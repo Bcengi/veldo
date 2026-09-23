@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -506 +506 @@
+-        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, held), origin=str(self._installed / (held + '.py')))
++        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, held), origin=os.path.realpath(str(self._installed / (held + '.py'))))  # defect: the link's target

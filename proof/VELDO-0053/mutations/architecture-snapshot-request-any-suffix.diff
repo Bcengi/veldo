@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -514 +514 @@
+-        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')
++        return self._named(name, os.path.splitext(file_name)[0])  # defect: any suffix names a held module

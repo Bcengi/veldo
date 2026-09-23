@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -829 +829 @@
+@@ -854 +854 @@
 -            load, parsed = snapshot.contract(self.workspace, True if accepted else None)
 +            load, parsed = snapshot.contract(self.workspace, None)  # defect: acceptance no longer makes the contract required

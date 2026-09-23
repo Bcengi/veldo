@@ -24,12 +24,15 @@
      "validator": {
       "entry": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
       "entry_point": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "git_process": "sha256:c8317f69b8e6635c1e0cb6185a93eee0693cdf4ec0c4beb113ee008d85f19828",
       "loader": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
-      "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20"
+      "tracker": "sha256:7d89d947b3d26da1b0455378b9bb1d2ff81cb69ebd073a939ffba9f00c37efd6",
+      "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
+      "verdict_corpus": "sha256:350b3c795696f167f40382370137ea9bbbfd35568aac8ffeda7efa08eb615455"
      }
     },
-    "decision_id": "f5e5dcde-5561-4939-8224-891d985ca09d",
+    "decision_id": "c49438e4-361a-4868-a9ee-7533c69f6025",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "selection",
@@ -66,12 +69,15 @@
      "validator": {
       "entry": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
       "entry_point": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "git_process": "sha256:c8317f69b8e6635c1e0cb6185a93eee0693cdf4ec0c4beb113ee008d85f19828",
       "loader": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
-      "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20"
+      "tracker": "sha256:7d89d947b3d26da1b0455378b9bb1d2ff81cb69ebd073a939ffba9f00c37efd6",
+      "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
+      "verdict_corpus": "sha256:350b3c795696f167f40382370137ea9bbbfd35568aac8ffeda7efa08eb615455"
      }
     },
-    "decision_id": "828dbd03-9140-46ca-b16e-138fba4b0cd5",
+    "decision_id": "d61c1f39-618f-42c6-8f02-b1aee7950a09",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "claim",
@@ -272,6 +278,11 @@
    ],
    "refused": 160
   },
+  "identity_covers_what_ran": {
+   "hooked_tracker_recorded": true,
+   "tracker": true,
+   "verdict_corpus": true
+  },
   "identity_is_what_ran": {
    "before_change": [
     "invalid_input:architecture/invalid_structure"
@@ -319,6 +330,20 @@
    "farm_collision": true,
    "miss_is_import_error": true
   },
+  "snapshot_held_names": {
+   "cases": {
+    "empty_name": true,
+    "fifo_is_named_stop": true
+   },
+   "fifo_readers_released": 0,
+   "requests": {
+    ".py": "ImportError",
+    "arch.pyc": "ImportError",
+    "engine/.py": "ImportError",
+    "engine/arch": "ImportError",
+    "no location": "ImportError"
+   }
+  },
   "snapshot_in_memory": {
    "engine_loads_from_disk": 0,
    "left_on_disk": [],
@@ -340,6 +365,10 @@
    },
    "swapped": 0,
    "writes_after_the_one_read": 2
+  },
+  "snapshot_module_files": {
+   "file_is_installed_path": true,
+   "load_error_shows_its_line": true
   },
   "snapshot_source": {
    "first_snapshot_unchanged_by_second": true,
@@ -443,6 +472,10 @@
       "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
       "path": "installed:.veldo/validate.py"
      },
+     "git_process": {
+      "digest": "sha256:c8317f69b8e6635c1e0cb6185a93eee0693cdf4ec0c4beb113ee008d85f19828",
+      "path": "installed:.veldo/git_process.py"
+     },
      "loader": {
       "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
@@ -451,9 +484,17 @@
       "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
       "path": "installed:.veldo/yamlish.py"
      },
+     "tracker": {
+      "digest": "sha256:7d89d947b3d26da1b0455378b9bb1d2ff81cb69ebd073a939ffba9f00c37efd6",
+      "path": "installed:.veldo/tracker.py"
+     },
      "validator": {
       "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
+     },
+     "verdict_corpus": {
+      "digest": "sha256:350b3c795696f167f40382370137ea9bbbfd35568aac8ffeda7efa08eb615455",
+      "path": "installed:.veldo/verdict_corpus.py"
      }
     }
    },
@@ -476,6 +517,10 @@
       "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
       "path": "installed:.veldo/validate.py"
      },
+     "git_process": {
+      "digest": "sha256:c8317f69b8e6635c1e0cb6185a93eee0693cdf4ec0c4beb113ee008d85f19828",
+      "path": "installed:.veldo/git_process.py"
+     },
      "loader": {
       "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
@@ -484,9 +529,17 @@
       "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
       "path": "installed:.veldo/yamlish.py"
      },
+     "tracker": {
+      "digest": "sha256:7d89d947b3d26da1b0455378b9bb1d2ff81cb69ebd073a939ffba9f00c37efd6",
+      "path": "installed:.veldo/tracker.py"
+     },
      "validator": {
       "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
+     },
+     "verdict_corpus": {
+      "digest": "sha256:350b3c795696f167f40382370137ea9bbbfd35568aac8ffeda7efa08eb615455",
+      "path": "installed:.veldo/verdict_corpus.py"
      }
     }
    },
@@ -509,6 +562,10 @@
       "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
       "path": "installed:.veldo/validate.py"
      },
+     "git_process": {
+      "digest": "sha256:c8317f69b8e6635c1e0cb6185a93eee0693cdf4ec0c4beb113ee008d85f19828",
+      "path": "installed:.veldo/git_process.py"
+     },
      "loader": {
       "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
@@ -517,9 +574,17 @@
       "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
       "path": "installed:.veldo/yamlish.py"
      },
+     "tracker": {
+      "digest": "sha256:7d89d947b3d26da1b0455378b9bb1d2ff81cb69ebd073a939ffba9f00c37efd6",
+      "path": "installed:.veldo/tracker.py"
+     },
      "validator": {
       "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
+     },
+     "verdict_corpus": {
+      "digest": "sha256:350b3c795696f167f40382370137ea9bbbfd35568aac8ffeda7efa08eb615455",
+      "path": "installed:.veldo/verdict_corpus.py"
      }
     }
    },
@@ -542,6 +607,10 @@
       "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
       "path": "installed:.veldo/validate.py"
      },
+     "git_process": {
+      "digest": "sha256:c8317f69b8e6635c1e0cb6185a93eee0693cdf4ec0c4beb113ee008d85f19828",
+      "path": "installed:.veldo/git_process.py"
+     },
      "loader": {
       "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
@@ -550,9 +619,17 @@
       "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
       "path": "installed:.veldo/yamlish.py"
      },
+     "tracker": {
+      "digest": "sha256:7d89d947b3d26da1b0455378b9bb1d2ff81cb69ebd073a939ffba9f00c37efd6",
+      "path": "installed:.veldo/tracker.py"
+     },
      "validator": {
       "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
+     },
+     "verdict_corpus": {
+      "digest": "sha256:350b3c795696f167f40382370137ea9bbbfd35568aac8ffeda7efa08eb615455",
+      "path": "installed:.veldo/verdict_corpus.py"
      }
     }
    }
@@ -583,7 +660,7 @@
    "wrong_type_fifo": 1
   }
  },
- "passed": 29,
+ "passed": 35,
  "rows": [
   [
    "VELDO-0053 architecture/store-only-refuses",
@@ -631,6 +708,18 @@
   ],
   [
    "VELDO-0053 architecture/snapshot-by-name",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/identity-covers-what-ran",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/snapshot-held-names",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/snapshot-module-files",
    true
   ],
   [
@@ -686,6 +775,18 @@
    true
   ],
   [
+   "VELDO-0053 ran/architecture/identity-covers-what-ran",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/snapshot-held-names",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/snapshot-module-files",
+   true
+  ],
+  [
    "VELDO-0053 ran/architecture/snapshot-source",
    true
   ],
@@ -703,5 +804,5 @@
   ]
  ],
  "suite": "60_veldo_0053_architecture.py",
- "suite_seconds": 3.05
+ "suite_seconds": 1.862
 }

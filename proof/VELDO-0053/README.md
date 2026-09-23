@@ -28,9 +28,10 @@ only that snapshot uses, and linecache holds its lines under that name with no m
 tracebacks and inspect show the code that ran without leaking into any other loader's traceback. The snapshot keeps one
 structural validator (arch.py) instance for every contract and asks validate.py's PUBLIC `entry_contract`
 (re-exported on validate.py, with `entry_validator`), which runs VELDO-0016's one tri-state loader. Every
-decision records the snapshot's identity, the installed path and the digest of the bytes loaded for
-validate.py, validate_checks.py, contract_loader.py, arch.py and yamlish.py, never a fresh read of the
-files on disk; and the artifact it judged (path, file type, and the loader's digest).
+decision records the snapshot's identity: every held module the snapshot has executed, under its role
+label when it has one (entry_point, entry, loader, validator, parser) and its module name otherwise
+(tracker, verdict_corpus, git_process), with its installed path and the digest of the bytes it ran from,
+never a fresh read of the files on disk; and the artifact it judged (path, file type, and the loader's digest).
 
 **The accepted artifact.** The authority's record `architecture:<repository>` (state `accepted`, the
 sha256 digest of the accepted bytes) makes the contract required whatever the workspace's own policy
@@ -51,15 +52,15 @@ success. `enrolled_gate` passes the workspace it verified, so every production G
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/60_veldo_0053_architecture.py`, 29 rows: 16 assertions and 13 `ran/` rows, one per
+Suite `scripts/suites/60_veldo_0053_architecture.py`, 35 rows: 19 assertions and 16 `ran/` rows, one per
 region, which stay green under every mutation, so each red row below failed its assertion with its region
 completing. A temporary Git repository is both the workspace and the installed `.veldo`; a second tree is
 a clone with its own `.veldo` whose `arch.py` is a success stub that writes a marker file when loaded.
 One unit passes every other predicate at every station, so each refusal is the architecture's.
 
-All 36 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
+All 46 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and each turned its named rows red while the unmutated copy (the driver's baseline run
-of the same suite) was green with 55 assertions (`mutations.json`, each diff in `mutations/`).
+of the same suite) was green with 61 assertions (`mutations.json`, each diff in `mutations/`).
 
 **AC1, valid, absent and invalid contracts.** Rows `architecture/state-kinds` and
 `architecture/ready-refusal`. Nine real-file states: valid, optional absent, required absent (policy
@@ -285,8 +286,43 @@ and `architecture-linecache-key-shared` (one key for every snapshot), besides th
 The snapshot-* mutations of earlier rounds are re-anchored on the name-keyed code; the path-lookup pair
 of round 3 is replaced by the two name mutations above.
 
+## 2026-09-23 fifth review: the identity is what ran, held names, regular files
+
+A review of 4c29526..e12aab1 found the name-keyed design sound, one blocker that predates it and two
+smaller items. `red.py e12aab1` (`red-e12aab1.json`): the three rows below fail by assertion with every
+region completing, no fixture substitution.
+
+**The identity is what ran** (d8a0b4b, BLOCKING). The recorded identity came from a hand-written list of
+five modules while the snapshot ran eight: tracker, verdict_corpus and git_process ran unrecorded, and a
+tampered tracker.py passed an invalid contract with pristine digests. The identity is now built from what
+the loader executes, every held module by name with its digest, recorded before each module runs; role
+names stay as labels. Row `architecture/identity-covers-what-ran`: a line appended to tracker.py, and one
+to verdict_corpus.py, each changes the recorded identity to the new bytes' digest; the tracker.py that
+answers arch.py's open() of the contract is recorded as such. At e12aab1 none of the three was recorded.
+Mutations `architecture-identity-static-five` (the static list reintroduced) and
+`architecture-identity-roles-only`.
+
+**Held names and regular files** (3bd666b). The empty module name (a file named `.py`) is never held, so
+a request that names no held module (`arch.pyc`, a path without `.py`, the bare `.py`, no location) is
+ImportError and that file never runs; each engine file is opened without waiting and read only if the
+open descriptor is a regular file, so a FIFO under a `.py` name is the named stop ImportError, never a
+wait. Row `architecture/snapshot-held-names`; a helper releases any reader blocked on the FIFO, so an old
+snapshot cannot hang the suite. At e12aab1 every such request was answered with the `.py` file's bytes and
+the FIFO was read. Mutations `architecture-snapshot-holds-empty-name`, `architecture-snapshot-request-any-suffix`,
+`architecture-snapshot-reads-any-file` and `architecture-snapshot-blocking-read`.
+
+**Pins** (1a7d993). Row `architecture/snapshot-module-files`: each held module's `__file__` (and each
+recorded identity path) is the installed path of its name, in a per-file link farm too; and an error
+raised while a module loads (a tracker.py that raises) shows its own line, because linecache is seeded
+before a module runs. Both held already, so this row adds no production change; at e12aab1 it is red only
+because that identity named no module. Mutations `architecture-snapshot-file-resolved`,
+`architecture-snapshot-file-is-key`, `architecture-linecache-seeded-after-load` and
+`architecture-linecache-seeded-for-roles-only`. A traceback under a file name that is not of the
+`<...>` form also reaches the right lines through the loader's get_source, so a mutation that only moved
+the compile key was not a defect and is not registered.
+
 Each red record was taken with the suite as of that review's fixes (`red-60d5018.json`,
-`red-8798a78.json`, `red-e299772.json`, `red-4c29526.json`).
+`red-8798a78.json`, `red-e299772.json`, `red-4c29526.json`, `red-e12aab1.json`).
 
 ## Narrowest seams, stated
 
@@ -301,15 +337,15 @@ Each red record was taken with the suite as of that review's fixes (`red-60d5018
 
 ## Cost and verification
 
-Suite 60_veldo_0053 runs in about 3.3 s (`observations.json`, `suite_seconds`), including seven
-installed-validator processes and five separate installed-engine fixtures; a validator snapshot costs
-about 22 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 36 mutations in 105 s here
-serially (`--jobs 1`) and in 29 s with main's parallel driver at its default of 8 jobs. Targeted checks on
-this branch after the fourth review's fix (main merged at d3cc356): `python3 -B scripts/selftest.py --suite
-60_veldo_0053_architecture` (29 rows, 55 assertions with the shared preamble, 0 failed),
-`python3 -B scripts/check_teeth_mutations.py --finding 53` (36 rejected, no `ran/` row red), `--finding 52`
-(47 rejected, suite 60_0052 at 80 of 80), the whole `python3 -B scripts/selftest.py` (5860 passed, 0
-failed; not the gate), `python3 .veldo/validate.py all` (exit 0), `bash scripts/check_generated.sh` and
-`bash scripts/check_template_sync.sh` (pass). The full gate is run by the lead.
+Suite 60_veldo_0053 runs in about 1.9 s (`observations.json`, `suite_seconds`), including seven
+installed-validator processes and the separately installed engine fixtures; a validator snapshot costs
+about 22 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 46 mutations in 15 s with
+main's parallel driver at its default of 8 jobs. Targeted checks on this branch after the fifth review's
+fixes: `python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (35 rows, 61 assertions with the
+shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (46 rejected, no
+`ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), the whole
+`python3 -B scripts/selftest.py` (5866 passed, 0 failed; not the gate), `python3 .veldo/validate.py all`
+(exit 0), `bash scripts/check_generated.sh` and `bash scripts/check_template_sync.sh` (pass). The full
+gate is run by the lead.
 
-`red.py <commit>` regenerates `red-60d5018.json`, `red-8798a78.json`, `red-e299772.json` and `red-4c29526.json`. `drive.py` regenerates `observations.json` from one run of the suite.
+`red.py <commit>` regenerates `red-60d5018.json`, `red-8798a78.json`, `red-e299772.json`, `red-4c29526.json` and `red-e12aab1.json`. `drive.py` regenerates `observations.json` from one run of the suite.

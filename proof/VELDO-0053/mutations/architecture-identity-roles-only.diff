@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -491 +491 @@
+-                for held, digest in self._executed.items()}
++                for held, digest in self._executed.items() if held in ROLE_LABELS}  # defect: labelled modules only

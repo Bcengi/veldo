@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -412 +412 @@
+@@ -416 +416 @@
 -        return importlib.util.decode_source(self.body)
 +        return None  # defect: the loader hands back no source

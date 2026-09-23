@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -426 +426,2 @@
+-        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)
++        if self.held in ROLE_LABELS:  # defect: only the labelled modules' lines are cached
++            linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)

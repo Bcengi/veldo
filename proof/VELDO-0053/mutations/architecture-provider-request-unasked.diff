@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -104 +104 @@
+@@ -105 +105 @@
 -STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', ARCHITECTURE_PREDICATE) + tuple(CC.ENTRY_PREDICATES[s])))
 +STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + ((ARCHITECTURE_PREDICATE,) if s != 'provider_request' else ()) + tuple(CC.ENTRY_PREDICATES[s])))
