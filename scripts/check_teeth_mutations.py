@@ -1084,9 +1084,9 @@ def cases():
     presentation('retry-after-above-bound-ignored', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
                  "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None", 'presentation/retry-after-capped')
     # VELDO-0065 third review item 8: choices under NFKC, case folding and separator equivalence.
-    presentation('choice-without-nfkc', "    text = unicodedata.normalize('NFKC', str(text)).casefold()\n",
-                 "    text = str(text).casefold()\n", 'answer/choice-normalization')
-    presentation('choice-separators-distinct', "    text = text.replace('_', ' ').replace('-', ' ')\n", "",
+    presentation('choice-without-nfkc', "    choice, _, reason = unicodedata.normalize('NFKC', text or '').partition(':')\n",
+                 "    choice, _, reason = (text or '').partition(':')\n", 'answer/choice-normalization')
+    presentation('choice-separators-distinct', "    text = text.translate(CHOICE_SEPARATORS)\n", "",
                  'answer/choice-normalization')
     # VELDO-0065 third review item 2: after a version is answered, a reply is told it is answered.
     presentation('answered-checked-after-choice', "        if recorded is not None:\n", "        if False:\n",
@@ -1113,6 +1113,11 @@ def cases():
                  "        ledger = {} if ledger is UNREADABLE else ledger\n", 'framing/ledger-read-fails-closed')
     presentation('journal-reader-ignores-kind', "            if (entry.get('kind') != kind or not isinstance(entry.get('data'), dict)",
                  "            if (not isinstance(entry.get('data'), dict)", 'framing/ledger-read-fails-closed')
+    # VELDO-0065 fourth review item 6: the whole reply NFKC-normalized before the split; Unicode hyphens separate.
+    presentation('split-before-nfkc', "    choice, _, reason = unicodedata.normalize('NFKC', text or '').partition(':')\n",
+                 "    choice, _, reason = (text or '').replace('\\uff1a', ':').partition(':')\n", 'answer/reply-nfkc-before-split')
+    presentation('ascii-hyphen-only', "CHOICE_SEPARATORS = str.maketrans({c: ' ' for c in '_-\\u2010\\u2011\\u2012\\u2043\\u2212'})\n",
+                 "CHOICE_SEPARATORS = str.maketrans({c: ' ' for c in '_-'})\n", 'answer/reply-nfkc-before-split')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

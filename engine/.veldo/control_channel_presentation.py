@@ -204,21 +204,24 @@ def usable_key(key, principal, now):
                  or (type(key['effective_at']) in (int, float) and key['effective_at'] <= now)))
 
 
+# Characters that separate the words of a choice name, alike: space, underscore, hyphen-minus and
+# the Unicode hyphens and minus NFKC keeps (hyphen, non-breaking hyphen, figure dash, minus sign).
+CHOICE_SEPARATORS = str.maketrans({c: ' ' for c in '_-\u2010\u2011\u2012\u2043\u2212'})
+
+
 def _fold(text):
     """A choice as the owner may type it: Unicode NFKC (full-width letters become ASCII), case
     folded, with spaces, underscores and hyphens alike and runs of them collapsed."""
     text = unicodedata.normalize('NFKC', str(text)).casefold()
-    text = text.replace('_', ' ').replace('-', ' ')
+    text = text.translate(CHOICE_SEPARATORS)
     return ' '.join(text.split())
 
 
 def split_reply(text):
-    """(choice, reason) of `<choice>: <reason>`, at the first colon, ASCII or full-width."""
-    text = text or ''
-    cuts = [i for i in (text.find(':'), text.find('\uff1a')) if i >= 0]
-    if not cuts:
-        return text, ''
-    return text[:min(cuts)], text[min(cuts) + 1:]
+    """(choice, reason) of `<choice>: <reason>`: the whole reply NFKC-normalized first, so every
+    colon form NFKC folds (full-width, small, vertical) is the colon, then split at the first one."""
+    choice, _, reason = unicodedata.normalize('NFKC', text or '').partition(':')
+    return choice, reason
 
 
 def offered_choice(typed, choices):

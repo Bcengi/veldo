@@ -106,7 +106,7 @@ def _v65_checks(base):
                                   'presentation/retry-after-bounded', 'answer/choice-normalization',
                                   'answer/after-answered-reply', 'answer/tell-once-per-message',
                                   'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed',
-                                  'presentation/retry-after-capped')}
+                                  'presentation/retry-after-capped', 'answer/reply-nfkc-before-split')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1330,6 +1330,22 @@ def _v65_checks(base):
                       and held.get('retry_not_before') is not None
                       and abs(held['retry_not_before'] - (now[0] - getattr(V, 'MAX_RETRY_AFTER', 3600) - 1)
                               - getattr(V, 'MAX_RETRY_AFTER', 3600)) < 1e-6)
+
+        # Review 4 item 6: the whole reply is NFKC-normalized before the split; Unicode hyphens separate
+        whole = 'answer/reply-nfkc-before-split'
+        with section(whole):
+            for n, (choices, text, choice) in enumerate((
+                    (('accept', 'reject'), 'accept\ufe55 small colon', 'accept'),
+                    (('accept', 'reject'), 'accept\ufe13 vertical colon', 'accept'),
+                    (('accept', 'reject', 'return_for_elaboration'), 'Return\u2010For\u2011Elaboration: unicode hyphens',
+                     'return_for_elaboration'),
+                    (('accept', 'reject', 'return_for_elaboration'), 'return\u2012for\u2212elaboration: more dashes',
+                     'return_for_elaboration'))):
+                wid = opened('WN-%d' % n, choices=choices)
+                presenter.present(wid)
+                result = answer(owner_reply(presenter.current(wid) or {}, text))
+                check(whole, '%r is the offered choice %s' % (text, choice),
+                      reason(result) == ('accepted', None) and (answered(wid, 1) or {}).get('choice') == choice)
     finally:
         server.shutdown()
         server.server_close()
