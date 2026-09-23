@@ -121,6 +121,15 @@ def receive(config, contract, accepted):
         if (shown.returncode or not lines or not lines[0].startswith('  Fetch URL: ') or not pushed
                 or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
             raise E.Refused('invalid-input')
+        # Each destination is listed by the URL git resolved for it, and `git ls-remote` resolves a
+        # URL again through the whole remote lookup (a remote section named by it, a legacy
+        # remotes/ file of that name, a further url.*.insteadOf). A destination that does not
+        # resolve to itself would be listed somewhere the push never went, so it is refused by
+        # name before anything is pushed; `--get-url` reads configuration only, no network.
+        for url in pushed:
+            itself = transport('ls-remote', '--get-url', '--', url)
+            if itself.returncode or itself.stdout != url + '\n':
+                raise E.Refused('rerouted-destination')
         # Each destination's state before the push, so its change can be judged after it. Nothing
         # is pushed unless every destination could be listed and holds the authorized ref at the
         # expected old state: the old tip, or absent when the all-zero id names a ref creation. A

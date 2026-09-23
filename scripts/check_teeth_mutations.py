@@ -479,6 +479,15 @@ def cases():
                 "        absent = False", 'publication-ref-creation')
     publication('effects-creation-over-existing-ref', precheck, precheck.replace('(ref in state if absent', '(False if absent'),
                 'publication-ref-creation')
+    # R8 B2: every destination must resolve to itself for its listing, or it is refused.
+    itself = ("        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n"
+              "            if itself.returncode or itself.stdout != url + '\\n':")
+    publication('effects-destination-listing-unchecked', itself, itself.replace(
+        "            if itself.returncode or itself.stdout != url + '\\n':", "            if False:"),
+        'publication-destination-listed-as-resolved')
+    publication('effects-destination-listing-first-only', itself,
+                itself.replace('        for url in pushed:\n', '        for url in pushed[:1]:\n'),
+                'publication-destination-listed-as-resolved')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.

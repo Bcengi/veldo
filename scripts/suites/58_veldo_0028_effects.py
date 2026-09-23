@@ -786,6 +786,45 @@ print(json.dumps(result))
             and recorded('create') == {'authorized_url': create_url,
                                        'destinations': reached((create_url, 'at-tip'), (str(second), 'at-tip'))}
             and over.get('refusal') == 'stale-subject' and ref_of(existing, 'refs/heads/created') == old)
+        # R8 B2: each destination is listed by the URL git resolved, and `git ls-remote` resolves
+        # that URL again through the whole remote lookup: a remote section named by it, a legacy
+        # remotes/ file of that name, a further url.*.insteadOf. The listing would then read a
+        # repository the push never reached, so a destination that does not resolve to itself
+        # (`git ls-remote --get-url`, no network) is refused by name before anything is pushed.
+        rerouted = {}
+        for name in ('section', 'legacy-file', 'insteadof-chain'):
+            clone, lbare = fresh('reroute-' + name)
+            xbare = elsewhere_for('reroute-' + name)
+            ybare = elsewhere_for('reroute-' + name + '-listed')
+            url = 'file://' + str(lbare)
+            if name == 'section':
+                # The second destination, X's file URL, has a section of its own pointing at Y (git
+                # ignores a section named by a plain path, so the URL form is the one that reroutes).
+                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', url)
+                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', 'file://' + str(xbare))
+                git('-C', str(clone), 'config', 'remote.file://' + str(xbare) + '.url', str(ybare))
+            elif name == 'legacy-file':
+                # A relative pushurl that is also a remote nickname with a legacy remotes/ file.
+                nick = clone / 'nick-repo'
+                git('init', '-q', '--bare', str(nick))
+                git('-C', str(repo), 'push', '-q', str(nick), old + ':refs/heads/main')
+                xbare = nick
+                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', url)
+                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', 'nick-repo')
+                (clone / '.git' / 'remotes').mkdir(exist_ok=True)
+                (clone / '.git' / 'remotes' / 'nick-repo').write_text('URL: %s\n' % ybare)
+            else:
+                # The authorized alias is rewritten to X, and X is itself rewritten to Y.
+                url = 'alias:reroute-repo'
+                git('-C', str(clone), 'config', 'url.' + str(xbare) + '.insteadOf', url)
+                git('-C', str(clone), 'config', 'url.' + str(ybare) + '.insteadOf', str(xbare))
+            _, answer = publish_as('reroute-' + name, clone, url)
+            rerouted[name] = (answer, [lbare, xbare, ybare])
+            seen_result('reroute-' + name, answer.get('result', {}), refusal=answer.get('refusal'),
+                        moved=[remote_main(b) == tip for b in (lbare, xbare, ybare)])
+        row('publication-destination-listed-as-resolved', all(
+            answer.get('refusal') == 'rerouted-destination' and answer.get('result', {}).get('status') == 'refused'
+            and all(remote_main(b) == old for b in repositories) for answer, repositories in rerouted.values()))
         # R6 2 and 3: the variables that select or inject operator configuration are the
         # operator's, not repository coordinates, so publication honors them as a plain git
         # command from the same environment does. Each case names the authorized remote only
@@ -876,6 +915,7 @@ print(json.dumps(result))
                      'completion-from-destination-state', 'hook-text-without-newline', 'non-utf8-output', 'fan-out-agit-report',
                      'scrub-scp-user-information', 'scrub-transport-prefix', 'scrub-query-fragment',
                      'refused-when-not-at-old-tip', 'refusal-reaches-caller', 'ref-creation',
+                     'destination-listed-as-resolved',
                      'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)

@@ -140,6 +140,11 @@ Nothing the push prints is evidence of where it went or whether it worked: a cli
 shares its standard output and a server's proc-receive report can reshape it, so that output is
 diagnostic text only, decoded losslessly. Git reports push URLs one per line, so a receiver URL or
 any configured URL or rewrite holding a line break is refused before anything is pushed.
+Each destination is listed by its resolved URL, and `git ls-remote` resolves a URL again through
+the whole remote lookup (a remote section named by it, a legacy `remotes/` file of that name, a
+further `url.*.insteadOf`). So each destination must resolve to itself (`git ls-remote --get-url`,
+which reads configuration only) or the publication is refused by name (`rerouted-destination`)
+before anything is pushed.
 
 **Completion rule.** Each resolved destination is listed before and after the push (`git ls-remote
 --symref`, same profile). A destination is at the tip when it held the old tip at the authorized
@@ -160,9 +165,9 @@ unencoded `/`, `?` or `#` in it ends the authority for git as well.
 
 **Stated limits, not passing claims.** A ref the remote hides from advertisement (for example
 `transfer.hideRefs`), and a ref the remote changes and restores while the push runs, cannot be
-observed from outside. Each destination is listed by its resolved URL, and `git ls-remote` applies
-`url.*.insteadOf` to that URL once more: where one rewrite's result matches another rewrite, the
-destination is listed one rewrite further than the push went.
+observed from outside. The record names URLs, not the repository a transport reaches with them:
+a remote's `receivepack` or `uploadpack` command, an SSH command, a remote helper, a proxy or an
+HTTP redirect decides that, and none of it is visible from the URL.
 
 ## History
 
