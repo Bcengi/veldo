@@ -722,6 +722,28 @@ def _s37_run():
                'no-publisher': 'missing_authority', 'no-file': 'missing_publication', 'other-bytes': 'publication_mismatch',
                'published-then': True} and still_pending and (honest_read or {}).get('body') == b'accepted bytes\n')
         env.conn.close()
+
+        # 7. Names that differ only by case are one file on a case-insensitive filesystem (the
+        # macOS default on a Release 1 worker host): prefixes and templates are compared
+        # case-insensitively, a historical number counts whatever its case, and a template is ASCII
+        # so that no Unicode normalization can merge two names either.
+        env = fresh('case', {'repository': [{'specs/veldo-0002-lower.md': b'lower case history\n'}]})
+        folded = {}
+        for label, kind, prefix, template, first in [
+                ('specification', 'specification', 'VELDO', 'specs/{alias}-{slug}.md', None),
+                ('prefix-case', 'plan', 'veldo', 'plans/{alias}-{slug}.md', 1),
+                ('upper-directory', 'note', 'NOTE', 'Docs/{number}.md', 1),
+                ('lower-directory', 'memo', 'MEMO', 'docs/{number}.md', 1),
+                ('non-ascii', 'decision', 'DEC', 'décisions/{number}.md', 1)]:
+            _, error = enable(env, kind, prefix, template, first=first)
+            folded[label] = code(error)
+        _, counter_now = env.service.current(al.kind_id('repository', 'specification'))
+        folded['counter'] = (counter_now or {}).get('next')
+        defects['case'] = folded
+        expect('aliases/case-insensitive-names', folded == {'specification': None, 'prefix-case': 'invalid_registration',
+               'upper-directory': None, 'lower-directory': 'invalid_registration', 'non-ascii': 'invalid_input',
+               'counter': 3})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

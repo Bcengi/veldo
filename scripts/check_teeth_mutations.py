@@ -474,6 +474,12 @@ def cases():
     aliases('record-missing-file-accepted', 'control_alias.py',
             "        if visible is None:\n            self._refuse('missing_publication', '%s is not in the bound checkout' % data['path'])",
             "        if visible is None:\n            visible = data['digest']", 'publication/recorded-only-by-publisher')
+    aliases('alias-prefix-case-sensitive', 'control_alias.py',
+            "            if other['prefix'].casefold() == data['prefix'].casefold():",
+            "            if other['prefix'] == data['prefix']:", 'aliases/case-insensitive-names')
+    aliases('alias-paths-case-sensitive', 'control_alias.py',
+            '    return [(frozenset(character), False) for character in text.casefold()]',
+            '    return [(frozenset(character), False) for character in text]', 'aliases/case-insensitive-names')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')

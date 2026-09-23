@@ -143,7 +143,8 @@ def _pattern(kind):
             regex += '[a-z0-9]+(?:-[a-z0-9]+)*'
         else:
             regex += re.escape(part)
-    return re.compile(regex)
+    # A historical number counts whatever its case: on a case-insensitive checkout it holds the path.
+    return re.compile(regex, re.IGNORECASE)
 
 
 def maximum(paths, kind):
@@ -205,7 +206,9 @@ _SLASH = (frozenset('/'), False)
 
 
 def _literal(text):
-    return [(frozenset(character), False) for character in text]
+    # Case-folded: on a case-insensitive filesystem (the macOS default) two names that differ
+    # only by case are one file.
+    return [(frozenset(character), False) for character in text.casefold()]
 
 
 def _items(kind):
@@ -253,8 +256,8 @@ def _meet(first, second, directories=True):
 
 def _template_problem(kind):
     template = kind['path_template']
-    if not isinstance(template, str):
-        return 'path_template is text'
+    if not isinstance(template, str) or not template.isascii():
+        return 'path_template is ASCII text, so no case or Unicode normalization rule can merge two paths'
     counts = {name: template.count(name) for name in ('{alias}', '{number}', '{slug}')}
     if counts['{alias}'] + counts['{number}'] != 1 or counts['{slug}'] > 1:
         return 'path_template names exactly one of {alias} or {number}, and {slug} at most once'
@@ -545,7 +548,7 @@ class Allocations:
             other = json.loads(raw)
             if other['repository_uuid'] != repository:
                 continue
-            if other['prefix'] == data['prefix']:
+            if other['prefix'].casefold() == data['prefix'].casefold():
                 self._refuse('invalid_registration', 'prefix %s already allocates kind %s' % (data['prefix'], other['kind']))
             if _meet(_items(data), _items(other)):
                 self._refuse('invalid_registration', 'kinds %s and %s can declare one path' % (data['kind'], other['kind']))
