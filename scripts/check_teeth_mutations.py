@@ -736,12 +736,12 @@ def cases():
                  " else ()) + tuple(CC.ENTRY_PREDICATES[s])))",
                  ['registrations', 'entries-blocked'])
     architecture('architecture-clone-validator', 'control_eligibility.py',
-                 "            self._validator = _organ('validate')._VC\n",
+                 "            self._validator = _organ('validate')\n",
                  "            clone = importlib.util.spec_from_file_location(\n"
                  "                'clone_validate', os.path.join(self.workspace, '.veldo', 'validate.py'))\n"
                  "            module = importlib.util.module_from_spec(clone)\n"
                  "            clone.loader.exec_module(module)\n"
-                 "            self._validator = module._VC  # defect: the workspace's own validator judges the workspace\n",
+                 "            self._validator = module  # defect: the workspace's own validator judges the workspace\n",
                  ['substitution'])
     architecture('architecture-accepted-digest-ignored', 'control_eligibility.py',
                  "        elif accepted and found['artifact']['digest'] != accepted['digest']:",
@@ -771,6 +771,16 @@ def cases():
                  "        self.workspace = str(workspace) if workspace is not None else None\n",
                  "        self.workspace = str(workspace) if workspace is not None else os.getcwd()  # defect: the process directory\n",
                  ['store-only-refuses'])
+    # Review fix: the Gate judges only through validate.py's public entry_contract.
+    architecture('architecture-private-seam', 'control_eligibility.py',
+                 "            self._validator = _organ('validate')\n",
+                 "            self._validator = _organ('validate')._VC  # defect: around the public name\n",
+                 ['public-seam'])
+    architecture('architecture-validate-checks-direct', 'control_eligibility.py',
+                 "            self._validator = _organ('validate')\n",
+                 "            self._validator = _organ('validate_checks')  # defect: around validate.py\n"
+                 "            self._validator.parse_yamlish = _organ('yamlish').parse\n",
+                 ['public-seam'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

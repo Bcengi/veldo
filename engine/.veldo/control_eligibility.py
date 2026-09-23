@@ -728,11 +728,10 @@ class Gate:
     # -- architecture (VELDO-0053) -----------------------------------------------------------------
 
     def _architecture_validator(self):
-        """The installed validator: validate.py beside this module, loaded once, whose own
-        validate_checks instance (its one parser bound) carries entry_contract. validate.py's
-        re-export list is VELDO-0016's, so the entry is reached on that instance."""
+        """The installed validator: validate.py beside this module, loaded once, judged through its
+        public entry_contract only."""
         if self._validator is None:
-            self._validator = _organ('validate')._VC
+            self._validator = _organ('validate')
         return self._validator
 
     def architecture(self, item):

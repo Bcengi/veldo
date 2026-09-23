@@ -605,6 +605,8 @@ check_placement = _VC.check_placement
 _observability_module = _VC._observability_module
 check_observability = _VC.check_observability
 load_repo_contract, load_contract_state, ContractRefused = _VC.load_repo_contract, _VC.load_contract_state, _VC.ContractRefused
+# VELDO-0053: the public seam an eligibility entry judges a workspace's architecture contract through.
+entry_contract = _VC.entry_contract
 placement_gate_problems = _VC.placement_gate_problems
 placement_gate_ok = _VC.placement_gate_ok
 check_ready = _VC.check_ready

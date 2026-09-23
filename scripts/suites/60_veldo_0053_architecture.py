@@ -633,6 +633,29 @@ def _v53_suite():
             observed['record_states'] = states
             check('architecture/record-states', all(states.values()) and len(states) == 5)
 
+        with region('architecture/public-seam'):
+            # The Gate judges only through validate.py's PUBLIC entry_contract: an installed copy whose
+            # validate.py wraps that name with a counter sees every judgement of a Gate loaded from it.
+            spied = top / 'spied' / '.veldo'
+            spied.mkdir(parents=True)
+            for source in sorted(mods.glob('*.py')):
+                shutil.copyfile(source, spied / source.name)
+            log = top / 'spied-entry.log'
+            with open(str(spied / 'validate.py'), 'a') as handle:
+                handle.write('\n\n_veldo_real_entry = globals().get("entry_contract") or _VC.entry_contract\n\n\n'
+                             'def entry_contract(*args, **kwargs):\n'
+                             '    with open(%r, "a") as _log:\n'
+                             '        _log.write("entry\\n")\n'
+                             '    return _veldo_real_entry(*args, **kwargs)\n' % str(log))
+            EL_spied = load('v53_spied_eligibility', spied / 'control_eligibility.py')
+            reset('valid')
+            spied_gate = EL_spied.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+            through = stations(spied_gate)
+            calls_seen = log.read_text().count('entry') if log.exists() else 0
+            observed['public_seam'] = {'judgements': len(through), 'through_public_entry': calls_seen,
+                                       'refusals': sorted({r for d in through.values() for r in d['refusals']})}
+            check('architecture/public-seam', outcome(through, None) and calls_seen == len(through) == len(EL.FLOOR_STATIONS))
+
         with region('architecture/observations'):
             # Every decision records the architecture it judged, and its refusals keep their taxonomy.
             judged = [e for e in gate.observations if e.get('architecture')]
