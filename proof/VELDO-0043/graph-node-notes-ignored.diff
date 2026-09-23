@@ -1,5 +1,0 @@
---- a/.veldo/control_graph_langgraph.py
-+++ b/.veldo/control_graph_langgraph.py
-@@ -153 +153 @@
--            update = dict(base, notes=dict(state['notes'], **(out.get('notes') or {})),
-+            update = dict(base, notes=dict(state['notes']),

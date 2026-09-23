@@ -1,5 +1,0 @@
---- a/.veldo/control_graph_langgraph.py
-+++ b/.veldo/control_graph_langgraph.py
-@@ -218 +218 @@
--                                                           'step': final['step'], 'notes': final['notes']})
-+                                                           'step': final['step'], 'notes': {}})
