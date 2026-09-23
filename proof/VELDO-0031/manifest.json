@@ -1,32 +1,40 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0031",
-  "commit": "74b8b6c4d3c45287abadaa3bf5a3bec20659c927",
+  "commit": "e1dfd6ee0118cd92d7da272245de6b7a9ed215f4",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-09-23T04:19:37.810728+00:00",
+  "produced_at": "2026-09-23T04:54:58.618117+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
       "id": "AC1",
       "status": "passed",
       "rows": [
-        "claims/atomic-activation"
+        "claims/atomic-activation",
+        "claims/review-r1",
+        "claims/review-r2",
+        "claims/review-r4"
       ],
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0031/observations.json",
-          "detail": "Canonical gate observations for claims/atomic-activation"
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0031/gate-summary.json",
-          "detail": "Clean full gate: real clones, IPC, SQLite, signatures and Git refs."
+          "ref": "proof/VELDO-0031/review-observations.json",
+          "detail": "Current full-gate criterion observations."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0031/mutations.jsonl",
-          "detail": "Two driven defects for this row; baseline and no-op green, mutant assertion red."
+          "ref": "proof/VELDO-0031/review-mutations.jsonl",
+          "detail": "All 18 registered claim mutations turn their target assertion rows RED; six final regression rows also fail against 5cf94c3."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0031/review-repros.json",
+          "detail": "All six unchanged independent reproduction scripts finish with zero BUG lines using this checkout modules."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0031/review-gate-summary.json",
+          "detail": "Complete clean-tree gate, including baseline/no-op/mutant workers."
         }
       ]
     },
@@ -34,23 +42,29 @@
       "id": "AC2",
       "status": "passed",
       "rows": [
-        "claims/current-generation"
+        "claims/current-generation",
+        "claims/review-r5"
       ],
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0031/observations.json",
-          "detail": "Canonical gate observations for claims/current-generation"
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0031/gate-summary.json",
-          "detail": "Clean full gate: real clones, IPC, SQLite, signatures and Git refs."
+          "ref": "proof/VELDO-0031/review-observations.json",
+          "detail": "Current full-gate criterion observations."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0031/mutations.jsonl",
-          "detail": "Two driven defects for this row; baseline and no-op green, mutant assertion red."
+          "ref": "proof/VELDO-0031/review-mutations.jsonl",
+          "detail": "All 18 registered claim mutations turn their target assertion rows RED; six final regression rows also fail against 5cf94c3."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0031/review-repros.json",
+          "detail": "All six unchanged independent reproduction scripts finish with zero BUG lines using this checkout modules."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0031/review-gate-summary.json",
+          "detail": "Complete clean-tree gate, including baseline/no-op/mutant workers."
         }
       ]
     },
@@ -58,23 +72,30 @@
       "id": "AC3",
       "status": "passed",
       "rows": [
-        "claims/uncertainty-stop"
+        "claims/uncertainty-stop",
+        "claims/review-r3",
+        "claims/review-r6"
       ],
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0031/observations.json",
-          "detail": "Canonical gate observations for claims/uncertainty-stop"
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0031/gate-summary.json",
-          "detail": "Clean full gate: real clones, IPC, SQLite, signatures and Git refs."
+          "ref": "proof/VELDO-0031/review-observations.json",
+          "detail": "Current full-gate criterion observations."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0031/mutations.jsonl",
-          "detail": "Two driven defects for this row; baseline and no-op green, mutant assertion red."
+          "ref": "proof/VELDO-0031/review-mutations.jsonl",
+          "detail": "All 18 registered claim mutations turn their target assertion rows RED; six final regression rows also fail against 5cf94c3."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0031/review-repros.json",
+          "detail": "All six unchanged independent reproduction scripts finish with zero BUG lines using this checkout modules."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0031/review-gate-summary.json",
+          "detail": "Complete clean-tree gate, including baseline/no-op/mutant workers."
         }
       ]
     }
@@ -85,8 +106,8 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "74b8b6c4d3c45287abadaa3bf5a3bec20659c927",
-      "ref": "proof/VELDO-0031/gate-summary.json"
+      "commit": "e1dfd6ee0118cd92d7da272245de6b7a9ed215f4",
+      "ref": "proof/VELDO-0031/review-gate-summary.json"
     }
   ],
   "rollback": "Stop new authority claim operations and preserve ownership and unresolved records; no automatic reclaim.",
@@ -104,6 +125,33 @@
     "proof/VELDO-0031/measure.py",
     "proof/VELDO-0031/mutations.jsonl",
     "proof/VELDO-0031/observations.json",
+    "proof/VELDO-0031/review-baseline-red.json",
+    "proof/VELDO-0031/review-baseline-red.txt",
+    "proof/VELDO-0031/review-gate-summary.json",
+    "proof/VELDO-0031/review-mutations.jsonl",
+    "proof/VELDO-0031/review-observations.json",
+    "proof/VELDO-0031/review-r1-command-crash.diff",
+    "proof/VELDO-0031/review-r1-green.json",
+    "proof/VELDO-0031/review-r1-signature-crash.diff",
+    "proof/VELDO-0031/review-r1-unicode-green.json",
+    "proof/VELDO-0031/review-r1-unicode-red.json",
+    "proof/VELDO-0031/review-r2-activation-without-owner.diff",
+    "proof/VELDO-0031/review-r2-green.json",
+    "proof/VELDO-0031/review-r2-inspect-skips-consistency.diff",
+    "proof/VELDO-0031/review-r3-green.json",
+    "proof/VELDO-0031/review-r3-publish-without-use.diff",
+    "proof/VELDO-0031/review-r3-swallow-heartbeat-stop.diff",
+    "proof/VELDO-0031/review-r4-cwd-selects-enrollment.diff",
+    "proof/VELDO-0031/review-r4-green.json",
+    "proof/VELDO-0031/review-r4-refuse-unrelated-root.diff",
+    "proof/VELDO-0031/review-r5-expiry-revokes-owner.diff",
+    "proof/VELDO-0031/review-r5-green.json",
+    "proof/VELDO-0031/review-r5-release-ignores-holder.diff",
+    "proof/VELDO-0031/review-r6-green.json",
+    "proof/VELDO-0031/review-r6-private-stop-class.diff",
+    "proof/VELDO-0031/review-r6-routing-wrong-exception.diff",
+    "proof/VELDO-0031/review-repros.json",
+    "proof/VELDO-0031/review-timing.json",
     "proof/VELDO-0031/timing.json"
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "command": "bash scripts/verify.sh",
+  "commit": "e1dfd6ee0118cd92d7da272245de6b7a9ed215f4",
+  "clean_at_start": true,
+  "exit_code": 0,
+  "gate": "GATE: GREEN (e1dfd6ee0118cd92d7da272245de6b7a9ed215f4)",
+  "unit": "selftest: 5687 passed, 0 failed",
+  "mutation_stage": "mutations: passed registered=102 executed=102 rejected=102 workers=142 elapsed=72.098s",
+  "full_log_sha256": "3a5a457a46f76eb82e39756b7a4aeb073d7ac1469562cbc8eb2becad84c9de0d",
+  "note": "Gate byproducts restored before final proof commit; no push. Complete log is not committed."
+}

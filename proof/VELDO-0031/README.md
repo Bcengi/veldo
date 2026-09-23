@@ -132,10 +132,23 @@ the driven negative controls. These targeted results are diagnostic evidence; th
 complete clean-tree gate is the acceptance check.
 
 The original proof and gate records above are historical. The correction gate and
-workload measurements are recorded separately below after verification. Independent
+workload measurements are recorded separately below. Independent
 review approval and landing are not asserted; no push was performed.
 
 Measured corrected claim workload: 24.18 seconds including both suite passes and
 all 18 claim mutations with baseline/no-op controls (30 workers), below 60 seconds.
 `review-timing.json` records the measurement; the canonical gate uses the entire
 mutation inventory without filtering.
+
+Final correction gate, started from a clean tree:
+
+```text
+GATE: GREEN (e1dfd6ee0118cd92d7da272245de6b7a9ed215f4)
+selftest: 5687 passed, 0 failed
+mutations: passed registered=102 executed=102 rejected=102 workers=142 elapsed=72.098s
+```
+
+`review-gate-summary.json` records the tested commit and full-log SHA-256. The
+manifest binds the corrected evidence to that verified tree. The final commit only
+records this proof; `.veldo/last_verify` and `.veldo/events.jsonl` are restored to
+their original checkout contents and are not included.
