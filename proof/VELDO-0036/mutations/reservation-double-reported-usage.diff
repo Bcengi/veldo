@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -241 +241 @@
+-                value['charge'][unit] = max(value['charge'].get(unit, 0), amount)
++                value['charge'][unit] = max(value['charge'].get(unit, 0), amount) + amount

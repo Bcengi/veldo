@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -495,2 +494,0 @@
+-        if raw is not None and self.store.digest_of({'kind': kind, 'data': raw, 'version': version}) != digest:
+-            problems.append('stored data does not match its committed digest')

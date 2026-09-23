@@ -1,0 +1,6 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -229 +229,2 @@
+-                return {}  # Duplicate sequence under a different delivery command settles nothing twice.
++                value['charge'] = {k: v * 2 for k, v in value['charge'].items()}
++                return {target: {'kind': 'subscription_reservation', 'data': value}}

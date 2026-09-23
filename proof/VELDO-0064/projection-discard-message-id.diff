@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -233 +233 @@
+-                    message_id=platform['message_id'], platform_date=platform['date'],
++                    message_id=None, platform_date=platform['date'],

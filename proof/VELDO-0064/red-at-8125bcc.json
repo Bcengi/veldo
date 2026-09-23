@@ -1,0 +1,133 @@
+{
+ "commit": "8125bcc16ebc70f67907cfe8a621ddbabc03a119",
+ "details": [
+  "VELDO-0064 projection/send-outcomes detail: a platform refusal publishes nothing and records the refusal",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: the released claim names the assignment the unit waits for",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: a claim on the parked unit is refused as parked",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: inspection reports the unit parked",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: resume before the owner answers is refused as not answered",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: the claim is unchanged by every refusal",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: admission does not reopen a plain claim",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: resume after admission takes the claim again at the next generation",
+  "VELDO-0064 inbox/release-derived-from-claim detail: an open that names no unit parks the requester's own claim",
+  "VELDO-0064 inbox/release-derived-from-claim detail: the stored assignment blocks the unit of that claim",
+  "VELDO-0064 inbox/release-derived-from-claim detail: a holder naming no claim generation is refused and opens nothing",
+  "VELDO-0064 inbox/release-derived-from-claim detail: naming a unit other than the requester's claim is refused",
+  "VELDO-0064 inbox/release-derived-from-claim detail: a requester holding several claims is refused",
+  "VELDO-0064 inbox/release-derived-from-claim detail: the next open parks the requester's remaining claim",
+  "VELDO-0064 inbox/release-derived-from-claim detail: a claim taken while the open is in flight refuses the open",
+  "VELDO-0064 inbox/admit-verifies-owner-signature detail: the record keeps the owner's signed answer, verifiable with ssh-keygen alone",
+  "VELDO-0064 inbox/admit-verifies-owner-signature detail: an upsert naming the owner, with an answer the owner never signed, is not admitted",
+  "VELDO-0064 inbox/admit-verifies-owner-signature detail: a genuine owner signature over another answer is not admitted",
+  "VELDO-0064 projection/intent-before-send detail: an intent that cannot be written sends nothing and records nothing",
+  "VELDO-0064 projection/intent-before-send detail: the next run writes the intent, sends once and completes it",
+  "VELDO-0064 projection/intent-before-send detail: a completion that cannot be written leaves the committed intent, reported unknown",
+  "VELDO-0064 projection/intent-before-send detail: the platform identity of the unrecorded send is reported, not dropped",
+  "VELDO-0064 projection/intent-before-send detail: a send whose outcome is unknown is never repeated",
+  "VELDO-0064 projection/intent-before-send detail: metrics expose the unknown outcome",
+  "VELDO-0064 projection/echo-mismatch-kept detail: the returned identity is kept, recorded as the named anomaly",
+  "VELDO-0064 projection/echo-mismatch-kept detail: the record keeps the platform's stored text beside the bytes sent",
+  "VELDO-0064 projection/echo-mismatch-kept detail: the anomalous message is never sent again",
+  "VELDO-0064 projection/echo-mismatch-kept detail: metrics count the anomaly, not pending work",
+  "VELDO-0064 projection/owner-enrolled-chat detail: the stranger's assignment reaches the stranger's own chat only",
+  "VELDO-0064 projection/owner-enrolled-chat detail: the record binds the owner and the enrollment it routed by",
+  "VELDO-0064 projection/owner-enrolled-chat detail: an owner with no enrolled chat gets a named refusal and no message",
+  "VELDO-0064 projection/owner-enrolled-chat detail: an enrollment filed for one owner that names another is refused",
+  "VELDO-0064 projection/owner-enrolled-chat detail: no chat ever received another owner's assignment",
+  "VELDO-0064 projection/owner-enrolled-chat detail: the refused owners stay refused and nothing is sent",
+  "VELDO-0064 projection/owner-enrolled-chat detail: the refused owners stay visible as unprojected work",
+  "VELDO-0064 projection/owner-enrolled-chat detail: an edge given one configured chat is refused",
+  "VELDO-0064 projection/returned-chat-checked detail: a message placed in another chat is the named anomaly, not a sent projection",
+  "VELDO-0064 projection/returned-chat-checked detail: the record keeps the chat the platform returned beside the enrolled chat",
+  "VELDO-0064 projection/returned-chat-checked detail: the misplaced message is never sent again"
+ ],
+ "failed_rows": [
+  "VELDO-0064 projection/send-outcomes",
+  "VELDO-0064 inbox/parked-unit-unclaimable",
+  "VELDO-0064 inbox/release-derived-from-claim",
+  "VELDO-0064 inbox/admit-verifies-owner-signature",
+  "VELDO-0064 projection/intent-before-send",
+  "VELDO-0064 projection/echo-mismatch-kept",
+  "VELDO-0064 projection/owner-enrolled-chat",
+  "VELDO-0064 projection/returned-chat-checked"
+ ],
+ "modules": {
+  "control_assignment.py": {
+   "changed": [],
+   "sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  "control_channel_projection.py": {
+   "changed": [
+    "def __init__(self, base_url, token, chat=5550001, timeout=10):"
+   ],
+   "sha256": "0b30885e062f3f50ef00d2443715cc3ed25dbc64b2f4b8ed5ac5d7a17ccea2ff"
+  },
+  "control_claim.py": {
+   "changed": [],
+   "sha256": "ee4a69129b506c6a57f2d461c005fe7871381ec20555c6e8c25bceec046c354a"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0064 install/assets",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/states-and-authority",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/waiting-resources",
+   true
+  ],
+  [
+   "VELDO-0064 projection/correlation",
+   true
+  ],
+  [
+   "VELDO-0064 projection/send-outcomes",
+   false
+  ],
+  [
+   "VELDO-0064 inbox/visible-invalid",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/unauthorized-admission",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/parked-unit-unclaimable",
+   false
+  ],
+  [
+   "VELDO-0064 inbox/release-derived-from-claim",
+   false
+  ],
+  [
+   "VELDO-0064 inbox/admit-verifies-owner-signature",
+   false
+  ],
+  [
+   "VELDO-0064 projection/intent-before-send",
+   false
+  ],
+  [
+   "VELDO-0064 projection/echo-mismatch-kept",
+   false
+  ],
+  [
+   "VELDO-0064 projection/owner-enrolled-chat",
+   false
+  ],
+  [
+   "VELDO-0064 projection/returned-chat-checked",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.805,
+ "spec_id": "VELDO-0064",
+ "suite": "scripts/suites/60_veldo_0064_inbox.py"
+}

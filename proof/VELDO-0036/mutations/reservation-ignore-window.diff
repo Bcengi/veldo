@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -103 +103 @@
+-            for window in policy.get('windows', {}).values():
++            for window in ():

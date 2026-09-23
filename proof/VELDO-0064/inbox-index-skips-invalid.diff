@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -526 +526 @@
+-                entry['category'] = 'invalid'
++                continue

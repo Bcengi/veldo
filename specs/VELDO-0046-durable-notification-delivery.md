@@ -26,6 +26,7 @@ footprint:
   - "scripts/suites/*_veldo_0046_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0046-durable-notification-delivery.md"
   - "specs/index.md"
   - "proof/VELDO-0046/*"
@@ -117,3 +118,7 @@ failures, AC2 notifier-death recovery and AC3 startup/reconnect/cursor replay mo
 2. Enabled event wake-up and lost-wakeup check remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-23: implementation adds the shared mutation-driver registration to the footprint.
+The three retained criteria are driven against temporary production copies; no release scope
+or specification status changes.

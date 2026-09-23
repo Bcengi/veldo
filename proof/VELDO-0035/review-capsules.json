@@ -1,0 +1,32 @@
+[
+  {
+    "finding": "R1",
+    "command": "python3 -B .capsule/reproduce.py",
+    "script_sha256": "a1e32b539ed12b0eae6737132a520e9fa78b962a07eda3cbd3096e1bf8ba0b82",
+    "exit_code": 0,
+    "stdout": "REFUSED: unregistered_inputs\nCONTROL: attached connection refused stale_input\n",
+    "stderr": "",
+    "elapsed_seconds": 0.18497874797321856,
+    "reproduces": false
+  },
+  {
+    "finding": "R2",
+    "command": "python3 -B .capsule/reproduce.py",
+    "script_sha256": "41018579e75fc6a72b9574aa274511ddb25227bcc2a2f71cbfdc0ef742dd3fc7",
+    "exit_code": 0,
+    "stdout": "REFUSED before accepting invalid inventory: invalid_input\n",
+    "stderr": "",
+    "elapsed_seconds": 0.1610435089096427,
+    "reproduces": false
+  },
+  {
+    "finding": "R3",
+    "command": "python3 -B .capsule/reproduce.py",
+    "script_sha256": "c12aefa1120c78e8e836f4ad239fd11e72b471b9187bf18c26064a98d42f9fd6",
+    "exit_code": 0,
+    "stdout": "REFUSED unpinned revision: invalid_input\n",
+    "stderr": "",
+    "elapsed_seconds": 0.14637125190347433,
+    "reproduces": false
+  }
+]

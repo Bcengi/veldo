@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -192,2 +191,0 @@
+-    if platform['text'].encode('utf-8') != record['presentation'].encode('utf-8'):
+-        found.append('presentation_mismatch')

@@ -538,6 +538,67 @@
    ],
    "regions": "Contract-derived protected effects, atomic handles and bound receiver outcomes",
    "requires_note": "Uses ROOT and expect only. Installed temporary modules, real Ed25519 pipe authentication and SQLite; trusted receiver process witnesses, a real local Git publication and a Linux confined credential-read probe. Writes only temporary fixtures."
+  },
+  {
+   "name": "58_veldo_0036_reservations",
+   "file": "58_veldo_0036_reservations.py",
+   "requires": [
+    "58_veldo_0036_reservations"
+   ],
+   "regions": "Atomic capacity and subscription reservations",
+   "requires_note": "Uses only shared ROOT and expect. Temporary real SQLite stores, two concurrent clients and a joined/reaped real descendant; logged-in CLI launch callbacks are a narrow integration seam."
+  },
+  {
+   "name": "58_veldo_0035_snapshots",
+   "file": "58_veldo_0035_snapshots.py",
+   "requires": [
+    "58_veldo_0035_snapshots"
+   ],
+   "regions": "Accepted snapshots, transactional inputs and complete materialization",
+   "requires_note": "Uses only shared ROOT and expect; real SQLite, Git, Ed25519 signatures and a separate reader process."
+  },
+  {
+   "name": "58_veldo_0031_claims",
+   "file": "58_veldo_0031_claims.py",
+   "requires": [
+    "58_veldo_0031_claims"
+   ],
+   "regions": "Authority claims: real clone race, SQLite activation, receiver generations and uncertainty stops"
+  },
+  {
+   "name": "59_veldo_0031_review",
+   "file": "59_veldo_0031_review.py",
+   "requires": [
+    "59_veldo_0031_review"
+   ],
+   "regions": "Six independent review regression scenarios for authority claims"
+  },
+  {
+   "name": "58_veldo_0046_notifications",
+   "file": "58_veldo_0046_notifications.py",
+   "requires": [
+    "58_veldo_0046_notifications"
+   ],
+   "regions": "Release 1 committed notifications, idle signals and journal authority",
+   "requires_note": "Uses shared ROOT and expect only; real installer, SQLite, Ed25519 signatures and joined event-loop threads."
+  },
+  {
+   "name": "60_veldo_0064_inbox",
+   "file": "60_veldo_0064_inbox.py",
+   "requires": [
+    "60_veldo_0064_inbox"
+   ],
+   "regions": "Assignment inbox, released waiting claims, Telegram correlation and authority-only admission",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, claim receiver, Ed25519 signatures, a child worker process and loopback HTTP."
+  },
+  {
+   "name": "61_scope_covers",
+   "file": "61_scope_covers.py",
+   "requires": [
+    "61_scope_covers"
+   ],
+   "regions": "Scope coverage of a plain-string inner scope (repository id)",
+   "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
   }
  ]
 }

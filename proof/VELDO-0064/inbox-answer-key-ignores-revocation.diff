@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -635,2 +634,0 @@
+-            if current.get('revoked_at') is not None and current['revoked_at'] <= at:
+-                return None

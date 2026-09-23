@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""VELDO claim ledger: the atomic self-dividing coordination primitive for the fleet.
+"""Enrolled clones use an explicit control_claim_client.Client and never a local ledger.
+An enrolled default caller stops with authority_required until wired to that client.
+Explicit filesystem roots retain the pre-factory compatibility API below.
+
+VELDO claim ledger: the atomic self-dividing coordination primitive for the fleet.
 
 Independent vanilla workers claim units of work (a spec id, or a review id) with no
 central coordinator. A claim is a file under the git common dir at veldo/claims/<unit>.json
@@ -120,6 +124,35 @@ def unit_id_problem(unit_id):
     return None
 
 
+class ClaimStopped(RuntimeError):
+    """A named terminal ownership stop; callers must not retry it as contention."""
+    def __init__(self, reason):
+        self.reason = reason
+        super().__init__('claim stopped: ' + reason)
+
+
+# File-location imports are used by installed callers, often under different names.
+# Keep the exception identity process-wide even when claim.py itself is loaded again.
+import sys as _sys
+import types as _types
+_claim_errors = _sys.modules.setdefault('veldo_claim_errors', _types.ModuleType('veldo_claim_errors'))
+if not hasattr(_claim_errors, 'ClaimStopped'):
+    _claim_errors.ClaimStopped = ClaimStopped
+ClaimStopped = _claim_errors.ClaimStopped
+
+
+def _authority(root):
+    if getattr(root, 'authority_claim_client', False):
+        return root
+    try:
+        ledger_root = os.path.dirname(claims_root(root))
+    except subprocess.CalledProcessError:
+        return None
+    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):
+        raise ClaimStopped('authority_required')
+    return None
+
+
 def _path(unit_id, root=None):
     """The record path for unit_id, or a REFUSAL. Every read and write path resolves a record
     through here, so an id that cannot be stored faithfully can never reach another unit's
@@ -237,11 +270,14 @@ def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
     that turned fresh while we waited is refused, never clobbered. Readers (is_claimed,
     holder, claimed_units) are lock-free and still safe: os.replace is an atomic rename, so a
     reader always sees a complete old-or-new record, never a half-written one."""
+    client = _authority(root)
+    if client:
+        return client.claim(unit_id, worker_id, worker_caps, requirements)
     if not capability_ok(worker_caps, requirements):
         return False, "capability"
+    path = _path(unit_id, root)
     d = claims_root(root)
     os.makedirs(d, exist_ok=True)
-    path = _path(unit_id, root)
     with _unit_lock(path):
         cur = _read(path)
         if cur is not None and cur.get("worker_id") != worker_id:
@@ -265,6 +301,9 @@ def heartbeat(unit_id, worker_id, root=None):
     under the per-unit lock so a heartbeat cannot clobber a concurrent takeover: if the claim
     was taken over (or removed) since we last saw it, the owner check fails and we do not
     write, rather than overwriting the new holder's record with our refreshed one."""
+    client = _authority(root)
+    if client:
+        return client.heartbeat(unit_id, worker_id)
     path = _path(unit_id, root)
     with _unit_lock(path):
         cur = _read(path)
@@ -279,6 +318,9 @@ def release(unit_id, worker_id, root=None):
     """Release this worker's claim. Returns True if released; False if not the holder. Runs
     under the per-unit lock so a release cannot remove a claim that was taken over by another
     worker since we last saw it: the owner check and the remove are one atomic decision."""
+    client = _authority(root)
+    if client:
+        return client.release(unit_id, worker_id)
     path = _path(unit_id, root)
     with _unit_lock(path):
         cur = _read(path)
@@ -293,6 +335,9 @@ def release(unit_id, worker_id, root=None):
 
 def holder(unit_id, root=None):
     """Return the worker id currently holding a LIVE claim on unit_id, else None."""
+    client = _authority(root)
+    if client:
+        return client.holder(unit_id)
     cur = _read(_path(unit_id, root))
     if not cur or _is_stale(cur):
         return None
@@ -306,6 +351,8 @@ def is_claimed(unit_id, root=None):
 
 def claimed_units(root=None):
     """The set of unit ids with a LIVE claim (stale claims excluded)."""
+    if _authority(root):
+        raise ClaimStopped("explicit_unit_required")
     d = claims_root(root)
     if not os.path.isdir(d):
         return set()

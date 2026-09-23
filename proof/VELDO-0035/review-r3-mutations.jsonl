@@ -1,0 +1,3 @@
+{"finding": 35, "mutation": "snapshot-skip-empty-commit-validation", "baseline": "green", "assertions": 59, "red_rows": ["snapshots/status-only-commit"]}
+{"finding": 35, "mutation": "snapshot-accept-noncommit-id", "baseline": "green", "assertions": 59, "red_rows": ["snapshots/status-only-commit"]}
+{"mutations_rejected": 2, "green_suites": {"58_veldo_0035_snapshots.py": 59}}

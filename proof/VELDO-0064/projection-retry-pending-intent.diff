@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -66 +66 @@
+-RETRYABLE = ('refused',)
++RETRYABLE = ('refused', 'pending')

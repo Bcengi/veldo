@@ -14,6 +14,8 @@ depends_on: [VELDO-0023, VELDO-0025]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
   - "engine/.veldo/control_snapshot*.py"
   - ".veldo/control_snapshot*.py"
   - "packs/*/.veldo/control_snapshot*.py"
@@ -24,6 +26,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0035_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0035-authoritative-snapshots.md"
@@ -117,3 +120,14 @@ concurrent read-set matrix and AC3 crash-safe snapshot pointer switching/recover
 Release 2. Accepted snapshots and ordinary materialization remain. The criteria, declared
 evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-23 implementation: register the AC1-AC3 negative controls in the existing
+`scripts/check_teeth_mutations.py` driver (the authorized footprint exception, also
+listed in the machine-readable footprint), with two
+distinct mutations per named criterion row and fresh unmutated controls. The snapshot
+consumer registration seam uses the existing store; it does not implement future eligibility,
+project-manager, identifier-allocation or lander commands.
+
+2026-09-23 review fixes: R1/R4 require the existing control store to dispatch connection-local
+snapshot registrations inside its BEGIN IMMEDIATE transaction. The footprint includes that
+minimal store seam and its installed mirror; no schema or additional operation is introduced.

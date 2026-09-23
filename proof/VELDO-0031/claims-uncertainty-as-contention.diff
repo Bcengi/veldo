@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim_client.py
++++ b/.veldo/control_claim_client.py
+@@ -55 +55 @@
+-            raise CL.ClaimStopped(result['reason'])
++            return {'ok': False, 'reason': 'claimed'}

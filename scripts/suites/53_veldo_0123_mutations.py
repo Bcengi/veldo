@@ -306,3 +306,38 @@ if 'expect' in globals():
     _m123_answers, _m123_evidence = qualification(_m123_gate, ROOT)
     for _m123_row, _m123_ok in _m123_answers.items():
         expect('VELDO-0123 ' + _m123_row + ': coordinator qualification', _m123_ok)
+    # The combined cap scales with the registered inventory, so growth alone never reddens the gate.
+    # Drive the real run_stage with a synthetic inventory and stop it right after the cap is armed,
+    # observing BOTH the enforced worker deadline and the armed alarm, not only the receipt field.
+    import signal as _m123_signal
+    _m123_budget = import_gate(ROOT / 'scripts/check_gate_mutations.py')
+    _m123_saved = (_m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers)
+    _m123_seen = []
+    _m123_made = []
+
+    class _m123_Workers(_m123_budget.Workers):
+        def __init__(self, deadline):
+            super().__init__(deadline)
+            _m123_made.append(self)
+
+    def _m123_stop_after_arm(root):
+        _m123_seen.append((_m123_made[-1].deadline - _m123_time.monotonic(),
+                           _m123_signal.getitimer(_m123_signal.ITIMER_REAL)[0]))
+        raise _m123_budget.Refused('driver_error', 'stop after the cap is armed')
+
+    _m123_caps = {}
+    try:
+        _m123_budget.read_inputs = _m123_stop_after_arm
+        _m123_budget.Workers = _m123_Workers
+        for _m123_count in (10, 116, 300):
+            _m123_budget.inventory = lambda root, n=_m123_count: [{'driver': 'synthetic'}] * n
+            _m123_caps[_m123_count] = _m123_budget.run_stage(ROOT).get('budget_seconds')
+    finally:
+        _m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers = _m123_saved
+    _m123_want = {10: 120, 116: 232.0, 300: 600.0}
+    _m123_enforced = [abs(left - _m123_want[n]) < 5 and abs(alarm - _m123_want[n]) < 5
+                      for n, (left, alarm) in zip((10, 116, 300), _m123_seen)]
+    expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: run_stage records, enforces as the '
+           'worker deadline, and arms as the alarm a cap of the floor or 2 s per registered case, '
+           'whichever is larger (10 -> 120, 116 -> 232, 300 -> 600)',
+           _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced))

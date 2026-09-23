@@ -1,0 +1,84 @@
+tree at bfcb530
+=== r1_reclaim_while_pending
+open: True released: claim:repo:unit-1 stop_requester: True
+admit before any answer: not_answered
+re-claim while assignment pending: False parked
+waiting_resources: []
+exit=0
+=== r2_open_without_unit_keeps_claim
+  File "<rerun>/r2_open_without_unit_keeps_claim.py", line 8, in <module>
+    print('open:', o['ok'], 'stop_requester:', o['stop_requester'], 'released:', o['released_claim'])
+                                               ~^^^^^^^^^^^^^^^^^^
+KeyError: 'stop_requester'
+exit=0
+=== r2_open_without_unit_keeps_claim_adapted
+open: False reason: invalid_input stop_requester: None released: None
+claim state: owned holder: worker-a
+waiting_resources: [] receiver.pending: ['claim:repo:unit-1']
+exit=0
+=== r2_with_generation_adapted
+open: True reason: open stop_requester: True released: claim:repo:unit-1
+claim state: released holder: None
+waiting_resources: [] receiver.pending: []
+exit=0
+=== r3_resend_after_record_failure
+  File "<rerun>/r3_resend_after_record_failure.py", line 7, in <module>
+    edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: TelegramEdge.__init__() takes 3 positional arguments but 4 were given
+exit=0
+=== r3_resend_after_record_failure_adapted
+run 1: [{'assignment_id': 'assignment:repo:K-1', 'outcome': 'refused', 'reason': 'incomplete_transaction'}]
+run 2: [{'assignment_id': 'assignment:repo:K-1', 'outcome': 'sent', 'projection_id': 'projection:telegram_chat:assignment:repo:K-1:1'}]
+messages published: 1
+exit=0
+=== r4_resend_on_echo_mismatch
+  File "<rerun>/r4_resend_on_echo_mismatch.py", line 7, in <module>
+    edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: TelegramEdge.__init__() takes 3 positional arguments but 4 were given
+exit=0
+=== r4_resend_on_echo_mismatch_adapted
+run 1: [{'assignment_id': 'assignment:repo:K-1', 'outcome': 'anomaly', 'projection_id': 'projection:telegram_chat:assignment:repo:K-1:1', 'reason': 'presentation_mismatch'}]
+run 2: [{'assignment_id': 'assignment:repo:K-1', 'outcome': 'anomaly', 'projection_id': 'projection:telegram_chat:assignment:repo:K-1:1', 'reason': 'presentation_mismatch'}]
+run 3: [{'assignment_id': 'assignment:repo:K-1', 'outcome': 'anomaly', 'projection_id': 'projection:telegram_chat:assignment:repo:K-1:1', 'reason': 'presentation_mismatch'}]
+correlation: {1: {'anomalies': ['presentation_mismatch'], 'assignment_id': 'assignment:repo:K-1', 'assignment_version': 1, 'attempt': 1, 'channel': 'telegram_chat', 'chat_id': 111, 'enrolled_chat': 111, 'enrollment_id': 'channel-enrollment:telegram_chat:owner', 'enrollment_version': 1, 'message_id': 1, 'outcome': 'anomaly', 'owner': 'owner', 'platform_date': 1790000000, 'platform_text': 'Veldo needs your decision\nAssignment: assignment:repo:K-1\nRequest version: 1\nOwner: owner\nScope: project-a\nDeadline: 2026-10-01T17:00:00Z\nBudget: owner_minutes=15\nSubject: specification specs/X.md sha256:1111111111111111111111111111111111111111111111111111111111111111\nChoices: accept | reject\n\nChoose. ', 'presentation': 'Veldo needs your decision\nAssignment: assignment:repo:K-1\nRequest version: 1\nOwner: owner\nScope: project-a\nDeadline: 2026-10-01T17:00:00Z\nBudget: owner_minutes=15\nSubject: specification specs/X.md sha256:1111111111111111111111111111111111111111111111111111111111111111\nChoices: accept | reject\n\nChoose.', 'presentation_digest': 'sha256:a6f32c925b7f75c09e52c91a1250cccefdc9ce4b2663190e30e5e273f2aac036', 'refusal': None, 'request_version': 1, 'schema': 'veldo.channel_projection/v1'}} messages published: 1
+exit=0
+=== r5_admit_without_answer_command
+owner-signed answer commands in journal: none; upsert command: fx-13
+admit: {'admitted': False, 'reason': 'invalid_record', 'assignment_id': 'assignment:repo:F-1', 'version': 2}
+exit=0
+=== r5_forged_signed_shape_adapted
+owner-signed answer commands in journal: none; upsert command: fx-13
+admit: {'admitted': False, 'reason': 'missing_authority', 'assignment_id': 'assignment:repo:F-1', 'version': 2}
+exit=0
+=== r6_owner_outside_repository
+stranger covers repository? True
+open: True open
+answer: True answer
+admit: {'admitted': True, 'reason': 'admitted', 'assignment_id': 'assignment:repo:W-1', 'version': 2}
+exit=0
+=== r7_all_owners_one_chat
+  File "<rerun>/r7_all_owners_one_chat.py", line 7, in <module>
+    edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: TelegramEdge.__init__() takes 3 positional arguments but 4 were given
+exit=0
+=== r7_all_owners_one_chat_adapted
+chat 111 <- Owner: owner
+chat 333 <- Owner: stranger
+exit=0
+=== r7_owner_without_chat_adapted
+results: [('assignment:repo:A-owner', 'sent', None), ('assignment:repo:A-stranger', 'refused', 'no_enrolled_chat')]
+chat 111 <- Owner: owner
+exit=0
+=== r8_other_chat_recorded_sent
+  File "<rerun>/r8_other_chat_recorded_sent.py", line 6, in <module>
+    edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: TelegramEdge.__init__() takes 3 positional arguments but 4 were given
+exit=0
+=== r8_other_chat_recorded_sent_adapted
+[{'assignment_id': 'assignment:repo:K-1', 'outcome': 'anomaly', 'projection_id': 'projection:telegram_chat:assignment:repo:K-1:1', 'reason': 'chat_mismatch'}]
+enrolled_chat 111 chat_id 222 outcome anomaly
+exit=0

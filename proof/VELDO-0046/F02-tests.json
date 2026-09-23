@@ -1,0 +1,290 @@
+{
+  "finding": "F02",
+  "reviewed_commit": "c64516739306fa98e5e23ff24ea8e3370afd3c51",
+  "red_command": "git show c645167:.veldo/control_notify.py > /tmp/veldo46-reviewed-control_notify.py; python3 -B scripts/check_teeth_mutations.py --worker notify-stop-after-handler-failure --mutant /tmp/veldo46-reviewed-control_notify.py",
+  "reviewed_source_sha256": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+  "red": {
+    "count": 31,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0046 notify/committed-event",
+        true
+      ],
+      [
+        "VELDO-0046 notify/event-in-the-gap",
+        true
+      ],
+      [
+        "VELDO-0046 notify/fabricated-event",
+        true
+      ],
+      [
+        "VELDO-0046 notify/watermark-range",
+        false
+      ],
+      [
+        "VELDO-0046 notify/subscriber-isolation",
+        false
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0046 notify/committed-event",
+      "VELDO-0046 notify/event-in-the-gap",
+      "VELDO-0046 notify/fabricated-event",
+      "VELDO-0046 notify/watermark-range",
+      "VELDO-0046 notify/subscriber-isolation"
+    ],
+    "failed_rows": [
+      "VELDO-0046 notify/watermark-range",
+      "VELDO-0046 notify/subscriber-isolation"
+    ],
+    "targets": {
+      "notify/subscriber-isolation": [
+        false
+      ]
+    }
+  },
+  "green": {
+    "command": "python3 -B scripts/selftest.py --suite 58_veldo_0046_notifications",
+    "passed": 31,
+    "failed": 0
+  },
+  "capsule_before": {
+    "pm_callbacks": 0,
+    "settlement_attempts": 1,
+    "pending": 0,
+    "next_outcome": null
+  },
+  "mutations": [
+    {
+      "finding": 46,
+      "mutation": "notify-stop-after-handler-failure",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/subscriber-isolation"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-retry-successful-subscribers",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/subscriber-isolation"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-unbounded-watermark",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/watermark-range"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-reject-valid-max-watermark",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/watermark-range"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-before-commit",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/committed-event"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-omit-committed-wakeup",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event",
+        "VELDO-0046 notify/watermark-range",
+        "VELDO-0046 notify/subscriber-isolation"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-check-outside-idle-lock",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/event-in-the-gap"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-wait-without-queue-predicate",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/event-in-the-gap"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-trust-invented-event-identity",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/fabricated-event"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-trust-invented-event-digest",
+      "baseline": "green",
+      "assertions": 31,
+      "red_rows": [
+        "VELDO-0046 notify/fabricated-event"
+      ]
+    },
+    {
+      "mutations_rejected": 10,
+      "green_suites": {
+        "58_veldo_0046_notifications.py": 31
+      }
+    }
+  ]
+}

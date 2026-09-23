@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -142 +142 @@
+-                or not isinstance(packet.get('signature'), str)
++                or False

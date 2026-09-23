@@ -1,0 +1,5 @@
+--- a/.veldo/control_snapshot.py
++++ b/.veldo/control_snapshot.py
+@@ -91 +91 @@
+-        result[safe_path(path)] = canonical(value)
++        result[safe_path(path)] = (Path(repo) / path).read_bytes()

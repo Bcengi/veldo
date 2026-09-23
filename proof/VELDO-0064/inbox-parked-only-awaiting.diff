@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -696,0 +697,2 @@
++            if reason != 'awaiting_answer':
++                continue

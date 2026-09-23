@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -194,2 +193,0 @@
+-    if platform['chat_id'] != record['enrolled_chat']:
+-        found.append('chat_mismatch')

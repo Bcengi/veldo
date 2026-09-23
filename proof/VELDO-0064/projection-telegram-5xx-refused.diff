@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -159,2 +158,0 @@
+-            if not 400 <= exc.code < 500:
+-                raise EdgeRefused('unknown_outcome', 'HTTP %d is not a definite refusal' % exc.code) from None

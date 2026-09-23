@@ -1,0 +1,4 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -249,0 +250 @@
++                value['charge']['wall_seconds'] = p['usage'].get('wall_seconds', 0)

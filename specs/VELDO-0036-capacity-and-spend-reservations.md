@@ -27,6 +27,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0036_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0036-capacity-and-spend-reservations.md"
@@ -145,3 +146,7 @@ intersecting allocation matrix, AC3 restart/reordering and AC4 durable quarantin
 moved to Release 2. Subscription usage caps, deduplicated accounting and unknown usage reservations remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-22 implementation: registers the Release 1 reservation suite in scripts/suites/manifest.json
+and requires.json, and its temporary-copy negative controls in scripts/check_teeth_mutations.py.
+The latter is the shared mutation driver required by this work; no criterion or status changes.

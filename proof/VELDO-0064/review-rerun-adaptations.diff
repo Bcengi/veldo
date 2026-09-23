@@ -1,0 +1,118 @@
+--- a/r2_open_without_unit_keeps_claim.py
++++ b/r2_open_without_unit_keeps_claim_adapted.py
+@@ -5,7 +5,7 @@
+ c = h.claim('worker-a', 'unit-1'); assert c['ok'], c
+ o = h.cmd('worker-a', 'open', 'W-1', assignment=h.content(unit=None))
+ cid = h.claims.claim_id('repo', 'unit-1')
+-print('open:', o['ok'], 'stop_requester:', o['stop_requester'], 'released:', o['released_claim'])
++print('open:', o['ok'], 'reason:', o.get('reason'), 'stop_requester:', o.get('stop_requester'), 'released:', o.get('released_claim'))
+ print('claim state:', h.entity(cid)['data']['state'], 'holder:', h.entity(cid)['data']['holder'])
+ print('waiting_resources:', h.inbox.waiting_resources(), 'receiver.pending:', list(h.receiver.pending()))
+ if o['ok'] and h.entity(cid)['data']['state'] == 'owned' and h.inbox.waiting_resources() == []:
+--- a/r2_open_without_unit_keeps_claim.py
++++ b/r2_with_generation_adapted.py
+@@ -3,9 +3,9 @@
+ import sys; sys.path.insert(0, '<rerun>'); from h import H
+ h = H()
+ c = h.claim('worker-a', 'unit-1'); assert c['ok'], c
+-o = h.cmd('worker-a', 'open', 'W-1', assignment=h.content(unit=None))
++o = h.cmd('worker-a', 'open', 'W-1', claim_generation=c['claim']['generation'], assignment=h.content(unit=None))  # ADAPTED: names its generation
+ cid = h.claims.claim_id('repo', 'unit-1')
+-print('open:', o['ok'], 'stop_requester:', o['stop_requester'], 'released:', o['released_claim'])
++print('open:', o['ok'], 'reason:', o.get('reason'), 'stop_requester:', o.get('stop_requester'), 'released:', o.get('released_claim'))
+ print('claim state:', h.entity(cid)['data']['state'], 'holder:', h.entity(cid)['data']['holder'])
+ print('waiting_resources:', h.inbox.waiting_resources(), 'receiver.pending:', list(h.receiver.pending()))
+ if o['ok'] and h.entity(cid)['data']['state'] == 'owned' and h.inbox.waiting_resources() == []:
+--- a/r3_resend_after_record_failure.py
++++ b/r3_resend_after_record_failure_adapted.py
+@@ -4,7 +4,8 @@
+ h = H()
+ h.cmd('pm', 'open', 'K-1', assignment=h.content())
+ srv, st = bot('ok')
+-edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
++h.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=111, revoked_at=None))  # ADAPTED: the owner's enrolled chat
++edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN')  # ADAPTED: the edge holds no chat
+ p = h.P.Projection(h.S, h.inbox, edge, h.conn, 'authority', h.jsign)
+ h.fail_sign = True
+ print('run 1:', p.project())
+--- a/r4_resend_on_echo_mismatch.py
++++ b/r4_resend_on_echo_mismatch_adapted.py
+@@ -4,7 +4,8 @@
+ h = H()
+ h.cmd('pm', 'open', 'K-1', assignment=h.content())
+ srv, st = bot('echo_normalized')
+-edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
++h.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=111, revoked_at=None))  # ADAPTED: the owner's enrolled chat
++edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN')  # ADAPTED: the edge holds no chat
+ p = h.P.Projection(h.S, h.inbox, edge, h.conn, 'authority', h.jsign)
+ for i in range(3):
+     print('run %d:' % (i + 1), p.project())
+--- a/r5_admit_without_answer_command.py
++++ b/r5_forged_signed_shape_adapted.py
+@@ -7,7 +7,9 @@
+ aid = h.I.assignment_id('repo', 'F-1')
+ data = dict(h.entity(aid)['data'])
+ nxt = h.n + 1
+-data.update(state='SUBMITTED', answer=dict(principal='owner', ruling='accept', request_version=1, command_id='fx-%d' % nxt))
++fake = dict(h.ids, operation='answer', alias='F-1', principal='owner', command_id='fx-%d' % nxt, nonce='x', request_version=1, ruling='accept')
++data.update(state='SUBMITTED', answer=dict(principal='owner', ruling='accept', request_version=1, command_id='fx-%d' % nxt,
++            command=fake, signature=h.sign_as('stranger', h.S.canonical_bytes(fake))))  # ADAPTED: the new record shape, signed by a non-owner
+ r = h.fixture(aid, 'assignment', data, principal='owner')
+ assert r['command_id'] == 'fx-%d' % nxt
+ print('owner-signed answer commands in journal: none; upsert command:', r['command_id'])
+--- a/r7_all_owners_one_chat.py
++++ b/r7_all_owners_one_chat_adapted.py
+@@ -4,7 +4,9 @@
+ h.cmd('pm', 'open', 'A-owner', assignment=h.content(owner='owner'))
+ h.cmd('worker-a', 'open', 'A-stranger', assignment=h.content(owner='stranger', scope=['project-b']))
+ srv, st = bot('ok')
+-edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
++h.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=111, revoked_at=None))  # ADAPTED: the owner's enrolled chat
++h.fixture('channel-enrollment:telegram_chat:stranger', 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='stranger', chat_id=333, revoked_at=None))  # ADAPTED: the owner's enrolled chat
++edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN')  # ADAPTED: the edge holds no chat
+ p = h.P.Projection(h.S, h.inbox, edge, h.conn, 'authority', h.jsign)
+ p.project()
+ for chat, text in st['sent']:
+--- a/r7_all_owners_one_chat.py
++++ b/r7_owner_without_chat_adapted.py
+@@ -4,9 +4,10 @@
+ h.cmd('pm', 'open', 'A-owner', assignment=h.content(owner='owner'))
+ h.cmd('worker-a', 'open', 'A-stranger', assignment=h.content(owner='stranger', scope=['project-b']))
+ srv, st = bot('ok')
+-edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
++h.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=111, revoked_at=None))  # ADAPTED: the owner's enrolled chat
++edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN')  # ADAPTED: the edge holds no chat
+ p = h.P.Projection(h.S, h.inbox, edge, h.conn, 'authority', h.jsign)
+-p.project()
++print('results:', [(r['assignment_id'], r['outcome'], r.get('reason')) for r in p.project()])
+ for chat, text in st['sent']:
+     owner = [l for l in text.splitlines() if l.startswith('Owner:')][0]
+     print('chat', chat, '<-', owner)
+--- a/r8_other_chat_recorded_sent.py
++++ b/r8_other_chat_recorded_sent_adapted.py
+@@ -3,10 +3,11 @@
+ h = H()
+ h.cmd('pm', 'open', 'K-1', assignment=h.content())
+ srv, st = bot('other_chat')
+-edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN', 111)
++h.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=111, revoked_at=None))  # ADAPTED: the owner's enrolled chat
++edge = h.P.TelegramEdge('http://127.0.0.1:%d' % srv.server_port, 'TOKEN')  # ADAPTED: the edge holds no chat
+ p = h.P.Projection(h.S, h.inbox, edge, h.conn, 'authority', h.jsign)
+ print(p.project())
+ rec = p.correlation(h.I.assignment_id('repo', 'K-1'))[1]
+-print('configured_chat', rec['configured_chat'], 'chat_id', rec['chat_id'], 'outcome', rec['outcome'])
+-if rec['outcome'] == 'sent' and rec['chat_id'] != rec['configured_chat']:
++print('enrolled_chat', rec['enrolled_chat'], 'chat_id', rec['chat_id'], 'outcome', rec['outcome'])
++if rec['outcome'] == 'sent' and rec['chat_id'] != rec['enrolled_chat']:
+     print('BUG: message the platform placed in a different numeric chat is recorded as a valid sent projection')
+--- a/h.py
++++ b/h.py
+@@ -2,7 +2,7 @@
+ import importlib.util, json, subprocess, tempfile, threading, http.server
+ from pathlib import Path
+ 
+-ROOT = Path('/tmp/v64review/tree')
++ROOT = Path('<rerun>/tree')
+ 
+ 
+ def load(name, path):
