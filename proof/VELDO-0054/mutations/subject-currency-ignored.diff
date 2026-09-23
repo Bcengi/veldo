@@ -1,0 +1,5 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -192 +192 @@
+-    if current is None or subject.get('digest') != current:
++    if False:

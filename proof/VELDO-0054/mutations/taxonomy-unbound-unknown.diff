@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -144 +144 @@
+-    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',
++    'decision_ruling': 'missing_authority',

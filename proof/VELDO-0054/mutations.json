@@ -1,0 +1,257 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 54 --diff-dir proof/VELDO-0054/mutations",
+ "summary": {
+  "mutations_rejected": 18,
+  "green_suites": {
+   "62_veldo_0054_decisions.py": 38
+  }
+ },
+ "wall_seconds_here": 44.66,
+ "mutations": [
+  {
+   "mutation": "framing-receipt-without-digest",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/wrong-framing"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/wrong-framing",
+    "decisions/observations"
+   ],
+   "diff": "mutations/framing-receipt-without-digest.diff",
+   "declared_falsifier_of": "AC1"
+  },
+  {
+   "mutation": "framing-shape-only",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/wrong-framing"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/exact-binding",
+    "decisions/wrong-framing",
+    "decisions/scope-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/framing-shape-only.diff",
+   "second_mutation_of": "AC1"
+  },
+  {
+   "mutation": "subject-currency-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/exact-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/exact-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/subject-currency-ignored.diff"
+  },
+  {
+   "mutation": "floor-stations-skip-decisions",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/exact-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/consumers-from-call-sites",
+    "decisions/exact-binding",
+    "decisions/wrong-framing",
+    "decisions/named-blockers",
+    "decisions/unsigned-resolution",
+    "decisions/scope-binding",
+    "decisions/production-gate-verifies",
+    "decisions/observations"
+   ],
+   "diff": "mutations/floor-stations-skip-decisions.diff"
+  },
+  {
+   "mutation": "inline-status-as-ruling",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unsigned-resolution",
+    "decisions/observations"
+   ],
+   "diff": "mutations/inline-status-as-ruling.diff",
+   "declared_falsifier_of": "AC2"
+  },
+  {
+   "mutation": "unsigned-settlement-accepted",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unsigned-resolution",
+    "decisions/observations"
+   ],
+   "diff": "mutations/unsigned-settlement-accepted.diff",
+   "second_mutation_of": "AC2"
+  },
+  {
+   "mutation": "plan-inline-resolution-honored",
+   "module": ".veldo/plan.py",
+   "target_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "diff": "mutations/plan-inline-resolution-honored.diff",
+   "second_mutation_of": "AC2"
+  },
+  {
+   "mutation": "ambiguous-settlement-first",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/observations"
+   ],
+   "diff": "mutations/ambiguous-settlement-first.diff"
+  },
+  {
+   "mutation": "unsupported-obligation-presumed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/observations"
+   ],
+   "diff": "mutations/unsupported-obligation-presumed.diff"
+  },
+  {
+   "mutation": "missing-reference-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/unsigned-resolution",
+    "decisions/observations"
+   ],
+   "diff": "mutations/missing-reference-ignored.diff"
+  },
+  {
+   "mutation": "frontier-inline-decisions",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers"
+   ],
+   "diff": "mutations/frontier-inline-decisions.diff"
+  },
+  {
+   "mutation": "run-check-ignores-file-references",
+   "module": ".veldo/plan.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/unsigned-resolution"
+   ],
+   "diff": "mutations/run-check-ignores-file-references.diff"
+  },
+  {
+   "mutation": "scope-binding-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/scope-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/exact-binding",
+    "decisions/scope-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/scope-binding-ignored.diff",
+   "declared_falsifier_of": "AC3"
+  },
+  {
+   "mutation": "scope-target-may-differ",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/scope-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/scope-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/scope-target-may-differ.diff",
+   "second_mutation_of": "AC3"
+  },
+  {
+   "mutation": "consumer-unregistered",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/consumers-from-call-sites"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/consumers-from-call-sites"
+   ],
+   "diff": "mutations/consumer-unregistered.diff"
+  },
+  {
+   "mutation": "production-trust-not-wired",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/production-gate-verifies"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/production-gate-verifies"
+   ],
+   "diff": "mutations/production-trust-not-wired.diff"
+  },
+  {
+   "mutation": "taxonomy-unbound-unknown",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/observations"
+   ],
+   "diff": "mutations/taxonomy-unbound-unknown.diff"
+  },
+  {
+   "mutation": "verifier-unavailable-as-unsigned",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/observations"
+   ],
+   "diff": "mutations/verifier-unavailable-as-unsigned.diff"
+  }
+ ]
+}

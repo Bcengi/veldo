@@ -1,0 +1,5 @@
+--- a/.veldo/plan.py
++++ b/.veldo/plan.py
+@@ -344,2 +343,0 @@
+-        reasons.extend("decision refused: %s" % r for r in gate.decision_blockers(spec_id, references=refs)
+-                       if r not in decision["refusals"])

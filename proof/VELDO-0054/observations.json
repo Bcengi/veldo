@@ -1,0 +1,597 @@
+{
+ "failed": 0,
+ "observed": {
+  "after": {
+   "VELDO-9401": {
+    "blocks": [],
+    "item_state": "ready (frontier)",
+    "offered": true,
+    "run_codes": [],
+    "stations": []
+   },
+   "VELDO-9402": {
+    "blocks": [
+     "unbound_decision:decision:D-9402/subject_digest"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9402/subject_digest",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9402/subject_digest"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9402/subject_digest"
+    ]
+   },
+   "VELDO-9403": {
+    "blocks": [
+     "unbound_decision:decision:D-9403/subject"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9403/subject",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9403/subject"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9403/subject"
+    ]
+   },
+   "VELDO-9404": {
+    "blocks": [
+     "unbound_decision:decision:D-9404/framing"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9404/framing",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9404/framing"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9404/framing"
+    ]
+   },
+   "VELDO-9405": {
+    "blocks": [
+     "unbound_decision:decision:D-9405/revision"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9405/revision",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9405/revision"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9405/revision"
+    ]
+   },
+   "VELDO-9406": {
+    "blocks": [],
+    "item_state": "ready (frontier)",
+    "offered": true,
+    "run_codes": [],
+    "stations": []
+   },
+   "VELDO-9407": {
+    "blocks": [
+     "unbound_decision:decision:P-9403/subject_digest"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:P-9403/subject_digest",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:P-9403/subject_digest"
+    ],
+    "stations": [
+     "unbound_decision:decision:P-9403/subject_digest"
+    ]
+   },
+   "VELDO-9408": {
+    "blocks": [
+     "decision_ruling:decision:D-9408/reject"
+    ],
+    "item_state": "blocked: decision decision_ruling:decision:D-9408/reject",
+    "offered": false,
+    "run_codes": [
+     "decision_ruling:decision:D-9408/reject"
+    ],
+    "stations": [
+     "decision_ruling:decision:D-9408/reject"
+    ]
+   },
+   "VELDO-9411": {
+    "blocks": [
+     "unbound_decision:decision:D-9411/framing"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9411/framing",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9411/framing"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9411/framing"
+    ]
+   },
+   "VELDO-9412": {
+    "blocks": [
+     "unbound_decision:decision:D-9412/framing"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9412/framing",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9412/framing"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9412/framing"
+    ]
+   },
+   "VELDO-9413": {
+    "blocks": [
+     "unbound_decision:decision:D-9413/framing"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9413/framing",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9413/framing"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9413/framing"
+    ]
+   },
+   "VELDO-9421": {
+    "blocks": [
+     "missing_decision:DEC-MISSING"
+    ],
+    "item_state": "blocked: decision missing_decision:DEC-MISSING",
+    "offered": false,
+    "run_codes": [
+     "missing_decision:DEC-MISSING"
+    ],
+    "stations": [
+     "missing_decision:DEC-MISSING"
+    ]
+   },
+   "VELDO-9422": {
+    "blocks": [
+     "missing_decision:DEC-FILE-ONLY"
+    ],
+    "item_state": "blocked: decision missing_decision:DEC-FILE-ONLY",
+    "offered": false,
+    "run_codes": [
+     "missing_decision:DEC-FILE-ONLY"
+    ],
+    "stations": []
+   },
+   "VELDO-9423": {
+    "blocks": [
+     "ambiguous_decision:DEC-AMB"
+    ],
+    "item_state": "blocked: decision ambiguous_decision:DEC-AMB",
+    "offered": false,
+    "run_codes": [
+     "ambiguous_decision:DEC-AMB"
+    ],
+    "stations": [
+     "ambiguous_decision:DEC-AMB"
+    ]
+   },
+   "VELDO-9424": {
+    "blocks": [
+     "ambiguous_decision:decision:D-9424"
+    ],
+    "item_state": "blocked: decision ambiguous_decision:decision:D-9424",
+    "offered": false,
+    "run_codes": [
+     "ambiguous_decision:decision:D-9424"
+    ],
+    "stations": [
+     "ambiguous_decision:decision:D-9424"
+    ]
+   },
+   "VELDO-9425": {
+    "blocks": [
+     "unsupported_decision:decision:D-9425/obligation:tripwire"
+    ],
+    "item_state": "blocked: decision unsupported_decision:decision:D-9425/obligation:tripwire",
+    "offered": false,
+    "run_codes": [
+     "unsupported_decision:decision:D-9425/obligation:tripwire"
+    ],
+    "stations": [
+     "unsupported_decision:decision:D-9425/obligation:tripwire"
+    ]
+   },
+   "VELDO-9426": {
+    "blocks": [
+     "unsupported_decision:decision:D-9426/obligation:adversarial_decision_review"
+    ],
+    "item_state": "blocked: decision unsupported_decision:decision:D-9426/obligation:adversarial_decision_review",
+    "offered": false,
+    "run_codes": [
+     "unsupported_decision:decision:D-9426/obligation:adversarial_decision_review"
+    ],
+    "stations": [
+     "unsupported_decision:decision:D-9426/obligation:adversarial_decision_review"
+    ]
+   },
+   "VELDO-9427": {
+    "blocks": [
+     "unsupported_decision:decision:D-9427/subject_kind:contract"
+    ],
+    "item_state": "blocked: decision unsupported_decision:decision:D-9427/subject_kind:contract",
+    "offered": false,
+    "run_codes": [
+     "unsupported_decision:decision:D-9427/subject_kind:contract"
+    ],
+    "stations": [
+     "unsupported_decision:decision:D-9427/subject_kind:contract"
+    ]
+   },
+   "VELDO-9428": {
+    "blocks": [
+     "unresolved_decision:decision:D-9428"
+    ],
+    "item_state": "blocked: decision unresolved_decision:decision:D-9428",
+    "offered": false,
+    "run_codes": [
+     "unresolved_decision:decision:D-9428"
+    ],
+    "stations": [
+     "unresolved_decision:decision:D-9428"
+    ]
+   },
+   "VELDO-9429": {
+    "blocks": [],
+    "item_state": "ready (frontier)",
+    "offered": true,
+    "run_codes": [],
+    "stations": []
+   },
+   "VELDO-9431": {
+    "blocks": [
+     "unresolved_decision:decision:D-9431"
+    ],
+    "item_state": "blocked: decision unresolved_decision:decision:D-9431",
+    "offered": false,
+    "run_codes": [
+     "unresolved_decision:decision:D-9431"
+    ],
+    "stations": [
+     "unresolved_decision:decision:D-9431"
+    ]
+   },
+   "VELDO-9432": {
+    "blocks": [
+     "unsigned_decision:decision:D-9432"
+    ],
+    "item_state": "blocked: decision unsigned_decision:decision:D-9432",
+    "offered": false,
+    "run_codes": [
+     "unsigned_decision:decision:D-9432"
+    ],
+    "stations": [
+     "unsigned_decision:decision:D-9432"
+    ]
+   },
+   "VELDO-9433": {
+    "blocks": [
+     "unsigned_decision:decision:D-9433"
+    ],
+    "item_state": "blocked: decision unsigned_decision:decision:D-9433",
+    "offered": false,
+    "run_codes": [
+     "unsigned_decision:decision:D-9433"
+    ],
+    "stations": [
+     "unsigned_decision:decision:D-9433"
+    ]
+   },
+   "VELDO-9434": {
+    "blocks": [
+     "unsigned_decision:decision:D-9434"
+    ],
+    "item_state": "blocked: decision unsigned_decision:decision:D-9434",
+    "offered": false,
+    "run_codes": [
+     "unsigned_decision:decision:D-9434"
+    ],
+    "stations": [
+     "unsigned_decision:decision:D-9434"
+    ]
+   },
+   "VELDO-9435": {
+    "blocks": [
+     "unresolved_decision:decision:D-9435"
+    ],
+    "item_state": "blocked: decision unresolved_decision:decision:D-9435",
+    "offered": false,
+    "run_codes": [
+     "unresolved_decision:decision:D-9435"
+    ],
+    "stations": [
+     "unresolved_decision:decision:D-9435"
+    ]
+   },
+   "VELDO-9436": {
+    "blocks": [
+     "missing_decision:DEC-INLINE"
+    ],
+    "item_state": "blocked: decision missing_decision:DEC-INLINE",
+    "offered": false,
+    "run_codes": [
+     "missing_decision:DEC-INLINE"
+    ],
+    "stations": []
+   },
+   "VELDO-9441": {
+    "blocks": [
+     "unbound_decision:decision:D-9441/scope",
+     "unbound_decision:decision:D-9441/subject"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9441/subject,unbound_decision:decision:D-9441/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9441/scope",
+     "unbound_decision:decision:D-9441/subject"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9441/scope",
+     "unbound_decision:decision:D-9441/subject"
+    ]
+   },
+   "VELDO-9442": {
+    "blocks": [
+     "unbound_decision:decision:D-9442/decision",
+     "unbound_decision:decision:D-9442/framing",
+     "unbound_decision:decision:D-9442/scope",
+     "unbound_decision:decision:D-9442/subject"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9442/decision,unbound_decision:decision:D-9442/framing,unbound_decision:decision:D-9442/subject,unbound_decision:decision:D-9442/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9442/decision",
+     "unbound_decision:decision:D-9442/framing",
+     "unbound_decision:decision:D-9442/scope",
+     "unbound_decision:decision:D-9442/subject"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9442/decision",
+     "unbound_decision:decision:D-9442/framing",
+     "unbound_decision:decision:D-9442/scope",
+     "unbound_decision:decision:D-9442/subject"
+    ]
+   },
+   "VELDO-9443": {
+    "blocks": [
+     "unbound_decision:decision:D-9443/scope"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9443/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9443/scope"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9443/scope"
+    ]
+   },
+   "VELDO-9444": {
+    "blocks": [
+     "unbound_decision:decision:D-9444/scope"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9444/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9444/scope"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9444/scope"
+    ]
+   },
+   "VELDO-9445": {
+    "blocks": [
+     "unbound_decision:decision:D-9445/scope"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9445/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9445/scope"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9445/scope"
+    ]
+   },
+   "VELDO-9446": {
+    "blocks": [
+     "unbound_decision:decision:P-9446/scope",
+     "unbound_decision:decision:P-9446/subject"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:P-9446/subject,unbound_decision:decision:P-9446/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:P-9446/scope",
+     "unbound_decision:decision:P-9446/subject"
+    ],
+    "stations": [
+     "unbound_decision:decision:P-9446/scope",
+     "unbound_decision:decision:P-9446/subject"
+    ]
+   },
+   "VELDO-9447": {
+    "blocks": [],
+    "item_state": "ready (frontier)",
+    "offered": true,
+    "run_codes": [],
+    "stations": []
+   },
+   "VELDO-9448": {
+    "blocks": [
+     "unbound_decision:decision:D-9448/scope"
+    ],
+    "item_state": "blocked: decision unbound_decision:decision:D-9448/scope",
+    "offered": false,
+    "run_codes": [
+     "unbound_decision:decision:D-9448/scope"
+    ],
+    "stations": [
+     "unbound_decision:decision:D-9448/scope"
+    ]
+   }
+  },
+  "consumers": [
+   "control_eligibility.py:Gate._decision_codes",
+   "control_eligibility.py:Gate._predicate",
+   "control_eligibility.py:Gate.decision_blockers",
+   "frontier.py:_plan_build_candidates",
+   "plan.py:_decision_blocks",
+   "plan.py:cmd_run_check",
+   "plan.py:cmd_status",
+   "runstatus.py:_burndown"
+  ],
+  "decision_status": {
+   "accepted": 196,
+   "blocked": [
+    "VELDO-9402",
+    "VELDO-9403",
+    "VELDO-9404",
+    "VELDO-9405",
+    "VELDO-9407",
+    "VELDO-9408",
+    "VELDO-9411",
+    "VELDO-9412",
+    "VELDO-9413",
+    "VELDO-9421",
+    "VELDO-9422",
+    "VELDO-9423",
+    "VELDO-9424",
+    "VELDO-9425",
+    "VELDO-9426",
+    "VELDO-9427",
+    "VELDO-9428",
+    "VELDO-9431",
+    "VELDO-9432",
+    "VELDO-9433",
+    "VELDO-9434",
+    "VELDO-9435",
+    "VELDO-9436",
+    "VELDO-9441",
+    "VELDO-9442",
+    "VELDO-9443",
+    "VELDO-9444",
+    "VELDO-9445",
+    "VELDO-9446",
+    "VELDO-9448"
+   ],
+   "refused": 348
+  },
+  "mismatched": [],
+  "production": {
+   "host": [
+    "ok",
+    []
+   ],
+   "inside": [
+    "stopped",
+    "host_trust_refused:settlement_signers_inside_workspace"
+   ],
+   "none": [
+    "ok",
+    [
+     "unsigned_decision:decision:D-9401"
+    ]
+   ],
+   "relative": [
+    "stopped",
+    "host_trust_refused:settlement_signers_not_absolute"
+   ]
+  },
+  "raised": [],
+  "taxonomy": {
+   "ambiguous_decision:DEC-AMB": "missing_authority",
+   "ambiguous_decision:decision:D-9424": "missing_authority",
+   "decision_ruling:decision:D-9408/reject": "missing_authority",
+   "missing_decision:DEC-FILE-ONLY": "missing_authority",
+   "missing_decision:DEC-INLINE": "missing_authority",
+   "missing_decision:DEC-MISSING": "missing_authority",
+   "unbound_decision:decision:D-9402/subject_digest": "stale_subject",
+   "unbound_decision:decision:D-9403/subject": "stale_subject",
+   "unbound_decision:decision:D-9404/framing": "stale_subject",
+   "unbound_decision:decision:D-9405/revision": "stale_subject",
+   "unbound_decision:decision:D-9411/framing": "stale_subject",
+   "unbound_decision:decision:D-9412/framing": "stale_subject",
+   "unbound_decision:decision:D-9413/framing": "stale_subject",
+   "unbound_decision:decision:D-9441/scope": "stale_subject",
+   "unbound_decision:decision:D-9441/subject": "stale_subject",
+   "unbound_decision:decision:D-9442/decision": "stale_subject",
+   "unbound_decision:decision:D-9442/framing": "stale_subject",
+   "unbound_decision:decision:D-9442/scope": "stale_subject",
+   "unbound_decision:decision:D-9442/subject": "stale_subject",
+   "unbound_decision:decision:D-9443/scope": "stale_subject",
+   "unbound_decision:decision:D-9444/scope": "stale_subject",
+   "unbound_decision:decision:D-9445/scope": "stale_subject",
+   "unbound_decision:decision:D-9448/scope": "stale_subject",
+   "unbound_decision:decision:P-9403/subject_digest": "stale_subject",
+   "unbound_decision:decision:P-9446/scope": "stale_subject",
+   "unbound_decision:decision:P-9446/subject": "stale_subject",
+   "unresolved_decision:decision:D-9428": "missing_authority",
+   "unresolved_decision:decision:D-9431": "missing_authority",
+   "unresolved_decision:decision:D-9435": "missing_authority",
+   "unsigned_decision:decision:D-9432": "missing_authority",
+   "unsigned_decision:decision:D-9433": "missing_authority",
+   "unsigned_decision:decision:D-9434": "missing_authority",
+   "unsupported_decision:decision:D-9425/obligation:tripwire": "missing_authority",
+   "unsupported_decision:decision:D-9426/obligation:adversarial_decision_review": "missing_authority",
+   "unsupported_decision:decision:D-9427/subject_kind:contract": "missing_authority"
+  },
+  "verifier_unavailable": [
+   "unavailable_service:settlement_verifier"
+  ]
+ },
+ "passed": 12,
+ "rows": [
+  [
+   "VELDO-0054 decisions/consumers-from-call-sites",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/exact-binding",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/wrong-framing",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/named-blockers",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/unsigned-resolution",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/scope-binding",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/production-gate-verifies",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/observations",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/consumers-from-call-sites",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/exact-binding",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/production-gate-verifies",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/observations",
+   true
+  ]
+ ],
+ "suite": "62_veldo_0054_decisions.py",
+ "suite_seconds": 1.179
+}
