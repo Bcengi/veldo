@@ -895,6 +895,84 @@ print(json.dumps(result))
         seen_result('scrub-table', {}, mismatches={url: got for (url, want), got in zip(scrub_table, scrub_seen.values()) if got != want})
         row('publication-scrub-malformed-address', ext_ok
             and all(scrub_seen[url] == want for url, want in scrub_table))
+        # R8 rules each pinned by a row of its own. Completion requires the push to exit cleanly: a
+        # pre-push hook that publishes the tip itself and then fails the push leaves the
+        # destination exactly at the tip, and the effect must still not read completed.
+        clone, bare = fresh('hook-then-fail')
+        hook(clone, 'git push -q --no-verify %s %s:refs/heads/main >/dev/null 2>&1\nexit 1\n' % (bare, tip))
+        failed = publish('hook-then-fail', clone, str(bare))
+        seen_result('hook-then-fail', failed, destination=recorded('hook-then-fail'))
+        row('publication-requires-clean-push-exit', failed.get('completed') is False and failed.get('status') == 'unknown'
+            and remote_main(bare) == tip
+            and recorded('hook-then-fail') == {'authorized_url': str(bare), 'destinations': reached((str(bare), 'at-tip'))})
+        # A line break in the receiver's URL, or in a configured URL, is refused by its own guard
+        # before git's one-per-line report is read. Each case below gets past the report's shape
+        # check without the guard: git would name three push URLs for the first, two for the second.
+        breaks = {}
+        clone, bare = fresh('break-remote')
+        _, answer = publish_as('break-remote', clone, str(bare) + '\n  Push  URL: ' + str(bare))
+        breaks['remote'] = (answer, [bare])
+        clone, bare = fresh('break-pushurl')
+        other = elsewhere_for('break-pushurl')
+        break_url = 'file://' + str(bare)
+        git('-C', str(clone), 'config', 'remote.' + break_url + '.url', break_url)
+        git('-C', str(clone), 'config', 'remote.' + break_url + '.pushurl', str(other) + '\n  Push  URL: ' + break_url)
+        _, answer = publish_as('break-pushurl', clone, break_url)
+        breaks['pushurl'] = (answer, [bare, other])
+        for key, (answer, _) in breaks.items():
+            seen_result('break-' + key, answer.get('result', {}), refusal=answer.get('refusal'))
+        row('publication-line-break-refused', all(answer.get('refusal') == 'invalid-input'
+            and all(remote_main(b) == old for b in repositories) for answer, repositories in breaks.values()))
+        # git's report is read only in the shape it has: the header naming this remote, the Fetch
+        # URL line, one or more Push URL lines, then the HEAD line; a failed `git remote show`
+        # or a failed configuration read refuses too. A wrapper ahead of git on PATH reshapes one
+        # output per case (a different git version, a localized one) and passes everything else to
+        # the real git. Each case pushes to two pushurls.
+        wrapper = root / 'git-wrapper'
+        wrapper.mkdir()
+        (wrapper / 'git').write_text("""#!/bin/sh
+real=%s
+if [ "$1" = -C ] && [ "$3" = remote ] && [ "$4" = show ]; then
+  out=$("$real" "$@"); rc=$?
+  loc=${LC_ALL:-${LC_MESSAGES:-${LANG:-C}}}
+  case "$V28_GIT_SHAPE" in
+    show-exit) printf '%%s\\n' "$out"; exit 1 ;;
+    header) printf '%%s\\n' "$out" | sed '1s/^.*$/* remote elsewhere/' ;;
+    fetch) printf '%%s\\n' "$out" | sed '/^  Fetch URL: /d' ;;
+    no-push) printf '%%s\\n' "$out" | sed '/^  Push  URL: /d' ;;
+    extra) printf '%%s\\n' "$out" | sed 's/^  HEAD branch/  Push  URL (unrecognized): elsewhere\\n&/' ;;
+    translated)
+      # As gettext does: a message catalog applies unless the effective locale is C or POSIX.
+      if [ "$loc" = C ] || [ "$loc" = POSIX ]; then printf '%%s\\n' "$out"
+      else printf '%%s\\n' "$out" | sed 's/^  Push  URL: /  URL zum Versenden: /; s/^  Fetch URL: /  URL zum Abholen: /'; fi ;;
+    *) printf '%%s\\n' "$out" ;;
+  esac
+  exit $rc
+fi
+if [ "$1" = -C ] && [ "$3" = config ] && [ "$V28_GIT_SHAPE" = config-exit ]; then exit 3; fi
+exec "$real" "$@"
+""" % _v28_shutil.which('git'))
+        (wrapper / 'git').chmod(0o755)
+        def reshaped(shape, env=None):
+            clone, bare = fresh('shape-' + shape)
+            other = elsewhere_for('shape-' + shape)
+            shape_url = 'file://' + str(bare)
+            git('-C', str(clone), 'config', '--add', 'remote.' + shape_url + '.pushurl', shape_url)
+            git('-C', str(clone), 'config', '--add', 'remote.' + shape_url + '.pushurl', str(other))
+            _, answer = publish_as('shape-' + shape, clone, shape_url, env=dict(
+                {'PATH': str(wrapper) + _v28_os.pathsep + _v28_os.environ['PATH'], 'V28_GIT_SHAPE': shape}, **(env or {})))
+            seen_result('shape-' + shape, answer.get('result', {}), refusal=answer.get('refusal'))
+            return answer, [bare, other]
+        shapes = {shape: reshaped(shape) for shape in ('show-exit', 'header', 'fetch', 'no-push', 'extra', 'config-exit')}
+        control, repositories = reshaped('unchanged')
+        row('publication-resolution-output-checked', control.get('result', {}).get('completed') is True
+            and all(remote_main(b) == tip for b in repositories)
+            and all(answer.get('refusal') == 'invalid-input' and all(remote_main(b) == old for b in repositories)
+                    for answer, repositories in shapes.values()))
+        # The report is read in the C locale, whatever the operator's locale is.
+        localized, repositories = reshaped('translated', {'LC_ALL': 'de_DE.UTF-8', 'LANG': 'de_DE.UTF-8'})
+        row('publication-resolution-in-c-locale', localized.get('result', {}).get('completed') is True
+            and all(remote_main(b) == tip for b in repositories))
         # R6 2 and 3: the variables that select or inject operator configuration are the
         # operator's, not repository coordinates, so publication honors them as a plain git
         # command from the same environment does. Each case names the authorized remote only
@@ -987,6 +1065,8 @@ print(json.dumps(result))
                      'refused-when-not-at-old-tip', 'refusal-reaches-caller', 'ref-creation',
                      'destination-listed-as-resolved', 'call-covers-every-destination',
                      'scrub-malformed-address',
+                     'requires-clean-push-exit', 'line-break-refused', 'resolution-output-checked',
+                     'resolution-in-c-locale',
                      'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)

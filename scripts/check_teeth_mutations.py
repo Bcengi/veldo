@@ -410,7 +410,8 @@ def cases():
         ['effects/' + routed, 'effects/publication-config-selection-parity'])
     # The guard against a configured URL holding a line break removed.
     add(28, 'effects-newline-config-accepted', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        if urls.returncode not in (0, 1) or any(", "        if False and any(", ['effects/' + routed])
+        "        if urls.returncode not in (0, 1) or any(", "        if False and any(",
+        ['effects/' + routed, 'effects/publication-line-break-refused'])
     complete = "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)"
     # Completion from the push's exit status alone, from the first destination only, or from the
     # To lines the push prints.
@@ -502,6 +503,28 @@ def cases():
     publication('effects-scrub-ext-command-kept', "        if scheme.group().lower() == 'ext':", "        if False:", malformed)
     publication('effects-scrub-malformed-host-kept', "        if not _AUTHORITY.fullmatch(host):", "        if False:", malformed)
     publication('effects-scrub-at-in-path-kept', "            if '@' in tail:", "            if False:", malformed)
+    # R8 rules pinned by rows of their own: a clean push exit, the receiver-URL line-break guard,
+    # the shape of git's report and the configuration read's exit status, and the C locale.
+    exit_rule = 'publication-requires-clean-push-exit'
+    publication('effects-completion-ignores-exit-status', complete,
+                "        complete = all(outcome == 'at-tip' for outcome in outcomes)", exit_rule)
+    publication('effects-completion-ignores-hook-failure', complete,
+                complete.replace('push.returncode == 0', 'push.returncode != 128'), exit_rule)
+    publication('effects-remote-line-break-accepted', "        if '\\n' in remote:\n", "        if False:\n",
+                'publication-line-break-refused')
+    report = 'publication-resolution-output-checked'
+    publication('effects-show-exit-unchecked', "        if (shown.returncode or not lines", "        if (not lines", report)
+    publication('effects-header-unchecked',
+                "        lines = shown.stdout[len(head):].split('\\n') if shown.stdout.startswith(head) else []",
+                "        lines = shown.stdout.split('\\n')[1:]", report)
+    publication('effects-fetch-line-unchecked', "not lines[0].startswith('  Fetch URL: ') or ", "", report)
+    publication('effects-empty-resolution-accepted', " or not pushed\n", "\n", report)
+    publication('effects-head-line-unchecked', shape, "                or False):", report)
+    publication('effects-config-exit-unchecked', "        if urls.returncode not in (0, 1) or any(", "        if any(", report)
+    publication('effects-resolution-locale-not-forced', "env=dict(os.environ, LC_ALL='C'))", "env=None)",
+                'publication-resolution-in-c-locale')
+    publication('effects-resolution-messages-locale-only', "env=dict(os.environ, LC_ALL='C'))",
+                "env=dict(os.environ, LC_MESSAGES='C'))", 'publication-resolution-in-c-locale')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.

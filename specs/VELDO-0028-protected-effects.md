@@ -146,6 +146,11 @@ further `url.*.insteadOf`). So each destination must resolve to itself (`git ls-
 which reads configuration only) or the publication is refused by name (`rerouted-destination`)
 before anything is pushed.
 
+git's report is read only in the shape it has (a header naming this remote, the Fetch URL line,
+one or more Push URL lines, then the HEAD line) and in the C locale, where gettext applies no
+message catalog; a failed `git remote show`, a failed configuration read or any other shape
+refuses the publication (`invalid-input`) before anything is pushed.
+
 **Completion rule.** Each resolved destination is listed before and after the push (`git ls-remote
 --symref`, same profile). A destination is at the tip when it held the old tip at the authorized
 ref before, and after the push its advertised state (every advertised ref, HEAD, peeled tags and

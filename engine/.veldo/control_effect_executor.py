@@ -162,8 +162,8 @@ def receive(config, contract, accepted):
         if urls.returncode not in (0, 1) or any('\n' in entry.partition('\n')[2]
                                                 for entry in urls.stdout.split('\0')):
             raise E.Refused('invalid-input')
-        shown = transport('remote', 'show', '-n', '--', remote, env=dict(
-            {k: v for k, v in os.environ.items() if k != 'LANGUAGE'}, LC_ALL='C'))
+        # Read in the C locale, where gettext applies no message catalog (and ignores LANGUAGE).
+        shown = transport('remote', 'show', '-n', '--', remote, env=dict(os.environ, LC_ALL='C'))
         head = '* remote ' + remote + '\n'
         lines = shown.stdout[len(head):].split('\n') if shown.stdout.startswith(head) else []
         pushed = []
