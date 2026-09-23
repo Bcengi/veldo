@@ -1,0 +1,45 @@
+"""Measure the policy product before writing suite rows; retain readable observations."""
+import importlib.util
+import json
+from pathlib import Path
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def main():
+    grammar = load('grammar', ROOT / 'scripts/fixtures/grammar_cases.py')
+    oracle = load('oracle', ROOT / 'scripts/fixtures/yaml_oracle.py')
+    consumer = load('consumer', ROOT / 'scripts/fixtures/policy_agreement.py')
+    readers = {name: load(name, ROOT / prefix / 'fix_validation_record.py')
+               for name, prefix in (('repository', '.veldo'), ('engine', 'engine/.veldo'))}
+    started = time.monotonic()
+    cases = list(consumer.cases(grammar))
+    generated = time.monotonic() - started
+    expected = consumer.expected_ids(grammar)
+    result = consumer.run(cases, expected, readers, oracle, oracle.capability(), retain='--records' in sys.argv)
+    counts = grammar.coverage_count()
+    summary = consumer.summary(result)
+    summary.update(grammar_counts=counts, generation_seconds=generated,
+                   full_cross_product=(sum(counts.values()) * 4 * len(consumer.BOOLEAN_WORDS) * len(consumer.COMMITS)),
+                   construction='coverage: each witness and boundary at each site, every scalar in both fields, schema partitions',
+                   coverage_by_family=dict(__import__('collections').Counter(c['id'][0] for c in cases)))
+    output = Path(sys.argv[1])
+    output.write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
+    if '--records' in sys.argv:
+        with output.with_suffix('.jsonl').open('w') as stream:
+            for record in result['records']:
+                stream.write(json.dumps(record, sort_keys=True) + '\n')
+    print(json.dumps(summary, sort_keys=True))
+
+
+if __name__ == '__main__':
+    main()

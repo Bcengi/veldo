@@ -1,0 +1,84 @@
+{
+  "boundary_yaml": {
+    "invalid_yaml": 903,
+    "valid_yaml": 925
+  },
+  "compared": 8093,
+  "compared_digest": "3f6335a84f8e2c70bd30c11644c6759e889596cd4b28479a3b3f879f4a605ab7",
+  "comparison_complete": true,
+  "construction": "coverage: each witness and boundary at each site, every scalar in both fields, schema partitions",
+  "coverage_by_family": {
+    "partition": 121,
+    "scalar": 1792,
+    "witness": 6180
+  },
+  "executed_digests": {
+    "engine": "3f6335a84f8e2c70bd30c11644c6759e889596cd4b28479a3b3f879f4a605ab7",
+    "repository": "3f6335a84f8e2c70bd30c11644c6759e889596cd4b28479a3b3f879f4a605ab7"
+  },
+  "expected_digest": "3f6335a84f8e2c70bd30c11644c6759e889596cd4b28479a3b3f879f4a605ab7",
+  "failures": [
+    {
+      "actual": {
+        "state": "syntax_refused"
+      },
+      "edit": null,
+      "expected": {
+        "state": "policy_shape_refused"
+      },
+      "identity": [
+        "partition",
+        "shape",
+        "root-scalar"
+      ],
+      "kind": "setting_disagreement",
+      "reader": "repository",
+      "source": "true\n"
+    },
+    {
+      "actual": {
+        "state": "syntax_refused"
+      },
+      "edit": null,
+      "expected": {
+        "state": "policy_shape_refused"
+      },
+      "identity": [
+        "partition",
+        "shape",
+        "root-scalar"
+      ],
+      "kind": "setting_disagreement",
+      "reader": "engine",
+      "source": "true\n"
+    }
+  ],
+  "full_cross_product": 1668600,
+  "generated": 8093,
+  "generation_seconds": 1.8035803530365229,
+  "grammar_counts": {
+    "boundary": 457,
+    "lexical": 934,
+    "pair": 132,
+    "production": 22
+  },
+  "inventory_complete": true,
+  "oracle_errors": 0,
+  "oracle_state": "available",
+  "oracle_version": "6.0.1",
+  "outcomes": {
+    "engine": {
+      "policy_shape_refused": 3254,
+      "settings": 3010,
+      "syntax_refused": 1829
+    },
+    "repository": {
+      "policy_shape_refused": 3254,
+      "settings": 3010,
+      "syntax_refused": 1829
+    }
+  },
+  "qualified": false,
+  "seconds": 0.7366606020368636,
+  "unobserved": 0
+}

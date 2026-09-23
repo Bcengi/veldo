@@ -84,3 +84,18 @@ VELDO-0118's exhaustive bounded domain was replaced by owner-approved grammar
 coverage criteria. Only AC1's domain reference and the Notes reference to the
 three-node bound change here. The complete generated policy product and its
 agreement, refusal and oracle-accounting obligations are unchanged.
+
+## Implementation history (2026-09-22)
+
+The owner-authorized footprint extension to `scripts/fixtures/*` adds the shared
+policy consumer, using VELDO-0118 rendering, edits and oracle composition rather
+than introducing a policy YAML grammar. The owner-authorized extension to
+`scripts/check_teeth_mutations.py` registers two assertion-driven mutations per
+criterion because the required gate mutation stage postdates this specification.
+
+Measurement precedes suite rows: the naive product contains 1,668,600 inputs;
+the first coverage construction contains 8,093, generated in 1.804 seconds and
+checked through both readers and the oracle in 0.737 seconds. The projected
+full-product checking time alone is 151.9 seconds, so construction uses coverage.
+The initial measurement retains the root-scalar classification discrepancy;
+root scalars require syntax refusal under the documented shared dialect.

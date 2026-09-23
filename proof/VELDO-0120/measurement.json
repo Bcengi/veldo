@@ -1,0 +1,49 @@
+{
+  "boundary_yaml": {
+    "invalid_yaml": 903,
+    "valid_yaml": 926
+  },
+  "compared": 8105,
+  "compared_digest": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a",
+  "comparison_complete": true,
+  "construction": "coverage: each witness and boundary at each site, every scalar in both fields, schema partitions",
+  "coverage_by_family": {
+    "partition": 133,
+    "scalar": 1792,
+    "witness": 6180
+  },
+  "executed_digests": {
+    "engine": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a",
+    "repository": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a"
+  },
+  "expected_digest": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a",
+  "failures": [],
+  "full_cross_product": 1668600,
+  "generated": 8105,
+  "generation_seconds": 1.8619249579496682,
+  "grammar_counts": {
+    "boundary": 457,
+    "lexical": 934,
+    "pair": 132,
+    "production": 22
+  },
+  "inventory_complete": true,
+  "oracle_errors": 0,
+  "oracle_state": "available",
+  "oracle_version": "6.0.1",
+  "outcomes": {
+    "engine": {
+      "policy_shape_refused": 3254,
+      "settings": 3022,
+      "syntax_refused": 1829
+    },
+    "repository": {
+      "policy_shape_refused": 3254,
+      "settings": 3022,
+      "syntax_refused": 1829
+    }
+  },
+  "qualified": true,
+  "seconds": 0.743028226075694,
+  "unobserved": 0
+}
