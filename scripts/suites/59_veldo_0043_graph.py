@@ -380,7 +380,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     account_before = account_state()
     rows = ('graph/runtime/lifecycle', 'graph/runtime/plain-data', 'graph/runtime/tracing-off',
             'graph/authority/no-direct-write', 'graph/authority/typed-proposals-only', 'graph/authority/proc-limit',
-            'graph/authority/stage-links')
+            'graph/authority/stage-links', 'graph/runtime/pyvenv-clean')
     if runtime is None:
         for name in rows:
             expect(name + absent, False)
@@ -491,6 +491,28 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         links['runners'] = call('start', 'cycle-after-r', 'command-after-r', snapshot, workflow('cwd-probe'))
         links['checkout_written'] = sorted(p.name for p in checkout.iterdir()
                                            if p.name.startswith('veldo-graph-') or p.suffix == '.py')
+        for name in ('work', 'runners'):
+            if (stage_root / name).is_symlink():
+                (stage_root / name).unlink()
+                if (stage_root / (name + '.displaced')).exists():
+                    (stage_root / (name + '.displaced')).rename(stage_root / name)
+        # A runtime whose pyvenv.cfg names a repository (created by a repository's own virtual
+        # environment) is refused before launch; the installed runtime's names none.
+        fake = root / 'repository-created-runtime'
+        (fake / 'bin').mkdir(parents=True)
+        (fake / 'bin/python').symlink_to(_s43_os.path.realpath(runtime['python']))
+        (fake / 'lib/python3.12').mkdir(parents=True)
+        (fake / 'lib/python3.12/site-packages').symlink_to(next(directory.glob('lib/python*/site-packages')))
+        (fake / 'pyvenv.cfg').write_text('home = /usr/bin\ninclude-system-site-packages = false\nversion = 3.12.3\n'
+                                         'command = ' + str(checkout / '.venv/bin/python3') + ' -m venv ' + str(fake) + '\n')
+        try:
+            fake_answer = graph.Adapter(dict(runtime, python=str(fake / 'bin/python'), runner=str(installed_runner),
+                                             stage=str(stage_root)), domain, 'repository',
+                                        evidence=graph.runtime_evidence()).start(
+                'cycle-pyvenv', 'command-pyvenv', snapshot, workflow('cwd-probe'))
+            pyvenv = 'launched: ' + fake_answer.get('outcome', '')
+        except Exception as error:
+            pyvenv = getattr(error, 'code', type(error).__name__) + ('' if 'pyvenv' in str(error) else ' (other)')
         # A stage inside a repository is refused before anything launches.
         try:
             graph.Adapter(dict(runtime, runner=str(installed_runner), stage=str(checkout / '.veldo')),
@@ -566,6 +588,12 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     notes = _s43_notes(probe)
     observations['stage_in_repository'] = in_repository
     observations['stage_links'] = links
+    observations['pyvenv'] = pyvenv
+    cfg_paths = [token for line in (directory / 'pyvenv.cfg').read_text().splitlines()
+                 for token in line.partition('=')[2].split() if token.startswith('/')]
+    expect('graph/runtime/pyvenv-clean', pyvenv == 'runtime_unavailable'
+           and not (audit_directory / 'command-pyvenv.json').exists() and cfg_paths
+           and not any(graph.inside_repository(token) for token in cfg_paths))
     expect('graph/authority/stage-links', links['work'].get('refused') == 'runtime_unavailable'
            and links['runners'].get('refused') == 'runtime_unavailable' and links['checkout_written'] == []
            and before == after and account_state() == account_before)
