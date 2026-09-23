@@ -561,7 +561,10 @@ class Gate:
         settlements = [self._data(m) for m in inputs.get('settlements') or []]
         subjects = self._data(inputs.get('decision_subjects')) or {}
         verify = self.settlement_trust.verify if self.settlement_trust is not None else None
-        codes = DD.blockers(unit, refs, records, settlements, subjects, verify, self.domain_uuid)
+        try:
+            codes = DD.blockers(unit, refs, records, settlements, subjects, verify, self.domain_uuid)
+        except DD.Unavailable:
+            codes = ['unavailable_service:settlement_verifier']
         outcome = 'refused' if codes else 'accepted'
         self.decision_counts[outcome] += 1
         self.decision_last[unit] = outcome

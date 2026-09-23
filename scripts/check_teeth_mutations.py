@@ -973,6 +973,9 @@ def cases():
     decisions('taxonomy-unbound-unknown', 'control_eligibility.py',
               "    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',\n",
               "    'decision_ruling': 'missing_authority',\n", 'observations')
+    decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
+              "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
+              "            if False:\n", 'observations')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

@@ -542,6 +542,16 @@ def _v54_suite():
             seen = {c for e in gate.observations for c in e['refusals']}
             reads = [e for e in gate.observations if e['operation'] == 'decision_dependency']
             status = gate.status()
+            # A verifier that cannot run (no ssh-keygen on PATH) is an unavailable service, never an
+            # unsigned settlement: a fresh trust, so nothing it verified before is remembered.
+            path, os.environ['PATH'] = os.environ.get('PATH', ''), ''
+            try:
+                blind = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY,
+                                settlement_trust=DD.SettlementTrust(signers.read_text()))
+                unavailable = blind.decide('selection', 'VELDO-9401')
+            finally:
+                os.environ['PATH'] = path
+            observed['verifier_unavailable'] = unavailable['refusals']
             observed['taxonomy'] = {c: EL.taxonomy(c) for c in sorted(seen)}
             observed['decision_status'] = status['decisions']
             check('decisions/observations',
@@ -550,6 +560,8 @@ def _v54_suite():
                    and all(t != 'unknown_outcome' for e in gate.observations for t in e['taxonomy'])
                    and reads and all({'operation', 'unit', 'domain_uuid', 'repository_uuid', 'decision_id', 'references', 'watermark',
                                       'accepted_inputs', 'outcome', 'refusals', 'taxonomy'} <= set(e) for e in reads)
+                   and unavailable['refusals'] == ['unavailable_service:settlement_verifier']
+                   and EL.taxonomy(unavailable['refusals'][0]) == 'unavailable_service'
                    and status['decisions']['accepted'] > 0 and status['decisions']['refused'] > 0
                    and {s for s in SCEN if SCEN[s][1] == 'all' and SCEN[s][2]} <= set(status['decisions']['blocked']))
 

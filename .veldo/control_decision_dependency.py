@@ -250,6 +250,11 @@ def blockers(unit, refs, records, settlements, subjects, verify, domain_uuid):
     return list(dict.fromkeys(codes))
 
 
+class Unavailable(Exception):
+    """The settlement verifier could not be asked (no ssh-keygen, or it timed out): an unavailable
+    service, never an unsigned settlement and never a verified one."""
+
+
 def _ssh_verify():
     spec = importlib.util.spec_from_file_location('decision_authority_contract',
                                                   Path(__file__).with_name('authority_contract.py'))
@@ -261,7 +266,8 @@ def _ssh_verify():
 class SettlementTrust:
     """The settlement signers a host trusts: OpenSSH allowed-signers text whose principals may sign a
     settlement body under SETTLEMENT_NAMESPACE. verify() is ssh-keygen -Y verify over exactly those
-    signers; its answer for identical bytes, signature and principal is remembered (bounded)."""
+    signers; its answer for identical bytes, signature and principal is remembered (bounded). A
+    verifier that cannot run raises Unavailable and nothing is remembered."""
 
     def __init__(self, allowed_signers_text, verifier=None):
         if not isinstance(allowed_signers_text, str) or not allowed_signers_text.strip():
@@ -277,6 +283,8 @@ class SettlementTrust:
         if key not in self._seen:
             if len(self._seen) >= VERIFY_CACHE_LIMIT:
                 self._seen.clear()
-            self._seen[key] = bool(self._verify(bytes(message), signature, self.signers, principal,
-                                                SETTLEMENT_NAMESPACE)[0])
+            verified, detail = self._verify(bytes(message), signature, self.signers, principal, SETTLEMENT_NAMESPACE)
+            if not verified and str(detail).startswith('ssh-keygen unavailable'):
+                raise Unavailable(detail)
+            self._seen[key] = bool(verified)
         return self._seen[key]
