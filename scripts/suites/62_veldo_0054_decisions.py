@@ -872,6 +872,22 @@ def _v54_suite():
                    stops == {'decide': ('stopped', 'host_trust_unreadable'),
                              'decision_blockers': ('stopped', 'host_trust_unreadable')})
 
+        with region('decisions/unexpected-message'):
+            # An unexpected fault is named with its type AND its message, on one line and bounded.
+            short = faulting(RuntimeError('a verifier fault\nnobody named'))
+            long_ = faulting(RuntimeError('x' * 5000))
+            messages = {'short': outcome(lambda: short.decide('selection', 'VELDO-9401')['refusals']),
+                        'short_blockers': outcome(lambda: short.decision_blockers('VELDO-9401')),
+                        'long': outcome(lambda: long_.decide('selection', 'VELDO-9401')['refusals'])}
+            observed['unexpected_messages'] = {k: (v[0], [c[:100] for c in v[1]] if v[0] == 'ok' else v[1])
+                                               for k, v in messages.items()}
+            long_codes = messages['long'][1] if messages['long'][0] == 'ok' else []
+            check('decisions/unexpected-message',
+                   messages['short'] == ('ok', ['unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named'])
+                   and messages['short_blockers'] == messages['short']
+                   and len(long_codes) == 1 and long_codes[0].startswith('unknown_outcome:evaluation_error/RuntimeError/xxx')
+                   and len(long_codes[0]) <= 256)
+
         with region('decisions/status-names-its-stop'):
             # veldo status names a burn-down it cannot build instead of crashing the whole read model. The
             # probe is a plan file whose open_decisions entry has a nested list in blocks, which still

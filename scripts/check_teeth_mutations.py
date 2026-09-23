@@ -1089,6 +1089,14 @@ def cases():
               "            codes = ['unavailable_service:store']\n        except Stopped:\n"
               "            raise  # a named stop is the caller's, never a unit hold\n",
               "            codes = ['unavailable_service:store']\n", 'stops-propagate')
+    # Item 3: an unexpected fault is named with its message, bounded and on one line.
+    decisions('unexpected-message-dropped', 'control_eligibility.py',
+              "    return code + '/' + message if message else code\n", "    return code\n", 'unexpected-message')
+    decisions('unexpected-message-unbounded', 'control_eligibility.py',
+              "    message = message.encode('ascii', 'backslashreplace').decode('ascii')[:UNEXPECTED_MESSAGE_LIMIT]\n",
+              "    message = message.encode('ascii', 'backslashreplace').decode('ascii')\n", 'unexpected-message')
+    decisions('unexpected-message-multiline', 'control_eligibility.py',
+              "    message = ' '.join(str(error).split())\n", "    message = str(error)\n", 'unexpected-message')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

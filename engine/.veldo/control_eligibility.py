@@ -151,10 +151,17 @@ def taxonomy(code):
     return TAXONOMY.get(code.split(':', 1)[0], 'unknown_outcome')
 
 
+UNEXPECTED_MESSAGE_LIMIT = 160
+
+
 def unexpected(error):
     """The named refusal for a fault nothing anticipated while deciding one unit (VELDO-0054): its
-    outcome is unknown, so it refuses that unit by name and never raises into the caller's loop."""
-    return 'unknown_outcome:evaluation_error/' + type(error).__name__
+    outcome is unknown, so it refuses that unit by name and never raises into the caller's loop. It
+    carries the fault's type and its message, on one line, ASCII only and bounded in length."""
+    code = 'unknown_outcome:evaluation_error/' + type(error).__name__
+    message = ' '.join(str(error).split())
+    message = message.encode('ascii', 'backslashreplace').decode('ascii')[:UNEXPECTED_MESSAGE_LIMIT]
+    return code + '/' + message if message else code
 
 
 class Refused(Exception):
