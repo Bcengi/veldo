@@ -441,23 +441,61 @@ if 'expect' in globals():
            and _m123_nested == 'driver_error: nested repository in the input closure'
            and _m123_unreadable == 'driver_error: unreadable input')
 
+    # A directory Git cannot open: ls-files only warns and lists less, and a directory whose files
+    # cannot be examined at all. Both refused by name, never a quietly smaller closure.
+    (_m123_repo / 'hidden').mkdir()
+    (_m123_repo / 'hidden/untracked.md').write_text('behind a directory Git cannot list\n')
+    (_m123_repo / 'hidden').chmod(0o311)
+    _m123_unlistable = _m123_refusal() if _m123_os.geteuid() != 0 else 'driver_error: incomplete input listing'
+    (_m123_repo / 'hidden').chmod(0o755)
+    _m123_sp.run(['rm', '-rf', str(_m123_repo / 'hidden')], check=True)
+    (_m123_repo / 'lib').chmod(0o600)                   # listable, but its entries cannot be examined
+    _m123_unreadable_dir = _m123_refusal() if _m123_os.geteuid() != 0 else 'driver_error: unreadable input'
+    (_m123_repo / 'lib').chmod(0o755)
+    expect('VELDO-0123 gate/input-closure-refuses-incomplete-listings: a directory Git cannot list '
+           '(ls-files warns and lists less) and a directory whose files cannot be examined are each '
+           'refused by name, so the closure is never quietly smaller than the checkout',
+           _m123_unlistable == 'driver_error: incomplete input listing'
+           and _m123_unreadable_dir == 'driver_error: unreadable input')
+
+    # The same closure through a symbolic link to the ROOT (a macOS temp path is one: /var is a link
+    # to /private/var): nothing is refused and nothing changes.
+    _m123_alias = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-alias-')) / 'root'
+    _m123_alias.symlink_to(_m123_repo)
+    try:
+        _m123_via_link = _m123_gate.read_inputs(_m123_alias)
+    except Exception as _m123_error:
+        _m123_via_link = {'raised': (0, repr(_m123_error).encode())}
+
     # THE SNAPSHOT ITSELF: the tree the workers run in holds every closure file, same name bytes,
     # same mode, same content, and nothing else outside .git.
-    _m123_files = _m123_gate.read_inputs(_m123_repo)
-    _m123_head = _m123_sp.run(['git', '-C', str(_m123_repo), 'rev-parse', 'HEAD'], check=True,
-                              capture_output=True, text=True, env=_m123_genv).stdout.strip()
     _m123_dest = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-snapshot-')) / 'frozen'
     try:
+        _m123_files = _m123_gate.read_inputs(_m123_repo)
+        _m123_head = _m123_sp.run(['git', '-C', str(_m123_repo), 'rev-parse', 'HEAD'], check=True,
+                                  capture_output=True, text=True, env=_m123_genv).stdout.strip()
         _m123_gate.snapshot(_m123_repo, _m123_dest, _m123_files, _m123_head)
         _m123_walked = {p.relative_to(_m123_dest).as_posix(): (p.stat().st_mode & 0o777, p.read_bytes())
                         for p in _m123_dest.rglob('*')
                         if p.is_file() and '.git' not in p.relative_to(_m123_dest).parts}
     except Exception as _m123_error:
-        _m123_walked = {'raised': repr(_m123_error)}
+        _m123_files, _m123_walked = {}, {'raised': repr(_m123_error)}
+    finally:
+        for _m123_dir in (_m123_repo, _m123_outside, _m123_dest.parent, _m123_alias.parent):
+            _m123_sp.run(['rm', '-rf', str(_m123_dir)], check=True)
     expect('VELDO-0123 gate/snapshot-holds-exactly-the-closure: snapshot() writes every closure file '
            'into the worker tree under the same name bytes, with the same mode and content, and '
-           'nothing else outside .git, so file_identity of the snapshot equals the checkout\'s',
-           _m123_walked == _m123_files
-           and _m123_gate.file_identity(_m123_walked) == _m123_gate.file_identity(_m123_files))
-    for _m123_dir in (_m123_repo, _m123_outside, _m123_dest.parent):
-        _m123_sp.run(['rm', '-rf', str(_m123_dir)], check=True)
+           'nothing else outside .git; and the closure read through a symbolic link to the root is '
+           'the same closure',
+           _m123_walked == _m123_files and _m123_via_link == _m123_files and _m123_files != {})
+    # file_identity is what the race check compares between the two reads: it must change when a
+    # file's content, its mode or its name changes, and only then.
+    _m123_base = {'a/b.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}
+    _m123_id = _m123_gate.file_identity
+    expect('VELDO-0123 gate/race-check-sees-content-mode-and-name: the identity the stage compares '
+           'between its two reads of the inputs changes with a file\'s content, its mode or its name, '
+           'and is equal for an equal closure',
+           _m123_id(_m123_base) == _m123_id(dict(_m123_base))
+           and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o644, b'ONE')}))
+           and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o600, b'one')}))
+           and _m123_id(_m123_base) != _m123_id({'a/B.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}))
