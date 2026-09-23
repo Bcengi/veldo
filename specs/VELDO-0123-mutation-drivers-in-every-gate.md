@@ -138,3 +138,6 @@ new commit) and drives the real run_stage end to end: a clean fixture passes and
 the checkout mid-stage is refused as inputs changed during stage. Git output while listing that is not a listing
 warning is refused as unexpected git output rather than mislabeled an incomplete listing, and an
 unreadable info/exclude is refused (gate/input-listing-output-is-named).
+2026-09-23, parallelism: the stage ran a fixed 8 workers, leaving most of a 20-core host idle while
+Release 1 items grew the inventory; it now runs as many workers as the CPUs it may use, clamped to
+2..16 (gate/workers-follow-the-host). Results do not depend on the count.

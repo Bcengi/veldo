@@ -579,3 +579,9 @@ if 'expect' in globals():
            and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o644, b'ONE')}))
            and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o600, b'one')}))
            and _m123_id(_m123_base) != _m123_id({'a/B.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}))
+
+    # The stage's parallelism follows the host: the CPUs this process may use, clamped to 2..16.
+    expect('VELDO-0123 gate/workers-follow-the-host: the mutation stage runs as many workers as the CPUs it '
+           'may use, never fewer than 2 or more than 16, and the module uses that count',
+           [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
+           and _m123_gate.PARALLEL == _m123_gate.worker_count())

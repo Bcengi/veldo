@@ -31,7 +31,19 @@ BUDGET = 120
 PER_CASE_SECONDS = 2.0
 WORKER_BUDGET = 120
 
-PARALLEL = 8
+def worker_count(cpus=None):
+    """Workers the stage runs at once: the CPUs this process may use, never fewer than 2 or more
+    than 16. A fixed 8 left most of a 20-core host idle while the stage grew with every item, and
+    would oversubscribe a small one; results do not depend on the count, only the wall time."""
+    if cpus is None:
+        try:
+            cpus = len(os.sched_getaffinity(0))
+        except (AttributeError, OSError):
+            cpus = os.cpu_count() or 2
+    return max(2, min(16, int(cpus)))
+
+
+PARALLEL = worker_count()
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 
