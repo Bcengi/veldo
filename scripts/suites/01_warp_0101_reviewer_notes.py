@@ -2830,6 +2830,33 @@ def rebinds_a_spec_globally():
 _spg = importlib.util.spec_from_file_location("g0", ROOT / ".veldo/naming.py")
 GLATE = importlib.util.module_from_spec(_spg)
 GLATE.which_module_depends_on_call_order()
+_spr = importlib.util.spec_from_file_location("r", ROOT / ".veldo/naming.py")
+_spr = _spo
+PLAINED = importlib.util.module_from_spec(_spr)
+PLAINED.rebound_by_plain_assignment()
+if UNIQ:
+    _spi = importlib.util.spec_from_file_location("i1", ROOT / ".veldo/naming.py")
+else:
+    _spi = importlib.util.spec_from_file_location("i2", ROOT / ".veldo/secret_scan.py")
+IFFED = importlib.util.module_from_spec(_spi)
+IFFED.depends_on_the_branch_taken()
+def encloses_a_rebound_spec():
+    _spe = importlib.util.spec_from_file_location("e1", ROOT / ".veldo/naming.py")
+    _spe = importlib.util.spec_from_file_location("e2", ROOT / ".veldo/secret_scan.py")
+    def reads_it_later():
+        ENCLOSED = importlib.util.module_from_spec(_spe)
+        ENCLOSED.depends_on_when_it_is_called()
+def generic_with_default[SCOPED](x=SCOPED.contract):
+    pass
+_spc = importlib.util.spec_from_file_location("c", ROOT / ".veldo/secret_scan.py")
+class Holder:
+    CLASSLEVEL = importlib.util.module_from_spec(_spc)
+    CLASSLEVEL.scan_text("x")
+    FIRST_ITERATOR = [x for x in CLASSLEVEL.scan_text("")]
+    def annotated[T](self) -> CLASSLEVEL.scan_text:
+        pass
+class GenericOnly[T]:
+    pass
 '''
 import ast as _sac_ast
 
@@ -2848,12 +2875,15 @@ expect("suite attr check TEETH: an alias rebound in the SAME SCOPE by ANY bindin
 expect("suite attr check TEETH: the forms the first scope-aware cut missed are rebindings too: `del`, a match `**rest` capture, and a `nonlocal` write from a method, which binds the enclosing FUNCTION's name and never the class body's same-named attribute between them",
        not any(a in ("DELETED", "RESTED", "NONLOCALED") for _f, _l, a, _at, _r in _sac_refs))
 expect("suite attr check TEETH: an alias whose module depends on WHEN a function runs is not checked. Source line order is execution order only at module level: a function loading from a module spec variable bound more than once, and a spec variable some function rebinds through `global`, each hold whatever the call order made them, so a reader that replays function bodies at their definition line maps the alias to the wrong module",
-       not any(a in ("LATE", "GLATE") for _f, _l, a, _at, _r in _sac_refs))
+       not any(a in ("LATE", "GLATE", "PLAINED", "IFFED", "ENCLOSED") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: a class-level alias is seen where Python lets it be seen: in the class body, in the FIRST iterator of a comprehension in that body (evaluated in the class scope), and in the annotation scope of a generic method (PEP 695 annotation scopes see their class), and nowhere else",
+       sorted((at, rel) for _f, _l, a, at, rel in _sac_refs if a == "CLASSLEVEL")
+       == [("scan_text", ".veldo/secret_scan.py")] * 3)
 _sac_scoped = sorted({(at, rel) for _f, _l, a, at, rel in _sac_refs if a == "SCOPED"})
 expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter or a PEP 695 type parameter of the same name is not an alias at all, and a comprehension variable does not rebind the module name",
        _sac_scoped == [("contract", ".veldo/naming.py"), ("local_gone", ".veldo/secret_scan.py"),
                        ("scan_text", ".veldo/secret_scan.py")]
-       and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 2
+       and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 3
        and any(a == "COMPREHENDED" for _f, _l, a, _at, _r in _sac_refs))
 def _sac_resolves(rel, attr):
     spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)

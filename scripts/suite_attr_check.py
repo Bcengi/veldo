@@ -95,6 +95,7 @@ class _Walk:
     def __init__(self, fname, module):
         self.fname, self.bindings, self.events, self.scopes = fname, [], [], []
         self.stack = [module]
+        self.top, self.straight = None, []          # the module statement being walked
 
     def scope(self, node, kind):
         s = _Scope((self.fname, node.lineno, node.col_offset, kind), kind, self.stack[-1], node)
@@ -123,6 +124,10 @@ class _Walk:
         for p in params:
             self.bind(p.name, p, scope)
         self.stack.append(scope)
+        for p in params:
+            for part in ("bound", "default_value"):
+                if getattr(p, part, None) is not None:
+                    self.one(getattr(p, part))
         return True
 
     def one(self, n):
@@ -225,6 +230,8 @@ class _Walk:
                 if rel:
                     self.events.append((n.lineno, n.col_offset, "spec", self.stack[-1],
                                         n.targets[0].id, rel))
+                    if n is self.top and len(n.targets) == 1:
+                        self.straight.append((n.targets[0].id, n))
                 sv = _spec_var_of_module_call(n.value)
                 if sv:
                     self.events.append((n.lineno, n.col_offset, "mod", self.stack[-1],
@@ -242,20 +249,24 @@ class _Walk:
 def resolve(scope, name):
     """The key of the scope a name READ in `scope` refers to, by Python's rules: a name bound in a
     function is local to it unless declared global or nonlocal; a free name is found in the nearest
-    enclosing function scope (class bodies are skipped), else in the module namespace."""
+    enclosing function scope (class bodies are skipped, except by the annotation scope directly
+    inside one), else in the module namespace."""
     if scope.kind == "module" or name in scope.globals:
         return MODULE
     if scope.local(name):
         return scope.key
-    cur = scope.parent
+    prev, cur = scope, scope.parent
     while cur is not None and cur.kind != "module":
-        if cur.kind == "class" and name == "__class__":
-            return cur.key                             # the implicit cell super() reads
-        if cur.kind != "class" and cur.local(name):
+        if cur.kind == "class":
+            if name == "__class__":
+                return cur.key                         # the implicit cell super() reads
+            if prev.kind == "annotation" and cur.local(name):
+                return cur.key                         # PEP 695: annotation scopes see their class
+        elif cur.local(name):
             return cur.key
-        if cur.kind != "class" and name in cur.globals:
+        elif name in cur.globals:
             return MODULE
-        cur = cur.parent
+        prev, cur = cur, cur.parent
     return MODULE
 
 
@@ -278,7 +289,12 @@ def walk(trees):
     walks = {}
     for fname, tree in trees.items():
         w = _Walk(fname, module)
-        w.visit(tree)
+        for statement in tree.body:
+            w.top = statement
+            w.one(statement)
+            if isinstance(statement, ast.Delete):          # unbinds in line order; never re-points
+                w.straight.extend((t.id, statement) for t in statement.targets
+                                  if isinstance(t, ast.Name))
         walks[fname] = w
     return walks
 
@@ -302,22 +318,27 @@ def references(order, trees, counts):
     genuinely is reused for two different modules in one file, and last-assignment-wins reports the
     wrong module - which was the second false-positive source before this ordered."""
     walks = walk(trees)
-    # Source line order is execution order only at MODULE level. A spec variable some function
-    # rebinds through `global` holds whatever the call order made it, anywhere, so it never maps.
-    unknown_order = {(MODULE, a) for w in walks.values() for _l, _c, kind, scope, a, _b in w.events
-                     if kind == "spec" and scope.kind != "module" and resolve(scope, a) == MODULE}
+    # WHICH MODULE A SPEC VARIABLE HOLDS is decided from the source only when it is bound once, or
+    # when every binding it has is a spec call or a `del` standing as a plain statement of a
+    # fragment's module body: those run in line order, fragment after fragment. Any other rebinding (in a function,
+    # under an if or a loop, by plain assignment, through global or nonlocal) depends on control
+    # flow or call order, and such a variable never maps an alias.
+    straight = collections.Counter((MODULE, a) for w in walks.values() for a, _n in w.straight)
+    def decidable(key):
+        return counts[key] == 1 or counts[key] == straight[key]
     spec_paths, mod_paths, out = {}, {}, []
     for fname in order:
         for line, _col, kind, scope, a, b in sorted(walks[fname].events, key=lambda e: e[:2]):
             if kind == "spec":
                 key = (resolve(scope, a), a)
-                if key not in unknown_order:
+                if decidable(key):
                     spec_paths[key] = b
             elif kind == "mod":
                 src = (resolve(scope, b), b)
-                # A function reads a module spec variable when it is CALLED; if that variable is
-                # bound more than once, which binding it sees is not decided by the source.
-                if scope.kind != "module" and src[0] == MODULE and counts[src] > 1:
+                # Read from another scope (a function reading a module or enclosing variable), a
+                # spec variable is read when the code RUNS; bound more than once, which binding it
+                # sees is not decided by the source.
+                if src[0] != scope.key and counts[src] > 1:
                     continue
                 if src in spec_paths:
                     mod_paths[(resolve(scope, a), a)] = spec_paths[src]
@@ -332,6 +353,17 @@ def _encloses(outer, inner):
     cur = inner.parent
     while cur is not None:
         if cur is outer:
+            return True
+        cur = cur.parent
+    return False
+
+
+def _binder_between(inner, outer, name):
+    """Whether a function scope strictly between `inner` and `outer` binds `name`: then `outer` is
+    not the NEAREST binder, and a resolver that returned it would be wrong."""
+    cur = inner.parent
+    while cur is not None and cur is not outer:
+        if cur.kind not in ("class", "module") and cur.local(name):
             return True
         cur = cur.parent
     return False
@@ -388,8 +420,8 @@ def symtable_disagreements(sources):
                 out.append((fname, k, "local", sorted(extra), sorted(our_local - sym_local)))
             for x in t.get_symbols():
                 n = x.get_name()
-                if n in our_local or n in comp_targets[s.key]:
-                    continue
+                if n.startswith(".") or n in our_local or n in comp_targets[s.key]:
+                    continue                           # ".type_params" and the like are internal
                 got = resolve(s, n)
                 if x.is_free():
                     # Free: it must be THE enclosing scope that binds it (a class only for the
@@ -397,7 +429,8 @@ def symtable_disagreements(sources):
                     owner = by_key.get(got)
                     if not (owner is not None and _encloses(owner, s) and (
                             (owner.kind == "class" and n == "__class__")
-                            or (owner.kind != "class" and owner.local(n)))):
+                            or (owner.kind != "class" and owner.local(n)))
+                            and not _binder_between(s, owner, n)):
                         out.append((fname, k, "free", n, got))
                 elif x.is_global() and got != MODULE:
                     out.append((fname, k, "global", n, got))
