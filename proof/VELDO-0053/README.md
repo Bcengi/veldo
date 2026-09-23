@@ -363,11 +363,10 @@ Each red record was taken with the suite as of that review's fixes (`red-60d5018
 Suite 60_veldo_0053 runs in about 2.3 s (`observations.json`, `suite_seconds`), including seven
 installed-validator processes and the separately installed engine fixtures; a validator snapshot costs
 about 22 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 52 mutations with the parallel
-driver (4 jobs here). Targeted checks on this branch after the fifth review's
+driver (4 jobs here). Targeted checks on this branch after the sixth review's
 fixes: `python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (39 rows, 65 assertions with the
 shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (52 rejected, no
-`ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), the whole
-`python3 -B scripts/selftest.py` (5866 passed, 0 failed; not the gate), `python3 .veldo/validate.py all`
+`ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), `python3 .veldo/validate.py all`
 (exit 0), `bash scripts/check_generated.sh` and `bash scripts/check_template_sync.sh` (pass). The full
 gate is run by the lead.
 
