@@ -3,9 +3,12 @@
 
   python3 .veldo/control_graph_install.py
 
-Builds <account home>/.local/share/veldo/langgraph/<lock digest>/ as a virtual environment and
-installs exactly the wheels in control_graph_lock.py into it: pip --require-hashes --no-deps
---only-binary=:all: from the lock's exact pins and sha256 hashes. The environment is built beside
+Builds <account home>/.local/share/veldo/langgraph/<lock digest>/ as a virtual environment
+WITHOUT pip and installs exactly the wheels in control_graph_lock.py into it: a throwaway tool
+environment's pip (the interpreter's own bundled copy, never kept) runs
+`pip --python <runtime python> install --require-hashes --no-deps --only-binary=:all:` from the
+lock's exact pins and sha256 hashes, so the runtime holds the locked distributions and nothing
+else. The environment is built beside
 its final name and renamed into place only after the install and an import of langgraph succeed,
 so the adapter never finds a half-built runtime. The account home comes from the password
 database, never $HOME. An existing runtime for this lock digest is left as it is.
@@ -54,12 +57,15 @@ def install(python=sys.executable, home=None, out=sys.stdout):
     building = Path(tempfile.mkdtemp(prefix='.building-', dir=target.parent))
     try:
         env = _environment()
-        subprocess.run([python, '-I', '-m', 'venv', str(building)], check=True, env=env)
+        subprocess.run([python, '-I', '-m', 'venv', '--without-pip', str(building)], check=True, env=env)
         requirements = building / 'veldo-lock.txt'
         requirements.write_text(lock.requirements())
-        subprocess.run([str(building / 'bin' / 'python'), '-I', '-m', 'pip', 'install', '--quiet',
-                        '--require-hashes', '--no-deps', '--only-binary=:all:', '-r', str(requirements)],
-                       check=True, env=env)
+        with tempfile.TemporaryDirectory(prefix='veldo-pip-') as tool:
+            subprocess.run([python, '-I', '-m', 'venv', tool], check=True, env=env)
+            subprocess.run([str(Path(tool) / 'bin' / 'python'), '-I', '-m', 'pip', '--python',
+                            str(building / 'bin' / 'python'), 'install', '--quiet', '--require-hashes',
+                            '--no-deps', '--only-binary=:all:', '-r', str(requirements)],
+                           check=True, env=env)
         subprocess.run([str(building / 'bin' / 'python'), '-I', '-B', '-c', 'import langgraph.graph'],
                        check=True, env=env)
         os.rename(building, target)
