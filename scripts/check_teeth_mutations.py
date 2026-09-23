@@ -1009,7 +1009,7 @@ def cases():
               '        return [], None\n', 'status-names-its-stop')
     # Item 2: a malformed blocks holds the unit it names and is recorded.
     decisions('malformed-blocks-govern-nothing', 'control_decision_dependency.py',
-              "    named = set(_named(blocks)) if blocks_malformed(record) else set(blocks)\n",
+              "    named = _named_ids(blocks) if blocks_malformed(record) else set(blocks)\n",
               "    named = set(blocks) if _str_list(blocks) else set()\n", 'malformed-blocks-held')
     decisions('malformed-blocks-unrecorded', 'control_eligibility.py',
               "                self._invalid_record(identity, 'blocks')\n", "                pass\n",
