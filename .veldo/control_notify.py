@@ -94,7 +94,7 @@ class Delivery:
     def resolve(self, hint):
         """An independent read handle cannot see the writer's uncommitted transaction."""
         if (hint.get('schema') != SCHEMA or type(hint.get('watermark')) is not int
-                or hint['watermark'] < 1
+                or not 1 <= hint['watermark'] <= 2**63 - 1
                 or any(not isinstance(hint.get(k), str) or not hint[k]
                        for k in ('command_id', 'record_digest'))):
             raise Refused('invalid_input')

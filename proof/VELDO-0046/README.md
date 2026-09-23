@@ -97,3 +97,19 @@ log. No full gate log, fixture credentials, private keys, bytecode, encoded/comp
 blobs or gate stamps are committed. The checkout's `.veldo/last_verify` and
 `.veldo/events.jsonl` are restored before the evidence commit. Source/test commits and
 this evidence are for independent review; this proof is not a self-approval.
+
+## Review fixes: F01 watermark range
+
+The supplied F01 capsule reproduced at `c645167`: an uncaught `OverflowError`, zero
+callbacks, one committed notification pending. Before changing production code,
+`notify/watermark-range` ran the same JSON hint followed by a signed real commit and
+failed its assertion (29 passed, 1 failed). The fixed targeted suite passed all 30 rows.
+`F01-tests.json` records these observations; the canonical gate is recorded below after
+both review fixes. Targeted runs alone are not landing evidence.
+
+Resolution now requires an integer watermark in `1..2**63-1` and returns `invalid_input`
+for out-of-range values before opening SQLite. The row also drives zero, negative,
+boolean and string inputs and confirms the valid maximum reaches journal lookup
+(`missing_evidence`). The registered `notify-unbounded-watermark` mutation restores
+F01; `notify-reject-valid-max-watermark` introduces a different boundary defect.
+Both fail this named assertion, with exact diffs retained beside this README.

@@ -283,6 +283,12 @@ def cases():
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
             old, new, ['notify/' + row])
 
+    notification('notify-unbounded-watermark',
+                 "or not 1 <= hint['watermark'] <= 2**63 - 1",
+                 "or hint['watermark'] < 1", 'watermark-range')
+    notification('notify-reject-valid-max-watermark',
+                 "or not 1 <= hint['watermark'] <= 2**63 - 1",
+                 "or not 1 <= hint['watermark'] < 2**63 - 1", 'watermark-range')
     notification('notify-before-commit',
                  "        # Only identity crosses the queue. Extra transport payload is not domain data.",
                  "        if 'event' in hint and 'transition' in hint['event']:\n"

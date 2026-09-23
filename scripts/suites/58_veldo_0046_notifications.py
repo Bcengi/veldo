@@ -252,14 +252,38 @@ def _n46_checks(directory):
     stopped = service.run_once(timeout=0)
     ac3 = ac3 and stopped is not None and stopped['outcome'] == 'unknown_outcome' and not stopped['accepted']
     ac3 = ac3 and 'private diagnostic' not in _n46_json.dumps(service.observations)
+    # F01 capsule: a JSON integer outside SQLite's range precedes a real commit.
+    # Capture the loop's exception so the regression is a RED assertion, not a crash.
+    ac4 = True
+    for watermark, reason in ((2**63, 'invalid_input'), (2**80, 'invalid_input'),
+                              (0, 'invalid_input'), (-1, 'invalid_input'),
+                              (True, 'invalid_input'), ('1', 'invalid_input'),
+                              (2**63 - 1, 'missing_evidence')):
+        seen, outcomes, errors = [], [], []
+        loop = delivery.Delivery(store, str(path), coords, ['completion'], {'completion': seen.append})
+        hint = _n46_json.loads(_n46_json.dumps(dict(service.hint(result), watermark=watermark)))
+        loop.notify(hint)
+        committed = loop.execute(writer, command('completion'), 'journal', sign, 1)
+        try:
+            # Bound the drain even when testing a defective copy.
+            for _ in range(2):
+                outcomes.append(loop.run_once(timeout=0))
+        except Exception as exc:
+            errors.append(type(exc).__name__)
+        ac4 = ac4 and not errors and len(outcomes) == 2 and all(outcomes)
+        ac4 = ac4 and outcomes[0]['outcome'] == reason and not outcomes[0]['accepted']
+        ac4 = ac4 and outcomes[1]['outcome'] == 'delivered'
+        ac4 = ac4 and [event['command_id'] for event in seen] == [committed['command_id']]
+        ac4 = ac4 and loop.metrics()['pending'] == 0
+        loop.close()
     service.close()
     writer.close()
-    return ac1, ac2, ac3
+    return ac1, ac2, ac3, ac4
 
 
 _n46_started = _n46_time.monotonic()
 with _n46_tempfile.TemporaryDirectory(prefix='v46-') as _n46_dir:
     _n46_results = _n46_checks(_n46_Path(_n46_dir))
-for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event'), _n46_results):
+for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range'), _n46_results):
     expect('VELDO-0046 notify/' + _n46_name, _n46_result)
 print('VELDO-0046 suite seconds: %.3f' % (_n46_time.monotonic() - _n46_started))

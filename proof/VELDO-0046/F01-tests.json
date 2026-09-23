@@ -1,0 +1,103 @@
+{
+  "finding": "F01",
+  "reviewed_commit": "c64516739306fa98e5e23ff24ea8e3370afd3c51",
+  "red": {
+    "command": "python3 -B scripts/selftest.py --suite 58_veldo_0046_notifications",
+    "production": "unchanged c645167",
+    "failed_row": "VELDO-0046 notify/watermark-range",
+    "passed": 29,
+    "failed": 1
+  },
+  "green": {
+    "passed": 30,
+    "failed": 0
+  },
+  "capsule_before": {
+    "error": "OverflowError: Python int too large to convert to SQLite INTEGER",
+    "completed_callbacks": 0,
+    "pending": 1
+  },
+  "mutations": [
+    {
+      "finding": 46,
+      "mutation": "notify-unbounded-watermark",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/watermark-range"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-reject-valid-max-watermark",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/watermark-range"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-before-commit",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/committed-event"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-omit-committed-wakeup",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event",
+        "VELDO-0046 notify/watermark-range"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-check-outside-idle-lock",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/event-in-the-gap"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-wait-without-queue-predicate",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/event-in-the-gap"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-trust-invented-event-identity",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/fabricated-event"
+      ]
+    },
+    {
+      "finding": 46,
+      "mutation": "notify-trust-invented-event-digest",
+      "baseline": "green",
+      "assertions": 30,
+      "red_rows": [
+        "VELDO-0046 notify/fabricated-event"
+      ]
+    },
+    {
+      "mutations_rejected": 8,
+      "green_suites": {
+        "58_veldo_0046_notifications.py": 30
+      }
+    }
+  ]
+}
