@@ -90,8 +90,9 @@ def _v28_run():
         modules = root / 'installed'
         modules.mkdir()
         for name in ('control_signer', 'control_keys', 'control_membership', 'authority_contract',
-                     'control_store', 'git_process', 'credential_issue', 'control_revocation'):
+                     'control_store', 'credential_issue', 'control_revocation'):
             _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
+        _v28_shutil.copyfile(ROOT / ".veldo" / "git_process.py", modules / 'git_process.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effects.py", modules / 'control_effects.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
         _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
@@ -373,7 +374,7 @@ print(json.dumps(result))
             and git('-C', str(bare), 'symbolic-ref', 'HEAD') == 'refs/heads/other')
         for name in ('pre-push-hook', 'url-rewrite', 'smart-http', 'head-change'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
-        # R5: an independent check of c5dc41a reproduced publication defects. `r5` keeps
+        # R5: an independent check of c5dc41a reproduced three publication defects. `r5` keeps
         # what each case actually observed for the printed observation line.
         r5 = {}
         def seen_result(name, result, **extra):
@@ -409,12 +410,12 @@ print(json.dumps(result))
         row('publication-push-options', result.get('completed') is True and remote_main(bare) == tip
             and lines == [['count=2', 'merge_request.create', 'ci.skip'], ['count=0']])
         # R5 2: the push reaches exactly the authorized URL. A clone section named exactly by the
-        # URL (a file:// URL with a space in its path included), its pushurl alone, a
-        # pushInsteadOf and a legacy remotes/ or branches/ file each could send the commit
+        # URL (a file:// URL with a space in its path included), its pushurl alone, a local or
+        # global pushInsteadOf and a legacy remotes/ or branches/ file each could send the commit
         # elsewhere; each is refused before anything is pushed. Control: a differently named
         # remote whose URL is the authorized one, with its own pushurl, publishes normally.
         redirects = {}
-        for name in ('space-section', 'pushurl-only', 'push-instead-of',
+        for name in ('space-section', 'pushurl-only', 'push-instead-of', 'global-push-instead-of',
                      'remotes-file', 'branches-file', 'other-remote-control'):
             clone, bare = fresh('redirect-' + name)
             other = elsewhere_for('redirect-' + name)
@@ -430,6 +431,8 @@ print(json.dumps(result))
                 git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other))
             elif name == 'push-instead-of':
                 git('-C', str(clone), 'config', 'url.' + str(other) + '.pushInsteadOf', url)
+            elif name == 'global-push-instead-of':
+                env = operator_home('redirect-' + name, '[url "%s"]\n\tpushInsteadOf = %s\n' % (other, url))
             elif name in ('remotes-file', 'branches-file'):
                 # A remote nickname: a clone rewrite maps it to the authorized remote, and the
                 # legacy file of the same name would point both listing and push elsewhere.
@@ -451,7 +454,90 @@ print(json.dumps(result))
                 for name, (result, landed, diverted) in redirects.items() if name != 'other-remote-control')
             and redirects['other-remote-control'][0].get('completed') is True
             and redirects['other-remote-control'][1:] == (tip, old))
-        for name in ('push-options', 'push-reaches-only-authorized-url'):
+        # R5 3: publication keeps what a plain git push from the same clone and the same operator
+        # environment can do: global configuration and transport and credential variables.
+        def fake_ssh(name):
+            script, log = root / (name + '-ssh'), root / (name + '-ssh.log')
+            script.write_text('#!/bin/sh\necho "$@" >> ' + str(log) + '\n'
+                              'while [ $# -gt 1 ]; do case "$1" in -o|-p|-l|-i) shift 2 ;; -*) shift ;; *) break ;; esac; done\n'
+                              'shift\nexec sh -c "$*"\n')
+            script.chmod(0o755)
+            return script, log
+        clone, bare = fresh('global-insteadof')
+        result = publish('global-insteadof', clone, 'deploy-alias:',
+                         env=operator_home('global-insteadof', '[url "%s"]\n\tinsteadOf = deploy-alias:\n' % bare))
+        seen_result('global-insteadof', result)
+        row('publication-global-insteadof', result.get('completed') is True and remote_main(bare) == tip)
+        clone, bare = fresh('global-credential-helper')
+        git('-C', str(bare), 'config', 'http.receivepack', 'true')
+        helper, helper_log = root / 'credential-helper', root / 'credential-helper.log'
+        helper.write_text('#!/bin/sh\necho "$1" >> ' + str(helper_log) + '\n'
+                          '[ "$1" = get ] && printf "username=deploy\\npassword=fixture-secret\\n"\nexit 0\n')
+        helper.chmod(0o755)
+        _V28Backend.project_root = str(root)
+        server = _v28_http.ThreadingHTTPServer(('127.0.0.1', 0), _V28AuthBackend)
+        _v28_threading.Thread(target=server.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True).start()
+        try:
+            url = 'http://127.0.0.1:%d/%s' % (server.server_address[1], bare.name)
+            # Control: the server refuses a client without the operator's credential helper.
+            unauthenticated = G.run(['git', 'ls-remote', url], capture_output=True, text=True, timeout=20).returncode != 0
+            result = publish('global-credential-helper', clone, url,
+                             env=operator_home('global-credential-helper', '[credential]\n\thelper = %s\n' % helper))
+        finally:
+            server.shutdown()
+            server.server_close()
+        seen_result('global-credential-helper', result, unauthenticated_refused=unauthenticated)
+        row('publication-global-credential-helper', unauthenticated and result.get('completed') is True
+            and remote_main(bare) == tip and helper_log.exists() and 'get' in helper_log.read_text().split())
+        clone, bare = fresh('env-ssh-command')
+        script, log = fake_ssh('env-ssh-command')
+        result = publish('env-ssh-command', clone, 'ssh://deploy-host' + str(bare), env={'GIT_SSH_COMMAND': str(script)})
+        seen_result('env-ssh-command', result, ssh_ran=log.exists())
+        row('publication-env-ssh-command', result.get('completed') is True and remote_main(bare) == tip
+            and log.exists() and 'git-receive-pack' in log.read_text())
+        clone, bare = fresh('global-ssh-command')
+        script, log = fake_ssh('global-ssh-command')
+        result = publish('global-ssh-command', clone, 'ssh://deploy-host' + str(bare),
+                         env=operator_home('global-ssh-command', '[core]\n\tsshCommand = %s\n' % script))
+        seen_result('global-ssh-command', result, ssh_ran=log.exists())
+        row('publication-global-ssh-command', result.get('completed') is True and remote_main(bare) == tip
+            and log.exists() and 'git-receive-pack' in log.read_text())
+        # The network profile still strips every variable that overrides an explicit coordinate:
+        # repository, work tree, index, object store, namespace and injected configuration. Were
+        # any honoured, the push would run in another repository, into a namespace, or to the
+        # decoy remote the injected rewrites name.
+        clone, bare = fresh('network-coordinates')
+        other = elsewhere_for('network-coordinates')
+        decoy = root / 'network-decoy'
+        git('init', '-q', str(decoy))
+        hostile = {'GIT_DIR': str(decoy / '.git'), 'GIT_WORK_TREE': str(decoy),
+                   'GIT_INDEX_FILE': str(root / 'no-such-index'), 'GIT_OBJECT_DIRECTORY': str(root / 'no-such-objects'),
+                   'GIT_ALTERNATE_OBJECT_DIRECTORIES': str(root / 'no-such-alternates'), 'GIT_NAMESPACE': 'hostile',
+                   'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': 'url.' + str(other) + '.insteadOf',
+                   'GIT_CONFIG_VALUE_0': str(bare),
+                   'GIT_CONFIG_PARAMETERS': "'url.%s.pushinsteadof'='%s'" % (other, bare),
+                   'GIT_CONFIG_GLOBAL': str(root / 'no-such-global'), 'GIT_CONFIG_SYSTEM': str(root / 'no-such-system'),
+                   'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG': str(root / 'no-such-config'),
+                   'GIT_COMMON_DIR': str(decoy / '.git'), 'GIT_EXEC_PATH': str(root / 'no-such-exec-path')}
+        result = publish('network-coordinates', clone, str(bare), env=hostile)
+        namespaced = git('-C', str(bare), 'for-each-ref', 'refs/namespaces')
+        transport = {'GIT_SSH_COMMAND': 'ssh-cmd', 'GIT_SSH': 'ssh-bin', 'GIT_ASKPASS': 'askpass',
+                     'SSH_ASKPASS': 'ssh-askpass', 'SSH_AUTH_SOCK': 'agent.sock', 'GIT_TERMINAL_PROMPT': '1',
+                     'HTTPS_PROXY': 'proxy', 'http_proxy': 'proxy', 'NO_PROXY': 'local'}
+        try:
+            network = G.clean_env(dict(hostile, **transport), profile='network')
+        except TypeError:
+            network = None
+        isolated = G.clean_env(dict(hostile, **transport))
+        seen_result('network-coordinates', result, elsewhere_moved=remote_main(other) == tip, namespaced=namespaced,
+                    network_profile_kept=None if network is None else sorted(k for k in hostile if k in network))
+        row('publication-network-profile-strips-coordinates', result.get('completed') is True
+            and remote_main(bare) == tip and remote_main(other) == old and namespaced == ''
+            and network is not None and not any(k in network for k in hostile)
+            and all(network.get(k) == v for k, v in transport.items())
+            and isolated.get('GIT_CONFIG_GLOBAL') == _v28_os.devnull and 'GIT_SSH_COMMAND' not in isolated)
+        for name in ('push-options', 'push-reaches-only-authorized-url', 'global-insteadof', 'global-credential-helper',
+                     'env-ssh-command', 'global-ssh-command', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'

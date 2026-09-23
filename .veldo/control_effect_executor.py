@@ -29,11 +29,17 @@ def receive(config, contract, accepted):
     if contract['kind'] == 'publication' and 'argv' not in receiver:
         payload = contract['payload']
         repo, remote, ref = receiver['repository'], receiver['remote'], receiver['ref']
-        def git(*args):
-            return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20)
+        def git(*args, profile='isolated'):
+            return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20,
+                                    profile=profile)
+        def transport(*args):
+            # What reaches the remote, and every query deciding where it goes, sees what a plain
+            # git push from this clone and this operator environment sees: global and system
+            # configuration, credential helpers, rewrites, proxies and SSH/askpass variables.
+            return git(*args, profile='network')
         def remote_refs():
             # Every advertised ref, HEAD and peeled tags included, plus each symbolic ref's target.
-            listed = git('ls-remote', '--symref', remote)
+            listed = transport('ls-remote', '--symref', remote)
             if listed.returncode:
                 return None
             refs = {}
@@ -49,13 +55,13 @@ def receive(config, contract, accepted):
             raise E.Refused('missing-evidence')
         # The receiver names a URL, never a remote of the clone, and the push must reach exactly
         # that URL. Git resolves a push destination by name first. A remote section named
-        # exactly by the URL, in any configuration scope, brings its pushurl,
+        # exactly by the URL, in any configuration scope the push reads, brings its pushurl,
         # refspecs and mirror setting (a pushurl alone is enough); a legacy remotes/ or branches/
         # file of that name replaces the URL for the listing and the push alike; a pushInsteadOf
         # prefix of the URL rewrites the push only. Each could send the commit somewhere the
         # authorization does not name, so each is refused before anything is pushed. Names are
         # compared exactly, never as whitespace-separated words.
-        listed = git('config', '-z', '--list')
+        listed = transport('config', '-z', '--list')
         if listed.returncode:
             raise E.Refused('invalid-input')
         for key, _, value in (entry.partition('\n') for entry in listed.stdout.split('\0') if entry):
@@ -77,10 +83,10 @@ def receive(config, contract, accepted):
         # from the command line or config, no push options from any configuration scope (an
         # empty push.pushOption resets the list; on GitLab-style servers an option can open a
         # merge request or skip CI), no submodule recursion, and a lease on the old tip.
-        push = git('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',
-                   '--no-follow-tags', '--recurse-submodules=no',
-                   '--force-with-lease=' + ref + ':' + payload['old_tip'],
-                   remote, payload['commit'] + ':' + ref)
+        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',
+                         '--no-follow-tags', '--recurse-submodules=no',
+                         '--force-with-lease=' + ref + ':' + payload['old_tip'],
+                         remote, payload['commit'] + ':' + ref)
         # Completion is exactly one remote change: the authorized ref (and any symbolic ref
         # that targets it, HEAD included) moved to the commit; every other entry is unchanged.
         after = remote_refs()

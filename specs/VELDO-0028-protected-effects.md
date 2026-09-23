@@ -23,6 +23,9 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/git_process.py"
+  - ".veldo/git_process.py"
+  - "packs/*/.veldo/git_process.py"
   - "scripts/suites/*_veldo_0028_*.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
@@ -112,13 +115,14 @@ Current authorization, independent engineering review, enforceable pre-call spen
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 Source publication is an ordinary `git push` from the trusted clone to the receiver's explicit URL,
-so hooks, URL rewrites, transports and credential helpers behave as configured; only what widens a
-push is neutralized (one explicit refspec, no tag following, no push options from any configuration
-scope, no submodule recursion, a lease on the old tip). The push reaches exactly the authorized
-URL: a remote section named by it, a legacy `remotes/` or `branches/` file of that name, or a
-`pushInsteadOf` prefix of it is refused before anything is pushed. Completion is claimed only when the remote's advertised state (every advertised ref,
-HEAD, peeled tags and symbolic-ref targets) equals the state before the push with the authorized
-ref moved. Two remote changes cannot be observed from outside by design and are stated limits, not
+so hooks, URL rewrites, transports and credential helpers behave as configured, global and system
+ones and the operator's transport variables included (`git_process.py`'s network profile); only
+what widens a push is neutralized (one explicit refspec, no tag following, no push options, no
+submodule recursion, a lease on the old tip). The push reaches exactly the authorized URL: a remote
+section named by it, a legacy `remotes/` or `branches/` file of that name, or a `pushInsteadOf`
+prefix of it is refused before anything is pushed. Completion is claimed only when the remote's
+advertised state (every advertised ref, HEAD, peeled tags and symbolic-ref targets) equals the state
+before the push with the authorized ref moved. Two remote changes cannot be observed from outside by design and are stated limits, not
 passing claims: a ref the remote hides from advertisement (for example `transfer.hideRefs`), and a
 ref the remote changes and restores while the push runs.
 
@@ -143,3 +147,13 @@ VELDO-0026's own accept_effect and reconcile_effect transitions, a committed led
 applies from its commit, a revoked reviewer's review satisfies nothing, publication is a plain
 `git push` again, and confirmation includes HEAD. The two unobservable publication changes are
 recorded in Notes as limits. No status or Release 2 obligation changes.
+
+2026-09-23 review round R5: the footprint now includes `.veldo/git_process.py` and its engine copy.
+Publication had run its push in the Git boundary's isolated environment, which disables global and
+system configuration and drops every GIT_* variable, so it lost the credential helpers, URL
+rewrites, proxies and SSH commands a plain `git push` from the same clone uses. The shared boundary
+gains an explicit network profile for transport operations: it still strips every variable that
+overrides an explicit coordinate and keeps global and system configuration and the named transport
+and credential variables. The default profile, and every other caller, is unchanged. The same
+round clears push options from every configuration scope and refuses every configured route that
+could send the push away from the authorized URL. No status or Release 2 obligation changes.

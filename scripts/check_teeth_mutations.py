@@ -343,10 +343,10 @@ def cases():
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])
-    push = ("        push = git('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',\n"
-            "                   '--no-follow-tags', '--recurse-submodules=no',")
+    push = ("        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',\n"
+            "                         '--no-follow-tags', '--recurse-submodules=no',")
     publication('effects-push-widened-by-clone-config', push,
-                "        push = git('push',\n                   '--recurse-submodules=no',", 'publication-exact-ref')
+                "        push = transport('push',\n                         '--recurse-submodules=no',", 'publication-exact-ref')
     publication('effects-push-follows-tags', push,
                 push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
     confirm = "after is not None and after == expected"
@@ -357,24 +357,24 @@ def cases():
                 'publication-confirms-one-change')
     # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
     # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
-    send_pack = "        push = git('send-pack',"
+    send_pack = "        push = transport('send-pack',"
     add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
         ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
     publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
                 'publication-pre-push-hook')
-    redirect_list = "        listed = git('config', '-z', '--list')\n        if listed.returncode:"
+    redirect_list = "        listed = transport('config', '-z', '--list')\n        if listed.returncode:"
     publication('effects-remote-must-exist-verbatim', redirect_list,
                 redirect_list.replace("if listed.returncode:", "if listed.returncode or not (Path(remote).exists() or '://' in remote):"),
                 'publication-url-rewrite')
     publication('effects-push-transports-restricted', push,
-                push.replace("git('-c', 'push.followTags=false',", "git('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
+                push.replace("transport('-c', 'push.followTags=false',", "transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
                 'publication-smart-http')
     # R4 P2: confirmation reads HEAD and its symbolic target, not only the refs namespace.
-    listing = "            listed = git('ls-remote', '--symref', remote)"
+    listing = "            listed = transport('ls-remote', '--symref', remote)"
     publication('effects-confirm-without-head', listing,
-                "            listed = git('ls-remote', '--refs', remote)", 'publication-head-change')
+                "            listed = transport('ls-remote', '--refs', remote)", 'publication-head-change')
     publication('effects-confirm-without-symref-targets', listing,
-                "            listed = git('ls-remote', remote)", 'publication-head-change')
+                "            listed = transport('ls-remote', remote)", 'publication-head-change')
     # R5 1: push options from any configuration scope never reach the receiver. `--no-push-option`
     # looks like the fix and clears only options given on the command line.
     publication('effects-push-options-from-config', push, push.replace("'-c', 'push.pushOption=', ", ''),
@@ -396,6 +396,26 @@ def cases():
                 "            if False:", exact)
     publication('effects-legacy-remote-files-allowed', "            for legacy in ('remotes/', 'branches/'):",
                 "            for legacy in ():", exact)
+    publication('effects-redirect-check-isolated-profile', redirect_list,
+                redirect_list.replace("transport('config',", "git('config',"), exact)
+    # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
+    # profile loses global config and transport variables at once; each git_process mutant loses
+    # one of them, or stops stripping the coordinates the profile must still strip.
+    capability = ['effects/publication-' + name for name in
+                  ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command')]
+    add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "            return git(*args, profile='network')", "            return git(*args)", capability)
+    add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
+        '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
+        '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
+        [label for label in capability if 'global' in label])
+    add(28, 'effects-network-profile-drops-transport-variables', '58_veldo_0028_effects.py', 'git_process.py',
+        '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
+        '        pass', ['effects/publication-env-ssh-command'])
+    add(28, 'effects-network-profile-keeps-coordinates', '58_veldo_0028_effects.py', 'git_process.py',
+        '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
+        '        result.update({k: v for k, v in source.items() if k.startswith("GIT_")})',
+        ['effects/publication-network-profile-strips-coordinates'])
     return result
 
 
