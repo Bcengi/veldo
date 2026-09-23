@@ -937,9 +937,10 @@ def cases():
     decisions('floor-stations-skip-decisions', 'control_eligibility.py',
               "            return self._decision_codes(unit, inputs)\n", "            return []\n", 'exact-binding')
     decisions('inline-status-as-ruling', 'control_decision_dependency.py',
-              "    mine = [s for s in settlements if s.get('decision') == rid]\n",
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n",
               "    if isinstance(record, dict) and record.get('state') == 'settled':\n        return []\n"
-              "    mine = [s for s in settlements if s.get('decision') == rid]\n", 'unsigned-resolution')
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n",
+              'unsigned-resolution')
     decisions('unsigned-settlement-accepted', 'control_decision_dependency.py',
               "        if verify is None or not isinstance(body, dict) or not _is_str(signature) or not _is_str(signer):\n"
               "            continue\n",
@@ -982,6 +983,17 @@ def cases():
               "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'status-reader-agrees')
     decisions('status-reader-ignores-decisions', 'runstatus.py',
               "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'status-reader-agrees')
+    # VELDO-0054 review B: malformed records are named invalid_input for the unit they concern.
+    decisions('invalid-record-not-observed', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'decision')\n", "                pass\n",
+              'malformed-records-named')
+    decisions('record-invalid-ignored', 'control_decision_dependency.py',
+              "    if invalid:\n        return invalid\n", "", 'malformed-records-named')
+    decisions('settlement-invalid-ignored', 'control_decision_dependency.py',
+              "    if malformed:\n        return malformed\n", "", 'malformed-records-named')
+    decisions('reference-invalid-dropped', 'control_decision_dependency.py',
+              "            codes.append('invalid_input:decision_reference')\n", "            continue\n",
+              'malformed-records-named')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

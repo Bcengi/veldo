@@ -22,11 +22,14 @@ record's subject (kind, id and digest, the digest also equal to the subject's cu
 digest), the digest of the record's scope, and an approving ruling. Anything else is a named blocker.
 
 THE NAMED BLOCKERS, in the order they are decided for one record:
+  invalid_input:<id>/<field>     a malformed governing or settlement record (a wrong type anywhere,
+                                 an unhashable id), or invalid_input:decision_reference for an
+                                 inline reference that is not an id; decided before anything else
   missing_decision:<ref>         a reference no accepted record carries
   ambiguous_decision:<ref|id>    a reference two records carry, or two verified current settlements
   unresolved_decision:<id>       no settlement is associated with the record
   unsupported_decision:<id>/...  a record this slice cannot evaluate: another schema, a subject kind
-                                 other than spec or plan, a malformed field, or a governing obligation
+                                 other than spec or plan, or a governing obligation
                                  (tripwire, adversarial decision review, anything) Release 1 does not
                                  evaluate; unsupported blocks, it is never presumed satisfied
   unsigned_decision:<id>         no associated settlement verifies against the trusted signers
@@ -129,39 +132,93 @@ def references(plan_data, unit):
 
 
 def governs(record, unit, plan, refs=()):
-    """Whether a governing record bears on `unit`: it blocks the unit or its plan, or a reference names it."""
+    """Whether a governing record bears on `unit`: it blocks the unit or its plan, or a reference names
+    it. A `blocks` that is one bare id instead of a list still names that unit, so the record is
+    evaluated (and refused as invalid) for the unit it concerns rather than silently dropped."""
     if not isinstance(record, dict):
         return False
     blocks = record.get('blocks') or []
+    if isinstance(blocks, str):
+        blocks = [blocks]
     if not isinstance(blocks, list):
         blocks = []
     return unit in blocks or (bool(plan) and 'plan:' + str(plan) in blocks) or \
         (record.get('decision_id') is not None and record.get('decision_id') in refs)
 
 
-def record_problems(rid, record):
-    """Why a governing record is one this slice cannot evaluate (unsupported_decision:<id>/<what>)."""
-    code = 'unsupported_decision:%s/' % rid
-    if not isinstance(record, dict) or record.get('schema') != GOVERNING_SCHEMA:
-        return [code + 'schema']
-    subject = record.get('subject')
-    if not isinstance(subject, dict) or subject.get('kind') not in SUBJECT_KINDS:
-        return [code + 'subject_kind:%s' % (subject.get('kind') if isinstance(subject, dict) else None)]
+def _is_int(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _str_list(value):
+    return isinstance(value, list) and all(isinstance(v, str) for v in value)
+
+
+def record_invalid(rid, record):
+    """Why a governing record is malformed (invalid_input:<id>/<field>): a field of the wrong type
+    wherever it is present, and for a record claiming GOVERNING_SCHEMA every field it must carry."""
+    code = 'invalid_input:%s/' % rid
+    if not isinstance(record, dict):
+        return [code + 'record']
     problems = []
-    for name, ok in (('decision_id', _is_str(record.get('decision_id'))),
-                     ('revision', isinstance(record.get('revision'), int) and not isinstance(record.get('revision'), bool)),
-                     ('framing_digest', _is_str(record.get('framing_digest'))),
-                     ('subject', _is_str(subject.get('id')) and _is_str(subject.get('digest'))),
-                     ('scope', isinstance(record.get('scope'), dict) and _is_str(record['scope'].get('operation'))
-                      and _is_str(record['scope'].get('target')) and isinstance(record['scope'].get('parameters'), dict))):
+    for name, ok in (('decision_id', record.get('decision_id') is None or isinstance(record.get('decision_id'), str)),
+                     ('blocks', record.get('blocks') is None or _str_list(record.get('blocks'))),
+                     ('obligations', record.get('obligations') is None or _str_list(record.get('obligations')))):
         if not ok:
             problems.append(code + name)
-    obligations = record.get('obligations') or []
-    if not isinstance(obligations, list):
-        problems.append(code + 'obligations')
-    else:
-        problems.extend(code + 'obligation:%s' % o for o in obligations if o not in SUPPORTED_OBLIGATIONS)
+    if record.get('schema') != GOVERNING_SCHEMA:
+        return problems
+    subject, scope = record.get('subject'), record.get('scope')
+    for name, ok in (('decision_id', _is_str(record.get('decision_id'))),
+                     ('revision', _is_int(record.get('revision'))),
+                     ('framing_digest', _is_str(record.get('framing_digest'))),
+                     ('subject', isinstance(subject, dict) and all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))),
+                     ('scope', isinstance(scope, dict) and _is_str(scope.get('operation')) and _is_str(scope.get('target'))
+                      and isinstance(scope.get('parameters'), dict))):
+        if not ok and code + name not in problems:
+            problems.append(code + name)
     return problems
+
+
+SETTLEMENT_TYPES = {'schema': str, 'domain_uuid': str, 'decision_id': str, 'decision_revision': int,
+                    'subject': dict, 'scope_digest': str, 'ruling': str, 'request_id': str,
+                    'request_version': int, 'principals': list, 'settled_at': str}
+
+
+def settlement_invalid(sid, data):
+    """Why an associated settlement record is malformed (invalid_input:<id>/<field>): a body that is
+    not a mapping, a signature or signer that is present but not text, or a signed field of the wrong
+    type. An ABSENT signature is not malformed, it is unsigned; an absent framing digest is a receipt
+    without its framing, refused by the binding (never accepted, never invalid)."""
+    code = 'invalid_input:%s/' % sid
+    body = data.get('settlement')
+    problems = []
+    if not isinstance(body, dict):
+        problems.append(code + 'settlement')
+    for name in ('signature', 'signer'):
+        if data.get(name) is not None and not isinstance(data.get(name), str):
+            problems.append(code + name)
+    if isinstance(body, dict):
+        for name, kind in SETTLEMENT_TYPES.items():
+            value = body.get(name)
+            if value is not None and not (isinstance(value, kind) and not isinstance(value, bool)):
+                problems.append(code + name)
+        if body.get('framing_digest') is not None and not isinstance(body.get('framing_digest'), str):
+            problems.append(code + 'framing_digest')
+    return problems
+
+
+def record_problems(rid, record):
+    """Why a well-formed governing record is one this slice cannot evaluate
+    (unsupported_decision:<id>/<what>): another schema, a subject kind other than spec or plan, or a
+    governing obligation Release 1 does not evaluate."""
+    code = 'unsupported_decision:%s/' % rid
+    if record.get('schema') != GOVERNING_SCHEMA:
+        return [code + 'schema']
+    kind = record['subject']['kind']
+    if kind not in SUBJECT_KINDS:
+        return [code + 'subject_kind:%s' % kind]
+    return [code + 'obligation:%s' % o for o in record.get('obligations') or [] if o not in SUPPORTED_OBLIGATIONS]
 
 
 def scope_binding_problems(rid, record, body):
@@ -199,14 +256,20 @@ def binding_problems(rid, record, body, current, domain_uuid):
 
 
 def _record_blockers(rid, record, settlements, subjects, verify, domain_uuid):
-    mine = [s for s in settlements if s.get('decision') == rid]
+    invalid = record_invalid(rid, record)
+    if invalid:
+        return invalid
+    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]
     if not mine:
         return ['unresolved_decision:' + rid]
     problems = record_problems(rid, record)
     if problems:
         return problems
+    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]
+    if malformed:
+        return malformed
     verified = []
-    for s in mine:
+    for _, s in mine:
         body, signature, signer = s.get('settlement'), s.get('signature'), s.get('signer')
         if verify is None or not isinstance(body, dict) or not _is_str(signature) or not _is_str(signer):
             continue
@@ -228,22 +291,29 @@ def blockers(unit, refs, records, settlements, subjects, verify, domain_uuid):
 
     `refs` are the decision ids inline entries reference for the unit; `records` the governing
     [(entity id, data)] the caller read (every record that governs the unit or carries a referenced
-    id); `settlements` the data of every settlement associated with one of them; `subjects`
-    {entity id: current accepted digest}; `verify(message, signature, principal) -> bool` the trusted
-    settlement verifier, or None when this host trusts no settlement signer (every settlement is then
-    unsigned). Only an exact current binding clears a record; nothing a record says of itself does."""
+    id); `settlements` the [(entity id, data)] of every settlement associated with one of them;
+    `subjects` {entity id: current accepted digest}; `verify(message, signature, principal) -> bool`
+    the trusted settlement verifier, or None when this host trusts no settlement signer (every
+    settlement is then unsigned). Only an exact current binding clears a record; nothing a record says
+    of itself does. Malformed input of any shape is a named invalid_input for this unit, never a raise."""
     codes = []
     by_ref = {}
     for rid, data in records:
-        if isinstance(data, dict) and data.get('decision_id') is not None:
-            by_ref.setdefault(data.get('decision_id'), []).append(rid)
-    for ref in dict.fromkeys(refs or ()):
+        if isinstance(data, dict) and isinstance(data.get('decision_id'), str):
+            by_ref.setdefault(data['decision_id'], []).append(rid)
+    wanted = []
+    for ref in refs or ():
+        if not isinstance(ref, str):
+            codes.append('invalid_input:decision_reference')
+        elif ref not in wanted:
+            wanted.append(ref)
+    for ref in wanted:
         found = by_ref.get(ref, [])
         if not found:
             codes.append('missing_decision:%s' % ref)
         elif len(found) > 1:
             codes.append('ambiguous_decision:%s' % ref)
-    ambiguous = {rid for ref in dict.fromkeys(refs or ()) for rid in by_ref.get(ref, []) if len(by_ref[ref]) > 1}
+    ambiguous = {rid for ref in wanted for rid in by_ref.get(ref, []) if len(by_ref[ref]) > 1}
     for rid, data in records:
         if rid in ambiguous:
             continue

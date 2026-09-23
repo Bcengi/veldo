@@ -420,6 +420,8 @@ class Gate:
         self.settlement_trust = settlement_trust
         self.decision_counts = {'accepted': 0, 'refused': 0}
         self.decision_last = {}
+        # Settlement records nothing can associate with a governing record, each observed once.
+        self.invalid_records = set()
         self.domain_uuid, self.repository_uuid = domain_uuid, repository_uuid
         self.authority_generation = authority_generation
         self.observe = observe or (lambda event: None)
@@ -535,12 +537,39 @@ class Gate:
             refs = DD.references(self._data(inputs.get('plan')), unit) + list(references)
             inputs['decisions'] = self._collection('decision', lambda d: DD.governs(d, unit, data.get('plan'), refs))
             governing = {m['id'] for m in inputs['decisions']}
-            inputs['settlements'] = self._collection('decision_settlement', lambda d: d.get('decision') in governing)
+            inputs['settlements'] = self._settlements(governing)
             inputs['decision_subjects'] = self._subjects(inputs['decisions'])
             inputs['blockers'] = self._collection('blocker', lambda d: d.get('unit') == unit)
             inputs['approvals'] = self._collection('approval', lambda d: d.get('unit') == unit)
             watermark = self.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
         return {k: v for k, v in inputs.items() if v is not None}, watermark
+
+    def _settlements(self, governing):
+        """Every settlement associated with one of the `governing` record ids. A settlement whose
+        `decision` is not an id (a list, a mapping) concerns no unit: it is left out of every unit's
+        read, and recorded once as a named invalid_input observation, never raised."""
+        members = []
+        for (identity,) in self.conn.execute('SELECT id FROM entities WHERE kind=? ORDER BY id', ('decision_settlement',)):
+            item = self._entity(identity)
+            data = self._data(item)
+            target = data.get('decision') if isinstance(data, dict) else None
+            if not isinstance(target, str):
+                self._invalid_record(identity, 'decision')
+            elif target in governing:
+                members.append(item)
+        return members
+
+    def _invalid_record(self, identity, field):
+        if identity in self.invalid_records:
+            return
+        self.invalid_records.add(identity)
+        code = 'invalid_input:%s/%s' % (identity, field)
+        event = {'schema': SCHEMA, 'operation': 'invalid_record', 'domain_uuid': self.domain_uuid,
+                 'repository_uuid': self.repository_uuid, 'unit': None, 'entity': identity,
+                 'decision_id': str(uuid.uuid4()), 'follows': None, 'watermark': None, 'accepted_inputs': {},
+                 'outcome': 'refused', 'refusals': [code], 'taxonomy': [taxonomy(code)]}
+        self.observations.append(event)
+        self.observe(event)
 
     def _subjects(self, records):
         """One derived input: the current accepted digest of every governing record's subject, keyed
@@ -548,7 +577,8 @@ class Gate:
         write (a claim moving the unit's state) leaves it current and a changed subject does not."""
         current = {}
         for item in records:
-            subject = (self._data(item) or {}).get('subject')
+            data = self._data(item)
+            subject = data.get('subject') if isinstance(data, dict) else None
             eid = DD.subject_entity(subject)
             if eid is not None and eid not in current:
                 current[eid] = DD.subject_digest(subject['kind'], self._data(self._entity(eid)))
@@ -558,7 +588,7 @@ class Gate:
     def _decision_codes(self, unit, inputs, references=()):
         refs = DD.references(self._data(inputs.get('plan')), unit) + list(references)
         records = [(m['id'], self._data(m)) for m in inputs.get('decisions') or []]
-        settlements = [self._data(m) for m in inputs.get('settlements') or []]
+        settlements = [(m['id'], self._data(m)) for m in inputs.get('settlements') or []]
         subjects = self._data(inputs.get('decision_subjects')) or {}
         verify = self.settlement_trust.verify if self.settlement_trust is not None else None
         try:
@@ -756,7 +786,8 @@ class Gate:
         """Metrics: accepted and refused decisions, and the units whose latest decision refused."""
         return dict(self.counts, pending=sorted(u for u, o in self.last.items() if o == 'refused'),
                     decisions=dict(self.decision_counts,
-                                   blocked=sorted(u for u, o in self.decision_last.items() if o == 'refused')))
+                                   blocked=sorted(u for u, o in self.decision_last.items() if o == 'refused'),
+                                   invalid_records=sorted(self.invalid_records)))
 
 
 # ---------------------------------------------------------------------------------------------

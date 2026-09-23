@@ -493,6 +493,70 @@ def _v54_suite():
                    and after['VELDO-9428']['lens'] == 'blocked: decision unresolved_decision:decision:D-9428'
                    and after['VELDO-9401']['lens'].endswith('(frontier)'))
 
+        with region('decisions/malformed-records-named'):
+            # A malformed settlement or governing record is a named invalid_input refusal for the unit it
+            # concerns, counted and observed; it never crashes another unit's decision or any consumer.
+            # A settlement nothing can associate (a list or a mapping in `decision`; the store itself
+            # refuses data that is not a mapping) concerns no unit: it is recorded, and every unit is
+            # decided as if it were absent.
+            put('settlement:malformed-decision', 'decision_settlement', dict(schema=SETTLEMENT, decision=['x']))
+            put('settlement:malformed-data', 'decision_settlement', dict(schema=SETTLEMENT, decision={'id': 'x'}))
+            PLANS['PLAN-9406'] = []
+            MALFORMED = {'VELDO-9471': {'invalid_input:decision:D-9471/decision_id'},
+                         'VELDO-9472': {'invalid_input:decision:D-9472/revision'},
+                         'VELDO-9473': {'invalid_input:settlement:decision:D-9473:1/settlement'},
+                         'VELDO-9474': {'invalid_input:settlement:decision:D-9474:1/signature'},
+                         'VELDO-9475': {'invalid_input:decision_reference'}}
+            for sid in MALFORMED:
+                PLANS['PLAN-9406'].append(sid)
+                unit(sid, plan='PLAN-9406')
+            put('plan:PLAN-9406', 'plan', dict(status='ready', revision=1,
+                                               open_decisions=[dict(id=['DEC-LIST'], blocks=['VELDO-9475'])]))
+            lines = []
+            for n, sid in enumerate(MALFORMED, 1):
+                (base / 'specs' / (sid + '-fixture.md')).write_text('\n'.join([
+                    '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Decision fixture ' + sid, 'status: ready',
+                    'risk: low', 'owner: dmitry', 'lane: planned', 'plan: PLAN-9406', 'work: W%d' % n, 'plan_revision: 1',
+                    'depends_on: []', '---', '', 'Fixture.', '']))
+                lines += ['  - item: W%d' % n, '    spec: ' + sid, '    order: %d' % n]
+            (base / 'plans' / 'PLAN-9406-fixture.md').write_text('\n'.join(
+                ['---', 'schema: veldo.plan/v1', 'id: PLAN-9406', 'title: Decision fixture plan', 'status: ready',
+                 'revision: 1', 'work:'] + lines + ['---', '', 'Fixture plan.', '']))
+            decision('decision:D-9471', 'spec', 'VELDO-9471', ['VELDO-9471'], decision_id=['DEC-9471'])
+            decision('decision:D-9472', 'spec', 'VELDO-9472', ['VELDO-9472'], revision='one')
+            decision('decision:D-9473', 'spec', 'VELDO-9473', ['VELDO-9473'])
+            settle('decision:D-9473', after=lambda d: d.update(settlement=['a list, not a body']))
+            decision('decision:D-9474', 'spec', 'VELDO-9474', ['VELDO-9474'])
+            settle('decision:D-9474', after=lambda d: d.update(signature=42))
+            try:
+                malformed = ('ok', sweep(['VELDO-9401', 'VELDO-9406'] + sorted(MALFORMED)))
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                malformed = ('raised', '%s: %s' % (type(error).__name__, error))
+            try:
+                direct = ('ok', DD.blockers('VELDO-9401', [['x'], None, 'DEC-9429'],
+                                            [('decision:r1', ['a list']), ('decision:r2', dict(decision_id=['a'], blocks=['VELDO-9401'])),
+                                             ('decision:r3', dict(schema=GOVERNING, decision_id='DEC-9429', blocks='VELDO-9401'))],
+                                            [('settlement:s1', 'junk'), ('settlement:s2', dict(decision=['decision:r2'])),
+                                             ('settlement:s3', dict(decision='decision:r3', settlement=dict(decision_revision=['x'])))],
+                                            {}, None, DOMAIN))
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                direct = ('raised', type(error).__name__)
+            recorded = sorted({e.get('entity') for e in gate.observations if e.get('operation') == 'invalid_record'})
+            observed['malformed'] = {'sweep': malformed[1] if malformed[0] == 'raised' else {
+                sid: {'stations': o['stations']['build'], 'blocks': o['blocks'], 'run_codes': o['run_codes'],
+                      'lens': o['lens']} for sid, o in malformed[1].items()},
+                'direct': direct, 'recorded': recorded, 'status': gate.status()['decisions']}
+            check('decisions/malformed-records-named',
+                   malformed[0] == 'ok'
+                   and verdict(malformed[1]['VELDO-9401'], set()) and verdict(malformed[1]['VELDO-9406'], set())
+                   and all(verdict(malformed[1][sid], codes) and malformed[1][sid]['lens'] == malformed[1][sid]['burn']
+                           for sid, codes in MALFORMED.items())
+                   and direct[0] == 'ok' and all(c.startswith(('invalid_input:', 'unresolved_decision:')) for c in direct[1])
+                   and {'invalid_input:decision_reference', 'invalid_input:decision:r2/decision_id',
+                        'invalid_input:decision:r3/blocks'} <= set(direct[1])
+                   and {'settlement:malformed-decision', 'settlement:malformed-data'} <= set(recorded)
+                   and {'settlement:malformed-decision', 'settlement:malformed-data'} <= set(gate.status()['decisions'].get('invalid_records', [])))
+
         with region('decisions/production-gate-verifies'):
             # The production construction: an enrolled workspace's Gate verifies settlements against
             # the settlement signers the HOST trusts (outside the workspace); a host naming none trusts no
