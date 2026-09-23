@@ -141,19 +141,43 @@ if not hasattr(_claim_errors, 'ClaimStopped'):
 ClaimStopped = _claim_errors.ClaimStopped
 
 
+GIT_DISCOVERY_TIMEOUT = 60
+
+
+def _enrollment_ledger():
+    """The ledger root Git's own discovery gives from the working directory, for the enrollment
+    check alone. VELDO_RUNS_ROOT never decides whether a repository is enrolled: an environment
+    override is not an explicit root, and honoring it here would let a claim in an enrolled
+    repository bypass the authority. A Git that fails where a repository IS present (a malformed
+    config, a lock, a timeout, no git executable), or a working directory that is gone, cannot show
+    the enrollment is absent, so it stops by name; only a directory in no repository at all is
+    unenrolled."""
+    try:
+        cwd = os.getcwd()
+    except OSError:
+        raise ClaimStopped('enrollment_unanswerable')
+    try:
+        common = _git_process.check_output(["git", "rev-parse", "--git-common-dir"], text=True,
+                                           timeout=GIT_DISCOVERY_TIMEOUT).strip()
+    except (subprocess.SubprocessError, OSError):
+        if _git_process.claims_a_repository(cwd):
+            raise ClaimStopped('enrollment_unanswerable')
+        return None
+    return os.path.join(os.path.abspath(common), "veldo")
+
+
 def _authority(root):
     if getattr(root, 'authority_claim_client', False):
         return root
-    try:
-        ledger_root = os.path.dirname(claims_root(root))
-    except (subprocess.CalledProcessError, OSError):
-        # A Git that fails where a repository IS present (malformed config, a lock, a timeout, no
-        # git executable) cannot show the enrollment is absent, because it lives inside that
-        # repository: a silent "not enrolled" would let a claim bypass the authority.
-        if _git_process.claims_a_repository(os.getcwd() if root is None else root):
-            raise ClaimStopped('enrollment_unanswerable')
+    # An explicit filesystem root is the documented compatibility path; no Git runs for it.
+    ledger_root = os.path.dirname(claims_root(root)) if root is not None else _enrollment_ledger()
+    if ledger_root is None:
         return None
-    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):
+    try:
+        enrolled = _git_process.entry_exists(os.path.join(ledger_root, 'control', 'enrollment.json'))
+    except OSError:
+        raise ClaimStopped('enrollment_unanswerable')     # unreadable is not absent
+    if enrolled:
         raise ClaimStopped('authority_required')
     return None
 

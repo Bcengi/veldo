@@ -28,6 +28,7 @@ def _v52_suite():
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
+        'git_process.py': ROOT / ".veldo" / "git_process.py",
         'dispatch.py': ROOT / ".veldo" / "dispatch.py",
         'work.py': ROOT / ".veldo" / "work.py",
         'work_state.py': ROOT / ".veldo" / "work_state.py",

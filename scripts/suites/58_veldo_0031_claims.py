@@ -156,26 +156,63 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
             "m.claim('unit', 'worker-a')"], cwd=_v31_repos[0], capture_output=True, text=True, timeout=10)
         _v31_check(1, 'enrolled-default-stops', _v31_local.returncode != 0 and 'authority_required' in _v31_local.stderr)
         # A repository whose Git FAILS cannot be concluded unenrolled: the enrollment lives inside it.
-        # A directory in no repository at all keeps the pre-factory behavior.
-        _v31_tmp = __import__('tempfile').mkdtemp(prefix='v31-authority-')
-        _v31_broken = __import__('os').path.join(_v31_tmp, 'broken')
+        # Driven from the repository root and from a subdirectory, for a failing Git and for no git
+        # executable at all; a directory in no repository keeps the pre-factory behavior (the Git
+        # failure propagates as before). The temporary base must itself be in no repository.
+        _v31_os = __import__('os')
+        _v31_gp = importlib.util.module_from_spec(importlib.util.spec_from_file_location('v31_gp', str(_v31_modules / 'git_process.py')))
+        _v31_gp.__spec__.loader.exec_module(_v31_gp)
+        _v31_bases = [b for b in (__import__('tempfile').gettempdir(), '/tmp', '/var/tmp')
+                      if _v31_os.path.isdir(b) and not _v31_gp.claims_a_repository(b)]
+        _v31_tmp = __import__('tempfile').mkdtemp(prefix='v31-authority-', dir=(_v31_bases or [None])[0])
+        _v31_broken = _v31_os.path.join(_v31_tmp, 'broken')
         _v31_sp.run(['git', 'init', '-q', _v31_broken], check=True, capture_output=True)
-        with open(__import__('os').path.join(_v31_broken, '.git', 'config'), 'w') as _v31_cfg:
+        _v31_os.mkdir(_v31_os.path.join(_v31_broken, 'sub'))
+        with open(_v31_os.path.join(_v31_broken, '.git', 'config'), 'w') as _v31_cfg:
             _v31_cfg.write('[[[ this is not a git config\n')
-        _v31_plain = __import__('os').path.join(_v31_tmp, 'plain')
-        __import__('os').mkdir(_v31_plain)
-        _v31_env = {k: v for k, v in __import__('os').environ.items() if not k.startswith(('GIT_', 'VELDO_'))}
-        _v31_env['GIT_CEILING_DIRECTORIES'] = _v31_tmp
+        _v31_healthy = _v31_os.path.join(_v31_tmp, 'healthy')
+        _v31_sp.run(['git', 'init', '-q', _v31_healthy], check=True, capture_output=True)
+        _v31_unreadable = _v31_os.path.join(_v31_tmp, 'unreadable')
+        _v31_sp.run(['git', 'init', '-q', _v31_unreadable], check=True, capture_output=True)
+        _v31_control = _v31_os.path.join(_v31_unreadable, '.git', 'veldo', 'control')
+        _v31_os.makedirs(_v31_control)
+        with open(_v31_os.path.join(_v31_control, 'enrollment.json'), 'w') as _v31_cfg:
+            _v31_cfg.write('{}\n')
+        _v31_plain = _v31_os.path.join(_v31_tmp, 'plain')
+        _v31_os.mkdir(_v31_plain)
+        _v31_nogit = _v31_os.path.join(_v31_tmp, 'nogit-bin')
+        _v31_os.mkdir(_v31_nogit)
+        _v31_env = {k: v for k, v in _v31_os.environ.items() if not k.startswith(('GIT_', 'VELDO_'))}
         _v31_default = ("import importlib.util; s=importlib.util.spec_from_file_location('claim', " + repr(str(_v31_modules / 'claim.py')) +
                         "); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(m.claim('unit', 'worker-a'))")
-        _v31_broken_run = _v31_sp.run([__import__('sys').executable, '-B', '-c', _v31_default], cwd=_v31_broken,
-                                      capture_output=True, text=True, timeout=10, env=_v31_env)
-        _v31_plain_run = _v31_sp.run([__import__('sys').executable, '-B', '-c', _v31_default], cwd=_v31_plain,
-                                     capture_output=True, text=True, timeout=10, env=_v31_env)
-        __import__('shutil').rmtree(_v31_tmp, ignore_errors=True)
+
+        def _v31_run(cwd, **extra):
+            return _v31_sp.run([__import__('sys').executable, '-B', '-c', _v31_default], cwd=cwd,
+                               capture_output=True, text=True, timeout=30, env=dict(_v31_env, **extra))
+
+        _v31_os.chmod(_v31_control, 0)
+        try:
+            _v31_runs = {'broken': _v31_run(_v31_broken), 'broken-sub': _v31_run(_v31_os.path.join(_v31_broken, 'sub')),
+                         'no-git': _v31_run(_v31_healthy, PATH=_v31_nogit), 'plain': _v31_run(_v31_plain),
+                         'env-override': _v31_run(_v31_repos[0], VELDO_RUNS_ROOT=_v31_os.path.join(_v31_tmp, 'elsewhere')),
+                         'unreadable-control': _v31_run(_v31_unreadable)}
+        finally:
+            _v31_os.chmod(_v31_control, 0o755)
+            __import__('shutil').rmtree(_v31_tmp, ignore_errors=True)
+
+        def _v31_stopped(name, reason):
+            run = _v31_runs[name]
+            return run.returncode != 0 and ('claim stopped: ' + reason) in run.stderr
+
         _v31_check(1, 'git-failure-in-a-repository-stops',
-                   _v31_broken_run.returncode != 0 and 'enrollment_unanswerable' in _v31_broken_run.stderr
-                   and _v31_plain_run.returncode != 0 and 'enrollment_unanswerable' not in _v31_plain_run.stderr)
+                   bool(_v31_bases) and _v31_stopped('broken', 'enrollment_unanswerable')
+                   and _v31_stopped('broken-sub', 'enrollment_unanswerable')
+                   and _v31_stopped('no-git', 'enrollment_unanswerable')
+                   and _v31_runs['plain'].returncode != 0 and 'CalledProcessError' in _v31_runs['plain'].stderr
+                   and 'claim stopped' not in _v31_runs['plain'].stderr)
+        _v31_check(1, 'enrollment-read-never-fails-open',
+                   _v31_stopped('env-override', 'authority_required')
+                   and (_v31_os.geteuid() == 0 or _v31_stopped('unreadable-control', 'enrollment_unanswerable')))
         _v31_backlog_data = _v31_S.materialized_state(_v31_conn)['entities']['backlog']['data']
         _v31_write('backlog', 'backlog_item', dict(_v31_backlog_data, state='ADMITTED'))
         _v31_check(1, 'priority-required', _v31_request(_v31_clients[0], 'claim')['reason'] == 'not_admitted')

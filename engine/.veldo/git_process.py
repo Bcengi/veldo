@@ -61,3 +61,15 @@ def claims_a_repository(path):
         except OSError:
             return True  # an ancestor that cannot be read cannot be ruled out
         current = parent
+
+
+def entry_exists(path):
+    """Whether a directory entry exists, telling ABSENT apart from UNREADABLE: only a missing entry
+    (or a missing directory on the way) is False; any other failure (permission denied, an I/O
+    error) is raised, because os.path.lexists would read it as absent and an unreadable enrollment
+    would then look like no enrollment."""
+    try:
+        os.lstat(path)
+        return True
+    except (FileNotFoundError, NotADirectoryError):
+        return False

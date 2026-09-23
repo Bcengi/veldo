@@ -171,7 +171,9 @@ Refused, Stopped = _errors.Refused, _errors.Stopped
 
 
 # The discovery walk lives in the shared Git boundary so every organ asks it the same way.
-_claims_a_repository = _organ('git_process').claims_a_repository
+_GP = _organ('git_process')
+_claims_a_repository = _GP.claims_a_repository
+_entry_exists = _GP.entry_exists
 
 
 def enrolled(repo_root):
@@ -183,7 +185,7 @@ def enrolled(repo_root):
     that repository, so its absence cannot be concluded, and a silent 'not enrolled' there would let
     every enabled entry run pre-factory with no eligibility at all."""
     try:
-        return os.path.lexists(E.binding_path(str(repo_root)))
+        return _entry_exists(E.binding_path(str(repo_root)))
     except E.EnrollmentRefused as error:
         if _claims_a_repository(repo_root):
             raise Stopped('enrollment_unanswerable') from error

@@ -566,7 +566,7 @@ def cases():
            "        return False\n",
            "        return False  # defect: any git error reads as not enrolled\n",
            'eligibility/enrollment-git-error-stops')
-    review('enrolled-discovery-ignores-ancestors', 'control_eligibility.py',
+    review('enrolled-discovery-ignores-ancestors', 'git_process.py',
            "        parent = os.path.dirname(current)\n        if parent == current:\n            return False\n",
            "        return False  # defect: discovery looks only at the directory it was given\n",
            'eligibility/enrollment-git-error-stops')
