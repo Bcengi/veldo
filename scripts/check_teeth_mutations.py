@@ -301,21 +301,21 @@ def cases():
                 "if unit not in ('capacity', 'invocations') and balance[unit] + wanted.get(unit, 0) > cap:",
                 'atomic-last-slot')
     reservation('reservation-follow-on-after-launch', 'control_reservation_runtime.py',
-                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
-                "        if boundary == 'follow_on':\n            self.launch(invocation, configuration)\n"
-                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                "            receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                "            if boundary == 'follow_on':\n                self.launch(invocation, configuration)\n"
+                "            receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
                 'pre-call-order')
     reservation('reservation-retry-after-launch', 'control_reservation_runtime.py',
-                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
-                "        if boundary == 'retry':\n            self.launch(invocation, configuration)\n"
-                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                "            receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                "            if boundary == 'retry':\n                self.launch(invocation, configuration)\n"
+                "            receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
                 'pre-call-order')
     reservation('reservation-ignore-wall-time', 'control_reservation_runtime.py',
                 "        reached = now - active['start'] >= active['wall_seconds']",
                 "        reached = False", 'usage-controls')
     reservation('reservation-ignore-window', 'control_reservations.py',
-                "            window = policy.get('window')",
-                "            window = None", 'usage-controls')
+                "            for window in policy.get('windows', {}).values():",
+                "            for window in ():", 'usage-controls')
     reservation('reservation-duplicate-settlement', 'control_reservations.py',
                 "                return {}  # Duplicate sequence under a different delivery command settles nothing twice.",
                 "                value['charge'] = {k: v * 2 for k, v in value['charge'].items()}\n"

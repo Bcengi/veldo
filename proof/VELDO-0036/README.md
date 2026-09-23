@@ -25,7 +25,7 @@ object unchanged. An identical accepted-command retry never launches again.
 Reports are cumulative and identified by invocation plus sequence; duplicates do not
 charge twice. Unknown usage keeps reserved invocation/time exposure. Unbounded token
 or message usage blocks the next invocation when that unit has an applicable cap or
-window. Partial telemetry is not a per-request maximum. Windows record units, provider
+window. Partial telemetry is not a per-request maximum. Independent named windows record units, provider
 observation watermark, store watermark, outstanding calls and reported reset time.
 A refresh cannot erase an unresolved call. No price or quota is invented.
 
@@ -79,7 +79,7 @@ atomicity row becomes false.
 AC2 enumerates both adapter registrations and their three boundaries. Launch observes
 its already committed allocation; exhausted caps launch nothing. Replays do not launch,
 current membership withdrawal refuses, configuration identity is preserved, and
-observability joins are checked. Wall-time and token/message caps stop the worker;
+observability joins are checked. Invocation-count, wall-time and token/message caps stop the worker;
 windows exercise remaining, exhausted, unknown, reset and refreshed observations.
 Partial/missing reports cannot erase outstanding window usage.
 

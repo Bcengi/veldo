@@ -163,7 +163,7 @@ def _v36_suite():
                     # A replay never launches a second time.
                     guard.invoke('first', 'worker', 'first', boundary, 5, configuration, now=3)
                     denied = refusal(lambda: guard.invoke('second', 'worker', 'second', boundary, 5, configuration, now=4))
-                    ordering_ok &= bool(denied) and launches == [('first', True, 1)]
+                    ordering_ok &= bool(denied) and launches == [('first', True, 1)] and stops == ['worker']
                     ordering_ok &= events[-1]['outcome'] == 'refused'
                     ordering_ok &= service.status()['refused'] == 1 and service.status()['pending'] == 1
                     ordering_ok &= all(e['domain'] == 'domain' and e['repository'] == 'repository'
@@ -186,14 +186,14 @@ def _v36_suite():
                 guard.invoke('call', 'worker', 'call', 'initial', 5, {}, now=3)
                 controls_ok &= refusal(lambda: call(service, 'unknown-next')) == 'unknown_allowance:' + unit
                 guard.observe('report', 'call', 1, {unit: 5}, now=4)
-                controls_ok &= stops == ['call'] and bool(refusal(lambda: call(service, 'exhausted-next')))
+                controls_ok &= stops == ['worker'] and bool(refusal(lambda: call(service, 'exhausted-next')))
             service, _ = fixture()
             worker(service)
             stops = []
             guard = runtime.InvocationGuard(service, 'claude_code', lambda *a: None, stops.append)
             guard.invoke('call', 'worker', 'call', 'initial', 5, {}, now=3)
             guard.observe('tick', 'call', 1, {}, now=8)
-            controls_ok &= stops == ['call']
+            controls_ok &= stops == ['worker']
             for unit in ('invocations', 'tokens', 'messages', 'wall_seconds'):
                 for remaining in (None, 0, 5):
                     service, _ = fixture()
@@ -205,7 +205,7 @@ def _v36_suite():
                         error = refusal(lambda: service.reserve_call('after-reset', 'worker', 'after-reset', 'retry', 5, now=20))
                         controls_ok &= error is None
                         service.window('refresh', 'account', unit, 5, 40, 2, now=21)
-                        controls_ok &= service._records()[service._policy_id('account', 'account')]['window']['watermark'] == 2
+                        controls_ok &= service._records()[service._policy_id('account', 'account')]['windows']['subscription']['watermark'] == 2
             # A refresh cannot erase an unfinished call; a later conclusive report is
             # still charged against that observed allowance, even across its watermark.
             service, _ = fixture()
@@ -218,6 +218,26 @@ def _v36_suite():
             service.report('final', 'call', 2, dict(invocations=1, wall_seconds=1, tokens=5, messages=1),
                            final=True, outcome='completed', now=6)
             controls_ok &= refusal(lambda: call(service, 'spent-after-refresh')) == 'window_exhausted'
+            service, _ = fixture({'invocations': 1})
+            worker(service)
+            stops = []
+            guard = runtime.InvocationGuard(service, 'codex', lambda *a: None, stops.append)
+            guard.invoke('call', 'worker', 'call', 'initial', 5, {}, now=3)
+            guard.observe('completed', 'call', 1, dict(invocations=1, wall_seconds=1), final=True, outcome='completed', now=4)
+            controls_ok &= stops == ['worker']
+            service, _ = fixture()
+            worker(service)
+            service.window('hourly', 'account', 'tokens', 5, 20, 1, now=2, window_id='hourly')
+            service.window('weekly', 'account', 'tokens', 0, 50, 1, now=2, window_id='weekly')
+            controls_ok &= refusal(lambda: call(service, 'blocked-weekly')) == 'window_exhausted'
+            service.window('hourly-refresh', 'account', 'tokens', 10, 30, 2, now=3, window_id='hourly')
+            controls_ok &= refusal(lambda: call(service, 'still-weekly')) == 'window_exhausted'
+            service.window('weekly-refresh', 'account', 'tokens', 5, 60, 2, now=3, window_id='weekly')
+            stops = []
+            guard = runtime.InvocationGuard(service, 'codex', lambda *a: None, stops.append)
+            guard.invoke('call', 'worker', 'call', 'initial', 5, {}, now=3)
+            guard.observe('window-cap', 'call', 1, {'tokens': 5}, now=4)
+            controls_ok &= stops == ['worker']
             expect('VELDO-0036 reservations/usage-controls', controls_ok)
 
             # AC3: cumulative reports, duplicates and conservative unknown charges.

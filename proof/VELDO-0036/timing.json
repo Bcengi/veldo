@@ -1,0 +1,106 @@
+{
+  "method": "Serial wall-time upper bound for both gate suite executions plus all added mutation workers (two module groups, baseline/noop and 14 mutants). Gate normally parallelizes mutation workers; this measurement does not divide by concurrency.",
+  "seconds": 4.877354364842176,
+  "measurements": [
+    {
+      "case": "reservation-extra-slot",
+      "mode": "unit-suite",
+      "seconds": 0.24242374813184142
+    },
+    {
+      "case": "reservation-extra-slot",
+      "mode": "first-use-suite",
+      "seconds": 0.24056451581418514
+    },
+    {
+      "case": "reservation-ignore-cleanup",
+      "mode": "baseline",
+      "seconds": 0.24068652116693556
+    },
+    {
+      "case": "reservation-ignore-cleanup",
+      "mode": "noop",
+      "seconds": 0.23818063596263528
+    },
+    {
+      "case": "reservation-ignore-wall-time",
+      "mode": "baseline",
+      "seconds": 0.24720884999260306
+    },
+    {
+      "case": "reservation-ignore-wall-time",
+      "mode": "noop",
+      "seconds": 0.2445257599465549
+    },
+    {
+      "case": "reservation-extra-slot",
+      "mode": "mutant",
+      "seconds": 0.242701229872182
+    },
+    {
+      "case": "reservation-ignore-ceiling",
+      "mode": "mutant",
+      "seconds": 0.24599444004707038
+    },
+    {
+      "case": "reservation-check-outside-transaction",
+      "mode": "mutant",
+      "seconds": 0.2471009239088744
+    },
+    {
+      "case": "reservation-ignore-capacity-and-count",
+      "mode": "mutant",
+      "seconds": 0.25308042485266924
+    },
+    {
+      "case": "reservation-follow-on-after-launch",
+      "mode": "mutant",
+      "seconds": 0.24031277792528272
+    },
+    {
+      "case": "reservation-retry-after-launch",
+      "mode": "mutant",
+      "seconds": 0.23760506720282137
+    },
+    {
+      "case": "reservation-ignore-wall-time",
+      "mode": "mutant",
+      "seconds": 0.23581988387741148
+    },
+    {
+      "case": "reservation-ignore-window",
+      "mode": "mutant",
+      "seconds": 0.240883779944852
+    },
+    {
+      "case": "reservation-duplicate-settlement",
+      "mode": "mutant",
+      "seconds": 0.2386701898649335
+    },
+    {
+      "case": "reservation-double-reported-usage",
+      "mode": "mutant",
+      "seconds": 0.23734020814299583
+    },
+    {
+      "case": "reservation-timeout-frees-exposure",
+      "mode": "mutant",
+      "seconds": 0.24060887610539794
+    },
+    {
+      "case": "reservation-cancel-frees-exposure",
+      "mode": "mutant",
+      "seconds": 0.25136178312823176
+    },
+    {
+      "case": "reservation-parent-exit-releases-slot",
+      "mode": "mutant",
+      "seconds": 0.25215502898208797
+    },
+    {
+      "case": "reservation-ignore-cleanup",
+      "mode": "mutant",
+      "seconds": 0.25602140184491873
+    }
+  ]
+}

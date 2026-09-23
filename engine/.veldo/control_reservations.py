@@ -100,8 +100,9 @@ class Reservations:
                         raise Refused('usage_cap:' + scope + ':' + unit)
                 if balance[unit] + wanted.get(unit, 0) > cap:
                     raise Refused('usage_cap:' + scope + ':' + unit)
-            window = policy.get('window')
-            if window and wanted.get('invocations'):
+            for window in policy.get('windows', {}).values():
+                if not wanted.get('invocations'):
+                    continue
                 if window['remaining'] is None:
                     raise Refused('unknown_window')
                 unit = window['unit']
@@ -177,12 +178,13 @@ class Reservations:
         return self._run(command_id, 'report', entity('invocation', [self.domain, identity(invocation)]),
                          dict(sequence=sequence, usage=usage, final=final, outcome=outcome), now)
 
-    def window(self, command_id, account, unit, remaining, reset_at, watermark, *, now):
+    def window(self, command_id, account, unit, remaining, reset_at, watermark, *, now, window_id='subscription'):
         if (unit not in USAGE or (remaining is not None and not number(remaining))
                 or not number(reset_at) or not isinstance(watermark, int) or watermark < 1):
             raise Refused('invalid_input')
+        identity(window_id)
         return self._run(command_id, 'window', self._policy_id('account', account),
-                         dict(unit=unit, remaining=remaining, reset_at=reset_at, watermark=watermark), now)
+                         dict(window_id=window_id, unit=unit, remaining=remaining, reset_at=reset_at, watermark=watermark), now)
 
     def retire(self, command_id, dispatch, lifecycle, *, now):
         """lifecycle(dispatch) is the trusted runner's actual group/cleanup/outcome observer."""
@@ -197,8 +199,8 @@ class Reservations:
         current = copy.deepcopy(records.get(target))
         if action == 'configure':
             value = dict(type='policy', **p)
-            if current and current.get('window'):
-                value['window'] = current['window']
+            if current and current.get('windows'):
+                value['windows'] = current['windows']
         elif action == 'worker':
             if current:
                 raise Refused('duplicate_dispatch')
@@ -240,6 +242,8 @@ class Reservations:
                 if p['final'] and unit in value['unknown']:
                     value['unknown'].remove(unit)
             if p['outcome'] == 'not_executed':
+                if any(value['observed'].values()):
+                    raise Refused('evidence_conflict')
                 # Only the trusted evidence service can attest non-execution via authorize().
                 value.update(charge=dict.fromkeys(USAGE, 0), unknown=[], state='settled')
             elif p['final']:
@@ -251,13 +255,13 @@ class Reservations:
         elif action == 'window':
             if not current:
                 raise Refused('missing_ceiling:account')
-            if current.get('window', {}).get('watermark', 0) >= p['watermark']:
+            if current.get('windows', {}).get(p['window_id'], {}).get('watermark', 0) >= p['watermark']:
                 raise Refused('stale_window')
             value = current
             unresolved = [key for key, r in records.items() if r['type'] == 'invocation'
                           and self._matches(r, 'account', current['subject'])
                           and r['state'] in ('pending', 'unknown')]
-            value['window'] = dict(p, outstanding=unresolved, store_watermark=self.conn.execute(
+            value.setdefault('windows', {})[p['window_id']] = dict(p, outstanding=unresolved, store_watermark=self.conn.execute(
                 'SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0])
         elif action == 'retire':
             if not current or current['type'] != 'worker':

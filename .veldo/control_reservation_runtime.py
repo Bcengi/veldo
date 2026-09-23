@@ -23,10 +23,14 @@ class InvocationGuard:
     def invoke(self, command_id, dispatch, invocation, boundary, wall_seconds, configuration, *, now):
         if boundary not in ADAPTERS[self.adapter]:
             raise ValueError('unregistered_invocation_boundary')
-        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)
+        try:
+            receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)
+        except Exception:
+            self.stop(dispatch)
+            raise
         if receipt['replayed']:
             return receipt  # Acceptance never proves non-execution and never authorizes another launch.
-        self.active[invocation] = dict(start=now, wall_seconds=wall_seconds, stopped=False)
+        self.active[invocation] = dict(dispatch=dispatch, start=now, wall_seconds=wall_seconds, stopped=False)
         self.launch(invocation, configuration)
         return receipt
 
@@ -44,10 +48,21 @@ class InvocationGuard:
             for unit in ('tokens', 'messages'):
                 if unit in policy['caps'] and balance[unit] >= policy['caps'][unit]:
                     reached = True
-            window = policy.get('window')
-            if window and (window['remaining'] is None or (now < window['reset_at'] and window['remaining'] == 0)):
+            if final and balance['invocations'] >= policy['caps']['invocations']:
                 reached = True
+            for window in policy.get('windows', {}).values():
+                if window['remaining'] is None:
+                    reached = True
+                elif now < window['reset_at']:
+                    unit = window['unit']
+                    exposed = [r for key, r in records.items() if r['type'] == 'invocation'
+                               and self.reservations._matches(r, policy['scope'], policy['subject'])
+                               and (r['accepted_seq'] > window['store_watermark'] or key in window['outstanding'])]
+                    used = sum((r['observed'] if unit == 'wall_seconds' else r['charge']).get(unit, 0)
+                               for r in exposed)
+                    if window['remaining'] == 0 or (used >= window['remaining'] and (unit != 'invocations' or final)):
+                        reached = True
         if reached and not active['stopped']:
-            self.stop(invocation)
+            self.stop(active['dispatch'])
             active['stopped'] = True
         return dict(receipt, stop_required=reached)

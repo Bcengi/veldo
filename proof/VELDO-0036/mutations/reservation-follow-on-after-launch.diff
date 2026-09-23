@@ -1,5 +1,5 @@
 --- a/.veldo/control_reservation_runtime.py
 +++ b/.veldo/control_reservation_runtime.py
-@@ -25,0 +26,2 @@
-+        if boundary == 'follow_on':
-+            self.launch(invocation, configuration)
+@@ -26,0 +27,2 @@
++            if boundary == 'follow_on':
++                self.launch(invocation, configuration)

@@ -1,5 +1,5 @@
 --- a/.veldo/control_reservations.py
 +++ b/.veldo/control_reservations.py
-@@ -266 +266 @@
+@@ -270 +270 @@
 -            if observation.get('terminated') is not True:
 +            if False:
