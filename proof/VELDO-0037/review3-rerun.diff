@@ -1,0 +1,309 @@
+--- a/h.py
++++ b/h.py
+@@ -1,6 +1,6 @@
+ import importlib.util, subprocess, sys, os, json, tempfile, sqlite3
+ from pathlib import Path
+-M = Path('/tmp/r37/.veldo')
++M = Path('/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo')
+ def load(name, alias=None):
+     s = importlib.util.spec_from_file_location(alias or ('p_' + name), M / (name + '.py'))
+     m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
+@@ -29,7 +29,7 @@
+ def upsert(conn, eid, kind, data, store=st):
+     return run(conn, 'upsert_entity', {'entity_id': eid, 'kind': kind, 'data': data}, {eid: ver(conn, eid)}, store)
+ def env(files=None, alias=True):
+-    base = Path(tempfile.mkdtemp(dir='/tmp/r37probe'))
++    base = Path(tempfile.mkdtemp(dir='<probe>'))
+     o = repo(base, files); db = base / 'c.sqlite3'; conn = st.open_store(db)
+     acc = rs.attach_revisions(st, conn, 'domain', {'repository': str(o)})
+     acc.accept('revision/repository', 'repository', g(o, 'rev-parse', 'HEAD'), 'op', **SIG)
+--- a/p1_generic.py
++++ b/p1_generic.py
+@@ -1,5 +1,5 @@
+ # Generic / foreign commands against owned kinds and prefixes, on the attaching connection and a fresh one.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env()
+ enable(svc)
+ counter = al.kind_id('repository', 'specification')
+--- a/p2_names.py
++++ b/p2_names.py
+@@ -1,5 +1,5 @@
+ # Is the command NAME the authority? A connection registers its own transition under an owned name.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env()
+ enable(svc)
+ counter = al.kind_id('repository', 'specification')
+--- a/p3_foreign_revision.py
++++ b/p3_foreign_revision.py
+@@ -1,7 +1,7 @@
+ # A second accept_revision service (the real API, another connection) enrolled with a different
+ # checkout for the same repository uuid. Does an accepted revision it writes poison every later
+ # enable_artifact_kind, permanently (revisions only move forward and cannot be retired)?
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env()
+ print('enable before:', enable(svc)['committed'])
+ other_repo = repo(Path(b) / 'unrelated', {'x.txt': b'x\n'})
+--- a/p3b_clone_revision.py
++++ b/p3b_clone_revision.py
+@@ -1,6 +1,6 @@
+ # Realistic variant of p3: the revision service reads a working clone of the SAME repository that holds a commit the
+ # allocation service's checkout does not have yet.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env(); enable(svc)
+ clone = Path(b) / 'clone'; subprocess.run(['git', 'clone', '-q', str(o), str(clone)], check=True)
+ g(clone, 'config', 'user.email', 'x@y'); g(clone, 'config', 'user.name', 'x')
+--- a/p4_declare.py
++++ b/p4_declare.py
+@@ -1,7 +1,7 @@
+ # Hostile/careless declarations: squatting before the rightful owner, overlapping prefixes, re-declaring, dropping.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ def fresh_store():
+-    base = Path(tempfile.mkdtemp(dir='/tmp/r37probe')); o = repo(base); db = base / 'c.sqlite3'
++    base = Path(tempfile.mkdtemp(dir='<probe>')); o = repo(base); db = base / 'c.sqlite3'
+     return base, o, db, st.open_store(db)
+ def attempt(f):
+     try: f(); return 'ok'
+--- a/p5_toctou.py
++++ b/p5_toctou.py
+@@ -1,8 +1,8 @@
+ # Is the ownership read inside the same transaction as the write? A writes an owned kind with a slow
+ # transition; B declares ownership from another process while A is inside its transaction; and the
+ # reverse (B's declaration transaction held open while A executes).
+-import sys, threading, time; sys.path.insert(0, '/tmp/r37probe'); from h import *
+-base = Path(tempfile.mkdtemp(dir='/tmp/r37probe')); db = base / 'c.sqlite3'
++import sys, threading, time; sys.path.insert(0, '<probe>'); from h import *
++base = Path(tempfile.mkdtemp(dir='<probe>')); db = base / 'c.sqlite3'
+ def slow(conn, params, before):
+     time.sleep(2.0)
+     return {'x/1': {'kind': 'control_snapshot', 'data': {}}}
+@@ -14,7 +14,7 @@
+ t = threading.Thread(target=ta)
+ t.start(); time.sleep(0.5)
+ child = subprocess.run([sys.executable, '-c', '''
+-import sys; sys.path.insert(0, "/tmp/r37probe"); from h import *
++import sys; sys.path.insert(0, "<probe>"); from h import *
+ c = st.open_store(sys.argv[1])
+ try:
+     st.declare_owners(c, "VELDO-0035 accepted snapshots", kinds={"control_snapshot": ("accept_snapshot",)}); print("declared")
+@@ -29,7 +29,7 @@
+ if res['a'] == 'committed' and res['b'] == 'declared':
+     print('BUG: declaration committed although an entity of the kind was written while nobody owned it')
+ # Reverse: B holds its declaration transaction open (simulated by BEGIN IMMEDIATE + insert + sleep), A writes meanwhile.
+-base = Path(tempfile.mkdtemp(dir='/tmp/r37probe')); db = base / 'c.sqlite3'
++base = Path(tempfile.mkdtemp(dir='<probe>')); db = base / 'c.sqlite3'
+ b = st.open_store(db)
+ b.execute('BEGIN IMMEDIATE'); b.execute(st._OWNERS_DDL)
+ b.execute("INSERT INTO entity_owners VALUES ('kind','control_snapshot','o','[\"accept_snapshot\"]')")
+--- a/p6_rawsql_oldcopy.py
++++ b/p6_rawsql_oldcopy.py
+@@ -1,9 +1,9 @@
+ # Writes outside the new execute: raw SQL, and a control_store copy from before this change (9421af6),
+ # which the scaffold installs as a separate file, opening the same store.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env(); enable(svc)
+ counter = al.kind_id('repository', 'specification'); kind_now = svc.current(counter)[1]
+-s = importlib.util.spec_from_file_location('old_store', '/tmp/r37probe/control_store_9421af6.py')
++s = importlib.util.spec_from_file_location('old_store', '<probe>/control_store_9421af6.py')
+ old = importlib.util.module_from_spec(s); s.loader.exec_module(old)
+ oc = old.open_store(db)
+ r = upsert(oc, counter, 'artifact_kind', dict(kind_now, next=1), old)
+--- a/p3_foreign_revision.py
++++ b/p3a_foreign_revision_direct.py
+@@ -1,23 +1,21 @@
+-# A second accept_revision service (the real API, another connection) enrolled with a different
+-# checkout for the same repository uuid. Does an accepted revision it writes poison every later
+-# enable_artifact_kind, permanently (revisions only move forward and cannot be retired)?
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++# ADAPTED (VELDO-0037 third review): p3 with the attach refusal caught, then accept_revision's own
++# code registered on the second connection WITHOUT attach_revisions, so the transition check is what answers.
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env()
+ print('enable before:', enable(svc)['committed'])
+ other_repo = repo(Path(b) / 'unrelated', {'x.txt': b'x\n'})
+ c3 = st.open_store(db)
+-acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(other_repo)})
+-r = acc2.accept('revision/careless', 'repository', g(other_repo, 'rev-parse', 'HEAD'), 'op', **SIG)
+-print('foreign-checkout revision accepted:', r['committed'])
+ try:
+-    enable(svc, kind='decision', prefix='DEC', template='decisions/{alias}-{slug}.md')
+-    print('enable after: committed')
++    rs.attach_revisions(st, c3, 'domain', {'repository': str(other_repo)}); print('attach: committed')
+ except st.StoreRefused as e:
+-    print('enable after: refused', e.code, '-', e.detail)
+-    print('BUG: one accepted revision whose commit is not in the enrolled repository makes every later enable_artifact_kind refuse, and nothing can remove it')
+-for fix in ('retire', 'move-back'):
+-    if fix == 'retire':
+-        out = run(conn, 'retire_entity', {'entity_id': 'revision/careless'}, {'revision/careless': 1})
+-    else:
+-        out = run(conn, 'accept_revision', {'revision_id': 'revision/careless', 'repository_uuid': 'repository', 'commit': g(o, 'rev-parse', 'HEAD'), 'documents': {}, 'statuses': {}}, {'revision/careless': 1})
+-    print('recovery by', fix, '->', out)
++    print('attach to the unrelated repository: refused', e.code)
++acc2 = rs.Revisions(st, c3, 'domain', {'repository': str(other_repo)})
++c3.command_registry['accept_revision'] = {'transaction_transition': acc2.transition, 'writes': ('entities',)}
++try:
++    acc2.accept('revision/careless', 'repository', g(other_repo, 'rev-parse', 'HEAD'), 'op', **SIG); print('foreign-checkout revision accepted: True')
++except st.StoreRefused as e:
++    print('direct accept_revision of the foreign commit: refused', e.code)
++try:
++    enable(svc, kind='decision', prefix='DEC', template='decisions/{alias}-{slug}.md'); print('enable after: committed')
++except st.StoreRefused as e:
++    print('enable after: refused', e.code, '-', e.detail); print('BUG: poisoned')
+--- a/p3b_clone_revision.py
++++ b/p3ba_clone_revision_direct.py
+@@ -1,13 +1,24 @@
+-# Realistic variant of p3: the revision service reads a working clone of the SAME repository that holds a commit the
+-# allocation service's checkout does not have yet.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++# ADAPTED (VELDO-0037 third review): p3b with the attach refusal caught, the direct registration tried,
++# then the clone's commit fetched into the bound repository and accepted by the rightful service.
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ b, o, db, conn, acc, svc = env(); enable(svc)
+ clone = Path(b) / 'clone'; subprocess.run(['git', 'clone', '-q', str(o), str(clone)], check=True)
+ g(clone, 'config', 'user.email', 'x@y'); g(clone, 'config', 'user.name', 'x')
+ (clone / 'n.txt').write_text('n\n'); g(clone, 'add', '-A'); g(clone, 'commit', '-qm', 'local')
+-c3 = st.open_store(db); acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(clone)})
+-acc2.accept('revision/clone', 'repository', g(clone, 'rev-parse', 'HEAD'), 'op', **SIG)
++c3 = st.open_store(db)
++try:
++    rs.attach_revisions(st, c3, 'domain', {'repository': str(clone)}); print('attach: committed')
++except st.StoreRefused as e:
++    print('attach to the clone: refused', e.code)
++acc2 = rs.Revisions(st, c3, 'domain', {'repository': str(clone)})
++c3.command_registry['accept_revision'] = {'transaction_transition': acc2.transition, 'writes': ('entities',)}
++try:
++    acc2.accept('revision/clone', 'repository', g(clone, 'rev-parse', 'HEAD'), 'op', **SIG); print('unpushed accepted')
++except st.StoreRefused as e:
++    print('direct accept_revision of the unpushed commit: refused', e.code)
++g(o, 'fetch', '-q', str(clone), 'HEAD:refs/heads/next')
++print('after it reaches the bound repository:', acc.accept('revision/clone', 'repository', g(clone, 'rev-parse', 'HEAD'), 'op', **SIG)['committed'])
+ try:
+     enable(svc, kind='decision', prefix='DEC', template='decisions/{alias}-{slug}.md'); print('enable: committed')
+ except st.StoreRefused as e:
+-    print('BUG: enable of an unrelated new kind refuses', e.code, '-', e.detail, '(revision/clone names a commit the allocation checkout lacks)')
++    print('BUG: enable of an unrelated new kind refuses', e.code, '-', e.detail)
+--- a/p4_declare.py
++++ b/p4a_declare_module.py
+@@ -1,7 +1,8 @@
++# ADAPTED (VELDO-0037 third review): declare_owners now requires module=; nothing else changed.
+ # Hostile/careless declarations: squatting before the rightful owner, overlapping prefixes, re-declaring, dropping.
+-import sys; sys.path.insert(0, '/tmp/r37probe'); from h import *
++import sys; sys.path.insert(0, '<probe>'); from h import *
+ def fresh_store():
+-    base = Path(tempfile.mkdtemp(dir='/tmp/r37probe')); o = repo(base); db = base / 'c.sqlite3'
++    base = Path(tempfile.mkdtemp(dir='<probe>')); o = repo(base); db = base / 'c.sqlite3'
+     return base, o, db, st.open_store(db)
+ def attempt(f):
+     try: f(); return 'ok'
+@@ -9,20 +10,20 @@
+ out = {}
+ # 1 squat the exact prefix with a generic writer, before alias attaches
+ b, o, db, c = fresh_store()
+-out['squat-prefix'] = attempt(lambda: st.declare_owners(c, 'evil', prefixes={'artifact-kind/': ('upsert_entity',)}))
++out['squat-prefix'] = attempt(lambda: st.declare_owners(c, 'evil', prefixes={'artifact-kind/': ('upsert_entity',)}, module=__file__))
+ acc = rs.attach_revisions(st, c, 'domain', {'repository': str(o)})
+ out['rightful-attach-after-squat'] = attempt(lambda: al.attach(st, c, 'domain', {'repository': str(o)}))
+ out['squat-left-generic-writer'] = upsert(c, 'artifact-kind/repository/specification', 'artifact_kind', {'next': 1})
+ # 2 squat a longer prefix that includes upsert_entity; rightful attach does not conflict
+ b, o, db, c = fresh_store()
+-out['squat-longer'] = attempt(lambda: st.declare_owners(c, 'evil', prefixes={'artifact-kind/repository/': ('upsert_entity', 'enable_artifact_kind', 'allocate_document')}))
++out['squat-longer'] = attempt(lambda: st.declare_owners(c, 'evil', prefixes={'artifact-kind/repository/': ('upsert_entity', 'enable_artifact_kind', 'allocate_document')}, module=__file__))
+ acc = rs.attach_revisions(st, c, 'domain', {'repository': str(o)})
+ acc.accept('revision/repository', 'repository', g(o, 'rev-parse', 'HEAD'), 'op', **SIG)
+ out['rightful-attach-after-longer'] = attempt(lambda: al.attach(st, c, 'domain', {'repository': str(o)}))
+ out['generic-under-longer'] = upsert(c, 'artifact-kind/repository/specification', 'artifact_kind', {'next': 1})
+ # 3 squat a longer prefix that EXCLUDES the owner: silent attach, then the owner's own command refuses (DoS)
+ b, o, db, c = fresh_store()
+-st.declare_owners(c, 'evil', prefixes={'artifact-kind/repository/': ('upsert_entity',)})
++out['excluding-squat-declare'] = attempt(lambda: st.declare_owners(c, 'evil', prefixes={'artifact-kind/repository/': ('upsert_entity',)}, module=__file__))
+ acc = rs.attach_revisions(st, c, 'domain', {'repository': str(o)})
+ acc.accept('revision/repository', 'repository', g(o, 'rev-parse', 'HEAD'), 'op', **SIG)
+ svc = al.attach(st, c, 'domain', {'repository': str(o)})
+@@ -33,12 +34,12 @@
+ out['attach-readset-after-prewrite'] = attempt(lambda: rs.attach(st, c, str(o), 'domain', 'repository'))
+ # 5 re-declare with more commands / other owner after the rightful declaration
+ b, o, db, c, acc, svc = env()
+-out['redeclare-kind-more-commands'] = attempt(lambda: st.declare_owners(c, al.OWNER, kinds={'artifact_kind': ('allocate_document', 'enable_artifact_kind', 'upsert_entity')}))
+-out['redeclare-same'] = attempt(lambda: st.declare_owners(c, al.OWNER, kinds={'artifact_kind': al._COUNTER}))
+-out['declare-empty-commands'] = attempt(lambda: st.declare_owners(c, 'x', kinds={'k': ()}))
+-out['declare-empty-prefix'] = attempt(lambda: st.declare_owners(c, 'x', prefixes={' ': ('upsert_entity',)}))
+-out['declare-single-char-prefix-occupied'] = attempt(lambda: st.declare_owners(c, 'x', prefixes={'a': ('upsert_entity',)}))
+-out['declare-unoccupied-short-prefix'] = attempt(lambda: st.declare_owners(c, 'x', prefixes={'z': ('upsert_entity',)}))
++out['redeclare-kind-more-commands'] = attempt(lambda: st.declare_owners(c, al.OWNER, kinds={'artifact_kind': ('allocate_document', 'enable_artifact_kind', 'upsert_entity')}, module=al.__file__))
++out['redeclare-same'] = attempt(lambda: st.declare_owners(c, al.OWNER, kinds={'artifact_kind': al._COUNTER}, module=al.__file__))
++out['declare-empty-commands'] = attempt(lambda: st.declare_owners(c, 'x', kinds={'k': ()}, module=__file__))
++out['declare-empty-prefix'] = attempt(lambda: st.declare_owners(c, 'x', prefixes={' ': ('upsert_entity',)}, module=__file__))
++out['declare-single-char-prefix-occupied'] = attempt(lambda: st.declare_owners(c, 'x', prefixes={'a': ('upsert_entity',)}, module=__file__))
++out['declare-unoccupied-short-prefix'] = attempt(lambda: st.declare_owners(c, 'x', prefixes={'z': ('upsert_entity',)}, module=__file__))
+ # 6 drop through raw SQL, then a generic write via execute
+ raw = sqlite3.connect(db); raw.execute('DELETE FROM entity_owners'); raw.commit()
+ out['after-raw-delete-generic-write'] = upsert(c, 'artifact-kind/repository/specification', 'artifact_kind', {'next': 1})
+--- a/p5_toctou.py
++++ b/p5a_toctou_module.py
+@@ -1,8 +1,9 @@
++# ADAPTED (VELDO-0037 third review): declare_owners requires module= and entity_owners has 6 columns.
+ # Is the ownership read inside the same transaction as the write? A writes an owned kind with a slow
+ # transition; B declares ownership from another process while A is inside its transaction; and the
+ # reverse (B's declaration transaction held open while A executes).
+-import sys, threading, time; sys.path.insert(0, '/tmp/r37probe'); from h import *
+-base = Path(tempfile.mkdtemp(dir='/tmp/r37probe')); db = base / 'c.sqlite3'
++import sys, threading, time; sys.path.insert(0, '<probe>'); from h import *
++base = Path(tempfile.mkdtemp(dir='<probe>')); db = base / 'c.sqlite3'
+ def slow(conn, params, before):
+     time.sleep(2.0)
+     return {'x/1': {'kind': 'control_snapshot', 'data': {}}}
+@@ -14,10 +15,10 @@
+ t = threading.Thread(target=ta)
+ t.start(); time.sleep(0.5)
+ child = subprocess.run([sys.executable, '-c', '''
+-import sys; sys.path.insert(0, "/tmp/r37probe"); from h import *
++import sys; sys.path.insert(0, "<probe>"); from h import *
+ c = st.open_store(sys.argv[1])
+ try:
+-    st.declare_owners(c, "VELDO-0035 accepted snapshots", kinds={"control_snapshot": ("accept_snapshot",)}); print("declared")
++    st.declare_owners(c, "VELDO-0035 accepted snapshots", kinds={"control_snapshot": ("accept_snapshot",)}, module=rs.__file__); print("declared")
+ except st.StoreRefused as e: print(e.code)
+ ''', str(db)], capture_output=True, text=True, timeout=60)
+ t.join()
+@@ -29,10 +30,10 @@
+ if res['a'] == 'committed' and res['b'] == 'declared':
+     print('BUG: declaration committed although an entity of the kind was written while nobody owned it')
+ # Reverse: B holds its declaration transaction open (simulated by BEGIN IMMEDIATE + insert + sleep), A writes meanwhile.
+-base = Path(tempfile.mkdtemp(dir='/tmp/r37probe')); db = base / 'c.sqlite3'
++base = Path(tempfile.mkdtemp(dir='<probe>')); db = base / 'c.sqlite3'
+ b = st.open_store(db)
+ b.execute('BEGIN IMMEDIATE'); b.execute(st._OWNERS_DDL)
+-b.execute("INSERT INTO entity_owners VALUES ('kind','control_snapshot','o','[\"accept_snapshot\"]')")
++b.execute("INSERT INTO entity_owners VALUES (?,?,?,?,?,?)", ("kind", "control_snapshot", "o", "[\"accept_snapshot\"]", st.os.path.realpath(rs.__file__), st.module_digest(rs.__file__)))
+ out = {}
+ t = threading.Thread(target=lambda: out.update(a=upsert(st.open_store(db), 'x/2', 'control_snapshot', {})))
+ t.start(); time.sleep(1.0); b.execute('COMMIT'); t.join()
+--- /dev/null
++++ b/q7_lost_commit.py
+@@ -0,0 +1,21 @@
++# Builder probe: a revision accept_revision rightly accepted, whose commit the bound repository later loses.
++import sys; sys.path.insert(0, sys.argv[1]); from h import *
++b, o, db, conn, acc, svc = env()
++main = g(o, 'rev-parse', 'HEAD')
++g(o, 'checkout', '-q', '-b', 'side')
++(o / 'specs').mkdir(); (o / 'specs/VELDO-0009-side.md').write_bytes(b'# side\n')
++g(o, 'add', '-A'); g(o, 'commit', '-qm', 'side')
++side = g(o, 'rev-parse', 'HEAD')
++g(o, 'checkout', '-q', '-')
++acc.accept('revision/side', 'repository', side, 'op', **SIG)
++print('side revision accepted at', side[:12])
++g(o, 'branch', '-D', 'side'); g(o, 'reflog', 'expire', '--expire=now', '--all'); g(o, 'gc', '-q', '--prune=now')
++held = subprocess.run(['git', '-C', str(o), 'cat-file', '-e', side + '^{commit}'], stderr=subprocess.DEVNULL).returncode == 0
++print('bound repository still holds it:', held)
++try:
++    r = enable(svc, first=None)
++    kind = svc.current(al.kind_id('repository', 'specification'))[1]
++    print('enable: committed, next =', kind['next'], 'floor_commits =', [c[:12] for c in kind['floor_commits']])
++    if kind['next'] <= 9: print('FINDING: VELDO-0009 is held by an accepted revision but the floor dropped it; next is', kind['next'])
++except st.StoreRefused as e:
++    print('enable: refused', e.code, e.detail)
