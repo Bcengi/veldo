@@ -53,16 +53,19 @@ which reserves before launch), and implements no recovery, fencing or clock qual
 consumption attaches to the same registrations. Standard library only.
 
 ARCHITECTURE AT EVERY ENTRY (VELDO-0053, R50). Every station asks architecture_accepted. The answer
-comes from the structural validator INSTALLED beside this module (validate.py and its loader, never
-the copy a workspace carries) over the workspace's .veldo/architecture.yaml. The authority's record
+comes from the structural validator INSTALLED beside this module (never the copy a workspace carries),
+loaded once per Gate from one read of its bytes (ValidatorSnapshot) and asked through validate.py's
+public entry_contract, over the workspace's .veldo/architecture.yaml. A Gate with no workspace always
+refuses (missing_evidence:architecture/workspace). The authority's record
 architecture:<repository> (state accepted, digest of the accepted bytes) makes the contract required
 whatever the workspace's policy says, and the workspace file must be exactly those bytes; with no
 record the repository's policy flag decides absence, as VELDO-0016's loader always has. A present
 contract that is unreadable, malformed, of the wrong type or structurally invalid refuses by name
 (invalid_input:architecture/<kind>), a required one that is absent refuses
 (missing_evidence:architecture/required_absence), and bytes the authority did not accept refuse
-(missing_authority:architecture/unaccepted_artifact). Each decision records the artifact it judged and
-the files of the code that judged it (path and digest).
+(missing_authority:architecture/unaccepted_artifact), compared by the digest of the very bytes the
+loader parsed. Each decision records the artifact it judged and the snapshot of the code that judged it
+(installed path and the digest of the bytes loaded).
 """
 import collections
 import contextlib
