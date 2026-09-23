@@ -1,0 +1,4 @@
+--- a/.veldo/authorization.py
++++ b/.veldo/authorization.py
+@@ -237,0 +238 @@
++        import langgraph.graph

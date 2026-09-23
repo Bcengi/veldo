@@ -1,0 +1,130 @@
+[
+ {
+  "failed_entries": [
+   {
+    "entry": "authorization",
+    "exception": "ModuleNotFoundError",
+    "exit": 0,
+    "refused_imports": [
+     "langgraph"
+    ],
+    "static_violations": [
+     {
+      "import": "langgraph",
+      "module": "authorization.py"
+     }
+    ]
+   },
+   {
+    "entry": "graph_start",
+    "exception": null,
+    "exit": 0,
+    "refused_imports": [],
+    "static_violations": [
+     {
+      "import": "langgraph",
+      "module": "authorization.py"
+     }
+    ]
+   }
+  ],
+  "isolation_exit": 1,
+  "module": "authorization.py",
+  "mutation": "graph-authorization-imports-langgraph",
+  "passed": false,
+  "target_rows": [
+   "graph/isolated-enforcement"
+  ]
+ },
+ {
+  "failed_entries": [
+   {
+    "entry": "authorization",
+    "exception": "ModuleNotFoundError",
+    "exit": 0,
+    "refused_imports": [
+     "langgraph"
+    ],
+    "static_violations": []
+   }
+  ],
+  "isolation_exit": 1,
+  "module": "authorization.py",
+  "mutation": "graph-authorization-dynamic-runtime-import",
+  "passed": false,
+  "target_rows": [
+   "graph/isolated-enforcement"
+  ]
+ },
+ {
+  "failed_entries": [
+   {
+    "entry": "authorization",
+    "exception": null,
+    "exit": 0,
+    "refused_imports": [],
+    "static_violations": [
+     {
+      "import": "langgraph.graph",
+      "module": "authorization.py"
+     }
+    ]
+   },
+   {
+    "entry": "graph_start",
+    "exception": null,
+    "exit": 0,
+    "refused_imports": [],
+    "static_violations": [
+     {
+      "import": "langgraph.graph",
+      "module": "authorization.py"
+     }
+    ]
+   }
+  ],
+  "isolation_exit": 1,
+  "module": "authorization.py",
+  "mutation": "graph-authorization-unexercised-runtime-import",
+  "passed": false,
+  "target_rows": [
+   "graph/isolated-enforcement"
+  ]
+ },
+ {
+  "failed_entries": [
+   {
+    "entry": "graph_start",
+    "exception": "TypeError",
+    "exit": 0,
+    "refused_imports": [],
+    "static_violations": []
+   }
+  ],
+  "isolation_exit": 1,
+  "module": "control_graph.py",
+  "mutation": "graph-start-without-runtime-launches",
+  "passed": false,
+  "target_rows": [
+   "graph/start-unavailable"
+  ]
+ },
+ {
+  "failed_entries": [
+   {
+    "entry": "graph_start",
+    "exception": null,
+    "exit": 1,
+    "refused_imports": [],
+    "static_violations": []
+   }
+  ],
+  "isolation_exit": 1,
+  "module": "control_graph.py",
+  "mutation": "graph-start-unavailable-mislabelled",
+  "passed": false,
+  "target_rows": [
+   "graph/start-unavailable"
+  ]
+ }
+]

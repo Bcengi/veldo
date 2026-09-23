@@ -68,10 +68,17 @@ def _s43_run():
     observations = {}
     with _s43_temp.TemporaryDirectory(prefix='graph-43-') as temporary:
         root = _s43_Path(temporary)
-        # An installed repository laid by the real scaffolder, then the production copies.
+        # An installed repository: every .veldo asset the scaffolder installs, from the canonical
+        # engine (the only template tree a frozen gate copy carries), then the production copies.
+        scaffold = _s43_load('s43_scaffold', ROOT / '.veldo/init_scaffold.py')
         repo = root / 'installed'
-        laid = _s43_sp.run([_s43_sys.executable, '-B', str(ROOT / '.veldo/init_scaffold.py'), str(repo)],
-                           capture_output=True, text=True, timeout=60)
+        (repo / '.veldo').mkdir(parents=True)
+        installed = [rel for rel in scaffold._FILES if rel.startswith('.veldo/')]
+        missing = [rel for rel in installed if not (ROOT / 'engine' / rel).is_file()]
+        for rel in installed:
+            if rel not in missing:
+                (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+                _s43_shutil.copyfile(ROOT / 'engine' / rel, repo / rel)
         for name, source in {
             'control_graph.py': ROOT / ".veldo" / "control_graph.py",
             'control_graph_isolation.py': ROOT / ".veldo" / "control_graph_isolation.py",
@@ -81,9 +88,8 @@ def _s43_run():
         }.items():
             _s43_shutil.copyfile(source, repo / '.veldo' / name)
         graph = _s43_load('s43_graph', repo / '.veldo/control_graph.py')
-        scaffold = _s43_load('s43_scaffold', ROOT / '.veldo/init_scaffold.py')
-        expect('graph/installed-assets', laid.returncode == 0 and all(
-               '.veldo/' + name in scaffold._FILES for name in ('control_graph.py', 'control_graph_isolation.py')))
+        expect('graph/installed-assets', not missing and all(
+               '.veldo/' + name in installed for name in ('control_graph.py', 'control_graph_isolation.py')))
 
         # AC3: every installed enforcement entry, run with the execution environment absent.
         isolated = _s43_sp.run([_s43_sys.executable, '-B', str(repo / '.veldo/control_graph_isolation.py'),

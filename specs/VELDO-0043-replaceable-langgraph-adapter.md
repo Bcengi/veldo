@@ -21,6 +21,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0043_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0043-replaceable-langgraph-adapter.md"
@@ -114,4 +115,12 @@ recovery and AC3 recovery without runtime moved to Release 2; broad AC1 replacem
 equivalence matrix moved to Release 2. Actual nonpersistent LangGraph and replaceable
 interface remain; 0044 is not an MVP dependency. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
+historical proof was changed.
+
+2026-09-23 implementation (partial): register the AC3 negative controls in the existing
+`scripts/check_teeth_mutations.py` driver (the authorized footprint exception, also listed in
+the machine-readable footprint), with three distinct mutations for the isolated-enforcement row,
+two for unavailable graph start, and fresh unmutated controls. AC1 and AC2 are not built: the
+actual LangGraph runtime is not installed because its dependency closure conflicts with C16
+and needs an owner decision, recorded in proof/VELDO-0043/README.md. No criterion, status or
 historical proof was changed.

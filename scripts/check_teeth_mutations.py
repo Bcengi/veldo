@@ -408,6 +408,30 @@ def cases():
     snapshots('snapshot-accept-noncommit-id', 'control_snapshot.py',
               '    if result.returncode or result.stdout.decode().strip() != commit:',
               '    if False:', 'status-only-commit')
+    # VELDO-0043 AC3: the declared falsifier and two different defects target the isolated-
+    # enforcement row (one each only the run, and only the static closure, can see); graph start
+    # without a runtime has two of its own. The gate additionally drives an unchanged copy.
+    def graph(name, module, old, new, row):
+        add(43, name, '59_veldo_0043_graph.py', module, old, new, ['graph/' + row])
+
+    graph('graph-authorization-imports-langgraph', 'authorization.py',
+          'from pathlib import Path\nimport json\n',
+          'from pathlib import Path\nimport json\nimport langgraph\n', 'isolated-enforcement')
+    graph('graph-authorization-dynamic-runtime-import', 'authorization.py',
+          '    req = request if isinstance(request, dict) else {}\n',
+          "    __import__('lang' + 'graph')\n    req = request if isinstance(request, dict) else {}\n",
+          'isolated-enforcement')
+    graph('graph-authorization-unexercised-runtime-import', 'authorization.py',
+          '        spec = importlib.util.spec_from_file_location("veldo_two_key_authz", p)\n',
+          '        import langgraph.graph\n'
+          '        spec = importlib.util.spec_from_file_location("veldo_two_key_authz", p)\n',
+          'isolated-enforcement')
+    graph('graph-start-without-runtime-launches', 'control_graph.py',
+          '    if not available(runtime):\n', '    if False:\n', 'start-unavailable')
+    graph('graph-start-unavailable-mislabelled', 'control_graph.py',
+          "        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation')",
+          "        raise Refused('unknown_outcome', 'no graph runtime is installed for this operation')",
+          'start-unavailable')
     return result
 
 
@@ -478,7 +502,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 36, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 36, 43, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

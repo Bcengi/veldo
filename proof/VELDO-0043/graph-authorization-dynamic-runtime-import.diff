@@ -1,0 +1,4 @@
+--- a/.veldo/authorization.py
++++ b/.veldo/authorization.py
+@@ -475,0 +476 @@
++    __import__('lang' + 'graph')
