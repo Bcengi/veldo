@@ -266,17 +266,21 @@ class Dispatcher(WK.Dispatcher):
         proof) return ok False and DO NOT flip - the change never reaches review."""
         sid = unit["spec"]
         gate = self._gate()
-        handle = None
+        executor = EX.Executor(self._build_hooks(), eligibility=gate)
         if gate is not None:
             context = self._context(unit)
             decision = gate.decide("build", sid, context=context, ticket=unit.get("eligibility"))
             if not decision["eligible"]:
                 return self._refused("build", sid, decision, reviewed=False)
             try:
-                handle = self._handle("build", unit, context, decision)
+                dispatch = self._open(unit, context)
             except EL.Refused as error:
                 return self._refused("build", sid, {"refusals": [error.code]}, reviewed=False)
-        result = EX.Executor(self._build_hooks(), eligibility=gate, calls=handle).run(sid, stop_after="proof")
+            # The executor launches the build through the SAME build station and this dispatch's
+            # reserved handle, rechecking before the launch against this decision as its ticket.
+            executor = EX.Executor(self._build_hooks(), eligibility=gate, calls=self._calls, station="build",
+                                   context=context, ticket=decision, dispatch=dispatch)
+        result = executor.run(sid, stop_after="proof")
         if result.get("state") != "built":
             return {"ok": False, "kind": "build", "spec": sid, "reviewed": False,
                     "state": result.get("state"), "halted_at": result.get("halted_at"),

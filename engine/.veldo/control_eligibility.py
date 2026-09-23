@@ -1,8 +1,8 @@
 """Shared floor eligibility for every enabled station entry (PLAN-0019 W37, VELDO-0052, R52, R70).
 
 WHAT THIS MODULE IS. The one eligibility service the floor's entries call: frontier selection, the
-work loop's claim, plan run-check and the direct executor, the dispatcher's build, review and
-publication, and every subscription CLI call a build or review makes. Each asks the same Gate for a
+work loop's claim, plan run-check and the direct executor's build and review launches, the
+dispatcher's build, review and publication, and every subscription CLI call a build or review makes. Each asks the same Gate for a
 named decision over the accepted records in the real control store, with the predicates of ITS
 station (completion_contract.ENTRY_PREDICATES, the shipped VELDO-0021 contract, plus current
 admission everywhere under R52/R69). Review cannot bypass draft-plan, decision or dependency checks.
@@ -72,7 +72,9 @@ REGISTRATIONS = (
     ('frontier.py', 'claimable._add', 'selection'),
     ('work.py', 'WorkLoop._claim_next', 'claim'),
     ('plan.py', 'cmd_run_check', 'direct_execution'),
-    ('executor.py', 'Executor.run', 'direct_execution'),
+    ('executor.py', 'Executor._decide', 'direct_execution'),
+    ('executor.py', 'Executor._decide', 'build'),
+    ('executor.py', 'Executor._decide', 'review'),
     ('dispatch.py', 'Dispatcher._dispatch_build', 'build'),
     ('dispatch.py', 'Dispatcher._dispatch_review', 'review'),
     ('dispatch.py', 'Dispatcher._land', 'publication'),

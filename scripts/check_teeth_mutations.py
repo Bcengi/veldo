@@ -491,8 +491,9 @@ def cases():
           '            if not decision["eligible"]:\n                return\n',
           '            if False:\n                return\n', 'entry-frontier')
     floor('eligibility-executor-bypass', 'executor.py',
-          '            if not decision["eligible"]:\n                return finish("halted", ELIGIBILITY_STEP,',
-          '            if False:\n                return finish("halted", ELIGIBILITY_STEP,', 'entry-executor')
+          '        return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)',
+          '        return dict(gate.decide("direct_execution", sid, context=self.context, ticket=ticket),\n'
+          '                    eligible=True)  # defect: the direct executor ignores every refusal', 'entry-executor')
     floor('eligibility-plan-bypass', 'plan.py',
           '        reasons.extend("eligibility refused: %s" % r for r in decision["refusals"])',
           '        pass  # defect: the direct-execution refusals are dropped', 'entry-plan')
@@ -594,6 +595,18 @@ def cases():
            "                                                    now=self.clock())",
            "                pass  # defect: an identity no worker slot was reserved for",
            'reservations/work-loop-dispatch-identity')
+    review('executor-launches-unreserved', 'executor.py',
+           '            if self.calls is None:\n'
+           '                # The dispatcher stops here in the same situation: nothing launches unreserved.\n'
+           '                raise EL.Stopped("reservation_required")\n',
+           '            if self.calls is None:\n'
+           '                gate = None  # defect: run on with no reservation handle and no later station\n',
+           'eligibility/executor-station-decisions')
+    review('executor-review-skips-review-station', 'executor.py',
+           '            context = dict(self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))\n'
+           '            return gate.decide("review", sid, context=context, ticket=ticket)\n',
+           '            return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)  # defect\n',
+           'eligibility/executor-station-decisions')
     return result
 
 

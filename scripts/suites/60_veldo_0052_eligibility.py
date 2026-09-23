@@ -462,11 +462,28 @@ def _v52_suite():
                    {s for s, rc in run_checks.items() if rc == 0} == {'VELDO-9106'})
 
         with region('eligibility/entry-executor'):
-            hooks = Hooks()
-            halted = {sid: EX.Executor(hooks, eligibility=gate).run(sid, stop_after='proof') for sid in SCENARIOS}
+            # Direct execution of the valid unit reaches its build through a reserved handle: the claim
+            # and the ceilings are what that build's call needs at its provider_request boundary.
+            # Every scenario has its ceilings, so only the station decision can hold one back.
+            claim('VELDO-9106')
+            for sid in SCENARIOS:
+                ceilings('exec-' + sid, sid)
+
+            class ExecHooks(Hooks):
+                def build(self, spec, calls=None):
+                    self.builds.append(spec['id'])
+                    if calls is not None:
+                        calls.invoke('claude_code', 'initial', 'exec-build-' + spec['id'], 10, CONFIG, now=tick())
+                    return {'ok': True, 'commit': 'c', 'evidence': {}}
+
+            hooks, before = ExecHooks(), len(receiver)
+            ran_exec = {sid: observe_effect(lambda: EX.Executor(hooks, eligibility=gate, calls=calls, context={
+                'holder': 'worker-a'}).run(sid, stop_after='proof')) for sid in SCENARIOS}
+            halted = {sid: r[1] if r[0] == 'ok' else {'state': r[1], 'halted_at': None} for sid, r in ran_exec.items()}
             check('eligibility/entry-executor',
                    hooks.builds == ['VELDO-9106'] and halted['VELDO-9106']['state'] == 'built'
-                   and all(halted[s]['halted_at'] == EX.ELIGIBILITY_STEP for s in SCENARIOS if s != 'VELDO-9106'))
+                   and all(halted[s]['halted_at'] == EX.ELIGIBILITY_STEP for s in SCENARIOS if s != 'VELDO-9106')
+                   and [(a, i, c) for a, i, c, _ in receiver[before:]] == [('claude_code', 'exec-build-VELDO-9106', True)])
 
         with region('eligibility/named-refusals'):
             # Build, review and publication run for a claimed unit; the claim's own lifecycle writes are
@@ -739,6 +756,64 @@ def _v52_suite():
                    and [i for _, i, _, _ in receiver[before:]] == ['u-initial', 'u-after'])
 
         # --- The six reproduced defects and the production entries (2026-09-23 review) -----------
+        ctx_x = {'holder': 'worker-a'}
+
+        class Direct(Hooks):
+            """A direct run's builder and reviewer: each records whether it was handed a handle and,
+            when it was, makes its subscription calls through it."""
+            reviewer_identity = 'reviewer-b'
+
+            def __init__(self, tag):
+                super().__init__()
+                self.tag, self.reviews = tag, []
+
+            def build(self, spec, calls=None):
+                self.builds.append((spec['id'], calls is not None))
+                if calls is not None:
+                    calls.invoke('claude_code', 'initial', '%s-build-%d' % (self.tag, len(self.builds)), 10,
+                                 CONFIG, now=tick())
+                return {'ok': True, 'commit': 'c', 'evidence': {}}
+
+            def review(self, spec, proof, calls=None):
+                self.reviews.append(calls is not None)
+                if calls is not None:
+                    n = len(self.reviews)
+                    calls.invoke('codex', 'initial', '%s-review-%d' % (self.tag, n), 10, CONFIG, now=tick())
+                    calls.invoke('codex', 'follow_on', '%s-review-more-%d' % (self.tag, n), 10, CONFIG, now=tick())
+                return {'verdict': 'pass'}
+
+            def merge_ready(self, spec, proof, verdict):
+                return True, None
+
+            def approve(self, spec, info):
+                return {'decision': 'approved'}
+
+        with region('eligibility/executor-station-decisions'):
+            # DEFECT a. The direct executor launches its build and its review through the same station
+            # decisions and reserved handles as the dispatcher, and without them stops by the same name.
+            sid = 'VELDO-9106'
+            bare = Direct('xa')
+            unwired = observe_effect(lambda: EX.Executor(bare, eligibility=gate).run(sid))
+            wired, before = Direct('xb'), len(receiver)
+            full = observe_effect(lambda: EX.Executor(wired, eligibility=gate, calls=calls, context=ctx_x).run(sid))
+            launched = [(a, c) for a, _, c, _ in receiver[before:]]
+            producer = Direct('xc')
+            producer.reviewer_identity = 'builder-a'
+            same = observe_effect(lambda: EX.Executor(producer, eligibility=gate, calls=calls, context=ctx_x).run(sid))
+            restore()
+            observed['executor'] = {'unwired': list(unwired) if unwired[0] == 'raised' else unwired[1]['state'],
+                                    'unwired_builds': list(bare.builds), 'unwired_reviews': list(bare.reviews),
+                                    'wired_launches': launched,
+                                    'producer_as_reviewer': same[1]['reason'] if same[0] == 'ok' else list(same)}
+            check('eligibility/executor-station-decisions',
+                   unwired == ('raised', 'Stopped:reservation_required') and bare.builds == [] and bare.reviews == []
+                   and full[0] == 'ok' and full[1]['state'] == 'ready'
+                   and wired.builds == [(sid, True)] and wired.reviews == [True]
+                   and launched == [('claude_code', True), ('codex', True), ('codex', True)]
+                   and same[0] == 'ok' and same[1]['halted_at'] == EX.ELIGIBILITY_STEP
+                   and 'reviewer_not_independent' in (same[1]['reason'] or '')
+                   and producer.builds == [(sid, True)] and producer.reviews == [])
+
         with region('eligibility/enrollment-git-error-stops'):
             # DEFECT c. A git error while determining enrollment stops by name; only a directory in which
             # Git's own discovery finds no repository at all is "not enrolled".
