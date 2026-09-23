@@ -93,8 +93,9 @@ def load_contract(path, parse):
 
 def read_contract(path, parse):
     """load_contract, and the sha256 digest of the very bytes it parsed (VELDO-0053): the file is read
-    ONCE, as bytes, decoded exactly as Path.read_text decodes, and parsed, so a caller comparing the
-    contract with an accepted digest compares the bytes that were judged, never a second read."""
+    ONCE, as bytes, decoded as UTF-8 with universal newlines, and parsed, so a caller comparing the
+    contract with an accepted digest compares the bytes that were judged, never a second read. Bytes
+    that are not UTF-8 are a named parse failure carrying their digest, never an unnamed error."""
     p = Path(path)
     try:
         with open(p, "rb") as handle:
@@ -102,7 +103,10 @@ def read_contract(path, parse):
     except OSError as e:
         raise ArchContractError("architecture contract unreadable: %s" % e, kind="unreadable")
     digest = "sha256:" + hashlib.sha256(body).hexdigest()
-    text = io.TextIOWrapper(io.BytesIO(body)).read()
+    try:
+        text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()
+    except UnicodeDecodeError as e:
+        raise ArchContractError("architecture contract is not UTF-8 text: %s" % e, digest=digest)
     try:
         data = parse(text)
     except ValueError as e:

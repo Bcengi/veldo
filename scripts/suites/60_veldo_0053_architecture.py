@@ -30,6 +30,7 @@ def _v53_suite():
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
         'validate_checks.py': ROOT / ".veldo" / "validate_checks.py",
         'contract_loader.py': ROOT / ".veldo" / "contract_loader.py",
+        'arch.py': ROOT / ".veldo" / "arch.py",
     }
 
     def load(name, path):
@@ -734,6 +735,22 @@ def _v53_suite():
             check('architecture/snapshot-in-memory',
                    outcome(raced, CODES['invalid_structure']) and loads == [] and swaps == [] and left_on_disk == []
                    and all(r == installed_digests for r in recorded))
+
+        with region('architecture/not-text-refused'):
+            # A contract that is not valid UTF-8 is a named parse failure with the digest of the bytes read,
+            # never an unanswered validator. The accepted record names those very bytes, so only the
+            # decoding can refuse them.
+            not_text = VALID.encode() + b'# \xff\xfe\n'
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=sha(not_text)))
+            arrange('optional_absent')
+            contract.write_bytes(not_text)
+            judged = stations(gate)
+            reset('valid')
+            observed['not_text'] = sorted({r for d in judged.values() for r in d['refusals']})
+            check('architecture/not-text-refused',
+                   outcome(judged, CODES['parse_failure'])
+                   and all(((d.get('architecture') or {}).get('artifact') or {}).get('digest') == sha(not_text)
+                           for d in judged.values()))
 
         with region('architecture/validated-is-digested'):
             # The digest compared with the accepted record is the digest of the very bytes the loader parsed

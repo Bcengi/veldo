@@ -830,6 +830,17 @@ def cases():
                  "    if digested is not None:\n"
                  "        digested(arch.read_contract(p, parse)[1])  # defect: the digest of a second read, after validation\n",
                  ['validated-is-digested'])
+    # Review fix: bytes that are not UTF-8 are a named parse failure with their digest.
+    decode = ('    try:\n        text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()\n'
+              '    except UnicodeDecodeError as e:\n'
+              '        raise ArchContractError("architecture contract is not UTF-8 text: %s" % e, digest=digest)\n')
+    architecture('architecture-decode-outside-refusal', 'arch.py', decode,
+                 '    text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()  # defect: decoded outside the refusal\n',
+                 ['not-text-refused'])
+    # defect: a lossy decode replaces what is not UTF-8 and parses the rest
+    architecture('architecture-decode-lossy', 'arch.py', 'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8")',
+                 'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8", errors="replace")',
+                 ['not-text-refused'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
