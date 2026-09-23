@@ -1065,6 +1065,9 @@ def cases():
                  "            key = self.AC.active_key(state['keyring'], principal, now)\n", 'framing/frame-and-presenter-agree')
     presentation('frame-ledger-unchecked', "            if principal in revoked:\n", "            if False:\n",
                  'framing/frame-and-presenter-agree')
+    presentation('frame-ledger-unpinned',
+                 "                        REVOCATION_LEDGER: (self._entity(REVOCATION_LEDGER) or {}).get('version', 0)}\n",
+                 "                        }\n", 'framing/frame-and-presenter-agree')
     # VELDO-0065 second review n6 (restored: dropped by 82576d5): the framing key by the journal's order.
     presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
                  "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')

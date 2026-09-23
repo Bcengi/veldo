@@ -132,7 +132,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'grouped', 'stranger', 'telegram-edge',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'grouped', 'stranger', 'telegram-edge',
                 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
@@ -173,6 +173,7 @@ def _v65_checks(base):
                'pm3': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm4': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm5': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm6': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1108,6 +1109,30 @@ def _v65_checks(base):
                     dict(ledger_now, revoked=dict(ledger_now.get('revoked') or {}, pm5={'at': later, 'reason': 'test', 'by': 'authority'})))
             check(agree, 'frame() refuses a principal the revocation ledger names, as the presenter does',
                   reason(frame('pm5', 'Z-5', 1, 'Low: a wrong choice costs one review cycle.')) == ('refused', 'not_authorized'))
+            command('pm6', 'open', 'Z-6', assignment=content())
+            z6 = I.assignment_id(ids['repository_uuid'], 'Z-6')
+
+            class LedgerRace:
+                """The store, with a ledger revocation of pm6 landing between frame()'s read and its commit."""
+                fired = False
+
+                def __getattr__(self, name):
+                    return getattr(S, name)
+
+                def execute(self, conn_, cmd, *a, **k):
+                    if cmd.get('operation') == V.FRAME_OPERATION and not LedgerRace.fired:
+                        LedgerRace.fired = True
+                        held = (entity('authority:revocations') or {}).get('data') or {'revocation_version': 0, 'revoked': {}}
+                        fixture('authority:revocations', 'revocation_ledger',
+                                dict(held, revoked=dict(held.get('revoked') or {}, pm6={'at': later, 'reason': 'test', 'by': 'authority'})))
+                    return S.execute(conn_, cmd, *a, **k)
+            presenter.store = LedgerRace()
+            try:
+                raced_frame = frame('pm6', 'Z-6', 1, 'Low: a wrong choice costs one review cycle.')
+            finally:
+                presenter.store = S
+            check(agree, 'a ledger revocation between frame()\'s read and its commit refuses the framing, as the presenter would',
+                  raced_frame.get('outcome') == 'refused' and reason(presenter.present(z6)) == ('refused', 'missing_framing'))
 
         # Review 3 item 5: retry_after counts only as a bounded non-negative integer
         bounded = 'presentation/retry-after-bounded'

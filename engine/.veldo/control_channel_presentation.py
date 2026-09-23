@@ -827,7 +827,9 @@ class Presenter:
             fid = framing_id(request)
             versions = {request: brief['version'], fid: (self._entity(fid) or {}).get('version', 0),
                         principal: entry['entity_version'], key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0),
-                        self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0)}
+                        self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0),
+                        # The ledger as read: a revocation that lands before the commit refuses it.
+                        REVOCATION_LEDGER: (self._entity(REVOCATION_LEDGER) or {}).get('version', 0)}
             framing = {'schema': FRAMING_SCHEMA, 'request_id': request, 'request_version': c['request_version'],
                        'risk_statement': _words(command['risk_statement']), 'framed_by': principal,
                        'command_id': command['command_id'], 'key_id': key['key_id'], 'expected_versions': versions,
