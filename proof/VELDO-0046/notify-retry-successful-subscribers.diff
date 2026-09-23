@@ -1,5 +1,5 @@
 --- a/.veldo/control_notify.py
 +++ b/.veldo/control_notify.py
-@@ -174 +174 @@
--            self._queue.append((hint, tuple(remaining)))
-+            self._queue.append((hint, None))
+@@ -257,0 +258,2 @@
++        if failed:
++            entry.owed = None  # defective: forget who accepted

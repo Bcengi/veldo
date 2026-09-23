@@ -143,3 +143,56 @@ independent journal-derived payloads. The targeted suite passes 31 assertions.
 registered mutations fail `notify/subscriber-isolation`. All ten VELDO-0046 mutations
 complete their assertions and are rejected. The four new diffs and per-finding test
 records are retained here; the original proof records above remain historical.
+
+## Review fixes: R1 ordering, R2 backoff, R3 first-attempt retention
+
+A second independent check at `1dc0dde` found three defects, each with a reproduction
+script. **R1:** a failing subscriber's retry was appended behind later events, so it
+received `[2, 3, 1]`. **R2:** a permanently failing subscriber turned the blocking
+`run_once()` into a hot loop (6,359 journal reads in 0.5 seconds while quiet, breaking AC2's
+no-polling claim) and grew observations without bound. **R3:** a first attempt refused as
+`service_unavailable` was dropped, because only retry items were requeued; the same
+script also showed a callback `BaseException` dropping the event for every subscriber
+not yet called. Fixed in commit order R3 (`0f4cc85`), R2 (`05ec4a9`), R1 (`4f7b193`).
+Each commit added its row first and recorded it RED by assertion before the fix.
+
+**Design.** Pending events stay in one queue in commit order. Each entry records the
+subscribers still owed it; that set is unknown until the journal is first resolved.
+A subscriber owed an earlier event is never offered a later one, so its retry goes
+ahead of its later events. An unresolved event may be owed to anyone, so it holds every
+subscriber behind it. A failing subscriber gets a per-subscriber delay; a failed
+journal read gets a per-event delay. Both use bounded exponential backoff
+(`retry_initial` 0.1 s, doubling, capped at `retry_cap` 30 s), and the loop waits for
+the next due time on the same condition commits signal, so nothing reads the store
+while quiet. Healthy subscribers keep receiving during another subscriber's delay.
+A first attempt that meets an unavailable store is retained exactly like a retry;
+other first-attempt refusals (invented or foreign hints) are still not events. An
+interrupt propagates but leaves the event owed to the interrupted subscriber and to
+those not yet called. `observations` is a bounded recent window (`observation_limit`,
+default 1024) while `metrics()` counts every operation. The clock is injectable. This
+supersedes the F02 section's "retry pacing is the caller's responsibility" and
+"rotate behind queued events".
+
+| Finding | Named row | Scenario | Registered mutations |
+| --- | --- | --- | --- |
+| R1 | `VELDO-0046 notify/subscriber-order` | The script's backlog and commit-after-failure orders, with one and three failures, plus an unresolved first event: each subscriber receives `[1, 2, 3]`, the failing one is never offered a later event early, and the healthy one is not held. | `notify-requeue-failed-at-tail` restores the defect; `notify-skip-head-of-line` drops the earlier-event hold. |
+| R2 | `VELDO-0046 notify/retry-backoff` | The script's documented blocking loop over a real clock allows at most four journal reads in 0.3 s (expected: first attempt, a later commit, retries at 0.1 s and 0.3 s), still serves another subscriber, and exits cleanly. On an injected clock the reads fall exactly at 0, 0.125, 0.375, 0.875, 1.375 and 1.875 s (cap 0.5 s), each reached only by waiting on the condition; observations stay at the limit of 8 while 12 refusals are counted; unbounded settings are refused. | `notify-retry-without-backoff` restores the hot loop; `notify-uncapped-backoff`, `notify-retry-not-woken-when-due` and `notify-unbounded-observations` break the cap, the timed wake and the bound. |
+| R3 | `VELDO-0046 notify/first-attempt-retained` | The script's flaky store failing one and three first reads, delivered exactly once; a callback `KeyboardInterrupt` propagates and both subscribers still receive the event once. | `notify-drop-unavailable-first-attempt` restores the defect; `notify-accept-before-callback` acknowledges before the callback returns. |
+
+The final suite was also run over the exact `1dc0dde` module bytes (SHA-256 recorded):
+every row completed its assertion with no worker exception, and the three new rows were
+RED. `subscriber-isolation` was RED as well, because this change rewrote that row to
+require the retry delay and to hold only the failing subscriber. The pre-existing
+finding-46 mutations were re-anchored to the new dispatch and wait loop with the same
+defects. All 18 finding-46 mutations complete their assertions and are rejected;
+every retained `.diff` was regenerated from the current registry. The targeted suite passes 34
+assertions in about 0.9 seconds. The serial measurement driver now reports 26.864
+seconds for the suite and all 18 mutants, below the 60-second threshold.
+
+The three reviewer scripts were rerun with their harness pointed at this worktree.
+Because retries now wait, their non-blocking `run_once(0)` calls that expected an
+immediate retry became `run_once(1)`; no BUG condition was changed. The adapted copies
+still print all four BUG lines against `1dc0dde` and print none against the final code.
+`R1-R3-tests.json` retains the RED and green observations, per-commit RED rows, script
+output, measurement and mutation result lines. Targeted runs are not landing evidence;
+the canonical gate is run by the lead.

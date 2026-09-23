@@ -1,8 +1,7 @@
 --- a/.veldo/control_notify.py
 +++ b/.veldo/control_notify.py
-@@ -125,0 +126 @@
-+        ready = bool(self._queue) or self._closed
-@@ -127 +128,2 @@
--            self._condition.wait_for(lambda: self._queue or self._closed, timeout)
-+            if not ready:
-+                self._condition.wait(timeout)
+@@ -160,0 +161 @@
++        ready = bool(self._queue)
+@@ -164 +165 @@
+-                work = self._ready(now)
++                work = self._ready(now) if ready else None

@@ -1,5 +1,5 @@
 --- a/.veldo/control_notify.py
 +++ b/.veldo/control_notify.py
-@@ -117 +117 @@
+@@ -152 +152 @@
 -        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:
 +        if row[1] != hint['record_digest']:
