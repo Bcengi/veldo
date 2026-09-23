@@ -374,17 +374,19 @@ class Executor:
     build, a verdict, and an approval come from the delegated callables."""
 
     def __init__(self, hooks, observer=None, eligibility=None, calls=None, station="direct_execution",
-                 context=None, ticket=None, dispatch=None):
+                 context=None, ticket=None):
         self.hooks = hooks
         self.observer = observer
         # VELDO-0052: the shared eligibility Gate and the runner's StationCalls. With the floor
         # enabled (a Gate, or an enrolled repository, which stops by name without one) every build
         # and every review this run launches goes through the same station decisions and reserved
         # CallHandles as the dispatcher's: `station` is direct_execution for a direct run and build
-        # when the dispatcher drives the build for a claim holder; `context` names the holder,
-        # `ticket` is the decision the caller already made and `dispatch` the build dispatch the
-        # caller already opened. With the floor enabled and no StationCalls the run stops with
-        # reservation_required, exactly as the dispatcher does.
+        # when the dispatcher drives the build for a claim holder; `context` names the holder and
+        # `ticket` is the decision the caller already made. Each launch opens its OWN dispatch (one
+        # worker slot) through StationCalls.launch only after every pre-launch decision passed, and
+        # that dispatch is closed, its slot retired, when the launched call returns. With the floor
+        # enabled and no StationCalls the run stops with reservation_required, exactly as the
+        # dispatcher does.
         if station not in ("direct_execution", "build"):
             raise ExecutorError("an executor runs at the direct_execution or build station, not %r" % station)
         self.eligibility = eligibility
@@ -392,7 +394,6 @@ class Executor:
         self.station = station
         self.context = dict(context or {})
         self.ticket = ticket
-        self.dispatch = dispatch
 
     def _decide(self, gate, sid, launch, ticket):
         """The station decision for one launch: a build asks this run's own station (direct
@@ -405,20 +406,14 @@ class Executor:
             return gate.decide("build", sid, context=self.context, ticket=ticket)
         return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)
 
-    def _handle(self, sid, launch, decision, dispatches):
-        """The launch's only path to a subscription CLI: a CallHandle reserved against this run's
-        own dispatch for that station, one worker slot for the builder and one for the reviewer."""
-        if launch not in dispatches:
-            if launch == "build" and self.station == "build":
-                # Driven by the dispatcher: its dispatch, opened on the runner side, is the build's.
-                dispatches[launch] = self.dispatch
-            else:
-                dispatches[launch] = self.calls.open_dispatch(sid, context=self.context)
-        if not isinstance(dispatches[launch], str) or not dispatches[launch]:
-            raise _eligibility_organ().Refused("reservation_required:dispatch", "no dispatch was opened for " + launch)
+    def _launch(self, sid, launch, decision):
+        """The launch's only path to a subscription CLI: the scope of THIS launch (StationCalls.launch),
+        which opens its own dispatch, one worker slot, and yields a CallHandle reserved against it,
+        then retires that slot when the launched call returns. A second build cycle is a second
+        launch with a slot of its own, and the build's slot is free again before the review opens."""
         context = self.context if launch == "build" else dict(
             self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))
-        return self.calls.handle(launch, sid, dispatches[launch], context=context, ticket=decision)
+        return self.calls.launch(launch, sid, context=context, ticket=decision)
 
     def run(self, spec_id, max_review_cycles=2, stop_after=None):
         """Drive the spec through the loop. stop_after is a DEFAULTED build-only
@@ -505,7 +500,7 @@ class Executor:
         EL = _eligibility_organ()
         gate = EL.gate_for(getattr(self.hooks, "root", ROOT), self.eligibility)
         sid = spec.get("id", spec_id)
-        decision, dispatches = None, {}
+        decision = None
         if gate is not None:
             ob("on_step", ELIGIBILITY_STEP)
             decision = self._decide(gate, sid, "build", self.ticket)
@@ -517,12 +512,12 @@ class Executor:
                 # The dispatcher stops here in the same situation: nothing launches unreserved.
                 raise EL.Stopped("reservation_required")
 
-        def launch_gate(launch, cycle):
-            """The decision and reserved handle for ONE launch, or the halt that replaces it. Every
-            launch, the second build cycle's included, re-decides its station over the COMPLETE
-            current read set against the last accepted decision as its ticket, so an input that
-            moved since (a withdrawn admission, or one re-accepted with its predicate still true)
-            is refused by name before the effect."""
+        def launched(launch, cycle, call):
+            """ONE launch, (its result, None), or (None, the halt that replaces it). Every launch, the
+            second build cycle's included, re-decides its station over the COMPLETE current read set
+            against the last accepted decision as its ticket, so an input that moved since (a
+            withdrawn admission, or one re-accepted with its predicate still true) is refused by name
+            before the effect. Only then is its dispatch opened; it is closed when `call` returns."""
             nonlocal decision
             current = self._decide(gate, sid, launch, decision)
             if not current["eligible"]:
@@ -532,9 +527,14 @@ class Executor:
                                     "eligibility refused before %s: %s" % (launch, reason), None,
                                     proof, gate_green, verdict)
             decision = current
+            opened = False
             try:
-                return self._handle(sid, launch, current, dispatches), None
+                with self._launch(sid, launch, current) as handle:
+                    opened = True
+                    return call(handle), None
             except EL.Refused as error:
+                if opened:
+                    raise
                 record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=error.code)
                 return None, finish("halted", ELIGIBILITY_STEP,
                                     "reservation refused before %s: %s" % (launch, error.code), None,
@@ -559,10 +559,9 @@ class Executor:
             if gate is None:
                 build = self.hooks.build(spec)
             else:
-                handle, halt = launch_gate("build", cycle)
+                build, halt = launched("build", cycle, lambda handle: self.hooks.build(spec, calls=handle))
                 if halt is not None:
                     return halt
-                build = self.hooks.build(spec, calls=handle)
             ob("on_heartbeat", "build")
             b_ok = bool(build.get("ok", True))
             record("build", b_ok, cycle=cycle, commit=build.get("commit"))
@@ -609,12 +608,14 @@ class Executor:
                 self.hooks.emit("review.requested", spec=spec.get("id"))
                 rv = self.hooks.review(spec, proof)
             else:
-                # THE REVIEW STATION, before any reviewer is launched, and the review's own handle.
-                handle, halt = launch_gate("review", cycle)
+                # THE REVIEW STATION, before any reviewer is launched, and the review's own launch.
+                def reviewed(handle):
+                    self.hooks.emit("review.requested", spec=spec.get("id"))
+                    return self.hooks.review(spec, proof, calls=handle)
+
+                rv, halt = launched("review", cycle, reviewed)
                 if halt is not None:
                     return halt
-                self.hooks.emit("review.requested", spec=spec.get("id"))
-                rv = self.hooks.review(spec, proof, calls=handle)
             verdict = rv.get("verdict")
             rmin = int(rv.get("human_minutes", 0) or 0)
             state["human_minutes"] += rmin

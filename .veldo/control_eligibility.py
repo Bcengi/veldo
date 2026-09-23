@@ -35,15 +35,25 @@ generation), after verifying that binding against what this HOST trusts (HostTru
 the allowed signers of enrollment). A binding that does not verify, a host that trusts nothing, or a
 store that cannot be read is a named stop, never a Gate over coordinates nobody vouched for.
 
+THE DISPATCH LIFECYCLE. StationCalls.launch() is the one scope a station's launch runs in: it opens
+the dispatch (reserving its worker slot) only when the caller has passed every pre-launch decision
+and is about to launch, and closes it the moment the launched call returns, however it returns. The
+close retains every call's exposure (a call with no final usage report is settled as UNKNOWN, its
+reserved charge and unknown units kept) and then retires the worker slot, so capacity is spent while
+a launch runs and returned when it ends. Until VELDO-0040/0041's supervisor exists, the runner's own
+observation that the launching call returned in this process is the lifecycle observation; the
+supervisor owns retirement once it exists.
+
 WHAT IT IS NOT. The Gate writes nothing: it reads inside one deferred read transaction. The only
 writes on this path are the runner's own reservation commands (StationCalls.open_dispatch reserves a
-dispatch's worker slot, and each launch its call, through VELDO-0036's reservation service, which
-commits through control_store). It holds no key, launches nothing itself (StationCalls hands launches
-to VELDO-0036's InvocationGuard, which reserves before launch), and implements no recovery, fencing or
-clock qualification (Release 2). VELDO-0053's architecture checks and VELDO-0054's exact decision
+dispatch's worker slot, each launch its call, and close_dispatch settles unreported calls as unknown
+and retires the slot, through VELDO-0036's reservation service, which commits through control_store).
+It holds no key, launches nothing itself (StationCalls hands launches to VELDO-0036's InvocationGuard,
+which reserves before launch), and implements no recovery, fencing or clock qualification (Release 2). VELDO-0053's architecture checks and VELDO-0054's exact decision
 consumption attach to the same registrations. Standard library only.
 """
 import collections
+import contextlib
 import importlib.util
 import json
 import os
@@ -663,8 +673,8 @@ class StationCalls:
         this station dispatch of `unit`, under this runner's account and the unit's ACCEPTED project,
         and return its identity. Every CallHandle of that dispatch reserves its calls against it, so
         the work loop's own unit (which carries no identity, and must not choose one) can reach a
-        subscription CLI. The slot is retired only by the supervisor's actual lifecycle observation
-        (Reservations.retire); until then it counts, which is the conservative direction."""
+        subscription CLI. Callers open a dispatch through launch(), which closes it when the launch
+        returns; until close_dispatch retires it the slot counts, which is the conservative direction."""
         event = {'operation': 'open_dispatch', 'unit': unit, 'holder': (context or {}).get('holder')}
         try:
             if not isinstance(self.account, str) or not self.account.strip():
@@ -693,6 +703,58 @@ class StationCalls:
         if station not in CALL_STATIONS:
             raise Refused('invalid_input', 'subscription calls belong to build and review stations')
         return CallHandle(self, station, unit, dispatch, dict(context or {}), ticket)
+
+    @contextlib.contextmanager
+    def launch(self, station, unit, *, context, ticket):
+        """THE SCOPE OF ONE STATION LAUNCH. Entered only after every pre-launch decision of the caller
+        passed: it opens the dispatch (one worker slot) and yields the station's CallHandle. When the
+        launched call returns, normally or by any exception, the dispatch is closed at once
+        (close_dispatch). A reservation refusal at the open is raised before anything is held."""
+        if station not in CALL_STATIONS:
+            raise Refused('invalid_input', 'subscription calls belong to build and review stations')
+        dispatch = self.open_dispatch(unit, context=context)
+        handle = CallHandle(self, station, unit, dispatch, dict(context or {}), ticket)
+        try:
+            yield handle
+        except BaseException as error:
+            try:
+                self.close_dispatch(dispatch, 'failed' if isinstance(error, Refused) else 'unknown')
+            except Exception as closing:  # noqa: BLE001 - the launch's own error is the one raised
+                self.observations.append({'operation': 'close_dispatch', 'dispatch': dispatch,
+                                          'outcome': 'unknown_outcome', 'error': type(closing).__name__})
+            raise
+        self.close_dispatch(dispatch, 'completed')
+
+    def close_dispatch(self, dispatch, outcome):
+        """The launch this dispatch was opened for has returned: retain its calls' exposure and retire
+        its worker slot. Every call of the dispatch with no final usage report is settled by one final
+        report carrying NO usage, which leaves it UNKNOWN (VELDO-0036 AC3/AC4: its reserved invocation
+        and wall time stay charged and its unknown units stay unknown, so later calls under a token or
+        message ceiling still refuse by name). The slot is then retired with the runner's lifecycle
+        observation: the launching call returned in this process, so the worker it was opened for has
+        ended. VELDO-0040/0041's supervisor owns this observation once it exists. A named refusal
+        leaves the slot held (the conservative direction) and is returned and recorded, never raised."""
+        event = {'operation': 'close_dispatch', 'dispatch': dispatch, 'launch_outcome': outcome}
+        service = self._reservations()
+        mine = [r for r in service._records().values() if r['type'] == 'invocation'
+                and r['context']['domain'] == service.domain and r['dispatch'] == dispatch]
+        observation = {'terminated': True, 'cleaned': True, 'outcome': outcome, 'observer': 'runner',
+                       'basis': 'launch_returned' if mine else 'no_call_launched', 'calls': len(mine)}
+        try:
+            for call in mine:
+                if call['state'] == 'pending':
+                    sequence = call['sequence'] + 1
+                    service.report('close/%s/%d' % (call['invocation'], sequence), call['invocation'], sequence, {},
+                                   final=True, now=self.clock())
+            service.retire('retire/' + dispatch, dispatch, lambda _: dict(observation), now=self.clock())
+        except Exception as error:
+            named = _reservation_refusal(error)
+            if named is None:
+                raise
+            self.observations.append(dict(event, outcome='refused', refusal=named.code))
+            return dict(event, outcome='refused', refusal=named.code)
+        self.observations.append(dict(event, outcome='retired', calls=len(mine)))
+        return dict(event, outcome='retired', calls=len(mine))
 
 
 class CallHandle:

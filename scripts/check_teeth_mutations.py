@@ -586,9 +586,9 @@ def cases():
            '    except EL.Stopped as stop:\n        return [], stop.reason',
            '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
            'completion/status-reader-agrees')
-    review('dispatch-without-identity', 'dispatch.py',
-           '        return self._calls.open_dispatch(unit["spec"], context=context)',
-           '        return unit.get("dispatch")  # defect: the work loop\'s unit carries no identity',
+    review('dispatch-without-identity', 'control_eligibility.py',
+           '        dispatch = self.open_dispatch(unit, context=context)\n',
+           "        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved\n",
            'reservations/work-loop-dispatch-identity')
     review('dispatch-identity-not-reserved', 'control_eligibility.py',
            "                self._reservations().reserve_worker('worker/' + dispatch, dispatch, self.account, project, unit,\n"
@@ -623,6 +623,23 @@ def cases():
            "    if False:  # defect: a binding that does not verify still builds a Gate\n"
            "        raise Stopped('enrollment_refused:' + problems[0][0])\n",
            'eligibility/production-entries-build-the-gate')
+    # VELDO-0052, the second independent check (r52b): defect g reintroduced, and different defects
+    # of the same row (a returned launch keeps its slot; closing forgets the calls' exposure).
+    review('slot-opened-before-prelaunch-halts', 'dispatch.py',
+           '            if self._calls is None:\n                raise EL.Stopped("reservation_required")\n'
+           '            # The executor launches the build',
+           '            if self._calls is None:\n                raise EL.Stopped("reservation_required")\n'
+           '            self._calls.open_dispatch(sid, context=context)  # defect: reserved before the halts, never retired\n'
+           '            # The executor launches the build',
+           'reservations/dispatch-slot-retired')
+    review('slot-kept-after-launch-returns', 'control_eligibility.py',
+           "            raise\n        self.close_dispatch(dispatch, 'completed')\n",
+           "            raise\n        # defect: a launch that returned normally keeps its worker slot\n",
+           'reservations/dispatch-slot-retired')
+    review('slot-close-zeroes-exposure', 'control_eligibility.py',
+           "                                   final=True, now=self.clock())",
+           "                                   final=True, outcome='not_executed', now=self.clock())  # defect",
+           'reservations/dispatch-slot-retired')
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

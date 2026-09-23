@@ -938,9 +938,107 @@ def _v52_suite():
             check('reservations/work-loop-dispatch-identity',
                    drained[0] == 'ok' and hooks.builds == [sid] and handed and all('dispatch' not in keys for keys in handed)
                    and launched == [('claude_code', 'loop-build-' + sid, True)]
-                   and len(slot) == 1 and not slot[0]['retired']
+                   and len(slot) == 1 and slot[0]['retired']
                    and slot[0]['context'] == dict(domain=DOMAIN, repository=REPOSITORY, account='acct-floor',
                                                   project='p1', unit=sid))
+
+        with region('reservations/dispatch-slot-retired'):
+            # DEFECT g. A worker slot is opened only after every pre-launch decision passed, and retired when
+            # the launch it was opened for returns, so a unit whose ceiling is ONE slot is dispatched again
+            # and again. Its calls' exposure stays: an unreported call is retained as unknown usage.
+            sid, one = 'VELDO-9170', dict(CEILING, capacity=1)
+            unit(sid)
+            claim(sid)
+            spec_file = base / 'specs' / (sid + '-fixture.md')
+            spec(sid, lane='standalone')
+            ready_text = spec_file.read_text()
+            reservations.configure('ceiling-unit-' + sid, 'unit', sid, one, now=tick())
+
+            class Resolves(Hooks):
+                """What each dispatch's builder did: `calls` says whether it was handed a handle."""
+                def __init__(self, halt=None, invoke=True):
+                    super().__init__()
+                    self.halt, self.invoke = halt, invoke
+
+                def resolve(self, s):
+                    spec_view = super().resolve(s)
+                    return dict(spec_view, status='review') if self.halt == 'resolve' else spec_view
+
+                def run_check(self, spec_view):
+                    if self.halt == 'recheck':
+                        # An input the dispatcher's own decision consumed moves before the launch.
+                        put('admission:' + sid, 'admission', dict(unit=sid, state='accepted', scope_digest='sha256:scope'))
+                    return (False, 'plan refuses') if self.halt == 'plan_check' else (True, 'checked')
+
+                def build(self, spec_view, calls=None):
+                    self.builds.append(spec_view['id'])
+                    if calls is not None and self.invoke:
+                        calls.invoke('claude_code', 'initial', 'slot-build-%d' % len(receiver), 10, CONFIG, now=tick())
+                    return {'ok': True, 'commit': 'c', 'evidence': {}}
+
+            def slots(s):
+                return [r for r in reservations._records().values() if r['type'] == 'worker' and r['context']['unit'] == s]
+
+            before, outcomes = len(receiver), {}
+            for tag, hooks in (('resolve', Resolves('resolve')), ('plan_check', Resolves('plan_check')),
+                               ('recheck', Resolves('recheck')), ('no-call', Resolves(invoke=False)),
+                               ('first', Resolves()), ('second', Resolves())):
+                disp = DSP.Dispatcher(repo_root=str(base), hooks=hooks, eligibility=gate, calls=calls, worker_id='worker-a')
+                result = observe_effect(lambda: disp.dispatch(dict(kind='build', spec=sid, holder='worker-a')))
+                spec_file.write_text(ready_text)
+                outcomes[tag] = (result[1].get('halted_at') or result[1].get('status') if result[0] == 'ok'
+                                 else list(result), list(hooks.builds), len(slots(sid)))
+            launched = [i for _, i, c, _ in receiver[before:] if c]
+            held = slots(sid)
+            spent = reservations.balances('unit', sid)
+            unknown = [r for r in reservations._records().values() if r['type'] == 'invocation' and r['invocation'] in launched]
+            # A review station dispatch of the same one-slot unit, twice: each opens and retires its own slot.
+            class Reviews(Reviewer):
+                def review(self, spec_view, u, calls=None):
+                    self.reviews.append(spec_view['id'])
+                    if calls is not None:
+                        calls.invoke('codex', 'initial', 'slot-review-%d' % len(receiver), 10, CONFIG, now=tick())
+                    return {'verdict': 'pass', 'findings': []}
+
+            reviewer, lander = Reviews(), Lander()
+            disp = DSP.Dispatcher(repo_root=str(base), reviewer=reviewer, lander=lander, eligibility=gate, calls=calls,
+                                  worker_id='worker-a')
+            reviews = []
+            for _ in range(2):
+                reviews.append(observe_effect(lambda: disp.dispatch(dict(kind='review', spec=sid, holder='worker-a'))))
+                spec_file.write_text(ready_text)
+            # A direct run of another one-slot unit: its build's slot is retired before its review needs one.
+            direct_sid = 'VELDO-9171'
+            unit(direct_sid)
+            claim(direct_sid)
+            spec(direct_sid, lane='standalone')
+            reservations.configure('ceiling-unit-' + direct_sid, 'unit', direct_sid, one, now=tick())
+            direct = Direct('slot-direct')
+            ran_direct = observe_effect(lambda: EX.Executor(direct, eligibility=gate, calls=calls, context=ctx_x).run(direct_sid))
+            (base / 'specs' / (direct_sid + '-fixture.md')).unlink()
+            spec_file.unlink()
+            observed['slot_retirement'] = {
+                'dispatches': outcomes, 'launched': launched, 'unit_balance': spent,
+                'slots': [dict(retired=r['retired'], retirement=r.get('retirement')) for r in held],
+                'calls': [dict(state=r['state'], unknown=r['unknown'], charge=r['charge']) for r in unknown],
+                'reviews': [r[1].get('status') if r[0] == 'ok' else list(r) for r in reviews],
+                'direct': ran_direct[1]['state'] if ran_direct[0] == 'ok' else list(ran_direct),
+                'direct_slots': [r['retired'] for r in slots(direct_sid)]}
+            check('reservations/dispatch-slot-retired',
+                   # Every pre-launch halt reserves nothing; each launch holds one slot and retires it.
+                   outcomes == {'resolve': ('resolve', [], 0), 'plan_check': ('plan_check', [], 0),
+                                'recheck': ('eligibility', [], 0), 'no-call': ('review', [sid], 1),
+                                'first': ('review', [sid], 2), 'second': ('review', [sid], 3)}
+                   and len(launched) == 2 and len(held) == 3 and all(r['retired'] for r in held)
+                   and sorted(r['retirement']['calls'] for r in held) == [0, 1, 1]
+                   and spent['capacity'] == 0 and spent['invocations'] == 2 and spent['wall_seconds'] == 20
+                   and len(unknown) == 2 and all(r['state'] == 'unknown' and r['unknown'] == ['tokens', 'messages']
+                                                 for r in unknown)
+                   and [r[1].get('status') if r[0] == 'ok' else r for r in reviews] == ['shipped', 'shipped']
+                   and reviewer.reviews == [sid, sid] and len(slots(sid)) == 5 and all(r['retired'] for r in slots(sid))
+                   and ran_direct[0] == 'ok' and ran_direct[1]['state'] == 'ready'
+                   and direct.builds == [(direct_sid, True)] and direct.reviews == [True]
+                   and [r['retired'] for r in slots(direct_sid)] == [True, True])
 
         with region('completion/landed-units-not-reoffered'):
             # DEFECT f. Every lane asks the one completion reader, never the front matter: a landed unit is

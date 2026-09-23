@@ -162,18 +162,15 @@ class Dispatcher(WK.Dispatcher):
         return dict({"holder": (unit or {}).get("holder") or self.worker_id,
                      "generation": (unit or {}).get("generation")}, **extra)
 
-    def _open(self, unit, context):
-        """THIS dispatch's identity: the runner opens it, reserving its worker slot (VELDO-0036),
-        because the unit the work loop hands over carries none and must not choose one."""
+    def _launch(self, station, unit, context, decision):
+        """The station's only path to a subscription CLI: the scope of this launch
+        (StationCalls.launch). The runner opens THIS dispatch's identity, reserving its worker slot
+        (VELDO-0036), because the unit the work loop hands over carries none and must not choose
+        one; every call is decided and reserved against that slot, and the slot is retired when the
+        launched call returns."""
         if self._calls is None:
             raise EL.Stopped("reservation_required")
-        return self._calls.open_dispatch(unit["spec"], context=context)
-
-    def _handle(self, station, unit, context, decision):
-        """The station's only path to a subscription CLI: every call is decided and reserved
-        against this dispatch's own worker slot."""
-        dispatch = self._open(unit, context)
-        return self._calls.handle(station, unit["spec"], dispatch, context=context, ticket=decision)
+        return self._calls.launch(station, unit["spec"], context=context, ticket=decision)
 
     @staticmethod
     def _refused(kind, sid, decision, **extra):
@@ -272,14 +269,13 @@ class Dispatcher(WK.Dispatcher):
             decision = gate.decide("build", sid, context=context, ticket=unit.get("eligibility"))
             if not decision["eligible"]:
                 return self._refused("build", sid, decision, reviewed=False)
-            try:
-                dispatch = self._open(unit, context)
-            except EL.Refused as error:
-                return self._refused("build", sid, {"refusals": [error.code]}, reviewed=False)
-            # The executor launches the build through the SAME build station and this dispatch's
-            # reserved handle, rechecking before the launch against this decision as its ticket.
+            if self._calls is None:
+                raise EL.Stopped("reservation_required")
+            # The executor launches the build through the SAME build station, rechecking before the
+            # launch against this decision as its ticket. It opens the build's dispatch (its worker
+            # slot) only after every pre-launch decision passed, and retires it when the build returns.
             executor = EX.Executor(self._build_hooks(), eligibility=gate, calls=self._calls, station="build",
-                                   context=context, ticket=decision, dispatch=dispatch)
+                                   context=context, ticket=decision)
         result = executor.run(sid, stop_after="proof")
         if result.get("state") != "built":
             return {"ok": False, "kind": "build", "spec": sid, "reviewed": False,
@@ -311,12 +307,16 @@ class Dispatcher(WK.Dispatcher):
         if decision is None:
             rv = self._reviewer.review(spec, unit) or {}
         else:
+            opened = False
             try:
-                handle = self._handle("review", unit, context, decision)
+                with self._launch("review", unit, context, decision) as handle:
+                    opened = True
+                    rv = self._reviewer.review(spec, unit, calls=handle) or {}
             except EL.Refused as error:
+                if opened:
+                    raise
                 return self._refused("review", sid, {"refusals": [error.code]}, verdict=None, shipped=False,
                                      landed=False)
-            rv = self._reviewer.review(spec, unit, calls=handle) or {}
         verdict = rv.get("verdict")
         if not self._verdict_passes(rv):
             self._set_status(sid, self.fail_status)

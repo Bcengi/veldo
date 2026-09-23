@@ -6,10 +6,11 @@
 This is how the rows added for the 2026-09-23 review were recorded red before their fixes: the
 suite's own production-copy anchors (the ones the mutation driver substitutes) are pointed at that
 commit's copies of every module the suite installs by name. One fixture line constructs an interface
-that commit did not have (StationCalls with the runner's account and clock); it is replaced by that
-commit's constructor so the suite can run at all, and is printed as the one substitution made. Every
-other line runs as committed. A row that fails reports its observation, never a crash: each region
-reds its rows on a raise and a `ran/` row says whether it did.
+0ea33e3 did not have (StationCalls with the runner's account and clock); for a commit that predates
+it, the line is replaced by that commit's constructor so the suite can run at all, and is printed as
+the one substitution made (null when none was needed). Every other line runs as committed. A row that
+fails reports its observation, never a crash: each region reds its rows on a raise and a `ran/` row
+says whether it did.
 """
 import ast
 import contextlib
@@ -46,7 +47,13 @@ def main(commit):
                                               check=True, capture_output=True).stdout)
             source = source.replace(text, '__import__("pathlib").Path(%r)' % str(target))
         assert source.count(FIXTURE_LINE) == 1, 'fixture line moved'
-        source = source.replace(FIXTURE_LINE, FIXTURE_THEN)
+        # Only a commit whose StationCalls predates the runner's account and clock needs the one
+        # substitution; a later commit runs the fixture exactly as committed.
+        then = subprocess.run(['git', '-C', str(ROOT), 'show', '%s:.veldo/control_eligibility.py' % commit],
+                              check=True, capture_output=True, text=True).stdout
+        substituted = 'account=None' not in then
+        if substituted:
+            source = source.replace(FIXTURE_LINE, FIXTURE_THEN)
         shared = ROOT / 'scripts/suites/shared.py'
         ns = {'__file__': str(shared), '__observe__': lambda name, ok: rows.append([name, bool(ok)])}
         stree = ast.parse(shared.read_text(), str(shared))
@@ -60,11 +67,12 @@ def main(commit):
             exec(compile(source, str(SUITE), 'exec'), ns)
     mine = [r for r in rows[before:] if r[0].startswith('VELDO-0052')]
     print(json.dumps({'production_at': commit, 'substituted_modules': sorted('/'.join(p.strip('"') for p in v) for v in anchors.values()),
-                      'fixture_substitution': [FIXTURE_LINE, FIXTURE_THEN],
+                      'fixture_substitution': [FIXTURE_LINE, FIXTURE_THEN] if substituted else None,
                       'failed': [n for n, ok in mine if not ok], 'passed': sum(ok for _, ok in mine),
                       'observed': {k: v for k, v in (ns.get('_V52_OBSERVED') or {}).items()
                                    if k in ('executor', 'enrollment_git_error', 'status_reader', 'work_loop',
-                                            'landed_offers', 'production_entries', 'raised')}}, indent=1, default=str))
+                                            'landed_offers', 'production_entries', 'raised', 'slot_retirement',
+                                            'host_trust', 'provider_refusal')}}, indent=1, default=str))
 
 
 if __name__ == '__main__':
