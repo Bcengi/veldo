@@ -289,7 +289,7 @@ print(json.dumps(result))
                 row('revocation-' + timing + '/' + kind, refused)
                 expect('VELDO-0028 effects/revocation-' + timing + '/' + kind, refused)
                 revoked_conn.close()
-        # R3: an accepted protected effect is in flight for VELDO-0026's own ledger. Each
+        # R3: revocation reaches every protected effect through VELDO-0026's own ledger. Each
         # scenario runs on an isolated copy of the store so the revocation stays local to it.
         def isolate(tag):
             path = root / (tag + '.sqlite3')
@@ -325,6 +325,20 @@ print(json.dumps(result))
                 and link is not None and link in in_flight and done is not None and done not in in_flight
                 and [data.get('effect') for _, data in stops if data.get('effect') in (link, done)] == [link])
             expect('VELDO-0028 effects/revocation-in-flight/' + kind, checks['revocation-in-flight/' + kind])
+            store.close()
+            # B: a committed ledger revocation dated ahead of the executor's clock applies from
+            # its commit: neither a new handle nor the already issued one is honored.
+            req, issued, contract, permit = setup(kind, 'future-dated')
+            store, isolated_path = isolate(kind + '-future-dated')
+            before_calls = len(calls(kind + '-good'))
+            revoke_on(store, 'worker', _v28_time.time() + 3600, 'revoke-future-dated')
+            reissue = {f: v for f, v in dict(req, operation='issue').items() if f != 'handle'}
+            answers = [_v28_executor.call(isolated_path, r, 'worker', private / 'worker') for r in (reissue, req)]
+            row('revocation-future-dated/' + kind, issued.get('accepted') is True
+                and [a.get('refusal') for a in answers] == ['revoked', 'revoked']
+                and len(calls(kind + '-good')) == before_calls and unused(store, req)
+                and E.S.materialized_state(store)['entities'][contract['permission_id']]['data'] == permit)
+            expect('VELDO-0028 effects/revocation-future-dated/' + kind, checks['revocation-future-dated/' + kind])
             store.close()
         # Linux custody witness: this isolated probe can execute but cannot read private
         # service files. Provisioning this boundary for real workers belongs to W26.

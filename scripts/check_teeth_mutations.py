@@ -306,7 +306,7 @@ def cases():
            "    completed = status in ('accepted', 'completed') and bool(observation.get('evidence'))", 'completion')
     effect('effects-unbound-result', "    matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)",
            "    matches = isinstance(observation, dict)", 'completion')
-    revocation = "    if R.is_revoked(S, conn, principal, now):\n        raise Refused('revoked')"
+    revocation = "    if revoked(conn, principal, now):\n        raise Refused('revoked')"
     effect('effects-ignore-authorization-revocation', revocation,
            "    if False:\n        raise Refused('revoked')", 'revocation-committed')
     # Acceptance is ordered against revocation by VELDO-0026's accept_effect inside the store
@@ -317,7 +317,7 @@ def cases():
                   "                 'kind': contract['kind'], 'at': time.time()}, before))")
     v26_reconcile = "        if completed:\n            changes.update("
     effect('effects-revocation-preflight-only', revocation,
-           "    if not consume and R.is_revoked(S, conn, principal, now):\n        raise Refused('revoked')", 'revocation-before-transaction',
+           "    if not consume and revoked(conn, principal, now):\n        raise Refused('revoked')", 'revocation-before-transaction',
            also=[(v26_accept, "            changes = {}"),
                  ("{'new_ids': [eid, rid, R.LEDGER_ENTITY]}", "{'new_ids': [eid]}"),
                  (v26_reconcile, "        if False:\n            changes.update(")])
@@ -326,6 +326,13 @@ def cases():
            v26_accept.replace("'principal': principal,", "'principal': 'effect-executor',"), 'revocation-in-flight')
     effect('effects-pending-reconciled-as-settled', v26_reconcile,
            "        if status in ('accepted', 'completed'):\n            changes.update(", 'revocation-in-flight')
+    # R3 B: a committed ledger entry applies from its commit, whatever its timestamp.
+    ledger_read = "    return principal in R.ledger(S, conn)[0]['revoked'] or R.is_revoked(S, conn, principal, now)"
+    effect('effects-future-dated-revocation-waits', ledger_read,
+           "    return R.is_revoked(S, conn, principal, now)", 'revocation-future-dated')
+    effect('effects-revocation-skew-allowance', ledger_read,
+           "    return R.ledger(S, conn)[0]['revoked'].get(principal, {}).get('at', now + 2) <= now + 1 or R.is_revoked(S, conn, principal, now)",
+           'revocation-future-dated')
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])

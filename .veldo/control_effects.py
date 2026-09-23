@@ -57,12 +57,18 @@ def authenticate(state, principal, challenge, request, signature):
         raise Refused('unauthenticated-worker')
 
 
+def revoked(conn, principal, now):
+    """VELDO-0026's revocation of `principal`. A committed ledger entry applies from its commit:
+    its `at` records when the operator says authority ended, never a start the executor waits for."""
+    return principal in R.ledger(S, conn)[0]['revoked'] or R.is_revoked(S, conn, principal, now)
+
+
 def authorize(conn, state, config, principal, request, consume=True):
     entry = entity(state, request['contract_id'], 'effect_contract')
     contract = entry['data']
     now = time.time()
     # The same connection observes the ledger under the acceptance write lock.
-    if R.is_revoked(S, conn, principal, now):
+    if revoked(conn, principal, now):
         raise Refused('revoked')
     for identity, version in config.get('_auth_versions', {}).items():
         if state.get(identity, {}).get('version') != version:
