@@ -306,6 +306,12 @@ def cases():
     add(31, 'review-r1-signature-crash', '59_veldo_0031_review.py', 'control_claim.py',
         "                or not isinstance(packet.get('signature'), str)",
         '                or False', ['claims/review-r1'])
+    add(31, 'review-r2-inspect-skips-consistency', '59_veldo_0031_review.py', 'control_claim.py',
+        "            status = ownership(current, u['data'], b['data'])",
+        "            status = 'owned' if current.get('holder') else 'unowned'", ['claims/review-r2'])
+    add(31, 'review-r2-activation-without-owner', '59_veldo_0031_review.py', 'control_claim.py',
+        "        return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'",
+        "        return 'unowned'", ['claims/review-r2'])
     return result
 
 

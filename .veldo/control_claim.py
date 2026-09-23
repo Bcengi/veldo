@@ -40,10 +40,18 @@ def validate_alias(unit):
         raise S.StoreRefused('invalid_input', problem)
 
 
-def ownership(data):
-    """Stored ownership and the existing VELDO-0015 detector, without takeover."""
-    if not data or data.get('state') == 'released':
+ACTIVE_UNIT_STATES = ('CLAIMED', 'DISPATCHING', 'RUNNING', 'VERIFYING',
+                      'REVIEWING', 'READY_TO_LAND', 'LANDING')
+
+
+def ownership(data, unit, backlog):
+    """One consistency and liveness answer for reads and transactional operations."""
+    if not data:
+        return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'
+    if data.get('state') == 'released':
         return 'unowned'
+    if unit.get('state') not in ACTIVE_UNIT_STATES or backlog.get('state') != 'ACTIVE':
+        return 'ownership_uncertain'
     if data.get('state') != 'owned' or not data.get('holder'):
         return 'ownership_uncertain'
     live = CL.liveness(data)
@@ -56,7 +64,7 @@ def transition(params, before):
     unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
     u, b = before[unit]['data'], before[backlog]['data']
     current = before.get(cid, {}).get('data', {})
-    status = ownership(current)
+    status = ownership(current, u, b)
     if status in ('unanswerable', 'ownership_uncertain'):
         raise S.StoreRefused(status, 'ownership cannot be established; stop without takeover')
     op, holder = params['action'], params['holder']
@@ -82,10 +90,6 @@ def transition(params, before):
         raise S.StoreRefused('not_owner', 'operation requires the stored holder')
     if current.get('generation') != params['generation']:
         raise S.StoreRefused('stale_generation', 'operation requires the stored claim generation')
-    if op != 'release' and (u.get('state') not in ('CLAIMED', 'DISPATCHING', 'RUNNING', 'VERIFYING',
-                                                      'REVIEWING', 'READY_TO_LAND', 'LANDING')
-                            or b.get('state') != 'ACTIVE'):
-        raise S.StoreRefused('ownership_uncertain', 'claim and activation disagree')
     if op == 'release':
         data = dict(current, state='released', holder=None)
     elif op == 'renew':
@@ -162,7 +166,7 @@ class Receiver:
         cid = claim_id(self.ids['repository_uuid'], unit)
         current = entities.get(cid, {}).get('data', {})
         if command['operation'] == 'inspect':
-            status = ownership(current)
+            status = ownership(current, u['data'], b['data'])
             return {'ok': status in ('owned', 'unowned'), 'reason': status, 'claim': current}
         # Bind every authorization and activation input to the store transaction.
         touched = {unit, backlog, cid, principal, key['key_id'], CM.VERSIONS_ENTITY}

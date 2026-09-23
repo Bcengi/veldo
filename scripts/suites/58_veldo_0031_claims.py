@@ -228,8 +228,8 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_write('unit', 'execution_unit', dict(_v31_unit_data, state='COMPLETED'))
         _v31_check(2, 'terminal-use-stops',
                     _v31_request(_v31_owner, 'use', generation=_v31_generation + 1)['reason'] == 'ownership_uncertain')
-        _v31_check(2, 'terminal-release',
-                    _v31_request(_v31_owner, 'release', generation=_v31_generation + 1)['ok'])
+        _v31_check(2, 'terminal-release-stops',
+                    _v31_request(_v31_owner, 'release', generation=_v31_generation + 1)['reason'] == 'ownership_uncertain')
         # An actual caller of the existing Lander must stop without retry or touching refs.
         _v31_L = _v31_load('lander31', ROOT / '.veldo/lander.py')
         _v31_land_client = _v31_clients[0]
