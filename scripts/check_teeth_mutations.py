@@ -362,9 +362,9 @@ def cases():
         ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
     publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
                 'publication-pre-push-hook')
-    redirect_list = "        listed = transport('config', '-z', '--list')\n        if listed.returncode:"
-    publication('effects-remote-must-exist-verbatim', redirect_list,
-                redirect_list.replace("if listed.returncode:", "if listed.returncode or not (Path(remote).exists() or '://' in remote):"),
+    get_url = "        resolved = transport('ls-remote', '--get-url', remote)\n        if resolved.returncode:"
+    publication('effects-remote-must-exist-verbatim', get_url,
+                get_url.replace("if resolved.returncode:", "if resolved.returncode or not (Path(remote).exists() or '://' in remote):"),
                 'publication-url-rewrite')
     publication('effects-push-transports-restricted', push,
                 push.replace("transport('-c', 'push.followTags=false',", "transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
@@ -382,22 +382,23 @@ def cases():
     publication('effects-push-options-flag-only', push,
                 push.replace("'-c', 'push.pushOption=', 'push',", "'push', '--no-push-option',"),
                 'publication-push-options')
-    # R5 2: the push reaches exactly the authorized URL. Reintroducing the whitespace-split name
-    # match lets a URL with a space through; each narrower mutant drops one redirect route.
-    section = "            if key.startswith('remote.') and key[len('remote.'):key.rindex('.')] == remote:"
-    exact = 'publication-push-reaches-only-authorized-url'
-    publication('effects-remote-name-as-words', section,
-                section.replace("key[len('remote.'):key.rindex('.')] == remote", "remote in key[len('remote.'):key.rindex('.')].split()"),
-                exact)
-    publication('effects-remote-section-url-key-only', section,
-                "            if key == 'remote.' + remote + '.url':", exact)
-    publication('effects-push-instead-of-allowed',
-                "            if key.startswith('url.') and key.endswith('.pushinsteadof') and remote.startswith(value):",
-                "            if False:", exact)
-    publication('effects-legacy-remote-files-allowed', "            for legacy in ('remotes/', 'branches/'):",
-                "            for legacy in ():", exact)
-    publication('effects-redirect-check-isolated-profile', redirect_list,
-                redirect_list.replace("transport('config',", "git('config',"), exact)
+    # R6 1: the push is routed as the operator configured it, and the effect record stores where
+    # it went. Each mutant loses one part of that account or claims completion it cannot see.
+    routed = 'publication-records-resolved-destination'
+    add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
+        "        result['destination'] = destination", "        pass",
+        ['effects/' + routed, 'effects/publication-destination-without-credentials'])
+    pushed = ("                       'pushed_urls': [anonymous_url(line[len('To '):]) for line in push.stdout.splitlines()\n"
+              "                                       if line.startswith('To ')]}")
+    publication('effects-destination-from-listing', pushed, "                       'pushed_urls': [anonymous_url(listed)]}", routed)
+    publication('effects-completion-ignores-destination',
+                "        complete = (push.returncode == 0 and destination['pushed_urls'] == [destination['listed_url']]\n",
+                "        complete = (push.returncode == 0\n", routed)
+    publication('effects-listed-url-isolated-profile', "        resolved = transport('ls-remote', '--get-url', remote)",
+                "        resolved = git('ls-remote', '--get-url', remote)", routed)
+    publication('effects-destination-with-credentials', "    scheme, separator, rest = url.partition('://')",
+                "    return url\n    scheme, separator, rest = url.partition('://')",
+                'publication-destination-without-credentials')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.

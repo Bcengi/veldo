@@ -21,6 +21,16 @@ _spec.loader.exec_module(E)
 _git_process = E.organ('git_process')
 
 
+def anonymous_url(url):
+    """The URL as git displays it: a scheme URL loses its user information (user, password or
+    token); a path or scp-style address is unchanged. Recorded URLs never carry credentials."""
+    scheme, separator, rest = url.partition('://')
+    if not separator or not scheme or not all(c.isalnum() or c in '+.-' for c in scheme):
+        return url
+    authority, slash, path = rest.partition('/')
+    return scheme + separator + authority.rpartition('@')[2] + slash + path
+
+
 def receive(config, contract, accepted):
     receiver = config['receivers'][contract['target']]
     if receiver['kind'] != contract['kind']:
@@ -53,27 +63,15 @@ def receive(config, contract, accepted):
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
-        # The receiver names a URL, never a remote of the clone, and the push must reach exactly
-        # that URL. Git resolves a push destination by name first. A remote section named
-        # exactly by the URL, in any configuration scope the push reads, brings its pushurl,
-        # refspecs and mirror setting (a pushurl alone is enough); a legacy remotes/ or branches/
-        # file of that name replaces the URL for the listing and the push alike; a pushInsteadOf
-        # prefix of the URL rewrites the push only. Each could send the commit somewhere the
-        # authorization does not name, so each is refused before anything is pushed. Names are
-        # compared exactly, never as whitespace-separated words.
-        listed = transport('config', '-z', '--list')
-        if listed.returncode:
+        # The push is addressed to the receiver's URL and routed as the operator configured it:
+        # url.*.insteadOf and pushInsteadOf rewrites, a remote section or a legacy remotes/ or
+        # branches/ file of that name, in any scope the push reads. Routing is the operator's and
+        # is kept; the effect record stores where it went instead. `listed` is where the remote's
+        # state is read before and after the push, the listing's own resolution of the URL.
+        resolved = transport('ls-remote', '--get-url', remote)
+        if resolved.returncode:
             raise E.Refused('invalid-input')
-        for key, _, value in (entry.partition('\n') for entry in listed.stdout.split('\0') if entry):
-            if key.startswith('remote.') and key[len('remote.'):key.rindex('.')] == remote:
-                raise E.Refused('invalid-input')
-            if key.startswith('url.') and key.endswith('.pushinsteadof') and remote.startswith(value):
-                raise E.Refused('invalid-input')
-        if '/' not in remote and remote not in ('', '.', '..'):
-            for legacy in ('remotes/', 'branches/'):
-                path = git('rev-parse', '--git-path', legacy + remote)
-                if path.returncode or (Path(repo) / path.stdout.strip()).exists():
-                    raise E.Refused('invalid-input')
+        listed = resolved.stdout.strip()
         before = remote_refs()
         if before is None or before.get(ref) != payload['old_tip']:
             raise E.Refused('stale-subject')
@@ -83,18 +81,26 @@ def receive(config, contract, accepted):
         # from the command line or config, no push options from any configuration scope (an
         # empty push.pushOption resets the list; on GitLab-style servers an option can open a
         # merge request or skip CI), no submodule recursion, and a lease on the old tip.
-        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',
+        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',
                          '--no-follow-tags', '--recurse-submodules=no',
                          '--force-with-lease=' + ref + ':' + payload['old_tip'],
                          remote, payload['commit'] + ':' + ref)
-        # Completion is exactly one remote change: the authorized ref (and any symbolic ref
-        # that targets it, HEAD included) moved to the commit; every other entry is unchanged.
+        # Where the push went is git's own account: one porcelain `To <url>` line per repository
+        # it pushed to (a hook's output goes to stderr, never to this stream).
+        destination = {'authorized_url': anonymous_url(remote), 'listed_url': anonymous_url(listed),
+                       'pushed_urls': [anonymous_url(line[len('To '):]) for line in push.stdout.splitlines()
+                                       if line.startswith('To ')]}
+        # Completion is exactly one remote change, observed where the push went: the push reached
+        # one repository, the one the listing reads, and there the authorized ref (and any symbolic
+        # ref that targets it, HEAD included) moved to the commit; every other entry is unchanged.
+        # A route that sends the push somewhere the listing does not read cannot be confirmed.
         after = remote_refs()
         expected = dict(before, **{ref: payload['commit']})
         expected.update({name[len('symref:'):]: payload['commit'] for name, target in before.items()
                          if name.startswith('symref:') and target == ref})
-        complete = push.returncode == 0 and after is not None and after == expected
-        return dict(binding, status='completed' if complete else 'unknown',
+        complete = (push.returncode == 0 and destination['pushed_urls'] == [destination['listed_url']]
+                    and after is not None and after == expected)
+        return dict(binding, status='completed' if complete else 'unknown', destination=destination,
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)
     # Only a service-selected adapter sees reusable authentication, on stdin. Its stdout
     # is never returned verbatim; only a bound digest enters the effect observation.

@@ -409,51 +409,75 @@ print(json.dumps(result))
         seen_result('push-options', result, receiver_saw=lines)
         row('publication-push-options', result.get('completed') is True and remote_main(bare) == tip
             and lines == [['count=2', 'merge_request.create', 'ci.skip'], ['count=0']])
-        # R5 2: the push reaches exactly the authorized URL. A clone section named exactly by the
-        # URL (a file:// URL with a space in its path included), its pushurl alone, a local or
-        # global pushInsteadOf and a legacy remotes/ or branches/ file each could send the commit
-        # elsewhere; each is refused before anything is pushed. Control: a differently named
-        # remote whose URL is the authorized one, with its own pushurl, publishes normally.
-        redirects = {}
-        for name in ('space-section', 'pushurl-only', 'push-instead-of', 'global-push-instead-of',
-                     'remotes-file', 'branches-file', 'other-remote-control'):
-            clone, bare = fresh('redirect-' + name)
-            other = elsewhere_for('redirect-' + name)
+        # R6 1: the push is addressed to the authorized URL and routed by the operator's configured
+        # rewrites, and the effect record stores where it went. Each case has a decoy repository
+        # holding the old tip, so the lease holds wherever the routing sends the push. A route that
+        # moves the listing and the push alike (url.*.insteadOf in the clone or, through includeIf,
+        # in the operator's global file; a legacy remotes/ or branches/ file) publishes at the
+        # routed repository and is recorded there. A route that moves only the push (a
+        # pushInsteadOf, a section named by the URL with a pushurl) sends it to the decoy, and
+        # completion, which is read from the listing, cannot be confirmed: unknown, with the
+        # decoy recorded as the destination. URLs are recorded without their credentials.
+        def recorded(name):
+            data = E.S.materialized_state(conn)['entities'].get('effect:dispatch-publication-' + name, {}).get('data', {})
+            return data.get('destination')
+        routes = {}
+        for name in ('control', 'insteadof', 'global-include-insteadof', 'remotes-file', 'branches-file',
+                     'push-instead-of', 'space-section-pushurl', 'fan-out-pushurls'):
+            clone, bare = fresh('route-' + name)
+            other = elsewhere_for('route-' + name)
             env = None
-            if name == 'space-section':
-                spaced = root / ('redirect ' + name + '.git')
+            if name == 'space-section-pushurl':
+                spaced = root / ('route ' + name + '.git')
                 bare.rename(spaced)
                 bare = spaced
             url = 'file://' + str(bare)
-            if name in ('space-section', 'pushurl-only'):
-                if name == 'space-section':
-                    git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
-                git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other))
-            elif name == 'push-instead-of':
-                git('-C', str(clone), 'config', 'url.' + str(other) + '.pushInsteadOf', url)
-            elif name == 'global-push-instead-of':
-                env = operator_home('redirect-' + name, '[url "%s"]\n\tpushInsteadOf = %s\n' % (other, url))
+            if name == 'insteadof':
+                git('-C', str(clone), 'config', 'url.' + str(other) + '.insteadOf', url)
+            elif name == 'global-include-insteadof':
+                included = root / ('route-' + name + '.gitconfig')
+                included.write_text('[url "%s"]\n\tinsteadOf = %s\n' % (other, url))
+                env = operator_home('route-' + name, '[includeIf "gitdir:%s/"]\n\tpath = %s\n' % (clone, included))
             elif name in ('remotes-file', 'branches-file'):
-                # A remote nickname: a clone rewrite maps it to the authorized remote, and the
-                # legacy file of the same name would point both listing and push elsewhere.
+                # A remote nickname: the legacy file of that name gives the listing and the push
+                # the decoy's URL.
                 url = 'publish-target'
-                git('-C', str(clone), 'config', 'url.' + str(bare) + '.insteadOf', url)
                 legacy = clone / '.git' / name.split('-')[0]
                 legacy.mkdir(exist_ok=True)
                 (legacy / url).write_text(('URL: %s\n' if name == 'remotes-file' else '%s\n') % other)
-            else:
-                git('-C', str(clone), 'remote', 'add', 'origin-control', url)
-                git('-C', str(clone), 'config', 'remote.origin-control.pushurl', str(other))
-            result = publish('redirect-' + name, clone, url, env=env)
-            redirects[name] = (result, remote_main(bare), remote_main(other))
-            seen_result('redirect-' + name, result, authorized_moved=redirects[name][1] == tip,
-                        elsewhere_moved=redirects[name][2] == tip)
-        row('publication-push-reaches-only-authorized-url',
-            all(result.get('completed') is False and result.get('status') == 'unknown'
-                and landed == old and diverted == old
-                for name, (result, landed, diverted) in redirects.items() if name != 'other-remote-control')
-            and redirects['other-remote-control'][0].get('completed') is True
-            and redirects['other-remote-control'][1:] == (tip, old))
+            elif name == 'push-instead-of':
+                git('-C', str(clone), 'config', 'url.' + str(other) + '.pushInsteadOf', url)
+            elif name == 'space-section-pushurl':
+                git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
+                git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other))
+            elif name == 'fan-out-pushurls':
+                # Two pushurls: the push reaches the authorized repository and the decoy.
+                git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
+                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', url)
+                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', str(other))
+            result = publish('route-' + name, clone, url, env=env)
+            routes[name] = dict(result=result, url=url, bare=bare, other=other, destination=recorded('route-' + name),
+                                authorized_moved=remote_main(bare) == tip, decoy_moved=remote_main(other) == tip)
+            seen_result('route-' + name, result, authorized_moved=routes[name]['authorized_moved'],
+                        decoy_moved=routes[name]['decoy_moved'], destination=routes[name]['destination'])
+        def routed(name, completed, listed, pushed, authorized_moved, decoy_moved):
+            # `pushed` lists the URLs of the repositories the push must have reached, and the two
+            # flags say which of the authorized repository and the decoy hold the commit after it.
+            case = routes[name]
+            return (case['result'].get('completed') is completed
+                    and case['result'].get('status') == ('completed' if completed else 'unknown')
+                    and case['authorized_moved'] is authorized_moved and case['decoy_moved'] is decoy_moved
+                    and case['destination'] == {'authorized_url': case['url'], 'listed_url': listed, 'pushed_urls': pushed}
+                    and case['result'].get('destination') == case['destination'])
+        url_of, decoy_of = (lambda name: routes[name]['url']), (lambda name: str(routes[name]['other']))
+        row('publication-records-resolved-destination',
+            routed('control', True, url_of('control'), [url_of('control')], True, False)
+            and all(routed(name, True, decoy_of(name), [decoy_of(name)], False, True)
+                    for name in ('insteadof', 'global-include-insteadof', 'remotes-file', 'branches-file'))
+            and all(routed(name, False, url_of(name), [decoy_of(name)], False, True)
+                    for name in ('push-instead-of', 'space-section-pushurl'))
+            and routed('fan-out-pushurls', False, url_of('fan-out-pushurls'),
+                       [url_of('fan-out-pushurls'), decoy_of('fan-out-pushurls')], True, True))
         # R5 3: publication keeps what a plain git push from the same clone and the same operator
         # environment can do: global configuration and transport and credential variables.
         def fake_ssh(name):
@@ -483,9 +507,20 @@ print(json.dumps(result))
             unauthenticated = G.run(['git', 'ls-remote', url], capture_output=True, text=True, timeout=20).returncode != 0
             result = publish('global-credential-helper', clone, url,
                              env=operator_home('global-credential-helper', '[credential]\n\thelper = %s\n' % helper))
+            # R6 1: an authorized URL carrying its credentials publishes, and the effect record
+            # stores every URL without them.
+            keyed_clone, keyed_bare = fresh('keyed-url')
+            git('-C', str(keyed_bare), 'config', 'http.receivepack', 'true')
+            keyed_url = 'http://127.0.0.1:%d/%s' % (server.server_address[1], keyed_bare.name)
+            keyed = publish('keyed-url', keyed_clone, keyed_url.replace('http://', 'http://deploy:fixture-secret@'))
         finally:
             server.shutdown()
             server.server_close()
+        keyed_record = recorded('keyed-url')
+        seen_result('keyed-url', keyed, destination=keyed_record)
+        row('publication-destination-without-credentials', keyed.get('completed') is True
+            and remote_main(keyed_bare) == tip and 'fixture-secret' not in _v28_json.dumps(keyed)
+            and keyed_record == {'authorized_url': keyed_url, 'listed_url': keyed_url, 'pushed_urls': [keyed_url]})
         seen_result('global-credential-helper', result, unauthenticated_refused=unauthenticated)
         row('publication-global-credential-helper', unauthenticated and result.get('completed') is True
             and remote_main(bare) == tip and helper_log.exists() and 'get' in helper_log.read_text().split())
@@ -536,7 +571,7 @@ print(json.dumps(result))
             and network is not None and not any(k in network for k in hostile)
             and all(network.get(k) == v for k, v in transport.items())
             and isolated.get('GIT_CONFIG_GLOBAL') == _v28_os.devnull and 'GIT_SSH_COMMAND' not in isolated)
-        for name in ('push-options', 'push-reaches-only-authorized-url', 'global-insteadof', 'global-credential-helper',
+        for name in ('push-options', 'records-resolved-destination', 'destination-without-credentials', 'global-insteadof', 'global-credential-helper',
                      'env-ssh-command', 'global-ssh-command', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)

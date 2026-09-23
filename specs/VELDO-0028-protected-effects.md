@@ -118,11 +118,19 @@ Source publication is an ordinary `git push` from the trusted clone to the recei
 so hooks, URL rewrites, transports and credential helpers behave as configured, global and system
 ones and the operator's transport variables included (`git_process.py`'s network profile); only
 what widens a push is neutralized (one explicit refspec, no tag following, no push options, no
-submodule recursion, a lease on the old tip). The push reaches exactly the authorized URL: a remote
-section named by it, a legacy `remotes/` or `branches/` file of that name, or a `pushInsteadOf`
-prefix of it is refused before anything is pushed. Completion is claimed only when the remote's
-advertised state (every advertised ref, HEAD, peeled tags and symbolic-ref targets) equals the state
-before the push with the authorized ref moved. Two remote changes cannot be observed from outside by design and are stated limits, not
+submodule recursion, a lease on the old tip). The push is addressed to the authorized URL and
+routed by the operator's configured routing: `url.*.insteadOf` and `pushInsteadOf` rewrites, a remote
+section named by the URL (its `url` and `pushurl` values) and a legacy `remotes/` or `branches/` file
+of that name, in every scope the push reads. None of them is refused. Routing is the operator's, and
+the owner's rule is that what configured tools can do is never reduced, so there is no claim that
+the push reaches exactly the authorized URL. Instead the effect record stores, without credentials,
+the authorized URL, the URL the remote's state is read from (`git ls-remote --get-url`) and every
+repository the push reached (the push's porcelain `To` lines), so the evidence shows where it went.
+Completion is claimed only when the push reached exactly one repository, the one whose state is
+read, and that remote's advertised state (every advertised ref, HEAD, peeled tags and symbolic-ref
+targets) equals the state before the push with the authorized ref moved. A route that moves only
+the push (a `pushInsteadOf` or a `pushurl`), or sends it to more than one repository, therefore
+ends unknown with its destinations recorded. Two remote changes cannot be observed from outside by design and are stated limits, not
 passing claims: a ref the remote hides from advertisement (for example `transfer.hideRefs`), and a
 ref the remote changes and restores while the push runs.
 
