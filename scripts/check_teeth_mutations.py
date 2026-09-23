@@ -640,6 +640,22 @@ def cases():
            "                                   final=True, now=self.clock())",
            "                                   final=True, outcome='not_executed', now=self.clock())  # defect",
            'reservations/dispatch-slot-retired')
+    # Defect h reintroduced (a signers file inside the workspace vouches for it), then a relative path
+    # accepted, and the containment judged on the unresolved path, so a symlink leads back inside.
+    review('trust-accepts-workspace-signers', 'control_eligibility.py',
+           "        if any(os.path.commonpath([resolved, area]) == area for area in _workspace_areas(workspace)):\n"
+           "            raise Stopped('host_trust_refused:signers_inside_workspace')\n",
+           "        pass  # defect: the workspace's own signers file vouches for the workspace\n",
+           'eligibility/host-trust-outside-workspace')
+    review('trust-accepts-relative-signers', 'control_eligibility.py',
+           "        if not os.path.isabs(enrollment_signers):\n"
+           "            raise Stopped('host_trust_refused:signers_not_absolute')\n",
+           "        pass  # defect: a relative signers path resolves against the process's directory\n",
+           'eligibility/host-trust-outside-workspace')
+    review('trust-judges-unresolved-path', 'control_eligibility.py',
+           "        resolved = os.path.realpath(self.enrollment_signers)\n",
+           "        resolved = os.path.abspath(self.enrollment_signers)  # defect: symlinks not followed\n",
+           'eligibility/host-trust-outside-workspace')
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

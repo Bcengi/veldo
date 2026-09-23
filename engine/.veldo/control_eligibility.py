@@ -131,6 +131,7 @@ TAXONOMY = {
     'eligibility_required': 'missing_authority', 'reservation_required': 'missing_authority',
     'enrollment_unanswerable': 'unavailable_service', 'enrollment_refused': 'missing_authority',
     'host_trust_required': 'missing_authority', 'host_trust_unreadable': 'invalid_input',
+    'host_trust_refused': 'missing_authority',
     'usage_cap': 'missing_authority', 'usage_refused': 'missing_authority', 'window_exhausted': 'missing_authority',
     'missing_ceiling': 'missing_authority', 'unknown_allowance': 'unknown_outcome', 'unknown_window': 'unknown_outcome',
     'unknown_window_usage': 'unknown_outcome',
@@ -235,18 +236,30 @@ class HostTrust:
     host_identity must equal it) and an OpenSSH allowed-signers file naming the principals whose
     signature, under ENROLLMENT_NAMESPACE, makes a binding. These are VELDO-0029 verify_binding's
     `host_identity` and `verify`. Installed with the host, outside every repository: a record the
-    checked workspace carries (its binding, its tracked .veldo/keys) cannot vouch for itself."""
+    checked workspace carries (its binding, its tracked .veldo/keys) cannot vouch for itself.
+
+    ENFORCED, not assumed: the signers path must be absolute (host_trust_refused:signers_not_absolute;
+    a relative one would resolve against wherever the process runs, usually the workspace), and the
+    file it resolves to after every symlink must lie outside the checked workspace, its working tree
+    and its git directory (host_trust_refused:signers_inside_workspace). The resolved file is the
+    one read, so a symlink retargeted after the check cannot substitute another."""
 
     def __init__(self, host_identity, enrollment_signers):
         if not isinstance(host_identity, str) or not host_identity.strip() \
                 or not isinstance(enrollment_signers, str) or not enrollment_signers.strip():
             raise Stopped('host_trust_unreadable')
+        if not os.path.isabs(enrollment_signers):
+            raise Stopped('host_trust_refused:signers_not_absolute')
         self.host_identity, self.enrollment_signers = host_identity, enrollment_signers
 
-    def verifier(self, principal):
-        """verify(message, signature) -> bool for a binding enrolled by `principal`."""
+    def verifier(self, principal, workspace):
+        """verify(message, signature) -> bool for a binding enrolled by `principal` in `workspace`,
+        read from the signers file only when it resolves outside that workspace."""
+        resolved = os.path.realpath(self.enrollment_signers)
+        if any(os.path.commonpath([resolved, area]) == area for area in _workspace_areas(workspace)):
+            raise Stopped('host_trust_refused:signers_inside_workspace')
         try:
-            signers = Path(self.enrollment_signers).read_text()
+            signers = Path(resolved).read_text()
         except OSError as error:
             raise Stopped('host_trust_unreadable') from error
         AC = _organ('authority_contract')
@@ -256,6 +269,21 @@ class HostTrust:
                 return False
             return AC.ssh_keygen_verify(message, signature, signers, principal, ENROLLMENT_NAMESPACE)[0]
         return verify
+
+
+def _workspace_areas(workspace):
+    """Every directory the checked workspace controls, each resolved: the path it was named by, its
+    working tree, its git common directory and, for a clone whose common directory is its `.git`,
+    that clone's working tree (a linked worktree's main checkout carries the same tracked files)."""
+    try:
+        top = E._git(workspace, 'rev-parse', '--show-toplevel')
+        common = E.git_common_dir(workspace)
+    except E.EnrollmentRefused as error:
+        raise Stopped('enrollment_unanswerable') from error
+    areas = {os.path.realpath(str(workspace)), os.path.realpath(top), common}
+    if os.path.basename(common) == '.git':
+        areas.add(os.path.dirname(common))
+    return sorted(areas)
 
 
 def host_trust_path():
@@ -301,7 +329,7 @@ def enrolled_gate(repo_root, trust, observe=None):
         raise Stopped('enrollment_refused:not_enrolled')
     principal = binding.get('enrolled_by') if isinstance(binding, dict) else None
     try:
-        problems = E.verify_binding(workspace, binding, trust.verifier(principal), trust.host_identity)
+        problems = E.verify_binding(workspace, binding, trust.verifier(principal, workspace), trust.host_identity)
     except E.EnrollmentRefused as error:
         raise Stopped('enrollment_unanswerable') from error
     if problems:

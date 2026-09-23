@@ -1148,6 +1148,51 @@ def _v52_suite():
             if built[0] == 'ok':
                 built[1].conn.close()
 
+        with region('eligibility/host-trust-outside-workspace'):
+            # DEFECT h. What the HOST trusts must be the host's: an allowed-signers path inside the checked
+            # workspace, a relative one (resolved against wherever the process runs, the workspace), or a
+            # host path that is a symlink into the workspace is refused by name, and the genuine signer's
+            # key in that file changes nothing. The host's own file, reached through a symlink, is accepted.
+            GP.run(['git', '-C', str(base), 'commit', '-q', '--allow-empty', '-m', 'host trust fixture'], check=True,
+                   capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+            EL.E.enroll(str(base), DOMAIN, 'store-52', str(db), 'host-52', 1, enrollment_sign, 'dmitry',
+                        '2026-09-23T00:00:00Z', repository_uuid=REPOSITORY)
+            carried = base / '.veldo' / 'keys' / 'allowed_signers'
+            carried.parent.mkdir(parents=True, exist_ok=True)
+            carried.write_text(signers.read_text())
+            into_workspace, to_host = host / 'signers-into-workspace', host / 'signers-to-host'
+            into_workspace.symlink_to(carried)
+            to_host.symlink_to(signers)
+            cases_h = {'inside': str(carried), 'relative': '.veldo/keys/allowed_signers',
+                       'symlink-into-workspace': str(into_workspace), 'git-directory': None,
+                       'host': str(signers), 'host-through-symlink': str(to_host)}
+            in_git = Path(EL.E.git_common_dir(str(base))) / 'veldo-allowed-signers'
+            in_git.write_text(signers.read_text())
+            cases_h['git-directory'] = str(in_git)
+            trusted, cwd = {}, os.getcwd()
+            try:
+                os.chdir(str(base))
+                for name, path in cases_h.items():
+                    record = host / ('trust-%s.json' % name)
+                    record.write_text(json.dumps({'schema': 'veldo.host_trust/v1', 'host_identity': 'host-52',
+                                                  'enrollment_signers': path}))
+                    got = observe_effect(lambda: EL.entry_gate(str(base), trust=EL.load_host_trust(str(record))))
+                    trusted[name] = ('ok', 'Gate') if got[0] == 'ok' else got
+                    if got[0] == 'ok':
+                        got[1].conn.close()
+            finally:
+                os.chdir(cwd)
+                for path in (binding, Path(EL.E.clone_uuid_path(str(base))), in_git, into_workspace, to_host, carried):
+                    if os.path.lexists(str(path)):
+                        path.unlink()
+                carried.parent.rmdir()
+            observed['host_trust'] = trusted
+            inside = ('raised', 'Stopped:host_trust_refused:signers_inside_workspace')
+            check('eligibility/host-trust-outside-workspace',
+                   trusted == {'inside': inside, 'relative': ('raised', 'Stopped:host_trust_refused:signers_not_absolute'),
+                               'symlink-into-workspace': inside, 'git-directory': inside,
+                               'host': ('ok', 'Gate'), 'host-through-symlink': ('ok', 'Gate')})
+
         with region('eligibility/observations'):
             # Observability: every decision is recorded with identity, versions, outcome and taxonomy.
             status = gate.status()
