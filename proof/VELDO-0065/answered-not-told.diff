@@ -1,4 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1132 +1131,0 @@
--            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
+@@ -1154 +1154 @@
+-                self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
++                pass

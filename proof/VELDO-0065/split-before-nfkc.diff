@@ -2,4 +2,4 @@
 +++ b/.veldo/control_channel_presentation.py
 @@ -223 +223 @@
 -    choice, _, reason = unicodedata.normalize('NFKC', text or '').partition(':')
-+    choice, _, reason = (text or '').partition(':')
++    choice, _, reason = (text or '').replace('\uff1a', ':').partition(':')

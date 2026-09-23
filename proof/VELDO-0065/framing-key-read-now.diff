@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -761 +761 @@
+@@ -766 +766 @@
 -        key = self._as_of(data.get('key_id'), 'verification_key', written[0])
 +        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)

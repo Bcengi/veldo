@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -243 +243 @@
+@@ -248 +248 @@
 -    return len(text.encode('utf-16-le')) // 2
 +    return len(text)

@@ -1,4 +1,4 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -962 +961,0 @@
--            self._reconcile_notice(request)
+@@ -974 +973,0 @@
+-        self._reconcile_notices(request)

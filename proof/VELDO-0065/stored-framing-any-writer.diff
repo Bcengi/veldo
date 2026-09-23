@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -756 +756 @@
+@@ -761 +761 @@
 -        if written[1] != command['command_id'] or self.store.command_digest(accepted_by) != written[2]:
 +        if written[1] != command['command_id']:

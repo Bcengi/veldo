@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -419 +419 @@
--            refused.retry_after = wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None
-+            refused.retry_after = wait if type(wait) in (int, float) and 0 <= wait <= MAX_RETRY_AFTER else None
+@@ -423 +423 @@
+-            refused.retry_after = min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None
++            refused.retry_after = min(wait, MAX_RETRY_AFTER) if type(wait) in (int, float) and wait >= 0 else None

@@ -1,0 +1,189 @@
+{
+ "commit": "fbf258a9fce69fdd43e70ce62d89bb93bb99ac9c",
+ "details": [
+  "VELDO-0065 framing/frame-and-presenter-agree detail: a ledger revocation after frame()'s checks and before its commit refuses the framing",
+  "VELDO-0065 framing/frame-and-presenter-agree detail: a key revocation after frame()'s checks and before its commit refuses the framing",
+  "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger journaled as another kind before the framing refuses it",
+  "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger record whose digest does not match refuses the framing",
+  "VELDO-0065 presentation/retry-after-capped detail: retry_after 7200 waits exactly the bound, then the rest is sent",
+  "VELDO-0065 presentation/retry-after-capped detail: retry_after 1000000000000 waits exactly the bound, then the rest is sent",
+  "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe55 small colon' is the offered choice accept",
+  "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe13 vertical colon' is the offered choice accept",
+  "VELDO-0065 answer/reply-nfkc-before-split detail: 'Return\u2010For\u2011Elaboration: unicode hyphens' is the offered choice return_for_elaboration",
+  "VELDO-0065 answer/reply-nfkc-before-split detail: 'return\u2012for\u2212elaboration: more dashes' is the offered choice return_for_elaboration",
+  "VELDO-0065 answer/redelivered-answer-silent detail: the accepted answer delivered again is refused and nothing is sent back",
+  "VELDO-0065 answer/reply-after-closed detail: a reply after the request left pending is refused and told it is no longer open",
+  "VELDO-0065 answer/reply-after-closed detail: control: another message is told once",
+  "VELDO-0065 projection/notices-per-version detail: the current version's unconfirmed notice is the one the presentation supersedes first",
+  "VELDO-0065 projection/notices-per-version detail: the presentation names both notices in its text",
+  "VELDO-0065 projection/notices-per-version detail: both notices are marked superseded by it",
+  "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the notice is marked superseded by the presentation that named it, once its outcome is known"
+ ],
+ "failed_rows": [
+  "VELDO-0065 framing/frame-and-presenter-agree",
+  "VELDO-0065 framing/ledger-read-fails-closed",
+  "VELDO-0065 presentation/retry-after-capped",
+  "VELDO-0065 answer/reply-nfkc-before-split",
+  "VELDO-0065 answer/redelivered-answer-silent",
+  "VELDO-0065 answer/reply-after-closed",
+  "VELDO-0065 projection/notices-per-version",
+  "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
+ ],
+ "modules": {
+  "control_channel_presentation.py": {
+   "changed": [],
+   "sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+  },
+  "control_channel_projection.py": {
+   "changed": [],
+   "sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0065 install/assets",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/receipt-binds-shown-content",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/revision-identity",
+   true
+  ],
+  [
+   "VELDO-0065 answer/current-presentation-only",
+   true
+  ],
+  [
+   "VELDO-0065 answer/ruling-and-rationale",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/visible-supersession",
+   true
+  ],
+  [
+   "VELDO-0065 answer/unseen-refused",
+   true
+  ],
+  [
+   "VELDO-0065 answer/settle-consumes-answer",
+   true
+  ],
+  [
+   "VELDO-0065 framing/requester-only",
+   true
+  ],
+  [
+   "VELDO-0065 framing/stored-framing-reverified",
+   true
+  ],
+  [
+   "VELDO-0065 answer/not-before-publication",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/private-chat-only",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/replacement-without-reply-target",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/reply-link-verified",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/long-brief-split",
+   true
+  ],
+  [
+   "VELDO-0065 projection/one-message-per-version",
+   true
+  ],
+  [
+   "VELDO-0065 framing/key-by-store-order",
+   true
+  ],
+  [
+   "VELDO-0065 projection/notice-superseded",
+   true
+  ],
+  [
+   "VELDO-0065 projection/silent-from-store",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/refused-part-sent-again",
+   true
+  ],
+  [
+   "VELDO-0065 answer/choice-matching-and-feedback",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/notice-kind-fixed",
+   true
+  ],
+  [
+   "VELDO-0065 framing/frame-and-presenter-agree",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/retry-after-bounded",
+   true
+  ],
+  [
+   "VELDO-0065 answer/choice-normalization",
+   true
+  ],
+  [
+   "VELDO-0065 answer/after-answered-reply",
+   true
+  ],
+  [
+   "VELDO-0065 answer/tell-once-per-message",
+   true
+  ],
+  [
+   "VELDO-0065 projection/in-flight-notice-superseded",
+   true
+  ],
+  [
+   "VELDO-0065 framing/ledger-read-fails-closed",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/retry-after-capped",
+   false
+  ],
+  [
+   "VELDO-0065 answer/reply-nfkc-before-split",
+   false
+  ],
+  [
+   "VELDO-0065 answer/redelivered-answer-silent",
+   false
+  ],
+  [
+   "VELDO-0065 answer/reply-after-closed",
+   false
+  ],
+  [
+   "VELDO-0065 projection/notices-per-version",
+   false
+  ],
+  [
+   "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 5.597,
+ "spec_id": "VELDO-0065",
+ "suite": "scripts/suites/62_veldo_0065_presentations.py"
+}

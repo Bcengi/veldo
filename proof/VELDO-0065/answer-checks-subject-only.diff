@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -379 +379 @@
+@@ -383 +383 @@
 -    return [f for f in BOUND_FIELDS if receipt.get(f) != current.get(f)]
 +    return [f for f in ('subject_digests',) if receipt.get(f) != current.get(f)]

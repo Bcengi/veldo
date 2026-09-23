@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1105 +1105 @@
+@@ -1120 +1120 @@
 -        if receipt['outcome'] != 'published':
 +        if receipt['outcome'] == 'refused':

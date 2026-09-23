@@ -171,3 +171,12 @@ message back is sent once per inbound message; frame() and the presenter share o
 frame() pins the ledger it read; retry_after is honored only as a bounded integer; only the
 projection's own notice of the same request is superseded; choices match under NFKC. The journal
 scan cost is a Release 2 scale note. The criteria, status and risk are unchanged.
+
+2026-09-23, review r4: a fourth review left eight items, each fixed test first with its own row or
+row cases and registered mutations, recorded in the proof README: frame() pins every authority input
+from the snapshot its checks read; a redelivered accepted answer gets no reply; the first
+presentation supersedes the notices of its request version and older ones, current version first;
+a pending notice is reconciled against every presentation that named it; an overlong retry_after is
+capped; the whole reply is NFKC-normalized before the split and Unicode hyphens separate; a reply
+after the request left pending is told it is no longer open; an unreadable ledger fails closed. The
+criteria, status and risk are unchanged.

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -765 +765 @@
--        if principal in (ledger.get('revoked') or {}):
+@@ -772 +772 @@
+-        if principal in ((ledger or {}).get('revoked') or {}):
 +        if False:

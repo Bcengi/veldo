@@ -1,0 +1,38 @@
+=== q1_frame_pin_window.py
+ledger revocation after the check, before the pin read: frame=refused, present=refused missing_framing
+key    revocation after the check, before the pin read: frame=refused, present=refused missing_framing
+=== q2_notice_versions.py
+v1 notice: ['sent']
+revise: True revise request_version now 2
+v2 notice: ['unknown_outcome']
+frame v2: accepted
+present: published
+named: {'chat_id': 5550001, 'message_id': None, 'notice_id': 'projection:telegram_chat:assignment:present-repository:M-1:2', 'notice_state': 'unknown_outcome', 'notices': [{'message_id': None, 'notice_id': 'projection:telegram_chat:assignme
+notices (version, outcome, superseded): [(1, 'sent', True), (2, 'unknown_outcome', True)]
+=== q3_redelivered_answer.py
+first delivery: {'request_id': 'assignment:present-repository:R-1', 'outcome': 'accepted', 'presentation_id': 'presentation:telegram_chat:assignment:present-repository:R-1:1:de0ff47e80a7700db43c2617b6b5d84bdf2372e80be012547ac3a559b782aaca',
+redelivery    : {'request_id': 'assignment:present-repository:R-1', 'outcome': 'refused', 'presentation_id': 'presentation:telegram_chat:assignment:present-repository:R-1:1:de0ff47e80a7700db43c2617b6b5d84bdf2372e80be012547ac3a559b782aaca', 
+=== q4_pending_notice_orphaned.py
+presented during the notice flight: published pending
+reframe: accepted
+runs after reframe: ['published', 'already_presented', 'already_presented'] | notice outcome sent superseded_by presentation:telegram_chat:assignment:present-repository:O-1:1:07c8b9c6ac65cf0127e7468b3afe217aad07cc4264b72bd751c05f60da1dc734
+=== q5_reply_after_inbox_answer.py
+inbox answer: answer
+'accept: fine' -> refused request_closed | told: 1
+'thanks'       -> refused request_closed | told: 1
+=== q6_retry_after_long.py
+retry_after=3600: first refused channel_refused, one second later refused retry_after
+retry_after=3601: first refused channel_refused, one second later refused retry_after
+retry_after=7200: first refused channel_refused, one second later refused retry_after
+=== q7_nfkc.py
+'accept\ufe55 small colon'                         choice=accept                   reason='small colon'
+'accept\ufe13 vertical colon'                      choice=accept                   reason='vertical colon'
+'accept\u2236 ratio'                               choice=None                     reason=''
+'accept\uff1a full-width'                          choice=accept                   reason='full-width'
+'Return\u2010For\u2011Elaboration: unicode hyphens'     choice=return_for_elaboration   reason='unicode hyphens'
+'return\u2014for elaboration: em dash'             choice=None                     reason='em dash'
+'RETURN  FOR\tELABORATION: tabs'              choice=return_for_elaboration   reason='tabs'
+'return__for--elaboration: doubled'           choice=return_for_elaboration   reason='doubled'
+'\uff52\uff45\uff4a\uff45\uff43\uff54: fw'                                  choice=reject                   reason='fw'
+'accept\u200d: zwj'                           choice=None                     reason='zwj'
+'ACCEPT'                                      choice=accept                   reason=''

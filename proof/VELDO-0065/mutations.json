@@ -117,9 +117,37 @@
    [
     "VELDO-0065 projection/in-flight-notice-superseded",
     true
+   ],
+   [
+    "VELDO-0065 framing/ledger-read-fails-closed",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/retry-after-capped",
+    true
+   ],
+   [
+    "VELDO-0065 answer/reply-nfkc-before-split",
+    true
+   ],
+   [
+    "VELDO-0065 answer/redelivered-answer-silent",
+    true
+   ],
+   [
+    "VELDO-0065 answer/reply-after-closed",
+    true
+   ],
+   [
+    "VELDO-0065 projection/notices-per-version",
+    true
+   ],
+   [
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+    true
    ]
   ],
-  "seconds": 6.845
+  "seconds": 5.81
  },
  "controls_green": true,
  "mutants": [
@@ -138,7 +166,7 @@
     "VELDO-0065 presentation/revision-identity"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d3313a792ae0d441e87306bfc1fb8f835549928a3fccb3a89619e1118bc4d76a",
+   "mutant_sha256": "275858593d5295be56fd34200cc77dd4b5f3bb3e413741320f680fdde39f7683",
    "name": "request-digest-omits-version",
    "named_row_red": true,
    "named_rows": [
@@ -257,10 +285,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.609,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.724,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -272,7 +328,7 @@
     "VELDO-0065 presentation/revision-identity"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d5eda672b32897f515eddebc3247448d3107553156fed9d32f31a4f4bc652984",
+   "mutant_sha256": "9e59363a00b61f98053c5747f478a42fb7901f345acb7a5d9379eb7f78769e05",
    "name": "bindings-ignore-request-identity",
    "named_row_red": true,
    "named_rows": [
@@ -391,10 +447,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.633,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.773,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -409,7 +493,7 @@
     "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "35e9cef88e50d468c5e021a3a2b8c7017a6644fe99c6ad38b204c25107f82b4e",
+   "mutant_sha256": "d138d3794284265dff36d6d127457fda187ce913dfbac64451566dd00ad3a46c",
    "name": "render-omits-risk",
    "named_row_red": true,
    "named_rows": [
@@ -528,10 +612,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.631,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.774,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -548,7 +660,9 @@
     "VELDO-0065 framing/key-by-store-order detail: a framing by a principal the revocation ledger revoked earlier in the journal is not presented",
     "VELDO-0065 framing/frame-and-presenter-agree detail: the presenter refuses the same framing written directly, with a revocation dated in the future",
     "VELDO-0065 framing/frame-and-presenter-agree detail: the presenter refuses the same framing written directly, with a retirement dated in the future",
-    "VELDO-0065 framing/frame-and-presenter-agree detail: the presenter refuses the same framing written directly, with a key not yet effective"
+    "VELDO-0065 framing/frame-and-presenter-agree detail: the presenter refuses the same framing written directly, with a key not yet effective",
+    "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger journaled as another kind before the framing refuses it",
+    "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger record whose digest does not match refuses the framing"
    ],
    "diff": "proof/VELDO-0065/framing-signature-unchecked.diff",
    "failed_rows": [
@@ -556,10 +670,11 @@
     "VELDO-0065 framing/requester-only",
     "VELDO-0065 framing/stored-framing-reverified",
     "VELDO-0065 framing/key-by-store-order",
-    "VELDO-0065 framing/frame-and-presenter-agree"
+    "VELDO-0065 framing/frame-and-presenter-agree",
+    "VELDO-0065 framing/ledger-read-fails-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "7de45619ac8f81971e32ec377906dd76c006ecfdd23555d567a38615911b0f84",
+   "mutant_sha256": "1a2cdcb12ea8019e57942e667c95909efdf60746ff67f4230b06fe91f5e91c3c",
    "name": "framing-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -678,10 +793,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.382,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 4.725,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -736,7 +879,15 @@
     "VELDO-0065 answer/after-answered-reply detail: the recorded answer is unchanged",
     "VELDO-0065 answer/tell-once-per-message detail: the first delivery of a non-answer is told once",
     "VELDO-0065 answer/tell-once-per-message detail: control: another message with the same text is told",
-    "VELDO-0065 answer/tell-once-per-message detail: the message told is recorded by its platform identity"
+    "VELDO-0065 answer/tell-once-per-message detail: the message told is recorded by its platform identity",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe55 small colon' is the offered choice accept",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe13 vertical colon' is the offered choice accept",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'Return\u2010For\u2011Elaboration: unicode hyphens' is the offered choice return_for_elaboration",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'return\u2012for\u2212elaboration: more dashes' is the offered choice return_for_elaboration",
+    "VELDO-0065 answer/redelivered-answer-silent detail: the accepted answer delivered again is refused and nothing is sent back",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling",
+    "VELDO-0065 answer/reply-after-closed detail: a reply after the request left pending is refused and told it is no longer open",
+    "VELDO-0065 answer/reply-after-closed detail: control: another message is told once"
    ],
    "diff": "proof/VELDO-0065/published-at-from-clock.diff",
    "failed_rows": [
@@ -755,10 +906,13 @@
     "VELDO-0065 answer/choice-matching-and-feedback",
     "VELDO-0065 answer/choice-normalization",
     "VELDO-0065 answer/after-answered-reply",
-    "VELDO-0065 answer/tell-once-per-message"
+    "VELDO-0065 answer/tell-once-per-message",
+    "VELDO-0065 answer/reply-nfkc-before-split",
+    "VELDO-0065 answer/redelivered-answer-silent",
+    "VELDO-0065 answer/reply-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "213eb883daa30482d20ab16b693668e22a298a26fc40e21482fce18280047f9a",
+   "mutant_sha256": "5ef9bb2cba1fef146f02530e6c0c6ca31570da09ca4946fb1342269c53caa865",
    "name": "published-at-from-clock",
    "named_row_red": true,
    "named_rows": [
@@ -877,10 +1031,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     false
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     false
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.081,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.46,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -890,17 +1072,19 @@
     "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
     "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
     "VELDO-0065 presentation/visible-supersession detail: a re-run shows nothing twice",
-    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded reject answer as it was recorded"
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded reject answer as it was recorded",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the presentation named the notice while it was pending and was then replaced"
    ],
    "diff": "proof/VELDO-0065/presentation-key-without-digest.diff",
    "failed_rows": [
     "VELDO-0065 answer/current-presentation-only",
     "VELDO-0065 answer/ruling-and-rationale",
     "VELDO-0065 presentation/visible-supersession",
-    "VELDO-0065 answer/settle-consumes-answer"
+    "VELDO-0065 answer/settle-consumes-answer",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "40143eeadb1536d2dd227e3d7ce7fb267dba5ea40348d0e65a229f5b43dfee23",
+   "mutant_sha256": "bee4a48530873da573df2e49e365a33a2ccd6160324d12919cc0b8b28cbeff67",
    "name": "presentation-key-without-digest",
    "named_row_red": true,
    "named_rows": [
@@ -1019,10 +1203,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
     ]
    ],
-   "seconds": 6.284,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.675,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1052,7 +1264,7 @@
     "VELDO-0065 answer/after-answered-reply"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a3043b3a730948daeb59ad71dc95ebddec86ed2b12fdb38ce49f0b1859ec7634",
+   "mutant_sha256": "376c4ddf1b665e01a93fb2dbadcffefc49f3b75c8e1c098549edb380d8917d19",
    "name": "replacement-without-reply-link",
    "named_row_red": true,
    "named_rows": [
@@ -1171,10 +1383,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.823,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.759,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1215,7 +1455,8 @@
     "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to_message_id changed to None does not verify",
     "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_linked changed to False does not verify",
     "VELDO-0065 projection/one-message-per-version detail: the revision is again exactly one message, a reply to the first",
-    "VELDO-0065 projection/one-message-per-version detail: the owner's reply to the one message settles the request version"
+    "VELDO-0065 projection/one-message-per-version detail: the owner's reply to the one message settles the request version",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the presentation named the notice while it was pending and was then replaced"
    ],
    "diff": "proof/VELDO-0065/answer-checks-subject-only.diff",
    "failed_rows": [
@@ -1226,10 +1467,11 @@
     "VELDO-0065 answer/settle-consumes-answer",
     "VELDO-0065 presentation/replacement-without-reply-target",
     "VELDO-0065 presentation/reply-link-verified",
-    "VELDO-0065 projection/one-message-per-version"
+    "VELDO-0065 projection/one-message-per-version",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "85935c6d37235c111668ed9109a386e548a8b04b0ccab99339f637888548f281",
+   "mutant_sha256": "f91ef7dcf3c51dfa5bcacbeedfad1078aa0e2221275ac176fa90dd61ffac6666",
    "name": "answer-checks-subject-only",
    "named_row_red": true,
    "named_rows": [
@@ -1348,10 +1590,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
     ]
    ],
-   "seconds": 7.813,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.715,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1367,7 +1637,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "f746b40a52966b3a090b3c1bbbbabf7c6238bb2f96a381e326d3085bc32a23f5",
+   "mutant_sha256": "66c1f21933c546382f6fa04ec54a2b61de70e430e69a915dba1cf24dbedfa5f8",
    "name": "missing-reference-uses-current",
    "named_row_red": true,
    "named_rows": [
@@ -1486,10 +1756,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 11.25,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.924,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1513,7 +1811,7 @@
     "VELDO-0065 answer/choice-normalization"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d60b672aaf5c14bf8a23bd3659a265c3c0813df92ac7be92d7a8bd30c861d821",
+   "mutant_sha256": "3a7785d86d8747a991c819b16d3f44639d175102c5b77d9650683ece4ad09047",
    "name": "answer-drops-rationale",
    "named_row_red": true,
    "named_rows": [
@@ -1632,10 +1930,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 9.326,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.913,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1651,7 +1977,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "aa52ef94ddc142dafbf24f3e5a8eda340290fc8b1b4e80139bf691e80d0b7aea",
+   "mutant_sha256": "dd4829a44fbe83e8df4dab3e7faabb49319e0096fcb67ff19a99fb99799cee59",
    "name": "answer-skips-edge-signature",
    "named_row_red": true,
    "named_rows": [
@@ -1770,10 +2096,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.227,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.946,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1788,7 +2142,7 @@
     "VELDO-0065 answer/unseen-refused"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8e22dc2f1fbd9d9d1477f6bf544df6dd095460b800d6335a45ff66ba45df4068",
+   "mutant_sha256": "33f1e25636a98c2864cef94b669461b6734f97d3ccb5b5a915d8b379f83f357d",
    "name": "unsent-marked-published",
    "named_row_red": true,
    "named_rows": [
@@ -1907,10 +2261,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.191,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.828,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -1923,7 +2305,7 @@
     "VELDO-0065 answer/unseen-refused"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "89d73684cb42cf4af52f89daac309f5f8ccb6d2d9a72160cc3a6d2e51583fff8",
+   "mutant_sha256": "e7520a379138ee55629261163e824554cee8e84c0b2e87b6d95fabcd6c9be525",
    "name": "unseen-only-refused-outcome",
    "named_row_red": true,
    "named_rows": [
@@ -2042,10 +2424,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.341,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.881,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2060,17 +2470,19 @@
     "VELDO-0065 answer/choice-matching-and-feedback detail: '  Accept   :  looks right' is the offered choice accept",
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'thanks!' is refused as already answered and the owner is told the ruling",
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling",
-    "VELDO-0065 answer/after-answered-reply detail: the recorded answer is unchanged"
+    "VELDO-0065 answer/after-answered-reply detail: the recorded answer is unchanged",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling"
    ],
    "diff": "proof/VELDO-0065/answer-records-typed-choice-as-ruling.diff",
    "failed_rows": [
     "VELDO-0065 answer/ruling-and-rationale",
     "VELDO-0065 answer/settle-consumes-answer",
     "VELDO-0065 answer/choice-matching-and-feedback",
-    "VELDO-0065 answer/after-answered-reply"
+    "VELDO-0065 answer/after-answered-reply",
+    "VELDO-0065 answer/redelivered-answer-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "115285020257f4f6cb312aafe61701556d6dbdba0f3ee3b1685276b75f1efef2",
+   "mutant_sha256": "2db5c6b4ac0cab6a07b6b81bd8d014c636a7b7f724a7ad2e2e0b775e826d63ba",
    "name": "answer-records-typed-choice-as-ruling",
    "named_row_red": true,
    "named_rows": [
@@ -2189,10 +2601,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.496,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.866,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2204,7 +2644,7 @@
     "VELDO-0065 answer/settle-consumes-answer"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "4bde1ca22257a8901972a61183002ff902a24156812c3448e2382f63acce70fa",
+   "mutant_sha256": "6c7e3814fd53b136a3e8bc4b60c1a3137bbe4b2e4db32df85da9035615526462",
    "name": "unmapped-choice-presented",
    "named_row_red": true,
    "named_rows": [
@@ -2323,10 +2763,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.69,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.914,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2338,7 +2806,7 @@
     "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "eed08e1861adad1bdee91bac2a4f711374042a3c8568792f0ba50e232b6d18dd",
+   "mutant_sha256": "7f8ab7b092cf84fe9ed8a33c2935b6d6a9df113afb63fb8c0033edc0930bdbe7",
    "name": "project-owner-frames-again",
    "named_row_red": true,
    "named_rows": [
@@ -2457,10 +2925,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.925,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.733,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2473,7 +2969,7 @@
     "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "59f1d92457b4c0a0ca4f28ec9c7c2d4c039379c47c1540ce19615e8df42cff5a",
+   "mutant_sha256": "c8536fe3f57c052811926aefc01c8bf1ec213687c0e3ce9d4937d33b91ef7aac",
    "name": "stored-framing-any-framer",
    "named_row_red": true,
    "named_rows": [
@@ -2592,10 +3088,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.862,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.761,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2609,7 +3133,7 @@
     "VELDO-0065 framing/stored-framing-reverified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "49696e4a3b8992f62df6a188001961a5e4eb1f1f28c46d251fb4c9a4943231eb",
+   "mutant_sha256": "cf440242311ad5c6a79040848ab723797523b31b5c3a93ebbdec5fcf6e4a743d",
    "name": "stored-framing-any-writer",
    "named_row_red": true,
    "named_rows": [
@@ -2728,10 +3252,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 10.346,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.911,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2751,7 +3303,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "49c0d9d2d152cf09f6bf172f8df8e71b2a924a64d84c81ae8db36e118f73a99e",
+   "mutant_sha256": "440dc98eff87e1efa004bb5f14d11bad1642cb47cfc54794135db8e1e5ced323",
    "name": "stored-framing-key-at-any-time",
    "named_row_red": true,
    "named_rows": [
@@ -2870,10 +3422,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 9.973,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.928,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -2886,7 +3466,7 @@
     "VELDO-0065 answer/not-before-publication"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "1e448754ac1805b0c32aab62358702e880141ff7cd8002f3448768ff172baa0e",
+   "mutant_sha256": "ccd5a5ff4c42b17331b84c14cb937898daa75045f63f387a514d60247fad9881",
    "name": "answer-time-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -3005,10 +3585,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 11.711,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.81,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3020,7 +3628,7 @@
     "VELDO-0065 answer/not-before-publication"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "6b461f960741b78e8495e16ad73a6d683975019d86d1b9f0169ca2d8f4d3629a",
+   "mutant_sha256": "fdd4b6f096686e25d4babba74ccdd6f6923856aba84b9bf68525b2eded116159",
    "name": "answer-time-same-second-refused",
    "named_row_red": true,
    "named_rows": [
@@ -3139,10 +3747,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.012,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.832,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3157,7 +3793,7 @@
     "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "69ab117839b3769e1dda4ed24e921d41d69ea3973ca1cb0d0381f0e9c310d1ca",
+   "mutant_sha256": "729ea71aebd5d064c3f2fa6922f2c323307407ba8c9cb1c91416a721ce8c614f",
    "name": "group-chat-presented",
    "named_row_red": true,
    "named_rows": [
@@ -3276,10 +3912,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 9.011,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.783,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3293,7 +3957,7 @@
     "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "cf35952eeaf7ab50769c269abf1c36dbbc839c5c5cbe156d6ac594d57a35d27d",
+   "mutant_sha256": "576513c7cf5015d0c708a811352b580c2eceaf0db38e10588c38ea6683cf2726",
    "name": "unpresented-reason-not-counted",
    "named_row_red": true,
    "named_rows": [
@@ -3412,10 +4076,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 9.199,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.809,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3431,7 +4123,7 @@
     "VELDO-0065 presentation/reply-link-verified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "f378d53441dfd304023b8f45370f1d91f781e0f75a47b24aca64480a4bd8b80e",
+   "mutant_sha256": "4f4a7678c09452d70db499a7d5d0d6de58999b32e1ad185484237ce1ee9aa2a7",
    "name": "replacement-requires-reply-target",
    "named_row_red": true,
    "named_rows": [
@@ -3550,10 +4242,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.153,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 6.08,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3565,7 +4285,7 @@
     "VELDO-0065 presentation/replacement-without-reply-target"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "bfe6b0986f6aeb4edae0512743c1a0958bd4f15fbee1bc13debc3a8f4e9fbb45",
+   "mutant_sha256": "79ad9d10c67b61c7fe2481e54ff296c54c2fb89e408aa6febeaebb38c547420e",
    "name": "reply-link-always-claimed",
    "named_row_red": true,
    "named_rows": [
@@ -3684,10 +4404,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 7.725,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.785,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3699,7 +4447,7 @@
     "VELDO-0065 presentation/reply-link-verified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d52d8ab2cd565d1a94ba1d0ba47085d8294dfcfa44e4016b2340698fde2f8bfa",
+   "mutant_sha256": "c93e90fc29ad0373d3c0542e48a89c2b4b71ea6c9fe8d49ed5bc8fe2d8a9db7a",
    "name": "receipt-reply-link-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -3818,10 +4566,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 7.804,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.743,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3833,7 +4609,7 @@
     "VELDO-0065 presentation/reply-link-verified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "05e32073fdb4e5f217bfd46e5649fd43f28493b8536dec1045a300f0b2a6ac2d",
+   "mutant_sha256": "742083bd840d9b46e2a6348c402f43b0717cc991d8da6ef94bcb3d01f3971924",
    "name": "receipt-platform-reply-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -3952,10 +4728,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 7.81,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.73,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -3972,7 +4776,7 @@
     "VELDO-0065 presentation/long-brief-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c48117e597aa25ef2111d3ad7a877ff8025222809166a17887fd523065bd2300",
+   "mutant_sha256": "eeff659d1d80e40aacaedfacd3ea607455f541f385cbf4e43203df85eaf5ade2",
    "name": "part-length-in-characters",
    "named_row_red": true,
    "named_rows": [
@@ -4091,10 +4895,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 7.856,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.721,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -4108,7 +4940,7 @@
     "VELDO-0065 presentation/refused-part-sent-again"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "1782c6a8fd14040b17f2d55ad69afa059f8c47d61ba667acd91e91364928e18e",
+   "mutant_sha256": "73333a4e68b7e5a83e4ed2a0925538cd7160c25133696bcf6f6f6ac7e7005cd4",
    "name": "answer-only-to-last-part",
    "named_row_red": true,
    "named_rows": [
@@ -4227,10 +5059,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.332,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.73,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -4366,9 +5226,37 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 7.808,
+   "seconds": 5.554,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -4500,9 +5388,37 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.972,
+   "seconds": 5.712,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -4635,9 +5551,37 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.973,
+   "seconds": 5.843,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -4769,9 +5713,37 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.92,
+   "seconds": 6.261,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -4782,15 +5754,22 @@
     "VELDO-0065 projection/notice-superseded detail: the presentation's receipt verifies with its reply link to the notice",
     "VELDO-0065 projection/in-flight-notice-superseded detail: a presentation composed while the notice is in flight names that notice in its text",
     "VELDO-0065 projection/in-flight-notice-superseded detail: once the notice's outcome is known, the next run marks it superseded",
-    "VELDO-0065 projection/in-flight-notice-superseded detail: a notice of unknown outcome is named by the first presentation and marked superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded detail: a notice of unknown outcome is named by the first presentation and marked superseded",
+    "VELDO-0065 projection/notices-per-version detail: the current version's unconfirmed notice is the one the presentation supersedes first",
+    "VELDO-0065 projection/notices-per-version detail: the presentation names both notices in its text",
+    "VELDO-0065 projection/notices-per-version detail: both notices are marked superseded by it",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the presentation named the notice while it was pending and was then replaced",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the notice is marked superseded by the presentation that named it, once its outcome is known"
    ],
    "diff": "proof/VELDO-0065/presentation-ignores-notice.diff",
    "failed_rows": [
     "VELDO-0065 projection/notice-superseded",
-    "VELDO-0065 projection/in-flight-notice-superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded",
+    "VELDO-0065 projection/notices-per-version",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "ee176bdcd8d5d010b57fef199e914c410237f3e87b238ac8d08c1bd64be2e620",
+   "mutant_sha256": "0174e281ba81178e564765ec4efaa72a61b1241c271c4e003151c8172893405a",
    "name": "presentation-ignores-notice",
    "named_row_red": true,
    "named_rows": [
@@ -4909,24 +5888,54 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      false
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     false
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
     ]
    ],
-   "seconds": 5.819,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.764,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0065 projection/notice-superseded detail: the notice's record is marked superseded by the presentation",
-    "VELDO-0065 projection/in-flight-notice-superseded detail: a notice of unknown outcome is named by the first presentation and marked superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded detail: a notice of unknown outcome is named by the first presentation and marked superseded",
+    "VELDO-0065 projection/notices-per-version detail: both notices are marked superseded by it"
    ],
    "diff": "proof/VELDO-0065/notice-not-marked-superseded.diff",
    "failed_rows": [
     "VELDO-0065 projection/notice-superseded",
-    "VELDO-0065 projection/in-flight-notice-superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded",
+    "VELDO-0065 projection/notices-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "75ac9e50fbe31040f2fd9708433cefd305aa6c0d50d54edecc4c8487cd41a58d",
+   "mutant_sha256": "806cd5886848e0f4cff909cd21285da6a0472346ae1c8a37dfdd9e30484f9c1f",
    "name": "notice-not-marked-superseded",
    "named_row_red": true,
    "named_rows": [
@@ -5045,10 +6054,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      false
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     false
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.971,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.81,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -5060,18 +6097,20 @@
     "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a string means the next run sends the rest",
     "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a fraction means the next run sends the rest",
     "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a negative number means the next run sends the rest",
-    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a huge number means the next run sends the rest",
     "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a boolean means the next run sends the rest",
     "VELDO-0065 presentation/retry-after-bounded detail: retry_after as an omitted value means the next run sends the rest",
-    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as infinity means the next run sends the rest"
+    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as infinity means the next run sends the rest",
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 7200 waits exactly the bound, then the rest is sent",
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 1000000000000 waits exactly the bound, then the rest is sent"
    ],
    "diff": "proof/VELDO-0065/partial-never-sent-again.diff",
    "failed_rows": [
     "VELDO-0065 presentation/refused-part-sent-again",
-    "VELDO-0065 presentation/retry-after-bounded"
+    "VELDO-0065 presentation/retry-after-bounded",
+    "VELDO-0065 presentation/retry-after-capped"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "589ce70bf81afa835b8965781dd452210c8b1cbb5a8fa821191169f8d0814a2c",
+   "mutant_sha256": "0bdb839de616ffe23bdd1a82cd6885ced8705b03fc2a5b54263e3ef4c5b5e697",
    "name": "partial-never-sent-again",
    "named_row_red": true,
    "named_rows": [
@@ -5190,23 +6229,54 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.759,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.585,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/refused-part-sent-again detail: a run inside the platform's retry_after sends nothing",
-    "VELDO-0065 presentation/refused-part-sent-again detail: after retry_after only the missing parts are sent and the presentation completes"
+    "VELDO-0065 presentation/refused-part-sent-again detail: after retry_after only the missing parts are sent and the presentation completes",
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 7200 waits exactly the bound, then the rest is sent",
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 1000000000000 waits exactly the bound, then the rest is sent"
    ],
    "diff": "proof/VELDO-0065/retry-after-ignored.diff",
    "failed_rows": [
-    "VELDO-0065 presentation/refused-part-sent-again"
+    "VELDO-0065 presentation/refused-part-sent-again",
+    "VELDO-0065 presentation/retry-after-capped"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "12bfb31e27b8bcb515db1d025ba1bafe7a325ddd920883ab28418c757491d5eb",
+   "mutant_sha256": "23045b1a9ef3a60b54d03d83604977539bcb77f861f75f750741311a8925f70d",
    "name": "retry-after-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -5325,10 +6395,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.922,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.68,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -5338,15 +6436,17 @@
     "VELDO-0065 answer/choice-matching-and-feedback detail: '  Accept   :  looks right' is the offered choice accept",
     "VELDO-0065 answer/choice-matching-and-feedback detail: control: the refused replies answered nothing, and a matching one then does",
     "VELDO-0065 answer/choice-normalization detail: '\uff21\uff23\uff23\uff25\uff30\uff34: full-width letters' is the offered choice accept",
-    "VELDO-0065 answer/choice-normalization detail: 'Return-For-Elaboration: need more' is the offered choice return_for_elaboration"
+    "VELDO-0065 answer/choice-normalization detail: 'Return-For-Elaboration: need more' is the offered choice return_for_elaboration",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'Return\u2010For\u2011Elaboration: unicode hyphens' is the offered choice return_for_elaboration"
    ],
    "diff": "proof/VELDO-0065/choice-match-case-sensitive.diff",
    "failed_rows": [
     "VELDO-0065 answer/choice-matching-and-feedback",
-    "VELDO-0065 answer/choice-normalization"
+    "VELDO-0065 answer/choice-normalization",
+    "VELDO-0065 answer/reply-nfkc-before-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "05f2dbee38addb514588bd41692b1a833bcc67d35c872157d7984e9b8cea13a6",
+   "mutant_sha256": "341ceb3815da50d52571df1e82c3d6b1898d8a2c4a0345db2ddfe95a2ef2ca1f",
    "name": "choice-match-case-sensitive",
    "named_row_red": true,
    "named_rows": [
@@ -5465,10 +6565,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     false
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.945,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.676,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -5479,16 +6607,21 @@
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'thanks!' is refused as already answered and the owner is told the ruling",
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling",
     "VELDO-0065 answer/tell-once-per-message detail: the first delivery of a non-answer is told once",
-    "VELDO-0065 answer/tell-once-per-message detail: control: another message with the same text is told"
+    "VELDO-0065 answer/tell-once-per-message detail: control: another message with the same text is told",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling",
+    "VELDO-0065 answer/reply-after-closed detail: a reply after the request left pending is refused and told it is no longer open",
+    "VELDO-0065 answer/reply-after-closed detail: control: another message is told once"
    ],
    "diff": "proof/VELDO-0065/owner-not-told.diff",
    "failed_rows": [
     "VELDO-0065 answer/choice-matching-and-feedback",
     "VELDO-0065 answer/after-answered-reply",
-    "VELDO-0065 answer/tell-once-per-message"
+    "VELDO-0065 answer/tell-once-per-message",
+    "VELDO-0065 answer/redelivered-answer-silent",
+    "VELDO-0065 answer/reply-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "0c1142db96d2016018997f44cbd50d2828e9c2f47b1019f2f2cfd6accef9bc71",
+   "mutant_sha256": "5d01fbefcb8b9eec6c361d2e98d0ff7843dfba9279a16b0e00c132cff50213be",
    "name": "owner-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -5607,10 +6740,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     false
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.205,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.859,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -5622,7 +6783,7 @@
     "VELDO-0065 presentation/notice-kind-fixed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "656276f82720da119136bafc4a388453b15c1b25aa249dd9660e7036d7b7651c",
+   "mutant_sha256": "5163d91743aabe342dffd79a27eb5743d416376a9df8c868f18c2d3ee4a7ca77",
    "name": "notice-kind-from-caller",
    "named_row_red": true,
    "named_rows": [
@@ -5741,10 +6902,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.079,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.763,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -5756,7 +6945,7 @@
     "VELDO-0065 presentation/notice-kind-fixed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "58d6e25905315655ef8b57449fb09e362b1cda00cfe6b7e32a1da15c99c8a909",
+   "mutant_sha256": "3b822117f60213ef8c007e3562c5fb83c5a6df500cd020dca5f4e79ff871a298",
    "name": "notice-of-any-request",
    "named_row_red": true,
    "named_rows": [
@@ -5875,10 +7064,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.983,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.801,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -5891,7 +7108,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a770b695004522e464294f7b82288e1e3b1bc5fa9cda4551150562972976011d",
+   "mutant_sha256": "1789351e2464ee5447d7fb347b9f7e625d09abf05723e8fac90a0183a7aa1683",
    "name": "frame-key-by-time",
    "named_row_red": true,
    "named_rows": [
@@ -6010,10 +7227,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 5.995,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.772,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -6025,7 +7270,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "695b1bd886bce677c9eec8dac12b91721330ee4c29031b5028d09c10cbbf05d9",
+   "mutant_sha256": "8d2d831db285c4af5b11db1ddc831d3e515f6f69bcacf32b5c5b048583b0e305",
    "name": "frame-ledger-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -6144,22 +7389,51 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.062,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.63,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0065 framing/frame-and-presenter-agree detail: a ledger revocation between frame()'s read and its commit refuses the framing, as the presenter would"
+    "VELDO-0065 framing/frame-and-presenter-agree detail: a ledger revocation between frame()'s read and its commit refuses the framing, as the presenter would",
+    "VELDO-0065 framing/frame-and-presenter-agree detail: a ledger revocation after frame()'s checks and before its commit refuses the framing"
    ],
    "diff": "proof/VELDO-0065/frame-ledger-unpinned.diff",
    "failed_rows": [
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2566ecbc4c2604a80853bf4eb247d0b0a95e67d7449bf5324942ff2a0aa5e9ce",
+   "mutant_sha256": "10e0d660e4e7aaac20758d8220708018bedfbfa73e05dfdffac473df3351fec7",
    "name": "frame-ledger-unpinned",
    "named_row_red": true,
    "named_rows": [
@@ -6278,10 +7552,362 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.325,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.788,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/frame-and-presenter-agree detail: a ledger revocation after frame()'s checks and before its commit refuses the framing"
+   ],
+   "diff": "proof/VELDO-0065/frame-ledger-pin-read-later.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/frame-and-presenter-agree"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "cb58ae8c182e5ea2af9c9783e385f354d1d10b5fe9659193147222deca0342c9",
+   "name": "frame-ledger-pin-read-later",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/frame-and-presenter-agree"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.757,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/frame-and-presenter-agree detail: a key revocation after frame()'s checks and before its commit refuses the framing"
+   ],
+   "diff": "proof/VELDO-0065/frame-key-pin-read-later.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/frame-and-presenter-agree"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "7b373d6259940181c0cfb1313988f9fb1e34b315be92b7219e2542c5d628d097",
+   "name": "frame-key-pin-read-later",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/frame-and-presenter-agree"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.969,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -6295,7 +7921,7 @@
     "VELDO-0065 framing/key-by-store-order"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d377d0df56cdbce52be2d9862d693931d934f1e2e5feb4145ea69935c7397c55",
+   "mutant_sha256": "573c6deeb15419572d28686c4ca66e404ac63a750c62a2461bbeaab949f4fd66",
    "name": "framing-key-read-now",
    "named_row_red": true,
    "named_rows": [
@@ -6414,10 +8040,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.102,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.599,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -6429,7 +8083,7 @@
     "VELDO-0065 framing/key-by-store-order"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "f44426ad83f178a03288a56bf204530de9a416fe161798dbb87d866c2f4a4cc3",
+   "mutant_sha256": "54190c0010e539a23d5b7dd77f6ae08732f8222cb250a7e4260b488ad5035e52",
    "name": "framing-ledger-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -6548,22 +8202,51 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.104,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.702,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a fraction means the next run sends the rest"
+    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a fraction means the next run sends the rest",
+    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as infinity means the next run sends the rest"
    ],
    "diff": "proof/VELDO-0065/retry-after-any-number.diff",
    "failed_rows": [
     "VELDO-0065 presentation/retry-after-bounded"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8a744e5993c5d73cd77303f0def7d5092c853b3959cc1b74729112944c025900",
+   "mutant_sha256": "f12847e3073ddb131cf1bf852b8807ade2dacd0e35fbe7b2942247fca50cd6bf",
    "name": "retry-after-any-number",
    "named_row_red": true,
    "named_rows": [
@@ -6682,23 +8365,51 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.091,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.644,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a huge number means the next run sends the rest"
+    "VELDO-0065 presentation/retry-after-bounded detail: retry_after as a boolean means the next run sends the rest"
    ],
-   "diff": "proof/VELDO-0065/retry-after-unbounded.diff",
+   "diff": "proof/VELDO-0065/retry-after-boolean-accepted.diff",
    "failed_rows": [
     "VELDO-0065 presentation/retry-after-bounded"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "286e2c6d2fee73c1c73c45197d7c1204275349634217a13035abc953fc53ecff",
-   "name": "retry-after-unbounded",
+   "mutant_sha256": "6cac6e96fba5dcab220e2b646ebb7e443f5b1628b266ea3e7fe549c1dc44a48b",
+   "name": "retry-after-boolean-accepted",
    "named_row_red": true,
    "named_rows": [
     "presentation/retry-after-bounded"
@@ -6816,22 +8527,379 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.596,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.637,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0065 answer/choice-normalization detail: '\uff21\uff23\uff23\uff25\uff30\uff34: full-width letters' is the offered choice accept"
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 7200 waits exactly the bound, then the rest is sent",
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 1000000000000 waits exactly the bound, then the rest is sent"
+   ],
+   "diff": "proof/VELDO-0065/retry-after-unbounded.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/retry-after-capped"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "d200fe2becac2dd31a50f4d74746dc092c31021eb06e85484e6a1356536eb399",
+   "name": "retry-after-unbounded",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/retry-after-capped"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.663,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 7200 waits exactly the bound, then the rest is sent",
+    "VELDO-0065 presentation/retry-after-capped detail: retry_after 1000000000000 waits exactly the bound, then the rest is sent"
+   ],
+   "diff": "proof/VELDO-0065/retry-after-above-bound-ignored.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/retry-after-capped"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "cccfc3f3fd8b20155cfb64d821127e8f378592d6ab27baeadc48dc21343a6c71",
+   "name": "retry-after-above-bound-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/retry-after-capped"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.656,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/choice-normalization detail: 'accept\uff1a full-width colon' is the offered choice accept",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe55 small colon' is the offered choice accept",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe13 vertical colon' is the offered choice accept"
    ],
    "diff": "proof/VELDO-0065/choice-without-nfkc.diff",
    "failed_rows": [
-    "VELDO-0065 answer/choice-normalization"
+    "VELDO-0065 answer/choice-normalization",
+    "VELDO-0065 answer/reply-nfkc-before-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "555b5febbb4ce8be00ac5662870786e901c896078b7456cddc3c255e74b264ff",
+   "mutant_sha256": "18e22272c5469fca441bc12f17ba9115e062f2cec77dcf04fb47c9395f902ef6",
    "name": "choice-without-nfkc",
    "named_row_red": true,
    "named_rows": [
@@ -6950,23 +9018,54 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     false
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 7.539,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 6.01,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0065 answer/choice-normalization detail: 'return for elaboration: need more' is the offered choice return_for_elaboration",
-    "VELDO-0065 answer/choice-normalization detail: 'Return-For-Elaboration: need more' is the offered choice return_for_elaboration"
+    "VELDO-0065 answer/choice-normalization detail: 'Return-For-Elaboration: need more' is the offered choice return_for_elaboration",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'Return\u2010For\u2011Elaboration: unicode hyphens' is the offered choice return_for_elaboration",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'return\u2012for\u2212elaboration: more dashes' is the offered choice return_for_elaboration"
    ],
    "diff": "proof/VELDO-0065/choice-separators-distinct.diff",
    "failed_rows": [
-    "VELDO-0065 answer/choice-normalization"
+    "VELDO-0065 answer/choice-normalization",
+    "VELDO-0065 answer/reply-nfkc-before-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "4a90d26cb717185f45a888d6485076ced5d7fcb33b45bf18df7ccc50434d8443",
+   "mutant_sha256": "d6e8056fbf0b4fdde87decdd8f386621a597bcbe9ba80a37c178eb986a19e963",
    "name": "choice-separators-distinct",
    "named_row_red": true,
    "named_rows": [
@@ -7085,25 +9184,56 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     false
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 9.096,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 6.548,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0065 answer/current-presentation-only detail: an answered request version refuses a second answer",
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'thanks!' is refused as already answered and the owner is told the ruling",
-    "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling"
+    "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling",
+    "VELDO-0065 answer/redelivered-answer-silent detail: the accepted answer delivered again is refused and nothing is sent back",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling"
    ],
    "diff": "proof/VELDO-0065/answered-checked-after-choice.diff",
    "failed_rows": [
     "VELDO-0065 answer/current-presentation-only",
-    "VELDO-0065 answer/after-answered-reply"
+    "VELDO-0065 answer/after-answered-reply",
+    "VELDO-0065 answer/redelivered-answer-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "160862e5ee5fc5b584e404de5021af920c2f77deabd99464e61b29658ecc8e76",
+   "mutant_sha256": "e4c5c762cd871f2e1d0f32fe4d93fc2718470dee794e24bcb2347dc6cafb6aa1",
    "name": "answered-checked-after-choice",
    "named_row_red": true,
    "named_rows": [
@@ -7222,23 +9352,53 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.945,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 7.015,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'thanks!' is refused as already answered and the owner is told the ruling",
-    "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling"
+    "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling"
    ],
    "diff": "proof/VELDO-0065/answered-not-told.diff",
    "failed_rows": [
-    "VELDO-0065 answer/after-answered-reply"
+    "VELDO-0065 answer/after-answered-reply",
+    "VELDO-0065 answer/redelivered-answer-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "7c8eff5c1be4c5d699bd73391321dfc5d47d28bed2ae083a3fbdac84b9617308",
+   "mutant_sha256": "64af98fcf76079354a35f9f040d6bbe377fa4a830c633736895c24f5d9fd452c",
    "name": "answered-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -7357,22 +9517,52 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 9.587,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 7.223,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0065 answer/tell-once-per-message detail: the same message delivered again is not told again"
+    "VELDO-0065 answer/tell-once-per-message detail: the same message delivered again is not told again",
+    "VELDO-0065 answer/reply-after-closed detail: the same message delivered again is not told again"
    ],
    "diff": "proof/VELDO-0065/tell-not-deduplicated.diff",
    "failed_rows": [
-    "VELDO-0065 answer/tell-once-per-message"
+    "VELDO-0065 answer/tell-once-per-message",
+    "VELDO-0065 answer/reply-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "e175400af35059726fe47af70e10480f8b9c0242a751bdeb68ca2e0b796c9905",
+   "mutant_sha256": "c022e8210fadda446129b1dfaa04ac6c77c650fc23e5edd9eb2a4c38189651b6",
    "name": "tell-not-deduplicated",
    "named_row_red": true,
    "named_rows": [
@@ -7491,10 +9681,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     false
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.842,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 6.655,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -7506,16 +9724,20 @@
     "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling",
     "VELDO-0065 answer/tell-once-per-message detail: the first delivery of a non-answer is told once",
     "VELDO-0065 answer/tell-once-per-message detail: control: another message with the same text is told",
-    "VELDO-0065 answer/tell-once-per-message detail: the message told is recorded by its platform identity"
+    "VELDO-0065 answer/tell-once-per-message detail: the message told is recorded by its platform identity",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling",
+    "VELDO-0065 answer/reply-after-closed detail: control: another message is told once"
    ],
    "diff": "proof/VELDO-0065/tell-keyed-by-text.diff",
    "failed_rows": [
     "VELDO-0065 answer/choice-matching-and-feedback",
     "VELDO-0065 answer/after-answered-reply",
-    "VELDO-0065 answer/tell-once-per-message"
+    "VELDO-0065 answer/tell-once-per-message",
+    "VELDO-0065 answer/redelivered-answer-silent",
+    "VELDO-0065 answer/reply-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2e1d622543ea79865128cef1d870ce5ac17786fa44bd1cf2e8e7c1449d61f894",
+   "mutant_sha256": "cc30d346a0b317979c522adbf4fe659a8601f2de7db622267efeef169dd43bab",
    "name": "tell-keyed-by-text",
    "named_row_red": true,
    "named_rows": [
@@ -7634,10 +9856,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     false
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.816,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.959,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
@@ -7768,9 +10018,37 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      false
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 8.273,
+   "seconds": 5.769,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -7778,14 +10056,21 @@
    "details": [
     "VELDO-0065 projection/in-flight-notice-superseded detail: a presentation composed while the notice is in flight names that notice in its text",
     "VELDO-0065 projection/in-flight-notice-superseded detail: once the notice's outcome is known, the next run marks it superseded",
-    "VELDO-0065 projection/in-flight-notice-superseded detail: a notice of unknown outcome is named by the first presentation and marked superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded detail: a notice of unknown outcome is named by the first presentation and marked superseded",
+    "VELDO-0065 projection/notices-per-version detail: the current version's unconfirmed notice is the one the presentation supersedes first",
+    "VELDO-0065 projection/notices-per-version detail: the presentation names both notices in its text",
+    "VELDO-0065 projection/notices-per-version detail: both notices are marked superseded by it",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the presentation named the notice while it was pending and was then replaced",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the notice is marked superseded by the presentation that named it, once its outcome is known"
    ],
    "diff": "proof/VELDO-0065/unconfirmed-notice-not-named.diff",
    "failed_rows": [
-    "VELDO-0065 projection/in-flight-notice-superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded",
+    "VELDO-0065 projection/notices-per-version",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "698e0c9212bc428a1a24e30e298a33f11f358d4a2e942a9e0ef229a5ab34f9a5",
+   "mutant_sha256": "2d5fb4cd1f92027f8d8cac14dac9f9706349f2781654c39726d1f3b5c2d6a1c1",
    "name": "unconfirmed-notice-not-named",
    "named_row_red": true,
    "named_rows": [
@@ -7904,22 +10189,52 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      false
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     false
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
     ]
    ],
-   "seconds": 8.784,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.869,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0065 projection/in-flight-notice-superseded detail: once the notice's outcome is known, the next run marks it superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded detail: once the notice's outcome is known, the next run marks it superseded",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the notice is marked superseded by the presentation that named it, once its outcome is known"
    ],
    "diff": "proof/VELDO-0065/pending-notice-never-marked.diff",
    "failed_rows": [
-    "VELDO-0065 projection/in-flight-notice-superseded"
+    "VELDO-0065 projection/in-flight-notice-superseded",
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "797ba300a934c80b1728c442d5643ae0b46520b7344449c81e19d5207c2df65b",
+   "mutant_sha256": "d0ae9d741daf37e31ad88afd28a38877ef69fe07616f916c8583c3bec9985f9b",
    "name": "pending-notice-never-marked",
    "named_row_red": true,
    "named_rows": [
@@ -8038,15 +10353,1994 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      false
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
     ]
    ],
-   "seconds": 9.006,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.777,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger journaled as another kind before the framing refuses it",
+    "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger record whose digest does not match refuses the framing"
+   ],
+   "diff": "proof/VELDO-0065/ledger-unreadable-as-empty.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/ledger-read-fails-closed"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "bf1ad949157652c3a48e998b685323561b604c5e3ca4f74c79c151b66a6494b6",
+   "name": "ledger-unreadable-as-empty",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/ledger-read-fails-closed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.827,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger journaled as another kind before the framing refuses it"
+   ],
+   "diff": "proof/VELDO-0065/journal-reader-ignores-kind.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/ledger-read-fails-closed"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "ce24d422ab0ebb3a84a96e85d07f3eddeb370fc289a0f9a3e28ab93fab4ca727",
+   "name": "journal-reader-ignores-kind",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/ledger-read-fails-closed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.779,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe55 small colon' is the offered choice accept",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'accept\ufe13 vertical colon' is the offered choice accept"
+   ],
+   "diff": "proof/VELDO-0065/split-before-nfkc.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/reply-nfkc-before-split"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "1eb9d2d8f10a6bede73bdfb29ad32910038903a69e691ee5c1c8d75c222957c9",
+   "name": "split-before-nfkc",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/reply-nfkc-before-split"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     false
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 6.102,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'Return\u2010For\u2011Elaboration: unicode hyphens' is the offered choice return_for_elaboration",
+    "VELDO-0065 answer/reply-nfkc-before-split detail: 'return\u2012for\u2212elaboration: more dashes' is the offered choice return_for_elaboration"
+   ],
+   "diff": "proof/VELDO-0065/ascii-hyphen-only.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/reply-nfkc-before-split"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "844e562aa0d4dc41b3699f2589b9a838280ab80e7102dc8218e34d8e4d81c871",
+   "name": "ascii-hyphen-only",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/reply-nfkc-before-split"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     false
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.978,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/redelivered-answer-silent detail: the accepted answer delivered again is refused and nothing is sent back"
+   ],
+   "diff": "proof/VELDO-0065/redelivered-answer-told.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/redelivered-answer-silent"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "014c9aa28c0c0abfdf6f846ab6c020957feee9f90b34e9000347772a9806774f",
+   "name": "redelivered-answer-told",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/redelivered-answer-silent"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 6.966,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/after-answered-reply detail: after the answer, 'thanks!' is refused as already answered and the owner is told the ruling",
+    "VELDO-0065 answer/after-answered-reply detail: after the answer, 'reject: changed my mind' is refused as already answered and the owner is told the ruling",
+    "VELDO-0065 answer/redelivered-answer-silent detail: control: a different message after the answer is told the ruling"
+   ],
+   "diff": "proof/VELDO-0065/redelivery-by-chat-only.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/after-answered-reply",
+    "VELDO-0065 answer/redelivered-answer-silent"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "c39686164aff47bea6c9d02fc7f26ee84101bc99c52adf19d75c14e627145dab",
+   "name": "redelivery-by-chat-only",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/redelivered-answer-silent"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     false
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     false
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 6.431,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/reply-after-closed detail: a reply after the request left pending is refused and told it is no longer open",
+    "VELDO-0065 answer/reply-after-closed detail: control: another message is told once"
+   ],
+   "diff": "proof/VELDO-0065/closed-not-told.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/reply-after-closed"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "bed3412b770a0147337e42440c98c357af4c37c666ed1333e4eaf955903c7d49",
+   "name": "closed-not-told",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/reply-after-closed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     false
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.914,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/reply-after-closed detail: a reply after the request left pending is refused and told it is no longer open"
+   ],
+   "diff": "proof/VELDO-0065/closed-reported-as-stale.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/reply-after-closed"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "94a2a1011f25965cd65a63dc44282dda0f5410580ad4f0763290b95ddb4dc2a1",
+   "name": "closed-reported-as-stale",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/reply-after-closed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     false
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 6.005,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 projection/notices-per-version detail: the current version's unconfirmed notice is the one the presentation supersedes first"
+   ],
+   "diff": "proof/VELDO-0065/older-sent-notice-preferred.diff",
+   "failed_rows": [
+    "VELDO-0065 projection/notices-per-version"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "9bcf9bb383975f175823dfd7338d1191a0a27ce67380599d7044a259dfd9bffc",
+   "name": "older-sent-notice-preferred",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/notices-per-version"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     false
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.718,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 projection/notices-per-version detail: both notices are marked superseded by it"
+   ],
+   "diff": "proof/VELDO-0065/only-first-notice-marked.diff",
+   "failed_rows": [
+    "VELDO-0065 projection/notices-per-version"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "704ae65b3094425746c018bdb412bfad7d699b0d3517daf39ee84d0260add3bb",
+   "name": "only-first-notice-marked",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/notices-per-version"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     false
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ]
+   ],
+   "seconds": 5.744,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the notice is marked superseded by the presentation that named it, once its outcome is known"
+   ],
+   "diff": "proof/VELDO-0065/reconcile-current-only.diff",
+   "failed_rows": [
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "74750425f2e48ee884730246f93fceafd48e7cac0cab9efed56ef006a9100844",
+   "name": "reconcile-current-only",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/pending-notice-reconciled-after-replacement"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
+    ]
+   ],
+   "seconds": 5.752,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement detail: the notice is marked superseded by the presentation that named it, once its outcome is known"
+   ],
+   "diff": "proof/VELDO-0065/reconcile-skips-replaced.diff",
+   "failed_rows": [
+    "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "a72b196914625e8e19e12becacce349ba990013c8d693ba3b210bdf917f500ff",
+   "name": "reconcile-skips-replaced",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/pending-notice-reconciled-after-replacement"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     false
+    ]
+   ],
+   "seconds": 5.743,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   }
  ],
  "noop": {
   "control_channel_presentation.py": {
-   "copy_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf",
+   "copy_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -8162,10 +12456,38 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.399,
-   "source_sha256": "b7894a609e51f0ed80f2f91c0a33042af85adfc83520ce41b2da7c4badc8dacf"
+   "seconds": 5.78,
+   "source_sha256": "e55d0c0f5c63d843ea81f425e9ae13b43b17e976ecf278e35da3a192852d9988"
   },
   "control_channel_projection.py": {
    "copy_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188",
@@ -8284,15 +12606,43 @@
     [
      "VELDO-0065 projection/in-flight-notice-superseded",
      true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
     ]
    ],
-   "seconds": 6.704,
+   "seconds": 5.755,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 65",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 455.963,
+ "serial_seconds": 445.487,
  "spec_id": "VELDO-0065",
  "suite": "scripts/suites/62_veldo_0065_presentations.py"
 }

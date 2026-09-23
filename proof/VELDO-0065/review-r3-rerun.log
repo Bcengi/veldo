@@ -43,12 +43,12 @@ Infinity     runs=[('partial', 'channel_refused'), ('published', None), ('alread
 bool         runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
              answer to last part: accepted None | published_at is last part date: True
 === p4_choices_tell.py
-'ＡＣＣＥＰＴ: full-width letters'       -> accepted None | told: 0
-'accept： full-width colon'         -> accepted None | told: 0
+'\uff21\uff23\uff23\uff25\uff30\uff34: full-width letters'       -> accepted None | told: 0
+'accept\uff1a full-width colon'         -> accepted None | told: 0
 'Accept\xa0: nbsp before colon'    -> accepted None | told: 0
 'ACCEPT\u200b: zero-width space'   -> refused unmatched_choice | told: 1
 'accept.: trailing period'         -> refused unmatched_choice | told: 1
-'İaccept: odd'                     -> refused unmatched_choice | told: 1
+'\u0130accept: odd'                     -> refused unmatched_choice | told: 1
 'Reject: fine'                     -> accepted None | told: 0
 'return for elaboration: need more' -> accepted None | told: 0
 'Return_For_Elaboration: need more' -> refused already_answered | told: 1

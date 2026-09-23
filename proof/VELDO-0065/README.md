@@ -211,7 +211,10 @@ settles (additive control).
   `presentation/visible-supersession` turns red: no visible link, recorded as `supersession_mismatch`.
 
 `VELDO-0065 install/assets` checks scaffold registration, engine byte identity, installation by the
-real `_lay` writer and that sampled journal signatures verify with `ssh-keygen`.
+real `_lay` writer and that sampled journal signatures verify with `ssh-keygen`. It has no registered
+mutation: it checks the installation and the journal signatures, which belong to the scaffold and the
+store organs, not to the two modules the finding-65 mutations change, so no mutation of those
+modules can make it red; the scaffold and store suites carry their own mutations.
 
 ## Review fixes, 2026-09-23
 
@@ -353,14 +356,60 @@ intent no longer names a notice kind. New operations `presentation_tell` and
 `presentation-framing:<request>` at version 0 (`control_channel_projection.framing_entity_id`).
 `usable_key(key, principal, now)` is the one key rule.
 
+## Fourth review fixes, 2026-09-23
+
+A fourth review (no blocking finding) left eight items, probed by q1 to q7. Each was fixed test
+first, with a new row (or, for item 1, new cases in an existing row) red at `fbf258a` by its own
+assertions, then green, and at least two registered mutations. Items 3 and 4 are one change to the
+list of notices a presentation names, so they share one commit. Before the fixes the branch merged
+`origin/main` again (`357b07c`, no conflicts).
+
+| Item | Gap at fbf258a | Fix | Row | Mutations | Commit |
+| --- | --- | --- | --- | --- | --- |
+| 1 (q1) | frame() pinned the key and ledger versions with separate reads after its checks, so a revocation landing in that gap was pinned as if read | Every authority input is pinned at its version in the one `authority_state` snapshot the checks read | `framing/frame-and-presenter-agree` (two new gap cases) | `frame-ledger-pin-read-later`, `frame-key-pin-read-later` | `d1cb40c` |
+| 2 (q3) | The owner's accepted answer delivered again was told "already answered" | The recorded answer's own chat and platform message id get no reply | `answer/redelivered-answer-silent` | `redelivered-answer-told`, `redelivery-by-chat-only` | `311a926` |
+| 3 (q2) | An older version's sent notice was preferred over the current version's unconfirmed one, which was neither named nor superseded | The first presentation of version N names and supersedes the notices of N and every older unsuperseded one, newest version first whatever its state | `projection/notices-per-version` | `older-sent-notice-preferred`, `only-first-notice-marked` | `19282f7` |
+| 4 (q4) | A notice named while pending was never marked once the naming presentation was replaced | Each run reconciles every published presentation of the request that named a pending notice | `projection/pending-notice-reconciled-after-replacement` | `reconcile-current-only`, `reconcile-skips-replaced` | `19282f7` |
+| 5 (q6) | A retry_after above the bound was ignored, so the next run sent into the flood window | Capped at `MAX_RETRY_AFTER` | `presentation/retry-after-capped` | `retry-after-unbounded`, `retry-after-above-bound-ignored` | `79dc7c8` |
+| 6 (q7) | The colon was split before NFKC, so small and vertical colons were missed; Unicode hyphens did not separate a choice name | The whole reply is NFKC-normalized before the split; U+2010, U+2011, U+2012, U+2043 and U+2212 separate like `-` and `_` | `answer/reply-nfkc-before-split` | `split-before-nfkc`, `ascii-hyphen-only` | `bc46587` |
+| 7 (q5) | A reply after the request left pending (answered in the inbox) met silence | Refused as `request_closed` and told once per message that it is no longer open | `answer/reply-after-closed` | `closed-not-told`, `closed-reported-as-stale` | `91784f8` |
+| 8 | An unreadable revocation ledger record (another kind, a digest mismatch) was read as an empty ledger | The journal reader returns `UNREADABLE` and the stored-framing check refuses on it, as for a key | `framing/ledger-read-fails-closed` | `ledger-unreadable-as-empty`, `journal-reader-ignores-kind` | `03906f9` |
+
+Two earlier registrations were re-pointed where the new code moved their anchor, with their rows
+unchanged: `choice-without-nfkc` now removes the NFKC of the split, and the bounded row's second
+mutation is `retry-after-boolean-accepted` because a huge value is now capped, not refused.
+
+**Speed.** The suite's temporary store and keys now live in `/dev/shm` when it exists and is
+writable, as suites 58 and 60 do, and in the platform's temporary directory elsewhere (the Mac):
+`6581c72`, 6.4 to 7.9 s before, 4.6 to 4.8 s after, on the same host.
+
+**Red at fbf258a.** `python3 -B proof/VELDO-0065/drive.py --red fbf258a` runs the current suite once
+against the presentation and projection modules of `fbf258a`, unchanged, and writes
+`red-at-fbf258a.json`. All seven new rows and the two new cases of `framing/frame-and-presenter-agree`
+fail by their own assertions, with no section raising; no other row is red there.
+
+**The fourth reviewer's probes, re-run unchanged.** `review-r4-rerun.log` holds q1 to q7 against the
+final tree: q1's gap revocations are refused and agree with the presenter, q2 names and supersedes
+both versions' notices, q3's redelivered answer gets no reply, q4's notice is marked by the
+presentation that named it, q5 is told "no longer open", q6 waits after a long retry_after, and q7
+matches every colon and hyphen NFKC folds. What q7 still shows by design: the ratio sign U+2236 is not a
+colon and a dash is not a separator; a zero-width joiner after the choice does not match. None prints
+`BUG`.
+
+The committed probe logs escape every non-ASCII character as `\uXXXX` (the repository's docs check
+allows only ASCII), so the full-width and hyphen probes read as their code points.
+
+**Contract changes a consumer will see.** A receipt's notice `supersedes` carries `notices`, every
+notice named, newest request version first, with `notice_id`, `notice_state` and `message_id` of the
+first. New refusal `request_closed`. `control_channel_presentation.UNREADABLE` and `CHOICE_SEPARATORS`.
+
 ## Measurements
 
-The suite runs in about 5.8 s (`VELDO-0065 suite seconds` 5.74, 5.85 and 5.85 on three runs on a
-quiet host; 7.3 to 8.6 s while other agents' runs shared it), 28 rows. Finding 65 has 57 mutations.
-The gate's mutation stage runs one baseline and one no-op per mutated module (presentation and
-projection) and one run per mutant: 61 runs of about 6 to 7.5 s, 8 in parallel, so about 46 to 57 s
-of wall time, and its budget grows by 2 s per case (114 s). The unit stage gains the suite's 6 s.
-That puts the time this suite adds to the gate at about 52 to 63 s: at the 60 s limit, so it is
-reported here rather than assumed to fit. `python3 -B scripts/check_teeth_mutations.py --finding 65`
-took 12 min 2 s serially (`{"mutations_rejected": 57, ...}`); `drive.py` took 7 min 36 s serially on
-a shared host.
+The suite runs in about 5.8 s (`VELDO-0065 suite seconds` 6.00, 5.86 and 5.78 on three runs), 35
+rows; before the `/dev/shm` change the same suite with 28 rows took 6.4 to 7.9 s. Finding 65 has 73
+mutations. The gate's mutation stage runs one baseline and one no-op per mutated module (presentation
+and projection) and one run per mutant: 77 runs of about 6 s, 8 in parallel, so about 58 s of wall
+time, and its budget grows by 2 s per case (146 s). The unit stage gains the suite's 6 s. That puts
+the time this suite adds to the gate at about 64 s: over the 60 s limit, reported here rather than
+assumed to fit. `python3 -B scripts/check_teeth_mutations.py --finding 65` took 15 min 4 s serially
+(`{"mutations_rejected": 73, ...}`); `drive.py` took 7 min 26 s serially on a shared host.

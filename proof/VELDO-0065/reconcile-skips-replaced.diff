@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -956 +956 @@
+-            if receipt is None or receipt.get('outcome') != 'published':
++            if receipt is None or receipt.get('outcome') != 'published' or receipt['presentation_id'] != (self.head(request) or {}).get('current'):

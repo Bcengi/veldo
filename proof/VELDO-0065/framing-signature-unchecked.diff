@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -672 +672 @@
+@@ -677 +677 @@
 -                or not self._framing_signed(request, framing, state, c)):
 +                or False):

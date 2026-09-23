@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -809 +809 @@
+@@ -817 +817 @@
 -            if principal in revoked:
 +            if False:
