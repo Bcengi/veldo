@@ -1,0 +1,9 @@
+{
+  "commit": "a284cd0c873abce8eb977279a25ac71ad5cbcc68",
+  "returncode": 1,
+  "failed_rows": [
+    "SELFTEST FAIL: VELDO-0036 reservations/partial-final-retained",
+    "SELFTEST FAIL: VELDO-0036 reservations/report-failure-stops",
+    "SELFTEST FAIL: VELDO-0036 reservations/current-caps"
+  ]
+}

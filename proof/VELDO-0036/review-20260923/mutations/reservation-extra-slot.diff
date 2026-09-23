@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -101 +101 @@
+-                if balance[unit] + wanted.get(unit, 0) > cap:
++                if balance[unit] + wanted.get(unit, 0) > cap + 1:

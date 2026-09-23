@@ -1,0 +1,18 @@
+{
+  "commit": "54b237407c9f0f91a7e8ac24d38e94d40b80e36c",
+  "command": "bash scripts/verify.sh",
+  "started_clean": true,
+  "exit_code": 0,
+  "log_sha256": "651902ae41849dce7a93118db874641831f575abd289653d20c36b96da929627",
+  "summary": [
+    "selftest: 5688 passed, 0 failed",
+    "mutations: passed registered=104 executed=104 rejected=104 workers=136 elapsed=66.305s",
+    "GATE: GREEN (54b237407c9f0f91a7e8ac24d38e94d40b80e36c)"
+  ],
+  "tested_files_sha256": {
+    ".veldo/control_reservations.py": "5a15312d1357260a90a1d868a30f3d0b39a77c8da07a7ad25329338b8c0cb00e",
+    ".veldo/control_reservation_runtime.py": "922b04713a800c77125f567e45ea92df354233465509425b148ac7d45d858a68",
+    "scripts/suites/58_veldo_0036_reservations.py": "ecbdd88bad78fbb31822194ff9e23235014a91ed2e30f5805af2c7a5a9fd1988",
+    "scripts/check_teeth_mutations.py": "ca8349465d9477622d52aabd6629d65fd16c363e26f76fc30b3fde0449eeac04"
+  }
+}

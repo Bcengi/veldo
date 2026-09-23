@@ -1,0 +1,106 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0036",
+  "commit": "862538f5cc1c620bc58e39d81721eab025fa68a6",
+  "producer": "Codex implementing agent",
+  "produced_at": "2026-09-23T04:17:50Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0036/gate-summary.json",
+          "detail": "Full canonical gate: reservations/ceilings, reservations/atomic-last-slot"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0036/mutations.json",
+          "detail": "Real SQLite/files/process observations and two driven temporary-copy defects per named row; see README and exact diffs."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0036/gate-summary.json",
+          "detail": "Full canonical gate: reservations/pre-call-order, reservations/usage-controls"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0036/mutations.json",
+          "detail": "Real SQLite/files/process observations and two driven temporary-copy defects per named row; see README and exact diffs."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0036/gate-summary.json",
+          "detail": "Full canonical gate: reservations/settles-once, reservations/unknown-retained"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0036/mutations.json",
+          "detail": "Real SQLite/files/process observations and two driven temporary-copy defects per named row; see README and exact diffs."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0036/gate-summary.json",
+          "detail": "Full canonical gate: reservations/retirement"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0036/mutations.json",
+          "detail": "Real SQLite/files/process observations and two driven temporary-copy defects per named row; see README and exact diffs."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "canonical-gate",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "862538f5cc1c620bc58e39d81721eab025fa68a6",
+      "ref": "proof/VELDO-0036/gate-summary.json"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0036/README.md",
+    "proof/VELDO-0036/gate-summary.json",
+    "proof/VELDO-0036/mutations/reservation-cancel-frees-exposure.diff",
+    "proof/VELDO-0036/mutations/reservation-check-outside-transaction.diff",
+    "proof/VELDO-0036/mutations/reservation-double-reported-usage.diff",
+    "proof/VELDO-0036/mutations/reservation-duplicate-settlement.diff",
+    "proof/VELDO-0036/mutations/reservation-extra-slot.diff",
+    "proof/VELDO-0036/mutations/reservation-follow-on-after-launch.diff",
+    "proof/VELDO-0036/mutations/reservation-ignore-capacity-and-count.diff",
+    "proof/VELDO-0036/mutations/reservation-ignore-ceiling.diff",
+    "proof/VELDO-0036/mutations/reservation-ignore-cleanup.diff",
+    "proof/VELDO-0036/mutations/reservation-ignore-wall-time.diff",
+    "proof/VELDO-0036/mutations/reservation-ignore-window.diff",
+    "proof/VELDO-0036/mutations/reservation-parent-exit-releases-slot.diff",
+    "proof/VELDO-0036/mutations/reservation-retry-after-launch.diff",
+    "proof/VELDO-0036/mutations/reservation-timeout-frees-exposure.diff",
+    "proof/VELDO-0036/mutations.json",
+    "proof/VELDO-0036/timing.json"
+  ],
+  "rollback": "Stop new reservation/invocation operations; preserve accepted allocation, accounting and journal records. No automated recovery or quota release.",
+  "review": "Prepared for independent review; no self-approved verdict is asserted. Live adapters and supervisor consume the narrow seam documented in README."
+}

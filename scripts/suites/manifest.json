@@ -529,6 +529,15 @@
    ],
    "regions": "Policy envelopes over every shared grammar witness and schema partition",
    "requires_note": "Uses shared ROOT, expect and json only. Full inventory in present, absent, broken and omitted-result runs."
+  },
+  {
+   "name": "58_veldo_0036_reservations",
+   "file": "58_veldo_0036_reservations.py",
+   "requires": [
+    "58_veldo_0036_reservations"
+   ],
+   "regions": "Atomic capacity and subscription reservations",
+   "requires_note": "Uses only shared ROOT and expect. Temporary real SQLite stores, two concurrent clients and a joined/reaped real descendant; logged-in CLI launch callbacks are a narrow integration seam."
   }
  ]
 }

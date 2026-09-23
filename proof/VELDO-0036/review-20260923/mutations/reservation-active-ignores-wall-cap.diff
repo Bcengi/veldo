@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_runtime.py
++++ b/.veldo/control_reservation_runtime.py
+@@ -51,0 +52,2 @@
++                    if unit == 'wall_seconds':
++                        continue

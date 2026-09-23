@@ -1,0 +1,42 @@
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 58_veldo_0036_reservations
+  running     1 of 65 suites: 58_veldo_0036_reservations
+  skipped     64: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 14_warp_0717_subset_runner, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 27_veldo_0010_evidence_provenance, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_floor, 32_veldo_0019_combined_graph, 33_veldo_0020_authority, 34_veldo_0022_admission, 35_veldo_0021_completion, 36_veldo_0023_journal, 37_veldo_0024_replica, 38_veldo_0025_membership, 39_veldo_0026_revocation, 40_veldo_0101_capsules, 41_veldo_0103_assessor, 42_veldo_0102_fixval, 43_veldo_0104_proofcheck, 44_veldo_0105_startline, 45_veldo_0106_policyread, 46_veldo_0029_enrollment, 47_veldo_0107_ipc, 48_veldo_0108_relay, 49_veldo_0109_unavailable, 50_git_environment, 51_parser_boundary, 52_writer_boundary, 53_veldo_0123_mutations, 54_veldo_0118_grammar, 55_veldo_0119_agreement, 56_veldo_0027_signing, 57_veldo_0120_policygrammar
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  /tmp/tmpd7b8ia7t: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpd7b8ia7t/nocrit.md: no acceptance criteria
+  /tmp/tmpd7b8ia7t/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpd7b8ia7t/status.md: bad status: donezo
+  /tmp/tmpd7b8ia7t/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpd7b8ia7t/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpd7b8ia7t/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpd7b8ia7t/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpd7b8ia7t/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpd7b8ia7t/verdict.json: bad verdict: looks_fine
+  /tmp/tmpjf988a49/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpjf988a49/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpjf988a49/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpjf988a49/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpjf988a49/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpjf988a49/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpjf988a49/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpjf988a49/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpjf988a49/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpjf988a49/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpjf988a49/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpjf988a49/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+  58_veldo_0036_reservations                       9 passed    0.21s
+selftest (PARTIAL, 1 of 65 suites): 35 passed, 0 failed in 0.21s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

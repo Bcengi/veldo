@@ -1,0 +1,154 @@
+{
+  "commit": "862538f5cc1c620bc58e39d81721eab025fa68a6",
+  "clean_start": true,
+  "command": "bash scripts/verify.sh",
+  "exit_code": 0,
+  "elapsed_seconds": 704.5867205301765,
+  "log_sha256": "9ab7bd849f115a9a73d23c817b4992719bb7f3b4b17317fcfe2f85d714f305be",
+  "summary_lines": [
+    "selftest: 5685 passed, 0 failed",
+    "mutations: passed registered=98 executed=98 rejected=98 workers=130 elapsed=61.878s",
+    "GATE: GREEN (862538f5cc1c620bc58e39d81721eab025fa68a6)"
+  ],
+  "reservation_mutations": [
+    {
+      "name": "reservation-extra-slot",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/ceilings",
+        "VELDO-0036 reservations/atomic-last-slot",
+        "VELDO-0036 reservations/pre-call-order",
+        "VELDO-0036 reservations/retirement"
+      ],
+      "worker_seconds": 0.5437082229182124
+    },
+    {
+      "name": "reservation-ignore-ceiling",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/ceilings",
+        "VELDO-0036 reservations/atomic-last-slot",
+        "VELDO-0036 reservations/pre-call-order",
+        "VELDO-0036 reservations/unknown-retained",
+        "VELDO-0036 reservations/retirement"
+      ],
+      "worker_seconds": 0.5637065859045833
+    },
+    {
+      "name": "reservation-check-outside-transaction",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/atomic-last-slot"
+      ],
+      "worker_seconds": 0.5435424889437854
+    },
+    {
+      "name": "reservation-ignore-capacity-and-count",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/ceilings",
+        "VELDO-0036 reservations/atomic-last-slot",
+        "VELDO-0036 reservations/pre-call-order",
+        "VELDO-0036 reservations/retirement"
+      ],
+      "worker_seconds": 0.563733033137396
+    },
+    {
+      "name": "reservation-follow-on-after-launch",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/pre-call-order"
+      ],
+      "worker_seconds": 0.5638942110817879
+    },
+    {
+      "name": "reservation-retry-after-launch",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/pre-call-order"
+      ],
+      "worker_seconds": 0.5639647229108959
+    },
+    {
+      "name": "reservation-ignore-wall-time",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/usage-controls"
+      ],
+      "worker_seconds": 0.5433360519818962
+    },
+    {
+      "name": "reservation-ignore-window",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/usage-controls"
+      ],
+      "worker_seconds": 0.5432927450165153
+    },
+    {
+      "name": "reservation-duplicate-settlement",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/settles-once"
+      ],
+      "worker_seconds": 0.5436633350327611
+    },
+    {
+      "name": "reservation-double-reported-usage",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/ceilings",
+        "VELDO-0036 reservations/settles-once"
+      ],
+      "worker_seconds": 0.5438112448900938
+    },
+    {
+      "name": "reservation-timeout-frees-exposure",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/unknown-retained",
+        "VELDO-0036 reservations/retirement"
+      ],
+      "worker_seconds": 0.5436489880084991
+    },
+    {
+      "name": "reservation-cancel-frees-exposure",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/unknown-retained"
+      ],
+      "worker_seconds": 0.563616659026593
+    },
+    {
+      "name": "reservation-parent-exit-releases-slot",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/retirement"
+      ],
+      "worker_seconds": 0.5436317140702158
+    },
+    {
+      "name": "reservation-ignore-cleanup",
+      "green_control": true,
+      "green_noop": true,
+      "red_rows": [
+        "VELDO-0036 reservations/retirement"
+      ],
+      "worker_seconds": 0.5434565381146967
+    }
+  ],
+  "reservation_mutant_worker_seconds": 7.711006541037932
+}

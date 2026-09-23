@@ -1,0 +1,8 @@
+--- a/.veldo/control_reservation_runtime.py
++++ b/.veldo/control_reservation_runtime.py
+@@ -38,0 +39,2 @@
++        receipt = self.reservations.report(command_id, invocation, sequence, usage,
++                                           now=now, final=final, outcome=outcome)
+@@ -43,2 +44,0 @@
+-            receipt = self.reservations.report(command_id, invocation, sequence, usage,
+-                                               now=now, final=final, outcome=outcome)
