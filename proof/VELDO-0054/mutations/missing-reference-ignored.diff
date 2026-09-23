@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -242 +242 @@
+@@ -313 +313 @@
 -            codes.append('missing_decision:%s' % ref)
 +            pass

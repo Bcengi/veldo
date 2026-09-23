@@ -139,3 +139,9 @@ built its plan burn-down with plan._decision_blocks and no Gate, so a unit a gov
 back (VELDO-9428 in suite 62, VELDO-9104 in suite 60) showed at the frontier while plan status blocked
 it. The burn-down now reads decisions through the same Gate plan status reads them through. No
 criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: a malformed decision_settlement (a list in `decision`) made every consumer
+raise an unnamed error for every unit. A malformed governing or settlement record is now a named
+invalid_input refusal for the units it concerns, and a settlement nothing can associate is recorded
+and left out of every read. The footprint is unchanged. No criterion, status or evidence universe
+changed.

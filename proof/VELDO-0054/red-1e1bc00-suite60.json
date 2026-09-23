@@ -1,0 +1,45 @@
+{
+ "failed": [
+  "VELDO-0052 completion/status-reader-agrees"
+ ],
+ "observed": {
+  "raised": [],
+  "status_reader": {
+   "items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "ready (frontier)",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "plan_enrolled": [
+    "raised",
+    "Stopped:eligibility_required"
+   ],
+   "plan_items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "blocked: decision unresolved_decision:decision:9104",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "status_enrolled": "eligibility_required"
+  }
+ },
+ "passed": 53,
+ "production_at": "1e1bc00",
+ "substituted_modules": [
+  ".veldo/control_eligibility.py",
+  ".veldo/dispatch.py",
+  ".veldo/executor.py",
+  ".veldo/frontier.py",
+  ".veldo/plan.py",
+  ".veldo/runstatus.py",
+  ".veldo/work.py",
+  ".veldo/work_state.py",
+  "bin/veldo"
+ ],
+ "suite": "60_veldo_0052_eligibility.py"
+}

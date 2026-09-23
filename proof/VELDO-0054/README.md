@@ -12,7 +12,7 @@ this unit?" as a list of named blockers, empty when nothing blocks. The shared G
 `decisions_settled` predicate (VELDO-0052) now asks it at selection, direct execution, build, review
 and publication, and a new `Gate.decision_blockers(unit, references)` gives the same answer to
 `plan._decision_blocks` (and through it `item_state` and the plan burn-down), `plan.cmd_run_check`
-and the frontier's plan candidates. The consumer set is `CONSUMERS`, checked against the actual call
+the frontier's plan candidates and `veldo status` (`runstatus._burndown`). The consumer set is `CONSUMERS`, checked against the actual call
 sites by AST.
 
 **What a governing decision is.** An accepted `decision` record (`veldo.governing_decision/v1`)
@@ -32,8 +32,9 @@ digest of its scope with a target that is the subject itself, and the ruling `ap
 blockers are `missing_decision`, `ambiguous_decision`, `unresolved_decision`, `unsupported_decision`
 (another schema, a subject kind other than spec or plan, a malformed field, or any obligation, since
 Release 1 evaluates none: tripwires and adversarial decision review are Release 3),
-`unsigned_decision`, `unbound_decision:<id>/<field>` and `decision_ruling`. A verifier that cannot
-run is `unavailable_service:settlement_verifier`. Each maps to the Gate's error taxonomy.
+`unsigned_decision`, `unbound_decision:<id>/<field>` and `decision_ruling`. A malformed governing or
+settlement record is `invalid_input:<id>/<field>`, decided first (review B, below). A verifier that
+cannot run is `unavailable_service:settlement_verifier`. Each maps to the Gate's error taxonomy.
 
 **Where the trust comes from.** `HostTrust` may name `settlement_signers`, an absolute path whose
 resolved file lies outside the checked workspace (the same rule as the enrollment signers); the
@@ -48,25 +49,25 @@ reports `decisions` (accepted, refused, and the units whose latest decision eval
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/62_veldo_0054_decisions.py`, 12 rows (8 assertions and 4 `ran/` rows, one per
-region). One temporary tree is both the repository the plan and frontier readers read and the
+Suite `scripts/suites/62_veldo_0054_decisions.py`, 15 rows (10 assertions and 5 `ran/` rows, one per
+region; 12 before the review fixes). One temporary tree is both the repository the plan and frontier readers read and the
 installed `.veldo` they run from; a real SQLite store with keyed journal signatures; settlements
 signed by real Ed25519 keys through `ssh-keygen -Y sign` and verified by the production
 `SettlementTrust`. 34 units are admitted, claimed, approved and dependency-free under ready plans,
 and each has exactly one governing-decision situation, so every hold-back is the decision
 evaluation's. The fixture spells every digest and the signed bytes itself, so the reader is judged
 against an independent writer. Every consumer is asked about every unit: the five stations, the
-frontier, `_decision_blocks`, `item_state`, the burn-down lines of `cmd_status` and `cmd_run_check`
-(its exit and every named refusal it prints). `observations.json` holds each unit's answers.
+frontier, `_decision_blocks`, `item_state`, the burn-down lines of `cmd_status`, `veldo status`'s
+burn-down and `cmd_run_check` (its exit and every named refusal it prints). `observations.json` holds each unit's answers.
 
 Every mutation below is registered as finding 54 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and required to turn its named row red by a failed assertion while the unmutated
-copy is green; none reddened a `ran/` row. All 18 were rejected (`mutations.json`, each diff in
+copy is green; none reddened a `ran/` row. All 24 were rejected (18 before the review fixes) (`mutations.json`, each diff in
 `mutations/`).
 
 **AC1, exact binding.** Rows `decisions/consumers-from-call-sites`, `decisions/exact-binding` and
-`decisions/wrong-framing`. The consumer set derived from call sites equals `CONSUMERS` plus one
-named unwired reader (below), the stations that ask `decisions_settled` are exactly selection,
+`decisions/wrong-framing`. The consumer set derived from call sites equals `CONSUMERS` (review A
+removed the one unwired reader it used to name), the stations that ask `decisions_settled` are exactly selection,
 direct execution, build, review and publication, and the signed fields equal the fixture's. Spec
 and plan subjects with current signed settlements are clear everywhere before any change; after
 it, only the current exact bindings unblock (VELDO-9401 spec, VELDO-9406 plan): a subject whose
@@ -136,20 +137,63 @@ decision the file joined VELDO-0054's footprint with a History line, and that on
 (no other change): suite 60 passes 80 of 80 and `--finding 52` rejects all 47 mutations. VELDO-9104's
 expectation (`unresolved_decision:decision:9104`) is unchanged.
 
-**Two readers keep the pre-factory reading.** `runstatus._burndown` (not in this footprint) still
-calls `plan._decision_blocks(fm)` without a Gate, so its display shows every inline entry as blocking
-and does not show a store-only governing decision; it grants no eligibility. The scan lists it by
-name so it cannot be forgotten. `plan.cmd_release_check` was not in the enumerated set and still
-refuses a release while any inline `open_decisions` entry exists, which is conservative.
+**One reader keeps the pre-factory reading.** `plan.cmd_release_check` was not in the enumerated set
+and still refuses a release while any inline `open_decisions` entry exists, which is conservative.
+
+## 2026-09-23 review: two fixes and one open item
+
+A fresh review of af58be2..1e1bc00 found nothing that bypasses the binding, and two defects. Each was
+fixed test first: rows that fail by assertion over 1e1bc00's production modules (`red.py`, recorded in
+`red-1e1bc00-suite62.json` and `red-1e1bc00-suite60.json`), then the fix, then two or more registered
+mutations per new row with the unmutated copy as control.
+
+**A, `veldo status` reads decisions through the Gate (c4a33bc).** `runstatus._burndown` built its
+burn-down with `plan._decision_blocks(fm)` and no Gate, so a unit a governing decision held back
+showed at the frontier in `veldo status` while plan status blocked it. It now passes
+`EL.gate_for(root, eligibility)`, joins `CONSUMERS` (the scan's unwired whitelist is gone) and the
+footprint with a History line. Suite 62's new row `decisions/status-reader-agrees` compares the two
+for every unit (VELDO-9428 `blocked: decision unresolved_decision:decision:D-9428` in both), and
+suite 60's `completion/status-reader-agrees` now compares `veldo status` with plan status read through
+the Gate (VELDO-9104 held by its unresolved decision). Both were red by assertion at 1e1bc00.
+Mutations `status-reader-inline-decisions` and `status-reader-ignores-decisions` (finding 54, red
+`status-reader-agrees`), `status-reader-decisions-inline` and `status-reader-decisions-dropped`
+(finding 52, red `completion/status-reader-agrees`).
+
+**B, malformed records are named, never a crash (13fdb00).** At 1e1bc00 one `decision_settlement`
+whose `decision` was a list made the Gate's read, `decision_blockers`, plan status, run-check and the
+frontier raise an unnamed `TypeError` for every unit (in the red record the production and
+observations regions raise on that same record). Now a malformed governing record (a wrong type
+anywhere, an unhashable `decision_id`) or a malformed associated settlement (a body that is not a
+mapping, a signature or signer that is not text, a signed field of the wrong type) is
+`invalid_input:<id>/<field>` for the units it governs, decided before anything else; an inline
+reference that is not an id is `invalid_input:decision_reference`; and a settlement nothing can
+associate (a list or mapping in `decision`; the store itself refuses non-mapping data) concerns no
+unit, is left out of every read and is recorded once as an `invalid_record` observation and in
+`Gate.status()['decisions']['invalid_records']`. Row `decisions/malformed-records-named`: two such
+settlements in the store, five units each with one malformed input held back by exactly its named
+code at every consumer, VELDO-9401 and VELDO-9406 still clear, and `blockers()` called directly
+with junk of every shape returns named codes. Mutations `invalid-record-not-observed`,
+`record-invalid-ignored`, `settlement-invalid-ignored` and `reference-invalid-dropped`.
+
+**C, open item, not built here: signers files the workspace controls through a sibling worktree or a
+hardlink.** `_workspace_areas` resolves the checked workspace, its working tree and its git common
+directory, but not the other linked worktrees of the same repository, and it compares paths, not
+files. So a settlement signers file (or, identically, an enrollment signers file) placed in a SIBLING
+linked worktree of the same repository, or a host path that is a hardlink to a workspace file, is
+accepted. This predates VELDO-0054 (the enrollment rule is the same predicate, from VELDO-0052) and
+needs its own ticket: enumerate every worktree of the common directory, and compare by device and
+inode rather than by path.
 
 ## Cost and verification
 
-Suite 62 runs in 1.18 s (`observations.json`, `suite_seconds`). `--finding 54` drives 18 mutations
-in 44.7 s here (36 suite runs of about 1.24 s); in the gate's mutation stage (8 workers) that is
-about 22 runs (18 mutants and 4 control groups) or roughly 3.5 s of wall time, and it raises the
-stage's scaled budget by 36 s. Targeted checks run on this branch:
-`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (38 passed, 12 of them this suite's),
-`python3 -B scripts/check_teeth_mutations.py --finding 54` (18 rejected), `python3 .veldo/validate.py
+After the review fixes suite 62 runs in 1.66 s here (`observations.json`, `suite_seconds`; 1.2 s
+before them, and this host was carrying other builds). `--finding 54` drives 24 mutations in 83 s
+here (48 suite runs); in the gate's mutation stage (8 workers) that is about 29 runs (24 mutants and 5
+control groups) or roughly 6 s of wall time, and it raises the stage's scaled budget by 48 s.
+`--finding 52` drives 49 mutations (47 before review A) in 150 s here. Targeted checks run on this branch:
+`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (41 passed, 15 of them this suite's),
+`--suite 60_veldo_0052_eligibility` (80 passed), `python3 -B scripts/check_teeth_mutations.py --finding 54`
+(24 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs,
 install-and-run, and every other suite that loads a module touched here, suite 60 included. The full gate is run by the lead.
 
