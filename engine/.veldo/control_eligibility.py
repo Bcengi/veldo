@@ -76,6 +76,8 @@ def _organ(name):
 CC = _organ('completion_contract')
 E = _organ('control_enrollment')
 SN = _organ('control_snapshot')
+# VELDO-0054: exact decision-record dependency evaluation, the decisions_settled predicate's answer.
+DD = _organ('control_decision_dependency')
 
 # The stations the floor's entries invoke, each with its station-specific predicates. The shipped
 # contract's set is the floor of each; current admission is added to every station because R52
@@ -136,6 +138,10 @@ TAXONOMY = {
     'usage_cap': 'missing_authority', 'usage_refused': 'missing_authority', 'window_exhausted': 'missing_authority',
     'missing_ceiling': 'missing_authority', 'unknown_allowance': 'unknown_outcome', 'unknown_window': 'unknown_outcome',
     'unknown_window_usage': 'unknown_outcome',
+    # VELDO-0054: the named blockers of a governing decision (control_decision_dependency).
+    'missing_decision': 'missing_authority', 'ambiguous_decision': 'missing_authority',
+    'unsupported_decision': 'missing_authority', 'unsigned_decision': 'missing_authority',
+    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',
 }
 
 OBSERVATION_LIMIT = 1000
@@ -245,13 +251,34 @@ class HostTrust:
     and its git directory (host_trust_refused:signers_inside_workspace). The resolved file is the
     one read, so a symlink retargeted after the check cannot substitute another."""
 
-    def __init__(self, host_identity, enrollment_signers):
+    def __init__(self, host_identity, enrollment_signers, settlement_signers=None):
         if not isinstance(host_identity, str) or not host_identity.strip() \
                 or not isinstance(enrollment_signers, str) or not enrollment_signers.strip():
             raise Stopped('host_trust_unreadable')
         if not os.path.isabs(enrollment_signers):
             raise Stopped('host_trust_refused:signers_not_absolute')
+        if settlement_signers is not None:
+            if not isinstance(settlement_signers, str) or not settlement_signers.strip():
+                raise Stopped('host_trust_unreadable')
+            if not os.path.isabs(settlement_signers):
+                raise Stopped('host_trust_refused:settlement_signers_not_absolute')
         self.host_identity, self.enrollment_signers = host_identity, enrollment_signers
+        self.settlement_signers = settlement_signers
+
+    def settlement_trust(self, workspace):
+        """VELDO-0054: the decision settlement signers this host trusts, as a
+        control_decision_dependency.SettlementTrust, or None when the host names none (every
+        settlement is then unsigned and every governing decision blocks). Held to the same rule as
+        the enrollment signers: the file it resolves to must lie outside the checked workspace."""
+        if self.settlement_signers is None:
+            return None
+        resolved = os.path.realpath(self.settlement_signers)
+        if any(os.path.commonpath([resolved, area]) == area for area in _workspace_areas(workspace)):
+            raise Stopped('host_trust_refused:settlement_signers_inside_workspace')
+        try:
+            return DD.SettlementTrust(Path(resolved).read_text())
+        except (OSError, ValueError) as error:
+            raise Stopped('host_trust_unreadable') from error
 
     def verifier(self, principal, workspace):
         """verify(message, signature) -> bool for a binding enrolled by `principal` in `workspace`,
@@ -313,7 +340,7 @@ def load_host_trust(path=None):
         raise Stopped('host_trust_unreadable') from error
     if not isinstance(record, dict) or record.get('schema') != HOST_TRUST_SCHEMA:
         raise Stopped('host_trust_unreadable')
-    return HostTrust(record.get('host_identity'), record.get('enrollment_signers'))
+    return HostTrust(record.get('host_identity'), record.get('enrollment_signers'), record.get('settlement_signers'))
 
 
 def enrolled_gate(repo_root, trust, observe=None):
@@ -335,13 +362,15 @@ def enrolled_gate(repo_root, trust, observe=None):
         raise Stopped('enrollment_unanswerable') from error
     if problems:
         raise Stopped('enrollment_refused:' + problems[0][0])
+    settlements = trust.settlement_trust(workspace) if hasattr(trust, 'settlement_trust') else None
     store = _organ('control_store')
     try:
         conn = store.open_store(E.store_path_for(binding), mode='r')
     except (store.StoreRefused, sqlite3.Error, OSError) as error:
         raise Stopped('unavailable_service:store') from error
     return Gate(store, conn, domain_uuid=binding['domain_uuid'], repository_uuid=binding['repository_uuid'],
-                authority_generation=binding['authority_generation'], observe=observe)
+                authority_generation=binding['authority_generation'], observe=observe,
+                settlement_trust=settlements)
 
 
 def entry_gate(repo_root, gate=None, trust=None, observe=None):
@@ -384,8 +413,13 @@ def _definition(label, data):
 class Gate:
     """One domain's shared eligibility over a real control store connection. Read-only."""
 
-    def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None):
+    def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None,
+                 settlement_trust=None):
         self.store, self.conn = store, conn
+        # VELDO-0054: the settlement signers this Gate verifies against (None trusts no settlement).
+        self.settlement_trust = settlement_trust
+        self.decision_counts = {'accepted': 0, 'refused': 0}
+        self.decision_last = {}
         self.domain_uuid, self.repository_uuid = domain_uuid, repository_uuid
         self.authority_generation = authority_generation
         self.observe = observe or (lambda event: None)
@@ -478,8 +512,9 @@ class Gate:
                 return False
         return _Read()
 
-    def read(self, unit):
-        """Every input a station decision over `unit` consumes, read in ONE read transaction."""
+    def read(self, unit, references=()):
+        """Every input a station decision over `unit` consumes, read in ONE read transaction.
+        `references` are decision ids an inline open_decisions entry outside the store names."""
         with self._reading():
             inputs = {}
             u = self._entity(unit)
@@ -494,11 +529,66 @@ class Gate:
             for dep in data.get('depends_on') or []:
                 inputs['dependency/' + dep] = self._entity(dep)
                 inputs['receipts/' + dep] = self._receipts(dep)
-            inputs['decisions'] = self._collection('decision', lambda d: unit in (d.get('blocks') or []))
+            # VELDO-0054: every governing record that blocks the unit or its plan or that a reference
+            # (the accepted plan's open_decisions, or one passed in) names, every settlement associated
+            # with one of them, and the current accepted digest of each record's subject.
+            refs = DD.references(self._data(inputs.get('plan')), unit) + list(references)
+            inputs['decisions'] = self._collection('decision', lambda d: DD.governs(d, unit, data.get('plan'), refs))
+            governing = {m['id'] for m in inputs['decisions']}
+            inputs['settlements'] = self._collection('decision_settlement', lambda d: d.get('decision') in governing)
+            inputs['decision_subjects'] = self._subjects(inputs['decisions'])
             inputs['blockers'] = self._collection('blocker', lambda d: d.get('unit') == unit)
             inputs['approvals'] = self._collection('approval', lambda d: d.get('unit') == unit)
             watermark = self.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
         return {k: v for k, v in inputs.items() if v is not None}, watermark
+
+    def _subjects(self, records):
+        """One derived input: the current accepted digest of every governing record's subject, keyed
+        by the subject's entity id. Its digest is exactly what the decision consumed, so a lifecycle
+        write (a claim moving the unit's state) leaves it current and a changed subject does not."""
+        current = {}
+        for item in records:
+            subject = (self._data(item) or {}).get('subject')
+            eid = DD.subject_entity(subject)
+            if eid is not None and eid not in current:
+                current[eid] = DD.subject_digest(subject['kind'], self._data(self._entity(eid)))
+        return {'id': 'decision_subjects', 'version': 0, 'digest': SN.digest(SN.canonical(current)),
+                'value': {'kind': 'decision_subjects', 'data': current}}
+
+    def _decision_codes(self, unit, inputs, references=()):
+        refs = DD.references(self._data(inputs.get('plan')), unit) + list(references)
+        records = [(m['id'], self._data(m)) for m in inputs.get('decisions') or []]
+        settlements = [self._data(m) for m in inputs.get('settlements') or []]
+        subjects = self._data(inputs.get('decision_subjects')) or {}
+        verify = self.settlement_trust.verify if self.settlement_trust is not None else None
+        codes = DD.blockers(unit, refs, records, settlements, subjects, verify, self.domain_uuid)
+        outcome = 'refused' if codes else 'accepted'
+        self.decision_counts[outcome] += 1
+        self.decision_last[unit] = outcome
+        return codes
+
+    def decision_blockers(self, unit, references=()):
+        """VELDO-0054, for the plan and frontier readers: the named blockers the governing decisions of
+        `unit` raise, [] when none blocks. Each inline reference must resolve to one accepted record
+        whose current exact binding is settled; the inline text itself resolves nothing."""
+        event = {'schema': SCHEMA, 'operation': 'decision_dependency', 'domain_uuid': self.domain_uuid,
+                 'repository_uuid': self.repository_uuid, 'unit': unit, 'references': list(references)}
+        try:
+            inputs, watermark = self.read(unit, references)
+            codes = self._decision_codes(unit, inputs, references)
+            identities = {label: self._identity(label, inputs[label])
+                          for label in ('plan', 'decisions', 'settlements', 'decision_subjects') if label in inputs}
+            event.update(watermark=watermark, accepted_inputs={
+                label: identity.get('version', identity['digest']) for label, identity in identities.items()})
+        except (SN.Refused, self.store.StoreRefused) as error:
+            codes = ['invalid_input:' + error.code]
+        except sqlite3.Error:
+            codes = ['unavailable_service:store']
+        event.update(outcome='refused' if codes else 'accepted', refusals=list(codes),
+                     taxonomy=sorted({taxonomy(c) for c in codes}))
+        self.observations.append(event)
+        self.observe(event)
+        return codes
 
     # -- predicates ------------------------------------------------------------------------------
 
@@ -528,8 +618,9 @@ class Gate:
                 return ['missing_authority:plan']
             return [] if p.get('status') in ('ready', 'in_progress') else ['draft_plan']
         if name == 'decisions_settled':
-            return ['unresolved_decision:' + d['id'] for d in inputs['decisions']
-                    if unit in (self._data(d).get('blocks') or []) and self._data(d).get('state') != 'settled']
+            # VELDO-0054: only the current exact binding of an accepted signed settlement clears a
+            # governing decision; a record's own status text resolves nothing.
+            return self._decision_codes(unit, inputs)
         if name == 'dependencies_resolved':
             return self._dependencies(data, inputs)
         if name == 'no_blockers':
@@ -659,7 +750,9 @@ class Gate:
 
     def status(self):
         """Metrics: accepted and refused decisions, and the units whose latest decision refused."""
-        return dict(self.counts, pending=sorted(u for u, o in self.last.items() if o == 'refused'))
+        return dict(self.counts, pending=sorted(u for u, o in self.last.items() if o == 'refused'),
+                    decisions=dict(self.decision_counts,
+                                   blocked=sorted(u for u, o in self.decision_last.items() if o == 'refused')))
 
 
 # ---------------------------------------------------------------------------------------------
