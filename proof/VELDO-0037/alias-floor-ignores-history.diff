@@ -1,6 +1,6 @@
 --- a/.veldo/control_readset.py
 +++ b/.veldo/control_readset.py
-@@ -77,2 +77 @@
--    result = SN._git_process.run(['git', '-C', str(repo), 'log', '-m', '--root', '-z', '--no-renames', '--format=',
--                                  '--name-only', '--ignore-missing', '--stdin', commit, '--'],
+@@ -98,2 +98 @@
+-    result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',
+-                                  '--ignore-missing', '--stdin', commit, '--'],
 +    result = SN._git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],

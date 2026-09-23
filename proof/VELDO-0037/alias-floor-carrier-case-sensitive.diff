@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -196 +196 @@
+@@ -197 +197 @@
 -    return re.compile(regex, re.IGNORECASE)
 +    return re.compile(regex)

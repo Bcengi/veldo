@@ -2,4 +2,4 @@
 +++ b/.veldo/control_readset.py
 @@ -384 +384 @@
 -                base = sorted(carrier_records(conn, self.domain_uuid, repository))
-+                base = ['HEAD']
++                base = []

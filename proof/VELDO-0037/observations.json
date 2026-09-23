@@ -32,6 +32,16 @@
     "reused": 1
   },
   "defects": {
+    "accept-after-lost-record": {
+      "accept-after-loss": null,
+      "enable": null,
+      "next": 12,
+      "record": [
+        "specs/VELDO-0011-next.md"
+      ],
+      "side": null,
+      "side-lost": true
+    },
     "carriers": {
       "case-directory": 5,
       "irregular-slug": 7,
@@ -46,6 +56,15 @@
       "prefix-case": "invalid_registration",
       "specification": null,
       "upper-directory": null
+    },
+    "configuration-independent": {
+      "enable": null,
+      "next": 91,
+      "oracle-next": 91,
+      "record": [
+        "specs/VELDO-0030-root.md",
+        "specs/VELDO-0090-resolution.md"
+      ]
     },
     "connections": {
       "counter": 3,
@@ -226,6 +245,14 @@
       "older-revision": null,
       "regression": "revision_regression"
     },
+    "shallow-repository": {
+      "deepened-accept": null,
+      "enable": null,
+      "next": 81,
+      "oracle-next": 81,
+      "shallow-accept": "shallow_repository",
+      "shallow-record": false
+    },
     "symlink": {
       "outside": [],
       "publish": "unsafe_path",
@@ -233,7 +260,7 @@
       "reader_parent_link": "unsafe_path"
     }
   },
-  "elapsed_seconds": 4.924058645032346,
+  "elapsed_seconds": 8.232801747042686,
   "pending": [
     [
       "other",
@@ -516,6 +543,18 @@
     [
       "aliases/records-hold-only-what-a-commit-adds",
       true
+    ],
+    [
+      "aliases/history-read-whatever-repository-config",
+      true
+    ],
+    [
+      "aliases/increment-after-a-lost-record",
+      true
+    ],
+    [
+      "aliases/shallow-repository-refused",
+      true
     ]
   ],
   "veldo-history-floors": {
@@ -549,10 +588,10 @@
     ]
   },
   "veldo-history-record-paths": [
-    932,
-    138,
-    229,
-    496
+    939,
+    144,
+    245,
+    481
   ],
   "verification": "Diagnostic observations; only bash scripts/verify.sh verifies the change."
 }

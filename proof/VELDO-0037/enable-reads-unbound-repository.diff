@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -604 +604 @@
+@@ -605 +605 @@
 -        if bound != os.path.realpath(self.paths[repository]):
 +        if False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -71 +71 @@
+-HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',
++HISTORY_OPTIONS = ('-m', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',

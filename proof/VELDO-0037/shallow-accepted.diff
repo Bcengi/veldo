@@ -1,0 +1,4 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -95 +94,0 @@
+-    _require_complete_history(repo)
