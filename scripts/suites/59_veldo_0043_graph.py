@@ -1059,12 +1059,33 @@ def _s43_run():
             except Exception as error:
                 shapes[shape] = [getattr(error, 'code', type(error).__name__), getattr(error, 'detail', str(error))[:80]]
             shapes[shape] += [placed.counts == {'accepted': 0, 'refused': 1}, (placed.observations or [{}])[-1].get('refusal')]
+        # A symlink loop or a NUL byte anywhere in these checks is a named, counted refusal.
+        (root / 'loop-root').symlink_to(root / 'loop-root')
+        (root / 'loop-target').symlink_to(root / 'loop-target')
+        for shape, content in (('pyvenv-loop', 'command = ' + str(root / 'loop-target') + ' -m venv /x\n'),
+                               ('pyvenv-nul', 'command = /usr/bin/python3\x00x -m venv /x\n')):
+            (root / ('shape-' + shape) / 'bin').mkdir(parents=True)
+            (root / ('shape-' + shape) / 'bin/python').symlink_to(_s43_sys.executable)
+            (root / ('shape-' + shape) / 'pyvenv.cfg').write_text(content)
+        for shape, python, place in (
+                ('root-loop', _s43_sys.executable, root / 'loop-root'),
+                ('pyvenv-loop', str(root / 'shape-pyvenv-loop/bin/python'), root / 'stage-loop-ok'),
+                ('pyvenv-nul', str(root / 'shape-pyvenv-nul/bin/python'), root / 'stage-nul-ok')):
+            placed = graph.Adapter({'python': python, 'runner': str(stub), 'stage': str(place)}, 'domain', 'repository')
+            try:
+                placed.start('cycle-loop', 'command-loop', snapshot, version)
+                shapes[shape] = ['launched']
+            except Exception as error:
+                shapes[shape] = [getattr(error, 'code', type(error).__name__), getattr(error, 'detail', str(error))[:80]]
+            shapes[shape] += [placed.counts == {'accepted': 0, 'refused': 1}, (placed.observations or [{}])[-1].get('refusal')]
         observations['stage_shapes'] = shapes
         reasons = {'runners-file': 'the stage runners is not a directory', 'work-file': 'the stage work is not a directory',
                    'runner-directory': 'the staged runner is not a file', 'root-file': 'the stage root is not a directory',
                    'runners-unwritable': 'the stage cannot be used',
                    'root-written-in-repository': 'the runtime stage lies inside a repository',
-                   'root-in-runtime': 'the runtime stage lies inside the runtime'}
+                   'root-in-runtime': 'the runtime stage lies inside the runtime',
+                   'root-loop': 'the stage cannot be used', 'pyvenv-loop': 'the runtime cannot be judged',
+                   'pyvenv-nul': 'the runtime cannot be judged'}
         expect('graph/authority/stage-shapes', all(
             shapes[name][0] == 'runtime_unavailable' and shapes[name][1].startswith(reason)
             and shapes[name][2] is True and shapes[name][3] == 'runtime_unavailable' for name, reason in reasons.items()))
