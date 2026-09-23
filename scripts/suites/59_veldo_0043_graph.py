@@ -318,6 +318,12 @@ def script_dir_probe(view):
     return {'next': 'only', 'suspend': True, 'notes': {'wrote': len(found)}}
 
 
+def descriptors(view):
+    # Where this child's own stdin and stdout, handed by the adapter, live.
+    return {'next': 'only', 'suspend': True,
+            'notes': {'fd0': _t_os.readlink('/proc/self/fd/0'), 'fd1': _t_os.readlink('/proc/self/fd/1')}}
+
+
 def cwd_probe(view):
     # Git discovery from the working directory the adapter gave this child; writes what it finds.
     found = _stores_from(_t_os.getcwd())
@@ -344,6 +350,7 @@ WORKFLOWS = {
     'proc-reach': one(proc_reach), 'poison-work': one(poison_work),
     'poison-runners': one(poison_runners), 'cwd-probe': one(cwd_probe),
     'plant-gitfile': one(plant_gitfile), 'script-dir-probe': one(script_dir_probe),
+    'descriptors': one(descriptors),
 }
 _t_request = json.loads(sys.stdin.buffer.read())
 emit(_t_request, answer(_t_request, WORKFLOWS), sys.stdout)
@@ -508,6 +515,15 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         proposed = call('advance', 'cycle-store', 'command-store-2', snapshot, workflow('store-access'),
                         probe.get('resume'), [_s43_result(1)])
         reach = call('start', 'cycle-proc', 'command-proc', snapshot, workflow('proc-reach'))
+        # The domain process's own temporary directory lies in its checkout: the child's stdin and
+        # stdout must still be created under the stage, never there.
+        scratch = checkout / '.scratch'
+        scratch.mkdir()
+        saved_tempdir, _s43_temp.tempdir = _s43_temp.tempdir, str(scratch)
+        try:
+            handed = _s43_notes(call('start', 'cycle-fds', 'command-fds', snapshot, workflow('descriptors')))
+        finally:
+            _s43_temp.tempdir = saved_tempdir
         # Links the adapter did not make: a node swaps <stage>/work, then <stage>/runners, for a
         # link to the next follower's working directory (the domain checkout). Each is refused by
         # name before anything is written or launched there.
@@ -651,16 +667,17 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and 'langgraph.types.Command' in foreign[0]['failure']['detail']
            and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
            and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
-           and len(responses) == 19 and all(_s43_exact_plain(r) for r in responses))
+           and len(responses) == 20 and all(_s43_exact_plain(r) for r in responses))
     source = (repo / '.veldo/control_graph_langgraph.py').read_text()
     present = [a for a in audits if a]
-    expect('graph/runtime/tracing-off', len(present) == 19 and all(
+    expect('graph/runtime/tracing-off', len(present) == 20 and all(
                a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
                and a['sockets'] == [] for a in present)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
            and not any(word in source for word in ('langgraph_sdk', 'RemoteGraph', 'get_client')))
     notes = _s43_notes(probe)
     observations['stage_in_repository'] = in_repository
+    observations['handed_descriptors'] = handed
     observations['stage_links'] = links
     observations['pyvenv'] = pyvenv
     observations['pyvenv_values_judged'] = cfg_judged
@@ -677,6 +694,9 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended'
            and in_repository == 'runtime_unavailable' and not (checkout / '.veldo/veldo').exists()
+           and sorted(handed) == ['fd0', 'fd1'] and all(
+               value.startswith(str(stage_root.resolve() / 'work') + '/') and str(checkout) not in value
+               for value in handed.values())
            and all(a['argv0'].startswith(str(stage_root.resolve() / 'runners')) for a in audits if a))
     # The stated limit (Release 2: real confinement): as the same account, a node can still read
     # the domain process through /proc. This row keeps that limit visible; it is not a pass.
