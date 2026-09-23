@@ -106,7 +106,8 @@ def _v65_checks(base):
                                   'presentation/retry-after-bounded', 'answer/choice-normalization',
                                   'answer/after-answered-reply', 'answer/tell-once-per-message',
                                   'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed',
-                                  'presentation/retry-after-capped', 'answer/reply-nfkc-before-split')}
+                                  'presentation/retry-after-capped', 'answer/reply-nfkc-before-split',
+                                  'answer/redelivered-answer-silent')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1346,6 +1347,25 @@ def _v65_checks(base):
                 result = answer(owner_reply(presenter.current(wid) or {}, text))
                 check(whole, '%r is the offered choice %s' % (text, choice),
                       reason(result) == ('accepted', None) and (answered(wid, 1) or {}).get('choice') == choice)
+
+        # Review 4 item 2: the owner's accepted answer, delivered again, gets no reply
+        again = 'answer/redelivered-answer-silent'
+        with section(again):
+            ra = opened('RA-1')
+            presenter.present(ra)
+            ra_r = presenter.current(ra) or {}
+            accepted_msg = owner_reply(ra_r, 'accept: fine')
+            first = answer(accepted_msg)
+            asked = len(api['requests'])
+            redelivered = answer(accepted_msg)
+            check(again, 'the accepted answer delivered again is refused and nothing is sent back',
+                  reason(first) == ('accepted', None) and reason(redelivered) == ('refused', 'already_answered')
+                  and len(api['requests']) == asked)
+            asked = len(api['requests'])
+            another = answer(owner_reply(ra_r, 'reject: second thoughts'))
+            check(again, 'control: a different message after the answer is told the ruling',
+                  reason(another) == ('refused', 'already_answered') and len(api['requests']) == asked + 1
+                  and 'already answered: approve' in api['requests'][-1][1])
     finally:
         server.shutdown()
         server.server_close()

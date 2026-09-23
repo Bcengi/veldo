@@ -1136,8 +1136,11 @@ class Presenter:
         aid = answer_id(request, receipt['request_version'], receipt['owner'])
         recorded = self._entity(aid)
         if recorded is not None:
-            # Answered already: say so and name the ruling, whatever this reply says.
-            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
+            # Answered already: say so and name the ruling, whatever this reply says, unless this is
+            # the recorded answer itself delivered again, which needs no reply.
+            was = recorded['data'].get('attribution') or {}
+            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):
+                self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
             raise Refused('already_answered', 'the owner has answered this request version')
         if a.get('choice') not in receipt['choices']:
             self._tell(ev, receipt, self._how(receipt, 'That reply did not match a choice.'))

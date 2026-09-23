@@ -1092,8 +1092,8 @@ def cases():
     presentation('answered-checked-after-choice', "        if recorded is not None:\n", "        if False:\n",
                  'answer/after-answered-reply')
     presentation('answered-not-told',
-                 "            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
-                 "", 'answer/after-answered-reply')
+                 "                self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
+                 "                pass\n", 'answer/after-answered-reply')
     # VELDO-0065 third review item 3: one message back per inbound message, recorded.
     presentation('tell-not-deduplicated', "        if self._entity(tid) is not None:\n            return\n", "",
                  'answer/tell-once-per-message')
@@ -1118,6 +1118,13 @@ def cases():
                  "    choice, _, reason = (text or '').replace('\\uff1a', ':').partition(':')\n", 'answer/reply-nfkc-before-split')
     presentation('ascii-hyphen-only', "CHOICE_SEPARATORS = str.maketrans({c: ' ' for c in '_-\\u2010\\u2011\\u2012\\u2043\\u2212'})\n",
                  "CHOICE_SEPARATORS = str.maketrans({c: ' ' for c in '_-'})\n", 'answer/reply-nfkc-before-split')
+    # VELDO-0065 fourth review item 2: the accepted answer delivered again gets no reply.
+    presentation('redelivered-answer-told',
+                 "            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):\n",
+                 "            if True:\n", 'answer/redelivered-answer-silent')
+    presentation('redelivery-by-chat-only',
+                 "            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):\n",
+                 "            if was.get('chat_id') != ev['chat_id']:\n", 'answer/redelivered-answer-silent')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
