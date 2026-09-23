@@ -104,6 +104,7 @@ CATEGORIES = {
     'missing_authority': 'missing_authority', 'entity_owned': 'missing_authority',
     'ownership_conflict': 'invalid_input', 'repository_binding_conflict': 'invalid_input',
     'accepted_revision_unavailable': 'missing_authority',
+    'shallow_repository': 'missing_authority',
     'foreign_transition': 'missing_authority',
     'unregistered_inputs': 'invalid_input', 'reserved_path': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',

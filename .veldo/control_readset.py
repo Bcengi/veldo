@@ -72,6 +72,15 @@ HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-rel
                    '--no-ext-diff', '--no-color', '--no-notes', '--no-show-signature')
 
 
+def _require_complete_history(repo):
+    """Refuse a shallow repository by name: its boundary commits hide the history before them, so
+    what the history names there is not what the history holds."""
+    result = SN._git_process.run(['git', '-C', str(repo), 'rev-parse', '--is-shallow-repository'],
+                                 capture_output=True, timeout=15)
+    if result.returncode or result.stdout.decode().strip() != 'false':
+        raise SN.Refused('shallow_repository', '%s is shallow or unreadable: its history is incomplete' % repo)
+
+
 def carrier_paths(repo, commit, base=()):
     """Every path named by a commit reachable from `commit` and from no commit in `base`, that holds
     a digit, sorted and distinct: each such commit's changes against every parent (every parent of a
@@ -79,9 +88,11 @@ def carrier_paths(repo, commit, base=()):
     A carrier always holds its number's digits, so this is every path any kind's number could be read
     from, and it is kind-independent because the first revision is accepted before any kind is
     enabled. With no base it is the whole history, which names every path of the tree, since every
-    tree path was added or changed by some commit of it. A base commit the repository no longer holds excludes
+    tree path was added or changed by some commit of it (a shallow repository, which breaks that,
+    is refused; grafts are a stated limit). A base commit the repository no longer holds excludes
     nothing, so what it held is listed again."""
     SN.commit_id(repo, commit)
+    _require_complete_history(repo)
     # The excluded commits go through stdin, so their number is bounded by nothing on a command line.
     exclusions = ''.join('^%s\n' % excluded for excluded in base)
     result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',
