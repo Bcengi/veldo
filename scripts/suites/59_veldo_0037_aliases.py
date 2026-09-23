@@ -1310,13 +1310,30 @@ def _s37_run():
                'decision-enabled': False})
         env.conn.close()
 
+        # Shared by rows 17 to 20: an oracle the code under test does not compute, the digit-bearing
+        # paths of `git ls-tree -r` of EVERY commit reachable from a commit, and one record by commit.
+        def reachable_tree_paths(repository, commit):
+            found = set()
+            for each in g(repository, 'rev-list', commit).split():
+                listing = git.run(['git', '-C', str(repository), 'ls-tree', '-r', '-z', '--name-only', each],
+                                  capture_output=True, check=True).stdout.decode('utf-8', 'surrogateescape')
+                found.update(name for name in listing.split('\0') if any(character.isdigit() for character in name))
+            return found
+
+        def record_of(connection, commit):
+            for (raw,) in connection.execute("SELECT data FROM entities WHERE kind='accepted_carriers'"):
+                data = _s37_json.loads(raw)
+                if data.get('commit') == commit:
+                    return data
+            return None
+
         # 17. Each accepted commit's record holds only what it adds: the digit-bearing paths named by
         # commits reachable from it and from no commit already recorded for the repository, and the
         # floor reads the union of every record. (b) A descendant's record is what the descendant
         # added and nothing more. (c) Ancestors lost after they were recorded change nothing, and
         # enabling can name a revision whose own commit is gone, from its record. (a) Over Veldo's
-        # own history, recorded in several acceptances, the union gives exactly the floor the whole
-        # history gives, for seven templates.
+        # own history, recorded in several acceptances, the union gives exactly the floor that every
+        # reachable tree gives, for seven templates.
         env = fresh('incremental', {'repository': [{'specs/VELDO-0002-base.md': b'# base\n'}]})
         origin = env.origins['repository']
         main_line = g(origin, 'rev-parse', '--abbrev-ref', 'HEAD')
@@ -1380,8 +1397,11 @@ def _s37_run():
                      ('bare', 'X', '{alias}.md'), ('numbered', 'N', 'docs/{number}-{slug}.md'),
                      ('proof', 'VELDO', 'proof/{alias}/README.md')]
         floors = {}
+        # The reference is every tree of every commit reachable from the accepted commits, listed
+        # with ls-tree, never carrier_paths or git log, which the code under test reads with.
+        every_tree = reachable_tree_paths(history, points[-1])
         for index, (kind, prefix, template) in enumerate(templates):
-            whole = al.accepted_maximum(history, points[-1], {'prefix': prefix, 'width': 4, 'path_template': template})
+            whole = al.maximum(every_tree, {'prefix': prefix, 'width': 4, 'path_template': template})
             copy_path = root / ('veldo-history-%d.sqlite3' % index)
             target = _s37_sqlite.connect(copy_path)
             veldo.backup(target)
@@ -1404,23 +1424,6 @@ def _s37_run():
                'descendant-bounded': True,
                'side-paths': [['specs/VELDO-0009-first-side.md'], ['specs/VELDO-0005-second-side.md']],
                'side-lost': True, 'enable-naming-lost': None, 'next': 10, 'union-equals-whole-history': True})
-
-        # Shared by rows 18 to 20: an oracle the code under test does not compute, the digit-bearing
-        # paths of `git ls-tree -r` of EVERY commit reachable from a commit, and one record by commit.
-        def reachable_tree_paths(repository, commit):
-            found = set()
-            for each in g(repository, 'rev-list', commit).split():
-                listing = git.run(['git', '-C', str(repository), 'ls-tree', '-r', '-z', '--name-only', each],
-                                  capture_output=True, check=True).stdout.decode('utf-8', 'surrogateescape')
-                found.update(name for name in listing.split('\0') if any(character.isdigit() for character in name))
-            return found
-
-        def record_of(connection, commit):
-            for (raw,) in connection.execute("SELECT data FROM entities WHERE kind='accepted_carriers'"):
-                data = _s37_json.loads(raw)
-                if data.get('commit') == commit:
-                    return data
-            return None
 
         def specification_next(env):
             return (env.service.current(al.kind_id('repository', 'specification'))[1] or {}).get('next')
