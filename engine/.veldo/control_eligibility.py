@@ -535,7 +535,7 @@ class Gate:
             # (the accepted plan's open_decisions, or one passed in) names, every settlement associated
             # with one of them, and the current accepted digest of each record's subject.
             refs = DD.references(self._data(inputs.get('plan')), unit) + list(references)
-            inputs['decisions'] = self._collection('decision', lambda d: DD.governs(d, unit, data.get('plan'), refs))
+            inputs['decisions'] = self._decisions(unit, data.get('plan'), refs)
             governing = {m['id'] for m in inputs['decisions']}
             inputs['settlements'] = self._settlements(governing)
             inputs['decision_subjects'] = self._subjects(inputs['decisions'])
@@ -543,6 +543,20 @@ class Gate:
             inputs['approvals'] = self._collection('approval', lambda d: d.get('unit') == unit)
             watermark = self.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
         return {k: v for k, v in inputs.items() if v is not None}, watermark
+
+    def _decisions(self, unit, plan, refs):
+        """Every governing record that bears on `unit` (control_decision_dependency.governs). A record
+        whose `blocks` is malformed is recorded once as a named invalid_input observation, and it still
+        governs every unit it names anywhere inside that value, where it is refused by name."""
+        members = []
+        for (identity,) in self.conn.execute('SELECT id FROM entities WHERE kind=? ORDER BY id', ('decision',)):
+            item = self._entity(identity)
+            data = self._data(item)
+            if DD.blocks_malformed(data):
+                self._invalid_record(identity, 'blocks')
+            if DD.governs(data, unit, plan, refs):
+                members.append(item)
+        return members
 
     def _settlements(self, governing):
         """Every settlement associated with one of the `governing` record ids. A settlement whose

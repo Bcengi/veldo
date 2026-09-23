@@ -614,6 +614,31 @@ def _v54_suite():
                    and all(verdict(subjects_seen[1][sid], {'invalid_input:decision:D-%s/subject' % sid[-4:]})
                            and subjects_seen[1][sid]['lens'] == subjects_seen[1][sid]['burn'] for sid in SUBJECTS))
 
+        with region('decisions/malformed-blocks-held'):
+            # A `blocks` that is a mapping, a nested list or a list holding a non-id does not silently
+            # govern nothing: the unit its author named anywhere in it is held by invalid_input:<id>/blocks,
+            # the record is recorded in invalid_records, and a malformed blocks naming no unit holds no one.
+            BLOCKS = {'VELDO-9485': lambda sid: {sid: True}, 'VELDO-9486': lambda sid: [[sid]],
+                      'VELDO-9487': lambda sid: [sid, {'x': 1}]}
+            planned('PLAN-9408', sorted(BLOCKS) + ['VELDO-9488'])
+            for sid, shape in BLOCKS.items():
+                rid = 'decision:D-' + sid[-4:]
+                decision(rid, 'spec', sid, [sid])
+                reshape(rid, blocks=shape(sid))
+            decision('decision:D-NOBODY', 'spec', 'VELDO-9488', ['VELDO-9488'])
+            settle('decision:D-NOBODY')
+            reshape('decision:D-NOBODY', blocks={'nobody': ['at all']})
+            blocks_seen = swept(['VELDO-9401', 'VELDO-9488'] + sorted(BLOCKS))
+            recorded_blocks = set(gate.status()['decisions'].get('invalid_records', []))
+            observed['malformed_blocks'] = {'sweep': blocks_seen[1] if blocks_seen[0] == 'raised' else {
+                sid: {'stations': o['stations']['build'], 'blocks': o['blocks'], 'lens': o['lens']}
+                for sid, o in blocks_seen[1].items()}, 'invalid_records': sorted(recorded_blocks)}
+            check('decisions/malformed-blocks-held',
+                   blocks_seen[0] == 'ok'
+                   and verdict(blocks_seen[1]['VELDO-9401'], set()) and verdict(blocks_seen[1]['VELDO-9488'], set())
+                   and all(verdict(blocks_seen[1][sid], {'invalid_input:decision:D-%s/blocks' % sid[-4:]}) for sid in BLOCKS)
+                   and {'decision:D-%s' % sid[-4:] for sid in BLOCKS} | {'decision:D-NOBODY'} <= recorded_blocks)
+
         with region('decisions/production-gate-verifies'):
             # The production construction: an enrolled workspace's Gate verifies settlements against
             # the settlement signers the HOST trusts (outside the workspace); a host naming none trusts no

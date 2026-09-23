@@ -132,18 +132,34 @@ def references(plan_data, unit):
     return out
 
 
+def _named(value):
+    """Every text value anywhere in a JSON value: keys, items and nested members."""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield key
+            yield from _named(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _named(item)
+
+
+def blocks_malformed(record):
+    """Whether a record's `blocks` is present and not a list of ids."""
+    return isinstance(record, dict) and record.get('blocks') is not None and not _str_list(record.get('blocks'))
+
+
 def governs(record, unit, plan, refs=()):
     """Whether a governing record bears on `unit`: it blocks the unit or its plan, or a reference names
-    it. A `blocks` that is one bare id instead of a list still names that unit, so the record is
-    evaluated (and refused as invalid) for the unit it concerns rather than silently dropped."""
+    it. A MALFORMED `blocks` (one bare id, a mapping, a nested list, a list holding a non-id) still
+    governs every unit it names anywhere inside it, so the record is refused as invalid for the unit
+    its author meant to hold rather than silently governing nothing."""
     if not isinstance(record, dict):
         return False
     blocks = record.get('blocks') or []
-    if isinstance(blocks, str):
-        blocks = [blocks]
-    if not isinstance(blocks, list):
-        blocks = []
-    return unit in blocks or (bool(plan) and 'plan:' + str(plan) in blocks) or \
+    named = set(_named(blocks)) if blocks_malformed(record) else set(blocks)
+    return unit in named or (bool(plan) and 'plan:' + str(plan) in named) or \
         (record.get('decision_id') is not None and record.get('decision_id') in refs)
 
 

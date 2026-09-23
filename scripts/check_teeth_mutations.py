@@ -1007,6 +1007,13 @@ def cases():
     decisions('status-stop-unnamed', 'runstatus.py',
               '        return [], "burndown_unanswerable:" + type(error).__name__\n',
               '        return [], None\n', 'status-names-its-stop')
+    # Item 2: a malformed blocks holds the unit it names and is recorded.
+    decisions('malformed-blocks-govern-nothing', 'control_decision_dependency.py',
+              "    named = set(_named(blocks)) if blocks_malformed(record) else set(blocks)\n",
+              "    named = set(blocks) if _str_list(blocks) else set()\n", 'malformed-blocks-held')
+    decisions('malformed-blocks-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'blocks')\n", "                pass\n",
+              'malformed-blocks-held')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
