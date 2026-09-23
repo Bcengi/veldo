@@ -386,7 +386,7 @@ def _v54_suite():
                     if label not in emitted:
                         check(label, False)
 
-        # --- AC1: the enabled consumers, from the actual call sites -----------------------------------
+        # AC1: the enabled consumers, derived from the actual call sites.
         def calls_in(path, names):
             found = set()
             tree = ast.parse(Path(path).read_text())
