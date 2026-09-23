@@ -132,6 +132,15 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
+| VELDO-0124 | Simple macOS worker lifecycle profile | draft | high | dmitry | required | VELDO-0124-macos-worker-profile.md |
+| VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | draft | high | dmitry | required | VELDO-0125-mac-relay-capability-routing.md |
+| VELDO-0126 | One Telegram and API message intake for proposed work | draft | high | dmitry | required | VELDO-0126-message-objective-intake.md |
+| VELDO-0127 | Versioned per-role MCP server and tool configuration | draft | high | dmitry | required | VELDO-0127-agent-capability-configuration.md |
+| VELDO-0128 | Telegram progress and completion from journal events | draft | high | dmitry | required | VELDO-0128-telegram-journal-reporting.md |
+| VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | draft | high | dmitry | required | VELDO-0129-live-build-review-adapter-wiring.md |
+| VELDO-0130 | Authenticated factory state, message and decision API | draft | high | dmitry | required | VELDO-0130-authenticated-factory-api.md |
+| VELDO-0131 | Veldo factory UI on phone and desktop | draft | high | dmitry | required | VELDO-0131-factory-phone-desktop-ui.md |
+| VELDO-0132 | Versioned workflow definitions consumed by LangGraph | draft | high | dmitry | required | VELDO-0132-versioned-workflow-definition.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 - the keyed bytes and the validated bytes must be the same bytes | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -713,7 +722,7 @@ Open decision D4 blocks: VELDO-0007.
 
 ### PLAN-0019 - Dark Factory project coordination inside Veldo
 
-Status ready, revision 3, owner dmitry. 11/86 work items shipped.
+Status ready, revision 3, owner dmitry. 11/95 work items shipped.
 Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036 (W21).
 
 | Item | Spec | Title | Depends on | State |
@@ -754,29 +763,38 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W47 | VELDO-0062 | Provider credential separation and live usage accounting | VELDO-0028, VELDO-0036 | waiting: VELDO-0028, VELDO-0036 |
 | W84 | VELDO-0107 | Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates | VELDO-0023, VELDO-0025, VELDO-0029 | waiting: VELDO-0029 |
 | W86 | VELDO-0109 | An unreachable authority stops mutation and admission, and never becomes a local one | VELDO-0107 | waiting: VELDO-0107 |
+| W92 | VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061 | waiting: VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061 |
 | W85 | VELDO-0108 | Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server | VELDO-0107 | waiting: VELDO-0107 |
+| W87 | VELDO-0124 | Simple macOS worker lifecycle profile | VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062 | waiting: VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062 |
+| W88 | VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124 | waiting: VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124 |
 | W49 | VELDO-0064 | Assignment inbox and durable projections on enrolled input surfaces | VELDO-0025, VELDO-0035, VELDO-0046 | waiting: VELDO-0035, VELDO-0046 |
 | W50 | VELDO-0065 | Versioned presentation receipts for every enrolled channel | VELDO-0064 | waiting: VELDO-0064 |
 | W51 | VELDO-0066 | Canonical channel attribution including platform-derived chat message, sender, and time | VELDO-0020, VELDO-0065 | waiting: VELDO-0065 |
 | W52 | VELDO-0067 | Per-channel restricted edge signing and enrollment | VELDO-0025, VELDO-0027, VELDO-0066 | waiting: VELDO-0027, VELDO-0066 |
 | W53 | VELDO-0068 | Atomic cross-channel settlement and principal-based quorum enforcement | VELDO-0035, VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067 | waiting: VELDO-0035, VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067 |
 | W54 | VELDO-0069 | Governing decision binding, supersession, and eligibility updates | VELDO-0054, VELDO-0068 | waiting: VELDO-0054, VELDO-0068 |
-| W58 | VELDO-0073 | Per-channel live ingress activation and real sandbox qualification | VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068 | waiting: VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068 |
+| W58 | VELDO-0073 | Per-channel live ingress activation and real sandbox qualification | VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0126 | waiting: VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0126 |
 | W60 | VELDO-0075 | Andon delivery and authorized resumption through enrolled channels | VELDO-0046, VELDO-0069, VELDO-0073 | waiting: VELDO-0046, VELDO-0069, VELDO-0073 |
+| W89 | VELDO-0126 | One Telegram and API message intake for proposed work | VELDO-0025, VELDO-0035, VELDO-0047 | waiting: VELDO-0035, VELDO-0047 |
+| W91 | VELDO-0128 | Telegram progress and completion from journal events | VELDO-0046, VELDO-0051, VELDO-0073, VELDO-0075 | waiting: VELDO-0046, VELDO-0051, VELDO-0073, VELDO-0075 |
 | W22 | VELDO-0037 | Atomic specification alias allocation and document publication | VELDO-0023, VELDO-0035 | waiting: VELDO-0035 |
 | W28 | VELDO-0043 | Replaceable LangGraph execution adapter | VELDO-0035 | waiting: VELDO-0035 |
 | W30 | VELDO-0045 | Pinned isolated runtime, dependency licenses, and distribution inventory | VELDO-0043 | waiting: VELDO-0043 |
 | W61 | VELDO-0076 | Project ownership, charter, lifecycle, and transfers | VELDO-0025, VELDO-0035, VELDO-0036, VELDO-0068, VELDO-0073 | waiting: VELDO-0035, VELDO-0036, VELDO-0068, VELDO-0073 |
-| W62 | VELDO-0077 | Objective acceptance and signed outcome assessment | VELDO-0076, VELDO-0069 | waiting: VELDO-0076, VELDO-0069 |
+| W62 | VELDO-0077 | Objective acceptance and signed outcome assessment | VELDO-0076, VELDO-0069, VELDO-0126 | waiting: VELDO-0076, VELDO-0069, VELDO-0126 |
 | W63 | VELDO-0078 | Backlog lifecycle and priority-controlled execution | VELDO-0052, VELDO-0076, VELDO-0077 | waiting: VELDO-0052, VELDO-0076, VELDO-0077 |
 | W64 | VELDO-0079 | Grooming and admission requests through enrolled decision surfaces | VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078 | waiting: VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078 |
 | W70 | VELDO-0085 | Decomposition and concurrent elaboration publication | VELDO-0037, VELDO-0078, VELDO-0079 | waiting: VELDO-0037, VELDO-0078, VELDO-0079 |
-| W73 | VELDO-0088 | Project-manager execution graphs | VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079 | waiting: VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079 |
+| W73 | VELDO-0088 | Project-manager execution graphs | VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0132 | waiting: VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0132 |
 | W74 | VELDO-0089 | Versioned team configuration | VELDO-0025, VELDO-0036, VELDO-0049, VELDO-0076 | waiting: VELDO-0036, VELDO-0049, VELDO-0076 |
-| W75 | VELDO-0090 | Capability-bound specialist selection | VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108 | waiting: VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108 |
+| W75 | VELDO-0090 | Capability-bound specialist selection | VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127 | waiting: VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127 |
 | W76 | VELDO-0091 | Budgeted requirements elaboration | VELDO-0037, VELDO-0062, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0090 | waiting: VELDO-0037, VELDO-0062, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0090 |
 | W77 | VELDO-0092 | Typed proposals and complete authorization validation | VELDO-0035, VELDO-0052, VELDO-0054, VELDO-0069, VELDO-0078, VELDO-0085, VELDO-0089, VELDO-0091 | waiting: VELDO-0035, VELDO-0052, VELDO-0054, VELDO-0069, VELDO-0078, VELDO-0085, VELDO-0089, VELDO-0091 |
-| W44 | VELDO-0059 | Installed end-to-end floor slice with fake model and real enforcement | VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108 | waiting: VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108 |
+| W90 | VELDO-0127 | Versioned per-role MCP server and tool configuration | VELDO-0025, VELDO-0035, VELDO-0089 | waiting: VELDO-0035, VELDO-0089 |
+| W95 | VELDO-0132 | Versioned workflow definitions consumed by LangGraph | VELDO-0035, VELDO-0043 | waiting: VELDO-0035, VELDO-0043 |
+| W93 | VELDO-0130 | Authenticated factory state, message and decision API | VELDO-0025, VELDO-0035, VELDO-0047, VELDO-0064, VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0126 | waiting: VELDO-0035, VELDO-0047, VELDO-0064, VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0126 |
+| W94 | VELDO-0131 | Veldo factory UI on phone and desktop | VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132 | waiting: VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132 |
+| W44 | VELDO-0059 | Installed end-to-end floor slice with fake model and real enforcement | VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132 | waiting: VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132 |
 | W9 | VELDO-0024 | Signed Git replication and off-host acknowledgement | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023 | shipped |
 | W15 | VELDO-0030 | Exclusive leadership and authority-generation fencing | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0029 | waiting: VELDO-0029 |
 | W17 | VELDO-0032 | Clock uncertainty in task reporting | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0031 | waiting: VELDO-0031 |

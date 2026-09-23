@@ -216,6 +216,9 @@ feature_tree:
   - id: F8
     title: Package H - Installable, migratable, and recoverable operation
     outcome_refs: [O2, O5]
+  - id: F9
+    title: Owner UI and authenticated API
+    outcome_refs: [O1, O3, O4]
 
 work:
   - item: W1
@@ -581,7 +584,7 @@ work:
     spec: VELDO-0059
     title: Installed end-to-end floor slice with fake model and real enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
     order: 16059
     release: 1
     stage: 6
@@ -689,7 +692,7 @@ work:
     spec: VELDO-0073
     title: Per-channel live ingress activation and real sandbox qualification
     feature_refs: [F5]
-    depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068]
+    depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0126]
     order: 13073
     release: 1
     stage: 3
@@ -720,7 +723,7 @@ work:
     spec: VELDO-0077
     title: Objective acceptance and signed outcome assessment
     feature_refs: [F6]
-    depends_on: [VELDO-0076, VELDO-0069]
+    depends_on: [VELDO-0076, VELDO-0069, VELDO-0126]
     order: 14077
     release: 1
     stage: 4
@@ -801,7 +804,7 @@ work:
     spec: VELDO-0088
     title: Project-manager execution graphs
     feature_refs: [F7]
-    depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079]
+    depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0132]
     order: 14088
     release: 1
     stage: 4
@@ -817,7 +820,7 @@ work:
     spec: VELDO-0090
     title: Capability-bound specialist selection
     feature_refs: [F7]
-    depends_on: [VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108]
+    depends_on: [VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127]
     order: 14090
     release: 1
     stage: 4
@@ -879,6 +882,78 @@ work:
     depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0063, VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0080, VELDO-0081, VELDO-0082, VELDO-0083, VELDO-0084, VELDO-0085, VELDO-0086, VELDO-0087, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0093, VELDO-0094, VELDO-0095, VELDO-0096, VELDO-0097]
     order: 40098
     release: 4
+  - item: W87
+    spec: VELDO-0124
+    title: Simple macOS worker lifecycle profile
+    feature_refs: [F2]
+    depends_on: [VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062]
+    order: 12124
+    release: 1
+    stage: 2
+  - item: W88
+    spec: VELDO-0125
+    title: Mac worker dispatch through the relay with host-capability routing
+    feature_refs: [F2]
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124]
+    order: 12125
+    release: 1
+    stage: 2
+  - item: W89
+    spec: VELDO-0126
+    title: One Telegram and API message intake for proposed work
+    feature_refs: [F5]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0047]
+    order: 13126
+    release: 1
+    stage: 3
+  - item: W90
+    spec: VELDO-0127
+    title: Versioned per-role MCP server and tool configuration
+    feature_refs: [F7]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089]
+    order: 14127
+    release: 1
+    stage: 4
+  - item: W91
+    spec: VELDO-0128
+    title: Telegram progress and completion from journal events
+    feature_refs: [F5]
+    depends_on: [VELDO-0046, VELDO-0051, VELDO-0073, VELDO-0075]
+    order: 13128
+    release: 1
+    stage: 3
+  - item: W92
+    spec: VELDO-0129
+    title: Real worker adapter wiring for LiveLoop and LiveReviewer
+    feature_refs: [F4]
+    depends_on: [VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061]
+    order: 11129
+    release: 1
+    stage: 1
+  - item: W93
+    spec: VELDO-0130
+    title: Authenticated factory state, message and decision API
+    feature_refs: [F9]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0047, VELDO-0064, VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0126]
+    order: 15130
+    release: 1
+    stage: 5
+  - item: W94
+    spec: VELDO-0131
+    title: Veldo factory UI on phone and desktop
+    feature_refs: [F9]
+    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132]
+    order: 15131
+    release: 1
+    stage: 5
+  - item: W95
+    spec: VELDO-0132
+    title: Versioned workflow definitions consumed by LangGraph
+    feature_refs: [F7]
+    depends_on: [VELDO-0035, VELDO-0043]
+    order: 14132
+    release: 1
+    stage: 4
 
 regression:
   journeys:
@@ -1029,14 +1104,14 @@ inventory and every-pack installation, adopters, migration and rollback. W57/VEL
 as a Release 4 historical disposition only: its Jira tracker intake is dropped by Telegram 28857
 and 28859, not scheduled to be built in that release. No later release silently re-enables Jira intake.
 
-The YAML `release` and `stage` annotations and the table below assign every existing work item.
+The YAML `release` and `stage` annotations and the table below assign every existing and new work item.
 The roadmap's continuous-release flags prevent all four releases becoming a single MVP barrier. They do
 not waive a release's own work or regression: Release 1 requires every assigned functional item
 and RJ1-RJ3; Release 2 requires its work and RJ4-RJ7/RJ10; Release 3 requires its governance evidence;
 Release 4 requires its active work and RJ8-RJ9. The retained dropped W57 is not an activation gate.
 These are writing-only allocations; no specification status or existing evidence is re-certified.
 
-## Complete existing work allocation
+## Complete work allocation
 
 | Work | Specification | Release | Stage or disposition |
 |---|---|---|---|
@@ -1126,6 +1201,15 @@ These are writing-only allocations; no specification status or existing evidence
 | W81 | VELDO-0096 | 4 | - |
 | W82 | VELDO-0097 | 2 | - |
 | W83 | VELDO-0098 | 4 | - |
+| W87 | VELDO-0124 | 1 | 2 |
+| W88 | VELDO-0125 | 1 | 2 |
+| W89 | VELDO-0126 | 1 | 3 |
+| W90 | VELDO-0127 | 1 | 4 |
+| W91 | VELDO-0128 | 1 | 3 |
+| W92 | VELDO-0129 | 1 | 1 |
+| W93 | VELDO-0130 | 1 | 5 |
+| W94 | VELDO-0131 | 1 | 5 |
+| W95 | VELDO-0132 | 1 | 4 |
 
 ## Related baseline and follow-up disposition
 
@@ -1149,5 +1233,5 @@ VELDO-0035, 0054 and 0069 retain consumed normal functions; 0053 retains require
 checks. 0089 consumes retained engineering review, not deferred 0070 adversarial decision review.
 0047 incorporates local exclusion from 0030 and normal real-store wiring from 0115; 0088 incorporates
 ordinary cycle serialization from 0093. Their broader matrices keep their later release allocation.
-New concerns are allocated as draft specifications in the subsequent authoring group and added to
-this same graph. The final writing audit lives in proof/plan-0019-rev3/README.md.
+Nine new draft specifications, VELDO-0124 through VELDO-0132, fill the host, routing, intake,
+capability, reporting, live wiring, API, UI and workflow-definition concerns in this same graph. The final writing audit lives in proof/plan-0019-rev3/README.md.
