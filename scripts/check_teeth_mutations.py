@@ -1080,6 +1080,12 @@ def cases():
                  "    text = str(text).casefold()\n", 'answer/choice-normalization')
     presentation('choice-separators-distinct', "    text = text.replace('_', ' ').replace('-', ' ')\n", "",
                  'answer/choice-normalization')
+    # VELDO-0065 third review item 2: after a version is answered, a reply is told it is answered.
+    presentation('answered-checked-after-choice', "        if recorded is not None:\n", "        if False:\n",
+                 'answer/after-answered-reply')
+    presentation('answered-not-told',
+                 "            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
+                 "", 'answer/after-answered-reply')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

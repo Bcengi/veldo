@@ -970,11 +970,14 @@ class Presenter:
                                  'platform_timestamp': message.get('date'), 'chat_id': chat.get('id'),
                                  'reply_to_message_id': reply.get('message_id')})
 
-    def _tell(self, ev, receipt, what):
-        """A short plain reply to the owner's own message when it cannot count as an answer, so a
-        reply is never met with silence. It grants nothing and records nothing."""
-        text = ('%s Reply to the presentation with one of: %s, then a colon and your reason, for example '
+    @staticmethod
+    def _how(receipt, what):
+        return ('%s Reply to the presentation with one of: %s, then a colon and your reason, for example '
                 '"%s: <your reason>".' % (what, ' | '.join(receipt['choices']), receipt['choices'][0]))
+
+    def _tell(self, ev, receipt, text):
+        """A short plain reply to the owner's own message when it cannot count as an answer, so a
+        reply is never met with silence. It grants nothing."""
         sent = self._send(ev['chat_id'], text, ev['platform_message_id'])
         self.observations.append(dict(self.ids, operation='tell_owner', channel=CHANNEL, request_id=receipt['request_id'],
                                       accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',
@@ -1053,19 +1056,22 @@ class Presenter:
             raise Refused('not_authorized', 'the edge scope does not cover the request')
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.
+        aid = answer_id(request, receipt['request_version'], receipt['owner'])
+        recorded = self._entity(aid)
+        if recorded is not None:
+            # Answered already: say so and name the ruling, whatever this reply says.
+            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
+            raise Refused('already_answered', 'the owner has answered this request version')
         if a.get('choice') not in receipt['choices']:
-            self._tell(ev, receipt, 'That reply did not match a choice.')
+            self._tell(ev, receipt, self._how(receipt, 'That reply did not match a choice.'))
             raise Refused('unmatched_choice', 'the reply names no offered choice')
         if (a.get('ruling') != ruling_of(a.get('choice'))
                 or a.get('assertion_kind') != self.assignment.KINDS.get(receipt['request']['kind'])
                 or a.get('authority_scope') != list(receipt['request']['scope'])):
             raise Refused('invalid_input', 'the choice is not offered, or its ruling, kind or scope is not the contract\'s')
         if not _is_str(a.get('rationale')):
-            self._tell(ev, receipt, 'That reply had no reason.')
+            self._tell(ev, receipt, self._how(receipt, 'That reply had no reason.'))
             raise Refused('missing_rationale', 'an answer records its rationale')
-        aid = answer_id(request, receipt['request_version'], receipt['owner'])
-        if self._entity(aid) is not None:
-            raise Refused('already_answered', 'the owner has answered this request version')
         versions.update({pid: receipt['entity_version'], head_id(request): head['entity_version'], aid: 0,
                          edge: edge_entry['entity_version'], key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0)})
         answer = {'schema': ANSWER_SCHEMA, 'channel': CHANNEL, 'request_id': request,

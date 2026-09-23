@@ -102,7 +102,8 @@ def _v65_checks(base):
                                   'projection/notice-superseded', 'projection/silent-from-store',
                                   'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
                                   'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
-                                  'presentation/retry-after-bounded', 'answer/choice-normalization')}
+                                  'presentation/retry-after-bounded', 'answer/choice-normalization',
+                                  'answer/after-answered-reply')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1139,6 +1140,23 @@ def _v65_checks(base):
                 check(nfkc, '%r is the offered choice %s' % (text, choice),
                       reason(result) == ('accepted', None) and recorded.get('choice') == choice
                       and recorded.get('rationale') == rationale)
+
+        # Review 3 item 2: after a version is answered, a reply is told so, not told it matched nothing
+        done_row = 'answer/after-answered-reply'
+        with section(done_row):
+            aa = opened('AA-1')
+            presenter.present(aa)
+            aa_r = presenter.current(aa) or {}
+            check(done_row, 'control: the owner answers once', reason(answer(owner_reply(aa_r, 'accept: fine'))) == ('accepted', None))
+            for text in ('thanks!', 'reject: changed my mind'):
+                asked = len(api['requests'])
+                message = owner_reply(aa_r, text)
+                result = answer(message)
+                told = api['requests'][asked:]
+                check(done_row, 'after the answer, %r is refused as already answered and the owner is told the ruling' % text,
+                      reason(result) == ('refused', 'already_answered') and len(told) == 1 and told[0][2] == message['message_id']
+                      and 'already answered: approve' in told[0][1] and 'did not match' not in told[0][1])
+            check(done_row, 'the recorded answer is unchanged', (answered(aa, 1) or {}).get('ruling') == 'approve')
     finally:
         server.shutdown()
         server.server_close()
