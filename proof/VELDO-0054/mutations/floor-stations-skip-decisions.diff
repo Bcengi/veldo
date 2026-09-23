@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -671 +671 @@
+@@ -697 +697 @@
 -            return self._decision_codes(unit, inputs)
 +            return []

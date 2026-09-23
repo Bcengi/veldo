@@ -151,3 +151,9 @@ changed.
 now a named invalid_input for the unit the record concerns, decided before unsupported and
 unresolved, and veldo status names a burn-down it cannot build. The footprint is unchanged. No
 criterion, status or evidence universe changed.
+
+2026-09-23, third review fixes: a blocks nested beyond the recursion limit broke every consumer, and
+veldo status reported a store integrity refusal without its code. The blocks walk no longer
+recurses, an unexpected fault is named for its unit, a store refusal is named by its code
+everywhere, a malformed settlement is invalid input before unsupported, and a blocks string names
+every id it lists. The footprint is unchanged. No criterion, status or evidence universe changed.

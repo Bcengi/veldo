@@ -49,8 +49,8 @@ reports `decisions` (accepted, refused, and the units whose latest decision eval
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/62_veldo_0054_decisions.py`, 23 rows (14 assertions and 9 `ran/` rows, one per
-region; 12 before the first review, 15 before the second). One temporary tree is both the repository the plan and frontier readers read and the
+Suite `scripts/suites/62_veldo_0054_decisions.py`, 31 rows (18 assertions and 13 `ran/` rows, one per
+region; 12 before the first review, 15 before the second, 23 before the third). One temporary tree is both the repository the plan and frontier readers read and the
 installed `.veldo` they run from; a real SQLite store with keyed journal signatures; settlements
 signed by real Ed25519 keys through `ssh-keygen -Y sign` and verified by the production
 `SettlementTrust`. 34 units are admitted, claimed, approved and dependency-free under ready plans,
@@ -62,7 +62,7 @@ burn-down and `cmd_run_check` (its exit and every named refusal it prints). `obs
 
 Every mutation below is registered as finding 54 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and required to turn its named row red by a failed assertion while the unmutated
-copy is green; none reddened a `ran/` row. All 32 were rejected (18 before the first review, 24 before the second) (`mutations.json`, each diff in
+copy is green; none reddened a `ran/` row. All 43 were rejected (18 before the first review, 24 before the second, 32 before the third) (`mutations.json`, each diff in
 `mutations/`).
 
 **AC1, exact binding.** Rows `decisions/consumers-from-call-sites`, `decisions/exact-binding` and
@@ -214,29 +214,67 @@ unsupported and before unresolved. Row `decisions/invalid-before-unsupported`; m
 `schema-type-unchecked`, `invalid-after-unresolved`.
 
 **Open items, each for its own ticket (all predate VELDO-0054).**
-- A unit record whose `plan` field is a list makes `Gate.read` raise (`'plan:' + data['plan']`, VELDO-0052
-  code); every consumer that visits that unit raises. `veldo status` now names it
-  (`burndown_unanswerable:TypeError`, the probe row `decisions/status-names-its-stop`) but the other
-  consumers still raise.
+- A unit record whose `plan` field is a list fails inside `Gate.read` (`'plan:' + data['plan']`,
+  VELDO-0052 code). Since the third review's item 1 no consumer raises on it: decide and
+  decision_blockers name it `unknown_outcome:evaluation_error/TypeError` for that unit. It should be a
+  specific `invalid_input:<unit>/plan`, which is its ticket.
 - A plan file whose `open_decisions` entry has a `blocks` holding a nested list makes
   `plan._decision_blocks` (its inline half) and `.veldo/validate.py` raise on the unhashable member.
+  `veldo status` names it (`burndown_unanswerable:TypeError`, row `decisions/status-names-its-stop`).
+- A tampered accepted row makes plan status and the frontier raise the store's named
+  `Refused: input_digest_mismatch` from VELDO-0052's completion reader; decide, decision_blockers and
+  `veldo status` name it `missing_authority:input_digest_mismatch`.
 - `scripts/update_index.py` derives each plan item's frontier state in the committed `specs/index.md`
   from the inline `open_decisions` text. That is by design: the committed index is generated from the
   checkout and cannot read the control store, so it shows every inline entry as blocking and knows
   nothing of settlements; the store-backed readers (plan status, `veldo status`, the frontier) are
   the authority.
 
+## 2026-09-23 third review: two blocking fixes, one ordering fix and three minor ones
+
+A fresh review of 53847df..f1c9803 found two blocking defects, an ordering inconsistency and three
+minor gaps. Each was fixed test first, one commit per item: its row fails by assertion over f1c9803's
+production modules (`red-f1c9803-suite62.json`: exactly the four new rows red, no region raised),
+then the fix, then two or three mutations per new row with the unmutated copy as control.
+
+**1, deep blocks and unexpected faults (84d8b19).** The recursive walker over a malformed `blocks`
+raised `RecursionError` on one nested about 1000 deep, which the store accepts, and broke every unit's
+decide, the frontier, plan status and run-check. The walker now uses an explicit stack, and decide and
+decision_blockers name any fault nothing anticipated as `unknown_outcome:evaluation_error/<type>` for
+the unit concerned instead of raising. Row `decisions/deep-blocks-named` (5000 deep, and a verifier
+that raises); mutations `blocks-walk-recursive`, `decide-raises-unexpected`,
+`blockers-raise-unexpected`. The status-stop row now probes with a plan file whose inline `blocks`
+holds a nested list, since decide no longer raises on a unit whose plan is a list.
+
+**2, a store refusal in `veldo status` (cac608c).** The broad catch reported a tampered accepted row as
+`burndown_unanswerable:Refused`. The Gate exposes its store refusals (`refusal_types`) and their one
+naming (`refusal_code`); the burn-down catches exactly those and reports
+`refused:missing_authority:input_digest_mismatch`, and decision_blockers now names them as decide
+does. Row `decisions/status-names-store-refusal` (one row tampered, then restored); mutations
+`status-store-refusal-generic`, `status-store-refusal-code-dropped`, `blockers-store-refusal-renamed`.
+
+**3, settlements before unsupported (50548d5).** A malformed settlement is `invalid_input` before its
+record is judged unsupported. Row `decisions/settlement-invalid-before-unsupported`; mutations
+`unsupported-before-settlement-invalid`, `settlement-signature-type-unchecked`.
+
+**Minor (f928eb0, anchor follow-up b1ec5ff).** A `blocks` string naming two ids, or one padded id, holds every id it
+names; a plan reference that is not an id is recorded in `invalid_records` under the plan record, and
+so is a record whose `decision_id` is malformed; the dead kind check in `record_problems` is gone.
+Row `decisions/minor-shapes`; mutations `blocks-string-not-split`, `plan-reference-unrecorded`,
+`decision-id-unrecorded`.
+
 ## Cost and verification
 
-After both reviews suite 62 runs in 2.5 s here (`observations.json`, `suite_seconds`; 1.2 s as first
-built; the growth is the new regions' sweeps, and this host was carrying other builds).
-`--finding 54` drives 32 mutations in 167 s here (64 suite runs); in the gate's mutation stage (8
-workers) that is about 37 runs (32 mutants and 5 control groups) or roughly 12 s of wall time, and it
-raises the stage's scaled budget by 64 s. `--finding 52` drives 49 mutations (47 before review A) in
-157 s here. Targeted checks run on this branch:
-`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (49 passed, 23 of them this suite's),
+After three reviews suite 62 runs in 3.6 s here (`observations.json`, `suite_seconds`; 1.2 s as first
+built; the growth is the new regions' sweeps, each of which reads every decision and settlement
+record per unit, and this host was carrying other builds). `--finding 54` drives 43 mutations in
+320 s here (86 suite runs); in the gate's mutation stage (8 workers) that is about 48 runs (43
+mutants and 5 control groups) or roughly 22 s of wall time, and it raises the stage's scaled budget
+by 86 s. Together with the unit stage that is about 26 s the new suite adds to the gate, under the
+60 s limit. `--finding 52` drives 49 mutations in 157 s here. Targeted checks run on this branch:
+`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (57 passed, 31 of them this suite's),
 `--suite 60_veldo_0052_eligibility` (80 passed), `python3 -B scripts/check_teeth_mutations.py --finding 54`
-(32 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
+(43 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs,
 install-and-run, and every other suite that loads a module touched here, suite 60 included. The full gate is run by the lead.
 

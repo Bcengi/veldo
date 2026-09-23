@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -233 +233 @@
+-        return [], "refused:" + eligibility.refusal_code(error)
++        return [], "refused:" + type(error).__name__

@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -161 +161 @@
--    named = set(_named(blocks)) if blocks_malformed(record) else set(blocks)
+@@ -175 +175 @@
+-    named = _named_ids(blocks) if blocks_malformed(record) else set(blocks)
 +    named = set(blocks) if _str_list(blocks) else set()

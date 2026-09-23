@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -595 +595 @@
--                self._invalid_record(identity, 'decision')
+@@ -580 +580 @@
+-                self._invalid_record(identity, 'decision_id')
 +                pass

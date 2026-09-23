@@ -1,6 +1,6 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -249,2 +249 @@
+@@ -263,2 +263 @@
 -    if body.get('scope_digest') != scope_digest(record.get('scope')) \
 -            or (record.get('scope') or {}).get('target') != (record.get('subject') or {}).get('id'):
 +    if body.get('scope_digest') != scope_digest(record.get('scope')):

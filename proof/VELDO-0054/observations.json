@@ -492,14 +492,33 @@
     "VELDO-9493"
    ],
    "invalid_records": [
+    "decision:D-9471",
     "decision:D-9485",
     "decision:D-9486",
     "decision:D-9487",
     "decision:D-NOBODY",
+    "plan:PLAN-9406",
     "settlement:malformed-data",
     "settlement:malformed-decision"
    ],
    "refused": 1023
+  },
+  "deep_blocks": {
+   "sweep": {
+    "VELDO-9401": [],
+    "VELDO-9496": [
+     "invalid_input:decision:D-DEEP/blocks"
+    ]
+   },
+   "unexpected": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/RuntimeError"
+    ],
+    [
+     "unknown_outcome:evaluation_error/RuntimeError"
+    ]
+   ]
   },
   "invalid_order": {
    "VELDO-9491": [
@@ -527,6 +546,8 @@
     ]
    ],
    "recorded": [
+    "decision:D-9471",
+    "plan:PLAN-9406",
     "settlement:malformed-data",
     "settlement:malformed-decision"
    ],
@@ -570,6 +591,8 @@
      "VELDO-9475"
     ],
     "invalid_records": [
+     "decision:D-9471",
+     "plan:PLAN-9406",
      "settlement:malformed-data",
      "settlement:malformed-decision"
     ],
@@ -652,10 +675,12 @@
   },
   "malformed_blocks": {
    "invalid_records": [
+    "decision:D-9471",
     "decision:D-9485",
     "decision:D-9486",
     "decision:D-9487",
     "decision:D-NOBODY",
+    "plan:PLAN-9406",
     "settlement:malformed-data",
     "settlement:malformed-decision"
    ],
@@ -747,6 +772,38 @@
     ]
    }
   },
+  "minor_shapes": {
+   "invalid_records": [
+    "decision:D-9471",
+    "decision:D-9485",
+    "decision:D-9486",
+    "decision:D-9487",
+    "decision:D-9501",
+    "decision:D-9503",
+    "decision:D-NOBODY",
+    "decision:D-REFLIST",
+    "plan:PLAN-9406",
+    "plan:PLAN-9413",
+    "settlement:malformed-data",
+    "settlement:malformed-decision"
+   ],
+   "sweep": {
+    "VELDO-9401": [],
+    "VELDO-9501": [
+     "invalid_input:decision:D-9501/blocks"
+    ],
+    "VELDO-9502": [
+     "invalid_input:decision:D-9501/blocks"
+    ],
+    "VELDO-9503": [
+     "invalid_input:decision:D-9503/blocks"
+    ],
+    "VELDO-9504": [
+     "invalid_input:decision:D-REFLIST/decision_id",
+     "invalid_input:decision_reference"
+    ]
+   }
+  },
   "mismatched": [],
   "production": {
    "host": [
@@ -769,8 +826,34 @@
    ]
   },
   "raised": [],
+  "settlement_order": {
+   "VELDO-9497": [
+    "invalid_input:settlement:decision:D-9497:1/signature"
+   ],
+   "VELDO-9498": [
+    "invalid_input:settlement:decision:D-9498:1/settlement"
+   ]
+  },
   "status_reader": {},
   "status_stop": "burndown_unanswerable:TypeError",
+  "store_refusal": {
+   "decide": [
+    "ok",
+    [
+     "missing_authority:input_digest_mismatch"
+    ]
+   ],
+   "decision_blockers": [
+    "ok",
+    [
+     "missing_authority:input_digest_mismatch"
+    ]
+   ],
+   "veldo status": [
+    "ok",
+    "refused:missing_authority:input_digest_mismatch"
+   ]
+  },
   "taxonomy": {
    "ambiguous_decision:DEC-AMB": "missing_authority",
    "ambiguous_decision:decision:D-9424": "missing_authority",
@@ -789,6 +872,7 @@
    "invalid_input:decision:D-9493/obligations": "invalid_input",
    "invalid_input:decision:D-NOBODY/blocks": "invalid_input",
    "invalid_input:decision_reference": "invalid_input",
+   "invalid_input:plan:PLAN-9406/open_decisions": "invalid_input",
    "invalid_input:settlement:decision:D-9473:1/settlement": "invalid_input",
    "invalid_input:settlement:decision:D-9474:1/signature": "invalid_input",
    "invalid_input:settlement:malformed-data/decision": "invalid_input",
@@ -830,7 +914,7 @@
    "unavailable_service:settlement_verifier"
   ]
  },
- "passed": 23,
+ "passed": 31,
  "rows": [
   [
    "VELDO-0054 decisions/consumers-from-call-sites",
@@ -885,7 +969,23 @@
    true
   ],
   [
+   "VELDO-0054 decisions/settlement-invalid-before-unsupported",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/minor-shapes",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/deep-blocks-named",
+   true
+  ],
+  [
    "VELDO-0054 decisions/status-names-its-stop",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/status-names-store-refusal",
    true
   ],
   [
@@ -921,10 +1021,26 @@
    true
   ],
   [
+   "VELDO-0054 ran/decisions/settlement-invalid-before-unsupported",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/minor-shapes",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/deep-blocks-named",
+   true
+  ],
+  [
    "VELDO-0054 ran/decisions/status-names-its-stop",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/status-names-store-refusal",
    true
   ]
  ],
  "suite": "62_veldo_0054_decisions.py",
- "suite_seconds": 2.497
+ "suite_seconds": 3.616
 }
