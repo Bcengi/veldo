@@ -458,6 +458,25 @@ if 'expect' in globals():
            _m123_unlistable == 'driver_error: incomplete input listing'
            and _m123_unreadable_dir == 'driver_error: unreadable input')
 
+    # Git output that is not a listing warning is refused under its own name; an unreadable
+    # info/exclude (whose rules the listing needs) is refused rather than read as "no rules".
+    _m123_git('config', 'core.fsyncObjectFiles', 'true')
+    _m123_other_output = _m123_refusal()
+    _m123_git('config', '--unset', 'core.fsyncObjectFiles')
+    _m123_exclude = _m123_repo / '.git/info/exclude'
+    _m123_exclude.parent.mkdir(exist_ok=True)
+    _m123_exclude.write_text('local.cfg\n')
+    (_m123_repo / 'local.cfg').write_text('machine-local\n')
+    _m123_exclude.chmod(0)
+    _m123_unreadable_exclude = _m123_refusal() if _m123_os.geteuid() != 0 else 'driver_error: x'
+    _m123_exclude.chmod(0o644)
+    (_m123_repo / 'local.cfg').unlink()
+    expect('VELDO-0123 gate/input-listing-output-is-named: Git output that is not a listing warning '
+           '(here a deprecation notice) is refused as unexpected git output rather than mislabeled an '
+           'incomplete listing, and an unreadable info/exclude is refused rather than read as no rules',
+           _m123_other_output == 'driver_error: unexpected git output while listing inputs'
+           and _m123_unreadable_exclude.startswith('driver_error'))
+
     # The same closure through a symbolic link to the ROOT (a macOS temp path is one: /var is a link
     # to /private/var): nothing is refused and nothing changes.
     _m123_alias = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-alias-')) / 'root'
@@ -490,6 +509,47 @@ if 'expect' in globals():
            _m123_walked == _m123_files and _m123_via_link == _m123_files and _m123_files != {})
     # file_identity is what the race check compares between the two reads: it must change when a
     # file's content, its mode or its name changes, and only then.
+    # The race check itself, driven over a real repository: unchanged inputs pass; a changed body,
+    # an added file, a changed mode and a new commit each fail. And run_stage calls it after the
+    # workers have run, so it compares the tree before and after, never one read with itself.
+    _m123_race = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-race-'))
+    try:
+        _m123_sp.run(['git', 'init', '-q', str(_m123_race)], check=True, capture_output=True, env=_m123_genv)
+        (_m123_race / 'f.txt').write_text('one\n')
+        _m123_rgit = ['git', '-C', str(_m123_race), '-c', 'user.name=F', '-c', 'user.email=f@example.invalid']
+        _m123_sp.run(_m123_rgit + ['add', '-A'], check=True, capture_output=True, env=_m123_genv)
+        _m123_sp.run(_m123_rgit + ['commit', '-qm', 'r'], check=True, capture_output=True, env=_m123_genv)
+        _m123_rfiles = _m123_gate.read_inputs(_m123_race)
+        _m123_rhead = _m123_gate.git(_m123_race, 'rev-parse', 'HEAD')
+        _m123_same = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        (_m123_race / 'f.txt').write_text('TWO\n')
+        _m123_body = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        (_m123_race / 'f.txt').write_text('one\n')
+        (_m123_race / 'f.txt').chmod(0o755)
+        _m123_mode = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        (_m123_race / 'f.txt').chmod(0o644)
+        (_m123_race / 'new.txt').write_text('added\n')
+        _m123_added = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        (_m123_race / 'new.txt').unlink()
+        _m123_sp.run(_m123_rgit + ['commit', '-q', '--allow-empty', '-m', 'moved'], check=True,
+                     capture_output=True, env=_m123_genv)
+        _m123_commit = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+    except Exception as _m123_error:
+        _m123_same, _m123_body, _m123_mode, _m123_added, _m123_commit = False, True, True, True, True
+    finally:
+        _m123_sp.run(['rm', '-rf', str(_m123_race)], check=True)
+    import ast as _m123_ast
+    _m123_stage = next(n for n in _m123_ast.walk(_m123_ast.parse(
+        (ROOT / 'scripts/check_gate_mutations.py').read_text())) if getattr(n, 'name', None) == 'run_stage')
+    _m123_calls = [n.lineno for n in _m123_ast.walk(_m123_stage) if isinstance(n, _m123_ast.Call)
+                   and getattr(n.func, 'id', None) == 'inputs_unchanged']
+    _m123_after = [n.lineno for n in _m123_ast.walk(_m123_stage) if isinstance(n, _m123_ast.Call)
+                   and getattr(n.func, 'attr', None) == 'run' and getattr(n.func.value, 'id', None) == 'workers']
+    expect('VELDO-0123 gate/race-check-rereads-the-tree: the stage re-reads its inputs after the workers '
+           'have run and refuses any change: unchanged inputs pass, and a changed file, a changed mode, '
+           'an added file or a new commit each fail',
+           _m123_same and not _m123_body and not _m123_mode and not _m123_added and not _m123_commit
+           and len(_m123_calls) == 1 and _m123_after and _m123_calls[0] > max(_m123_after))
     _m123_base = {'a/b.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}
     _m123_id = _m123_gate.file_identity
     expect('VELDO-0123 gate/race-check-sees-content-mode-and-name: the identity the stage compares '

@@ -144,10 +144,14 @@ def read_inputs(root):
     listed, warned = git_bytes(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard',
                                with_stderr=True)
     if warned.strip():
-        # Git lists what it could read and only WARNS about a directory it could not open, so a
-        # warning means files are missing from the listing: never a quietly smaller closure.
-        raise Refused('driver_error', 'incomplete input listing: '
-                      + warned.decode(errors='replace').strip().splitlines()[0])
+        # Git lists what it could read and only WARNS about a directory it could not open, so such
+        # a warning means files are missing from the listing. Any OTHER output (a deprecation
+        # notice, a hint) is refused too, since nobody has shown the listing is whole, but under
+        # its own name so the cause is not misread.
+        text = warned.decode(errors='replace').strip()
+        kind = ('incomplete input listing' if 'could not open directory' in text
+                else 'unexpected git output while listing inputs')
+        raise Refused('driver_error', kind + ': ' + text.splitlines()[0])
     files = {}
     top = os.path.realpath(root)
     for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
@@ -172,6 +176,13 @@ def read_inputs(root):
             except OSError as error:
                 raise Refused('driver_error', 'unreadable input: ' + rel) from error
     return files
+
+
+def inputs_unchanged(root, files, head):
+    """THE RACE CHECK: read the inputs AGAIN and compare with the first read, by content, mode and
+    name, and the commit, so a change during the stage can never pass as the tree that was run."""
+    return (file_identity(read_inputs(root)) == file_identity(files)
+            and git(root, 'rev-parse', 'HEAD') == head)
 
 
 def file_identity(files):
@@ -398,8 +409,7 @@ def run_stage(root=ROOT):
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
             # Reject changes to the checked inputs during execution.
-            if (file_identity(read_inputs(root)) != file_identity(files)
-                    or git(root, 'rev-parse', 'HEAD') != head):
+            if not inputs_unchanged(root, files, head):
                 raise Refused('driver_error', 'inputs changed during stage')
             workers.check()
             if set(results) != {c['identity'] for c in cases}:
