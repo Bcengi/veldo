@@ -62,6 +62,20 @@ def _spec_var_of_module_call(node):
     return None
 
 
+def _target_names(target):
+    """Every name a binding target binds, through tuple and list unpacking and starred members.
+    `S, CM, AC = ...` binds AC exactly as `AC = ...` does; reading only a bare Name target called an
+    alias unique while another file rebound it by unpacking, and the check then failed real
+    references against the wrong module."""
+    if isinstance(target, ast.Name):
+        yield target.id
+    elif isinstance(target, (ast.Tuple, ast.List)):
+        for element in target.elts:
+            yield from _target_names(element)
+    elif isinstance(target, ast.Starred):
+        yield from _target_names(target.value)
+
+
 def binding_counts(trees):
     """How many times each NAME is bound anywhere, in any scope. An alias bound more than once is
     ambiguous to a scope-free reader and is deliberately not checked."""
@@ -70,12 +84,11 @@ def binding_counts(trees):
         for n in ast.walk(tree):
             if isinstance(n, ast.Assign):
                 for t in n.targets:
-                    if isinstance(t, ast.Name):
-                        counts[t.id] += 1
+                    for name in _target_names(t):
+                        counts[name] += 1
             elif isinstance(n, (ast.For, ast.comprehension)):
-                tgt = getattr(n, "target", None)
-                if isinstance(tgt, ast.Name):
-                    counts[tgt.id] += 1
+                for name in _target_names(getattr(n, "target", None)):
+                    counts[name] += 1
             elif isinstance(n, (ast.FunctionDef, ast.Lambda)):
                 for a in getattr(n.args, "args", []):
                     counts[a.arg] += 1

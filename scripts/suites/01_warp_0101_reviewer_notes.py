@@ -2717,9 +2717,10 @@ expect("suite attr check ANTI-VACUITY: it is actually reading a large corpus, no
 expect("suite attr check: a module that cannot be imported standalone is UNVERIFIABLE and reported, never counted as passed",
        isinstance(_sac_unver, dict))
 
-# TEETH, over synthetic source so the real corpus is untouched. Four properties in one fixture:
+# TEETH, over synthetic source so the real corpus is untouched. Five properties in one fixture:
 # a resolvable reference stays clean, a missing one is CAUGHT, a spec temp name reused for two
-# different modules resolves IN ORDER, and an alias rebound elsewhere is excluded as ambiguous.
+# different modules resolves IN ORDER, an alias rebound elsewhere is excluded as ambiguous, and so
+# is one rebound by tuple unpacking or a nested loop target.
 _SAC_SRC = '''
 _sp = importlib.util.spec_from_file_location("a", ROOT / ".veldo/naming.py")
 UNIQ = importlib.util.module_from_spec(_sp)
@@ -2732,6 +2733,13 @@ SECOND.also_missing("x")
 AMBIG = importlib.util.module_from_spec(_sp)
 AMBIG.definitely_not_there()
 AMBIG = 1
+TUPLED = importlib.util.module_from_spec(_sp)
+TUPLED.bound_elsewhere_by_unpacking()
+OTHER, TUPLED = 1, 2
+for (NESTED, [LISTED, *STARRED]) in []:
+    pass
+LISTED = importlib.util.module_from_spec(_sp)
+LISTED.bound_elsewhere_by_a_loop_target()
 '''
 import ast as _sac_ast
 
@@ -2743,6 +2751,8 @@ expect("suite attr check TEETH: a reused spec temp name resolves IN LINE ORDER, 
        and _sac_by_alias.get(("SECOND", "scan_text")) == ".veldo/secret_scan.py")
 expect("suite attr check TEETH: an alias REBOUND elsewhere is excluded as ambiguous, which is what keeps the false-positive rate at zero and the check switched on",
        not any(a == "AMBIG" for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: an alias rebound by TUPLE UNPACKING or a nested loop target is just as ambiguous and is excluded too. VELDO-0064's suite bound `S, CM, AC = ...` to the authority contract while another suite bound AC to the accounts module; the scope-free reader missed the unpacking, called AC unique, and failed six real references against the wrong module",
+       not any(a in ("TUPLED", "LISTED") for _f, _l, a, _at, _r in _sac_refs))
 def _sac_resolves(rel, attr):
     spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)
     mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
