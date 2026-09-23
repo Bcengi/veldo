@@ -1,0 +1,5 @@
+--- a/.veldo/work.py
++++ b/.veldo/work.py
+@@ -130,2 +129,0 @@
+-            if gate is not None and not gate.decide("claim", u["spec"], ticket=u.get("eligibility"))["eligible"]:
+-                continue

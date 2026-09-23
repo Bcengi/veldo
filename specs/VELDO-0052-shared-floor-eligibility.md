@@ -38,9 +38,16 @@ footprint:
   - "engine/.veldo/control_eligibility*.py"
   - ".veldo/control_eligibility*.py"
   - "packs/*/.veldo/control_eligibility*.py"
+  - "engine/.veldo/runstatus.py"
+  - ".veldo/runstatus.py"
+  - "engine/.veldo/status_server.py"
+  - ".veldo/status_server.py"
+  - "engine/bin/veldo"
+  - "bin/veldo"
   - "scripts/suites/*_veldo_0052_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0052-shared-floor-eligibility.md"
   - "specs/index.md"
   - "proof/VELDO-0052/*"
@@ -144,3 +151,20 @@ concurrent-input/restart and AC4 resource-limit/exposure-recovery matrices moved
 Every shared entry, current authority, completion and pre-call caps remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
+falsifiers and their second mutations are registered with the repository's mutation driver
+(finding 52). No criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: .veldo/runstatus.py and its engine copy joined the footprint. `veldo status`
+computed the plan burn-down from status text, so it counted as shipped what the completion reader
+said had no landing receipt, and in an enrolled repository it answered where plan status stops. Its
+burn-down now reads plan status's own completion reader and reports the same named stop. No
+criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: bin/veldo, .veldo/status_server.py and their engine copies joined the
+footprint. No production entry built a Gate from the enrollment binding, so `veldo work`,
+`veldo fleet`, `veldo run`, the executor, frontier and plan commands and the status reader all
+stopped with eligibility_required in every enrolled repository and the floor could not run. Each now
+builds its Gate from the workspace's signed binding, verified against what the host trusts, and
+reaches its next named boundary. No criterion, status or evidence universe changed.
