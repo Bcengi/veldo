@@ -575,7 +575,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                 'cycle-pyvenv', 'command-pyvenv', snapshot, workflow('cwd-probe'))
             pyvenv = 'launched: ' + fake_answer.get('outcome', '')
         except Exception as error:
-            pyvenv = getattr(error, 'code', type(error).__name__) + ('' if 'pyvenv' in str(error) else ' (other)')
+            pyvenv = getattr(error, 'code', type(error).__name__) + ('' if 'pyvenv' in str(error) else ' (other)') + (
+                '' if 'python3 .veldo/control_graph_install.py --rebuild' in str(error) else ' (no recovery command)')
         # Every pyvenv.cfg value is judged whole, as a path (the command line split like a shell
         # would), including a repository under a directory whose name has a space and a quoted
         # value; and the interpreter is judged at every hop of its link chain.
