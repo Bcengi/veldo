@@ -94,7 +94,7 @@ def _v64_checks(base):
                                   'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
                                   'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
                                   'projection/intent-before-send', 'projection/echo-mismatch-kept',
-                                  'projection/owner-enrolled-chat')}
+                                  'projection/owner-enrolled-chat', 'projection/returned-chat-checked')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -582,6 +582,24 @@ def _v64_checks(base):
         check(routed, 'the refused owners stay refused and nothing is sent', len(api['requests']) == asked
               and again[o_reviewer].get('reason') == 'no_enrolled_chat' and again[o_auditor].get('reason') == 'invalid_enrollment')
         check(routed, 'the refused owners stay visible as unprojected work', projection.metrics()['pending'] == 2)
+        # --- a message the platform placed in another chat is a named anomaly, never sent -------
+        chat_row = 'projection/returned-chat-checked'
+        command('pm', 'open', 'P-chat', assignment=content('decision'))
+        p_chat = I.assignment_id(ids['repository_uuid'], 'P-chat')
+        asked = len(api['requests'])
+        api['chats'][5550001] = 5559999  # the platform answers that it published into another chat
+        placed = [r for r in projection.project() if r['assignment_id'] == p_chat]
+        del api['chats'][5550001]
+        misplaced = projection.record(P.projection_id(p_chat, 1)) or {}
+        check(chat_row, 'a message placed in another chat is the named anomaly, not a sent projection',
+              [(r['outcome'], r.get('reason')) for r in placed] == [('anomaly', 'chat_mismatch')]
+              and misplaced.get('outcome') == 'anomaly' and misplaced.get('anomalies') == ['chat_mismatch'])
+        check(chat_row, 'the record keeps the chat the platform returned beside the enrolled chat',
+              misplaced.get('chat_id') == 5559999 and misplaced.get('enrolled_chat') == 5550001
+              and api['messages'].get((5559999, misplaced.get('message_id'))) == (misplaced.get('presentation') or '').encode('utf-8'))
+        later = [r for _ in range(2) for r in projection.project() if r['assignment_id'] == p_chat]
+        check(chat_row, 'the misplaced message is never sent again', len(api['requests']) == asked + 1
+              and [(r['outcome'], r.get('reason')) for r in later] == [('anomaly', 'chat_mismatch')] * 2)
         try:
             P.TelegramEdge('http://example.invalid', api['token'])
             check('projection/send-outcomes', 'a plain-HTTP remote origin is refused', False)

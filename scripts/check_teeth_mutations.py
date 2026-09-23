@@ -647,6 +647,12 @@ def cases():
     inbox('projection-enrollment-ignores-principal', 'control_channel_projection.py',
           "    if data.get('principal') != principal:\n        problems.append('the enrollment names another principal')\n",
           "", 'projection/owner-enrolled-chat')
+    # VELDO-0064 review r8: a message placed in another chat is a named anomaly, not a projection.
+    inbox('projection-ignore-returned-chat', 'control_channel_projection.py',
+          "    if platform['chat_id'] != record['enrolled_chat']:\n        found.append('chat_mismatch')\n",
+          "", 'projection/returned-chat-checked')
+    inbox('projection-record-enrolled-chat', 'control_channel_projection.py',
+          "chat_id=platform['chat_id'],", "chat_id=data['enrolled_chat'],", 'projection/returned-chat-checked')
     return result
 
 

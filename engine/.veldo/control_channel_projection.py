@@ -28,7 +28,9 @@ WHAT THE PLATFORM SAID IS WHAT IS KEPT. The chat and message identity recorded a
 platform returned. A platform answer is classified by the store transition that records it, never by
 the caller: when the text the platform stored differs from the bytes sent, the message still
 exists, so its returned identity and stored text are kept and the record is the named anomaly
-`presentation_mismatch` (outcome `anomaly`), not a valid projection and never sent again. A transport
+`presentation_mismatch` (outcome `anomaly`), not a valid projection and never sent again. The
+same holds when the platform says it placed the message in a chat other than the owner's
+enrolled chat: the returned chat is recorded as returned and the record is `chat_mismatch`. A transport
 failure after the request may have reached the platform is recorded as `unknown_outcome` with
 no message identity, so nothing is blindly sent again; looking the message up and recovering an
 unknown or pending record is Release 2 work.
@@ -52,7 +54,7 @@ CHANNEL = 'telegram_chat'
 # The outcomes of one record. `pending` is the committed intent before the send completes.
 OUTCOMES = ('pending', 'sent', 'anomaly', 'refused', 'unknown_outcome')
 # Named anomalies of a published message that is not a valid projection.
-ANOMALIES = ('presentation_mismatch',)
+ANOMALIES = ('presentation_mismatch', 'chat_mismatch')
 # Only a definite refusal, where the platform answered and published nothing, is attempted again.
 RETRYABLE = ('refused',)
 INTENT_FIELDS = ('schema', 'channel', 'assignment_id', 'assignment_version', 'request_version',
@@ -162,6 +164,8 @@ def anomalies(record, platform):
     found = []
     if platform['text'].encode('utf-8') != record['presentation'].encode('utf-8'):
         found.append('presentation_mismatch')
+    if platform['chat_id'] != record['enrolled_chat']:
+        found.append('chat_mismatch')
     return found
 
 
