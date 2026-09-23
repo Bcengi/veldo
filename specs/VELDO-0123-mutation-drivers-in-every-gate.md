@@ -138,3 +138,12 @@ new commit) and drives the real run_stage end to end: a clean fixture passes and
 the checkout mid-stage is refused as inputs changed during stage. Git output while listing that is not a listing
 warning is refused as unexpected git output rather than mislabeled an incomplete listing, and an
 unreadable info/exclude is refused (gate/input-listing-output-is-named).
+2026-09-23, parallelism: the stage ran a fixed 8 workers, leaving most of a 20-core host idle while
+Release 1 items grew the inventory; it now runs as many workers as the CPUs it may use, clamped to
+2..16 and bounded by a cgroup CPU quota (gate/workers-follow-the-host, driven in a pinned child and through
+Workers.run). Verdicts do not depend on the count; the combined budget, measured at 8 workers, now scales
+inversely with the workers the stage runs, so a small host is not cut off early.
+Its review found the cgroup quota read only at the mount root (a host scope or slice quota was missed,
+giving 16 workers a 2-CPU budget and a false red) and undriven; the quota is now the smallest cpu.max on
+the process's own cgroup and every parent, driven over a temporary cgroup tree; and since 8 -> 16 workers
+measured about 1.5x rather than 2x, the budget never drops below its 8-worker figure.
