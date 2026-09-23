@@ -34,7 +34,10 @@ keep the signal clean is right; lowering the BAR by allowlisting the noisy names
 
 NOT MODELED, stated as limits (the corpus has none of them): a star import, a write through
 globals(), locals() or vars(), and exec() without its own namespace rebind names this reader cannot
-see; and private-name mangling (`__M` inside a class compiles to `_K__M`) is not applied.
+see; private-name mangling (`__M` inside a class compiles to `_K__M`) is not applied; a metaclass
+`__prepare__` namespace and a class-body binding whose own right-hand side reads the same name
+(which then falls back to the global) are not modeled. A spec path maps only when every `/` segment
+is a string constant on the fragments' shared ROOT.
 
 A module that cannot be imported standalone (one that needs helpers injected by its caller) is
 UNVERIFIABLE, not passed, and is reported as such.
@@ -59,8 +62,9 @@ def _rel_of_spec_call(node):
         return None
     parts, cur = [], node.args[1]
     while isinstance(cur, ast.BinOp) and isinstance(cur.op, ast.Div):
-        if isinstance(cur.right, ast.Constant) and isinstance(cur.right.value, str):
-            parts.append(cur.right.value)
+        if not (isinstance(cur.right, ast.Constant) and isinstance(cur.right.value, str)):
+            return None                                # a computed segment: the path is not decided
+        parts.append(cur.right.value)
         cur = cur.left
     if isinstance(cur, ast.Name) and cur.id == "ROOT" and parts:
         return "/".join(reversed(parts))
@@ -352,7 +356,8 @@ def references(order, trees, counts):
         for line, _col, kind, scope, a, b in sorted(walks[fname].events, key=lambda e: e[:2]):
             if kind == "spec":
                 key = (resolve(scope, a), a)
-                if decidable(key):
+                # ROOT must be the fragments' shared module ROOT, not a local or a parameter.
+                if decidable(key) and resolve(scope, "ROOT") == MODULE:
                     spec_paths[key] = b
             elif kind == "mod":
                 src = (resolve(scope, b), b)

@@ -2866,11 +2866,47 @@ class Holder:
     for _ in ():
         LOOPED = importlib.util.module_from_spec(_spc)
     LOOPED.class_body_falls_back_when_the_loop_never_runs()
+    while False:
+        WHILED = importlib.util.module_from_spec(_spc)
+    WHILED.class_body_falls_back_when_the_while_never_runs()
+    with open(__file__):
+        WITHBODY = importlib.util.module_from_spec(_spc)
+    WITHBODY.class_body_falls_back_when_the_with_body_raises()
+    match 0:
+        case 1:
+            MATCHBODY = importlib.util.module_from_spec(_spc)
+    MATCHBODY.class_body_falls_back_when_no_case_matches()
+    if not UNIQ:
+        pass
+    else:
+        ELSED = importlib.util.module_from_spec(_spc)
+    ELSED.class_body_falls_back_when_the_else_is_not_taken()
+    try:
+        pass
+    except Exception:
+        EXCEPTBODY = importlib.util.module_from_spec(_spc)
+    EXCEPTBODY.class_body_falls_back_when_nothing_raises()
     def method_with_a_generic_helper(self):
         def helper[T](x) -> CLASSLEVEL.not_the_class_alias_here:
             pass
 class Bounded[TB: SCOPED.contract]:
     pass
+_sub = ".veldo"
+_spx = importlib.util.spec_from_file_location("x", ROOT / _sub / "naming.py")
+COMPUTED = importlib.util.module_from_spec(_spx)
+COMPUTED.path_has_a_computed_segment()
+_spf = importlib.util.spec_from_file_location("f", ROOT / f"{_sub}/naming.py")
+FSTRINGED = importlib.util.module_from_spec(_spf)
+FSTRINGED.path_has_an_fstring_segment()
+def local_root():
+    ROOT = UNIQ
+    _spl2 = importlib.util.spec_from_file_location("l2", ROOT / ".veldo/naming.py")
+    LOCALROOT = importlib.util.module_from_spec(_spl2)
+    LOCALROOT.root_is_a_local()
+def param_root(ROOT):
+    _spp = importlib.util.spec_from_file_location("p", ROOT / ".veldo/naming.py")
+    PARAMROOT = importlib.util.module_from_spec(_spp)
+    PARAMROOT.root_is_a_parameter()
 _spd = importlib.util.spec_from_file_location("d", ROOT / ".veldo/naming.py")
 DELLED = importlib.util.module_from_spec(_spd)
 DELLED.contract(1, 2)
@@ -2893,16 +2929,21 @@ expect("suite attr check TEETH: an alias rebound in the SAME SCOPE by ANY bindin
 expect("suite attr check TEETH: the forms the first scope-aware cut missed are rebindings too: `del`, a match `**rest` capture, and a `nonlocal` write from a method, which binds the enclosing FUNCTION's name and never the class body's same-named attribute between them",
        not any(a in ("DELETED", "RESTED", "NONLOCALED") for _f, _l, a, _at, _r in _sac_refs))
 expect("suite attr check TEETH: an alias whose module depends on WHEN a function runs is not checked. Source line order is execution order only at module level: a function loading from a module spec variable bound more than once, and a spec variable some function rebinds through `global`, each hold whatever the call order made them, so a reader that replays function bodies at their definition line maps the alias to the wrong module",
-       not any(a in ("LATE", "GLATE", "PLAINED", "IFFED", "ENCLOSED") for _f, _l, a, _at, _r in _sac_refs))
-expect("suite attr check TEETH: a class body that binds an alias only under an if, a try or a loop reads the GLOBAL when that path is not taken, so such a binding is never the only one and the alias is not checked",
-       not any(a in ("CONDITIONAL", "TRIED", "LOOPED") for _f, _l, a, _at, _r in _sac_refs))
-expect("suite attr check TEETH: a spec variable bound by a straight-line spec call and later deleted by a straight-line del still maps its alias: a del at module level runs in line order and never re-points the variable (the real corpus ends many fragments that way, and 212 references depend on it)",
-       [(a, at) for _f, _l, a, at, _r in _sac_refs if a == "DELLED"] == [("DELLED", "contract")])
+       not any(a in ("LATE", "GLATE", "ENCLOSED") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: at module level too, a spec variable rebound by plain assignment or under an if/else is not decided by the source, so the alias loaded from it is not checked; and a spec path with a computed segment (a variable, an f-string) or on a ROOT that is a local or a parameter is not mapped at all",
+       not any(a in ("PLAINED", "IFFED", "COMPUTED", "FSTRINGED", "LOCALROOT", "PARAMROOT")
+               for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: a class body that binds an alias only under an if or its else, a try or its except, a for or while loop, a with body or a match case reads the GLOBAL when that path is not taken, so such a binding is never the only one and the alias is not checked",
+       not any(a in ("CONDITIONAL", "TRIED", "LOOPED", "WHILED", "WITHBODY", "MATCHBODY", "ELSED",
+                     "EXCEPTBODY") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: a spec variable bound by a straight-line spec call and later deleted by a straight-line del still maps its alias to that module: a del at module level runs in line order and never re-points the variable (real fragments end that way)",
+       [(a, at, rel) for _f, _l, a, at, rel in _sac_refs if a == "DELLED"]
+       == [("DELLED", "contract", ".veldo/naming.py")])
 expect("suite attr check TEETH: a class-level alias is seen where Python lets it be seen: in the class body, in the FIRST iterator of a comprehension in that body (evaluated in the class scope), and in the annotation scope of a generic method DIRECTLY in the class (PEP 695), and nowhere else: not in that method's body, and not in the annotation of a generic helper nested inside a method",
        sorted((at, rel) for _f, _l, a, at, rel in _sac_refs if a == "CLASSLEVEL")
        == [("scan_text", ".veldo/secret_scan.py")] * 3)
 _sac_scoped = sorted({(at, rel) for _f, _l, a, at, rel in _sac_refs if a == "SCOPED"})
-expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter or a PEP 695 type parameter of the same name is not an alias at all (while a default or a type-parameter bound reads the module alias, outside the type-parameter scope), and a comprehension variable does not rebind the module name",
+expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter or a PEP 695 type parameter of the same name is not an alias at all (while a default, evaluated outside the type-parameter scope, reads the module alias, and so does a type-parameter bound that names no type parameter), and a comprehension variable does not rebind the module name",
        _sac_scoped == [("contract", ".veldo/naming.py"), ("local_gone", ".veldo/secret_scan.py"),
                        ("scan_text", ".veldo/secret_scan.py")]
        and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 4
