@@ -518,12 +518,9 @@ def cases():
           'authority/stage-shapes')
     graph('graph-staged-runner-shape-unchecked', 'control_graph.py',
           "    if target.exists() and not target.is_file():\n", "    if False:\n", 'authority/stage-shapes')
-    graph('graph-stage-oserror-unnamed', 'control_graph.py',
-          "    except OSError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
-          "    except FileNotFoundError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
-          'authority/stage-shapes')
-    graph('graph-staged-runner-shape-unchecked', 'control_graph.py',
-          "    if target.exists() and not target.is_file():\n", "    if False:\n", 'authority/stage-shapes')
+    graph('graph-descriptors-in-parent-tmpdir', 'control_graph.py',
+          'tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:',
+          'tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:', 'authority/no-direct-write')
     graph('graph-pyvenv-unchecked', 'control_graph.py',
           '    problems = runtime_problems(runtime)\n    if problems:\n',
           '    problems = runtime_problems(runtime)\n    if False:\n', 'runtime/pyvenv-clean')
