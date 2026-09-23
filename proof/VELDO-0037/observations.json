@@ -67,6 +67,19 @@
       "read_other_here": "wrong_repository",
       "stray_publisher": "wrong_repository"
     },
+    "enrolled-repository": {
+      "allocated": "VELDO-0008",
+      "allocation-attach-elsewhere": "repository_binding_conflict",
+      "allocation-direct-elsewhere": "wrong_repository",
+      "clone-after-push": null,
+      "clone-attach": "repository_binding_conflict",
+      "clone-unpushed": "unenrolled_commit",
+      "enable-after": null,
+      "enable-beside-raw": null,
+      "foreign-attach": "repository_binding_conflict",
+      "foreign-direct": "unenrolled_commit",
+      "plan-floor-commits": true
+    },
     "enrollment": {
       "A-checkout": "A",
       "A-file-in-B": false,
@@ -106,6 +119,21 @@
       "same-path": "invalid_registration",
       "slug-meets-number": "invalid_registration"
     },
+    "owned-code": {
+      "altered-after-edit": "foreign_transition",
+      "altered-before-edit": null,
+      "altered-restored": null,
+      "counter-after": 3,
+      "declare-generic-command": "malformed_command",
+      "declared": true,
+      "forged-accept-revision": "foreign_transition",
+      "forged-accept-snapshot": "foreign_transition",
+      "forged-enable": "foreign_transition",
+      "generic-after": null,
+      "genuine-other-connection": "VELDO-0003",
+      "wrapped-foreign-body": "foreign_transition"
+    },
+    "owned-code-copy-attach": "ownership_conflict",
     "record-without-bytes": {
       "no-file": "missing_publication",
       "no-publisher": "missing_authority",
@@ -170,7 +198,7 @@
       "reader_parent_link": "unsafe_path"
     }
   },
-  "elapsed_seconds": 4.511481567053124,
+  "elapsed_seconds": 3.757177822990343,
   "pending": [
     [
       "other",
@@ -436,6 +464,14 @@
     ],
     [
       "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      true
+    ],
+    [
+      "aliases/owned-by-code-not-name",
       true
     ]
   ],
