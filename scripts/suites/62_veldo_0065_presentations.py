@@ -1317,7 +1317,7 @@ def _v65_checks(base):
         # Review 4 item 8: an unreadable revocation ledger fails closed
         closed = 'framing/ledger-read-fails-closed'
         with section(closed):
-            for alias in ('LC-1', 'LC-2', 'LC-3'):
+            for alias in ('LC-1', 'LC-2', 'LC-3', 'LC-4', 'LC-5'):
                 command('pm7', 'open', alias, assignment=content())
             lc1, lc2, lc3 = (I.assignment_id(ids['repository_uuid'], a) for a in ('LC-1', 'LC-2', 'LC-3'))
             ledger_entity = entity('authority:revocations') or {}
@@ -1325,8 +1325,18 @@ def _v65_checks(base):
             direct_frame('pm7', 'LC-1', 1, 'Low: a wrong choice costs one review cycle.')
             check(closed, 'a ledger journaled as another kind before the framing refuses it',
                   reason(presenter.present(lc1)) == ('refused', 'missing_framing'))
+            check(closed, 'frame() refuses while the ledger is of another kind, as the presenter does',
+                  reason(frame('pm7', 'LC-4', 1, 'Low: a wrong choice costs one review cycle.')) == ('refused', 'not_authorized'))
             fixture('authority:revocations', 'revocation_ledger', dict(ledger_entity.get('data') or {}))
-            seq = conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+            real_digest = conn.execute("SELECT digest FROM entities WHERE id='authority:revocations'").fetchone()[0]
+            conn.execute("UPDATE entities SET digest=? WHERE id='authority:revocations'", ('sha256:' + '0' * 64,))
+            conn.commit()
+            check(closed, 'frame() refuses while the stored ledger does not match its digest',
+                  reason(frame('pm7', 'LC-5', 1, 'Low: a wrong choice costs one review cycle.')) == ('refused', 'not_authorized'))
+            conn.execute("UPDATE entities SET digest=? WHERE id='authority:revocations'", (real_digest,))
+            conn.commit()
+            seq = max(q for q, t in conn.execute('SELECT seq, transition FROM journal')
+                      if 'authority:revocations' in _v65_json.loads(t))  # the record that wrote the ledger
             row = _v65_json.loads(conn.execute('SELECT transition FROM journal WHERE seq=?', (seq,)).fetchone()[0])
             tampered = dict(row)
             tampered['authority:revocations'] = dict(row['authority:revocations'], digest='sha256:' + '0' * 64)

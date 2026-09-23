@@ -813,7 +813,13 @@ class Presenter:
             state = self.membership.authority_state(self.store, self.conn)
             # The same rule the stored-framing check applies, so the two never disagree.
             key = next((k for k in state['keyring'] if usable_key(k, principal, now)), None)
-            revoked = (state['entities'].get(REVOCATION_LEDGER, {}).get('data') or {}).get('revoked') or {}
+            ledger = state['entities'].get(REVOCATION_LEDGER)
+            if ledger is not None and (ledger.get('kind') != 'revocation_ledger' or not isinstance(ledger.get('data'), dict)
+                                       or ledger.get('digest') != self.store.digest_of(
+                                           {'kind': ledger['kind'], 'data': ledger['data'], 'version': ledger.get('version')})):
+                # An unreadable ledger fails closed here exactly as in the stored-framing check.
+                raise Refused('not_authorized', 'the revocation ledger is unreadable')
+            revoked = ((ledger or {}).get('data') or {}).get('revoked') or {}
             if principal in revoked:
                 raise Refused('not_authorized', 'the revocation ledger names the requester')
             if not key or not self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],

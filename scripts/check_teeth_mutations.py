@@ -1167,6 +1167,11 @@ def cases():
                  "        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):\n",
                  "        if not self.membership.scope_covers(edge_entry.get('scope'), edge_entry.get('scope')):\n",
                  'answer/closed-tell-after-edge-scope')
+    # VELDO-0065 fifth review item 3: frame() refuses an unreadable ledger as the presenter does.
+    presentation('frame-ledger-any-kind', "            if ledger is not None and (ledger.get('kind') != 'revocation_ledger' or not isinstance(ledger.get('data'), dict)\n",
+                 "            if ledger is not None and (not isinstance(ledger.get('data'), dict)\n", 'framing/ledger-read-fails-closed')
+    presentation('frame-ledger-digest-unchecked', "                                       or ledger.get('digest') != self.store.digest_of(\n",
+                 "                                       or False and self.store.digest_of(\n", 'framing/ledger-read-fails-closed')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
