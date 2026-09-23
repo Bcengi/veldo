@@ -484,6 +484,69 @@ def _s43_run():
                 shaped.append(getattr(error, 'code', type(error).__name__))
         observations['shape_refusals'] = shaped
 
+        # A request is closed, plain, versioned data: exact digests, versioned supplied results, a
+        # closed resume, and no filesystem location anywhere.
+        good_digest = 'sha256:' + 'd' * 64
+        result = {'id': 'result-1', 'version': 1, 'digest': good_digest,
+                  'value': {'rank': 2, 'link': 'https://example.com/a/b'}}
+        resume_ok = {'position': 'rank', 'step': 2, 'notes': '{"trail": ["groom"]}'}
+        identity = dict(cycle_id='cycle-q', command_id='command-q', domain_uuid='domain', repository_uuid='repository')
+        store_like = '/home/someone/repo/.git/veldo/control/control.sqlite3'
+        request_cases = {
+            'accepted': dict(snapshot=snapshot, workflow=version, resume=resume_ok, supplied_results=[result]),
+            'snapshot-digest-path': dict(snapshot=dict(snapshot, digest='sha256:' + store_like), workflow=version,
+                                         resume=resume_ok, supplied_results=[]),
+            'workflow-digest-relative': dict(snapshot=snapshot, workflow=dict(version, digest='sha256:../../.git/veldo'),
+                                             resume=resume_ok, supplied_results=[]),
+            'digest-uppercase': dict(snapshot=dict(snapshot, digest='sha256:' + 'B' * 64), workflow=version,
+                                     resume=resume_ok, supplied_results=[]),
+            'digest-short': dict(snapshot=dict(snapshot, digest='sha256:' + 'b' * 63), workflow=version,
+                                 resume=resume_ok, supplied_results=[]),
+            'result-unversioned': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
+                                       supplied_results=[{'rank': 2}]),
+            'result-bad-digest': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
+                                      supplied_results=[dict(result, digest='sha256:x')]),
+            'resume-open': dict(snapshot=snapshot, workflow=version, resume=dict(resume_ok, db='x'),
+                                supplied_results=[]),
+            'resume-notes-object': dict(snapshot=snapshot, workflow=version, resume=dict(resume_ok, notes={'a': 1}),
+                                        supplied_results=[]),
+            'path-in-result': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
+                                   supplied_results=[dict(result, value={'store': store_like})]),
+            'path-in-notes': dict(snapshot=snapshot, workflow=version, resume=dict(resume_ok, notes='db=' + store_like),
+                                  supplied_results=[]),
+            'home-path-in-result': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
+                                        supplied_results=[dict(result, value=['~/.ssh'])]),
+            'relative-path-in-result': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
+                                            supplied_results=[dict(result, value='../../.git/veldo')]),
+        }
+        answered = {}
+        for name, fields in request_cases.items():
+            try:
+                graph.request('advance', identity, **fields)
+                answered[name] = 'accepted'
+            except Exception as error:
+                answered[name] = getattr(error, 'code', type(error).__name__)
+        sent = graph.request('advance', identity, **request_cases['accepted'])
+        head = {k: sent[k] for k in ('schema', 'operation', 'cycle_id', 'command_id', 'domain_uuid', 'repository_uuid')}
+        for name, evidence in (('evidence-ok', [good_digest]), ('evidence-malformed', ['sha256:not-hex']),
+                               ('evidence-path', ['sha256:' + store_like])):
+            raw = _s43_json.dumps(dict(head, outcome='proposal', runtime={'name': 'interface-stub', 'version': '0'},
+                                       proposals=[{'type': 'completion', 'proposal_id': 'p1', 'subject': 'unit-1',
+                                                   'evidence': evidence}]))
+            try:
+                graph.response(sent, raw.encode())
+                answered[name] = 'accepted'
+            except Exception as error:
+                answered[name] = getattr(error, 'code', type(error).__name__)
+        observations['closed_request'] = answered
+        expect('graph/shape/closed-request', answered == {
+            'accepted': 'accepted', 'snapshot-digest-path': 'invalid_input', 'workflow-digest-relative': 'invalid_input',
+            'digest-uppercase': 'invalid_input', 'digest-short': 'invalid_input', 'result-unversioned': 'invalid_input',
+            'result-bad-digest': 'invalid_input', 'resume-open': 'invalid_input', 'resume-notes-object': 'invalid_input',
+            'path-in-result': 'path_in_request', 'path-in-notes': 'path_in_request',
+            'home-path-in-result': 'path_in_request', 'relative-path-in-result': 'path_in_request',
+            'evidence-ok': 'accepted', 'evidence-malformed': 'invalid_response', 'evidence-path': 'invalid_response'})
+
         # An over-deep answer is a named refusal, counted and observed, never an escaping error.
         before_counts = dict(adapter.counts)
         try:
