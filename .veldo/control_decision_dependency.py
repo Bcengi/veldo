@@ -217,10 +217,23 @@ SETTLEMENT_TYPES = {'schema': str, 'domain_uuid': str, 'decision_id': str, 'deci
                     'request_version': int, 'principals': list, 'settled_at': str}
 
 
+def _passable(text):
+    """Whether text can be handed to the signature verifier at all: it holds no NUL (an argument or
+    file the OpenSSH tool reads cannot carry one) and it encodes as UTF-8 (no lone surrogate)."""
+    if '\x00' in text:
+        return False
+    try:
+        text.encode('utf-8')
+    except UnicodeEncodeError:
+        return False
+    return True
+
+
 def settlement_invalid(sid, data):
     """Why an associated settlement record is malformed (invalid_input:<id>/<field>): a body that is
     not a mapping, a signature or signer that is present but not text, or a signed field of the wrong
-    type. An ABSENT signature is not malformed, it is unsigned; an absent framing digest is a receipt
+    type, or a signature or signer holding NUL or text that does not encode. An ABSENT signature is
+    not malformed, it is unsigned; an absent framing digest is a receipt
     without its framing, refused by the binding (never accepted, never invalid)."""
     code = 'invalid_input:%s/' % sid
     body = data.get('settlement')
@@ -228,7 +241,8 @@ def settlement_invalid(sid, data):
     if not isinstance(body, dict):
         problems.append(code + 'settlement')
     for name in ('signature', 'signer'):
-        if data.get(name) is not None and not isinstance(data.get(name), str):
+        value = data.get(name)
+        if value is not None and (not isinstance(value, str) or not _passable(value)):
             problems.append(code + name)
     if isinstance(body, dict):
         for name, kind in SETTLEMENT_TYPES.items():

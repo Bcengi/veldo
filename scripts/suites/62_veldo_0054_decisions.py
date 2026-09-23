@@ -786,6 +786,36 @@ def _v54_suite():
                                                         'invalid_input:decision:D-REFLIST/decision_id'})
                    and {'plan:PLAN-9413', 'decision:D-REFLIST', 'decision:D-9501', 'decision:D-9503'} <= invalid_now)
 
+        with region('decisions/settlement-text-encodable'):
+            # A settlement signer or signature holding NUL, or text that does not encode (a lone
+            # surrogate), is invalid_input:<id>/<field> for its unit, never an evaluation error, and it
+            # never hides the unit's other refusals (VELDO-9514's admission is withdrawn as well).
+            TEXT = {'VELDO-9511': ('signer', lambda d: d.update(signer='veldo-settlement\u0000x')),
+                    'VELDO-9512': ('signature', lambda d: d.update(signature=d['signature'] + '\u0000')),
+                    'VELDO-9513': ('signer', lambda d: d.update(signer='\udfff')),
+                    'VELDO-9514': ('signature', lambda d: d.update(signature='\ud800' + d['signature']))}
+            planned('PLAN-9414', sorted(TEXT))
+            for sid, (field, change) in TEXT.items():
+                rid = 'decision:D-' + sid[-4:]
+                decision(rid, 'spec', sid, [sid])
+                settle(rid, after=change)
+            put('admission:VELDO-9514', 'admission', dict(unit='VELDO-9514', state='withdrawn', scope_digest='sha256:scope'))
+            texts = {}
+            for sid in TEXT:
+                try:
+                    texts[sid] = ('ok', gate.decide('build', sid, context=CONTEXT['build'])['refusals'],
+                                  gate.decision_blockers(sid))
+                except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                    texts[sid] = ('raised', '%s: %s' % (type(error).__name__, error))
+            observed['settlement_text'] = texts
+            wanted_text = {sid: 'invalid_input:settlement:decision:D-%s:1/%s' % (sid[-4:], field)
+                           for sid, (field, _) in TEXT.items()}
+            check('decisions/settlement-text-encodable',
+                   all(texts[sid] == ('ok', [wanted_text[sid]], [wanted_text[sid]]) for sid in TEXT if sid != 'VELDO-9514')
+                   and texts['VELDO-9514'][0] == 'ok'
+                   and set(texts['VELDO-9514'][1]) == {wanted_text['VELDO-9514'], 'missing_authority:admission'}
+                   and texts['VELDO-9514'][2] == [wanted_text['VELDO-9514']])
+
         with region('decisions/deep-blocks-named'):
             # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it
             # names is held by invalid_input:<id>/blocks and every other unit is decided as before. And

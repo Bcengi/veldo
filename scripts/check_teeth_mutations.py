@@ -1074,6 +1074,12 @@ def cases():
               'minor-shapes')
     decisions('decision-id-unrecorded', 'control_eligibility.py',
               "                self._invalid_record(identity, 'decision_id')\n", "                pass\n", 'minor-shapes')
+    # VELDO-0054 review 4, item 1: signer and signature text the verifier cannot be handed is named.
+    decisions('settlement-nul-passed', 'control_decision_dependency.py',
+              "    if '\\x00' in text:\n        return False\n", "", 'settlement-text-encodable')
+    decisions('settlement-unencodable-passed', 'control_decision_dependency.py',
+              "    try:\n        text.encode('utf-8')\n    except UnicodeEncodeError:\n        return False\n", "",
+              'settlement-text-encodable')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
