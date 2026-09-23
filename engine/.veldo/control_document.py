@@ -122,8 +122,15 @@ class Publisher:
                 observed = self._materialize(target, body, data['digest'], exclusive=False)
             return service.record_publication(repository, alias, version, observed, principal, **signing)
 
+        def guarded(event):
+            # This module's refusals are reported through the service's store vocabulary.
+            try:
+                return work(event)
+            except SN.Refused as error:
+                raise service.store.StoreRefused(error.code, error.detail) from error
+
         return service.observe('publish_document', {'repository_uuid': repository,
-                                                    'request_id': 'publish:%s@%s' % (alias, version)}, work)
+                                                    'request_id': 'publish:%s@%s' % (alias, version)}, guarded)
 
 
 def read_published(store, conn, repository, alias, root):

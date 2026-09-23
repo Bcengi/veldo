@@ -547,6 +547,15 @@
    ],
    "regions": "Accepted snapshots, transactional inputs and complete materialization",
    "requires_note": "Uses only shared ROOT and expect; real SQLite, Git, Ed25519 signatures and a separate reader process."
+  },
+  {
+   "name": "59_veldo_0037_aliases",
+   "file": "59_veldo_0037_aliases.py",
+   "requires": [
+    "59_veldo_0037_aliases"
+   ],
+   "regions": "Counter aliases, versioned edits and exact published documents",
+   "requires_note": "Uses only shared ROOT and expect; real SQLite, Git clones, Ed25519 journal signatures, separate allocation and reader processes."
   }
  ]
 }
