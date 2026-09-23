@@ -28,6 +28,7 @@ def _v52_suite():
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
+        'git_process.py': ROOT / ".veldo" / "git_process.py",
         'dispatch.py': ROOT / ".veldo" / "dispatch.py",
         'work.py': ROOT / ".veldo" / "work.py",
         'work_state.py': ROOT / ".veldo" / "work_state.py",
@@ -865,6 +866,17 @@ def _v52_suite():
                 binding.unlink()
             with tempfile.TemporaryDirectory(prefix='v52-plain-', dir=fast) as plain:
                 unrepository = observe_effect(lambda: EL.enrolled(plain))
+            # An enrollment that exists but cannot be READ is not an absent one.
+            binding.parent.mkdir(parents=True, exist_ok=True)
+            binding.write_text('{}')
+            os.chmod(binding.parent, 0)
+            try:
+                unreadable = (observe_effect(lambda: EL.enrolled(str(base))) if os.geteuid() != 0
+                              else ('raised', 'Stopped:enrollment_unanswerable'))
+            finally:
+                os.chmod(binding.parent, 0o755)
+                binding.unlink()
+            broken['unreadable'] = unreadable
             healthy = observe_effect(lambda: EL.gate_for(str(base), None))
             observed['enrollment_git_error'] = {k: [v[0], sorted(u['spec'] for u in v[1]) if k == 'frontier' and v[0] == 'ok'
                                                     else v[1]] for k, v in broken.items()}

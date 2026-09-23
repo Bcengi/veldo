@@ -125,3 +125,16 @@ files silently dropped out (now refused by name); an unreadable file stopped the
 generic error (now refused by name); the docstring now names every ignore source Git applies; and
 the closure row no longer leaks its temporary repository. Row gate/snapshot-holds-exactly-the-closure
 drives snapshot() itself: names, modes and contents in the worker tree equal the closure.
+Its third review (no blockers) led to five follow-ups the same day: a directory Git cannot list,
+about which ls-files only warns while listing less, and a directory whose entries cannot be
+examined are refused by name (gate/input-closure-refuses-incomplete-listings); the closure read
+through a symbolic link to the root is driven (a macOS temporary path is one); the identity the
+race check compares is driven for content, mode and name (gate/race-check-sees-content-mode-and-name);
+and the snapshot row cleans up even when a read raises.
+Follow-ups from the closure's final review, 2026-09-23: the race check is one function,
+inputs_unchanged, which the stage calls after the workers have run; row
+gate/race-check-rereads-the-tree drives it over a real repository (changed file, mode, added file,
+new commit) and drives the real run_stage end to end: a clean fixture passes and a worker writing into
+the checkout mid-stage is refused as inputs changed during stage. Git output while listing that is not a listing
+warning is refused as unexpected git output rather than mislabeled an incomplete listing, and an
+unreadable info/exclude is refused (gate/input-listing-output-is-named).

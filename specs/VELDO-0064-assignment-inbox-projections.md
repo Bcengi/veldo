@@ -128,6 +128,8 @@ every parked unit with its assignment and why it is parked (`parked_units`, and 
 nothing about it. Whether a decline or cancel should release the unit, re-open it for another
 holder, retire it, or wait for a new assignment is the owner's decision.
 
+2026-09-23: the owner answered this question in Telegram 28934 and 28936, and VELDO-0133 specifies the answer.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: the owner narrowed this work under
