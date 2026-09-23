@@ -81,7 +81,8 @@ def _v65_checks(base):
                                   'framing/stored-framing-reverified', 'answer/not-before-publication',
                                   'presentation/private-chat-only', 'presentation/replacement-without-reply-target',
                                   'presentation/reply-link-verified', 'presentation/long-brief-split',
-                                  'projection/one-message-per-version', 'framing/key-by-store-order')}
+                                  'projection/one-message-per-version', 'framing/key-by-store-order',
+                                  'projection/notice-superseded', 'projection/silent-from-store')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -268,6 +269,18 @@ def _v65_checks(base):
                                     parameters=dict(framing_id=fid, request_id=rid, framing=framing),
                                     expected_versions=pinned, artifact_digests=[], nonce=body['nonce']),
                          'authority', journal_sign, 1, committed_at=committed_at)
+
+    def enroll_other_and_project():
+        """A second owner with a plain enrollment and no presentation: the inbox projection sends."""
+        fixture('channel-enrollment:telegram_chat:stranger', 'channel_enrollment',
+                dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='stranger',
+                     chat_id=stranger_chat, revoked_at=None))
+        command('pm', 'open', 'N-1', assignment=content(owner='stranger'))
+        n1 = I.assignment_id(ids['repository_uuid'], 'N-1')
+        start = len(api['requests'])
+        results = {r['assignment_id']: r for r in P.Projection(S, inbox, P.TelegramEdge(
+            'http://127.0.0.1:%d' % server.server_address[1], api['token']), conn, 'authority', journal_sign).project()}
+        return results.get(n1, {}).get('outcome') == 'sent' and any(c == stranger_chat for c, _, _ in api['requests'][start:])
 
     def answered(rid, version):
         """The answer record of one request version, read from the store itself."""
@@ -815,6 +828,59 @@ def _v65_checks(base):
                   and (answered(l1, 1) or {}).get('presentation_id') == l1_r.get('presentation_id'))
             check(long_row, 'control: a short presentation is one message',
                   (presenter.receipt(r1.get('presentation_id', '')) or {}).get('message_ids') == [r1.get('message_id')])
+
+        # Review 2 n1: the store, not a constructor argument, decides whether the projection sends
+        edge64 = P.TelegramEdge('http://127.0.0.1:%d' % server.server_address[1], api['token'])
+
+        def about(request, start):
+            return [(chat, text, reply) for chat, text, reply in api['requests'][start:]
+                    if 'Request: %s' % request in text.split('\n') or 'Assignment: %s' % request in text.split('\n')]
+        notice_row = 'projection/notice-superseded'
+        with section(notice_row):
+            b1 = opened('B-1')
+            start = len(api['requests'])
+            notice_results = {r['assignment_id']: r for r in
+                              P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()}
+            notice = conn.execute("SELECT id, data FROM entities WHERE kind='channel_projection' AND data LIKE ?",
+                                  ('%"' + b1 + '"%',)).fetchone()
+            notice_data = _v65_json.loads(notice[1]) if notice else {}
+            check(notice_row, 'before presentations are enabled the inbox projection sends its notice',
+                  notice_results.get(b1, {}).get('outcome') == 'sent' and len(about(b1, start)) == 1)
+            presenter.present(b1)
+            b1_r = presenter.current(b1) or {}
+            shown_b1 = (api['messages'].get((owner_chat, b1_r.get('message_id'))) or {})
+            check(notice_row, 'the first presentation is a reply to that notice and names it',
+                  shown_b1.get('reply_to') == notice_data.get('message_id') is not None
+                  and 'Supersedes: the notice message %s. Only this message can be answered.' % notice_data.get('message_id')
+                  in shown_b1.get('text', '').split('\n'))
+            after_notice = _v65_json.loads(conn.execute('SELECT data FROM entities WHERE id=?', (notice[0],)).fetchone()[0]) if notice else {}
+            check(notice_row, 'the notice\'s record is marked superseded by the presentation',
+                  after_notice.get('superseded_by') == b1_r.get('presentation_id') is not None
+                  and after_notice.get('message_id') == notice_data.get('message_id'))
+            check(notice_row, 'the presentation\'s receipt verifies with its reply link to the notice',
+                  V.receipt_problems(b1_r, platform(owner_chat, b1_r.get('message_id'))) == [] and b1_r.get('reply_linked') is True)
+
+        silent = 'projection/silent-from-store'
+        with section(silent):
+            a1 = opened('A-1')
+            presenter.present(a1)
+            start = len(api['requests'])
+            restarted = {r['assignment_id']: r for r in P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()}
+            check(silent, 'a projection built without the presenter sends nothing for a request that has a presentation',
+                  about(a1, start) == [] and about(b1, start) == [] and restarted.get(a1, {}).get('outcome') == 'presented')
+            fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
+                    dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=owner_chat,
+                         revoked_at=None, presentations='enabled'))
+            command('pm', 'open', 'S-9', assignment=content())
+            s9 = I.assignment_id(ids['repository_uuid'], 'S-9')
+            start = len(api['requests'])
+            quiet = {r['assignment_id']: r for r in P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()}
+            check(silent, 'with presentations enabled on the enrollment, nothing is sent even before a presentation exists',
+                  about(s9, start) == [] and quiet.get(s9, {}).get('outcome') == 'awaiting_presentation')
+            check(silent, 'control: an owner without the setting and without a presentation still gets the notice',
+                  enroll_other_and_project())
+            check(silent, 'the receipt kind the projection reads is the presentation organ\'s',
+                  getattr(P, 'PRESENTATION_KIND', None) == V.RECEIPT_KIND)
 
         # Review r3: with presentations enabled, one decision message per request version
         one = 'projection/one-message-per-version'

@@ -1023,16 +1023,28 @@ def cases():
             ['projection/one-message-per-version'])
 
     one_message('projection-notice-beside-presentation',
-                "        return [self._presented(e) if self.presenter is not None else self._project(e)\n",
-                "        return [self._presented(e) if False else self._project(e)\n")
-    one_message('projection-defers-only-once-presented',
-                "        return [self._presented(e) if self.presenter is not None else self._project(e)\n",
-                "        return [self._presented(e) if self.presenter is not None and self.presenter.current(e['id']) else self._project(e)\n")
-    # VELDO-0065 second review n6: the framing key is judged by the store's journal order.
-    presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
-                 "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')
-    presentation('framing-ledger-unchecked', "        if principal in (ledger.get('revoked') or {}):\n",
-                 "        if False:\n", 'framing/key-by-store-order')
+                "        return self._project(entry) if receipts is None else self._presented(entry, receipts)\n",
+                "        return self._project(entry)\n")
+    one_message('projection-never-reports-presented',
+                "            outcome = 'presented' if refusal is None and record is None else 'awaiting_presentation'\n",
+                "            outcome = 'awaiting_presentation'\n")
+
+    # VELDO-0065 second review n1: the store decides whether the projection sends, and an earlier
+    # notice is visibly superseded by the first presentation.
+    def projection(name, old, new, row):
+        add(65, name, '62_veldo_0065_presentations.py', 'control_channel_projection.py', old, new, [row])
+
+    projection('projection-ignores-presentations', "        return mine if enabled or mine else None\n",
+               "        return mine if enabled else None\n", 'projection/silent-from-store')
+    projection('projection-ignores-enrollment-setting', "        return mine if enabled or mine else None\n",
+               "        return mine if mine else None\n", 'projection/silent-from-store')
+    presentation('presentation-ignores-notice',
+                 "        notice = self._notice(request, b['enrolled_chat']) if prior is None else None\n",
+                 "        notice = None\n", 'projection/notice-superseded')
+    presentation('notice-not-marked-superseded',
+                 "            changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}\n",
+                 "            pass\n", 'projection/notice-superseded')
+
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

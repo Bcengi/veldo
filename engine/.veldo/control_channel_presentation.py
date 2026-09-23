@@ -225,7 +225,9 @@ def render(record):
             'Request digest: %s' % record['request_digest'],
             'Presentation version: %d' % record['presentation_version']]
     prior = record.get('supersedes')
-    if prior:
+    if prior and prior.get('notice_id'):
+        head.append('Supersedes: the notice message %s. Only this message can be answered.' % prior['message_id'])
+    elif prior:
         head.append('Supersedes: presentation version %s, message %s. Only this message can be answered.'
                     % (prior['presentation_version'], prior['message_id']))
     head += ['Owner: %s' % c['owner'],
@@ -448,6 +450,13 @@ def _record_transition(params, before):
             'schema': HEAD_SCHEMA, 'channel': CHANNEL, 'request_id': data['request_id'], 'current': pid,
             'presentation_version': data['presentation_version'],
             'published': list(head.get('published') or []) + [pid], 'superseded': superseded}}
+        notice = (data['supersedes'] or {}).get('notice_id')
+        if notice:
+            # The inbox projection's earlier notice is superseded by this, its first presentation.
+            held = before.get(notice) or {}
+            if held.get('kind') != data['supersedes'].get('notice_kind') or not isinstance(held.get('data'), dict):
+                raise ValueError('the notice this presentation supersedes is not the one it named')
+            changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}
     changes[pid] = {'kind': RECEIPT_KIND, 'data': data}
     return changes
 
@@ -779,6 +788,11 @@ class Presenter:
             return None, None, versions
         record = dict(b, schema=SCHEMA, channel=CHANNEL, presentation_version=(head or {}).get('presentation_version', 0) + 1,
                       supersedes=None, reply_to=None)
+        notice = self._notice(request, b['enrolled_chat']) if prior is None else None
+        if notice:
+            versions[notice['notice_id']] = notice.pop('version')
+            record['supersedes'] = notice
+            record['reply_to'] = notice['message_id']
         if prior:
             record['supersedes'] = {'presentation_id': prior['presentation_id'],
                                     'presentation_version': prior['presentation_version'],
@@ -791,6 +805,21 @@ class Presenter:
         record['brief_digest'] = bytes_digest(_canonical(record['rendered']))
         record['presentation_id'] = presentation_id(request, b['request_version'], record['brief_digest'])
         return None, record, versions
+
+    def _notice(self, request, chat):
+        """The VELDO-0064 notice the inbox projection sent for this request before presentations were
+        in use, not yet superseded, in the owner's chat: the one the first presentation supersedes."""
+        found = None
+        for eid, version, text in self.conn.execute('SELECT id, version, data FROM entities WHERE kind=?', (self.P.ENTITY_KIND,)):
+            data = json.loads(text)
+            if (data.get('assignment_id') != request or data.get('outcome') != 'sent' or data.get('superseded_by')
+                    or data.get('chat_id') != chat or type(data.get('message_id')) is not int):
+                continue
+            if found is None or data.get('request_version', 0) > found['request_version']:
+                found = {'notice_id': eid, 'notice_kind': self.P.ENTITY_KIND, 'chat_id': chat,
+                         'message_id': data['message_id'], 'request_version': data.get('request_version', 0),
+                         'version': version}
+        return found
 
     def present(self, request):
         """Present one request as current authority requires: nothing when its current presentation
@@ -819,7 +848,9 @@ class Presenter:
         try:
             self._commit(RECORD_OPERATION, dict(phase='complete', presentation_id=pid, head_id=hid,
                                                 attempt=intent['attempt'], **completion),
-                         {pid: intent['entity_version'], hid: versions[hid]})
+                         dict({pid: intent['entity_version'], hid: versions[hid]},
+                              **({record['supersedes']['notice_id']: versions[record['supersedes']['notice_id']]}
+                                 if (record['supersedes'] or {}).get('notice_id') else {})))
         except self.store.StoreRefused as exc:
             return self._observe('publish', request, versions, 'unknown_outcome', exc.code, presentation_id=pid)
         done = self.receipt(pid)
