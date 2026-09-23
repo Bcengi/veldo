@@ -455,11 +455,11 @@ def cases():
         '                self._hb_error = exc',
         '                self._hb_error = None', ['claims/review-r3'])
     add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
-        '        ledger_root = os.path.dirname(claims_root(root))',
-        "        common = _git_process.check_output(['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()\n        ledger_root = os.path.join(common, 'veldo')", ['claims/review-r4'])
+        '        ledgers = [claims_root(root)]',
+        "        ledgers = [os.path.join(_enrollment_ledger() or os.sep, 'claims')]", ['claims/review-r4'])
     add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
-        "    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):",
-        "    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):", ['claims/review-r4'])
+        "            if enrolled:\n                raise ClaimStopped('authority_required')",
+        "            if enrolled or root:\n                raise ClaimStopped('authority_required')", ['claims/review-r4'])
     add(31, 'review-r5-expiry-revokes-owner', '59_veldo_0031_review.py', 'control_claim.py',
         "    if live == 'stale' and action in ('renew', 'release'):",
         '    if False:', ['claims/review-r5'])
@@ -566,7 +566,7 @@ def cases():
            "        return False\n",
            "        return False  # defect: any git error reads as not enrolled\n",
            'eligibility/enrollment-git-error-stops')
-    review('enrolled-discovery-ignores-ancestors', 'control_eligibility.py',
+    review('enrolled-discovery-ignores-ancestors', 'git_process.py',
            "        parent = os.path.dirname(current)\n        if parent == current:\n            return False\n",
            "        return False  # defect: discovery looks only at the directory it was given\n",
            'eligibility/enrollment-git-error-stops')
