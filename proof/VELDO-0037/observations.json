@@ -1,0 +1,252 @@
+{
+  "allocations": {
+    "distinct": {
+      "id": "VELDO-0008",
+      "revision": "VELDO-0009",
+      "role-decision": "VELDO-DEC-0005",
+      "role-label": "VELDO-0010",
+      "role-plan": "PLAN-0003",
+      "system": "VELDO-0007"
+    },
+    "independent": [
+      {
+        "alias": "VELDO-0004",
+        "reused": false,
+        "seq": 4
+      },
+      {
+        "alias": "VELDO-0005",
+        "reused": false,
+        "seq": 5
+      },
+      {
+        "alias": "VELDO-0006",
+        "reused": false,
+        "seq": 6
+      }
+    ]
+  },
+  "counts": {
+    "accepted": 25,
+    "refused": 16,
+    "reused": 1
+  },
+  "elapsed_seconds": 0.8466904619708657,
+  "pending": [
+    [
+      "other",
+      "VELDO-0001",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0004",
+      4
+    ],
+    [
+      "repository",
+      "VELDO-0006",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0007",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0008",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0009",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0010",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0010",
+      2
+    ],
+    [
+      "repository",
+      "VELDO-0011",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0012",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0013",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0014",
+      1
+    ]
+  ],
+  "readers": {
+    "missing": {
+      "refusal": "missing_publication"
+    },
+    "tampered": {
+      "refusal": "document_mismatch"
+    },
+    "v1": {
+      "PLAN-0003": {
+        "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+        "path": "plans/PLAN-0003-journey-plan.md",
+        "role": "plan",
+        "source": {
+          "id": "msg-100",
+          "revision": "r1",
+          "system": "telegram"
+        },
+        "version": 1
+      },
+      "VELDO-0004": {
+        "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+        "path": "specs/VELDO-0004-api-contract.md",
+        "role": "specification/api",
+        "source": {
+          "id": "msg-100",
+          "revision": "r1",
+          "system": "telegram"
+        },
+        "version": 1
+      },
+      "VELDO-DEC-0005": {
+        "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+        "path": ".veldo/decisions/0005-store-choice.yaml",
+        "role": "decision",
+        "source": {
+          "id": "msg-100",
+          "revision": "r1",
+          "system": "telegram"
+        },
+        "version": 1
+      }
+    }
+  },
+  "refusal_log": [
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "stale_version",
+    "wrong_repository",
+    "publication_conflict",
+    "source_content_conflict",
+    "source_content_conflict",
+    "stale_version",
+    "stale_version",
+    "stale_document",
+    "stale_document",
+    "publication_order",
+    "publication_conflict"
+  ],
+  "refusals": {
+    "invalid-unit-id": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "stale-overwrite": {
+      "aba-stale-version": "stale_version",
+      "old-version": "stale_version",
+      "unknown-digest": "stale_document",
+      "wrong-digest": "stale_document"
+    }
+  },
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ]
+  ],
+  "verification": "Diagnostic observations; only bash scripts/verify.sh verifies the change."
+}

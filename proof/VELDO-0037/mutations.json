@@ -1,0 +1,827 @@
+{
+  "records": [
+    {
+      "assertions": 45,
+      "baseline": {
+        "aliases/stale-checkouts": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.648,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/stale-checkouts": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "refusal": "stale_version"
+          },
+          {
+            "refusal": "stale_version"
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-checkout-maximum",
+      "new_digest": "b35cc0b26b3c962579dddc8a86506c127cef773e702d3856d55c00200de88984",
+      "noop": {
+        "aliases/stale-checkouts": [
+          true
+        ]
+      },
+      "noop_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "noop_failed_rows": [],
+      "old_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "red_rows": [
+        "aliases/stale-checkouts",
+        "aliases/same-source-reuse",
+        "aliases/distinct-source",
+        "aliases/stale-read-refused",
+        "aliases/no-recycling",
+        "aliases/per-repository",
+        "publication/exclusive-create",
+        "publication/replace-declared-version",
+        "aliases/observations"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/stale-checkouts"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "aliases/stale-checkouts": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.618,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/stale-checkouts": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "refusal": "stale_version"
+          },
+          {
+            "refusal": "stale_version"
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-counter-not-advanced",
+      "new_digest": "cdc8ec212d36809b2ab59169f08a7d5ffc586e89cdd79d62403e540feb8f440a",
+      "noop": {
+        "aliases/stale-checkouts": [
+          true
+        ]
+      },
+      "noop_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "noop_failed_rows": [],
+      "old_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "red_rows": [
+        "aliases/stale-checkouts",
+        "aliases/same-source-reuse",
+        "aliases/distinct-source",
+        "aliases/stale-read-refused",
+        "aliases/no-recycling",
+        "aliases/per-repository",
+        "publication/commit-together",
+        "publication/exclusive-create",
+        "publication/replace-declared-version",
+        "aliases/observations"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/stale-checkouts"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "documents/stale-overwrite": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.815,
+      "module": "control_alias.py",
+      "mutant": {
+        "documents/stale-overwrite": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 5
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 6
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_version",
+          "wrong-digest": null
+        }
+      },
+      "mutation": "document-ignore-digest",
+      "new_digest": "0b65544c526960b7665300325c4989596b4eb37649449f563d0cb72dffda33c3",
+      "noop": {
+        "documents/stale-overwrite": [
+          true
+        ]
+      },
+      "noop_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "noop_failed_rows": [],
+      "old_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "red_rows": [
+        "documents/stale-overwrite",
+        "publication/replace-guard"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "documents/stale-overwrite"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "documents/stale-overwrite": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.86,
+      "module": "control_alias.py",
+      "mutant": {
+        "documents/stale-overwrite": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 5
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 6
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": null,
+          "old-version": "stale_document",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "document-current-version",
+      "new_digest": "e9c222d2458565d93ba2454fdeda0caffe638093f85d1d84a7b17cfba96389c7",
+      "noop": {
+        "documents/stale-overwrite": [
+          true
+        ]
+      },
+      "noop_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "noop_failed_rows": [],
+      "old_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "red_rows": [
+        "documents/stale-overwrite",
+        "publication/replace-guard"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "documents/stale-overwrite"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "publication/accepted-documents": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.834,
+      "module": "control_document.py",
+      "mutant": {
+        "publication/accepted-documents": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 5
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 6
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "refusal": "document_mismatch"
+          },
+          "VELDO-0004": {
+            "refusal": "document_mismatch"
+          },
+          "VELDO-DEC-0005": {
+            "refusal": "document_mismatch"
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "publication-altered-bytes",
+      "new_digest": "b4699e47a73f60ff666146db4c1372f8df73c243e3a7bb48a587dcc82b25ef01",
+      "noop": {
+        "publication/accepted-documents": [
+          true
+        ]
+      },
+      "noop_digest": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f",
+      "noop_failed_rows": [],
+      "old_digest": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f",
+      "red_rows": [
+        "publication/accepted-documents",
+        "documents/edit-current",
+        "publication/replace-declared-version",
+        "publication/replace-guard",
+        "aliases/observations"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "publication/accepted-documents"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "publication/accepted-documents": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.465,
+      "module": "control_document.py",
+      "mutant": {
+        "publication/accepted-documents": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 5
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 6
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "missing_publication"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "refusal": "missing_publication"
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "publication-normalized-newlines",
+      "new_digest": "39598f0c4dcb76715ec87e98a6a3b532d9ee8fc3c652439f4e27824930cb4069",
+      "noop": {
+        "publication/accepted-documents": [
+          true
+        ]
+      },
+      "noop_digest": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f",
+      "noop_failed_rows": [],
+      "old_digest": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f",
+      "red_rows": [
+        "publication/accepted-documents",
+        "documents/edit-current",
+        "publication/replace-declared-version",
+        "publication/replace-guard",
+        "publication/tampered-refused",
+        "aliases/observations"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "publication/accepted-documents"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "publication/tampered-refused": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.48,
+      "module": "control_document.py",
+      "mutant": {
+        "publication/tampered-refused": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 4
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 5
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 6
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+          "path": "specs/VELDO-0004-api-contract.md",
+          "role": "specification/api",
+          "source": {
+            "id": "msg-100",
+            "revision": "edit-2",
+            "system": "telegram"
+          },
+          "version": 3
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "reader-trusts-record",
+      "new_digest": "d770ae85d5520f08870f9913d2d3a4b2cf642d1a4ecbfce8e49d2c5f25c5be1c",
+      "noop": {
+        "publication/tampered-refused": [
+          true
+        ]
+      },
+      "noop_digest": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f",
+      "noop_failed_rows": [],
+      "old_digest": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f",
+      "red_rows": [
+        "publication/tampered-refused"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "publication/tampered-refused"
+      ]
+    },
+    {
+      "assertions": 45,
+      "baseline": {
+        "aliases/invalid-unit-id": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 2.481,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/invalid-unit-id": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 5
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 7
+          }
+        ],
+        "invalid_unit_id_checks": [
+          false,
+          false,
+          false,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": ".veldo/decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-skip-unit-id",
+      "new_digest": "754eb572ffe39adb7166aac4c11d007726acd2a9c033e3ebd762aaae9554f042",
+      "noop": {
+        "aliases/invalid-unit-id": [
+          true
+        ]
+      },
+      "noop_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "noop_failed_rows": [],
+      "old_digest": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+      "red_rows": [
+        "aliases/invalid-unit-id"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/invalid-unit-id"
+      ]
+    }
+  ],
+  "registered": 8,
+  "source": "proof/VELDO-0037/drive.py over scripts/check_teeth_mutations.py finding 37",
+  "status": "rejected"
+}

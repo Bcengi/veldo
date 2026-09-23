@@ -1,0 +1,8 @@
+--- a/.veldo/control_document.py
++++ b/.veldo/control_document.py
+@@ -76 +76 @@
+-                output.write(body)
++                output.write(body + b'.')
+@@ -79 +79 @@
+-            observed = SN.digest(temporary.read_bytes())
++            observed = digest
