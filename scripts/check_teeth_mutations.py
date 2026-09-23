@@ -1065,6 +1065,11 @@ def cases():
                  "            key = self.AC.active_key(state['keyring'], principal, now)\n", 'framing/frame-and-presenter-agree')
     presentation('frame-ledger-unchecked', "            if principal in revoked:\n", "            if False:\n",
                  'framing/frame-and-presenter-agree')
+    # VELDO-0065 second review n6 (restored: dropped by 82576d5): the framing key by the journal's order.
+    presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
+                 "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')
+    presentation('framing-ledger-unchecked', "        if principal in (ledger.get('revoked') or {}):\n",
+                 "        if False:\n", 'framing/key-by-store-order')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
