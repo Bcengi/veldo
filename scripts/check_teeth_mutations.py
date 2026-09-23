@@ -676,6 +676,17 @@ def cases():
           "            raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None\n",
           "            raise EdgeRefused('channel_refused', 'no readable platform answer (%s)' % type(exc).__name__) from None\n",
           'projection/protocol-error-unknown')
+    # VELDO-0064 review r2-s7: an answer verifies against the key active when it was accepted.
+    inbox('inbox-admit-current-active-key', 'control_assignment.py',
+          "        key = self._answer_key(state, data, row, inputs)\n",
+          "        key = self.AC.active_key(state['keyring'], data['owner'], now)\n", 'inbox/answer-survives-key-rotation')
+    inbox('inbox-answer-key-from-current-entity', 'control_assignment.py',
+          "        key = dict(stored['data'], key_id=kid)\n",
+          "        key = dict(state['entities'].get(kid, {}).get('data') or {}, key_id=kid)\n",
+          'inbox/answer-survives-key-rotation')
+    inbox('inbox-answer-key-ignores-revocation', 'control_assignment.py',
+          "            if current.get('revoked_at') is not None and current['revoked_at'] <= at:\n                return None\n",
+          "", 'inbox/answer-survives-key-rotation')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

@@ -29,7 +29,9 @@ watermark, verify each row against its committed digest, and show an invalid rec
 listed. `admit()` is the only answer to "may the blocked work proceed". It needs a valid
 `SUBMITTED` record whose current version and digest were written by the owner's own journaled
 answer command, the owner's signed answer kept on the record and verified against the owner's
-active key, and an owner who is still an active person member covering the scope.
+key as it stood when the answer was accepted (the version that answer's own journal record
+pinned; see the second review fixes below), and an owner who is still an active person member
+covering the scope.
 Display fields such as `display_status` or `assignee` are never read.
 
 `.veldo/control_channel_projection.py` projects pending entries to Telegram. It renders plain-text
@@ -209,8 +211,12 @@ and r7 with the stranger unenrolled is refused as `no_enrolled_chat` while the o
 **Left for a decision.** A plain claim stays refused on a parked unit even after admission;
 `resume` is the only way back. A unit parked on an assignment that is then declined or canceled
 stays parked, since no Release 1 command decides what a refused or withdrawn request means for
-the blocked work. An owner key rotated after answering makes that answer unverifiable, so
-admission refuses it as `missing_authority` until the owner answers again. Recovering a
+the blocked work. (Corrected by the second review fixes below: this
+paragraph used to say that an owner key rotated after answering made the answer unverifiable
+"until the owner answers again". No command could do that, because the record is `SUBMITTED`
+and a new answer, a revision and a cancel are all refused as `stale_subject`, so the unit was
+parked for good. Admission now verifies the answer against the key that was active when it was
+accepted, and a rotation strands nothing.) Recovering a
 `pending` or `unknown_outcome` record by looking the message up remains Release 2 work. The
 resume check mirrors the claim receiver's repository scope check, which calls
 `control_membership.scope_covers` with the repository id as a string; a string scope reads as

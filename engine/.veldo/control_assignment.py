@@ -29,7 +29,10 @@ whose current version was written by the owner's own answer command in the journ
 who is still an active person member covering the assignment's scope. The record keeps the
 owner's signed answer command and its signature; admission checks that the command answers
 exactly this assignment, request version and ruling, and verifies the signature against the
-owner's active key in the committed keyring. The journal's principal column is copied from
+owner's key as it stood when the answer was accepted (VELDO-0027's historical verification
+rule): the key version the answer's own journal record pinned, read back from the journal. A
+later rotation, retirement or in-place replacement of that key strands nothing; a revocation
+dated at or before the acceptance refuses it. The journal's principal column is copied from
 whatever command the store was given, so it identifies no one on its own. A displayed status, an
 assignee field or any other text on the record grants nothing.
 
@@ -307,6 +310,9 @@ class Inbox:
                 params['ruling'] = command.get('ruling')
                 if op == 'answer':
                     params['signed'] = {'command': command, 'signature': packet['signature']}
+                    # The key that verified it, and when: admission verifies against this key as the
+                    # answer's own journal record pinned it, so a later rotation strands nothing.
+                    params['verified_by'] = {'key_id': key['key_id'], 'accepted_at': now}
             elif op == 'resume':
                 touched.update(self._resume(state, entities, current, principal, now, command, params))
             else:
@@ -431,7 +437,9 @@ class Inbox:
                                                        request_version=data['request_version'],
                                                        command_id=params['command_id'],
                                                        command=params['signed']['command'],
-                                                       signature=params['signed']['signature']))
+                                                       signature=params['signed']['signature'],
+                                                       key_id=params['verified_by']['key_id'],
+                                                       accepted_at=params['verified_by']['accepted_at']))
         elif op == 'decline':
             if principal != data['owner']:
                 raise refused('not_authorized', 'only the owner declines')
@@ -554,7 +562,8 @@ class Inbox:
                 or not self.membership.scope_covers(owner.get('scope'), data['scope']):
             return 'missing_authority', inputs
         # The owner's own signed answer: it answers this assignment at this request version with
-        # this ruling, and its signature verifies against the owner's active committed key.
+        # this ruling, was written by that answer's journal record, and its signature verifies
+        # against the owner's key as that record pinned it.
         answer, signed = data['answer'], data['answer']['command']
         binds = (signed.get('operation') == 'answer' and signed.get('alias') == data['alias']
                  and signed.get('principal') == data['owner'] and signed.get('ruling') == answer['ruling']
@@ -563,22 +572,62 @@ class Inbox:
                  and all(signed.get(k) == v for k, v in self.ids.items()))
         if not binds:
             return 'missing_authority', inputs
-        key = self.AC.active_key(state['keyring'], data['owner'], now)
-        verified = False
-        if key:
-            inputs.add(key['key_id'])
-            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(signed), answer['signature'],
-                                                    self.AC.allowed_signers_line(data['owner'], key['public_key']),
-                                                    data['owner'])
-        if not verified:
-            return 'missing_authority', inputs
-        row = self.conn.execute('SELECT principal, transition FROM journal WHERE command_id=?',
+        row = self.conn.execute('SELECT principal, transition, seq, before_versions FROM journal WHERE command_id=?',
                                 (data['answer']['command_id'],)).fetchone()
         written = json.loads(row[1]).get(item['id'], {}) if row else {}
         if row is None or row[0] != data['owner'] or written.get('version') != item['version'] \
                 or written.get('digest') != item['digest']:
             return 'missing_authority', inputs
+        key = self._answer_key(state, data, row, inputs)
+        verified = False
+        if key:
+            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(signed), answer['signature'],
+                                                    self.AC.allowed_signers_line(data['owner'], key['public_key']),
+                                                    data['owner'])
+        if not verified:
+            return 'missing_authority', inputs
         return 'admitted', inputs
+
+    def _answer_key(self, state, data, row, inputs):
+        """The owner's verification key as it stood when the answer was accepted, or None.
+
+        VELDO-0027's historical rule: a signature is verified against the key that was active when
+        it was signed, never against whatever key is active now, so a later rotation, retirement or
+        in-place replacement does not strand an accepted answer. The key is the one the answer's
+        own journal record pinned (its before-version), read from the journal record that wrote
+        that version and checked against its committed digest; it must name the owner and have been
+        active at the acceptance time. A revocation reaches back: a current keyring entry with the
+        same public key revoked at or before the acceptance verifies nothing. """
+        answer = data['answer']
+        kid, at = answer.get('key_id'), answer.get('accepted_at')
+        if not _is_str(kid) or type(at) not in (int, float) or not math.isfinite(at):
+            return None
+        pinned = json.loads(row[3]).get(kid) if row[3] else None
+        if not _is_int(pinned, 1):
+            return None
+        stored = None
+        for (transition,) in self.conn.execute('SELECT transition FROM journal WHERE seq < ? AND instr(transition, ?) > 0 '
+                                               'ORDER BY seq DESC', (row[2], json.dumps(kid))):
+            stored = json.loads(transition).get(kid)
+            if stored is not None:
+                break
+        if (not isinstance(stored, dict) or stored.get('version') != pinned or stored.get('kind') != 'verification_key'
+                or not isinstance(stored.get('data'), dict)
+                or self.store.digest_of({'kind': stored['kind'], 'data': stored['data'], 'version': pinned}) != stored.get('digest')):
+            return None
+        key = dict(stored['data'], key_id=kid)
+        if not _is_str(key.get('public_key')) or self.AC.active_key([key], data['owner'], at) is None:
+            return None
+        inputs.add(kid)
+        words = key['public_key'].split()[:2]
+        for current in state['keyring']:
+            if current.get('principal') != data['owner'] or not _is_str(current.get('public_key')) \
+                    or current['public_key'].split()[:2] != words:
+                continue
+            inputs.add(current['key_id'])
+            if current.get('revoked_at') is not None and current['revoked_at'] <= at:
+                return None
+        return key
 
     def admit(self, assignment):
         """Whether the work this assignment blocks may proceed, from current authority only."""

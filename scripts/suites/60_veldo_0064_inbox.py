@@ -115,7 +115,8 @@ def _v64_checks(base):
                                   'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
                                   'projection/intent-before-send', 'projection/echo-mismatch-kept',
                                   'projection/owner-enrolled-chat', 'projection/returned-chat-checked',
-                                  'projection/only-telegram-refusal-retried', 'projection/protocol-error-unknown')}
+                                  'projection/only-telegram-refusal-retried', 'projection/protocol-error-unknown',
+                                  'inbox/answer-survives-key-rotation')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -142,7 +143,8 @@ def _v64_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'worker-a', 'worker-b', 'stranger', 'pm', 'pm-b', 'reviewer', 'auditor'):
+    for who in ('authority', 'owner', 'worker-a', 'worker-b', 'stranger', 'pm', 'pm-b', 'reviewer', 'auditor',
+                'rotator', 'rotator-new', 'rotator-next'):
         _v64_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v64-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -166,12 +168,14 @@ def _v64_checks(base):
     conn = S.open_store(str(db))
     serial = [0]
 
-    def fixture(eid, kind, data, principal='authority'):
+    def fixture(eid, kind, data, principal='authority', pins=()):
+        # `pins`: further entities whose current versions the write binds, as a forger may.
         serial[0] += 1
-        entity = S.materialized_state(conn)['entities'].get(eid, {})
+        current = S.materialized_state(conn)['entities']
+        expected = {i: current.get(i, {}).get('version', 0) for i in (eid, *pins)}
         return S.execute(conn, dict(command_id='fixture-%d' % serial[0], principal=principal, operation='upsert_entity',
                                     parameters=dict(entity_id=eid, kind=kind, data=data),
-                                    expected_versions={eid: entity.get('version', 0)}, artifact_digests=[],
+                                    expected_versions=expected, artifact_digests=[],
                                     nonce='fixture-n-%d' % serial[0]), 'authority', journal_sign, 1)
 
     members = {'owner': dict(principal_type='person', roles=['project_owner'], scope=['project-a']),
@@ -181,7 +185,8 @@ def _v64_checks(base):
                'pm': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm-b': dict(principal_type='service', roles=[], scope=['project-b']),
                'reviewer': dict(principal_type='person', roles=[], scope=['project-a']),
-               'auditor': dict(principal_type='person', roles=[], scope=['project-a'])}
+               'auditor': dict(principal_type='person', roles=[], scope=['project-a']),
+               'rotator': dict(principal_type='person', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
         fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
@@ -711,6 +716,55 @@ def _v64_checks(base):
         server.server_close()
         thread.join(5)
 
+    # --- an answer verifies against the key active when it was accepted, whatever rotates later ---
+    rotated = 'inbox/answer-survives-key-rotation'
+
+    def signed_with(key_file, who, operation, alias, **fields):
+        counter[0] += 1
+        body = dict(ids, operation=operation, alias=alias, principal=who, command_id='c-%d' % counter[0],
+                    nonce='n-%d' % counter[0], **fields)
+        return inbox.apply({'command': body, 'signature': sign_as(key_file, S.canonical_bytes(body))})
+    cid5 = claims.claim_id(ids['repository_uuid'], 'unit-5')
+    rot1, rot2, rot3 = (I.assignment_id(ids['repository_uuid'], a) for a in ('K-rot-1', 'K-rot-2', 'K-rot-3'))
+    opened_rot1 = command('worker-b', 'open', 'K-rot-1', claim_generation=(entity(cid5) or {}).get('data', {}).get('generation'),
+                          assignment=content('decision', owner='rotator'))
+    answered_rot1 = command('rotator', 'answer', 'K-rot-1', request_version=1, ruling='accept')
+    # An accepted rotation: the old key is retired, a new key takes effect, and both are kept (R38).
+    rotated_at = _v64_time.time()
+    fixture('key-rotator', 'verification_key', dict(principal='rotator', public_key=public['rotator'], effective_at=0,
+                                                    retired_at=rotated_at))
+    fixture('key-rotator-2', 'verification_key', dict(principal='rotator', public_key=public['rotator-new'],
+                                                      effective_at=rotated_at))
+    check(rotated, 'an owner answer accepted before a rotation is still admitted after it',
+          opened_rot1.get('released_claim') == cid5 and answered_rot1.get('ok') is True and inbox.admit(rot1)['admitted'] is True)
+    command('pm', 'open', 'K-rot-2', assignment=content('decision', owner='rotator'))
+    retired_sign = signed_with('rotator', 'rotator', 'answer', 'K-rot-2', request_version=1, ruling='accept')
+    check(rotated, 'control: the retired key signs no new answer', retired_sign == {'ok': False, 'reason': 'not_authorized'})
+    answered_rot2 = signed_with('rotator-new', 'rotator', 'answer', 'K-rot-2', request_version=1, ruling='reject')
+    # The reviewer's form: the key entity is replaced in place by another public key.
+    fixture('key-rotator-2', 'verification_key', dict(principal='rotator', public_key=public['rotator-next'],
+                                                      effective_at=rotated_at))
+    check(rotated, 'an answer whose key entity was later replaced in place is still admitted',
+          answered_rot2.get('ok') is True and inbox.admit(rot2)['admitted'] is True and inbox.admit(rot1)['admitted'] is True)
+    resumed_rot1 = command('worker-b', 'resume', 'K-rot-1', request_version=1, capabilities=[])
+    claim5 = (entity(cid5) or {}).get('data', {})
+    check(rotated, 'the unit parked on the rotated answer resumes; it is not parked for good',
+          resumed_rot1.get('ok') is True and claim5.get('state') == 'owned' and claim5.get('holder') == 'worker-b'
+          and claim5.get('resumed_from') == rot1)
+    # Negative control: a revocation dated at or before the acceptance reaches back into history.
+    opened_rot3 = command('worker-b', 'open', 'K-rot-3', claim_generation=claim5.get('generation'),
+                          assignment=content('decision', owner='rotator'))
+    before_rot3 = _v64_time.time()
+    answered_rot3 = signed_with('rotator-next', 'rotator', 'answer', 'K-rot-3', request_version=1, ruling='accept')
+    admitted_rot3 = inbox.admit(rot3)['admitted']
+    fixture('key-rotator-2', 'verification_key', dict(principal='rotator', public_key=public['rotator-next'],
+                                                      effective_at=rotated_at, revoked_at=before_rot3))
+    check(rotated, 'control: a key revoked from before the acceptance admits nothing it signed',
+          opened_rot3.get('ok') is True and answered_rot3.get('ok') is True and admitted_rot3 is True
+          and inbox.admit(rot3)['reason'] == 'missing_authority')
+    check(rotated, 'control: that revocation does not reach an answer signed with another key',
+          inbox.admit(rot2)['admitted'] is True and inbox.admit(rot1)['admitted'] is True)
+
     # --- AC3: views describe; only current authority admits --------------------------------------
     k1_brief = inbox.brief(k1)
     check('inbox/visible-invalid', 'the changed version reads as current accepted content',
@@ -797,12 +851,13 @@ def _v64_checks(base):
     check(signed_row, 'an upsert naming the owner, with an answer the owner never signed, is not admitted',
           wrote['command_id'] == upsert_id and forged_admit == {'admitted': False, 'reason': 'missing_authority',
                                                                 'assignment_id': f1, 'version': 2})
-    # The owner's genuine signature over another assignment's answer, carried by a forged record.
+    # The owner's genuine signature over another assignment's answer, carried by a forged record
+    # whose write also pins the owner's key, so only the binding of the signed command refuses it.
     command('pm', 'open', 'F-2', assignment=content('decision'))
     f2 = I.assignment_id(ids['repository_uuid'], 'F-2')
     upsert_id = 'fixture-%d' % (serial[0] + 1)
     fixture(f2, 'assignment', dict(entity(f2)['data'], state='SUBMITTED', answer=dict(
-        stored_answer, command_id=upsert_id)), principal='owner')
+        stored_answer, command_id=upsert_id)), principal='owner', pins=('key-owner',))
     check(signed_row, 'a genuine owner signature over another answer is not admitted',
           inbox.admit(f2)['reason'] == 'missing_authority')
     check(signed_row, 'control: the owner\'s own signed answer admits', genuine['admitted'] is True)
