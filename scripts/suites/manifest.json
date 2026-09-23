@@ -547,6 +547,15 @@
    ],
    "regions": "Accepted snapshots, transactional inputs and complete materialization",
    "requires_note": "Uses only shared ROOT and expect; real SQLite, Git, Ed25519 signatures and a separate reader process."
+  },
+  {
+   "name": "59_veldo_0043_graph",
+   "file": "59_veldo_0043_graph.py",
+   "requires": [
+    "59_veldo_0043_graph"
+   ],
+   "regions": "Plain-data graph adapter boundary and isolated stdlib enforcement",
+   "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store handle and a stdlib interface stub runner; the actual LangGraph runtime is not installed."
   }
  ]
 }
