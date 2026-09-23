@@ -489,8 +489,8 @@ def cases():
     # which closes /proc/<parent>/cwd and fd to a same-account child. It replaces the two earlier
     # notes-path mutants, which broke the row's observation channel rather than the limit.
     graph('graph-proc-closed-by-nondumpable', 'control_graph.py',
-          '    staged, work = stage(runtime)\n',
-          "    __import__('ctypes').CDLL(None).prctl(4, 0, 0, 0, 0)\n    staged, work = stage(runtime)\n",
+          '        staged, work = stage(runtime)\n',
+          "        __import__('ctypes').CDLL(None).prctl(4, 0, 0, 0, 0)\n        staged, work = stage(runtime)\n",
           'authority/proc-limit')
     # Second review (2026-09-23): links the adapter did not make, answer encodings, request
     # paths and sizes, process groups, the runtime's pyvenv.cfg.
