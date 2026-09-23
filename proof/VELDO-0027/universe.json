@@ -76,7 +76,17 @@
       "signing/receipt-bound/delegation_id",
       "signing/receipt-bound/delegation_version",
       "signing/personal-content-binding",
-      "signing/personal-envelope-expiry"
+      "signing/personal-envelope-expiry",
+      "signing/personal-relabel/presentation_digest",
+      "signing/personal-relabel/assertion_kind",
+      "signing/personal-relabel/authority_scope",
+      "signing/personal-missing/ruling",
+      "signing/personal-missing/presentation_id",
+      "signing/personal-missing/presentation_digest",
+      "signing/personal-missing/assertion_kind",
+      "signing/personal-missing/authority_scope",
+      "signing/personal-missing/request_version",
+      "signing/personal-missing/presentation_version"
     ],
     "AC4": [
       "signing/channel-comes-from-the-connection",

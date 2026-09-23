@@ -212,11 +212,17 @@ def cases():
             "    if Path(projection_path).read_text() != projection(state):\n"
             "        return {'committed': True}\n"
             "    keyring = administrative_keyring(state, projection_path)", 'branch-key')
-    content = "               for field in ('ruling', 'presentation_id')):"
+    content = "               for field in AC.DECISION_ASSERTION_FIELDS):"
     signing('signing-ignore-personal-content', 'control_signer.py', content,
             "               for field in ()):", 'personal-content-binding')
     signing('signing-ignore-personal-ruling', 'control_signer.py', content,
             "               for field in ('presentation_id',)):", 'personal-content-binding')
+    signing('signing-bind-only-original-fields', 'control_signer.py', content,
+            "               for field in ('ruling', 'presentation_id')):", 'personal-relabel/presentation_digest')
+    signing('signing-default-missing-personal-fields', 'control_signer.py',
+            "        if any(field not in parameters or field not in payload or parameters[field] != payload[field]",
+            "        if any(parameters.get(field, payload.get(field)) != payload.get(field)",
+            'personal-missing/presentation_digest')
     binding = "    if payload.get('edge_key_id') != request['edge_key_id']:"
     signing('signing-ignore-selected-key-binding', 'control_signer.py', binding,
             "    if False:", 'rotation-requires-rebound-delegation')

@@ -1,0 +1,105 @@
+{
+  "finding": "F-05",
+  "baseline_commit": "f95c7a6",
+  "baseline_module_sha256": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+  "red_failed_rows": [
+    "VELDO-0027 signing/personal-relabel/presentation_digest",
+    "VELDO-0027 signing/personal-relabel/assertion_kind",
+    "VELDO-0027 signing/personal-relabel/authority_scope",
+    "VELDO-0027 signing/personal-missing/presentation_digest",
+    "VELDO-0027 signing/personal-missing/assertion_kind",
+    "VELDO-0027 signing/personal-missing/authority_scope",
+    "VELDO-0027 signing/personal-missing/request_version",
+    "VELDO-0027 signing/personal-missing/presentation_version"
+  ],
+  "red_command": "python3 -B scripts/check_teeth_mutations.py --worker signing-ignore-personal-content --mutant /tmp/veldo-0027-followup/baseline-control_signer.py",
+  "green_development_check": [
+    "  56_veldo_0027_signing                           88 passed    5.70s",
+    "selftest (PARTIAL, 1 of 63 suites): 114 passed, 0 failed in 5.70s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+  ],
+  "mutations": [
+    {
+      "mutation": "signing-bind-only-original-fields",
+      "observations": {
+        "baseline": {
+          "count": 114,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-relabel/presentation_digest": [
+              true
+            ]
+          }
+        },
+        "noop": {
+          "count": 114,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-relabel/presentation_digest": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 114,
+          "failed_rows": [
+            "VELDO-0027 signing/personal-relabel/presentation_digest",
+            "VELDO-0027 signing/personal-relabel/assertion_kind",
+            "VELDO-0027 signing/personal-relabel/authority_scope",
+            "VELDO-0027 signing/personal-missing/presentation_digest",
+            "VELDO-0027 signing/personal-missing/assertion_kind",
+            "VELDO-0027 signing/personal-missing/authority_scope",
+            "VELDO-0027 signing/personal-missing/request_version",
+            "VELDO-0027 signing/personal-missing/presentation_version"
+          ],
+          "targets": {
+            "signing/personal-relabel/presentation_digest": [
+              false
+            ]
+          }
+        }
+      }
+    },
+    {
+      "mutation": "signing-default-missing-personal-fields",
+      "observations": {
+        "baseline": {
+          "count": 114,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-missing/presentation_digest": [
+              true
+            ]
+          }
+        },
+        "noop": {
+          "count": 114,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-missing/presentation_digest": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 114,
+          "failed_rows": [
+            "VELDO-0027 signing/personal-missing/ruling",
+            "VELDO-0027 signing/personal-missing/presentation_id",
+            "VELDO-0027 signing/personal-missing/presentation_digest",
+            "VELDO-0027 signing/personal-missing/assertion_kind",
+            "VELDO-0027 signing/personal-missing/authority_scope",
+            "VELDO-0027 signing/personal-missing/request_version",
+            "VELDO-0027 signing/personal-missing/presentation_version"
+          ],
+          "targets": {
+            "signing/personal-missing/presentation_digest": [
+              false
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "note": "Targeted development checks only; acceptance requires the clean canonical gate."
+}

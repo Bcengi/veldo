@@ -264,3 +264,21 @@ records the clean-tree precondition and exit status; [gate-summary.json](gate-su
 retains the log digest and all signing mutation observations. The final evidence
 commit changes proof only. The checkout's `.veldo/last_verify` and
 `.veldo/events.jsonl` are restored before that commit and are not included.
+
+## Follow-up F-05: bind every decision field
+
+The new rows were run against the unmodified signer from `f95c7a6` before
+implementation. Relabeling only the presentation digest, assertion kind or scope
+was accepted; all three refusal rows were RED. Missing signed digest, kind, scope
+and version fields were also accepted. The contract now owns the decision field
+set, including request and presentation versions, and the signer requires explicit,
+equal values in the personal parameters and payload. Both kinds and scopes in the
+relabel cases are delegated, so delegation checks cannot mask this regression.
+The runtime modules are mirrored byte-for-byte into `engine/.veldo/`.
+
+[followup-f05.json](followup-f05.json) records the RED rows, the targeted green
+development run (88 signing rows), and baseline/no-op/mutant observations for
+`signing-bind-only-original-fields` (reintroduces F-05) and
+`signing-default-missing-personal-fields` (defaults an omitted signed field).
+Both mutations fail their named rows; their applied diffs are adjacent. These
+development checks are not a gate or a landing approval.

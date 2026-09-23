@@ -156,8 +156,8 @@ def _payload(state, request, channel, now):
         if envelope.get('principal') != payload['principal'] or envelope.get('command_digest') != AC.canonical_command_digest(command):
             raise K.Refused('provenance-mismatch')
         parameters = command.get('parameters', {})
-        if any(field not in parameters or parameters[field] != payload.get(field)
-               for field in ('ruling', 'presentation_id')):
+        if any(field not in parameters or field not in payload or parameters[field] != payload[field]
+               for field in AC.DECISION_ASSERTION_FIELDS):
             raise K.Refused('provenance-mismatch')
         # Coordinates come from the authority-captured source, not new admission.
         # Recheck its envelope against current membership/delegation and time via

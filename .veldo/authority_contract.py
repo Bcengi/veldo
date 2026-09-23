@@ -291,6 +291,10 @@ CHANNELS = {
 DELEGATION_FIELDS = ("principal", "channel", "assertion_kinds", "authority_scope", "request_version",
                      "presentation_version", "expires_at", "edge_key_id")
 ASSERTION_KINDS = ("decision_answer", "assignment_acceptance", "review_disposition", "acknowledgement")
+# Decision meaning checked by edge_assertion_problems and settle. A personal command
+# must explicitly sign every field; acquisition cannot supply defaults or relabel it.
+DECISION_ASSERTION_FIELDS = ("ruling", "presentation_id", "presentation_digest", "assertion_kind",
+                             "authority_scope", "request_version", "presentation_version")
 # Fields that are TEXT, not evidence: their presence never substitutes for attribution.
 TEXT_ONLY_FIELDS = ("text", "display_name", "sender_name")
 

@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer.py
++++ b/.veldo/control_signer.py
+@@ -160 +160 @@
+-               for field in AC.DECISION_ASSERTION_FIELDS):
++               for field in ('ruling', 'presentation_id')):

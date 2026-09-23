@@ -112,7 +112,7 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
                                           'public_key': _v27_public[_v27_kid], 'connection_public_key': _v27_public[_v27_auth]})
         if _v27_channel != 'evidence':
             _v27_admin('grant_delegation', {'id': 'delegation-' + _v27_channel, 'principal': 'owner', 'channel': _v27_channel,
-                                           'assertion_kinds': list(_v27_ac.ASSERTION_KINDS), 'authority_scope': ['project'],
+                                           'assertion_kinds': list(_v27_ac.ASSERTION_KINDS), 'authority_scope': ['project', 'other-project'],
                                            'request_version': 1, 'presentation_version': 1,
                                            'expires_at': _v27_time.time() + 600, 'edge_key_id': _v27_kid})
     # The projection is committed and then changed on a REAL conflicting worker branch
@@ -195,7 +195,9 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
                                    for f in _v27_ac.CHANNELS[channel]['attribution']}}
         if channel == 'signed_cli':
             payload['ruling'] = 'approve'
-            cmd = _v27_command('answer', {'ruling': 'approve', 'presentation_id': 'p1'})
+            cmd = _v27_command('answer', {field: payload[field] for field in (
+                'ruling', 'presentation_id', 'presentation_digest', 'assertion_kind',
+                'authority_scope', 'request_version', 'presentation_version')})
             env = _v27_envelope(cmd)
             payload['personal_command'] = {'command': cmd, 'envelope': env,
                                            'signature': _v27_sign('owner', _v27_ac.canonical_envelope_bytes(env))}
@@ -215,7 +217,7 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
                          _v27_result['accepted'] and _v27_keys.verify(_v27_state(), _v27_result))
     # F-01: preserve the person's exact reject/p1 signature in conflicting records.
     _v27_personal = _v27_copy.deepcopy(_v27_controls['signed_cli', 'decision_answer'][0]['payload']['personal_command'])
-    _v27_personal['command']['parameters'] = dict(ruling='reject', presentation_id='p1')
+    _v27_personal['command']['parameters'].update(ruling='reject', presentation_id='p1')
     _v27_personal['envelope'] = _v27_envelope(_v27_personal['command'])
     _v27_personal['signature'] = _v27_sign('owner', _v27_ac.canonical_envelope_bytes(_v27_personal['envelope']))
     _v27_signed_control = _v27_call(_v27_source('signed_cli', 'decision_answer',
@@ -228,6 +230,33 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
     _v27_expect('signing/personal-content-binding', _v27_signed_control['accepted']
                  and _v27_keys.verify(_v27_state(), _v27_signed_control)
                  and all(not r['accepted'] and r.get('refusal') == 'provenance-mismatch' for r in _v27_conflicts))
+
+    # F-05: keep the exact personal signature, relabel only one decision field.
+    # Both scopes and kinds are delegated: delegation cannot mask missing binding.
+    _v27_bound_request = _v27_controls['signed_cli', 'decision_answer'][0]
+    _v27_bound_control = _v27_call(_v27_bound_request, 'signed_cli')
+    for _v27_field, _v27_value in (
+            ('presentation_digest', _v27_signer.digest({'presentation': 2})),
+            ('assertion_kind', 'acknowledgement'), ('authority_scope', 'other-project')):
+        _v27_relabel = _v27_call(_v27_source('signed_cli', 'decision_answer', {
+            'personal_command': _v27_bound_request['payload']['personal_command'],
+            _v27_field: _v27_value}), 'signed_cli')
+        _v27_expect('signing/personal-relabel/' + _v27_field,
+            _v27_bound_control['accepted'] and _v27_keys.verify(_v27_state(), _v27_bound_control)
+            and not _v27_relabel['accepted'] and _v27_relabel.get('refusal') == 'provenance-mismatch')
+    # Missing signed parameters must refuse, even when the payload supplies them.
+    # This independently enumerated oracle must not shrink with the runtime set.
+    for _v27_field in ('ruling', 'presentation_id', 'presentation_digest', 'assertion_kind',
+                       'authority_scope', 'request_version', 'presentation_version'):
+        _v27_incomplete = _v27_copy.deepcopy(_v27_bound_request['payload']['personal_command'])
+        del _v27_incomplete['command']['parameters'][_v27_field]
+        _v27_incomplete['envelope'] = _v27_envelope(_v27_incomplete['command'])
+        _v27_incomplete['signature'] = _v27_sign('owner',
+            _v27_ac.canonical_envelope_bytes(_v27_incomplete['envelope']))
+        _v27_missing_result = _v27_call(_v27_source('signed_cli', 'decision_answer',
+            {'personal_command': _v27_incomplete}), 'signed_cli')
+        _v27_expect('signing/personal-missing/' + _v27_field,
+            not _v27_missing_result['accepted'] and _v27_missing_result.get('refusal') == 'provenance-mismatch')
 
     # F-04: the very same signed expired envelope must refuse at both boundaries.
     _v27_expired_request = _v27_source('signed_cli', 'decision_answer')

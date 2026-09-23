@@ -14,6 +14,8 @@ depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0
 placement: [engine, contracts, distribution]
 protected_paths: []
 footprint:
+  - ".veldo/authority_contract.py"
+  - "engine/.veldo/authority_contract.py"
   - "engine/.veldo/control_signer.py"
   - ".veldo/control_signer.py"
   - "engine/.veldo/control_keys.py"
@@ -198,3 +200,7 @@ row or signer implementation is added.
 2026-09-22 (build-veldo-0027): Add scripts/check_teeth_mutations.py to the footprint
 because the required gate mutation stage postdates this specification. Register every
 named falsifier there, with a second distinct mutation and unmutated controls.
+
+2026-09-22 (build-veldo-0027, F-05): Add authority_contract.py and its engine mirror
+to the footprint because the decision-bearing assertion field set belongs to the
+contract, not to the signer. Personal commands must explicitly bind every field.
