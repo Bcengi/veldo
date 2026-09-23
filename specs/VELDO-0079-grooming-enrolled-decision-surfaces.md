@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W64
-plan_revision: 1
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0072, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0078]
+plan_revision: 3
+depends_on: [VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078]
 placement: [contracts, tracker, engine, distribution]
 protected_paths: []
 footprint:
@@ -41,79 +41,91 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Grooming receipts name request/version, rendered presentation, admission and priority rulings,
-    rationale, actor and originating channel.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count returned elaborations, rejected proposals, pending priorities and stale grooming answers
-    per channel.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join exact request and decomposition bytes to the presentation seen, canonical answer and
-    single authoritative admission settlement.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unsigned prepared draft, changed brief, unauthorized groomer, absent priority and
-    conflicting terminal ruling.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Grooming presents the complete authorization material and binds the answer to what
-      the person saw. Set: request.request_digest/validate_record, request_projection.build_brief
-      and control_grooming for R09/R12 material on every enrolled E surface. Completeness: Compare
-      fields to A: class, outcome, comparable scope, exclusions, priority, ceiling, lane, policy,
-      spec revisions, protected paths, release authority, expiry, evidence, decomposition,
-      alternatives and questions. Publish actual briefs, mutate each field with an answer pending,
-      and require E presentation-bound refusal including rejection. Telegram, Jira and signed CLI
-      work independently; email requires its own enrollment proof. Falsifier: Omit decomposition
-      digest from grooming presentation binding; grooming/changed-decomposition must detect
-      admission from a superseded proposal.
+      Claim: Grooming presents the exact complete authorization material. Set and completeness:
+      Compare real Telegram briefs to the request schema: class, outcome, scope/exclusions,
+      priority, ceiling, lane, policy/spec revisions, protected paths, release authority,
+      expiry/evidence, decomposition, alternatives and questions. Change each bound field and refuse
+      the earlier presentation. Falsifier: Omit decomposition digest from presentation binding; the
+      changed-decomposition refusal check must fail.
     falsified_by: >
-      Omit decomposition digest from grooming presentation binding; grooming/changed-decomposition
-      must detect admission from a superseded proposal.
+      Omit decomposition digest from presentation binding; the changed-decomposition refusal check
+      must fail.
   - id: AC2
     text: >
-      Claim: A person with current admission authority admits, rejects or returns work;
-      preparation cannot authorize it. Set: request_reconcile._reconcile_one and
-      authorization.is_authorized consuming control_grooming actions for RAW through
-      AWAITING_GROOMING. Completeness: Cross every preparatory state with principal kinds and
-      allowed rulings. Run real signed commands and E assertions, including a project manager
-      claiming the owner role. Require actor-authored reasoning and distinct admission/priority
-      decisions even when settled together; unresolved scope or acceptance questions block the
-      applicable boundary. Falsifier: Accept a preparation-agent admission assertion because its
-      project-manager role is present; grooming/preparer-cannot-admit must detect the transition.
+      Claim: Only current admission and priority authorities may admit or prioritize prepared work.
+      Set and completeness: Exercise owner admit/reject/return choices and a PM self-admission
+      attempt through actual authenticated assertions; require actor-authored reasoning, separate
+      authority predicates and no execution while required questions remain unresolved. Falsifier:
+      Accept a PM role label as admission authority; the preparer-cannot-admit check must fail.
     falsified_by: >
-      Accept a preparation-agent admission assertion because its project-manager role is present;
-      grooming/preparer-cannot-admit must detect the transition.
+      Accept a PM role label as admission authority; the preparer-cannot-admit check must fail.
   - id: AC3
     text: >
-      Claim: Concurrent grooming answers settle once and cannot expand the signed command or mint
-      priority. Set: E settlement transaction used by control_grooming, across same-channel and
-      cross-channel answers and retries. Completeness: Race actual authority clients over one
-      request revision. Alter operation, target and priority/ceiling parameters under a retained
-      CLI signature and require canonical digest refusal. Kill after commit before acknowledgment;
-      retry original identity and require one replicated ruling, nonce and delivery obligation,
-      with rejected preparation retained and zero floor capacity. Falsifier: Reuse a valid
-      admission signature after changing the priority parameter without digest verification;
-      grooming/signed-priority-substitution must fail.
+      Claim: The accepted ruling authorizes only its exact operation, target and parameters. Set and
+      completeness: Change priority, ceiling and target separately beneath a retained valid signed
+      command, and submit an unchanged ordinary duplicate; inspect refusal of changes and one bound
+      settlement for the duplicate. Falsifier: Reuse an admission signature after changing priority
+      without digest validation; the parameter-binding check must fail.
     falsified_by: >
-      Reuse a valid admission signature after changing the priority parameter without digest
-      verification; grooming/signed-priority-substitution must fail.
+      Reuse an admission signature after changing priority without digest validation; the parameter-
+      binding check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Suspend new grooming settlements, preserve request and presentation versions, and obtain a
-  current authorized replacement ruling.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make grooming an attributable authorization act on the enrolled surface where the admission authority answers.
+Grooming and admission requests through enrolled decision surfaces. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package F, W64 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R09/R12, R61 and R72 supersede tracker-only wording. E supplies presentation and settlement; this item supplies grooming semantics. Its authority grant is critical. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W64 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-New edge keys, channel activation, cryptography and discretionary machine admission are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block durable grooming settlements and success replies; D3/D4 are inherited C boundaries. Dmitry must identify admission and priority authorities under R37/R64 before additional principals decide. A missing ruling remains a named blocker, never inferred from project ownership. Reuse the E full request digest, canonical source evidence and per-request quorum; map control_grooming into contracts/tracker/engine and W30 inventory before ready. Preserve rendered briefs and conflicting answer results without private signing material.
+Telegram is the first presentation channel; UI/API later consumes the same full request and
+settlement contract. No Jira intake, tracker projection or signed-CLI decision channel is
+built. Admission and priority remain distinct decisions even when the owner settles them
+together.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Narrow AC1 to Telegram; drop AC3 cross-
+channel/concurrent/lost-ack qualification while retaining exact authorization material, owner
+ruling, and separate admission/priority decisions. Jira-specific intake/decision/projection
+work is dropped under 28857/28859; additional non-Jira channel breadth is Release 4. UI/API
+support is supplied by 0130/0131 against the retained settlement contract. Removed recovery,
+durability and failure-matrix obligations belong to Release 2; additional host/channel/version
+and full distribution breadth belongs to Release 4. Normal function and the checks stated
+above remain Release 1.

@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W74
-plan_revision: 1
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0063, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0080, VELDO-0081, VELDO-0082, VELDO-0083, VELDO-0084, VELDO-0085, VELDO-0086, VELDO-0087, VELDO-0088]
+plan_revision: 3
+depends_on: [VELDO-0025, VELDO-0036, VELDO-0049, VELDO-0076]
 placement: [contracts, engine, loop, distribution]
 protected_paths: []
 footprint:
@@ -38,79 +38,86 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Team configuration receipts identify project, revision, approving authority, manager role and
-    each role capability/budget/independence digest.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count missing mandatory roles, stale team revisions, refused permission growth and staffing
-    requests.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace a presented team amendment through enrolled approval to the roster version read by each
-    cycle and assignment.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish missing manager, malformed role, unauthorized roster edit, stale assignment
-    predicates and review-policy conflict.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: A versioned team configuration declares one project-manager role and every role
-      required by the project work. Set: control_team validation with request.validate_record for
-      responsibilities, allowed proposals, capabilities, engine eligibility, context restrictions,
-      budgets and independence under R17. Completeness: Compare required field and role coverage
-      to the accepted team schema and project requirements, including elaboration, implementation
-      and independent review. Test missing/multiple manager definitions, omitted expertise and
-      malformed bounds; generate a durable owner staffing request instead of inventing a role or
-      substituting an ineligible worker. Falsifier: Accept a team configuration without
-      independent review capability required by its work; team/missing-review-role must detect an
-      executable incomplete roster.
+      Claim: Versioned team data defines one PM and required elaboration, implementation and
+      independent review roles. Set and completeness: Compare required responsibilities, expertise,
+      proposal permissions, engine eligibility, context/tool restrictions, budget and independence
+      fields to the team schema and project requirements; missing or conflicting staffing produces
+      an owner request, not invented workers. Falsifier: Accept a team missing required independent
+      review; the incomplete-roster check must fail.
     falsified_by: >
-      Accept a team configuration without independent review capability required by its work;
-      team/missing-review-role must detect an executable incomplete roster.
+      Accept a team missing required independent review; the incomplete-roster check must fail.
   - id: AC2
     text: >
-      Claim: Team amendments require current scoped authority and cannot promote roster membership
-      into admission rights. Set: control_team amendment transactions and
-      authorization.is_authorized across all enrolled E decision surfaces. Completeness: Race two
-      accepted amendments from one revision, change role permissions beneath a signed CLI
-      envelope, and submit a manager-authored self-promotion. Require full canonical
-      command-digest checks, one version winner and current E presentation/quorum. An approved
-      role entry still requires separately enrolled admission or named-authority predicates.
-      Falsifier: Grant admission authority to every member of an approved manager role;
-      team/roster-not-authority must detect an unauthorized grooming decision.
+      Claim: Team changes require current scoped owner authority and do not confer admission rights.
+      Set and completeness: Accept a version-bound owner amendment and reject stale versions,
+      altered signed parameters and manager self-promotion through the retained settlement path;
+      compare stored team revisions and unchanged authority grants. Falsifier: Grant admission
+      rights to a configured PM role; the roster-not-authority check must fail.
     falsified_by: >
-      Grant admission authority to every member of an approved manager role;
-      team/roster-not-authority must detect an unauthorized grooming decision.
+      Grant admission rights to a configured PM role; the roster-not-authority check must fail.
   - id: AC3
     text: >
-      Claim: Assignment creation and reassignment preserve team restrictions and the repository
-      independent-review policy. Set: control_team consumers of E assignment predicates and
-      decision_review.required_reviews_for/bind_review. Completeness: Derive role-to-station
-      coverage, then remove a capability, shrink a budget, change engine eligibility or
-      independence during a cycle. Require complete read-set refusal for stale assignments,
-      explicit new version on reassignment and unchanged actor-kind/named-authority predicates.
-      Exercise every effective review tier without allowing a team amendment to lower repository
-      policy. Falsifier: Use the cycle cached roster after its independent-review restriction
-      changes; team/stale-roster must detect acceptance of an obsolete assignment.
+      Claim: Assignments bind current team configuration and applicable engineering-review policy.
+      Set and completeness: Create builder/reviewer assignments under real policy and team
+      revisions; attempt missing policy, insufficient review count, same builder/reviewer and wrong
+      reviewed subject. Each must block, and a valid independent assignment succeeds. Falsifier:
+      Default a missing review policy to no reviews; the policy-required check must fail.
     falsified_by: >
-      Use the cycle cached roster after its independent-review restriction changes;
-      team/stale-roster must detect acceptance of an obsolete assignment.
+      Default a missing review policy to no reviews; the policy-required check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Suspend assignments affected by the team revision, preserve prior configurations, and accept a
-  current authorized replacement without widening permissions.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make project teams configurable and versioned while keeping role definitions separate from authority grants.
+Versioned team configuration. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package G, W74 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R17/R18, R30 and R62 replace a fixed roster with bounded role requirements. Team configuration can weaken separation of duties unless the authority boundary is enforced. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W74 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-A fixed roster of people, new real enrollment and changes to repository review/model-selection policy are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block durable configuration and published amendments; D3/D4 remain inherited worker prerequisites. Dmitry must rule on additional named authorities and who may approve project team amendments under R37/R64. Missing policy or expertise blocks the assignment. Map control_team into contracts/engine with loop consumers and inventory it before ready. Exercise existing decision_review consumers after E repairs; do not preserve their baseline permissive fallback as an enrolled policy. Save the effective policy and team revisions beside stale-roster proof.
+Assignment consumes VELDO-0049 engineering-review policy and its count, independence and
+exact-subject bindings. It does not invoke deferred VELDO-0070/decision_review adversarial
+decision workflows. Missing applicable policy refuses; no permissive fallback or roster-
+derived authority is allowed.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 amendment races/multiple channels and AC3 mid-cycle
+change/every-review-tier matrix; keep versioned roles, expertise, budgets, and applicable
+independent-review policy. Removed recovery, durability and failure-matrix obligations belong
+to Release 2; additional host/channel/version and full distribution breadth belongs to Release
+4. Normal function and the checks stated above remain Release 1.

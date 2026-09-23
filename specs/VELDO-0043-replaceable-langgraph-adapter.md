@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W28
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0035]
+plan_revision: 3
+depends_on: [VELDO-0035]
 placement: [loop, contracts, distribution]
 protected_paths: []
 footprint:
@@ -29,83 +29,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Adapter records identify cycle, snapshot watermark, node operation identity, supplied
-    committed result, and proposal or failure.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count starts, advances, suspensions, cancellations, repeated nodes, quarantined checkpoints,
-    and refused proposal commits.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join graph execution and deterministic replacement execution to identical authorized command
-    IDs and journal transitions.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish stale snapshot, checkpoint ahead or behind, conflicting checkpoint, repeated
-    operation, and unavailable execution runtime.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Start, advance, suspend, cancel, and proposal/failure operations exchange plain
-      versioned data with the domain and produce equivalent transitions under a deterministic
-      replacement. Set: Real LangGraph adapter and replacement processes consuming the same
-      accepted snapshots and supplied results against control.sqlite3. Completeness: Enumerate
-      public adapter operations from the interface and execute each path, including cancel during
-      a real child wait. Compare committed domain transitions and proposal digests for identical
-      authorized inputs; domain modules must import neither LangGraph nor worker engines.
-      Falsifier: Let the LangGraph path allocate a different command identity on advance after
-      suspension; graph/adapter-equivalence must detect divergent journal transitions.
+      Claim: Actual LangGraph exchanges plain versioned lifecycle data through a replaceable adapter
+      interface. Set and completeness: Enumerate start, advance, suspend, cancel and
+      proposal/failure interface operations; execute each using the installed LangGraph runtime and
+      accepted snapshots/supplied results. A deterministic interface stub may check shapes, not
+      replace actual runtime evidence. Falsifier: Return a LangGraph-specific object in the domain
+      response; the plain-data interface check must fail.
     falsified_by: >
-      Let the LangGraph path allocate a different command identity on advance after suspension;
-      graph/adapter-equivalence must detect divergent journal transitions.
+      Return a LangGraph-specific object in the domain response; the plain-data interface check must
+      fail.
   - id: AC2
     text: >
-      Claim: Replayed nodes reuse Veldo command IDs, and checkpoint loss or apparent progress
-      cannot repeat effects or establish admission, priority, assignment, authorization, dispatch,
-      or completion. Set: Real SQLite checkpoint records ahead of, behind, absent from, and
-      conflicting with signed domain history. Completeness: Kill the graph process after command
-      commit before checkpoint persistence, delete checkpoints, and restart. Compare real receiver
-      invocation counts and domain facts to the original committed results; repeat with forged
-      checkpoint progress and require replay or quarantine. Falsifier: Allocate a fresh command ID
-      after deleting the post-commit checkpoint; graph/checkpoint-loss must catch the repeated
-      receiver effect.
+      Claim: Graph execution cannot confer domain authority. Set and completeness: Exercise nodes
+      returning admission, priority and completion assertions and attempting store access; only
+      typed proposals reach separately authorized commands and graph processes receive no store
+      handle or path. Falsifier: Let a graph node write priority directly; the no-direct-authority
+      check must fail.
     falsified_by: >
-      Allocate a fresh command ID after deleting the post-commit checkpoint; graph/checkpoint-loss
-      must catch the repeated receiver effect.
+      Let a graph node write priority directly; the no-direct-authority check must fail.
   - id: AC3
     text: >
-      Claim: The execution adapter can be removed while stdlib validators, authorization, journal
-      replay, and recovery continue to operate on unchanged domain history. Set: Fresh enforcement
-      and recovery processes with the isolated execution environment unavailable and actual signed
-      SQLite history present. Completeness: Run each registered enforcement entry, validate a real
-      signature, replay the journal, and apply a permitted recovery command after hiding the
-      runtime. Compare domain state before and after checkpoint removal and require unavailable
-      graph execution to refuse explicitly without blocking independent recovery. Falsifier:
-      Import LangGraph from journal replay and remove the runtime environment;
-      graph/stdlib-recovery must fail its real replay command.
+      Claim: Domain enforcement does not depend on the installed graph runtime. Set and
+      completeness: Run the enabled stdlib validator, authorization and gate-import entry points
+      with the execution environment absent; ordinary enforcement remains usable and graph start
+      reports runtime unavailable. Falsifier: Import LangGraph from authorization; the isolated-
+      enforcement command must fail.
     falsified_by: >
-      Import LangGraph from journal replay and remove the runtime environment;
-      graph/stdlib-recovery must fail its real replay command.
+      Import LangGraph from authorization; the isolated-enforcement command must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Suspend graph execution, preserve accepted domain results and operation identities, quarantine
-  checkpoint state, and select the tested replacement through versioned configuration.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Run LangGraph as a replaceable adapter over Veldo snapshots and command identities without granting checkpoints domain authority.
+Replaceable LangGraph execution adapter. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W28 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R21, R29-R30, R34-R35, R53, R57, R62. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Checkpoint authority or adapter-specific identities could bypass domain decisions and repeat committed operations. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W28 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Project-manager graphs, live engine adapters, and checkpoint SQL isolation implementation belong to G, D, and W29.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 is inherited from store and snapshot implementation. Use actual LangGraph execution with only model responses faked; a hand-written replacement alone cannot prove the adopted adapter. W29 supplies the restricted checkpoint boundary and W30 packages its qualified versions. No server or hosted control plane is introduced. Keep graph lifecycle distinct from project-manager policy and completion facts.
+Actual LangGraph is required by owner Telegram 28848 and R34. Release 1 uses a nonpersistent
+graph, with no persistent checkpointer or database access from graph/model execution. Veldo
+owns cycle/action identity and domain results. 0044 checkpoint connection/isolation and
+recovery are Release 2.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 checkpoint recovery and AC3 recovery-with-runtime-
+removed qualification; narrow AC1 replacement equivalence testing while retaining the
+replaceable interface and actual LangGraph execution. Removed recovery, durability and
+failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

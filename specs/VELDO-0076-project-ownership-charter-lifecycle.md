@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W61
-plan_revision: 1
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0072, VELDO-0073, VELDO-0074, VELDO-0075]
+plan_revision: 3
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0036, VELDO-0068, VELDO-0073]
 placement: [contracts, engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -38,78 +38,85 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Project transitions name charter digest, owner, execution repository, authority binding,
-    old/new versions and settlement receipt.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count blocked activations, paused assignments, unreconciled terminal obligations and rejected
-    ownership collisions.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join the enrolled charter or transfer presentation to one settlement, project transition and
-    affected running-work stop receipts.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unsigned charter, unresolved owner, absent authority policy, unbounded budget,
-    terminal continuation and stale transfer.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Activation establishes one accountable project with a signed charter and bounded
-      coordination authority. Set: Proposed control_project commands consuming
-      request.validate_record and authorization.is_authorized for R04/R05 fields and DRAFT,
-      ACTIVE, PAUSED, COMPLETED, CANCELED. Completeness: Compare the A field/state registry with
-      command coverage. Omit each activation requirement in turn; sign current and stale charter
-      presentations through each enrolled E surface. Race activation in real B transactions and
-      require one version with an owner, one execution repository, authority policy and finite
-      reservation. Falsifier: Skip the bounded coordination budget predicate;
-      project/unbounded-activation must detect an ACTIVE project without a ceiling.
+      Claim: Project activation binds owner, charter, execution repository, authority policy and
+      finite coordination budget. Set and completeness: Enumerate those required schema fields and
+      omit each in a real signed activation command; valid current owner acceptance creates one
+      active project, while missing authority or budget refuses. Falsifier: Skip the budget
+      predicate; the unbounded-project check must fail.
     falsified_by: >
-      Skip the bounded coordination budget predicate; project/unbounded-activation must detect an
-      ACTIVE project without a ceiling.
+      Skip the budget predicate; the unbounded-project check must fail.
   - id: AC2
     text: >
-      Claim: Pause and terminal transitions close future authorization while preserving effects
-      and unresolved obligations. Set: Every project transition pair and frontier.claimable
-      consumers, including running assignments, decisions, dispatches, release executions and
-      reservations. Completeness: Generate the full state-pair matrix from A. Pause or cancel
-      during real running work, restart after commit, and inspect stop-policy execution and no new
-      dispatch. Complete only with terminal objectives and all listed obligations reconciled.
-      Terminal continuation creates a linked project; landed history remains unchanged. Falsifier:
-      Allow frontier.claimable to return a new assignment after project pause;
-      project/pause-dispatch must detect fresh execution.
+      Claim: Pause and cancellation stop new assignments and dispatch while preserving accepted
+      history. Set and completeness: Activate, pause and cancel a real project with pending and
+      running work; observe the ordinary host stop policy, no new dispatch and unchanged landed
+      receipts. Falsifier: Permit frontier to assign work after pause; the paused-project check must
+      fail.
     falsified_by: >
-      Allow frontier.claimable to return a new assignment after project pause;
-      project/pause-dispatch must detect fresh execution.
+      Permit frontier to assign work after pause; the paused-project check must fail.
   - id: AC3
     text: >
-      Claim: Ownership transfer is an authorized versioned act and never conveys admission
-      authority implicitly. Set: control_project transfer commands, project-to-repository
-      ownership and unit ownership under R04. Completeness: Race transfers to two enrolled
-      principals from one version, alter target-owner parameters beneath a retained signed CLI
-      envelope, and try claiming the same unit for two projects. Require canonical command-digest
-      verification, one winner and historical owner retention. The new owner without an admission
-      delegation cannot admit work. Falsifier: Copy admission authority from the old owner to the
-      new owner automatically; project/transfer-no-admission must reject the new owner admission
-      attempt.
+      Claim: Project completion requires terminal objectives and disposition of its ordinary
+      outstanding obligations. Set and completeness: Attempt completion with an open objective,
+      assignment, decision, dispatch or reservation separately, then with all required records
+      resolved; compare accepted project state and preserved history. Falsifier: Complete with a
+      pending objective; the incomplete-project refusal check must fail.
     falsified_by: >
-      Copy admission authority from the old owner to the new owner automatically;
-      project/transfer-no-admission must reject the new owner admission attempt.
+      Complete with a pending objective; the incomplete-project refusal check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Pause affected projects, preserve ownership and effect history, and restore a compatible project
-  reader before authorized resumption.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Give continuing projects explicit ownership and lifecycle controls without conflating them with releases or plans.
+Project ownership, charter, lifecycle, and transfers. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package F, W61 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R04/R05 and R61 govern project commands. The existing frontier selects specifications, so a new project predicate must reach its enrolled path. Ownership and pause defects can authorize unintended execution. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W61 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Release grouping, objective assessment and live enrollment policy are separate items.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks project storage and D2 its success acknowledgment; D3 blocks the running-work stop profile and D4 the inherited C clone path. Dmitry must rule on additional project owners and admission authorities under R37/R64 before those bindings can activate. Map control_project into contracts/engine and its scheduling consumer into fleet through A, and register its distribution via W30 before ready. Keep the state-pair matrix and transfer signature mutation with the failing proof row.
+Release 1 establishes the enrolled owner, one execution repository, charter and bounded
+project coordination. The roster does not grant admission authority. Additional owners and
+transfer require the Release 3 governance work rather than a default inferred delegation.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Defer AC3 multi-owner transfer and AC1 concurrent/multi-
+channel activation qualification; remove restart and unused release-execution cases from AC2,
+retaining owner, charter, budget, pause, and cancellation. Removed recovery, durability and
+failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

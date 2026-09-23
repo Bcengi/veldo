@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W77
-plan_revision: 1
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0063, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0080, VELDO-0081, VELDO-0082, VELDO-0083, VELDO-0084, VELDO-0085, VELDO-0086, VELDO-0087, VELDO-0088, VELDO-0089, VELDO-0091]
+plan_revision: 3
+depends_on: [VELDO-0035, VELDO-0052, VELDO-0054, VELDO-0069, VELDO-0078, VELDO-0085, VELDO-0089, VELDO-0091]
 placement: [contracts, engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -38,79 +38,90 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Proposal results name cycle/logical action, target versions, complete read set, atomic group,
-    authority predicate and committed result or refusal.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count per-predicate refusals, stale negative reads, replayed actions and rejected atomic
-    groups.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace typed graph output through deterministic validation, store commit, replication and
-    stable results returned to the adapter.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish malformed action, scope escalation, missing decision, stale graph/roster,
-    insufficient budget and idempotency conflict.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Only typed proposals with complete identities, versions and authority requirements
-      enter validation. Set: control_proposal schemas consumed by authorization.is_authorized and
-      request.validate_record for every registered R30 action. Completeness: Require action
-      registry/schema/handler equality. Omit target, expected version, evidence, intended
-      transition, authority or idempotency key one at a time; submit shell commands, SQL and
-      invented action types. Reject before effects. Model confidence, roster labels and objective
-      acceptance cannot supply missing admission or priority authority. Falsifier: Allow a
-      shell-command proposal as a generic action; proposals/typed-only must detect an executable
-      untyped proposal.
+      Claim: Only registered typed proposals with complete identity, expected versions and authority
+      enter validation. Set and completeness: Compare action schema/handler registrations in both
+      directions and omit target, version, evidence, transition, authority or idempotency key;
+      shell, SQL and invented types must refuse before effects. Falsifier: Accept shell text as a
+      generic executable proposal; the typed-only check must fail.
     falsified_by: >
-      Allow a shell-command proposal as a generic action; proposals/typed-only must detect an
-      executable untyped proposal.
+      Accept shell text as a generic executable proposal; the typed-only check must fail.
   - id: AC2
     text: >
-      Claim: Veldo validates the entire authorization and read set at commit, including absence
-      predicates. Set: control_proposal commit and C shared eligibility/frontier consumers across
-      schema, identity, authorization, scope, dependency closure, unresolved decisions, roster,
-      separation of duties, budget and lifecycle. Completeness: Compare every predicate and R70
-      input class to independent failure rows. Hold project version fixed while changing spec,
-      plan, release, decision, floor, policy, membership, admission, graph, roster, reservation or
-      receipt; insert a new blocker into a previously empty collection. Race real owner/service
-      commands during the model cycle and require named refusal before commit. Falsifier: Validate
-      only project version while ignoring a newly inserted blocking decision;
-      proposals/negative-read-staleness must detect a committed stale action.
+      Claim: Commit validates current schema, identity, authority, scope, dependencies, decisions,
+      roster, independence, budget and lifecycle. Set and completeness: Derive applicable inputs
+      from enabled handlers, mutate each predicate in ordinary real-store requests and insert a
+      blocking dependency with unchanged project version; inspect named refusal before assignment,
+      dispatch or publication. Falsifier: Validate only project version after inserting a
+      dependency; the stale-proposal check must fail.
     falsified_by: >
-      Validate only project version while ignoring a newly inserted blocking decision;
-      proposals/negative-read-staleness must detect a committed stale action.
+      Validate only project version after inserting a dependency; the stale-proposal check must
+      fail.
   - id: AC3
     text: >
-      Claim: Declared atomic groups commit completely or not at all, and graph retries reuse
-      stable action identities. Set: B store transactions for control_proposal groups and
-      independent group results under one cycle. Completeness: Use real concurrent processes and
-      kill barriers at each action write, commit and reply. Inject an invalid action into a
-      multi-action group and require zero group effects; separate valid groups receive their own
-      result. Replay identical cycle/logical operations after lost acknowledgment and require
-      prior results; changed payload under the same identity conflicts. D2 pending export cannot
-      be reported as success. Falsifier: Commit the first action before validating the rest of its
-      atomic group; proposals/group-atomicity must detect a partial accepted group.
+      Claim: A declared atomic group commits all accepted actions together or none, under stable
+      action identities. Set and completeness: Submit a valid group, a group with one invalid
+      action, an unchanged duplicate and changed content under the same identity to real store
+      transactions; inspect complete result, zero partial effects and explicit conflict. Falsifier:
+      Commit the first action before validating the remaining group; the partial-group check must
+      fail.
     falsified_by: >
-      Commit the first action before validating the rest of its atomic group;
-      proposals/group-atomicity must detect a partial accepted group.
+      Commit the first action before validating the remaining group; the partial-group check must
+      fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop proposal commits, preserve original cycle/action identities and results, and replay only
-  after current validation is restored.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Turn project-manager output into auditable Veldo transitions only after complete deterministic authorization.
+Typed proposals and complete authorization validation. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package G, W77 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R29/R30, R62 and R70 define the trust boundary between reasoning and authority. This validator can grant execution and therefore has critical risk. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W77 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-A second policy engine, direct database access for models and changing admission decisions inside a proposal are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks atomic groups/read sets and D2 their acknowledged results; D3/D4 remain inherited dispatch prerequisites. Dmitry must supply any named authority binding a proposal requires; absent product rulings are explicit unresolved decisions. Administrative actions must reuse B full canonical command-digest verification, including operation, target and every parameter. Map control_proposal to contracts/engine/fleet and inventory its installed entry points before ready. Keep each rejected predicate row and partial-group crash observation for fresh-context review.
+Use complete current authorization inputs from accepted snapshots, including dependency
+collections and exact decision settlements. Unsupported governing obligations block. Domain
+commands commit declared atomic groups; graph output, confidence and objective acceptance
+cannot supply missing authority.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 exhaustive concurrent read-set insertion matrix and
+AC3 kill/lost-ack/replica qualification; retain typed actions, current authorization,
+dependency checks, and all-or-nothing declared groups. Removed recovery, durability and
+failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

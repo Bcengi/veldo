@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W73
-plan_revision: 1
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0063, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0080, VELDO-0081, VELDO-0082, VELDO-0083, VELDO-0084, VELDO-0085, VELDO-0086, VELDO-0087]
+plan_revision: 3
+depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079]
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
@@ -41,80 +41,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Cycle receipts identify project/version, journal and published watermarks, coordination
-    contract, complete snapshot digest, reservation and graph result.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count cycles returning proposals, no action, suspension, cancellation or failure, with elapsed
-    time and reconciled usage.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join authoritative cycle inputs and supplied command results through graph advancement to
-    typed proposals and Veldo commit results.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish missing coordination contract, unavailable adapter, stale input, invalid proposal,
-    exhausted cycle budget and unsupported graph progress.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The project manager reconciles an immutable authorized snapshot and returns proposals
-      under a bounded coordination contract. Set: Proposed control_project_cycle graph execution
-      using B control_graph start/advance/suspend/cancel/result interface and
-      request.validate_record. Completeness: Enumerate all adapter operations and cycle input
-      fields from R29/R34/R70. Run actual installed LangGraph with fixed model outputs, bind
-      project version, journal/published watermark, accepted source commit, complete input
-      versions/digests and reservation. Drive proposal, no-action and failure cycles; each
-      consumes its own operation unit and produces an evidence receipt without claiming source
-      landing. Falsifier: Omit a receipt when the graph returns no action;
-      manager/no-action-receipt must detect the unaccounted cycle.
+      Claim: The PM reads an immutable accepted snapshot and returns proposals under its bounded
+      coordination contract. Set and completeness: Run actual LangGraph proposal, no-action and
+      failure cycles; enumerate required project/source/watermark/input-version/reservation fields
+      and compare every cycle receipt including empty cycles to real store records. Falsifier: Omit
+      the no-action cycle receipt; the cycle-accounting check must fail.
     falsified_by: >
-      Omit a receipt when the graph returns no action; manager/no-action-receipt must detect the
-      unaccounted cycle.
+      Omit the no-action cycle receipt; the cycle-accounting check must fail.
   - id: AC2
     text: >
-      Claim: Graph execution cannot admit, prioritize, assign, dispatch, sign observations or
-      complete work directly. Set: Every graph node and adapter output reaching F services,
-      frontier.claimable and tasks.claim_task through Veldo commands. Completeness: Compare
-      node/output registrations with the typed proposal registry and inspect real
-      process/file/authority effects. Submit shell text, SQL, invented roles, completion
-      assertions and a node that tries store access. Require named refusal and no domain change
-      except independently validated Veldo commands; waiting for a person releases worker/claim
-      resources while retaining the assignment. Falsifier: Allow a graph node to set backlog
-      priority directly; manager/no-direct-priority must detect a transition lacking an authorized
-      Veldo command.
+      Claim: Nodes can propose but cannot admit, prioritize, assign, dispatch or complete directly.
+      Set and completeness: Compare node/output registrations with typed proposal handlers and
+      attempt shell/SQL actions, invented roles and store access from a graph process; observe only
+      separately validated commands changing domain state. Waiting on a person releases the worker.
+      Falsifier: Let a node set priority directly; the unauthorized-transition check must fail.
     falsified_by: >
-      Allow a graph node to set backlog priority directly; manager/no-direct-priority must detect
-      a transition lacking an authorized Veldo command.
+      Let a node set priority directly; the unauthorized-transition check must fail.
   - id: AC3
     text: >
-      Claim: The same supplied results and authorized proposals have identical domain meaning
-      under a deterministic replacement adapter. Set: LangGraph and the B deterministic adapter,
-      across all allowed proposal/result and graph terminal forms. Completeness: Run both on
-      cloned verified authority fixtures with identical cycle identities, inputs and logical
-      proposals. Compare canonical accepted/refused transitions and effect identities, excluding
-      only execution telemetry by explicit schema fields. Repeat advancement and cancel the cycle
-      holder; committed command results replay without fresh identities or repeated effects.
-      Falsifier: Allocate a new logical action ID when a LangGraph node retries;
-      manager/retry-identity must detect a second committed transition.
+      Claim: One cycle per project runs, with one bounded follow-up when relevant input arrives
+      during it. Set and completeness: Hold an actual PM cycle while an owner answer and worker
+      completion arrive; observe one active cycle, one pending follow-up using the new accepted
+      snapshot, and no self-triggered loop after inputs are consumed. Apply the finite cycle budget.
+      Falsifier: Discard pending input when the active cycle ends; the expected-follow-up
+      observation must fail.
     falsified_by: >
-      Allocate a new logical action ID when a LangGraph node retries; manager/retry-identity must
-      detect a second committed transition.
+      Discard pending input when the active cycle ends; the expected-follow-up observation must
+      fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop starting project-manager cycles, fence outstanding proposals, and retain command results
-  for deterministic reconciliation.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Run the project manager as a bounded reconciler over Veldo state with a replaceable graph implementation.
+Project-manager execution graphs. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package G, W73 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R19, R29/R30, R34 and R62 place reasoning outside authority. B supplies the adapter boundary; this item supplies project coordination graphs. Bypassing F authorization warrants critical risk. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W73 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-New storage, a LangGraph server, direct model shell execution and replacement of deterministic services are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block authoritative cycles and published proposals; D3/D4 block qualified runner and clone activation inherited from D/C. Dmitry must approve the governing coordination authority and any additional named deciders; a cycle cannot infer them. Assign control_project_cycle to loop/fleet and keep domain schemas in contracts under A effective architecture before ready. Inventory graph assets through W30. W78 supplies final serialized/checkpoint journey qualification; preserve actual node-to-command evidence here, including empty-cycle accounting.
+Use the actual installed nonpersistent LangGraph step runtime and Veldo-owned workflow
+definition. This item brings 0093 ordinary cycle scheduling forward: at most one cycle per
+project and one bounded follow-up for pending relevant input. Checkpoint recovery and broad
+replacement equivalence remain Release 2.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 retry/cancellation/replacement-adapter matrix;
+retain actual PM execution and add 0093's minimal cycle scheduling, with no checkpoint-
+recovery requirement. Removed recovery, durability and failure-matrix obligations belong to
+Release 2; additional host/channel/version and full distribution breadth belongs to Release 4.
+Normal function and the checks stated above remain Release 1.

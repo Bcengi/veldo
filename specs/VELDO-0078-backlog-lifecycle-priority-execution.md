@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W63
-plan_revision: 1
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0072, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0076, VELDO-0077]
+plan_revision: 3
+depends_on: [VELDO-0052, VELDO-0076, VELDO-0077]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -41,76 +41,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Backlog transitions report class, request revision, phase, priority decision, decomposition
-    version and first-unit claim.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count unprioritized items, blocked interrupted phases, terminal exceptions and refused
-    duplicate active units.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join intake and priority receipts to first claim, remaining decomposition units and terminal
-    reconciliation.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unresolved classification, missing priority, changed decomposition, duplicate
-    active revision and unsupported DONE.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Only prioritized admitted work can create executable units eligible for scheduling.
-      Set: control_backlog plus frontier.claimable, tasks.claim_answer/claim_task and
-      claim.unit_id_problem over all eleven R11 states. Completeness: Compare full state-pair
-      coverage with A, including RAW, QUARANTINED, PREPARED, AWAITING_GROOMING, REJECTED,
-      ADMITTED, PRIORITIZED, ACTIVE, BLOCKED, DONE and CANCELED. Drive actual commands and direct
-      claim paths; intake, ready spec text, model output and admission without priority must yield
-      no executable unit or dispatch. Falsifier: Permit tasks.claim_task for an ADMITTED item
-      without priority; backlog/admitted-not-prioritized must detect a granted claim.
+      Claim: Only prioritized admitted work can create eligible engineering units. Set and
+      completeness: Drive the ordinary path and direct claim entries with intake-only, prepared,
+      admitted-without-priority and prioritized work; inspect real store/claim results and reject
+      any executable unit without accepted admission and priority. Falsifier: Allow tasks.claim_task
+      for admitted but unprioritized work; the missing-priority check must fail.
     falsified_by: >
-      Permit tasks.claim_task for an ADMITTED item without priority;
-      backlog/admitted-not-prioritized must detect a granted claim.
+      Allow tasks.claim_task for admitted but unprioritized work; the missing-priority check must
+      fail.
   - id: AC2
     text: >
-      Claim: The first claim activates the item atomically and only its approved decomposition can
-      continue. Set: First and subsequent claims, one primary spec revision per engineering unit
-      and exactly one owning backlog item. Completeness: Race real claim processes, crash at
-      claim/item commit barriers and replay. Require one active unit per admitted spec revision
-      and coherent claim/item state. Remaining approved units may run; adding a unit requires a
-      new prioritization over revised decomposition, even while the item is ACTIVE. Falsifier:
-      Append an executable unit to an ACTIVE item without renewed prioritization;
-      backlog/decomposition-growth must detect its claim.
+      Claim: First claim activates the item and follows only its approved decomposition. Set and
+      completeness: Claim a real approved unit and inspect coherent owner/item activation; append
+      another proposed unit and require fresh prioritization for it while existing approved units
+      may continue. Falsifier: Make an appended unit executable without renewed prioritization; the
+      decomposition-growth check must fail.
     falsified_by: >
-      Append an executable unit to an ACTIVE item without renewed prioritization;
-      backlog/decomposition-growth must detect its claim.
+      Make an appended unit executable without renewed prioritization; the decomposition-growth
+      check must fail.
   - id: AC3
     text: >
-      Claim: Blocked phases resume only after validated resolution, and terminal status reflects
-      reconciled outcomes. Set: control_backlog completion/resumption and tasks.concluded
-      consumers for every interrupted phase and terminal state. Completeness: Enumerate phases and
-      unit outcomes from A; preserve interrupted phase/reason and require all required units
-      completed or a signed alternative-outcome reconciliation. A produces path, canceled attempt
-      or status edit cannot establish DONE. Reconsideration of rejected, done or canceled work
-      creates a linked item and preserves old receipts. Falsifier: Use tasks.concluded file
-      existence to mark a backlog item DONE; backlog/path-is-not-completion must detect missing
-      accepted receipts.
+      Claim: A clean blocked phase resumes only after its binding is resolved and DONE requires
+      accepted unit outcomes. Set and completeness: Record interrupted phase/reason, settle its
+      actual owner decision and resume that phase. Attempt DONE with path-only output, canceled
+      attempt and missing required unit receipt; only complete receipts or an authorized alternative
+      outcome suffice. Falsifier: Use output-file existence as DONE; the missing-outcome check must
+      fail.
     falsified_by: >
-      Use tasks.concluded file existence to mark a backlog item DONE;
-      backlog/path-is-not-completion must detect missing accepted receipts.
+      Use output-file existence as DONE; the missing-outcome check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop new backlog dispatch, retain interrupted phases and reconcile claimed units before
-  restoring a compatible scheduler.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make priority a durable execution boundary and keep backlog lifecycle tied to approved units and their outcomes.
+Backlog lifecycle and priority-controlled execution. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package F, W63 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R07, R10/R11 and R61 build on C eligibility. tasks.concluded currently checks a path; enrolled backlog completion must consume accepted receipts instead. Unauthorized claims make this concern critical. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W63 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Grooming presentation and automatic defect policy evaluation are owned by W64/W65.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks atomic backlog/claim transitions and D2 published eligibility; D3/D4 block the inherited runner/clone execution proof. Dmitry must name or delegate the priority authority before a non-Dmitry principal can prioritize. Keep legacy TASK kinds distinct from backlog work classes. Map control_backlog under contracts/fleet and register it through W30; do not add an alternative unit-ID validator. Preserve first-claim crash tables and forbidden transition results for independent review.
+The regular path is proposed/prepared, awaiting grooming, admitted, prioritized, active,
+optionally blocked, and done or canceled. Unsupported advanced work classes remain non-
+executable. Use the existing unit-ID validator and current owner/admission policy.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 exhaustive state-pair qualification and AC2
+crash/replay races; keep priority, approved decomposition, ordinary blocked-state resumption,
+and evidence-based DONE. Removed recovery, durability and failure-matrix obligations belong to
+Release 2; additional host/channel/version and full distribution breadth belongs to Release 4.
+Normal function and the checks stated above remain Release 1.

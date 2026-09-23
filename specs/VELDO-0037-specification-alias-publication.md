@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W22
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0035]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -32,83 +32,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Allocation results identify repository, source tuple, alias, artifact digest, expected
-    version, and pending publication.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count fresh allocations, identical retries, content conflicts, unrecycled reservations, and
-    unfinished document publications.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join source-system identity and revision to counter transaction, immutable artifact,
-    publication obligation, and materialized version.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish invalid unit alias, source-content conflict, stale edit, exclusive-create
-    collision, and publication pending.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: A per-repository transactional counter and uniqueness constraint allocate new VELDO
-      aliases without changing historical WARP or VELDO identities. Set: Separate drafting
-      processes requesting aliases through control.sqlite3, including identical
-      source-system/source-ID/source-revision/artifact-role tuples. Completeness: Race identical
-      and distinct sources, corrupt a proposed unit ID, and SIGKILL after counter commit before
-      response. Require one alias for an identical proposal, distinct aliases for distinct
-      accepted sources, no recycled reservation, and claim.unit_id_problem before any unit
-      artifact reservation. Falsifier: Allocate from each checkout maximum instead of the store
-      counter and race two authors; aliases/concurrent-allocation must detect duplicate aliases.
+      Claim: Authority allocation gives unique VELDO aliases and preserves historical IDs. Set and
+      completeness: Use real counter/uniqueness constraints with identical and distinct source-
+      system/ID/revision/role tuples; inspect same-source reuse, distinct-source allocation and no
+      reserved alias recycling. Reject invalid unit IDs through claim.unit_id_problem before
+      artifacts. Falsifier: Allocate from checkout maximum instead of the store counter; independent
+      requests with stale checkouts must collide and fail the check.
     falsified_by: >
-      Allocate from each checkout maximum instead of the store counter and race two authors;
-      aliases/concurrent-allocation must detect duplicate aliases.
+      Allocate from checkout maximum instead of the store counter; independent requests with stale
+      checkouts must collide and fail the check.
   - id: AC2
     text: >
-      Claim: Changed source content and edits compare expected version and artifact digest,
-      returning a new revision or named conflict instead of overwriting an accepted document. Set:
-      Real command and filesystem clients editing the same accepted specification or repeating a
-      source tuple with altered bytes. Completeness: Execute both writer orders against one
-      version, record winning bytes and journal results, and retry after process restart. Require
-      identical retries to return their original allocation and changed content to preserve the
-      prior artifact and rejected proposal evidence. Falsifier: Ignore the expected digest and
-      race an edited document against a newer accepted revision; aliases/stale-edit must reject
-      the overwrite.
+      Claim: Edits compare expected version and artifact digest before replacing accepted content.
+      Set and completeness: Submit current, stale and changed-content requests against real accepted
+      documents; require a new version or named conflict with prior bytes preserved, and identical
+      request reuse of its allocation. Falsifier: Ignore expected digest on an edit; the stale-
+      overwrite check must fail.
     falsified_by: >
-      Ignore the expected digest and race an edited document against a newer accepted revision;
-      aliases/stale-edit must reject the overwrite.
+      Ignore expected digest on an edit; the stale-overwrite check must fail.
   - id: AC3
     text: >
-      Claim: Allocation, artifact identity, source mapping, and publication obligation commit
-      together; subsequent materialization exposes only complete published versions. Set: Real
-      SQLite allocation and exclusive file creation or atomic version replacement in specs
-      projections, with concurrent snapshot readers. Completeness: SIGKILL after allocation,
-      during temporary-file write, and after rename before publication acknowledgment. Restart
-      the materializer and verify same alias, exact accepted bytes, no overwrite of another
-      author, and published-only reader visibility at each boundary. Falsifier: Mark publication
-      complete before atomic replacement and kill the writer with a partial temporary file;
-      aliases/publication-window must detect incomplete reader content.
+      Claim: Source mapping, allocation and accepted document identity commit together and
+      materialize exact bytes. Set and completeness: Publish each enabled artifact role through real
+      store/filesystem operations; compare source tuple, alias, version, digest and reader-visible
+      complete document against the accepted record. Falsifier: Publish altered bytes under the
+      accepted digest; the document comparison must fail.
     falsified_by: >
-      Mark publication complete before atomic replacement and kill the writer with a partial
-      temporary file; aliases/publication-window must detect incomplete reader content.
+      Publish altered bytes under the accepted digest; the document comparison must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Pause allocation and materialization, retain counter reservations and source mappings, and
-  resume pending publication without recycling any identifier.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Allocate one durable specification alias per source revision and publish its accepted document without races or overwrites.
+Atomic specification alias allocation and document publication. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W22 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R10, R19, R22, R57, R73. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Alias collisions or stale document overwrites could bind implementation and proof to the wrong accepted specification. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W22 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Automatic admission of drafted specifications and project elaboration workflows are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks allocation persistence through W8, and D2 governs when the snapshot may be exposed as published. The source tuple includes intended artifact role; two outputs from one source are not accidentally collapsed. Static IDs in this plan were expressly allocated during drafting, but runtime authors must never scan a checkout maximum. The materializer consumes W20 snapshot semantics without changing the plan dependency list.
+Use the authority counter, never a runtime checkout maximum. Source identity includes intended
+artifact role, so one source can produce distinct specifications and other artifacts. 0035
+supplies accepted snapshots and ordinary materialization; local commit is sufficient under
+amended C3.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1/AC2 concurrency-and-restart matrices and AC3
+interrupted materialization; retain unique allocation, source mapping, version checks, and
+published document bytes. Removed recovery, durability and failure-matrix obligations belong
+to Release 2; additional host/channel/version and full distribution breadth belongs to Release
+4. Normal function and the checks stated above remain Release 1.

@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W30
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0043, VELDO-0044]
+plan_revision: 3
+depends_on: [VELDO-0043]
 placement: [distribution, enforcement, loop]
 protected_paths: [scripts/verify.sh, engine/scripts/verify.sh]
 footprint:
@@ -45,85 +45,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Installer output identifies runtime lock digest, Python compatibility, artifact hash
-    verification, license disposition, and active environment.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Report locked versus installed dependency closure, inventoried versus composed assets, missing
-    scaffold files, and refused partial installs.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join dependency resolution and hashes to isolated installation, composed pack digests,
-    installed adapter execution, and stdlib-only gate observations.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unsupported Python, hash mismatch, incomplete lock, missing license, undistributed
-    asset, partial installation, and enforcement dependency leak.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The installer uses a complete transitive lock with hashes and license records for a
-      tested Python, LangGraph, and SQLite-checkpoint combination in an isolated environment. Set:
-      Every runtime distribution and supported Python profile, installed by real package tooling
-      into fresh temporary environments. Completeness: Compare installed dependency metadata to
-      the lock and license inventory in both directions; execute the actual adapter/checkpointer
-      smoke workload. Corrupt a downloaded artifact hash, omit a transitive dependency, and
-      SIGKILL installation before activation; incompatible or partial environments must never
-      become active. Falsifier: Bypass locked-hash enforcement and install an otherwise valid
-      altered wheel while retaining the original lock; runtime/hash-refusal must reject
-      installation before activation.
+      Claim: The journey installs a compatible pinned, hashed and licensed LangGraph runtime in
+      isolation. Set and completeness: Use real package tooling for the chosen runtime/Python
+      configuration; compare installed transitive metadata to the lock and license/provenance
+      records and run the actual nonpersistent adapter workload. Alter one artifact hash and omit
+      one dependency; both must refuse activation. Falsifier: Bypass hash enforcement for an altered
+      wheel; the runtime-integrity check must fail.
     falsified_by: >
-      Bypass locked-hash enforcement and install an otherwise valid altered wheel while retaining
-      the original lock; runtime/hash-refusal must reject installation before activation.
+      Bypass hash enforcement for an altered wheel; the runtime-integrity check must fail.
   - id: AC2
     text: >
-      Claim: The engine manifest, assembly, scaffolder, and explicit distribution inventory
-      account for every new code and non-code asset and preserve byte-identical engine copies.
-      Set: All PLAN-0019 foundation modules, runtime locks, dependency license material,
-      service/helper assets, and composed packs declared in .veldo/packs.json. Completeness:
-      Compare tracked canonical assets, declared dispositions, pack.engine_files, and
-      init_scaffold output in both directions. Compose real packs, install each declared asset
-      set, and run the installed runtime smoke workload; intentionally omit a non-code lock or
-      service asset and require a named packaging failure. Falsifier: Omit the runtime lock from
-      one pack composition while leaving engine Python files identical; runtime/inventory-omission
-      must detect the missing installed asset.
+      Claim: The chosen installed journey contains every code and non-code asset it needs. Set and
+      completeness: Enumerate actual runtime imports, service/helper/config assets and lock files
+      reached by the reference pack installation and journey; compare to installed files and
+      digests. Omit one required non-code asset and require named failure without source-tree
+      fallback. Falsifier: Omit the runtime lock from the reference installation; the journey-asset
+      check must fail.
     falsified_by: >
-      Omit the runtime lock from one pack composition while leaving engine Python files identical;
-      runtime/inventory-omission must detect the missing installed asset.
+      Omit the runtime lock from the reference installation; the journey-asset check must fail.
   - id: AC3
     text: >
-      Claim: Validators, authorization, gate imports, journal replay, and recovery run using only
-      stdlib Python when the execution environment is unavailable. Set: Fresh installed-artifact
-      enforcement processes and a populated signed authority fixture, with runtime environment
-      removed from import and executable paths. Completeness: Enumerate enforcement entry points
-      from installed inventory, run their real commands and canonical gate, and exercise replay
-      and recovery with a valid and corrupted journal. Require graph execution to report runtime
-      unavailable without weakening independent enforcement checks. Falsifier: Add an execution
-      dependency import to installed authorization and remove the isolated environment;
-      runtime/enforcement-isolation must fail the real authorization command.
+      Claim: Validators, authorization and gate imports remain stdlib-only when the execution
+      environment is absent. Set and completeness: Enumerate enabled installed enforcement entries,
+      hide the runtime and run their real commands against accepted data; graph invocation alone
+      reports unavailable. Falsifier: Add a runtime import to installed authorization; the no-
+      runtime enforcement check must fail.
     falsified_by: >
-      Add an execution dependency import to installed authorization and remove the isolated
-      environment; runtime/enforcement-isolation must fail the real authorization command.
+      Add a runtime import to installed authorization; the no-runtime enforcement check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Keep the previous compatible runtime and lock installable; leave an interrupted new environment
-  inactive and switch back only with schema compatibility and a recorded activation receipt.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Install a pinned isolated execution runtime and account for every shipped asset while keeping enforcement independent of it.
+Pinned isolated runtime, dependency licenses, and distribution inventory. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W30 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R35, R50, R53, R57-R58, R63. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Unverified dependencies or omitted assets could compromise installed execution, and this footprint includes protected gate scripts. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W30 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-No live engine certification, release activation, or claim that source-tree tests qualify every installed journey is made.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 is inherited from the adapter/checkpoint placement; D3 remains a blocker for activating packaged service and helper assets. Exact versions and licenses are findings of compatibility qualification, not assumptions in this draft. Protected gate edits may update honest dependency and license check declarations, but must not weaken checks or import third-party runtime packages into enforcement. B supplies installed smoke proof; C and H own the full floor-slice and release qualification.
+Exact Python/LangGraph versions and licenses must come from compatibility qualification.
+Install the chosen reference distribution and all its journey assets; full inventory/every-
+pack coverage is Release 4. No persistent checkpoint dependency is required in Release 1.
+Apply C16 provenance and no-free/paid-tier restrictions to direct and transitive dependencies.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 installation-crash/profile matrix, AC2 every-
+pack/full inventory qualification, AC3 replay/recovery matrix; retain a compatible isolated
+pinned runtime and every asset needed by the chosen installed journey. Removed recovery,
+durability and failure-matrix obligations belong to Release 2; additional host/channel/version
+and full distribution breadth belongs to Release 4. Normal function and the checks stated
+above remain Release 1.

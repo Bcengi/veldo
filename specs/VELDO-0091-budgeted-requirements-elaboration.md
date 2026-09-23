@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W76
-plan_revision: 1
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0063, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0080, VELDO-0081, VELDO-0082, VELDO-0083, VELDO-0084, VELDO-0085, VELDO-0086, VELDO-0087, VELDO-0088, VELDO-0090]
+plan_revision: 3
+depends_on: [VELDO-0037, VELDO-0062, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0090]
 placement: [contracts, loop, metrics, distribution]
 protected_paths: []
 footprint:
@@ -38,78 +38,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Elaboration receipts identify accepted objective revision, governing contract, source mapping,
-    assumptions/questions and request-level reserved exposure.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure cycles, tokens, elapsed time, unchanged proposals, settled charges and unresolved
-    maximum-charge allocations.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join bounded elaboration assignment through each billable request to versioned requirements
-    artifacts and open decision obligations.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish scope question unresolved, cycle/token/time limit, repeated unchanged proposal,
-    unknown charge bound and signed-ceiling exhaustion.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Elaboration publishes versioned requirements, assumptions, alternatives, proposed
-      specs, dependencies and questions without admission authority. Set: control_elaboration
-      outputs using request.validate_record and W70 decomposition publication for accepted
-      objectives and governing coordination specs. Completeness: Compare output roles to R19 and
-      allocation mappings. Run concurrent authors and duplicate retries; require
-      source-revision/role identity reuse and distinct artifacts for distinct sources. Scope or
-      acceptance questions create enrolled decision requests and block the applicable
-      admission/execution boundary; a prepared spec cannot authorize itself. Falsifier: Mark a
-      generated feature admitted when its objective was accepted; elaboration/no-feature-admission
-      must detect unauthorized backlog progress.
+      Claim: Elaboration publishes versioned requirements, assumptions, alternatives, specs,
+      dependencies and questions. Set and completeness: Enumerate these output roles against real
+      artifacts allocated by 0037/0085 for an accepted objective; ensure required scope/acceptance
+      questions reach the owner and dependencies reach shared eligibility, with no self-admission.
+      Falsifier: Admit a generated feature automatically; the generated-work authority check must
+      fail.
     falsified_by: >
-      Mark a generated feature admitted when its objective was accepted;
-      elaboration/no-feature-admission must detect unauthorized backlog progress.
+      Admit a generated feature automatically; the generated-work authority check must fail.
   - id: AC2
     text: >
-      Claim: Finite cycle, token, elapsed-time and unchanged-proposal limits bound self-triggered
-      elaboration. Set: Every control_elaboration continuation, retry, no-action and failure
-      result under the governing budget contract. Completeness: Derive limits from the accepted
-      policy and test below/at/above each independently using real adapter processes and trusted
-      accounting. Repeated unchanged proposals reach a named stop and E escalation; each cycle
-      retains its receipt. Waiting on an answer holds no model or claim, and deleting checkpoints
-      cannot reset the durable limit counters. Falsifier: Reset unchanged-proposal count on
-      checkpoint deletion; elaboration/repetition-bound must detect extra unauthorized cycles.
+      Claim: Finite reasoning limits bound every continuation and repeated unchanged proposal. Set
+      and completeness: Derive cycle/token/time/repetition limits from the accepted coordination
+      policy and drive below, at and above each bound with actual adapter processes; retain cycle
+      receipts and produce a named owner stop at exhaustion, releasing workers while waiting.
+      Falsifier: Reset unchanged-proposal count on each continuation; the repetition-limit check
+      must fail.
     falsified_by: >
-      Reset unchanged-proposal count on checkpoint deletion; elaboration/repetition-bound must
-      detect extra unauthorized cycles.
+      Reset unchanged-proposal count on each continuation; the repetition-limit check must fail.
   - id: AC3
     text: >
-      Claim: Every billable request allocates an enforceable maximum charge before calling the
-      provider. Set: B control_reservation consumed by elaboration trusted adapters, across
-      initial, retry and follow-on requests and account/project/unit ceilings. Completeness: Use D
-      qualified price/request-limit profiles; race real allocations at remaining ceilings after
-      settled charges and outstanding exposure. Test unknown maximum, above-bound request,
-      timeout, cancellation and delayed usage. No refused call reaches the provider; exposure
-      persists until reconciled usage or authoritative no-charge evidence. Exhaustion produces a
-      stop rather than a larger model budget. Falsifier: Release outstanding request exposure on
-      timeout; elaboration/timeout-exposure must detect a second call spending the same remainder.
+      Claim: Every elaboration billable call reserves its enforceable maximum before sending. Set
+      and completeness: Enumerate initial, retry and follow-on paths using qualified provider
+      pricing/limit profiles; observe calls with fitting, excessive and unknown maxima after settled
+      charges and outstanding exposure. Refused calls never reach the provider. Falsifier: Raise the
+      budget after a pre-call refusal; the exhausted-budget stop check must fail.
     falsified_by: >
-      Release outstanding request exposure on timeout; elaboration/timeout-exposure must detect a
-      second call spending the same remainder.
+      Raise the budget after a pre-call refusal; the exhausted-budget stop check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop further elaboration calls, retain unresolved exposure and question requests, and resume
-  only under a current bounded contract.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Bound requirements preparation and its provider costs while keeping unresolved decisions and admission authority explicit.
+Budgeted requirements elaboration. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package G, W76 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R19, R45 as reviewed and R62 require durable limits at every reasoning and billable-request boundary. Overspend and implicit admission make this concern critical. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W76 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-New provider pricing models, discretionary budget expansion and automatic question settlement are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block durable elaboration and charge allocation; D3/D4 block production adapter containment and clones. Dmitry must ratify the coordination budget and designate authorities for unresolved scope/acceptance questions. D qualification supplies exact enforceable request limits; unknown cost is a blocker, not an estimate treated as permission. Confirm the B reservation module footprint before ready, map control_elaboration under loop/contracts/metrics and inventory it through W30. Preserve provider-call counts and maximum exposure before and after each timeout.
+Elaboration creates requirements and specifications, dependencies and authentic owner
+questions; it never admits its output. Bound cycles, tokens, elapsed time and unchanged
+proposals in Veldo. 0062 supplies actual qualified provider maxima and live accounting for
+both engines.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 concurrent-author/retry matrix, AC2 checkpoint-
+deletion recovery, AC3 delayed-report/cancellation/concurrent-allocation qualification; retain
+elaboration, questions, finite reasoning limits, and pre-call caps. Removed recovery,
+durability and failure-matrix obligations belong to Release 2; additional host/channel/version
+and full distribution breadth belongs to Release 4. Normal function and the checks stated
+above remain Release 1.

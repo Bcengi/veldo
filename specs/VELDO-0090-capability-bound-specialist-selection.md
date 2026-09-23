@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W75
-plan_revision: 1
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0063, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0080, VELDO-0081, VELDO-0082, VELDO-0083, VELDO-0084, VELDO-0085, VELDO-0086, VELDO-0087, VELDO-0089]
+plan_revision: 3
+depends_on: [VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108]
 placement: [contracts, fleet, engine, distribution]
 protected_paths: []
 footprint:
@@ -41,78 +41,86 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Selection receipts identify assignment/station, required actor and capabilities, roster
-    revision, eligible engine/host profile and chosen principal.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count eligible candidates, capability/independence refusals, missing-specialist blockers and
-    owner staffing obligations.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join current team requirements through deterministic candidate filtering to a bounded
-    assignment and its receiving authority recheck.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish no qualified specialist, wrong actor kind, revoked membership, engine mismatch,
-    self-review and budget unavailable.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Selection uses current capabilities, authority, engine eligibility, context and
-      independence requirements conjunctively. Set: control_specialist selection integrating
-      tasks.claim_answer/claim_task, claim.capability_ok, frontier.claimable and
-      authorization.is_authorized. Completeness: Construct the complete role/station predicate
-      matrix from team and assignment schemas. Vary each predicate independently, including model
-      version/host qualification, required person/named principal, revocation and independence.
-      Use real assignments and receiver rechecks; satisfying capabilities alone cannot satisfy
-      authority or review separation. Falsifier: Select an agent for an assignment requiring a
-      named person because capabilities match; specialists/actor-predicate must detect the
-      substitution.
+      Claim: Selection conjunctively matches expertise, current authority, engine, host, context and
+      independence. Set and completeness: For the configured team and Linux/Mac workers, vary each
+      required predicate independently in real assignments, including iOS-on-Linux and person-
+      required work proposed to an agent; inspect eligible candidates or named refusal. Falsifier:
+      Select a Linux worker for a macOS requirement; the host-capability check must fail.
     falsified_by: >
-      Select an agent for an assignment requiring a named person because capabilities match;
-      specialists/actor-predicate must detect the substitution.
+      Select a Linux worker for a macOS requirement; the host-capability check must fail.
   - id: AC2
     text: >
-      Claim: Missing mandatory expertise produces a blocker or staffing request, never invented
-      permissions or an automatic fallback. Set: Every configured required specialist role and
-      empty, unavailable, expired or ineligible roster outcomes. Completeness: Compare role
-      requirements to returned candidate/blocker rows in both directions. Remove the only eligible
-      reviewer or technical specialist, run a manager cycle and observe one durable E owner
-      request with no dispatch or held worker while waiting. Reassignment preserves expected
-      artifact, deadline, budget and actor/authority predicates. Falsifier: Fall back to the
-      implementation agent when no independent reviewer is eligible;
-      specialists/no-review-fallback must detect self-review dispatch.
+      Claim: Missing expertise yields a staffing request or blocker without an invented fallback.
+      Set and completeness: Remove the only eligible specialist or independent reviewer, run a PM
+      selection and inspect one owner request, no dispatch and no held waiting worker; a
+      reassignment retains scope, deadline and budget. Falsifier: Fall back to the builder when no
+      independent reviewer exists; the no-review-fallback check must fail.
     falsified_by: >
-      Fall back to the implementation agent when no independent reviewer is eligible;
-      specialists/no-review-fallback must detect self-review dispatch.
+      Fall back to the builder when no independent reviewer exists; the no-review-fallback check
+      must fail.
   - id: AC3
     text: >
-      Claim: Selection is a proposal; committed assignment and dispatch use current bounded
-      reservations and versions. Set: control_specialist assignment acceptance and B
-      reservation/receiver predicates after candidate selection. Completeness: Race roster
-      revocation, owner reassignment and account/project/unit capacity exhaustion between proposal
-      and commit. Require named stale/refused outcomes, no double reservation and no launch under
-      the obsolete assignment. A permitted reassignment records a new version without increasing
-      scope or admission priority. Falsifier: Skip roster-version revalidation when accepting a
-      selected candidate; specialists/revoked-after-selection must detect a granted assignment.
+      Claim: Selection is only a proposal; assignment and dispatch recheck current versions and
+      reservations. Set and completeness: Select a worker, change its team/assignment version or
+      consume the remaining budget before acceptance, then call the real assignment/dispatch
+      boundary; require a named refusal without launch or expanded scope. Falsifier: Skip team-
+      version checking on acceptance; the stale-selection check must fail.
     falsified_by: >
-      Skip roster-version revalidation when accepting a selected candidate;
-      specialists/revoked-after-selection must detect a granted assignment.
+      Skip team-version checking on acceptance; the stale-selection check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop affected assignments, retain candidate and refusal evidence, and request eligible staffing
-  through the enrolled owner surface.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Choose qualified specialists for bounded assignments without inventing expertise, authority or review independence.
+Capability-bound specialist selection. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package G, W75 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R17/R18, R30 and R62 require selection to preserve all assignment predicates. Incorrect selection can confer forbidden authority, requiring critical risk. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W75 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Recruiting real principals, silently changing engine policy and a fixed specialist roster are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block atomic assignment/reservation publication; D3/D4 block actual qualified specialist launches. Dmitry must enroll any additional named specialist authority and decide staffing requests; a model may only propose a candidate. Keep tasks.capability checks as one predicate, not the whole admission test. Register control_specialist in fleet/engine with plain contracts and W30 distribution before ready. Proof must retain the no-candidate observation even when that means the assignment stays blocked.
+Required capabilities include operating-system requirements: macOS/iOS work goes only to a
+qualified Mac through the new remote-worker routing spec. Exact per-role MCP/tool handoff is
+separately specified. Matching capabilities never substitutes for named person authority or
+review independence.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 all-model/host predicate matrix and AC3 concurrent
+revocation/reassignment/exhaustion qualification; retain specialist matching, missing-
+expertise stops, and assignment checks. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.

@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W70
-plan_revision: 1
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0072, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0078, VELDO-0079]
+plan_revision: 3
+depends_on: [VELDO-0037, VELDO-0078, VELDO-0079]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -44,78 +44,85 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Decomposition records identify source system/identity/revision/role, spec alias/UUID, expected
-    digest, approved unit set and pending publication.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count allocation conflicts, deduplicated proposals, reserved unpublished aliases and refused
-    decomposition growth.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join elaboration source to allocation transaction, immutable artifact, published snapshot and
-    priority-approved engineering unit.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish invalid unit ID, source-content conflict, stale spec edit, recycled alias and
-    unpublished allocation.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Decomposition binds one primary spec revision and one admitted backlog item per
-      engineering unit. Set: control_decomposition proposals and claim.unit_id_problem with
-      tasks.task_id_problems as an existing caller of the same rule. Completeness: Derive required
-      unit/decomposition fields from A. Exercise additional constraint specs without combining
-      authority, duplicate active spec revisions, and revised unit sets after priority. Invoke
-      installed claim.unit_id_problem before any unit artifact reservation; rejected identifiers
-      create no artifact. New units require fresh prioritization while remaining approved units
-      may continue. Falsifier: Reserve a unit artifact before calling claim.unit_id_problem;
-      decomposition/invalid-id-no-artifact must detect the reserved invalid key.
+      Claim: Decomposition binds one primary specification revision and one admitted backlog item
+      per unit. Set and completeness: Enumerate required unit fields, invoke claim.unit_id_problem
+      before artifacts and reject invalid IDs, duplicate active spec revisions or authority combined
+      across backlog items. New units need fresh priority. Falsifier: Reserve an artifact before
+      unit-ID validation; the invalid-ID-no-artifact check must fail.
     falsified_by: >
-      Reserve a unit artifact before calling claim.unit_id_problem;
-      decomposition/invalid-id-no-artifact must detect the reserved invalid key.
+      Reserve an artifact before unit-ID validation; the invalid-ID-no-artifact check must fail.
   - id: AC2
     text: >
-      Claim: Concurrent authors use B atomic alias allocation and source mapping, never checkout
-      maxima. Set: control_decomposition publication consuming W22 allocation over source system,
-      identity, revision and intended artifact role. Completeness: Race real processes in separate
-      clones on identical and distinct sources. Require same-source/same-bytes reuse,
-      distinct-source unique aliases, immutable digest/version/mapping/publication obligation in
-      one transaction, and named conflict or new revision for changed bytes. Include existing
-      WARP/VELDO IDs; reserved aliases are never recycled. Falsifier: Allocate aliases from the
-      current checkout maximum; decomposition/concurrent-aliases must detect two authors receiving
-      the same new alias.
+      Claim: Each accepted decomposition artifact uses authority allocation and its source
+      revision/role. Set and completeness: Publish identical and distinct source tuples through 0037
+      in real SQLite; compare alias reuse, unique distinct aliases and exact source-to-spec mapping,
+      preserving existing WARP and VELDO identities. Falsifier: Allocate the alias from checkout
+      maximum; the authority-counter comparison must fail.
     falsified_by: >
-      Allocate aliases from the current checkout maximum; decomposition/concurrent-aliases must
-      detect two authors receiving the same new alias.
+      Allocate the alias from checkout maximum; the authority-counter comparison must fail.
   - id: AC3
     text: >
-      Claim: Allocation and eventual publication form one recoverable operation without exposing
-      partial snapshots. Set: control_document materialization and control_decomposition edits
-      over immutable spec artifacts and snapshot pointers. Completeness: SIGKILL after
-      reservation, artifact write and before/after snapshot switch, then replay original command.
-      Require one artifact per source revision/role, recoverable pending publication, exclusive
-      creation and atomic declared-version replacement. Stale expected version or digest refuses
-      edits; readers see complete old/new snapshots and no admitted unpublished unit. Falsifier:
-      Expose the new allocation before switching a complete published snapshot;
-      decomposition/partial-publication must detect a reader resolving a missing artifact.
+      Claim: Published specifications have the accepted complete bytes and declared dependencies.
+      Set and completeness: Read the materialized files in another process and compare versions,
+      digests, unit ownership and dependency edges; a stale edit or unpublished document cannot
+      become admitted execution input. Falsifier: Omit a generated dependency when publishing its
+      spec; the decomposition-to-eligibility comparison must fail.
     falsified_by: >
-      Expose the new allocation before switching a complete published snapshot;
-      decomposition/partial-publication must detect a reader resolving a missing artifact.
+      Omit a generated dependency when publishing its spec; the decomposition-to-eligibility
+      comparison must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop decomposition publication, retain reservations and pending obligations, and replay through
-  the same source identities after repair.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Publish concurrent elaboration safely and keep every executable decomposition inside deliberately prioritized scope.
+Decomposition and concurrent elaboration publication. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package F, W70 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R10/R19, R61 and R73 require atomic source allocation. Misbinding an artifact or unit can execute scope under another request, warranting critical risk. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W70 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-New alias syntax, checkout-based counters and automatic admission of drafted specifications are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks allocation transactions and D2 acknowledgment/publication; D4 blocks multi-clone production qualification and D3 inherited launches. Dmitry must name the decomposition approval/priority authority before additional principals approve units. W22 already owns allocation: extend its caller rather than create another counter. control_decomposition needs contracts/fleet mapping and W30 inventory before ready. Record kill barriers and source-to-artifact set equality, preserving reserved holes as evidence rather than tidying the sequence.
+0037 owns the only alias counter and source mapping. This consumer publishes the PM
+decomposition as actual specifications, with dependencies delivered to 0052/0092. Preserve
+contract-named scope and one owning backlog item per unit.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 multi-clone/concurrent-author matrix and AC3
+crash/snapshot-recovery qualification; retain decomposition binding and actual specification
+publication. Removed recovery, durability and failure-matrix obligations belong to Release 2;
+additional host/channel/version and full distribution breadth belongs to Release 4. Normal
+function and the checks stated above remain Release 1.

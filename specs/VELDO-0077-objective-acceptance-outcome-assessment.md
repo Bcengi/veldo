@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W62
-plan_revision: 1
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0072, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0076]
+plan_revision: 3
+depends_on: [VELDO-0076, VELDO-0069]
 placement: [contracts, engine, distribution]
 protected_paths: []
 footprint:
@@ -35,77 +35,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Objective receipts identify accepted revision, beneficiary, scope, exclusions, acceptance
-    principal and assessment evidence digests.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure objectives awaiting acceptance, unproven outcome obligations and stale assessment
-    refusals.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace proposed objective through enrolled acceptance to bounded elaboration and the exact
-    signed satisfaction assessment.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish missing beneficiary, unauthorized acceptance, stale outcome revision, absent
-    evidence and contribution-only completion.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Acceptance binds the exact objective outcome and permits only bounded elaboration.
-      Set: control_objective commands using request.request_digest/validate_record and
-      authorization.is_authorized for all R06 fields and seven objective states. Completeness:
-      Require field and transition-pair coverage equal to A. Accept through each enrolled channel,
-      change scope with an answer pending, and reject stale settlement. After valid acceptance
-      propose a later feature and assert that neither admission nor priority nor an executable
-      unit exists without its own request. Falsifier: Grant backlog admission when its parent
-      objective is accepted; objective/later-feature must catch unauthorized engineering
-      eligibility.
+      Claim: Objective acceptance binds the exact observable outcome, scope, authority and evidence
+      requirements. Set and completeness: Create an objective in one project through the shared
+      intake and present it for current owner acceptance; alter a bound field and refuse the stale
+      answer. After acceptance propose a later feature and inspect absent admission/priority until
+      separately authorized. Falsifier: Admit a feature when its objective is accepted; the later-
+      feature check must fail.
     falsified_by: >
-      Grant backlog admission when its parent objective is accepted; objective/later-feature must
-      catch unauthorized engineering eligibility.
+      Admit a feature when its objective is accepted; the later-feature check must fail.
   - id: AC2
     text: >
-      Claim: Satisfaction requires a signed evidence assessment against the accepted objective
-      revision. Set: SATISFIED entry for objectives supported by release executions, plans and
-      standalone specification outcomes. Completeness: Enumerate all contribution kinds and
-      accepted evidence requirements. Supply shipped specs with an unproven outcome, missing
-      evidence, an ineligible signer, and a superseded objective; each refuses satisfaction. A
-      current enrolled presentation and authorized signed assessment of every required outcome
-      succeeds and replays once. Falsifier: Treat all contributed specifications shipped as
-      sufficient for SATISFIED; objective/unproven-outcome must detect unsupported satisfaction.
+      Claim: Satisfaction requires an authorized evidence assessment of the accepted objective
+      revision. Set and completeness: Exercise a specification-supported objective with proven
+      outcome, shipped specs but unproven outcome, missing evidence, wrong signer and stale
+      objective revision; only complete current evidence may satisfy it. Falsifier: Treat all specs
+      shipped as sufficient; the unproven-outcome refusal check must fail.
     falsified_by: >
-      Treat all contributed specifications shipped as sufficient for SATISFIED;
-      objective/unproven-outcome must detect unsupported satisfaction.
+      Treat all specs shipped as sufficient; the unproven-outcome refusal check must fail.
   - id: AC3
     text: >
-      Claim: Cancellation and contribution links preserve singular ownership and require explicit
-      work disposition. Set: control_objective contribution/cancellation paths over one-project
-      objectives and backlog-owned units. Completeness: Attempt duplicate objective ownership,
-      cross-project contribution consumption and cancellation with active units. Require exactly
-      one owning project, explicit artifact dependency for consumption, and an authorized
-      disposition of owning backlog items before unit cancellation. Compare history before and
-      after restart; rejected and canceled objectives cannot silently reopen. Falsifier: Cancel
-      every contributing unit solely because an objective is canceled;
-      objective/explicit-disposition must detect an unapproved stop.
+      Claim: Objective cancellation records explicit disposition of its unfinished work and
+      preserves its owner/history. Set and completeness: Cancel a one-project objective with active
+      backlog work; inspect the authorized disposition and retained prior receipts, and reject
+      reopening a terminal objective without a linked new objective. Falsifier: Cancel contributing
+      units without an authorized disposition; the work-disposition check must fail.
     falsified_by: >
-      Cancel every contributing unit solely because an objective is canceled;
-      objective/explicit-disposition must detect an unapproved stop.
+      Cancel contributing units without an authorized disposition; the work-disposition check must
+      fail.
 required_evidence: [unit, integration]
 rollback: >
-  Withdraw affected satisfaction permissions, append impact records and obtain a current
-  assessment without rewriting prior receipts.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Separate an accepted objective, authorized elaboration and demonstrated satisfaction of its promised outcome.
+Objective acceptance and signed outcome assessment. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package F, W62 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R06, R61 and R65 require outcome evidence beyond source delivery. An incorrect satisfaction or acceptance path grants authority or claims an unproven result. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
+W62 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Automatic feature admission and production deployment are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block accepted objective records and replicated assessments; D3/D4 remain transitive C execution prerequisites. The named acceptance authority beyond Dmitry is a R37/R64 product ruling for Dmitry, not the project manager or a default owner role. Missing enrollment blocks acceptance and satisfaction by that principal. Assign control_objective to contracts/engine and inventory its copies before ready. Retain the later-feature refusal and exact assessment artifact bytes as independent proof observations.
+An accepted objective permits bounded elaboration only. 0059 starts at common message intake
+before this acceptance; generated features require separate admission and priority. Outcome
+satisfaction must be assessed against evidence, never inferred from shipped specification
+counts.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 full transition/channel matrix, AC2 release-
+contribution/replay qualification, AC3 cross-project/restart cases; retain objective
+acceptance and evidence-based satisfaction. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.
