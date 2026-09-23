@@ -41,7 +41,8 @@ observability:
     Bind receipt bytes to the observed subject, the assertion kind, the accepted key transition and
     the effective signing time.
   error_taxonomy: >
-    Distinguish an unknown assertion kind, forbidden arbitrary signing, a revoked key, a stale
+    Distinguish an unknown assertion kind, forbidden arbitrary signing, a revoked key, multiple
+    simultaneously active keys for one channel (ambiguous-channel-key), a stale
     delegation, missing attribution, a key named by path rather than by channel (key-path), a caller
     without an authenticated channel identity (unauthenticated-channel), and a request channel or
     key id that disagrees with the authenticated channel's registration (channel-mismatch).

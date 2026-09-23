@@ -83,7 +83,8 @@
       "signing/key-comes-from-the-channel",
       "signing/unauthenticated",
       "signing/key-path",
-      "signing/unauthenticated-diagnostic-is-empty"
+      "signing/unauthenticated-diagnostic-is-empty",
+      "signing/ambiguous-channel-key"
     ]
   },
   "completeness_row": "signing/universe"

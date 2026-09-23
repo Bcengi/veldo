@@ -491,6 +491,19 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
     _v27_expect('signing/rotation-rebound-control',
         _v27_rebound['accepted'] and _v27_keys.verify(_v27_state(), _v27_rebound, fresh=True))
 
+    # A corrupt projection/state with two active keys is distinct from no active key.
+    _v27_ambiguous_state = _v27_copy.deepcopy(_v27_state())
+    _v27_ambiguous_state['entities']['duplicate-key'] = _v27_copy.deepcopy(
+        _v27_ambiguous_state['entities']['tg-rotated'])
+    _v27_ambiguous_projection = _v27_root / 'ambiguous-allowed-signers'
+    _v27_ambiguous_projection.write_text(_v27_keys.projection(_v27_ambiguous_state))
+    _v27_ambiguous_refusal = None
+    try:
+        _v27_keys.select(_v27_ambiguous_state, _v27_ambiguous_projection, 'telegram_chat', _v27_time.time())
+    except _v27_keys.Refused as _v27_error:
+        _v27_ambiguous_refusal = _v27_error.code
+    _v27_expect('signing/ambiguous-channel-key', _v27_ambiguous_refusal == 'ambiguous-channel-key')
+
     # Observation apparatus inspects the production child PIDs after joining and
     # the entire disposable run for listener/socket/pid artifacts and private bytes.
     _v27_observer_stop.set()

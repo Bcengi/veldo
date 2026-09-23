@@ -167,8 +167,10 @@ def select(state, path, channel, at):
     if body != projection(state):
         raise Refused('projection-mismatch')
     candidates = [k for k in entries(state).values() if k['channel'] == channel and active(k, at)]
-    if len(candidates) != 1:
+    if not candidates:
         raise Refused('revoked-key')
+    if len(candidates) > 1:
+        raise Refused('ambiguous-channel-key')
     selected = candidates[0]
     line = AC.allowed_signers_line(channel + ':' + selected['key_id'], selected['public_key'], NAMESPACE)
     if line not in body.splitlines():
