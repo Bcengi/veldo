@@ -547,6 +547,22 @@
    ],
    "regions": "Accepted snapshots, transactional inputs and complete materialization",
    "requires_note": "Uses only shared ROOT and expect; real SQLite, Git, Ed25519 signatures and a separate reader process."
+  },
+  {
+   "name": "58_veldo_0031_claims",
+   "file": "58_veldo_0031_claims.py",
+   "requires": [
+    "58_veldo_0031_claims"
+   ],
+   "regions": "Authority claims: real clone race, SQLite activation, receiver generations and uncertainty stops"
+  },
+  {
+   "name": "59_veldo_0031_review",
+   "file": "59_veldo_0031_review.py",
+   "requires": [
+    "59_veldo_0031_review"
+   ],
+   "regions": "Six independent review regression scenarios for authority claims"
   }
  ]
 }

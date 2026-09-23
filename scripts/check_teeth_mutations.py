@@ -408,6 +408,64 @@ def cases():
     snapshots('snapshot-accept-noncommit-id', 'control_snapshot.py',
               '    if result.returncode or result.stdout.decode().strip() != commit:',
               '    if False:', 'status-only-commit')
+    # VELDO-0031: each declared falsifier and an independent defect per criterion.
+    def claims(name, module, old, new, row):
+        add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
+
+    claims('claims-ownership-without-unit', 'control_claim.py',
+           "'data': dict(u, state='CLAIMED')",
+           "'data': dict(u, state=u['state'] if unit == 'unit' else 'CLAIMED')", 'atomic-activation')
+    claims('claims-ownership-without-backlog', 'control_claim.py',
+           "'data': dict(b, state='ACTIVE')",
+           "'data': dict(b, state=b['state'] if unit == 'unit' else 'ACTIVE')", 'atomic-activation')
+    claims('claims-ignore-use-generation', 'control_claim.py',
+           "    if current.get('generation') != params['generation']:",
+           "    if op != 'use' and current.get('generation') != params['generation']:", 'current-generation')
+    claims('claims-ignore-use-holder', 'control_claim.py',
+           "    if current.get('holder') != holder:",
+           "    if op != 'use' and current.get('holder') != holder:", 'current-generation')
+    claims('claims-uncertainty-as-contention', 'control_claim_client.py',
+           "        if result.get('reason') in ('unanswerable', 'ownership_uncertain', 'missing_authority'):\n            raise CL.ClaimStopped(result['reason'])\n        return result",
+           "        if result.get('reason') in ('unanswerable', 'ownership_uncertain', 'missing_authority'):\n            return {'ok': False, 'reason': 'claimed'}\n        return result", 'uncertainty-stop')
+    claims('claims-detector-as-owned', 'control_claim.py',
+           "        return 'unanswerable'",
+           "        return 'owned'", 'uncertainty-stop')
+    add(31, 'review-r1-command-crash', '59_veldo_0031_review.py', 'control_claim.py',
+        '        if not isinstance(command, dict):\n            command = {}',
+        '', ['claims/review-r1'])
+    add(31, 'review-r1-signature-crash', '59_veldo_0031_review.py', 'control_claim.py',
+        "                or not isinstance(packet.get('signature'), str)",
+        '                or False', ['claims/review-r1'])
+    add(31, 'review-r2-inspect-skips-consistency', '59_veldo_0031_review.py', 'control_claim.py',
+        "            status = ownership(current, u['data'], b['data'])",
+        "            status = 'owned' if current.get('holder') else 'unowned'", ['claims/review-r2'])
+    add(31, 'review-r2-activation-without-owner', '59_veldo_0031_review.py', 'control_claim.py',
+        "        return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'",
+        "        return 'unowned'", ['claims/review-r2'])
+    add(31, 'review-r6-private-stop-class', '59_veldo_0031_review.py', 'claim.py',
+        'ClaimStopped = _claim_errors.ClaimStopped\n',
+        '', ['claims/review-r6'])
+    add(31, 'review-r6-routing-wrong-exception', '59_veldo_0031_review.py', 'control_claim_client.py',
+        '            raise CL.ClaimStopped(exc.reason) from exc',
+        '            raise RuntimeError(exc.reason) from exc', ['claims/review-r6'])
+    add(31, 'review-r3-publish-without-use', '59_veldo_0031_review.py', 'lander.py',
+        '                    self._check_ownership()',
+        '                    pass  # omitted publication ownership check', ['claims/review-r3'])
+    add(31, 'review-r3-swallow-heartbeat-stop', '59_veldo_0031_review.py', 'lander.py',
+        '                self._hb_error = exc',
+        '                self._hb_error = None', ['claims/review-r3'])
+    add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
+        '        ledger_root = os.path.dirname(claims_root(root))',
+        "        common = _git_process.check_output(['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()\n        ledger_root = os.path.join(common, 'veldo')", ['claims/review-r4'])
+    add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
+        "    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):",
+        "    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):", ['claims/review-r4'])
+    add(31, 'review-r5-expiry-revokes-owner', '59_veldo_0031_review.py', 'control_claim.py',
+        "    if live == 'stale' and action in ('renew', 'release'):",
+        '    if False:', ['claims/review-r5'])
+    add(31, 'review-r5-release-ignores-holder', '59_veldo_0031_review.py', 'control_claim.py',
+        "    if current.get('holder') != holder:",
+        "    if op != 'release' and current.get('holder') != holder:", ['claims/review-r5'])
     return result
 
 
@@ -478,7 +536,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 36, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
