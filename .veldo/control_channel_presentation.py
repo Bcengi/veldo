@@ -218,10 +218,14 @@ def _fold(text):
 
 
 def split_reply(text):
-    """(choice, reason) of `<choice>: <reason>`: the whole reply NFKC-normalized first, so every
-    colon form NFKC folds (full-width, small, vertical) is the colon, then split at the first one."""
-    choice, _, reason = unicodedata.normalize('NFKC', text or '').partition(':')
-    return choice, reason
+    """(choice, reason) of `<choice>: <reason>`, split at the first character NFKC folds to a colon
+    (the ASCII, full-width, small and vertical colons). Normalization only finds the split: both
+    parts are the owner's original text, and the choice is folded later only to match it."""
+    text = text or ''
+    cut = next((i for i, ch in enumerate(text) if ':' in unicodedata.normalize('NFKC', ch)), None)
+    if cut is None:
+        return text, ''
+    return text[:cut], text[cut + 1:]
 
 
 def offered_choice(typed, choices):

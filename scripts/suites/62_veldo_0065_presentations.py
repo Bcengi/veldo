@@ -109,7 +109,8 @@ def _v65_checks(base):
                                   'presentation/retry-after-capped', 'answer/reply-nfkc-before-split',
                                   'answer/redelivered-answer-silent', 'answer/reply-after-closed',
                                   'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
-                                  'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope')}
+                                  'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope',
+                                  'answer/rationale-original-text')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1537,6 +1538,22 @@ def _v65_checks(base):
             check(scoped, 'control: with the edge scope restored, the closed request\'s reply is told once',
                   reason(answer(owner_reply(presenter.current(I.assignment_id(ids['repository_uuid'], 'SC-1')) or {}, 'nonsense')))
                   == ('refused', 'request_closed') and len(api['requests']) == asked + 1)
+
+        # Review 5 item 4: the rationale recorded is the owner's own text; normalization only finds the split
+        own_words = 'answer/rationale-original-text'
+        with section(own_words):
+            for n, (text, choice, rationale) in enumerate((
+                    ('reject: it costs 10\u2076 dollars and needs 5 m\u00b2', 'reject', 'it costs 10\u2076 dollars and needs 5 m\u00b2'),
+                    ('accept\ufe55 keeps the \ufb01 ligature', 'accept', 'keeps the \ufb01 ligature'),
+                    ('\uff21\uff23\uff23\uff25\uff30\uff34\uff1a \uff26\uff55\uff4c\uff4c width words', 'accept',
+                     '\uff26\uff55\uff4c\uff4c width words'))):
+                oid = opened('OW-%d' % n)
+                presenter.present(oid)
+                result = answer(owner_reply(presenter.current(oid) or {}, text))
+                recorded = answered(oid, 1) or {}
+                check(own_words, 'the reply %r records the choice %s and the owner\'s own words' % (text, choice),
+                      reason(result) == ('accepted', None) and recorded.get('choice') == choice
+                      and recorded.get('rationale') == rationale)
     finally:
         server.shutdown()
         server.server_close()
