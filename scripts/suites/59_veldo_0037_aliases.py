@@ -809,7 +809,10 @@ def _s37_run():
                 ('missing-slug', 'specs/{alias}-{slug}.md', ['specs/VELDO-0001-a.md', 'specs/VELDO-0008.md']),
                 ('number-template', 'decisions/{number}-{slug}.yaml', ['decisions/0002-a.yaml', 'Decisions/0009_B.YAML']),
                 ('not-carriers', 'specs/{alias}-{slug}.md', ['specs/VELDO-0001-a.md', 'specs/XVELDO-0090-x.md',
-                                                             'other/VELDO-0080-x.md', 'specs/notes-0070.md'])]:
+                                                             'other/VELDO-0080-x.md', 'specs/notes-0070.md']),
+                # A newline is a legal byte in a Git path; below the number it must count too.
+                ('newline-below-directory', 'proof/{alias}/README.md', ['proof/VELDO-0060/a\nb']),
+                ('newline-below-number', 'specs/{alias}-{slug}.md', ['specs/VELDO-0061-dir/x\ny.md'])]:
             history = root / ('carriers-' + label)
             history.mkdir()
             g(history, 'init', '-q')
@@ -823,7 +826,8 @@ def _s37_run():
             carriers[label] = code(error) if error else found
         defects['carriers'] = carriers
         expect('aliases/floor-counts-every-carrier', carriers == {'case-directory': 5, 'irregular-slug': 7,
-               'missing-slug': 8, 'number-template': 9, 'not-carriers': 1})
+               'missing-slug': 8, 'number-template': 9, 'not-carriers': 1, 'newline-below-directory': 60,
+               'newline-below-number': 61})
 
         # 10. Ownership is the store's, on EVERY connection: a second connection from another copy
         # of the store module with nothing registered, and one opened before the allocation
@@ -1548,6 +1552,63 @@ def _s37_run():
         expect('aliases/shallow-repository-refused', shallow_state == {
                'shallow-accept': 'shallow_repository', 'shallow-record': False, 'deepened-accept': None,
                'enable': None, 'next': 81, 'oracle-next': 81})
+
+        def configured_repository(label, files):
+            repository = root / (label + '-origin')
+            repository.mkdir()
+            g(repository, 'init', '-q')
+            for path, body in files.items():
+                (repository / path).parent.mkdir(parents=True, exist_ok=True)
+                (repository / path).write_bytes(body)
+            g(repository, 'add', '-A')
+            g(repository, 'commit', '-qm', 'Base')
+            return repository
+
+        def proof_kind_next(env):
+            _, error = enable(env, 'proof', 'VELDO', 'proof/{alias}/README.md', first=None)
+            return code(error), (env.service.current(al.kind_id('repository', 'proof'))[1] or {}).get('next')
+
+        # 21. A gitlink is a path, and one can carry a number; repository configuration that tells
+        # diffs to ignore submodules (diff.ignoreSubmodules=all, submodule.<name>.ignore=all) must
+        # not hide it from the record.
+        linked = configured_repository('gitlink', {'specs/VELDO-0001-base.md': b'# base\n',
+                                                   '.gitmodules': b'[submodule "held"]\n\tpath = proof/VELDO-0020\n'
+                                                                  b'\turl = ./held\n'})
+        base_of_link = g(linked, 'rev-parse', 'HEAD')
+        g(linked, 'update-index', '--add', '--cacheinfo', '160000,%s,proof/VELDO-0020' % base_of_link)
+        g(linked, 'commit', '-qm', 'Gitlink')
+        g(linked, 'config', 'diff.ignoreSubmodules', 'all')
+        g(linked, 'config', 'submodule.held.ignore', 'all')
+        linked_tip = g(linked, 'rev-parse', 'HEAD')
+        env = fresh('gitlink', origins={'repository': linked})
+        gitlink = {'record': (record_of(env.conn, linked_tip) or {}).get('paths')}
+        gitlink['enable'], gitlink['next'] = proof_kind_next(env)
+        defects['gitlink-carrier'] = gitlink
+        expect('aliases/gitlink-carrier-whatever-submodule-config', gitlink == {
+               'record': ['proof/VELDO-0020', 'specs/VELDO-0001-base.md'], 'enable': None, 'next': 21})
+        env.conn.close()
+
+        # 22. log.showSignature prints a signature check into the log output; for a signed commit
+        # that text must not become, or displace, a recorded path.
+        signed = configured_repository('signed', {'specs/VELDO-0001-base.md': b'# base\n'})
+        signing_key = root / 'history-signing-key'
+        _s37_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(signing_key)], check=True,
+                    capture_output=True)
+        g(signed, 'config', 'gpg.format', 'ssh')
+        g(signed, 'config', 'user.signingkey', str(signing_key))
+        (signed / 'specs/VELDO-0050-signed.md').write_bytes(b'# signed\n')
+        g(signed, 'add', '-A')
+        g(signed, 'commit', '-q', '-S', '-m', 'Signed')
+        g(signed, 'config', 'log.showSignature', 'true')
+        signed_tip = g(signed, 'rev-parse', 'HEAD')
+        env = fresh('signed', origins={'repository': signed})
+        signature = {'record': (record_of(env.conn, signed_tip) or {}).get('paths')}
+        _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None)
+        signature['enable'], signature['next'] = code(error), specification_next(env)
+        defects['signed-history'] = signature
+        expect('aliases/signed-history-whatever-signature-config', signature == {
+               'record': ['specs/VELDO-0001-base.md', 'specs/VELDO-0050-signed.md'], 'enable': None, 'next': 51})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

@@ -1,0 +1,215 @@
+{
+  "completed": true,
+  "control_rows_green": {
+    "aliases/gitlink-carrier-whatever-submodule-config": true,
+    "aliases/signed-history-whatever-signature-config": true
+  },
+  "defect_observations": {
+    "carriers": {
+      "case-directory": 5,
+      "irregular-slug": 7,
+      "missing-slug": 8,
+      "newline-below-directory": 0,
+      "newline-below-number": 0,
+      "not-carriers": 1,
+      "number-template": 9
+    },
+    "gitlink-carrier": {
+      "enable": null,
+      "next": 21,
+      "record": [
+        "proof/VELDO-0020",
+        "specs/VELDO-0001-base.md"
+      ]
+    },
+    "signed-history": {
+      "enable": null,
+      "next": 51,
+      "record": [
+        "specs/VELDO-0001-base.md",
+        "specs/VELDO-0050-signed.md"
+      ]
+    }
+  },
+  "defect_rows_red": {
+    "aliases/floor-counts-every-carrier": true
+  },
+  "failed_rows": [
+    "aliases/floor-counts-every-carrier"
+  ],
+  "module_sha256": {
+    "control_alias.py": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+    "control_readset.py": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+    "control_store.py": "4c5229e50d0bef76063ac6dacff3a7532443d34508137ff738aa4e5cb251dd76"
+  },
+  "reviewed_commit": "87f05d9b980e8892a9c6faddd938e03f36f9e0b8",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      false
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      true
+    ],
+    [
+      "aliases/owned-by-code-not-name",
+      true
+    ],
+    [
+      "aliases/floor-from-recorded-numbers",
+      true
+    ],
+    [
+      "aliases/records-hold-only-what-a-commit-adds",
+      true
+    ],
+    [
+      "aliases/history-read-whatever-repository-config",
+      true
+    ],
+    [
+      "aliases/increment-after-a-lost-record",
+      true
+    ],
+    [
+      "aliases/shallow-repository-refused",
+      true
+    ],
+    [
+      "aliases/gitlink-carrier-whatever-submodule-config",
+      true
+    ],
+    [
+      "aliases/signed-history-whatever-signature-config",
+      true
+    ]
+  ],
+  "shims": {},
+  "suite_sha256": "0ceaa1eb12b6b579c9be4cc7495d0e85841e47b96324d38c5aae707f7843fc91",
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}
