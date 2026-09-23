@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -343 +343 @@
+-                    published_at=platform['date'], platform_text=platform['text'],
++                    published_at=int(time.time()), platform_text=platform['text'],

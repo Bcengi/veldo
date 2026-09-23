@@ -239,7 +239,7 @@ def _v65_checks(base):
         return 'sha256:' + _v65_hashlib.sha256(text).hexdigest()
 
     try:
-        # --- AC1: the receipt binds exactly what Telegram showed the owner ---------------------------
+        # AC1: the receipt binds exactly what Telegram showed the owner
         shown = 'presentation/receipt-binds-shown-content'
         command('pm', 'open', 'D-1', assignment=content())
         d1 = I.assignment_id(ids['repository_uuid'], 'D-1')
@@ -334,7 +334,7 @@ def _v65_checks(base):
               all(set(o) >= {'operation', 'request_id', 'outcome', 'reason', 'accepted_versions'}
                   and text not in _v65_json.dumps(o) for o in presenter.observations))
 
-        # --- AC1: equal revisions are distinct requests ----------------------------------------------
+        # AC1: equal revisions are distinct requests
         ident = 'presentation/revision-identity'
         revised = command('pm', 'revise', 'D-1', request_version=1, changes={'deadline': '2026-10-01T17:00:00Z'})
         v2 = entity(d1)['data']
@@ -352,8 +352,9 @@ def _v65_checks(base):
         check(ident, 'the first presentation does not bind the equal revision',
               refusal is None and {'request_version', 'request_digest'} <= set(mismatched))
         stale = answer(owner_reply(r1, 'accept: same content as before'))
-        check(ident, 'an answer to the first presentation does not settle the equal revision',
-              reason(stale) == ('refused', 'stale_presentation') and presenter.settlement(d1, 1) is None)
+        check(ident, 'an answer to the first presentation is refused as stale after the equal revision',
+              reason(stale) == ('refused', 'stale_presentation'))
+        check(ident, 'the first presentation settles nothing after the equal revision', presenter.settlement(d1, 1) is None)
         second = presenter.present(d1)
         r2 = presenter.current(d1) or {}
         check(ident, 'the revision is a new presentation with its own identity',
@@ -363,7 +364,7 @@ def _v65_checks(base):
         check(ident, 'both receipts are retained', presenter.receipt(r1.get('presentation_id', '')) is not None
               and sorted(r['request_version'] for r in presenter.receipts(d1)) == [1, 2])
 
-        # --- AC3: a changed presentation visibly supersedes the previous one ------------------------
+        # AC3: a changed presentation visibly supersedes the previous one
         sup = 'presentation/visible-supersession'
         held2 = api['messages'].get((r2.get('chat_id'), r2.get('message_id'))) or {}
         head = presenter.head(d1) or {}
@@ -404,7 +405,7 @@ def _v65_checks(base):
         check(sup, 'an answer to a superseded presentation is refused',
               reason(old) == ('refused', 'superseded_presentation'))
 
-        # --- AC3: content with no confirmed publication is never answerable -------------------------
+        # AC3: content with no confirmed publication is never answerable
         unseen = 'answer/unseen-refused'
         u1, u2, u3 = opened('U-1'), opened('U-2'), opened('U-3')
         api['mode'] = 'refuse'
@@ -424,7 +425,8 @@ def _v65_checks(base):
             api['next'] += 1
             result = presenter.answer(edge_signed(hand_assertion(receipts[u], api['next'])))
             check(unseen, 'an answer to %s presentation is refused as unseen' % label,
-                  reason(result) == ('refused', 'unseen_presentation') and presenter.settlement(u, 1) is None)
+                  reason(result) == ('refused', 'unseen_presentation'))
+            check(unseen, '%s presentation settles nothing' % label, presenter.settlement(u, 1) is None)
         check(unseen, 'unknown outcomes are visible in metrics', presenter.metrics()['unknown'] >= 2)
         asked = len(api['requests'])
         again = {u: presenter.present(u) for u in (u1, u2, u3)}
@@ -437,7 +439,7 @@ def _v65_checks(base):
               reason(control) == ('accepted', None) and seen.get('attempt') == 2
               and seen.get('presentation_id') == receipts[u1].get('presentation_id'))
 
-        # --- AC2: only the current shown presentation may settle ------------------------------------
+        # AC2: only the current shown presentation may settle
         cur = 'answer/current-presentation-only'
         c1 = opened('C-1')
         c2 = opened('C-2')
@@ -451,8 +453,9 @@ def _v65_checks(base):
               entity(c1)['data']['subject'] == c1_r1.get('request', {}).get('subject')
               and entity(c1)['data']['brief'] != c1_r1.get('request', {}).get('brief'))
         replaced = answer(owner_reply(c1_r1, 'accept: approving the brief I saw'))
-        check(cur, 'an answer to the presentation of the replaced brief is refused',
-              reason(replaced) == ('refused', 'stale_presentation') and presenter.settlement(c1, 1) is None)
+        check(cur, 'an answer to the presentation of the replaced brief is refused as stale',
+              reason(replaced) == ('refused', 'stale_presentation'))
+        check(cur, 'the presentation of the replaced brief settles nothing', presenter.settlement(c1, 1) is None)
         frame('pm', 'C-2', 1, 'High: the risk is now a production migration.')
         rerisked = answer(owner_reply(c2_r1, 'accept: approving the risk I saw'))
         check(cur, 'an answer to a presentation whose risk changed is refused',
@@ -487,7 +490,7 @@ def _v65_checks(base):
               reason(answer(owner_reply(c2_r2, 'reject: too risky'))) == ('accepted', None)
               and reason(answer(owner_reply(c3_r2, 'defer: after the release'))) == ('accepted', None))
 
-        # --- AC2: every answer records its own ruling and rationale ---------------------------------
+        # AC2: every answer records its own ruling and rationale
         rul = 'answer/ruling-and-rationale'
         settled = presenter.settlement(c1, 2) or {}
         record = (entity(settled.get('answer_id', '')) or {}).get('data', {})

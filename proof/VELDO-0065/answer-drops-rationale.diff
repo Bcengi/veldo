@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -774 +774 @@
+-                  'ruling': a['ruling'], 'rationale': a['rationale'], 'attribution': dict(ev),
++                  'ruling': a['ruling'], 'rationale': None, 'attribution': dict(ev),

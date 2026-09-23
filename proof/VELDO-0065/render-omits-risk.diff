@@ -1,0 +1,4 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -187 +186,0 @@
+-              'Risk: %s' % _words(record['risk_statement']),

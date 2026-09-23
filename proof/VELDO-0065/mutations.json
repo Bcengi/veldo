@@ -1,0 +1,796 @@
+{
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0065 install/assets",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/receipt-binds-shown-content",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/revision-identity",
+    true
+   ],
+   [
+    "VELDO-0065 answer/current-presentation-only",
+    true
+   ],
+   [
+    "VELDO-0065 answer/ruling-and-rationale",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/visible-supersession",
+    true
+   ],
+   [
+    "VELDO-0065 answer/unseen-refused",
+    true
+   ]
+  ],
+  "seconds": 2.328
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "details": [
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 full request digest covers identity, version and content",
+    "VELDO-0065 presentation/revision-identity detail: equal revisions have distinct request digests",
+    "VELDO-0065 presentation/revision-identity detail: the module's digest of the revision is the independent one",
+    "VELDO-0065 presentation/revision-identity detail: the first presentation does not bind the equal revision",
+    "VELDO-0065 presentation/revision-identity detail: the revision is a new presentation with its own identity"
+   ],
+   "diff": "proof/VELDO-0065/request-digest-omits-version.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/receipt-binds-shown-content",
+    "VELDO-0065 presentation/revision-identity"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "078f6c45a36881ccb4dfd0413f71c696daed20dfad550a626e4d13583c8cacad",
+   "name": "request-digest-omits-version",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/revision-identity"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     false
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.351,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 presentation/revision-identity detail: the first presentation does not bind the equal revision"
+   ],
+   "diff": "proof/VELDO-0065/bindings-ignore-request-identity.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/revision-identity"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "beb1bffcda9b1845d6b24dd756f9f94a962246abc17cb7ae0e46f0a0d1622c8e",
+   "name": "bindings-ignore-request-identity",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/revision-identity"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     false
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.355,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 risk statement is the signed framing and is shown",
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: a receipt with its risk_statement changed does not verify"
+   ],
+   "diff": "proof/VELDO-0065/render-omits-risk.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/receipt-binds-shown-content"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "9e9975bfbf5c336c16222b66d981cc64ef5521c713dd8d35929263a925835cf9",
+   "name": "render-omits-risk",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/receipt-binds-shown-content"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.457,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: a framing signed by another principal is not presented",
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: a framing carrying another request's signed framing is not presented"
+   ],
+   "diff": "proof/VELDO-0065/framing-signature-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/receipt-binds-shown-content"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "9aead9eb12f2a56148ad60e65ad546f2deb9e582551db67311ce1498f6a8444a",
+   "name": "framing-signature-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/receipt-binds-shown-content"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.243,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 publication time is the platform date",
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: control: the receipt verifies against the platform bytes",
+    "VELDO-0065 presentation/visible-supersession detail: both immutable receipts still verify against the platform"
+   ],
+   "diff": "proof/VELDO-0065/published-at-from-clock.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/receipt-binds-shown-content",
+    "VELDO-0065 presentation/visible-supersession"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "1bc9a3bd4b36668b262a40e82734bb4fe800e63384ae9d2e1ac0dcafa52f0eae",
+   "name": "published-at-from-clock",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/receipt-binds-shown-content"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     false
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.278,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
+    "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
+    "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
+    "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
+    "VELDO-0065 presentation/visible-supersession detail: a re-run shows nothing twice"
+   ],
+   "diff": "proof/VELDO-0065/presentation-key-without-digest.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/current-presentation-only",
+    "VELDO-0065 answer/ruling-and-rationale",
+    "VELDO-0065 presentation/visible-supersession"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "89cb96024b24ce8a1e6678e878d79ae4be1ce0393ac7e52a7958d3b5d2fd022e",
+   "name": "presentation-key-without-digest",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/visible-supersession"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     false
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     false
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.216,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 presentation/revision-identity detail: the revision is a new presentation with its own identity",
+    "VELDO-0065 answer/current-presentation-only detail: after replacement the old presentation is refused as superseded",
+    "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
+    "VELDO-0065 answer/current-presentation-only detail: a settled request version refuses a second answer",
+    "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer keeps the platform's message, sender, time and reply identity",
+    "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone",
+    "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
+    "VELDO-0065 presentation/visible-supersession detail: the replacement is sent as a reply to the superseded message",
+    "VELDO-0065 presentation/visible-supersession detail: the replacement names what it supersedes in the shown bytes",
+    "VELDO-0065 presentation/visible-supersession detail: the visible link is the current authority's supersession",
+    "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
+    "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
+    "VELDO-0065 presentation/visible-supersession detail: a re-run shows nothing twice",
+    "VELDO-0065 presentation/visible-supersession detail: an answer to a superseded presentation is refused"
+   ],
+   "diff": "proof/VELDO-0065/replacement-without-reply-link.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/revision-identity",
+    "VELDO-0065 answer/current-presentation-only",
+    "VELDO-0065 answer/ruling-and-rationale",
+    "VELDO-0065 presentation/visible-supersession"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "c8ce79a5822e55b81791abdb60d92b555404cd4e908308c20d4aa4908e734c03",
+   "name": "replacement-without-reply-link",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/visible-supersession"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     false
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     false
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     false
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.232,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 presentation/revision-identity detail: the first presentation does not bind the equal revision",
+    "VELDO-0065 presentation/revision-identity detail: an answer to the first presentation is refused as stale after the equal revision",
+    "VELDO-0065 presentation/revision-identity detail: the first presentation settles nothing after the equal revision",
+    "VELDO-0065 presentation/revision-identity detail: the revision is a new presentation with its own identity",
+    "VELDO-0065 presentation/revision-identity detail: both receipts are retained",
+    "VELDO-0065 answer/current-presentation-only detail: an answer to the presentation of the replaced brief is refused as stale",
+    "VELDO-0065 answer/current-presentation-only detail: the presentation of the replaced brief settles nothing",
+    "VELDO-0065 answer/current-presentation-only detail: an answer to a presentation whose risk changed is refused",
+    "VELDO-0065 answer/current-presentation-only detail: an answer to a presentation whose choices changed is refused",
+    "VELDO-0065 answer/current-presentation-only detail: after replacement the old presentation is refused as superseded",
+    "VELDO-0065 answer/current-presentation-only detail: an answer naming one presentation while replying to another is refused",
+    "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
+    "VELDO-0065 answer/current-presentation-only detail: a settled request version refuses a second answer",
+    "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer keeps the platform's message, sender, time and reply identity",
+    "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone",
+    "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
+    "VELDO-0065 presentation/visible-supersession detail: the replacement is sent as a reply to the superseded message",
+    "VELDO-0065 presentation/visible-supersession detail: the replacement names what it supersedes in the shown bytes",
+    "VELDO-0065 presentation/visible-supersession detail: the visible link is the current authority's supersession",
+    "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
+    "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
+    "VELDO-0065 presentation/visible-supersession detail: an answer to a superseded presentation is refused"
+   ],
+   "diff": "proof/VELDO-0065/answer-checks-subject-only.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/revision-identity",
+    "VELDO-0065 answer/current-presentation-only",
+    "VELDO-0065 answer/ruling-and-rationale",
+    "VELDO-0065 presentation/visible-supersession"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "8f8a458ab04a2bb036ae17d79b5069c17e528397b6895e0ae03c0753d611a3da",
+   "name": "answer-checks-subject-only",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/current-presentation-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     false
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     false
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     false
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.112,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 answer/current-presentation-only detail: an answer that names no presentation is refused",
+    "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+    "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone"
+   ],
+   "diff": "proof/VELDO-0065/missing-reference-uses-current.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/current-presentation-only",
+    "VELDO-0065 answer/ruling-and-rationale"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "c38ac88d3492c5e86dabb62fd02c6df56fdd854d016a31fc601704c5395a5a5d",
+   "name": "missing-reference-uses-current",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/current-presentation-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     false
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.354,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+    "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone",
+    "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale"
+   ],
+   "diff": "proof/VELDO-0065/answer-drops-rationale.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/ruling-and-rationale"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "dcfbe29146fea382fff65b1d03aada47a44b1a648a1351c41d40ab0862d87b94",
+   "name": "answer-drops-rationale",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/ruling-and-rationale"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.438,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 answer/ruling-and-rationale detail: an assertion changed after the edge signed it is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: an assertion signed with the edge's ordinary key is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: an assertion the owner signs as the edge is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: no refused answer settled the request",
+    "VELDO-0065 answer/ruling-and-rationale detail: control: the owner's answer then settles"
+   ],
+   "diff": "proof/VELDO-0065/answer-skips-edge-signature.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/ruling-and-rationale"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "2e18a0fb38792d1f6573f04c0327a59b4ec6c7c1fe40b55fd41d58e9004cbca6",
+   "name": "answer-skips-edge-signature",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/ruling-and-rationale"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ]
+   ],
+   "seconds": 2.466,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 answer/unseen-refused detail: a refused, a lost and an unrecorded send leave no confirmed publication",
+    "VELDO-0065 answer/unseen-refused detail: an answer to a refused presentation is refused as unseen",
+    "VELDO-0065 answer/unseen-refused detail: only the refused presentation is attempted again",
+    "VELDO-0065 answer/unseen-refused detail: control: once confirmed published, the same presentation settles"
+   ],
+   "diff": "proof/VELDO-0065/unsent-marked-published.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/unseen-refused"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "8afa111de88e0dc70ab10e21ed59c9e81400615f045f95fe45e33755a7bf1128",
+   "name": "unsent-marked-published",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/unseen-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     false
+    ]
+   ],
+   "seconds": 2.376,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  },
+  {
+   "details": [
+    "VELDO-0065 answer/unseen-refused detail: an answer to a lost presentation is refused as unseen",
+    "VELDO-0065 answer/unseen-refused detail: an answer to an unrecorded presentation is refused as unseen"
+   ],
+   "diff": "proof/VELDO-0065/unseen-only-refused-outcome.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/unseen-refused"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "8381e53288258fb535d0d4649ae99f877ba318d07892b28904f392f28c68f4ec",
+   "name": "unseen-only-refused-outcome",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/unseen-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     false
+    ]
+   ],
+   "seconds": 2.398,
+   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+  }
+ ],
+ "noop": {
+  "copy_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810",
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0065 install/assets",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/receipt-binds-shown-content",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/revision-identity",
+    true
+   ],
+   [
+    "VELDO-0065 answer/current-presentation-only",
+    true
+   ],
+   [
+    "VELDO-0065 answer/ruling-and-rationale",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/visible-supersession",
+    true
+   ],
+   [
+    "VELDO-0065 answer/unseen-refused",
+    true
+   ]
+  ],
+  "seconds": 2.335,
+  "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 65",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 34.939,
+ "spec_id": "VELDO-0065",
+ "suite": "scripts/suites/62_veldo_0065_presentations.py"
+}

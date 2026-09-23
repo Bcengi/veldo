@@ -402,7 +402,7 @@ class Presenter:
             'transition': guarded(lambda p, b: _write_new(p, b, (('answer', ANSWER_KIND), ('settlement', SETTLEMENT_KIND)))),
             'writes': writes}
 
-    # -- reading -------------------------------------------------------------------------------
+    # reading
 
     def _entity(self, eid):
         row = self.conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (eid,)).fetchone()
@@ -488,7 +488,7 @@ class Presenter:
             'choices': list(c['choices']), 'owner': c['owner'], 'enrollment_id': eid,
             'enrollment_version': enrollment['version'], 'enrolled_chat': enrollment['data']['chat_id']}, versions
 
-    # -- framing: the requester's signed risk statement ----------------------------------------
+    # framing: the requester's signed risk statement
 
     def _frame_transition(self, params, before):
         fid, request = params.get('framing_id'), params.get('request_id')
@@ -580,7 +580,7 @@ class Presenter:
     def inbox_request(self, alias):
         return 'assignment:%s:%s' % (self.ids['repository_uuid'], alias)
 
-    # -- publication ----------------------------------------------------------------------------
+    # publication
 
     def _commit(self, operation, params, expected, principal=None, command_id=None):
         self._serial += 1
@@ -664,7 +664,7 @@ class Presenter:
         authority requires; return one result per pending entry."""
         return [self.present(e['id']) for e in self.inbox.index()['entries'] if e['category'] == 'pending']
 
-    # -- answers --------------------------------------------------------------------------------
+    # answers
 
     def canonical_answer(self, message, edge_principal):
         """The canonical assertion the Telegram edge signs for one owner reply, from the Bot API
