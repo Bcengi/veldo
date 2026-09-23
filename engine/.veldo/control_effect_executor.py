@@ -21,11 +21,29 @@ _spec.loader.exec_module(E)
 _git_process = E.organ('git_process')
 
 
+def displayed_url(url):
+    """The URL exactly as git displays it in push output (transport_anonymize_url): a local path
+    is unchanged; otherwise everything up to the first `@` is dropped, from a scheme URL when that
+    `@` comes before the path, and from an scp-style address when a `:` follows it. A porcelain
+    `To` line carries this form, so the listing's resolution is compared in it."""
+    at, colon, slash = url.find('@'), url.find(':'), url.find('/')
+    if at < 0 or colon < 0 or 0 <= slash < colon:
+        return url
+    rest, end = url[at + 1:], url.find('://')
+    if end < 0:
+        return rest if ':' in rest else url
+    if not all(c in '+.-' or (c.isascii() and c.isalnum()) for c in url[:end]):
+        return url
+    if 0 <= url.find('/', end + 3) < at:
+        return url
+    return url[:end + 3] + rest
+
+
 def anonymous_url(url):
-    """The URL as git displays it: a scheme URL loses its user information (user, password or
-    token); a path or scp-style address is unchanged. Recorded URLs never carry credentials."""
+    """A displayed URL as it is recorded: a scheme URL also loses any user information git's
+    display leaves (a password holding an unencoded `@`). Recorded URLs never carry credentials."""
     scheme, separator, rest = url.partition('://')
-    if not separator or not scheme or not all(c.isalnum() or c in '+.-' for c in scheme):
+    if not separator or not scheme or not all(c in '+.-' or (c.isascii() and c.isalnum()) for c in scheme):
         return url
     authority, slash, path = rest.partition('/')
     return scheme + separator + authority.rpartition('@')[2] + slash + path
@@ -85,11 +103,21 @@ def receive(config, contract, accepted):
                          '--no-follow-tags', '--recurse-submodules=no',
                          '--force-with-lease=' + ref + ':' + payload['old_tip'],
                          remote, payload['commit'] + ':' + ref)
-        # Where the push went is git's own account: one porcelain `To <url>` line per repository
-        # it pushed to (a hook's output goes to stderr, never to this stream).
-        destination = {'authorized_url': anonymous_url(remote), 'listed_url': anonymous_url(listed),
-                       'pushed_urls': [anonymous_url(line[len('To '):]) for line in push.stdout.splitlines()
-                                       if line.startswith('To ')]}
+        # Where the push went is git's own account: for each repository it pushed to, a porcelain
+        # `To <url>` line followed by git's status line for this one refspec. A pre-push hook
+        # writes to the same stream (git runs it with standard output inherited), so a `To` line
+        # counts only when that status line follows it; a hook's own text or its own push of
+        # another refspec is never taken for a destination.
+        refspec = payload['commit'] + ':' + ref
+        lines = push.stdout.splitlines()
+        pushed = [line[len('To '):] for line, status in zip(lines, lines[1:])
+                  if line.startswith('To ') and len(status.split('\t')) == 3
+                  and len(status.split('\t')[0]) == 1 and status.split('\t')[1] == refspec]
+        # Compared as git displays them, recorded without credentials.
+        reached = pushed == [displayed_url(listed)]
+        destination = {'authorized_url': anonymous_url(displayed_url(remote)),
+                       'listed_url': anonymous_url(displayed_url(listed)),
+                       'pushed_urls': [anonymous_url(url) for url in pushed]}
         # Completion is exactly one remote change, observed where the push went: the push reached
         # one repository, the one the listing reads, and there the authorized ref (and any symbolic
         # ref that targets it, HEAD included) moved to the commit; every other entry is unchanged.
@@ -98,7 +126,7 @@ def receive(config, contract, accepted):
         expected = dict(before, **{ref: payload['commit']})
         expected.update({name[len('symref:'):]: payload['commit'] for name, target in before.items()
                          if name.startswith('symref:') and target == ref})
-        complete = (push.returncode == 0 and destination['pushed_urls'] == [destination['listed_url']]
+        complete = (push.returncode == 0 and reached
                     and after is not None and after == expected)
         return dict(binding, status='completed' if complete else 'unknown', destination=destination,
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)

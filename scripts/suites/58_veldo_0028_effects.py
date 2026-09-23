@@ -537,6 +537,46 @@ print(json.dumps(result))
         seen_result('global-ssh-command', result, ssh_ran=log.exists())
         row('publication-global-ssh-command', result.get('completed') is True and remote_main(bare) == tip
             and log.exists() and 'git-receive-pack' in log.read_text())
+        # R6 1, destinations as git names them. The push's porcelain `To` line is git's own display
+        # of the URL (its transport_anonymize_url): the user information before the first `@` is
+        # dropped from a scheme URL and from an scp-style address alike. The listing's resolution
+        # is compared in that same display, or an ordinary `deploy@host:path` publication can never
+        # complete; and each recorded URL is then stripped of any user information git's display
+        # leaves (a password holding an unencoded `@`). Both remotes are reached through a fake SSH
+        # command, so git runs its real ssh transport and prints its own display.
+        displayed = {}
+        for name, prefix in (('scp-user', 'deploy@deploy-host:'), ('ssh-at-in-password', 'ssh://deploy:fix@ture-secret@deploy-host')):
+            clone, bare = fresh('displayed-' + name)
+            script, log = fake_ssh('displayed-' + name)
+            result = publish('displayed-' + name, clone, prefix + str(bare), env={'GIT_SSH_COMMAND': str(script)})
+            displayed[name] = (result, recorded('displayed-' + name), remote_main(bare) == tip, str(bare))
+            seen_result('displayed-' + name, result, destination=displayed[name][1], authorized_moved=displayed[name][2])
+        def shown(name, url):
+            result, destination, moved, bare = displayed[name]
+            return (result.get('completed') is True and moved and 'ture-secret' not in _v28_json.dumps(result)
+                    and destination == {'authorized_url': url + bare, 'listed_url': url + bare, 'pushed_urls': [url + bare]})
+        row('publication-destination-as-git-displays',
+            shown('scp-user', 'deploy-host:') and shown('ssh-at-in-password', 'ssh://deploy-host'))
+        # R6 1, only git's own account of the push is read. The clone's pre-push hook writes to the
+        # push's standard output (git runs pre-push with it inherited): here the hook mirrors the
+        # commit to a backup branch with its own porcelain push, whose `To` block names the backup
+        # repository for another refspec, and echoes a stray `To` line. Neither is where the
+        # authorized push went; a `To` line counts only when git's status line for the authorized
+        # refspec follows it.
+        clone, bare = fresh('hook-stdout')
+        backup = elsewhere_for('hook-stdout')
+        stray = 'file:///hook-stdout-not-a-destination.git'
+        hook = clone / '.git' / 'hooks' / 'pre-push'
+        hook.write_text('#!/bin/sh\necho "To %s"\n'
+                        'git push --porcelain --no-verify %s %s:refs/heads/backup\n' % (stray, backup, tip))
+        hook.chmod(0o755)
+        result = publish('hook-stdout', clone, str(bare))
+        hooked = recorded('hook-stdout')
+        backed_up = git('-C', str(backup), 'rev-parse', '--verify', '-q', 'refs/heads/backup') == tip
+        seen_result('hook-stdout', result, destination=hooked, hook_backed_up=backed_up)
+        row('publication-destination-from-push-status', backed_up and result.get('completed') is True
+            and remote_main(bare) == tip and 'hook-stdout-not-a-destination' not in _v28_json.dumps(result)
+            and hooked == {'authorized_url': str(bare), 'listed_url': str(bare), 'pushed_urls': [str(bare)]})
         # R6 2 and 3: the variables that select or inject operator configuration are the
         # operator's, not repository coordinates, so publication honors them as a plain git
         # command from the same environment does. Each case names the authorized remote only
@@ -622,7 +662,8 @@ print(json.dumps(result))
             and not any(k in isolated for k in configuration if k not in ('GIT_CONFIG_GLOBAL', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_NOSYSTEM'))
             and 'GIT_SSH_COMMAND' not in isolated)
         for name in ('push-options', 'records-resolved-destination', 'destination-without-credentials', 'global-insteadof', 'global-credential-helper',
-                     'env-ssh-command', 'global-ssh-command', 'config-selection-parity', 'network-profile-strips-coordinates'):
+                     'env-ssh-command', 'global-ssh-command', 'destination-as-git-displays', 'destination-from-push-status',
+                     'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'

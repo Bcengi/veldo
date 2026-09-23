@@ -388,11 +388,9 @@ def cases():
     add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
         "        result['destination'] = destination", "        pass",
         ['effects/' + routed, 'effects/publication-destination-without-credentials'])
-    pushed = ("                       'pushed_urls': [anonymous_url(line[len('To '):]) for line in push.stdout.splitlines()\n"
-              "                                       if line.startswith('To ')]}")
-    publication('effects-destination-from-listing', pushed, "                       'pushed_urls': [anonymous_url(listed)]}", routed)
-    publication('effects-completion-ignores-destination',
-                "        complete = (push.returncode == 0 and destination['pushed_urls'] == [destination['listed_url']]\n",
+    publication('effects-destination-from-listing', "                       'pushed_urls': [anonymous_url(url) for url in pushed]}",
+                "                       'pushed_urls': [anonymous_url(displayed_url(listed))]}", routed)
+    publication('effects-completion-ignores-destination', "        complete = (push.returncode == 0 and reached\n",
                 "        complete = (push.returncode == 0\n", routed)
     # The listing's resolution and the push read configuration through the same profile, or the
     # record names a URL the push did not use.
@@ -400,9 +398,32 @@ def cases():
         "        resolved = transport('ls-remote', '--get-url', remote)",
         "        resolved = git('ls-remote', '--get-url', remote)",
         ['effects/' + routed, 'effects/publication-config-selection-parity'])
-    publication('effects-destination-with-credentials', "    scheme, separator, rest = url.partition('://')",
-                "    return url\n    scheme, separator, rest = url.partition('://')",
+    record = ("        destination = {'authorized_url': anonymous_url(displayed_url(remote)),\n"
+              "                       'listed_url': anonymous_url(displayed_url(listed)),\n")
+    publication('effects-destination-with-credentials', record,
+                "        destination = {'authorized_url': remote,\n                       'listed_url': listed,\n",
                 'publication-destination-without-credentials')
+    # R6 1, destinations as git names them: the listing's resolution is compared in git's own
+    # display of a URL (the porcelain `To` form), which drops an scp-style address's user too,
+    # and each recorded URL also loses any user information git's display leaves.
+    displays = 'publication-destination-as-git-displays'
+    publication('effects-scp-url-as-given', "        return rest if ':' in rest else url", "        return url", displays)
+    add(28, 'effects-completion-compares-raw-listing', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "        reached = pushed == [displayed_url(listed)]", "        reached = pushed == [listed]",
+        ['effects/' + displays, 'effects/publication-destination-without-credentials'])
+    publication('effects-destination-git-display-only', "    scheme, separator, rest = url.partition('://')",
+                "    return url\n    scheme, separator, rest = url.partition('://')", displays)
+    # R6 1, only git's own account of the push is read: a pre-push hook writes to the same stream,
+    # so a `To` line counts only when git's status line for the authorized refspec follows it.
+    status = ("        pushed = [line[len('To '):] for line, status in zip(lines, lines[1:])\n"
+              "                  if line.startswith('To ') and len(status.split('\\t')) == 3\n"
+              "                  and len(status.split('\\t')[0]) == 1 and status.split('\\t')[1] == refspec]")
+    publication('effects-pushed-from-every-to-line', status,
+                "        pushed = [line[len('To '):] for line in lines if line.startswith('To ')]",
+                'publication-destination-from-push-status')
+    publication('effects-pushed-ignores-refspec', status,
+                status.replace(" and status.split('\\t')[1] == refspec]", "]"),
+                'publication-destination-from-push-status')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.
