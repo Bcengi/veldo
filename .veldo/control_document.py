@@ -50,6 +50,7 @@ def _sibling(alias, name):
 AL = _sibling('document_alias', 'control_alias.py')
 EN = _sibling('document_enrollment', 'control_enrollment.py')
 SN = AL.SN
+_git_process = AL._git_process
 
 
 def store_file(conn):
@@ -65,7 +66,7 @@ def enrolled_repository(root, store_path, domain_uuid, verify, host_identity):
     signed (`verify` checks it), written for this clone, for its current root commits, this host
     and this domain, and naming the store at `store_path`. `root` must be the checkout's top level."""
     root = os.path.realpath(root)
-    top = AL._git_process.run(['git', '-C', root, 'rev-parse', '--show-toplevel'], capture_output=True, timeout=15)
+    top = _git_process.run(['git', '-C', root, 'rev-parse', '--show-toplevel'], capture_output=True, timeout=15)
     if top.returncode or os.path.realpath(top.stdout.decode().strip()) != root:
         raise SN.Refused('wrong_repository', '%s is not the top level of a Git checkout' % root)
     try:

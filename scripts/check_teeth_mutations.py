@@ -459,9 +459,9 @@ def cases():
     # control_readset.carrier_paths; this is the same defect at the code that now reads it: the
     # commit's tree listed instead of its history.
     aliases('alias-floor-ignores-history', 'control_readset.py',
-            "    result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',\n"
+            "    result = _git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',\n"
             "                                  '--ignore-missing', '--stdin', commit, '--'],",
-            "    result = SN._git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],",
+            "    result = _git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],",
             'aliases/historical-floor')
     aliases('alias-owners-undeclared', 'control_alias.py',
             '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)', '    pass',

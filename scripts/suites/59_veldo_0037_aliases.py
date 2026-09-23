@@ -769,7 +769,7 @@ def _s37_run():
                 ('prefix-case', 'plan', 'veldo', 'plans/{alias}-{slug}.md', 1),
                 ('upper-directory', 'note', 'NOTE', 'Docs/{number}.md', 1),
                 ('lower-directory', 'memo', 'MEMO', 'docs/{number}.md', 1),
-                ('non-ascii', 'decision', 'DEC', 'décisions/{number}.md', 1)]:
+                ('non-ascii', 'decision', 'DEC', 'd\u00e9cisions/{number}.md', 1)]:
             _, error = enable(env, kind, prefix, template, first=first)
             folded[label] = code(error)
         _, counter_now = env.service.current(al.kind_id('repository', 'specification'))
