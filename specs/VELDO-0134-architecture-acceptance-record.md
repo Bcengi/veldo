@@ -14,6 +14,7 @@ depends_on: [VELDO-0053]
 placement: [contracts, distribution, fleet]
 protected_paths: []
 footprint:
+  - "plans/PLAN-0019-dark-factory.md"
   - "engine/.veldo/control_architecture*.py"
   - ".veldo/control_architecture*.py"
   - "packs/*/.veldo/control_architecture*.py"
@@ -248,3 +249,6 @@ Real stores, signatures, Git objects and the installed validator are required wh
 left: the record that makes the architecture contract required had a reader and no writer, so
 whether the contract was required still came from a file a worker can edit. The simple function
 is in this release; recovery, concurrency and clocks are Release 2.
+2026-09-23: plans/PLAN-0019-dark-factory.md joined the footprint because this specification's own writing
+change adds its work item (W97) to the plan, and the shape gate holds a change that names one
+specification to that specification's footprint.
