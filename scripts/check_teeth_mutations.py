@@ -446,6 +446,11 @@ def cases():
     aliases('reader-follows-links', 'control_document.py',
             "        body = read_exact(os.path.realpath(root), data['path'])\n",
             "        body = (Path(root) / data['path']).read_bytes()\n", 'publication/no-symlink-escape')
+    aliases('alias-overlap-unchecked', 'control_alias.py',
+            '            if _meet(_items(data), _items(other)):', '            if False:', 'aliases/one-path-per-kind')
+    aliases('alias-overlap-ignores-directories', 'control_alias.py',
+            'def _meet(first, second, directories=True):', 'def _meet(first, second, directories=False):',
+            'aliases/one-path-per-kind')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')

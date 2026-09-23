@@ -158,6 +158,58 @@ def accepted_maximum(repo, commit, kind):
     return maximum(result.stdout.decode().splitlines(), kind)
 
 
+_DIGITS = frozenset('0123456789')
+_SLUG = frozenset('abcdefghijklmnopqrstuvwxyz0123456789-')
+_SLASH = (frozenset('/'), False)
+
+
+def _literal(text):
+    return [(frozenset(character), False) for character in text]
+
+
+def _items(kind):
+    """Every path a kind can declare, as a sequence of (characters, repeats) items. It
+    over-approximates: a slug's hyphen placement and a number's leading zeros are not modelled, so
+    a collision found here may be one the counter never reaches, never the reverse."""
+    items = []
+    for part in _PLACEHOLDER.split(kind['path_template']):
+        if part == '{alias}':
+            items += _literal(kind['prefix'] + '-')
+        if part in ('{alias}', '{number}'):
+            items += [(_DIGITS, False)] * kind['width'] + [(_DIGITS, True)]
+        elif part == '{slug}':
+            items += [(_SLUG, False), (_SLUG, True)]
+        elif part:
+            items += _literal(part)
+    return items
+
+
+def _meet(first, second, directories=True):
+    """Whether some path of `first` equals some path of `second`, or (with directories) names a
+    directory holding one of the other's paths. A walk of the two item sequences in step."""
+    ends = (len(first), len(second))
+    seen, pending = {(0, 0)}, [(0, 0)]
+    while pending:
+        i, j = pending.pop()
+        if (i, j) == ends:
+            return True
+        if directories and ((i == ends[0] and j < ends[1] and second[j] == _SLASH)
+                            or (j == ends[1] and i < ends[0] and first[i] == _SLASH)):
+            return True
+        moves = []
+        if i < ends[0] and first[i][1]:
+            moves.append((i + 1, j))
+        if j < ends[1] and second[j][1]:
+            moves.append((i, j + 1))
+        if i < ends[0] and j < ends[1] and first[i][0] & second[j][0]:
+            moves.append((i if first[i][1] else i + 1, j if second[j][1] else j + 1))
+        for move in moves:
+            if move not in seen:
+                seen.add(move)
+                pending.append(move)
+    return False
+
+
 def _template_problem(kind):
     template = kind['path_template']
     if not isinstance(template, str):
@@ -419,10 +471,16 @@ class Allocations:
         problem = _template_problem(data)
         if problem is not None:
             self._refuse('invalid_input', problem)
+        # One repository's kinds share one checkout: no two may declare one path, or a path that
+        # is a directory of another kind's path.
         for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='artifact_kind'"):
             other = json.loads(raw)
-            if other['repository_uuid'] == repository and other['prefix'] == data['prefix']:
+            if other['repository_uuid'] != repository:
+                continue
+            if other['prefix'] == data['prefix']:
                 self._refuse('invalid_registration', 'prefix %s already allocates kind %s' % (data['prefix'], other['kind']))
+            if _meet(_items(data), _items(other)):
+                self._refuse('invalid_registration', 'kinds %s and %s can declare one path' % (data['kind'], other['kind']))
         return {kind_id(repository, data['kind']): {'kind': 'artifact_kind', 'data': data}}
 
     def _t_allocate(self, conn, p, before):

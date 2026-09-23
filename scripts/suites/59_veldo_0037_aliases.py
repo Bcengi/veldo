@@ -560,6 +560,27 @@ def _s37_run():
                and bool(published_plan) and (honest_read or {}).get('body') == b'plan bytes\n'
                and code(parent_link) == 'unsafe_path' and code(file_link) == 'unsafe_path')
         env.conn.close()
+
+        # 2. Two kinds of one repository can never declare one path, or a path that is a
+        # directory of the other's: the overlapping kind is refused when it is enabled.
+        env = fresh('overlap')
+        overlap = {}
+        for label, kind, prefix, template in [('first', 'specification', 'VELDO', 'docs/{number}-{slug}.md'),
+                                              ('same-path', 'plan', 'PLAN', 'docs/{number}-{slug}.md'),
+                                              ('directory-of', 'decision', 'DEC', 'docs/{number}-{slug}.md/index.yaml'),
+                                              ('slug-meets-number', 'note', 'NOTE', 'docs/{slug}-{number}.md'),
+                                              ('disjoint', 'memo', 'MEMO', 'memos/{alias}.md')]:
+            _, error = enable(env, kind, prefix, template)
+            overlap[label] = code(error)
+        kinds_stored = sorted(json_row['kind'] for json_row in
+                              (_s37_json.loads(raw) for (raw,) in env.conn.execute(
+                                  "SELECT data FROM entities WHERE kind='artifact_kind'")))
+        allocated_plan, _ = allocate(env, 'plan-one', 'plan', 'first', b'plan bytes\n')
+        defects['overlap'] = dict(overlap, kinds=kinds_stored)
+        expect('aliases/one-path-per-kind', overlap == {'first': None, 'same-path': 'invalid_registration',
+               'directory-of': 'invalid_registration', 'slug-meets-number': 'invalid_registration', 'disjoint': None}
+               and kinds_stored == ['memo', 'specification'] and allocated_plan is None)
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 
