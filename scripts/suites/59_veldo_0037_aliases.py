@@ -455,6 +455,111 @@ def _s37_run():
         observations['pending'] = pending
         observations['refusal_log'] = refusal_log
         conn.close()
+
+        # --- Review defects: each row owns its store, authority and accepted repositories -------
+        defects = observations['defects'] = {}
+        serial = [0]
+
+        class _S37Env:
+            pass
+
+        def fresh(label, histories=None):
+            """histories maps a repository to its accepted commits, each {path: bytes, or None to delete}."""
+            env = _S37Env()
+            env.base = root / ('defect-' + label)
+            env.base.mkdir()
+            env.origins, env.revisions = {}, {}
+            for repository, commits in (histories or {'repository': [{}]}).items():
+                origin = env.base / (repository + '-origin')
+                origin.mkdir()
+                g(origin, 'init', '-q')
+                for index, files in enumerate(commits):
+                    for path, body in dict(files, **{'README.md': ('%s %s %d\n' % (label, repository, index)).encode()}).items():
+                        if body is None:
+                            (origin / path).unlink()
+                        else:
+                            (origin / path).parent.mkdir(parents=True, exist_ok=True)
+                            (origin / path).write_bytes(body)
+                    g(origin, 'add', '-A')
+                    g(origin, 'commit', '-qm', 'Accepted %s %d' % (repository, index))
+                env.origins[repository] = origin
+            env.conn = st.open_store(env.base / 'control.sqlite3')
+            env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
+            for repository, origin in env.origins.items():
+                env.revisions[repository] = 'revision/' + repository
+                st.execute(env.conn, {'command_id': 'seed-' + repository, 'principal': 'operator',
+                                      'operation': 'upsert_entity', 'nonce': 'seed-%s/nonce' % repository,
+                                      'parameters': {'entity_id': 'revision/' + repository, 'kind': 'accepted_revision',
+                                                     'data': {'domain_uuid': 'domain', 'repository_uuid': repository,
+                                                              'commit': g(origin, 'rev-parse', 'HEAD'),
+                                                              'documents': {}, 'statuses': {}}},
+                                      'expected_versions': {'revision/' + repository: 0}, 'artifact_digests': []},
+                           **signing)
+            return env
+
+        def checkout_of(env, repository='repository', name=None):
+            path = env.base / (name or repository + '-checkout')
+            g(env.base, 'clone', '-q', str(env.origins[repository]), str(path))
+            return path
+
+        def enable(env, kind, prefix, template, first=1, repository='repository'):
+            serial[0] += 1
+            item = {'request_id': 'enable-%d' % serial[0], 'principal': 'operator', 'repository_uuid': repository,
+                    'kind': kind, 'prefix': prefix, 'width': 4, 'path_template': template,
+                    'revision_id': env.revisions[repository]}
+            if first is not None:
+                item['first'] = first
+            return attempt(lambda: env.service.enable_kind(item, **signing))
+
+        def allocate(env, rid, role, slug, body, repository='repository'):
+            return attempt(lambda: env.service.allocate(request(rid, 'telegram', rid, 'r1', role, slug, body, env.base,
+                                                                repository=repository), **signing))
+
+        def publish_by(publisher, repository, alias, version=1):
+            if publisher is None:
+                return None, None
+            return attempt(lambda: publisher.publish(repository, alias, version, 'publisher', **signing))
+
+        def read_by(env, repository, alias, checkout):
+            return attempt(lambda: doc.read_published(st, env.conn, repository, alias, checkout))
+
+        def files_under(directory):
+            return sorted(str(p.relative_to(directory)) for p in directory.rglob('*') if '.git' not in p.parts)
+
+        # 1. No symlink anywhere on a declared path: publication refuses a symlinked parent and
+        # writes nothing outside the checkout; the reader refuses a symlinked parent or file even
+        # when the bytes behind it are the accepted ones.
+        env = fresh('symlink')
+        checkout = checkout_of(env)
+        outside = env.base / 'outside'
+        outside.mkdir()
+        (checkout / 'specs').symlink_to(outside, target_is_directory=True)
+        publisher_1, _ = attempt(lambda: doc.Publisher(env.service, checkout))
+        enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+        enable(env, 'plan', 'PLAN', 'plans/{alias}-{slug}.md')
+        allocate(env, 'escape', 'specification', 'escape', b'escaping bytes\n')
+        _, escaped = publish_by(publisher_1, 'repository', 'VELDO-0001')
+        allocate(env, 'moved', 'plan', 'moved', b'plan bytes\n')
+        published_plan, _ = publish_by(publisher_1, 'repository', 'PLAN-0001')
+        honest_read, _ = read_by(env, 'repository', 'PLAN-0001', checkout)
+        elsewhere = env.base / 'elsewhere'
+        (checkout / 'plans').rename(elsewhere)
+        (checkout / 'plans').symlink_to(elsewhere, target_is_directory=True)
+        _, parent_link = read_by(env, 'repository', 'PLAN-0001', checkout)
+        (checkout / 'plans').unlink()
+        elsewhere.rename(checkout / 'plans')
+        declared = checkout / 'plans/PLAN-0001-moved.md'
+        (env.base / 'copy.md').write_bytes(b'plan bytes\n')
+        declared.unlink()
+        declared.symlink_to(env.base / 'copy.md')
+        _, file_link = read_by(env, 'repository', 'PLAN-0001', checkout)
+        defects['symlink'] = {'publish': code(escaped), 'outside': files_under(outside),
+                              'reader_parent_link': code(parent_link), 'reader_file_link': code(file_link)}
+        expect('publication/no-symlink-escape', publisher_1 is not None and code(escaped) == 'unsafe_path'
+               and files_under(outside) == [] and ('repository', 'VELDO-0001', 1) in env.service.pending()
+               and bool(published_plan) and (honest_read or {}).get('body') == b'plan bytes\n'
+               and code(parent_link) == 'unsafe_path' and code(file_link) == 'unsafe_path')
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

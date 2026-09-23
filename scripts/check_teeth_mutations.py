@@ -426,10 +426,11 @@ def cases():
             "            expected = request['expected_version']\n", '            expected = head_version\n',
             'documents/stale-overwrite')
     aliases('publication-altered-bytes', 'control_document.py',
-            '                output.write(body)\n                output.flush()\n'
-            '                os.fsync(output.fileno())\n            observed = SN.digest(temporary.read_bytes())\n',
-            "                output.write(body + b'.')\n                output.flush()\n"
-            '                os.fsync(output.fileno())\n            observed = digest\n',
+            '                    output.write(body)\n                    output.flush()\n'
+            '                    os.fsync(output.fileno())\n'
+            '                observed = SN.digest(_read_at(parent, temporary, path))\n',
+            "                    output.write(body + b'.')\n                    output.flush()\n"
+            '                    os.fsync(output.fileno())\n                observed = digest\n',
             'publication/accepted-documents')
     aliases('publication-normalized-newlines', 'control_document.py',
             '                output.write(body)\n',
@@ -437,6 +438,14 @@ def cases():
     aliases('reader-trusts-record', 'control_document.py',
             '    observed = SN.digest(body)\n', "    observed = obligation['observed_digest']\n",
             'publication/tampered-refused')
+    # Review defects: every row gets its reintroducing mutation and a second, distinct one.
+    aliases('publication-follow-parent-symlink', 'control_document.py',
+            "_DIRECTORY = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, 'O_CLOEXEC', 0)",
+            "_DIRECTORY = os.O_RDONLY | os.O_DIRECTORY | getattr(os, 'O_CLOEXEC', 0)",
+            'publication/no-symlink-escape')
+    aliases('reader-follows-links', 'control_document.py',
+            "        body = read_exact(os.path.realpath(root), data['path'])\n",
+            "        body = (Path(root) / data['path']).read_bytes()\n", 'publication/no-symlink-escape')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')
