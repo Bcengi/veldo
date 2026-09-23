@@ -134,7 +134,14 @@ the kind's carrier pattern to the union of every record of the repository, and r
 revision's root commits from its record, so a branch deleted, pruned or force-pushed after
 acceptance lowers nothing, and storage grows with the history, not with its square. A revision
 accepted before records existed is read from the bound repository while it holds the commit and
-refused `accepted_revision_unavailable` at enabling once it does not, never skipped. What clears one: none
+refused `accepted_revision_unavailable` at enabling once it does not, never skipped. What
+acceptance reads from Git does not follow repository configuration: every option that
+configuration could change about which paths the history names is passed explicitly
+(`--diff-merges=separate`, `--root`, `--no-renames` and the rest), so `log.diffMerges=off` cannot
+hide a path only a merge adds. A shallow bound repository is refused `shallow_repository`, since
+its history is incomplete. Stated limit, not a claim: grafts (`.git/info/grafts`), which Git still
+reads and the shared Git boundary does not disable, can hide history under the same-account threat
+model, and a record made under one names only the history the graft shows. What clears one: none
 is needed, because none exists outside test stores (`accept_revision` and its record were both
 introduced on this branch, and every revision `accept_revision` writes now carries its record);
 one written around the commands, by raw SQL, is the stated same-account limit above, and Release 1
@@ -187,4 +194,5 @@ a held number again. `accept_revision` now records each accepted commit's carrie
 store and the floor reads that record; an unrecorded revision whose commit is gone refuses
 `accepted_revision_unavailable` instead of being skipped. Each record then held the whole
 history; it now holds only what its commit adds over every recorded commit, and the floor reads the
-union of the records.
+union of the records. A fourth check then found merge paths read through
+`log.diffMerges`, now explicit, and a shallow bound repository accepted, now refused.
