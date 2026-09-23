@@ -147,24 +147,33 @@ def path_for(kind, number, slug):
     return SN.safe_path(path)
 
 
-def _pattern(kind):
-    regex = ''
-    for part in _PLACEHOLDER.split(kind['path_template']):
-        if part == '{alias}':
-            regex += re.escape(kind['prefix']) + '-([0-9]+)'
-        elif part == '{number}':
-            regex += '([0-9]+)'
-        elif part == '{slug}':
-            regex += '[a-z0-9]+(?:-[a-z0-9]+)*'
-        else:
-            regex += re.escape(part)
-    # A historical number counts whatever its case: on a case-insensitive checkout it holds the path.
+def _loose(text):
+    # A slug is whatever the file is called there: an accepted name is history, not a request.
+    return ''.join('[^/]*' if part == '{slug}' else re.escape(part) for part in re.split(r'(\{slug\})', text) if part)
+
+
+def _carrier(kind):
+    """Every repository path that CARRIES one of the kind's numbers: the template's leading
+    directories, then the component holding {alias} or {number}, whatever surrounds the number
+    there (an irregular slug, no slug, another extension) and whatever lies below it. Case never
+    matters: on a case-insensitive checkout (the macOS default) Specs/ and specs/ are one
+    directory. It over-counts rather than under-counts, because a number a file already holds that
+    is issued again is a second document under one identity, while a skipped number costs nothing."""
+    components = kind['path_template'].split('/')
+    index = next(i for i, part in enumerate(components) if '{alias}' in part or '{number}' in part)
+    regex = ''.join(_loose(part) + '/' for part in components[:index])
+    if '{alias}' in components[index]:
+        # The alias anywhere in the component, never as the tail of a longer prefix (XVELDO-).
+        regex += '[^/]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'
+    else:
+        regex += _loose(components[index].split('{number}')[0])
+    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'
     return re.compile(regex, re.IGNORECASE)
 
 
 def maximum(paths, kind):
-    """The highest number among repository-relative paths the kind's template produces."""
-    pattern = _pattern(kind)
+    """The highest number among repository-relative paths that carry one of the kind's numbers."""
+    pattern = _carrier(kind)
     found = [int(match.group(1)) for match in (pattern.fullmatch(str(p)) for p in paths) if match]
     return max(found, default=0)
 
@@ -199,16 +208,19 @@ def _static_directory(template):
 
 
 def accepted_maximum(repo, commit, kind):
-    """The kind's highest number among the paths its template matches in an EXACT accepted commit,
+    """The kind's highest number among the paths carrying one in an EXACT accepted commit,
     counting the commit's tree AND its history, so a number whose file was later deleted or renamed
     stays taken (C9). Only the enabling transition calls it; allocation never reads any tree."""
     SN.commit_id(repo, commit)
     directory = _static_directory(kind['path_template'])
-    scope = ['--', directory] if directory else []
+    # A plain pathspec is case-sensitive and the directory the template names is not, on the Mac:
+    # the history walk narrows case-insensitively, and ls-tree (which has no icase magic) lists the
+    # whole tree, which the carrier pattern filters.
+    scope = ['--', ':(icase)' + directory] if directory else []
     names = []
-    for command in (['ls-tree', '-r', '-z', '--name-only', commit],
-                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):
-        result = _git_process.run(['git', '-C', str(repo), *command, *scope], capture_output=True, timeout=30)
+    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),
+                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):
+        result = _git_process.run(['git', '-C', str(repo), *command, *narrowed], capture_output=True, timeout=30)
         if result.returncode:
             raise SN.Refused('missing_authority', 'accepted tree is unreadable')
         names += result.stdout.decode('utf-8', 'surrogateescape').split('\0')

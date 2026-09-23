@@ -454,9 +454,9 @@ def cases():
     aliases('alias-trusts-first-number', 'control_alias.py',
             '        elif first < floor:', '        elif False:', 'aliases/historical-floor')
     aliases('alias-floor-ignores-history', 'control_alias.py',
-            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],\n"
-            "                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):",
-            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):", 'aliases/historical-floor')
+            "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),\n"
+            "                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):",
+            "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),):", 'aliases/historical-floor')
     aliases('alias-generic-commands-unguarded', 'control_alias.py',
             '        conn.command_registry[operation] = _guard_generic(store, operation, registration)',
             '        pass', 'aliases/generic-writes-refused')
@@ -488,6 +488,18 @@ def cases():
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')
+    # Second review (2026-09-23): each row's reintroducing mutation, then a second, distinct one.
+    aliases('alias-floor-pathspec-case-sensitive', 'control_alias.py',
+            "    scope = ['--', ':(icase)' + directory] if directory else []",
+            "    scope = ['--', directory] if directory else []\n"
+            "    names = [n for n in _git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit,"
+            " *scope], capture_output=True).stdout.decode().split('\\0') if n]\n"
+            "    return maximum(names + [n for n in _git_process.run(['git', '-C', str(repo), 'log', '-m', '-z', '--no-renames',"
+            " '--format=', '--name-only', commit, *scope], capture_output=True).stdout.decode().split('\\0') if n], kind)",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-slug-grammar', 'control_alias.py',
+            "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'",
+            "    regex += '([0-9]+)(?![0-9])-[a-z0-9]+(?:-[a-z0-9]+)*[.][a-z]+'", 'aliases/floor-counts-every-carrier')
     return result
 
 

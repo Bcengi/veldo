@@ -763,6 +763,32 @@ def _s37_run():
                'nested-upper-git': 'reserved_path', 'slug-makes-git': 'reserved_path',
                'mixed-case-veldo': 'reserved_path', 'github-allowed': None})
         env.conn.close()
+
+        # --- Second review (2026-09-23): five more defects, each its own row -----------------
+        # 9. A historical number is held by EVERY accepted file whose name carries it, whatever
+        # the case of its directory (one directory on the Mac) and whatever its slug, or none.
+        carriers = {}
+        for label, template, files in [
+                ('case-directory', 'specs/{alias}-{slug}.md', ['specs/VELDO-0001-a.md', 'Specs/VELDO-0005-b.md']),
+                ('irregular-slug', 'specs/{alias}-{slug}.md', ['specs/VELDO-0001-a.md', 'specs/VELDO-0007-foo_bar.md']),
+                ('missing-slug', 'specs/{alias}-{slug}.md', ['specs/VELDO-0001-a.md', 'specs/VELDO-0008.md']),
+                ('number-template', 'decisions/{number}-{slug}.yaml', ['decisions/0002-a.yaml', 'Decisions/0009_B.YAML']),
+                ('not-carriers', 'specs/{alias}-{slug}.md', ['specs/VELDO-0001-a.md', 'specs/XVELDO-0090-x.md',
+                                                             'other/VELDO-0080-x.md', 'specs/notes-0070.md'])]:
+            history = root / ('carriers-' + label)
+            history.mkdir()
+            g(history, 'init', '-q')
+            for path in files:
+                (history / path).parent.mkdir(parents=True, exist_ok=True)
+                (history / path).write_bytes(path.encode() + b'\n')
+            g(history, 'add', '-A')
+            g(history, 'commit', '-qm', 'Accepted ' + label)
+            found, error = attempt(lambda: al.accepted_maximum(history, g(history, 'rev-parse', 'HEAD'),
+                                                               {'prefix': 'VELDO', 'width': 4, 'path_template': template}))
+            carriers[label] = code(error) if error else found
+        defects['carriers'] = carriers
+        expect('aliases/floor-counts-every-carrier', carriers == {'case-directory': 5, 'irregular-slug': 7,
+               'missing-slug': 8, 'number-template': 9, 'not-carriers': 1})
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 
