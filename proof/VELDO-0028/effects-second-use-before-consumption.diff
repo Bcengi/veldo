@@ -8,4 +8,4 @@
 -    nonce = hid
 +    if previous and previous['data']['request_digest'] != SIG.digest(request):
 +        raise Refused('request-content-conflict')
-+    nonce = secrets.token_hex(20) if previous else hid
++    nonce = hid if previous else secrets.token_hex(20)

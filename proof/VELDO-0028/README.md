@@ -26,7 +26,7 @@ rejected only when the named assertion is false, never by an exception, timeout 
 | Criterion | Named rows | First driven mutation | Second different mutation |
 |---|---|---|---|
 | AC1 | `effects/scope/provider`, `effects/scope/publication` | `effects-worker-scope`: replace contract scope with worker fields; actual out-of-scope receiver calls become nonzero | `effects-overlong-handle`: issue beyond contract deadline plus fifteen minutes |
-| AC2 | `effects/nonce/provider`, `effects/nonce/publication` | `effects-second-use-before-consumption`: permit another acceptance with another nonce after the first use | `effects-changed-content-replay`: return the old result for changed content |
+| AC2 | `effects/nonce/provider`, `effects/nonce/publication` | `effects-second-use-before-consumption`: delay consumption of the original handle nonce until the second acceptance | `effects-changed-content-replay`: return the old result for changed content |
 | AC3 | `effects/completion/provider`, `effects/completion/publication` | `effects-acceptance-is-completion`: treat accepted-only receiver evidence as completed | `effects-unbound-result`: accept evidence for another dispatch |
 
 The AC1 rows also compare contract digest/version, unit, station, sandbox, domain, repository,
@@ -42,7 +42,11 @@ The completed source-publication case uses a real source repository and local ba
 checks the actual remote commit. The provider and queued publication receivers are harmless
 trusted process-protocol witnesses, not model engines or substitutes for live worker qualification.
 
-The six exact mutation diffs and the named-red-row summary are in this directory. The required
+The six exact mutation diffs and the named-red-row summary are in this directory.
+`receiver-observations.json` retains the actual counts: control has zero out-of-scope calls
+and 5 calls per kind; worker-scope mutation has 2 out-of-scope calls; delayed nonce consumption
+has 9 calls per kind. `python3 -B proof/VELDO-0028/drive_observations.py` reproduces these
+observations on temporary copies. The required
 gate mutation stage discovers them through `scripts/check_teeth_mutations.py` (finding 28).
 The executable suite is `scripts/suites/58_veldo_0028_effects.py`.
 

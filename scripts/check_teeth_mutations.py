@@ -294,7 +294,7 @@ def cases():
     effect('effects-second-use-before-consumption', replay,
            """    if previous and previous['data']['request_digest'] != SIG.digest(request):
         raise Refused('request-content-conflict')
-    nonce = secrets.token_hex(20) if previous else hid""", 'nonce')
+    nonce = hid if previous else secrets.token_hex(20)""", 'nonce')
     effect('effects-changed-content-replay', "        if previous['data']['request_digest'] != SIG.digest(request):",
            "        if False:", 'nonce')
     effect('effects-acceptance-is-completion', "    completed = status == 'completed' and bool(observation.get('evidence'))",
