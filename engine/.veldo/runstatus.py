@@ -225,6 +225,12 @@ def _burndown_or_stop(root, eligibility, eligibility_stop):
         return _burndown(root, eligibility), None
     except EL.Stopped as stop:
         return [], stop.reason
+    except EL.Refused as refused:
+        return [], "refused:" + refused.code
+    except Exception as error:  # noqa: BLE001 - a burn-down it cannot build is named, never a crash
+        # VELDO-0054 review: one malformed accepted record must not take the whole read model down;
+        # the stop names what failed and the rest of the model (runs, events, replication) is shown.
+        return [], "burndown_unanswerable:" + type(error).__name__
 
 
 def production_status(root=None, **kwargs):

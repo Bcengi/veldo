@@ -340,6 +340,8 @@ def _v54_suite():
             except Exception as error:  # noqa: BLE001 - recorded, then asserted
                 lens = {'raised': type(error).__name__}
             for pid in PLANS:
+                if not any(sid in out for sid in PLANS[pid]):
+                    continue
                 _, fm = PL.load_plan(plan_path(pid))
                 blocks = PL._decision_blocks(fm, gate)
                 buffer = io.StringIO()
@@ -557,6 +559,61 @@ def _v54_suite():
                    and {'settlement:malformed-decision', 'settlement:malformed-data'} <= set(recorded)
                    and {'settlement:malformed-decision', 'settlement:malformed-data'} <= set(gate.status()['decisions'].get('invalid_records', [])))
 
+        def planned(pid, sids):
+            """A ready plan with these ready specs at its frontier, in the store and in the checkout."""
+            PLANS[pid] = list(sids)
+            for sid in sids:
+                unit(sid, plan=pid)
+            put('plan:' + pid, 'plan', dict(status='ready', revision=1))
+            lines = []
+            for n, sid in enumerate(sids, 1):
+                (base / 'specs' / (sid + '-fixture.md')).write_text('\n'.join([
+                    '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Decision fixture ' + sid, 'status: ready',
+                    'risk: low', 'owner: dmitry', 'lane: planned', 'plan: ' + pid, 'work: W%d' % n, 'plan_revision: 1',
+                    'depends_on: []', '---', '', 'Fixture.', '']))
+                lines += ['  - item: W%d' % n, '    spec: ' + sid, '    order: %d' % n]
+            (base / 'plans' / (pid + '-fixture.md')).write_text('\n'.join(
+                ['---', 'schema: veldo.plan/v1', 'id: ' + pid, 'title: Decision fixture plan', 'status: ready',
+                 'revision: 1', 'work:'] + lines + ['---', '', 'Fixture plan.', '']))
+
+        def reshape(rid, **fields):
+            """Re-accept a governing record with fields replaced (a subject or scope field by 'subject.kind')."""
+            data = json.loads(json.dumps(records[rid]))
+            for name, value in fields.items():
+                top, _, sub = name.partition('__')
+                if sub:
+                    data[top] = dict(data[top], **{sub: value})
+                else:
+                    data[top] = value
+            put(rid, 'decision', data)
+
+        def swept(sids):
+            try:
+                return ('ok', sweep(sids))
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                return ('raised', '%s: %s' % (type(error).__name__, error))
+
+        with region('decisions/malformed-subject-named'):
+            # An unhashable or wrong-typed subject field is invalid_input:<id>/subject for the unit the
+            # record governs, at every consumer; it never raises for that unit or any other.
+            SUBJECTS = {'VELDO-9481': dict(subject__kind=['spec']), 'VELDO-9482': dict(subject__kind={'k': 'spec'}),
+                        'VELDO-9483': dict(subject__id=['VELDO-9483']), 'VELDO-9484': dict(subject__digest={'d': 1})}
+            planned('PLAN-9407', sorted(SUBJECTS))
+            for sid, fields in SUBJECTS.items():
+                rid = 'decision:D-' + sid[-4:]
+                decision(rid, 'spec', sid, [sid])
+                settle(rid)
+                reshape(rid, **fields)
+            subjects_seen = swept(['VELDO-9401', 'VELDO-9406'] + sorted(SUBJECTS))
+            observed['malformed_subject'] = subjects_seen[1] if subjects_seen[0] == 'raised' else {
+                sid: {'stations': o['stations']['build'], 'blocks': o['blocks'], 'lens': o['lens']}
+                for sid, o in subjects_seen[1].items()}
+            check('decisions/malformed-subject-named',
+                   subjects_seen[0] == 'ok'
+                   and verdict(subjects_seen[1]['VELDO-9401'], set()) and verdict(subjects_seen[1]['VELDO-9406'], set())
+                   and all(verdict(subjects_seen[1][sid], {'invalid_input:decision:D-%s/subject' % sid[-4:]})
+                           and subjects_seen[1][sid]['lens'] == subjects_seen[1][sid]['burn'] for sid in SUBJECTS))
+
         with region('decisions/production-gate-verifies'):
             # The production construction: an enrolled workspace's Gate verifies settlements against
             # the settlement signers the HOST trusts (outside the workspace); a host naming none trusts no
@@ -638,6 +695,29 @@ def _v54_suite():
                    and EL.taxonomy(unavailable['refusals'][0]) == 'unavailable_service'
                    and status['decisions']['accepted'] > 0 and status['decisions']['refused'] > 0
                    and {s for s in SCEN if SCEN[s][1] == 'all' and SCEN[s][2]} <= set(status['decisions']['blocked']))
+
+        with region('decisions/status-names-its-stop'):
+            # veldo status names a burn-down it cannot build instead of crashing the whole read model. The
+            # probe is a unit record whose plan is a list, which still raises inside the Gate's read (an
+            # open item with its own ticket, predating VELDO-0054); it is repaired at once afterwards.
+            planned('PLAN-9410', ['VELDO-9495'])
+            good = dict(written['VELDO-9495'])
+            put('VELDO-9495', 'execution_unit', dict(good, plan=['PLAN-9410']))
+            quiet = dict(runs_root=str(Path(directory) / 'runs'), events_path=str(Path(directory) / 'no-events.jsonl'),
+                         control_db=str(Path(directory) / 'no-store.sqlite3'))
+            try:
+                model = ('ok', RS.status(root=base, eligibility=gate, **quiet))
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                model = ('raised', '%s: %s' % (type(error).__name__, error))
+            finally:
+                put('VELDO-9495', 'execution_unit', good)
+                for suffix in ('specs/VELDO-9495-fixture.md', 'plans/PLAN-9410-fixture.md'):
+                    (base / suffix).unlink()
+                PLANS.pop('PLAN-9410')
+            stop = model[1].get('burndown_stopped') if model[0] == 'ok' else model
+            observed['status_stop'] = stop
+            check('decisions/status-names-its-stop',
+                   model[0] == 'ok' and model[1].get('burndown') == [] and str(stop).startswith('burndown_unanswerable:'))
 
         for first in regions:
             check('ran/' + first, first not in {label for label, _ in raised})

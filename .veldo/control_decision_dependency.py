@@ -94,7 +94,8 @@ def _is_str(value):
 
 def subject_entity(subject):
     """The store entity id an accepted subject lives at, or None for a kind this slice does not bind."""
-    if not isinstance(subject, dict) or subject.get('kind') not in SUBJECT_KINDS or not _is_str(subject.get('id')):
+    if not isinstance(subject, dict) or not isinstance(subject.get('kind'), str) \
+            or subject['kind'] not in SUBJECT_KINDS or not _is_str(subject.get('id')):
         return None
     return subject['id'] if subject['kind'] == 'spec' else 'plan:' + subject['id']
 
@@ -216,7 +217,7 @@ def record_problems(rid, record):
     if record.get('schema') != GOVERNING_SCHEMA:
         return [code + 'schema']
     kind = record['subject']['kind']
-    if kind not in SUBJECT_KINDS:
+    if not isinstance(kind, str) or kind not in SUBJECT_KINDS:
         return [code + 'subject_kind:%s' % kind]
     return [code + 'obligation:%s' % o for o in record.get('obligations') or [] if o not in SUPPORTED_OBLIGATIONS]
 

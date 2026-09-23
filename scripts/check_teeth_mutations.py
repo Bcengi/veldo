@@ -994,6 +994,19 @@ def cases():
     decisions('reference-invalid-dropped', 'control_decision_dependency.py',
               "            codes.append('invalid_input:decision_reference')\n", "            continue\n",
               'malformed-records-named')
+    # VELDO-0054 review 2, item 1: an unhashable subject field is named; veldo status names its stop.
+    decisions('subject-digest-type-unchecked', 'control_decision_dependency.py',
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))",
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id'))", 'malformed-subject-named')
+    decisions('subject-kind-type-unchecked', 'control_decision_dependency.py',
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))",
+              "all(_is_str(subject.get(k)) for k in ('id', 'digest'))", 'malformed-subject-named')
+    decisions('status-stop-crashes', 'runstatus.py',
+              '    except Exception as error:  # noqa: BLE001 - a burn-down it cannot build is named, never a crash\n',
+              '    except ZeroDivisionError as error:  # defect: any other failure escapes\n', 'status-names-its-stop')
+    decisions('status-stop-unnamed', 'runstatus.py',
+              '        return [], "burndown_unanswerable:" + type(error).__name__\n',
+              '        return [], None\n', 'status-names-its-stop')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
