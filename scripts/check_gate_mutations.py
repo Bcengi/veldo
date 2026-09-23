@@ -56,9 +56,10 @@ def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
                 best = cpus if best is None else min(best, cpus)
         except (OSError, ValueError):
             pass
-        if path == top:
+        parent = os.path.dirname(path)
+        if path == top or parent == path:      # the mount, or the filesystem root: stop
             return best
-        path = os.path.dirname(path)
+        path = parent
 
 
 def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
