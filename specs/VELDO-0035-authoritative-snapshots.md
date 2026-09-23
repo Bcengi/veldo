@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W20
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0025]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -32,82 +32,85 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Read-set refusals identify changed entity or collection, expected and observed version,
-    digest, and snapshot watermark.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count stale positive reads, conflicting insertions, unpublished snapshots, materialization
-    failures, and cache refusals.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join accepted source commit and published journal watermark to input digests, transaction
-    validation, and snapshot pointer switch.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish omitted read dependency, stale entity, changed collection, unpublished watermark,
-    corrupt artifact, and partial materialization.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Commands validate complete entity and collection read sets inside the same
-      transaction that commits their result. Set: Specifications, plans, releases, decisions,
-      floors, policy, membership, admission, combined graph, roster, reservations, and receipts,
-      including absence of blockers. Completeness: Compare the R70 input registry to real command
-      instrumentation in control.sqlite3. A second process changes each input or inserts a blocker
-      after the snapshot while holding project version fixed; all stale command commits must
-      refuse with the changed subject named. Falsifier: Validate only project version while
-      another process inserts a blocking dependency; snapshots/negative-read must reject the
-      proposal.
+      Claim: A command validates the versions and digests of all inputs it consumed before
+      committing. Set and completeness: Enumerate inputs in each enabled command registration,
+      including dependency collections and absence of blockers; use a real stored snapshot, change a
+      dependency or authority input, and require a named stale-input refusal. Falsifier: Check only
+      project version after a dependency changes; the stale-input command must incorrectly commit
+      and fail the check.
     falsified_by: >
-      Validate only project version while another process inserts a blocking dependency;
-      snapshots/negative-read must reject the proposal.
+      Check only project version after a dependency changes; the stale-input command must
+      incorrectly commit and fail the check.
   - id: AC2
     text: >
-      Claim: Published snapshots bind domain, repository, accepted Git commit, journal sequence,
-      published watermark, and every input version and digest. Set: Real stored documents and Git
-      objects consumed by snapshot clients, including stale checkout bytes and missing or corrupt
-      accepted artifacts. Completeness: Construct snapshots through the store, edit the working
-      checkout without acceptance, corrupt artifact bytes, and request an unpublished sequence.
-      Read clients must use accepted immutable content or refuse, with no silent mutable-path
-      fallback. Falsifier: Read the edited checkout specification instead of its accepted artifact
-      digest; snapshots/checkout-substitution must detect the wrong bytes.
+      Claim: Snapshots identify domain, repository, accepted commit, journal watermark and input
+      versions/digests. Set and completeness: Read each registered journey input from accepted real
+      artifacts; edit checkout bytes and remove a referenced artifact. Require the accepted bytes or
+      explicit refusal, never mutable-path substitution. Falsifier: Read edited checkout bytes
+      instead of the accepted artifact; the digest comparison must fail.
     falsified_by: >
-      Read the edited checkout specification instead of its accepted artifact digest;
-      snapshots/checkout-substitution must detect the wrong bytes.
+      Read edited checkout bytes instead of the accepted artifact; the digest comparison must fail.
   - id: AC3
     text: >
-      Claim: Only the materializer exposes whole immutable snapshot directories through an atomic
-      current-pointer switch; interrupted publication is recoverable. Set: Document and legacy
-      status/event projections at one watermark, using real filesystem readers racing a
-      materializer process. Completeness: SIGKILL before directory completion, before pointer
-      switch, and after switch before acknowledgment; continuously read all projected members and
-      compare their watermarks and digests. Restart must expose either the old complete corpus or
-      the new complete corpus and reconcile pending work. Falsifier: Switch the current pointer
-      before the last projection file is durable, then kill the materializer;
-      snapshots/partial-corpus must detect a mixed or incomplete view.
+      Claim: The materializer publishes accepted document and status bytes at an explicit watermark.
+      Set and completeness: Enumerate the enabled document/status projections, materialize one
+      complete accepted revision, and read it from another process; compare every member digest and
+      watermark with the store. Falsifier: Publish a status projection from unaccepted working
+      bytes; the reader-to-store comparison must fail.
     falsified_by: >
-      Switch the current pointer before the last projection file is durable, then kill the
-      materializer; snapshots/partial-corpus must detect a mixed or incomplete view.
+      Publish a status projection from unaccepted working bytes; the reader-to-store comparison must
+      fail.
 required_evidence: [unit, integration]
 rollback: >
-  Keep the last verified snapshot pointer, pause new publication, retain pending directories and
-  journal obligations, and rebuild only from verified accepted history.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Validate every decision input and publish coherent immutable snapshots so stale proposals cannot commit.
+Complete read-set validation and authoritative snapshots. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W20 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R14, R22, R30, R54, R57, R70-R71. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Incomplete read sets or mixed snapshots could commit proposals after their authority or prerequisites changed. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W20 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Project-manager scheduling, live decision settlement, and floor completion-reader rewiring belong to later packages.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks backing-store implementation through W8; D2 governs which journal watermark is published, so snapshot clients cannot consume an unacknowledged tail. This item implements reusable transactional read-set checks and materialization; C wires every floor entry to the shared eligibility service. Collection versions must cover negative predicates and reverse dependency closure, not only explicitly fetched rows.
+Accepted snapshots supply 0052 eligibility and 0088/0092 proposals; 0037 and 0049 use ordinary
+materialization. Local committed watermarks are sufficient under amended C3. The MVP checks
+current inputs transactionally without claiming every concurrent negative-read interleaving.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. AC1 exhaustive concurrent complete-read-set qualification
+and AC3 crash-safe pointer switching, interrupted publication and recovery move to Release 2;
+accepted snapshots and ordinary materialization remain.

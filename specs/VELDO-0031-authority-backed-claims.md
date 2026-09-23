@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W16
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0030]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107]
 placement: [fleet, distribution]
 protected_paths: []
 footprint:
@@ -32,81 +32,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Claim results identify owner, unit, claim and authority generations, expected version, and
-    exact refusal reason.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count contention winners, stale claim effects, uncertain leases, and reconciled versus blocked
-    reclaims.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join claim.unit_id_problem, claim transaction, unit and backlog transition, and downstream
-    permit validation.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish invalid unit ID, capability mismatch, already claimed, unanswerable clock, stale
-    generation, and prior attempt unresolved.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The installed claim API routes enrolled ownership, unit transition, first-unit
-      backlog activation, and increasing claim generation through one authority transaction. Set:
-      Two real clone clients racing claim() for the same admitted unit through control.sqlite3,
-      plus invalid unit aliases. Completeness: Enumerate claim API entry points and allowed unit
-      transitions; race each ownership operation and SIGKILL after commit before response. Query
-      exactly one owner and atomic lifecycle changes, prove no clone-local ledger writes, and
-      invoke claim.unit_id_problem before artifacts. Falsifier: Commit ownership separately from
-      the unit transition and kill between commits; claims/atomic-owner must detect partial
-      ownership.
+      Claim: Claim ownership, unit activation and first-unit backlog activation commit together. Set
+      and completeness: Race two real clone clients for one admitted unit; enumerate claim and
+      activation entries and inspect one owner and coherent unit/backlog state in SQLite, with no
+      clone-local ledger writes. Reject invalid aliases before artifacts. Falsifier: Write ownership
+      without the corresponding unit transition; the stored-state consistency check must fail.
     falsified_by: >
-      Commit ownership separately from the unit transition and kill between commits;
-      claims/atomic-owner must detect partial ownership.
+      Write ownership without the corresponding unit transition; the stored-state consistency check
+      must fail.
   - id: AC2
     text: >
-      Claim: Every protected effect rejects old claim generations even after lease expiry or
-      authority restart. Set: Claim renew, release, reclaim, and effect validation against the
-      real store and accepting receiver process. Completeness: Hold an old worker at a barrier,
-      reconcile and fence its attempt, issue a higher generation, then resume the old worker.
-      Check every registered effect permit kind and ensure the old worker cannot release or
-      overwrite its successor claim. Falsifier: Check only lease expiry when the old worker
-      resumes after reclaim; claims/stale-generation must catch its accepted effect.
+      Claim: Renew, release and protected use require the currently stored owner and claim
+      generation. Set and completeness: Exercise each operation with current and mismatched
+      holder/generation in the real store and receiver; a non-owner cannot release or use the claim.
+      Falsifier: Ignore the claim generation on protected use; the stale-generation request must
+      reach the receiver and fail the check.
     falsified_by: >
-      Check only lease expiry when the old worker resumes after reclaim; claims/stale-generation
-      must catch its accepted effect.
+      Ignore the claim generation on protected use; the stale-generation request must reach the
+      receiver and fail the check.
   - id: AC3
     text: >
-      Claim: Reclaim requires fencing and effect reconciliation, and clock disagreement preserves
-      unanswerable without granting takeover. Set: Real claim records with fresh, expired,
-      future-beyond-tolerance, and malformed timestamps and receiver states running, unknown, and
-      reconciled. Completeness: Drive the liveness/receiver matrix using installed claim.liveness
-      and a real second claimant; SIGKILL the former worker after target acceptance and require no
-      reclaim from process absence alone. Record both clock readings and tolerance and retain the
-      original holder on uncertainty. Falsifier: Treat _is_stale false as proof of liveness for a
-      future heartbeat; claims/unanswerable must retain the named uncertainty and block affected
-      dispatch.
+      Claim: Uncertain ownership refuses admission and exposes a named stop without takeover. Set
+      and completeness: Present known owned, unowned and uncertain claim states to claim and landing
+      callers, including the existing unanswerable detector result; inspect holder and local/remote
+      refs. Falsifier: Map an unanswerable claim result to ordinary contention and retry; the stop
+      and unchanged-ref observation must fail.
     falsified_by: >
-      Treat _is_stale false as proof of liveness for a future heartbeat; claims/unanswerable must
-      retain the named uncertainty and block affected dispatch.
+      Map an unanswerable claim result to ordinary contention and retry; the stop and unchanged-ref
+      observation must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop enrolled claims and effects, retain owners and generation counters, and reconcile attempts
-  before any compatible implementation resumes.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Preserve one claim API while making enrolled ownership and generation changes atomic across clones.
+Authority-backed claims and claim-generation fencing. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W16 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R10-R11, R24-R25, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Incorrect claim ownership or generation checks could permit concurrent work and stale publication. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W16 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-No second claim API, scheduler rewrite, or reporting UI is introduced.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 is inherited through leadership and storage. VELDO-0015 already implements clock stand-down; preserve its canonical detector and boolean reclaim contract. W17 through W19 repair consumers, not clock arithmetic. Unenrolled compatibility must remain explicit and must never become a fallback for an enrolled repository.
+Use the installed claim.unit_id_problem before artifacts and VELDO-0015 for existing clock
+stand-down. No automatic reclaim is in Release 1. Local claim commands must use the real
+authority store, not a clone ledger.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 takeover fencing, AC3 reclaim/clock/receiver
+matrix, and AC1 lost-reply crash proof; keep one owner and coherent claim/unit activation.
+Removed recovery, durability and failure-matrix obligations belong to Release 2; additional
+host/channel/version and full distribution breadth belongs to Release 4. Normal function and
+the checks stated above remain Release 1.

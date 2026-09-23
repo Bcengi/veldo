@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W39
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0052]
+plan_revision: 3
+depends_on: [VELDO-0020, VELDO-0035, VELDO-0052]
 placement: [distribution, contracts, fleet]
 protected_paths: []
 footprint:
@@ -38,85 +38,82 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Decision blockers identify exact framing, subject revision, settlement receipt, governing
-    observation, and affected unit.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count unresolved references, stale settlements, expired observations, withdrawn offers, and
-    impacted completed dependents.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace each plan open-decision reference through the accepted combined graph to the published
-    ruling and reverse invalidation closure.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish absent or ambiguous decision, changed framing, wrong subject, insufficient
-    authority, expired observation, and pending settlement export.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: plan._decision_blocks, item_state, cmd_run_check, and frontier._plan_build_candidates
-      resolve governing decision references against current accepted decision bindings. Set: Real
-      plan and decision artifacts plus signed fixture settlements in control.sqlite3, across
-      project, release execution, plan, backlog item, spec, and contract bindings supported by A.
-      Completeness: Enumerate A binding kinds and unresolved target states; drive each through
-      actual plan CLI, frontier, and direct executor/review eligibility. Change framing bytes
-      without changing the displayed ID/version, substitute subject digests, and remove referenced
-      decisions. Unpublished, stale, or unsupported rulings remain blockers by name; valid current
-      fixtures unblock only their bound scope. Falsifier: Treat the presence of a settlement receipt
-      as resolution without checking full framing digest; decisions/framing-substitution must detect
-      unauthorized eligibility.
+      Claim: Plan and specification eligibility resolves exact accepted decision bindings. Set and
+      completeness: Enumerate enabled plan._decision_blocks, item_state, cmd_run_check, frontier and
+      direct floor consumers; pass current signed fixture settlements bound to framing/subject
+      digests, and change either digest. Only the current exact binding unblocks. Falsifier: Accept
+      a receipt without its framing digest; the wrong-framing eligibility check must fail.
     falsified_by: >
-      Treat the presence of a settlement receipt as resolution without checking full framing digest;
-      decisions/framing-substitution must detect unauthorized eligibility.
+      Accept a receipt without its framing digest; the wrong-framing eligibility check must fail.
   - id: AC2
     text: >
-      Claim: Decision supersession, expiry, or invalidation withdraws queued and running permissions
-      and preserves completed history with impact obligations. Set: plan._decision_blocks and shared
-      floor eligibility over mixed plan/spec/decision edges stored in the real combined graph, with
-      real claimant and reviewer processes. Completeness: Construct all edge families from A,
-      including a cycle spanning separately acyclic families. Compute reverse closure independently.
-      Race signed invalidation against claim, direct review, and publication eligibility, then
-      SIGKILL after invalidation commit before notification. Replay must retain every affected
-      blocker and completed impact record without authorizing the previous graph. Falsifier: Keep
-      cached resolved decisions after supersession commits and restart the consumer;
-      decisions/restart-invalidation must detect a running dependent still permitted to publish.
+      Claim: Missing, ambiguous or unsupported governing decisions remain named blockers. Set and
+      completeness: Drive each of these three cases plus a valid bound decision through every
+      enabled consumer against real accepted artifacts and SQLite. No inline resolved text
+      substitutes for settlement. Falsifier: Treat an inline status edit as a ruling; the unsigned-
+      resolution check must fail.
     falsified_by: >
-      Keep cached resolved decisions after supersession commits and restart the consumer;
-      decisions/restart-invalidation must detect a running dependent still permitted to publish.
+      Treat an inline status edit as a ruling; the unsigned-resolution check must fail.
   - id: AC3
     text: >
-      Claim: Decision eligibility consumes current trusted governing observations and accepted
-      review dispositions; missing or stale measurements cannot authorize work. Set:
-      plan.cmd_run_check and frontier.claimable plus direct floor entries consuming persisted R71
-      observation and decision-review fixtures, including explicit advisory assumptions.
-      Completeness: Derive observation/source/subject/freshness requirements from each accepted
-      decision. Expire measured and manual records, corrupt signatures, introduce contradictory
-      readings, duplicate one principal across review records, and remove blocking-objection
-      dispositions. Query real SQLite snapshots and signed files in separate processes; only
-      explicit non-authorizing advisory assumptions may warn without blocking. Falsifier: Accept a
-      stale measured governing observation after its maximum age expires;
-      decisions/stale-observation must detect a newly granted floor entry.
+      Claim: A ruling authorizes only its recorded subject and scope. Set and completeness: Use a
+      valid signed decision for one spec/plan and try it on another or with changed
+      operation/target/parameters; inspect refused eligibility and preserved accepted artifacts.
+      Falsifier: Reuse one subject ruling for another subject; the scope-binding check must fail.
     falsified_by: >
-      Accept a stale measured governing observation after its maximum age expires;
-      decisions/stale-observation must detect a newly granted floor entry.
+      Reuse one subject ruling for another subject; the scope-binding check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop affected enrolled entries, preserve signed history and pending obligations, and restore the
-  prior compatible consumer only after current authorization is revalidated.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Connect existing plan decision blockers to exact accepted settlements and current governing evidence.
+Decision-record dependency evaluation for the floor slice. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W39 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R14, R51, R58, R70-R71 require decision consumption before the slice. Incorrect binding or invalidation can keep work executable after its authority changes. The declared risk floor is high; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W39 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-No live channel or tripwire is activated, and no fixture assertion certifies an actual owner decision.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block the backing store and published settlement boundary. D3/D4 remain inherited prerequisites for floor execution; fixture rulings do not resolve any of D1-D4. The baseline _decision_blocks reads inline blocks only; it neither authenticates settlement nor evaluates observation freshness. Proposed control_decision_dependency paths belong to contracts/fleet and need explicit inventory and architecture mapping before ready. Use real OpenSSH signatures on recorded fixture commands, including canonical operation/target/parameter digests. Mutating those parameters under the original envelope must refuse before state change. Preserve mutation diffs and failed rows. E owns real decision review production, tripwire acquisition, channel attribution, atomic settlement, and interrupted decision journeys.
+The normal spec/plan governing decision consumer is required now; 0069 supplies actual
+settlement binding later in Release 1. Signed fixtures only test consumption, never
+authenticate a live owner. Tripwire and adversarial-decision-review obligations unsupported by
+this slice block eligibility.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. AC2 expiry, supersession and reverse invalidation plus AC3
+tripwire/adversarial-review depth move to Release 3; crash and restart matrices move to
+Release 2. AC1 exact normal binding consumption remains.

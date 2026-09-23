@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W24
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0024, VELDO-0031, VELDO-0035, VELDO-0036, VELDO-0038]
+plan_revision: 3
+depends_on: [VELDO-0028, VELDO-0031, VELDO-0036]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -32,83 +32,84 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Dispatch diagnostics identify unit, station, attempt, contract, reservation, both generations,
-    and receiver launch-record state.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count logical dispatches, delivery retries, launch intents, published acceptances, and
-    uncertain launch windows.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join precondition snapshot to prepared export, receiver acceptance, pre-spawn intent,
-    invocation identity, and RUNNING acknowledgment.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish active-dispatch conflict, unpublished preparation, stale acceptance, launch
-    uncertain, and acknowledgment pending.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Preparation stores and publishes the full dispatch contract before invocation, with
-      at most one active logical dispatch per unit and station. Set: Real store clients racing
-      dispatch preparation over unit, station, attempt, read set, contract digest, idempotency
-      key, generations, and reservation. Completeness: Compare persisted fields to the R31 schema,
-      race two proposals, and reject the bare remote export in turn. A separate receiver process
-      must see no delivery before acknowledgment, and the unit stays DISPATCHING without a second
-      active logical dispatch. Falsifier: Invoke the receiver before the preparation export is
-      acknowledged while the remote rejects it; dispatch/unpublished-launch must detect the
-      forbidden call.
+      Claim: Preparation records the complete dispatch contract before invocation and permits one
+      active dispatch per unit/station. Set and completeness: Submit a real admitted unit twice
+      through the runner; inspect stored source, input, capability, reservation and deadline
+      bindings and count launched workers. Falsifier: Spawn before recording the contract; the
+      launch-order check must fail.
     falsified_by: >
-      Invoke the receiver before the preparation export is acknowledged while the remote rejects
-      it; dispatch/unpublished-launch must detect the forbidden call.
+      Spawn before recording the contract; the launch-order check must fail.
   - id: AC2
     text: >
-      Claim: The receiver durably accepts the original dispatch identity and records launch intent
-      before spawning; repeated delivery queries that record rather than starting another engine.
-      Set: Real receiver and child processes across acceptance commit, intent commit, process
-      creation, and conclusive launch-record windows. Completeness: SIGKILL the receiver at every
-      boundary and deliver the same dispatch from two clients after restart. Observe child
-      identities and launch records; an intent without conclusive evidence remains stopped for W23
-      reconciliation, never blindly relaunched. Falsifier: Treat a pre-spawn intent as safe to
-      relaunch after killing the receiver just after child creation; dispatch/ambiguous-spawn must
-      catch the second child.
+      Claim: The trusted receiver records launch acceptance under the original dispatch identity.
+      Set and completeness: Drive accepted, refused and unknown launch results through the real
+      receiver boundary; compare OS process/start identity and stored acceptance, and refuse another
+      launch of an unknown attempt. Falsifier: Create a new dispatch for an unknown result; the
+      second-launch check must fail.
     falsified_by: >
-      Treat a pre-spawn intent as safe to relaunch after killing the receiver just after child
-      creation; dispatch/ambiguous-spawn must catch the second child.
+      Create a new dispatch for an unknown result; the second-launch check must fail.
   - id: AC3
     text: >
-      Claim: RUNNING requires committed and published receiver acceptance, and acceptance rechecks
-      current admission, claim, authority, read set, and reservation. Set: Acknowledgement
-      ingestion and repeated delivery against real SQLite, a real Git replica, and a durable
-      receiver with revoked or stale inputs. Completeness: Race each precondition change against
-      acceptance, kill after receipt commit before export, and retry acknowledgment by original
-      identity. Compare lifecycle and receiver counts; a new attempt requires a reconciled
-      terminal predecessor and fresh applicable retry authorization. Falsifier: Advance to RUNNING
-      on a local acceptance commit while its replica export fails; dispatch/running-before-replica
-      must detect the premature transition.
+      Claim: Prepared, accepted, running and terminal observations update only their bound dispatch.
+      Set and completeness: Derive allowed ordinary transitions from the dispatch schema and
+      exercise each plus a wrong-dispatch result using real records; terminal output alone cannot
+      create landed completion. Falsifier: Apply one worker result to another dispatch; the state-
+      binding check must fail.
     falsified_by: >
-      Advance to RUNNING on a local acceptance commit while its replica export fails;
-      dispatch/running-before-replica must detect the premature transition.
+      Apply one worker result to another dispatch; the state-binding check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop new delivery, preserve prepared dispatches and launch records, and use W23 evidence-driven
-  reconciliation before any retry.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Record and replicate dispatch preparation and acceptance so delivery retries cannot launch a second worker.
+Durable dispatch acceptance and launch records. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W24 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R31-R33, R39, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-A lost launch acknowledgment could create duplicate workers or report unreplicated execution as accepted. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W24 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Containment and heartbeat implementation are W25 and W26; production engine output is D.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D2 directly blocks external dispatch and acceptance-success semantics until Dmitry ratifies off-host acknowledgment. D1 is inherited through storage and replication; D3 blocks production runner activation in W25. Launch records must be durable trusted receiver metadata, not a second coordination database or a model checkpoint. Temporary file write, fsync, and rename barriers need explicit crash coverage if used for receiver metadata.
+Persist explicit dispatch identity and the accepted contract in the authority before receiver
+launch. Use local committed acceptance in Release 1. Ambiguous launch is a stopped original
+dispatch, never permission to spawn again.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 ambiguous-spawn/restart recovery and AC1/AC3
+replication-failure and crash matrices; keep explicit dispatch identity, launch acceptance,
+and ordinary state transitions. Removed recovery, durability and failure-matrix obligations
+belong to Release 2; additional host/channel/version and full distribution breadth belongs to
+Release 4. Normal function and the checks stated above remain Release 1.

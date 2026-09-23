@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W34
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048]
+plan_revision: 3
+depends_on: [VELDO-0031, VELDO-0035, VELDO-0039]
 placement: [fleet, tracker, loop, distribution]
 protected_paths: []
 footprint:
@@ -32,84 +32,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Transition diagnostics name unit, station, expected version, command ID, and published
-    watermark.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count refused local status writes, pending handoffs, duplicate transition submissions, and
-    review objections awaiting disposition.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join dispatcher result and tracker proposal to their signed command, accepted artifact,
-    assignment, and materialized projection.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unadmitted proposal, stale transition, proof not durable, independence failure,
-    unresolved objection, and authority unavailable.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Dispatcher._dispatch_build and Dispatcher._set_status use authoritative transitions;
-      only the materializer writes enrolled status projections after durable proof acceptance. Set:
-      Real dispatch.py processes over an admitted specification, proof files, and
-      <git-common-dir>/veldo/control/control.sqlite3, including build success, red gate, and invalid
-      proof. Completeness: Enumerate status-writing call sites in dispatch.py and drive each through
-      real gate and filesystem operations. SIGKILL after transition commit before projection,
-      restart, and compare stored versions and published files; race identical build completions and
-      require one review handoff. Falsifier: Restore the direct _set_status file write and kill
-      dispatch before the authority transition; transitions/build-handoff must detect a review
-      projection without its committed acceptance.
+      Claim: Build acceptance is authoritative and only the materializer writes enrolled status
+      projections. Set and completeness: Enumerate dispatch status-write sites and run build
+      success, red gate and invalid proof through real files/store/gate; only accepted proof
+      produces the review handoff and projection. Falsifier: Write a review status directly without
+      accepted proof; the authority-to-projection check must fail.
     falsified_by: >
-      Restore the direct _set_status file write and kill dispatch before the authority transition;
-      transitions/build-handoff must detect a review projection without its committed acceptance.
+      Write a review status directly without accepted proof; the authority-to-projection check must
+      fail.
   - id: AC2
     text: >
-      Claim: Dispatcher._dispatch_review and _verdict_passes consume trusted independent review
-      receipts and explicit finding dispositions; a passing verdict alone cannot ship or erase an
-      objection. Set: Separate real builder and reviewer processes with fixture model output, signed
-      actor/assignment records, proof digests, and a real lander against a bare remote.
-      Completeness: Exercise builder-as-reviewer, changed source or proof, missing review receipt,
-      unresolved blocking finding followed by pass, rejected approval, and valid independent review.
-      Compare authority receipts and both trunk refs before and after every attempt; review failure
-      requests an authorized retry transition rather than rewriting ready. Falsifier: Let
-      _verdict_passes accept a later pass while a prior blocking finding remains unresolved;
-      transitions/review-objection must detect attempted publication.
+      Claim: Review uses a separate eligible principal and fresh context bound to exact source and
+      proof. Set and completeness: Run separate builder/reviewer processes; exercise self-review,
+      wrong source/proof, missing receipt and valid independent review. Check applicable policy
+      count and identity against signed assignment and review records. Falsifier: Accept the builder
+      as its own reviewer; the independence check must fail.
     falsified_by: >
-      Let _verdict_passes accept a later pass while a prior blocking finding remains unresolved;
-      transitions/review-objection must detect attempted publication.
+      Accept the builder as its own reviewer; the independence check must fail.
   - id: AC3
     text: >
-      Claim: tracker_bridge.reconcile_promotions and FilesystemSpecStore._promote_spec cannot turn
-      tracker status into enrolled admission or priority; drafting submits idempotent proposals
-      through B allocation and publication. Set: reconcile_drafts, SpecStore.promote_spec,
-      FilesystemSpecStore._allocate_spec_id and _write_spec, and direct promotion calls using real
-      proposal files and authority clients. Completeness: Discover all bridge filesystem writers;
-      race two bridge clients for one source revision and kill after alias reservation before
-      materialization. Recorded input files exercise status-only, accepted current admission, stale
-      signed command parameters, and absent authority. Query real SQLite, specs bytes, and source
-      mapping for zero unauthorized readiness and one allocated alias. No live channel is activated.
-      Falsifier: Allow _promote_spec to flip a draft when only the recorded tracker status is ready;
-      transitions/tracker-status-only must detect readiness without stored admission and priority.
+      Claim: A pass cannot erase an unresolved blocking finding or establish source completion. Set
+      and completeness: Present a blocking finding followed by a pass, rejected approval and a valid
+      explicit finding disposition; inspect allowed handoff and unchanged trunk on rejection. Only
+      the lander may establish completion. Falsifier: Let a later pass discard an unresolved
+      finding; the publication-refusal check must fail.
     falsified_by: >
-      Allow _promote_spec to flip a draft when only the recorded tracker status is ready;
-      transitions/tracker-status-only must detect readiness without stored admission and priority.
+      Let a later pass discard an unresolved finding; the publication-refusal check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop affected enrolled entries, preserve signed history and pending obligations, and restore the
-  prior compatible consumer only after current authorization is revalidated.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make dispatch and tracker intake consume one authoritative lifecycle instead of creating readiness and completion by editing Markdown.
+Dispatch and tracker bridge consume authoritative state transitions. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W34 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R11, R31, R46, R51, R54, and R70 drive the repair. Direct file writes and verdict-only shipping can bypass admission and publication authority. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W34 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Live tracker mutations, channel settlement, project admission workflows, and production model qualification remain E, F, and D work.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 and D2 block the inherited store and published transition boundary; D3 and D4 block the real runner and isolated-clone qualification used by dispatch. All four remain prerequisites through the A/B barrier. At the inspected baseline tracker_bridge.py exists only in .veldo/, so establish its canonical engine copy and explicit distribution/scaffolder disposition under W30 before installed use. Retain explicit unenrolled compatibility without allowing enrolled fallback. Proof must retain each applied falsifier diff and its failing named row, then revert it. Source-channel fixtures test consumption only; E owns presentation, attribution, settlement, and channel activation.
+Dispatcher._dispatch_build/_set_status and _dispatch_review/_verdict_passes use authority
+transitions and retained engineering-review policy. Tracker drafting/promotion paths are
+disabled for enrolled factory work; Telegram/API intake is a separate concern.
+LiveLoop/LiveReviewer adapter wiring is separately specified.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 projection crash/replay races and AC3 tracker
+intake/promotion integration for the Telegram MVP; retain authoritative build/review
+transitions and independent review/finding disposition. Removed recovery, durability and
+failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

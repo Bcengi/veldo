@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W36
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0049, VELDO-0050]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0035, VELDO-0050]
 placement: [distribution, metrics, contracts, loop]
 protected_paths: []
 footprint:
@@ -35,83 +35,86 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Projection records expose journal sequence, unit, dispatch, event identity, output watermark,
-    and recovery cursor.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure canonical type coverage, publication lag, duplicate delivery suppression, and corrupt
-    projection refusals.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join signed journal record and receipt digest to each deterministic event line and its explicit
-    repository destination.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unknown type, unauthorized event owner, wrong repository, unpublished record, cursor
-    gap, and damaged projection.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: events.make_event, refuse_unknown_type, _append_events, and validate.check_events
-      consume one canonical event vocabulary while preserving accepted historical schema spellings.
-      Set: Every registered emitted/projected event type, including run, request, incident, proof,
-      review, and landing events, serialized into real JSONL files and read by a separate validator
-      process. Completeness: Compare producer registrations and canonical registry in both
-      directions; emit each allowed type through its actual owner and validate resulting bytes.
-      Corrupt type and schema independently, and exercise extra-field type substitution at the real
-      writer. Unknown values refuse before any invalid line is published. Falsifier: Remove run.done
-      from validator recognition while retaining its registered producer;
-      events/vocabulary-roundtrip must fail on that real serialized event.
+      Claim: Enabled event producers and validators use the same canonical vocabulary. Set and
+      completeness: Enumerate registered journey events and preserved historical schema spellings,
+      serialize each actual owner event into JSONL and validate in another process; unknown
+      type/schema and type substitution refuse. Falsifier: Remove run.done from validator
+      recognition while keeping its producer; the vocabulary round trip must fail.
     falsified_by: >
-      Remove run.done from validator recognition while retaining its registered producer;
-      events/vocabulary-roundtrip must fail on that real serialized event.
+      Remove run.done from validator recognition while keeping its producer; the vocabulary round
+      trip must fail.
   - id: AC2
     text: >
-      Claim: events.reconcile_verdicts and _reconcile_pass route enrolled publication through
-      ordered signed journal projection; replay appends each logical event once without merging
-      independent authority logs. Set: Real materializer processes, control.sqlite3 published
-      journal records, persisted cursors, and .veldo/events.jsonl projections in two enrolled
-      clones. Completeness: Race two projectors using real locks; SIGKILL before file publication,
-      after publication before cursor acknowledgment, and after cursor commit. Restart and compare
-      event identities/order and watermark to the full published journal prefix, preserving existing
-      historical bytes and reporting damaged tails rather than truncating them. Falsifier: Advance
-      the projection cursor before durable file publication and kill in that window;
-      events/cursor-gap must detect the missing journal-derived event.
+      Claim: The event projection follows the committed journal in order at an explicit watermark.
+      Set and completeness: Materialize the enabled single-domain event prefix once through the
+      actual projector; compare event identity/order, stored watermark and unchanged historical
+      bytes with the authoritative sequence. Falsifier: Skip a committed event while advancing the
+      watermark; the prefix comparison must fail.
     falsified_by: >
-      Advance the projection cursor before durable file publication and kill in that window;
-      events/cursor-gap must detect the missing journal-derived event.
+      Skip a committed event while advancing the watermark; the prefix comparison must fail.
   - id: AC3
     text: >
-      Claim: events.emit cannot manufacture enrolled completion or redirect a journal projection
-      through ambient ROOT; spec.shipped requires the remote-confirmed replicated landing receipt.
-      Set: Direct emit, reconcile_verdicts, and journal projection calls from separate real
-      processes with explicit domain/repository identities, two repositories, and a bare remote.
-      Completeness: Try forged producer strings, changed unit/dispatch bindings, build-only results,
-      an unacknowledged landing export, and a valid replicated landing. Point process cwd and
-      imported module ROOT at the other repository; compare both logs and journals and require no
-      false shipped event or wrong-root write. Falsifier: Permit direct emit of spec.shipped after a
-      build-only attempt without a landing receipt; events/completion-owner must detect the
-      unsupported line.
+      Claim: Only a confirmed landing receipt can produce spec.shipped for its exact unit and
+      dispatch. Set and completeness: Exercise direct emit, build-only, wrong-dispatch receipt,
+      unconfirmed remote landing and valid confirmed landing with explicit domain/repository
+      coordinates; inspect actual journal and projection. Falsifier: Permit direct spec.shipped
+      after build-only; the completion-owner check must fail.
     falsified_by: >
-      Permit direct emit of spec.shipped after a build-only attempt without a landing receipt;
-      events/completion-owner must detect the unsupported line.
+      Permit direct spec.shipped after build-only; the completion-owner check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop affected enrolled entries, preserve signed history and pending obligations, and restore the
-  prior compatible consumer only after current authorization is revalidated.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Publish a complete, ordered event view from authoritative receipts using one accepted vocabulary.
+Canonical event vocabulary and journal-derived publication. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W36 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R23, R28, R51-R54, R70, and R76 govern event consumption. A fabricated completion event or skipped journal record can mislead downstream eligibility. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W36 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Full historical migration is H; live channel event production is E; source publication is W42.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 and D2 block journal authority and publication acknowledgment. D3 and D4 remain inherited A/B package prerequisites, but this projection adds no runner or clone policy. The existing legacy verdict projector is descriptive; its producer string is not authentication. Keep historical exports append-only and qualify explicit cutover routing without fabricating old signatures. control_event is a proposed narrow adapter under metrics/contracts; register its final path before ready and distribute it byte-identically. Mutation proof must show the altered registry or cursor code and the named failing row. Gate observation redirection is W43, not permission to make event history an independently merged source of truth.
+One canonical event vocabulary includes every enabled producer and preserves historical
+spellings. The legacy verdict projector is descriptive, not authenticated by its producer
+string. Local journal commit is sufficient under amended C3, but source completion still
+requires confirmed remote landing.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 multi-projector/two-clone/crash replay and AC3
+multi-repository/replica-failure matrices; retain valid event vocabulary and completion events
+derived from landing evidence. Removed recovery, durability and failure-matrix obligations
+belong to Release 2; additional host/channel/version and full distribution breadth belongs to
+Release 4. Normal function and the checks stated above remain Release 1.

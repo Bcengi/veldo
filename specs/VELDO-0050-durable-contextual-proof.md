@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W35
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0049]
+plan_revision: 3
+depends_on: [VELDO-0035, VELDO-0049]
 placement: [distribution, loop, contracts, metrics]
 protected_paths: []
 footprint:
@@ -35,96 +35,98 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Proof acceptance records name implementation object, accepted spec digest, artifact digest,
-    producer invocation, and persisted location.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count incomplete bundles, duplicate criterion mappings, missing observations, fabricated checks,
-    and recoverable proof publications.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace actual verifier output through immutable artifact storage and proof acceptance to a
-    separate review process.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish nonexistent Git object, empty criterion universe, digest mismatch, incomplete
-    evidence, untrusted check, and pending proof publication.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: LiveLoop.assemble_proof and Executor.run persist immutable proof and evidence before
-      reporting built or offering review. Set: Actual proof/<spec-id>/manifest.json projections,
-      digest-addressed artifacts, Git implementation commits, and authority proof records across
-      separate builder and reviewer processes. Completeness: Enumerate artifact-write, fsync, atomic
-      publication, acceptance commit, and reply barriers. SIGKILL at each barrier and restart the
-      reader without the builder memory or temporary directory; it must read the exact complete
-      accepted bundle or refuse review while publication is pending. Falsifier: Keep the manifest
-      only in validate_proof temporary storage and kill the builder after built;
-      proof/process-boundary must fail when the fresh reviewer cannot resolve its bytes.
+      Claim: Proof is stored as accepted immutable evidence before built or review is offered. Set
+      and completeness: Run the actual builder, end its process, and resolve its complete proof
+      bundle from a fresh reviewer without builder memory or temporary files; compare artifact
+      digests and implementation/spec identity. Falsifier: Keep the manifest only in temporary
+      validation storage; the fresh reviewer must fail to resolve it.
     falsified_by: >
-      Keep the manifest only in validate_proof temporary storage and kill the builder after built;
-      proof/process-boundary must fail when the fresh reviewer cannot resolve its bytes.
+      Keep the manifest only in temporary validation storage; the fresh reviewer must fail to
+      resolve it.
   - id: AC2
     text: >
-      Claim: LiveLoop.validate_proof invokes complete contextual validation against accepted source
-      and specification, not only validate.check_json. Set: validate.check_json,
-      check_criteria_coverage, check_required_evidence, and spec_criterion_ids over real Git
-      objects, manifests, and evidence bytes in enrolled snapshots. Completeness: Derive the
-      required criterion/evidence/check universe from the accepted spec and verifier catalog.
-      Corrupt one binding at a time: empty accepted criterion set, omitted or duplicate or invented
-      mapping, nonexistent commit, wrong spec revision, missing producer, missing trusted
-      observation, changed artifact digest, or absent required evidence. Require a named refusal
-      before review in a new process. Falsifier: Replace contextual validation with check_json alone
-      and submit an empty-criteria proof naming a nonexistent commit; proof/contextual-validation
-      must reject it.
+      Claim: Proof validation covers the complete accepted specification and required evidence. Set
+      and completeness: Derive criterion/evidence/check sets from the accepted spec and installed
+      catalog; invoke contextual validation with empty, omitted, duplicate and invented mappings,
+      nonexistent commit, wrong spec revision, missing producer/observation, wrong digest and
+      missing evidence. Each must refuse. Falsifier: Use check_json alone for an empty-criteria
+      proof naming a nonexistent commit; the contextual-validation check must fail.
     falsified_by: >
-      Replace contextual validation with check_json alone and submit an empty-criteria proof naming
-      a nonexistent commit; proof/contextual-validation must reject it.
+      Use check_json alone for an empty-criteria proof naming a nonexistent commit; the contextual-
+      validation check must fail.
   - id: AC3
     text: >
-      Claim: LiveLoop.assemble_proof records only actual trusted check observations; missing build
-      checks cannot create a passing unit check. Set: LiveLoop.gate and Executor.run using the real
-      canonical gate subprocess, captured exit/output artifacts, and signed Evidence Service
-      receipts in control.sqlite3. Completeness: Enumerate required checks from the installed gate
-      catalog and compare them to captured results. Run green, red, interrupted, missing-output, and
-      altered-output cases; SIGKILL the gate before its terminal record and require missing evidence
-      rather than default success. Falsifier: Reinstate the default passed unit check when build
-      checks are absent; proof/no-default-check must detect fabricated success after the interrupted
-      gate.
+      Claim: Proof records actual trusted checks and never defaults missing build checks to passed.
+      Set and completeness: Run the real canonical gate with green, red and missing-terminal-output
+      cases; compare every required catalog check to captured output, exit and Evidence Service
+      observations. Missing or altered observations refuse review. Falsifier: Insert a default
+      passed unit check when observations are absent; the no-default-success check must fail.
     falsified_by: >
-      Reinstate the default passed unit check when build checks are absent; proof/no-default-check
-      must detect fabricated success after the interrupted gate.
+      Insert a default passed unit check when observations are absent; the no-default-success check
+      must fail.
   - id: AC4
     text: >
-      Claim: Executor.run and LiveLoop.emit submit proof/review observations to their owning
-      services and never directly emit projection-owned verdict.recorded or completion. Set:
-      Build-only and full executor paths with real events.emit refusal, signed review artifacts from
-      a separate actor, the event file, and the authoritative journal. Completeness: Drive both
-      paths beyond proof with only model responses faked. Kill after review artifact acceptance
-      before event projection; replay must produce its single owned observation without executor
-      append, and build-only must leave landing receipts absent. Falsifier: Restore Executor.run
-      direct verdict.recorded emission; proof/event-owner must fail at the real emitter refusal on
-      the full review path.
+      Claim: Executor proof and review observations go to their owning services, while build-only
+      leaves landing receipts absent. Set and completeness: Drive build-only and full review paths
+      through real events.emit restrictions and the journal; compare producer ownership and read
+      completion from a new process. Falsifier: Emit verdict.recorded directly from the executor;
+      the owning-service check must fail.
     falsified_by: >
-      Restore Executor.run direct verdict.recorded emission; proof/event-owner must fail at the real
-      emitter refusal on the full review path.
+      Emit verdict.recorded directly from the executor; the owning-service check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop affected enrolled entries, preserve signed history and pending obligations, and restore the
-  prior compatible consumer only after current authorization is revalidated.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make executor proof survive its producer and bind review eligibility to complete observed evidence.
+Executor persists proof and performs complete contextual validation. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W35 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R15, R46-R47, R51, and R76 require durable contextual proof. Accepting incomplete or fabricated proof can authorize unsupported publication. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W35 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Candidate integration and final gate evidence are W41 and W43. This item does not qualify live engines or channel approvals.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 and D2 block durable accepted proof publication through B; D3 and D4 block the contained construction profile used in the full path. control_proof is a narrow proposed integration module, to be mapped into contracts before ready and inventoried under W30 if introduced. Preserve implementation commit, proof artifact or evidence commit, and later candidate as distinct subjects. W36 owns journal event projection; this item removes executor ownership violations without weakening events.emit. Use real ssh-keygen signing and Git object lookup. Retain the applied mutation and the specific failing row for each criterion. A review assertion remains an assertion, even when signed as an observed response.
+Preserve implementation commit, proof artifact/evidence commit and final candidate as distinct
+subjects. VELDO-0051 owns journal projection; neither the executor nor a signed reviewer
+assertion can manufacture completion. Required checks and contextual proof coverage remain
+intact.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 every-write-barrier crash recovery and AC4
+projection replay; retain proof available to a fresh reviewer, complete contextual validation,
+and actual check observations. Removed recovery, durability and failure-matrix obligations
+belong to Release 2; additional host/channel/version and full distribution breadth belongs to
+Release 4. Normal function and the checks stated above remain Release 1.

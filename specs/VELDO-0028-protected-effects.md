@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W13
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0026, VELDO-0027]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0025, VELDO-0027]
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -32,82 +32,89 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Effect denials identify operation, unit, contract digest, capability identity, and consumed or
-    refused nonce identity.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count accepted effects, duplicate requests, expired handles, unresolved outcomes, and denied
-    credential exchanges.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join accepted contract, invocation identity, nonce transaction, receiver evidence, and
-    reconciliation obligation.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish forged task declaration, scope mismatch, stale generation, expired capability,
-    nonce replay, and outcome unknown.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The real Credential Service derives short-lived invocation handles from accepted
-      contracts and only the trusted Effect Executor can exchange them for privileged operations.
-      Set: Each registered privileged operation and invocation scope in real SQLite, with
-      credentials held outside the worker OS identity. Completeness: Use actual IPC clients and a
-      credential-protected local target; substitute caller task declarations, contract, unit,
-      station, sandbox, and expiry. Verify fresh invocation identity and expiry no later than
-      contract deadline plus fifteen minutes, and denied direct worker credential reads.
-      Falsifier: Trust a worker-supplied task declaration instead of the stored contract and
-      invoke an out-of-scope target; effects/forged-scope must observe zero target calls.
+      Claim: Only the trusted Effect Executor exchanges a contract-derived short-lived handle for an
+      authorized provider or source-publication operation. Set and completeness: Exercise both
+      operation kinds through real authenticated IPC and the configured store; compare accepted
+      contract, unit, station, sandbox, target and expiry and attempt a direct worker credential
+      read. Expiry is no later than contract deadline plus fifteen minutes. Falsifier: Trust a
+      worker-supplied scope instead of the accepted contract; the out-of-scope receiver-call count
+      must become nonzero.
     falsified_by: >
-      Trust a worker-supplied task declaration instead of the stored contract and invoke an
-      out-of-scope target; effects/forged-scope must observe zero target calls.
+      Trust a worker-supplied scope instead of the accepted contract; the out-of-scope receiver-call
+      count must become nonzero.
   - id: AC2
     text: >
-      Claim: Authorization, current authority and claim generations, and nonce consumption
-      serialize with durable effect acceptance so one capability cannot authorize two logical
-      effects. Set: Concurrent protected requests with identical and changed content, using real
-      executor processes and a durable target receipt. Completeness: Race both orders against
-      revocation and stale generations; count SQLite nonce and acceptance rows and target
-      operations. SIGKILL before and after acceptance commit and require one logical identity on
-      retry, never fresh permission from a consumed nonce. Falsifier: Move nonce consumption after
-      effect acceptance and race two consumers; effects/nonce-race must detect more than one
-      accepted effect.
+      Claim: Authorization and nonce consumption commit with effect acceptance, permitting one
+      logical use. Set and completeness: For each of the two operation kinds, submit an identical
+      request twice and changed content under the same identity; inspect nonce, acceptance and
+      receiver records. Only the identical request returns its existing result. Falsifier: Consume
+      the nonce after accepting a second use; the duplicate-acceptance observation must fail.
     falsified_by: >
-      Move nonce consumption after effect acceptance and race two consumers; effects/nonce-race
-      must detect more than one accepted effect.
+      Consume the nonce after accepting a second use; the duplicate-acceptance observation must
+      fail.
   - id: AC3
     text: >
-      Claim: A crash between acceptance and conclusive target evidence leaves explicit uncertainty
-      and forbids blind execution retry. Set: Before-send, target-commit-before-reply, and
-      receipt-commit windows for a real local effect receiver with persistent outcome records.
-      Completeness: Kill the executor at each barrier, restart it, and compare target bytes,
-      consumed nonce, and stored recovery obligation. Receiver evidence may resolve the outcome;
-      process absence or a new nonce alone may not. The API preserves the original dispatch for
-      W23 recovery. Falsifier: Treat consumed nonce plus absent executor PID as nonexecution after
-      the target committed; effects/unknown-retry must catch the duplicate target operation.
+      Claim: Provider and publication results preserve dispatch and target identity without treating
+      acceptance as completion. Set and completeness: Observe accepted, conclusively completed and
+      unknown results from both receivers, binding returned evidence to the stored request; unknown
+      results expose a named stop and no new attempt. Falsifier: Treat receiver acceptance as
+      conclusive completion; the accepted-only result must fail the completion check.
     falsified_by: >
-      Treat consumed nonce plus absent executor PID as nonexecution after the target committed;
-      effects/unknown-retry must catch the duplicate target operation.
+      Treat receiver acceptance as conclusive completion; the accepted-only result must fail the
+      completion check.
 required_evidence: [unit, integration]
 rollback: >
-  Revoke affected handles, stop new effects, and preserve consumed nonces and uncertain dispatches
-  for reconciliation; never reset replay protection.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Execute privileged effects only through trusted capabilities with atomic authorization and nonce consumption.
+Protected effect execution and atomic nonce consumption. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W13 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R22, R33, R36, R39, R45, R57, R74. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Capability or nonce errors could expose credentials or repeat privileged effects. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W13 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Effect-specific resolution commands are W23 and production provider qualification is D.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 blocks the inherited authority store; D2 controls release of effects that depend on pending publication. Replace the existing FakeIssuer seam with the actual protected internal issuer, while retaining fixture keys only in tests. B tests a real local target and credential boundary; D separately establishes live provider credential separation. No unknown target effect is autonomously enabled.
+The actual protected issuer replaces FakeIssuer for provider and source-publication
+operations. The worker never obtains reusable provider or Git credentials. Unknown outcomes
+retain the original dispatch and stay stopped; no recovery command is implied.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 recovery and AC2 generation/revocation/crash
+interleavings; scope effects to the retained provider/publication operations and keep their
+authorization boundary. Removed recovery, durability and failure-matrix obligations belong to
+Release 2; additional host/channel/version and full distribution breadth belongs to Release 4.
+Normal function and the checks stated above remain Release 1.

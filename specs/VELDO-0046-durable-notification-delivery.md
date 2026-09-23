@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W31
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0107]
 placement: [fleet, metrics, distribution]
 protected_paths: []
 footprint:
@@ -32,82 +32,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Notification records identify consumer, durable sequence, cursor, delivery obligation, and
-    reconnect reason.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure pending delivery count and age, cursor lag, replayed events, duplicate notifications,
-    and bounded reconnect attempts.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join command commit and published watermark to signal emission, authenticated IPC delivery,
-    consumer handling, and cursor acknowledgment.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish notification gap, notifier death, unauthenticated peer, stale cursor, unpublished
-    event, and delivery still pending.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Committed history and delivery obligations wake consumers through in-process signals
-      and authenticated IPC, with publication-dependent actions held until durable
-      acknowledgment. Set: Intake, settlement, assignment, dependency, completion, revocation,
-      and budget-availability events in real control.sqlite3. Completeness: Compare R28 causes
-      with the producer registry and drive each through real command and consumer processes.
-      Disconnect IPC and withhold Git export acknowledgment; obligations persist, notification
-      cannot grant unpublished authority, and consumers do not periodically query storage to
-      discover changes. Falsifier: Authorize a dependent consumer action on a local notification
-      before its export acknowledgment; notifications/unpublished-event must detect that action.
+      Claim: Committed journal events wake each enabled consumer through signals or authenticated
+      IPC. Set and completeness: Compare enabled producer/consumer registrations to the installed
+      journey, drive each event into the real store, and observe its handler only after local
+      commit. Falsifier: Notify and accept an action before its transaction commits; the committed-
+      event check must fail.
     falsified_by: >
-      Authorize a dependent consumer action on a local notification before its export
-      acknowledgment; notifications/unpublished-event must detect that action.
+      Notify and accept an action before its transaction commits; the committed-event check must
+      fail.
   - id: AC2
     text: >
-      Claim: Commit notification and entering idle serialize so a committed event cannot leave a
-      live consumer asleep indefinitely. Set: Real event loop, notifier process or channel, and
-      idle consumer across commit, signal send, and idle-transition barriers. Completeness: Race
-      an event with idle entry in both orders; SIGKILL the notifier after commit before signal and
-      require channel closure plus recovery replay within the declared reconnect deadline. Count
-      storage reads during quiet idle to exclude discovery polling. Falsifier: Enter idle after
-      checking the queue outside the notification boundary and commit in that gap;
-      notifications/lost-wakeup must detect the sleeping consumer.
+      Claim: Entering idle cannot lose an ordinary committed wake-up. Set and completeness: Use real
+      event-loop barriers to deliver an event immediately before and after idle entry; both orders
+      must invoke the consumer, with no periodic database discovery polling while quiet. Falsifier:
+      Check the queue outside the idle transition; the event-in-the-gap check must leave a sleeping
+      consumer and fail.
     falsified_by: >
-      Enter idle after checking the queue outside the notification boundary and commit in that
-      gap; notifications/lost-wakeup must detect the sleeping consumer.
+      Check the queue outside the idle transition; the event-in-the-gap check must leave a sleeping
+      consumer and fail.
   - id: AC3
     text: >
-      Claim: Durable cursors replay startup, reconnect, and explicit resynchronization without
-      duplicating committed consumer effects or losing delivery obligations. Set: Real consumer
-      cursor transactions and idempotent handlers, including terminal projection obligations and
-      out-of-order notifications. Completeness: Kill consumers before handler commit, after effect
-      commit before cursor acknowledgment, and after cursor commit. Restart from each stored
-      cursor, duplicate notifications, and compare logical effects and complete journal-sequence
-      coverage to the retained event range. Falsifier: Advance the cursor before the handler
-      transaction and kill the consumer in that window; notifications/cursor-before-effect must
-      detect the skipped event.
+      Claim: Consumers receive the committed event identity and watermark and cannot treat transport
+      as authority. Set and completeness: For each enabled consumer submit a genuine notification
+      and an invented event identity; read the actual stored event before acting, and reject the
+      invented identity. Falsifier: Trust an invented IPC event payload without resolving its
+      journal entry; the fabricated-event check must fail.
     falsified_by: >
-      Advance the cursor before the handler transaction and kill the consumer in that window;
-      notifications/cursor-before-effect must detect the skipped event.
+      Trust an invented IPC event payload without resolving its journal entry; the fabricated-event
+      check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Pause affected consumers, retain delivery obligations and cursors, and replay from the last
-  acknowledged cursor through a compatible handler without discarding unsignaled commits.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Wake consumers reliably from durable events and replay cursor gaps without polling storage for rare changes.
+Durable wake-up, cursor replay, and notification delivery. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W31 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R28, R41, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Lost notifications or premature cursors could strand committed work or skip revocation and stop obligations. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W31 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Live tracker doorbells, channel projection creation, and model project cycles are separate work.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 and D2 are inherited from the store and replica. Notification is transport, SQLite is durable history, and timers are limited to real deadlines, heartbeat, and bounded reconnect backoff. Define the reconnect bound in configuration before ready. Existing tracker session-start pull remains visibly limited until E qualifies its ingress; this transport does not silently activate it.
+The active event consumers include settlement, assignment, dependency, completion and budget
+updates; the common intake and PM subscribe when installed. Telegram reporting is a separate
+projection. No Jira discovery polling or replay/reconnect qualification is required.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 replay and AC2 notifier-death recovery, plus AC1
+off-host failure cases; keep ordinary event wake-up and correct transition to idle. Removed
+recovery, durability and failure-matrix obligations belong to Release 2; additional
+host/channel/version and full distribution breadth belongs to Release 4. Normal function and
+the checks stated above remain Release 1.

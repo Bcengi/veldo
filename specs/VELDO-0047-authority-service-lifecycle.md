@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W32
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0029, VELDO-0030, VELDO-0040, VELDO-0041, VELDO-0046]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0025, VELDO-0027, VELDO-0029, VELDO-0040, VELDO-0046, VELDO-0107]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -41,95 +41,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Service diagnostics identify domain instance, fixed executable digest, configuration revision,
-    recovery phase, and operations stop or failure reason.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count startup failures, recovery restarts, stopped instances, absent-service refusals, and
-    retired containment groups.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join authorized installation and activation receipt to systemd unit, lock generation, recovery
-    result, socket permissions, and shutdown observations.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unqualified host, unenrolled instance, unsafe socket permissions, recovery failed,
-    restart limit reached, explicit stop, and AUTHORITY_UNAVAILABLE.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Authorized installation creates a versioned user systemd instance under an
-      operations-controlled account with fixed executable, protected configuration, socket
-      permissions, and constrained helper. Set: Real installation and startup on every supported
-      qualified Linux profile, one service instance per domain and distinct common directory.
-      Completeness: Install disposable service instances, inspect loaded unit and filesystem
-      permissions, and corrupt each executable/configuration/socket binding. Activation must
-      refuse absent enrollment or qualification; logout persistence is required only when
-      separately established and tested. Falsifier: Start from a worker-writable executable path
-      after replacing its bytes; service/executable-binding must refuse activation.
+      Claim: Explicit authorized installation/start/stop operates one protected Linux authority
+      instance. Set and completeness: Install a disposable real systemd instance on this box and
+      inspect fixed executable, configuration, enrollment, socket and helper permissions. Attempt a
+      second scheduling instance under the same stable lock; it must refuse. Falsifier: Allow two
+      instances to acquire scheduling authority; the single-instance observation must fail.
     falsified_by: >
-      Start from a worker-writable executable path after replacing its bytes;
-      service/executable-binding must refuse activation.
+      Allow two instances to acquire scheduling authority; the single-instance observation must
+      fail.
   - id: AC2
     text: >
-      Claim: Unexpected exits restart only through verified recovery, repeated failures leave a
-      durable stopped diagnostic, and explicit operations stop remains stopped. Set: Real systemd
-      authority and runner groups across normal startup, SIGKILL, corrupted startup history,
-      control-channel loss, and explicit stop. Completeness: Drive each failure, observe the
-      stable leader lock and generation, and require retired old containment before new
-      scheduling. Exhaust the configured finite restart limit and inspect diagnostic persistence;
-      stop explicitly and prove no automatic restart after the observation window. Falsifier:
-      Bypass recovery on automatic restart after SIGKILL with an unresolved running group;
-      service/restart-recovery must detect premature scheduling.
+      Claim: Authenticated local client commands execute against the configured real authority store
+      and return its committed result. Set and completeness: Send a signed mutation through
+      production IPC with explicit domain, repository and workspace coordinates; query the
+      configured SQLite database independently and compare changed row, journal identity and
+      returned watermark. Wrong coordinates or actor must refuse. Falsifier: Return a callback
+      success without changing the configured store; the independent SQLite observation must fail.
     falsified_by: >
-      Bypass recovery on automatic restart after SIGKILL with an unresolved running group;
-      service/restart-recovery must detect premature scheduling.
+      Return a callback success without changing the configured store; the independent SQLite
+      observation must fail.
   - id: AC3
     text: >
-      Claim: Clients never silently start a competing authority and report service identity, last
-      watermark, and the documented operations procedure when it is absent. Set: Real local CLI
-      and SSH-relayed inspection, mutation, and claim clients against a stopped or unreachable
-      enrolled service. Completeness: Stop the service, invoke every registered client class, and
-      inspect process census, common-directory files, and Git state. Require AUTHORITY_UNAVAILABLE
-      for writes, explicitly stale inspection only, and no local database or claim fallback.
-      Falsifier: Auto-start an authority when a claim client finds no socket;
-      service/absent-client must detect the unapproved new process.
+      Claim: Absent authority and unexpected exit leave mutation/admission unavailable until an
+      explicit operations action. Set and completeness: Stop the real service and invoke enabled
+      local inspection, claim and mutation clients; require AUTHORITY_UNAVAILABLE, service identity,
+      last-known watermark and start guidance, no local fallback, and clearly stale read-only state.
+      Falsifier: Auto-start a service on a missing socket; the absent-service observation must fail.
     falsified_by: >
-      Auto-start an authority when a claim client finds no socket; service/absent-client must
-      detect the unapproved new process.
-  - id: AC4
-    text: >
-      Claim: The optional status listener is read-only and validates loopback at the actual socket
-      boundary even through direct API calls. Set: Real status_server.make_server and serve entry
-      points with loopback, wildcard, non-loopback, and resolved-address inputs plus remote relay
-      inspection. Completeness: Attempt each bind against real sockets, inspect bound addresses,
-      and issue mutation requests to every exposed route. Non-loopback listening must refuse
-      before accepting a connection; remote inspection uses authenticated relay and cannot widen
-      the local listener. Falsifier: Trust the default host argument and call make_server directly
-      with a wildcard address; service/direct-bind must detect the unsafe listener.
-    falsified_by: >
-      Trust the default host argument and call make_server directly with a wildcard address;
-      service/direct-bind must detect the unsafe listener.
+      Auto-start a service on a missing socket; the absent-service observation must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Perform an authorized stop, retire or quarantine worker groups, preserve store and activation
-  receipts, and restore the previous compatible unit without implicit schema downgrade.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Install one explicitly activated authority service per domain with recoverable startup, bounded stop, and honest absence behavior.
+Authority service installation, startup, stop, and absent-service behavior. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W32 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R20, R24, R43-R44, R57, R75. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Incorrect service activation or restart could run competing authorities or leave workers alive without supervision. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W32 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Automatic host failover, a network application server, and live channel ingress are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D3 directly blocks service installation and activation until Dmitry ratifies Linux systemd and cgroup v2. D1 and D2 are inherited from authority storage and notifications. Tests must use real systemd on a qualified host; unavailable host support is an explicit blocked qualification, not a mocked pass. Installed service and helper files require explicit distribution disposition. Source landing alone never enables a user service.
+This spec includes the normal request-to-real-store wiring identified by 0115 and the single
+local service exclusion from 0030. Actual SQLite changes and returned committed watermarks are
+required; callback-only evidence is insufficient. Optional legacy status-server/remote
+inspection matrices are deferred; the new authenticated UI API is separately specified.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 automatic recovery, plural-profile AC1
+qualification, and AC3/AC4 remote-relay cases; retain explicit install/start/stop, one local
+instance, and honest unavailable behavior. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.

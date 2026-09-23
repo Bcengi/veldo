@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W47
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059]
+plan_revision: 3
+depends_on: [VELDO-0028, VELDO-0036]
 placement: [fleet, engine, metrics, distribution]
 protected_paths: []
 footprint:
@@ -47,104 +47,100 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Credential and accounting receipts name provider account, invocation, contract, request
-    sequence, pricing revision, maximum allocated charge, and observed charge without secrets.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Expose reserved, settled, outstanding, and unknown amounts at account/project/unit ceilings,
-    plus rejected credential exchanges and duplicate usage sequences.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join accepted contract to internal handle issuance and use, protected provider call, actual
-    usage evidence, and exactly one durable charge settlement.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish reusable-profile exposure, forged task scope, expired handle, unbounded maximum,
-    exhausted remainder, usage conflict, and unresolved possible charge.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Provider authentication is held by protected services and is inaccessible to real
-      model tools/builds; internal capabilities derive only from accepted contracts. Set:
-      accounts.account_add/resolve/get, fleet.InSessionSpawner._assemble_env,
-      credential_issue.issue/authorize_use/Credential.reveal, and both production adapters on
-      every supported authentication and host profile. Completeness: Enumerate credential sources
-      from launch environment, mounts, descriptors, sockets, and provider configuration. Run
-      actual tool/build children attempting each access, another account, forged task_declares,
-      changed contract/unit/station/sandbox, expired handles, and revocation at use. Require
-      unique short-lived invocation identity expiring no later than deadline plus fifteen minutes
-      and zero reusable profile mounts. Unsafe profiles stay disabled. Falsifier: Mount the
-      resolved account profile into a worker tool sandbox; provider/custody must detect a reusable
-      credential read from that child.
+      Claim: Provider authentication stays in protected services and internal handles derive from
+      accepted contracts. Set and completeness: For both configured providers enumerate environment,
+      mounts, descriptors, sockets and provider config available to real model/tool/build children
+      on Linux and Mac; attempt credential reads and substituted
+      contract/unit/station/sandbox/expiry. Require refusal and no reusable profile mounts.
+      Falsifier: Mount a reusable account profile into the worker tool environment; the real
+      credential-read check must fail.
     falsified_by: >
-      Mount the resolved account profile into a worker tool sandbox; provider/custody must detect
-      a reusable credential read from that child.
+      Mount a reusable account profile into the worker tool environment; the real credential-read
+      check must fail.
   - id: AC2
     text: >
-      Claim: Every live billable request allocates an enforceable maximum possible charge
-      atomically from all applicable remaining reservations before reaching the provider. Set:
-      Initial, retry, and follow-on calls for Claude Code and Codex, through B control_reservation
-      and production credential_issue.authorize_use boundaries, at account/project/unit ceilings.
-      Completeness: Inventory all billable paths and applicable pricing components, including
-      input/output and any enabled extras; bind pricing revision, hard request limits, exact
-      monetary units and rounding to the maximum. Race real callers below, at, and above each
-      remainder after charges and exposure, observing actual outbound calls and billed results.
-      Unknown or unenforceable maxima refuse before any call; a provider mode without enforcement
-      cannot qualify. Falsifier: Allocate a follow-on maximum after sending and race two calls for
-      the same remainder; provider/pre-call-race must detect the extra outbound billable call.
+      Claim: Each billable request allocates its enforceable maximum from all applicable remaining
+      budgets before sending. Set and completeness: Inventory initial, retry and follow-on paths for
+      both providers, enabled price components and hard request limits; bind pricing revision, exact
+      units and rounding. Exercise fitting, excessive and unknown maxima and two requests for one
+      remainder, recording outbound calls and live charges. Falsifier: Allocate a follow-on maximum
+      after sending; the pre-call ordering check must fail.
     falsified_by: >
-      Allocate a follow-on maximum after sending and race two calls for the same remainder;
-      provider/pre-call-race must detect the extra outbound billable call.
+      Allocate a follow-on maximum after sending; the pre-call ordering check must fail.
   - id: AC3
     text: >
-      Claim: Observed usage settles once per invocation and sequence while incomplete reports
-      retain conservative exposure through cancellation and restart. Set: Both adapters feeding B
-      reservation accounting and budget_state.budget_report/report_lines, with actual provider
-      receipts and normal, delayed, duplicate, reordered, malformed, and conflicting usage.
-      Completeness: Capture live costs and reconcile token/charge semantics against provider
-      evidence for each qualified mode. Kill the adapter after provider acceptance before usage
-      persistence, replay reports through separate processes, and compare durable balances with an
-      independent exact-unit oracle. Only reconciled usage or authoritative no-charge evidence
-      releases exposure; estimates and unknowns remain labeled and unbounded uncertainty blocks
-      affected admission. Falsifier: Release outstanding exposure when an accepted request times
-      out; provider/timeout-exposure must catch a new call spending the unresolved allocation.
+      Claim: Usage settles once per invocation/sequence and incomplete reports retain conservative
+      exposure. Set and completeness: Capture live receipts from each configured provider, ingest
+      normal/duplicate/missing reports, and compare balances with an independent exact-unit
+      calculation; cancellation or timeout alone cannot release an accepted request allocation.
+      Falsifier: Release exposure on accepted-request timeout; the next-spend refusal check must
+      fail.
     falsified_by: >
-      Release outstanding exposure when an accepted request times out; provider/timeout-exposure
-      must catch a new call spending the unresolved allocation.
+      Release exposure on accepted-request timeout; the next-spend refusal check must fail.
   - id: AC4
     text: >
-      Claim: Account selection and cost reports cannot misattribute consumption or turn missing
-      instrumentation into free capacity. Set: accounts.resolve/get/list_accounts and
-      budget_state.read_events/spend_events/budget_report/report_lines over accepted account
-      bindings and real concurrent invocations in two provider accounts and two projects.
-      Completeness: Drive every supported provider accounting mode with explicit repository
-      coordinates. Supply an unrelated ambient account environment, corrupt usage attribution, and
-      remove measurement data while retaining committed allocations. Compare each
-      account/project/unit total and displayed watermark to signed stored receipts; missing
-      instrumentation must show unknown exposure, never another account balance or available
-      budget. Falsifier: Attribute one invocation usage to a caller-supplied account label instead
-      of its accepted contract; provider/account-substitution must detect the wrong ledger and
-      report totals.
+      Claim: Costs and remaining budget are attributed to the stored account/project/unit. Set and
+      completeness: For the one account per provider and journey project, alter ambient account
+      labels and report attribution, and remove measurement while retaining allocation; compare
+      displayed watermark and totals to actual stored receipts. Falsifier: Use a caller-supplied
+      account label for usage; the ledger-attribution comparison must fail.
     falsified_by: >
-      Attribute one invocation usage to a caller-supplied account label instead of its accepted
-      contract; provider/account-substitution must detect the wrong ledger and report totals.
+      Use a caller-supplied account label for usage; the ledger-attribution comparison must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Disable affected provider modes, revoke handles, preserve private custody and all usage/exposure
-  records, and reconcile charges before releasing any reservation.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Qualify live provider credential custody and charge accounting before either engine can consume a production budget.
+Provider credential separation and live usage accounting. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package D, W47 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R36, R39, R45, and R59 extend the inspected account-profile and FakeIssuer seams. Leakage of a reusable login or allocation after a billable call can exceed both authority and signed spending limits. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W47 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Customer billing, new admission policy, secret inventory exemptions, and governor pacing strategy are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block the store and acknowledged effects; D3/D4 block real credential-isolated host and clone qualification until Dmitry rules. B W13 owns the actual issuer and W21 the reservation predicate; this item proves both against live provider behavior and repairs provider integration, rather than accepting FakeIssuer.mint as issuance evidence. Qualification must name supported billing/authentication modes and all pricing components before ready, with actual costs under a declared finite budget. No provider price or safe proxy is assumed. Preserve raw protected receipts outside public proof and publish redacted digests/provenance sufficient for independent checks. Register any adapter assets in W30 inventory, map budget_state and credential_issue into effective architecture, and retain each mutation diff with its named failing row.
+Qualify one account and authentication mode for each of Claude Code and Codex on the two MVP
+host profiles. Record pricing and hard-limit evidence; no price or safe proxy is assumed.
+Protect raw receipts and publish redacted digests sufficient for independent checking. Unknown
+cost is never zero.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 all-authentication/host matrix, AC3
+restart/reordered-report qualification, AC4 two-account/two-project matrix; retain one account
+per provider, attribution, custody, live accounting, and every pre-call cap. Removed recovery,
+durability and failure-matrix obligations belong to Release 2; additional host/channel/version
+and full distribution breadth belongs to Release 4. Normal function and the checks stated
+above remain Release 1.

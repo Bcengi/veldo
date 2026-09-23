@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W26
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0040]
+plan_revision: 3
+depends_on: [VELDO-0036, VELDO-0039, VELDO-0040]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -35,82 +35,85 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Heartbeat and stop records identify wrapper sequence, deadline, escalation stage, observed
-    containment, and accounting status.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure heartbeat gaps, thirty-second liveness closures, ten-second cooperative grace,
-    five-second kill escalation, and quarantined slots.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join monotonic observations from wrapper and supervisor to effect fencing, OS signals, exit
-    evidence, and capacity-release transaction.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish missing heartbeat, uncertain liveness, cooperative-stop timeout, surviving
-    descendants, accounting pending, and cleanup incomplete.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: A trusted wrapper emits ten-second heartbeats and renews claims independently of
-      blocking model calls; thirty seconds without a heartbeat closes effect permission. Set: Real
-      wrapper, model-response child, independent supervisor, and accepting effect process on the
-      qualified profile. Completeness: Block child output and model return, then SIGSTOP the
-      wrapper while leaving the effect receiver live. Observe independent monotonic timestamps,
-      continued heartbeat during model silence, and permission closure at the declared
-      missed-heartbeat deadline; separately retain the two-second leadership-loss bound.
-      Falsifier: Emit heartbeats only after model calls return and hang the model child;
-      heartbeat/independent-wrapper must detect missed wrapper heartbeats.
+      Claim: The wrapper reports liveness independently of a blocking model response. Set and
+      completeness: Run a real wrapper and blocked model child on Linux; observe ten-second
+      heartbeats and claim renewal, then missing-heartbeat stop after the configured thirty-second
+      window. Record actual monotonic timings. Falsifier: Emit heartbeats only after model return;
+      the blocked-call liveness check must fail.
     falsified_by: >
-      Emit heartbeats only after model calls return and hang the model child;
-      heartbeat/independent-wrapper must detect missed wrapper heartbeats.
+      Emit heartbeats only after model return; the blocked-call liveness check must fail.
   - id: AC2
     text: >
-      Claim: Cooperative stop escalates after ten seconds to containment termination and after
-      five more seconds to killing remaining descendants. Set: Real cooperative, hanging,
-      signal-ignoring, and grandchild-spawning workers under every qualified containment profile.
-      Completeness: Request stop through the accepted control API and record adapter request plus
-      actual SIGTERM and SIGKILL delivery with monotonic times. SIGSTOP the orchestrator during
-      escalation and require the independent supervisor to finish within versioned policy bounds
-      without waiting on model output. Falsifier: Send termination only to the parent and leave a
-      SIGTERM-ignoring grandchild alive beyond the kill deadline; heartbeat/stop-escalation must
-      detect it.
+      Claim: An accepted stop escalates to termination after ten seconds and killing remaining
+      descendants after five more seconds. Set and completeness: Exercise a cooperative child and a
+      signal-ignoring descendant under the real Linux group; observe the requested stop, signals and
+      OS exit with declared measurement tolerance. Falsifier: Send termination only to the parent;
+      the bounded group-exit check must fail.
     falsified_by: >
-      Send termination only to the parent and leave a SIGTERM-ignoring grandchild alive beyond the
-      kill deadline; heartbeat/stop-escalation must detect it.
+      Send termination only to the parent; the bounded group-exit check must fail.
   - id: AC3
     text: >
-      Claim: Retirement releases a slot only after empty containment and durable outcome,
-      accounting, and resource-cleanup records; uncertainty quarantines it. Set: Real runner group
-      retirement and reservation consumers across exit, accounting write, cleanup, and release
-      commit. Completeness: SIGKILL the retirement process at every boundary, withhold each
-      required observation, and race a new admission. Reopen SQLite and inspect the actual group
-      and files; require retained capacity until all obligations are proven, with no double
-      release after restart. Falsifier: Commit capacity release before accounting and kill the
-      retiring process in that window; heartbeat/retirement-commit must reject reuse of the slot.
+      Claim: Retirement follows actual termination and retains unresolved outcome/accounting/cleanup
+      obligations. Set and completeness: Attempt retirement with a live descendant, missing
+      accounting or remaining clone files, then complete each obligation and inspect the single
+      capacity release. Falsifier: Release the slot before descendant termination; the retirement
+      observation must fail.
     falsified_by: >
-      Commit capacity release before accounting and kill the retiring process in that window;
-      heartbeat/retirement-commit must reject reuse of the slot.
+      Release the slot before descendant termination; the retirement observation must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop new work, complete or quarantine all retirement sequences, and retain reservations until
-  the prior qualified supervisor proves empty containment and accounting.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Supervise worker liveness independently and release capacity only after bounded stopping and durable retirement.
+Independent heartbeat, bounded stopping, and safe capacity retirement. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W26 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R24, R43-R44, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Dependent supervision or early retirement could leave privileged descendants running after capacity is reassigned. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W26 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Model-output interpretation, billing qualification, and scheduling policy are outside this lifetime concern.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D3 directly blocks the runner lifecycle profile until Dmitry ratifies it; D1 and D2 are inherited through dispatch and containment. Use real elapsed time for the default timing qualification, with an independent observer and declared measurement tolerance; fake time alone cannot prove process independence. A heartbeat says the wrapper is responsive, not that an external effect succeeded. Empty-group evidence must cover all descendants.
+A heartbeat proves wrapper responsiveness, never effect success. Linux qualification is here;
+the Mac must meet the same normal liveness/retirement semantics through its own profile.
+Release 1 does not recover a stopped or failed orchestrator.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 leadership fencing/timing qualification, AC2 all-
+profile and stopped-orchestrator matrix, AC3 crash-safe retirement; retain ordinary liveness,
+stop, exit, and release after actual worker termination. Removed recovery, durability and
+failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

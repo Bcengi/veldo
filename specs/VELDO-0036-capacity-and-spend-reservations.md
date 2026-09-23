@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W21
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023]
+plan_revision: 3
+depends_on: [VELDO-0023, VELDO-0025]
 placement: [fleet, metrics, distribution]
 protected_paths: []
 footprint:
@@ -35,97 +35,96 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Reservation decisions identify account, project, unit, request identity, maximum charge,
-    remaining allowance, and retained exposure.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Report reserved capacity, settled charges, outstanding exposure, unknown spend, and pre-call
-    refusals at all three ceilings.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join invocation and request identities to pricing and hard-limit evidence, allocation commit,
-    usage sequence, and settlement receipt.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish capacity exhausted, ceiling exceeded, unenforceable charge bound, duplicate usage,
-    unknown spend, and retirement incomplete.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Concurrent admission reserves capacity and cost atomically at account, project, and
-      unit ceilings before dispatch. Set: Real authority transactions from competing client
-      processes sharing control.sqlite3, across every configured account/project/unit limit.
-      Completeness: Drive below, equal, and above-bound allocations for each ceiling and
-      intersecting project/account pairs. SIGKILL after reservation commit before reply and retry
-      the same identity; compare all balances and allocation rows, requiring at most the
-      admissible capacity. Falsifier: Check capacity outside the reservation transaction and race
-      two last-slot clients; reservations/capacity-race must detect over-allocation.
+      Claim: Capacity and spend reservations are atomic at applicable account, project and unit
+      ceilings before dispatch. Set and completeness: On the configured journey accounts/project,
+      exercise below, equal and above each ceiling and two clients competing for the last slot in
+      real SQLite; compare allocation rows and balances. Falsifier: Check the last slot outside its
+      reservation transaction; competing admissions must over-allocate and fail the check.
     falsified_by: >
-      Check capacity outside the reservation transaction and race two last-slot clients;
-      reservations/capacity-race must detect over-allocation.
+      Check the last slot outside its reservation transaction; competing admissions must over-
+      allocate and fail the check.
   - id: AC2
     text: >
-      Claim: Every billable request, including retries and follow-on calls, allocates its
-      enforceable maximum possible charge from all remaining reservations before the provider
-      boundary is entered. Set: Trusted adapter request admission against real SQLite, using
-      pricing plus hard request limits and a real local request receiver with deterministic
-      response bytes. Completeness: Enumerate initial, retry, and follow-on request paths; race
-      separate callers for the same remainder after settled charges and outstanding exposure. Test
-      below, exact, above, absent, and unenforceable maxima at every ceiling; record receiver
-      calls and require zero calls for refusal. Falsifier: Allocate a follow-on request maximum
-      after invoking the receiver and race two requests exceeding the shared remainder;
-      reservations/pre-call-bound must fail.
+      Claim: Every billable request allocates its enforceable maximum before entering the provider
+      boundary. Set and completeness: Enumerate initial, retry and follow-on call sites from adapter
+      registrations; test fitting, excessive, absent and unenforceable maxima against remaining
+      budgets after charges and exposure, observing zero outbound calls on refusal. Falsifier:
+      Allocate a follow-on maximum after the receiver call; the pre-call ordering check must fail.
     falsified_by: >
-      Allocate a follow-on request maximum after invoking the receiver and race two requests
-      exceeding the shared remainder; reservations/pre-call-bound must fail.
+      Allocate a follow-on maximum after the receiver call; the pre-call ordering check must fail.
   - id: AC3
     text: >
-      Claim: Usage is deduplicated by invocation and sequence, and timeout, cancellation, or
-      delayed reporting never releases outstanding charge exposure. Set: Real usage ingestion,
-      request cancellation, and restart processes over committed request allocations, with known
-      and unknown charge outcomes. Completeness: Duplicate and reorder usage messages, kill the
-      adapter after receiver acceptance before usage acknowledgment, and restart ingestion.
-      Compare settled charges and retained exposure; only reconciled usage or authoritative
-      no-charge evidence frees an allocation, and unbounded exposure blocks affected admission.
-      Falsifier: Release charge exposure on timeout after the receiver accepted the request;
-      reservations/timeout-exposure must catch a subsequent request spending that remainder.
+      Claim: Usage settles once per invocation/sequence and unknown charge outcomes retain exposure.
+      Set and completeness: Ingest normal, duplicate and missing reports for accepted requests;
+      compare exact-unit balances. Timeout or cancellation without conclusive usage/no-charge
+      evidence cannot free the allocation. Falsifier: Release exposure on a timeout after
+      acceptance; a subsequent request must overspend and fail the check.
     falsified_by: >
-      Release charge exposure on timeout after the receiver accepted the request;
-      reservations/timeout-exposure must catch a subsequent request spending that remainder.
+      Release exposure on a timeout after acceptance; a subsequent request must overspend and fail
+      the check.
   - id: AC4
     text: >
-      Claim: A capacity slot stays reserved or quarantined until containment emptiness, outcome,
-      accounting, and required resource cleanup are durably reconciled. Set: Reservation
-      retirement API receiving real process-exit and filesystem-cleanup observations, including an
-      unknown outstanding effect. Completeness: Hold a child process alive, withhold accounting,
-      and interrupt cleanup in turn; race retirement and new admission through SQLite. Kill the
-      retiring process before its final commit and require the restarted reader to retain the slot
-      until every registered retirement obligation is present. Falsifier: Release the slot on
-      parent exit while a real descendant remains alive; reservations/premature-retirement must
-      refuse new use of the slot.
+      Claim: A capacity slot is released only after actual worker termination, cleanup and accounted
+      or retained charge obligations. Set and completeness: Hold a real descendant alive, withhold
+      outcome/accounting and leave clone cleanup incomplete separately; attempt retirement and
+      observe refusal until required ordinary observations exist. Falsifier: Release capacity on
+      parent exit while its descendant is alive; the slot-reuse check must fail.
     falsified_by: >
-      Release the slot on parent exit while a real descendant remains alive;
-      reservations/premature-retirement must refuse new use of the slot.
+      Release capacity on parent exit while its descendant is alive; the slot-reuse check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop new allocations and preserve all balances and uncertain exposure; reconcile usage and
-  retired containment before releasing capacity or money.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Reserve capacity and maximum request charges durably so concurrent work cannot spend the same remaining allowance.
+Durable capacity and spend reservations. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W21 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R22, R31, R43-R45, R57, R70. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Reservation races could exceed signed cost ceilings or release capacity while effects and descendants remain unresolved. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W21 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Provider prices, live charges, production adapter certification, and governor policy tuning are D work.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 is inherited from W8; D3 blocks activation of the containment-backed capacity profile. The reviewed R45 amendment requires a separate allocation before every billable request, not just an invocation estimate. B proves the transaction and pre-call enforcement using a local receiver; D must qualify each live provider pricing model and enforceable maximum. Monetary arithmetic must use exact units with declared rounding, never binary floating-point budget comparisons.
+Use exact monetary units and declared rounding. Reservations cover the configured account,
+project and unit for each provider. Every initial, retry or follow-on billable path reserves
+its enforceable maximum before calling; missing accounting retains exposure.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 crash recovery and broad allocation matrix, AC3
+restart/reordering qualification, AC4 durable quarantine recovery; keep caps, ordinary
+accounting, and conservative treatment of unknown charges. Removed recovery, durability and
+failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

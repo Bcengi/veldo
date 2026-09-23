@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W46
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059]
+plan_revision: 3
+depends_on: [VELDO-0028, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0062]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -38,99 +38,97 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Codex adapter diagnostics identify binary/version, invocation and sandbox contracts, stream
-    sequence, recovery finding, and refused capability.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count accepted Codex dispatches, duplicate delivery queries, retained usage exposure, signal
-    outcomes, and escaped-descendant attempts by supported profile.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace a Codex dispatch from replicated preparation through durable receiver acceptance to
-    actual process identity, output artifacts, costs, and terminal reconciliation.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unsupported Codex protocol, missing terminal event, ambiguous spawn, unbounded
-    request charge, credential separation failure, and stale generation.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The Codex production adapter implements the same R42 lifecycle as Claude without
-      adding a second launch authority. Set: fleet.WorkerSpawner.spawn/retire and B runner
-      registrations for every supported Codex executable version and host/helper profile.
-      Completeness: Declare the supported matrix from installed manifests and compare it against
-      all lifecycle rows. Invoke actual binaries with explicit accepted source/input digests and
-      tool permissions, observing version validation, acceptance, boot/start identity, output
-      streaming, stop, exit, recovery query, and artifact return. Unknown versions and changed
-      binary digests refuse before spawn. Falsifier: Accept an unregistered Codex version at
-      production launch; codex/version-refusal must observe the unexpected child.
+      Claim: The real Codex adapter implements normal launch, acceptance, observation streaming,
+      stop, exit and artifact return through the trusted runner. Set and completeness: Enumerate
+      these lifecycle operations from installed adapter registrations for the chosen configuration
+      and explicit accepted source/input/tool bindings; invoke the actual binary in an isolated
+      clone and reject an unknown version or changed digest before spawn. Falsifier: Skip executable
+      binding after its digest changes; the unexpected-launch check must fail.
     falsified_by: >
-      Accept an unregistered Codex version at production launch; codex/version-refusal must
-      observe the unexpected child.
+      Skip executable binding after its digest changes; the unexpected-launch check must fail.
   - id: AC2
     text: >
-      Claim: The Codex decoder fails explicitly on unsupported output and usage and never converts
-      process success into specification completion. Set: Real Codex terminal/stream variants,
-      normal and signal exits, nonzero exits, output truncation, missing terminal records, and
-      malformed or absent usage through the production result path. Completeness: Capture live
-      output for every supported binary; derive parser variant coverage from the decoder
-      registrations and perturb captured bytes at real transport boundaries. Read result artifacts
-      in an independent validator process, compare journal facts, and preserve conservative charge
-      exposure on unknown usage. A valid exit yields only the facts independently established.
-      Falsifier: Map an absent usage record to zero charge on a successful Codex exit;
-      codex/unknown-usage must catch released exposure or an unsupported zero-cost receipt.
+      Claim: Terminal output yields independently validated artifacts, never automatic completion.
+      Set and completeness: Capture live normal/nonzero/signal exits and perturb actual stream bytes
+      for absent terminal record, malformed output and missing usage; feed the production decoder,
+      inspect resulting artifacts and retained unknown charge exposure. Falsifier: Accept zero exit
+      with its terminal record removed; the missing-result check must fail.
     falsified_by: >
-      Map an absent usage record to zero charge on a successful Codex exit; codex/unknown-usage
-      must catch released exposure or an unsupported zero-cost receipt.
+      Accept zero exit with its terminal record removed; the missing-result check must fail.
   - id: AC3
     text: >
-      Claim: Codex recovery reuses durable dispatch identity and closes stale permissions despite
-      suspended or orphaned processes. Set: Production spawn/recovery and retire calls through
-      fleet.WorkerSpawner, B receiver records and real Codex process groups, with scope change and
-      revocation during execution. Completeness: SIGKILL the adapter around launch and acceptance
-      acknowledgment; SIGSTOP and resume the old engine across authority-generation replacement.
-      Query actual containment and target acceptance with both current and stale handles,
-      requiring one logical dispatch and no stale protected effect. Missing conclusive evidence
-      retains AWAITING_AUTHORITY and its reservation. Falsifier: Accept an old Codex capability
-      after generation replacement when the suspended process resumes; codex/resumed-stale-worker
-      must detect the target operation.
+      Claim: Ordinary stop terminates the adapter worker and records its original invocation
+      outcome. Set and completeness: Use the real chosen configuration to perform cooperative and
+      bounded forced stop through the host wrapper; compare OS exit, descendant termination and
+      invocation identity. A stopped call with missing cost retains its exposure. Falsifier: Report
+      stopped when a real worker descendant remains alive; the termination check must fail.
     falsified_by: >
-      Accept an old Codex capability after generation replacement when the suspended process
-      resumes; codex/resumed-stale-worker must detect the target operation.
+      Report stopped when a real worker descendant remains alive; the termination check must fail.
   - id: AC4
     text: >
-      Claim: Codex tool processes cannot escape qualified containment or acquire reusable provider
-      authentication, and every billable call fits an enforced maximum. Set: The enrolled
-      replacements for fleet.InSessionSpawner._assemble_env/spawn and
-      WorktreeInSessionStart.__call__, with Codex sandbox tools, retries, follow-on requests, and
-      B reservation/credential boundaries. Completeness: Run real tool descendants that attempt
-      session escape, authority/cache writes, inherited credential reads, and limit changes.
-      Inspect installed aggregate memory, cumulative descendant CPU-time, writable-byte and inode
-      bounds. Record provider call boundaries, pricing and hard-limit evidence, observed costs,
-      and pre-call allocations; an unseparable auth mode or unenforceable maximum refuses
-      qualification. Falsifier: Allow a Codex retry to enter the provider without allocating its
-      maximum charge; codex/retry-charge-bound must detect a call exceeding the retained
-      remainder.
+      Claim: Tools cannot read reusable provider credentials and every billable path enforces its
+      pre-call maximum. Set and completeness: Run a real tool child attempting credential access,
+      then exercise initial/retry/follow-on request boundaries with fitting and excessive maxima
+      under 0062; unsupported auth separation or an unenforceable maximum refuses qualification.
+      Falsifier: Expose the reusable provider credential to a real tool child; the custody check
+      must fail.
     falsified_by: >
-      Allow a Codex retry to enter the provider without allocating its maximum charge;
-      codex/retry-charge-bound must detect a call exceeding the retained remainder.
+      Expose the reusable provider credential to a real tool child; the custody check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Remove eligibility for the affected Codex profile, fence its handles, reconcile live invocations
-  and cost exposure, and retain the previous qualified adapter.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Qualify Codex with the same durable lifecycle, isolation, and accounting obligations as every production worker.
+Codex production adapter qualification. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package D, W46 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R42-R45 and R59 prohibit certifying a binary from a claimed version or fake-provider result. Incorrect recovery or permissive tool credentials can preserve authority after fencing. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W46 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-No new provider-neutral runner, Claude parser, project-manager graph, or production activation is included.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block inherited storage and replicated dispatch, D3 blocks Linux systemd/cgroup activation, and D4 blocks worker clone/cache cutover until Dmitry rules. The guardian version is an input to verify, not a tested version. Record the actual executable digest, command arguments, terminal protocol, supported host matrix, and bounded live costs in proof. Proposed control_engine_codex modules require architecture mapping and W30 inventory before ready; synchronize canonical engine copies and qualification assets. Do not import an engine SDK into stdlib enforcement. W46 remains independent of W45 as the plan declares. Drive each mutation against the production adapter, save its diff and failed row, and restore the code before final qualification.
+Qualify one actual Codex version/configuration on Linux in delivery, then that configuration
+on the Mac in the host stage. Record executable digest, flags, terminal protocol,
+pricing/authentication mode and bounded live cost. 0062 supplies provider custody/caps; 0063
+recovery/governor matrices are not prerequisites. Worker configuration is handed through
+exactly, never silently reduced.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 recovery/fencing, AC1 broad version/host matrix,
+AC4 exhaustive resource/escape qualification; retain one real Codex configuration and the same
+normal lifecycle/accounting contract. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.

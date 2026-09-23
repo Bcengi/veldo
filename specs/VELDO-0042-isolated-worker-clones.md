@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W27
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0029, VELDO-0031]
+plan_revision: 3
+depends_on: [VELDO-0029, VELDO-0031, VELDO-0040]
 placement: [fleet, distribution]
 protected_paths: []
 footprint:
@@ -35,84 +35,86 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Provisioning records identify accepted commit, clone identity, object-cache pin, worker OS
-    identity, and retirement result.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count active pins, refused mutable-cache access, missing accepted objects, failed isolation
-    checks, and unreleased clone resources.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join admitted contract and claim generation to Git object resolution, clone creation, mount
-    permissions, and pin release.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unaccepted source, authority-path access, mutable alternate, missing pinned
-    object, stale clone identity, and cleanup uncertainty.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Each run receives an isolated clone checked out at its explicit accepted commit, with
-      no write access to authority metadata or other workers. Set: Two real git clones under
-      worker identities, authority clone/common directory, claims, keys, database, and another
-      worker clone. Completeness: Move the provisioner HEAD away from the accepted commit, create
-      each run, and verify Git tree identity. Execute actual read/write and symlink-traversal
-      attacks from workers against protected authority paths; repository object access must reveal
-      no operational metadata or credentials. Falsifier: Provision from current HEAD instead of
-      the accepted commit after HEAD moves; clones/accepted-source must detect the wrong tree.
+      Claim: Each run gets an isolated clone at its accepted commit with no write access to
+      authority metadata or other workers. Set and completeness: Provision two real clones while
+      provisioner HEAD points elsewhere; compare tree identities and attempt actual writes to the
+      other clone, store, keys and authority Git metadata under worker identities. Falsifier:
+      Provision from current HEAD; the accepted-source tree comparison must fail.
     falsified_by: >
-      Provision from current HEAD instead of the accepted commit after HEAD moves;
-      clones/accepted-source must detect the wrong tree.
+      Provision from current HEAD; the accepted-source tree comparison must fail.
   - id: AC2
     text: >
-      Claim: The shared cache exposes only read-only Git objects of the repositories the contract
-      names, never objects of any other repository, and pins every referenced object until all
-      dependent clones retire. Set: Real Git alternates or an equivalently qualified
-      sharing mechanism with concurrent clone provisioning, object reads, and git gc.
-      Completeness: Enumerate accepted commit reachability with Git, race garbage collection and
-      clone creation, and try worker writes to shared objects. Require all pinned object reads to
-      succeed and cache bytes to remain unchanged, including during a worker build that creates
-      local objects. Seed a second repository's objects in a separate cache and require that a
-      worker whose contract does not name it cannot enumerate or read them through cat-file
-      --batch-all-objects, cat-file -p, or its alternates file; a pooled cache holding both
-      repositories' objects must refuse provisioning by name. Falsifier: Drop a live clone pin before running git gc on an otherwise
-      unreachable accepted commit; clones/gc-pin must detect a missing running-checkout object.
+      Claim: Only named repository objects are exposed read-only and pinned while a clone uses them.
+      Set and completeness: Enumerate reachable objects for accepted attachments, read them from the
+      worker, try cache writes and try cat-file access to an unnamed repository; ordinary garbage
+      collection must retain the live pinned objects. Falsifier: Pool unnamed repository objects
+      into the worker alternate; the unnamed-object access check must fail.
     falsified_by: >
-      Drop a live clone pin before running git gc on an otherwise unreachable accepted commit;
-      clones/gc-pin must detect a missing running-checkout object.
+      Pool unnamed repository objects into the worker alternate; the unnamed-object access check
+      must fail.
   - id: AC3
     text: >
-      Claim: Interrupted provisioning or retirement preserves pin and resource obligations and
-      cannot silently reuse another clone path. Set: Clone creation, mount setup, claim
-      association, cleanup, and pin-release durable boundaries. Completeness: SIGKILL the
-      provisioner at each barrier, replace a fixture clone directory at the same path, then
-      restart provisioning or retirement. Verify actual clone identity, conservative pin
-      retention, and no pin release before containment and clone consumers are retired. Falsifier:
-      Release the pin after parent exit while a real child still reads the clone;
-      clones/retirement-pin must catch the premature release.
+      Claim: Ordinary clone cleanup releases its object pins only after its workers and consumers
+      terminate. Set and completeness: Run a real child reading the clone, attempt cleanup while it
+      is alive, then terminate it and retire the clone; inspect retained and released pins and
+      distinct clone paths. Falsifier: Release a pin while its child still reads objects; the live-
+      object availability check must fail.
     falsified_by: >
-      Release the pin after parent exit while a real child still reads the clone;
-      clones/retirement-pin must catch the premature release.
+      Release a pin while its child still reads objects; the live-object availability check must
+      fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop provisioning, retain cache pins for live or uncertain clones, retire workers safely, and
-  return to a previously qualified provisioning profile only through recorded activation.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Provision workers from accepted Git commits in isolated clones with pinned, read-only shared objects.
+Isolated worker clones and pinned read-only shared object cache. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package B, W27 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R20, R25, R43, R45, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
-
-Writable shared objects or authority metadata could let one worker corrupt accepted source or another run. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
-
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+W27 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Historical client migration and general source landing are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D4 directly blocks replacing shared-worktree provisioning until Dmitry ratifies isolated clones and the cache. D1 is inherited from claims and routing; D3 blocks activation of the OS isolation profile. Existing fleet.WorktreeProvisioner and env_provision are the known integration sites, but only enrolled autonomous work crosses this new boundary. A read-only alternate must not expose the authority Git common directory as its mount.
+C13 remains unchanged: other repositories are accessible only as contract-named, exact-
+accepted-commit, read-only attachments. Another repository write requires its own admitted
+unit. A cache alternate must not expose authority metadata or unnamed repositories.
 
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 and AC2 concurrent-GC recovery qualification;
+retain accepted-commit clones, read-only named-repository access, and objects remaining
+available while used. Removed recovery, durability and failure-matrix obligations belong to
+Release 2; additional host/channel/version and full distribution breadth belongs to Release 4.
+Normal function and the checks stated above remain Release 1.

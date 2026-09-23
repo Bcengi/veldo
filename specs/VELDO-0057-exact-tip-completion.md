@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W42
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0054, VELDO-0055, VELDO-0056]
+plan_revision: 3
+depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058]
 placement: [distribution, fleet, contracts, metrics]
 protected_paths: []
 footprint:
@@ -32,100 +32,95 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Publication records expose dispatch, expected remote tip, tested candidate, permit generations,
-    outcome query, and receipt publication state.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count exact-tip conflicts, authorization regressions, uncertain publications, reconciled
-    acknowledgments, and completed replicated landings.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join implementation, proof, independent review, candidate tree, gate invocation, remote ref
-    evidence, signed landing receipt, and spec.shipped.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish stale tip, revoked permission, stale claim, candidate mismatch, rejected approval,
-    acknowledgment lost, outcome unknown, and receipt export pending.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: GitLandOps.finalize publishes only a fast-forward candidate under an exact
-      expected-old-tip condition enforced by the remote integration. Set: Real serialized
-      Lander.land calls and protected Effect Executor requests to a bare Git remote, with two real
-      publishing clients and Git ancestry/ref observations. Completeness: Race remote updates after
-      verification in both orders, including a moved tip that is still an ancestor of the candidate
-      and would pass an ordinary fast-forward push. Require exact-tip rejection without overwriting
-      the new tip; rebuild a candidate and obtain fresh applicable checks before retry. Derive
-      publication routes from finalize and the effect registry. Falsifier: Use an unconstrained
-      fast-forward push after the competing client moves the remote to another candidate ancestor;
-      publication/exact-old-tip must detect acceptance despite the changed expected tip.
+      Claim: Publication compare-and-swaps the exact old remote tip to the verified candidate. Set
+      and completeness: Run protected Git publication to a disposable bare remote using the recorded
+      old tip, candidate commit/tree and receipt; move the remote tip before a second attempt and
+      require refusal without overwrite. Falsifier: Publish without checking the exact old tip; the
+      moved-tip refusal check must fail.
     falsified_by: >
-      Use an unconstrained fast-forward push after the competing client moves the remote to another
-      candidate ancestor; publication/exact-old-tip must detect acceptance despite the changed
-      expected tip.
+      Publish without checking the exact old tip; the moved-tip refusal check must fail.
   - id: AC2
     text: >
-      Claim: Immediately before effect acceptance, finalize rechecks current authority and claim
-      generations, admission, scope, decisions, dependencies, approvals, and exact tested candidate.
-      Set: GitLandOps.finalize, Lander.land, and B serialized authorization/effect acceptance using
-      real control.sqlite3, signed fixture commands, Git objects, and a bare remote. Completeness:
-      Enumerate R49/R76 prerequisites and race a second client invalidating each after candidate
-      verification. Hold project version fixed for indirect changes. Resume a SIGSTOPped old lander
-      after authority/claim generation replacement; require denied publication with durable reason.
-      Mutate signed command target/parameters under its old envelope and require digest refusal
-      before any ref update. Falsifier: Reuse a pre-verification dependency decision after its
-      receipt is withdrawn; publication/dependency-race must detect the forbidden remote update.
+      Claim: Publication validates current authority, applicable approval and the exact
+      tested/reviewed subjects. Set and completeness: At the real effect boundary substitute
+      approval, source, proof, candidate tree or current dependency version separately; each must
+      refuse and preserve trunk. The valid current combination publishes. Falsifier: Accept an
+      approval for a different candidate tree; the exact-subject check must fail.
     falsified_by: >
-      Reuse a pre-verification dependency decision after its receipt is withdrawn;
-      publication/dependency-race must detect the forbidden remote update.
+      Accept an approval for a different candidate tree; the exact-subject check must fail.
   - id: AC3
     text: >
-      Claim: Lost publication acknowledgment is reconciled against exact remote candidate and
-      ancestry under the original dispatch; uncertainty cannot trigger another publication. Set:
-      Real GitLandOps.finalize publication, B recovery commands, control.sqlite3 effect records, and
-      a bare remote with durable receive observations. Completeness: SIGKILL the publishing process
-      before send, after remote ref acceptance before reply, and after target observation before
-      receipt commit. Restart and query actual remote refs and ancestry, including candidate-at-tip,
-      candidate-as-ancestor, divergent ref, and unreachable remote. Count receive attempts and
-      require original identity, conclusive evidence for success, or AWAITING_AUTHORITY without
-      blind retry. Falsifier: Allocate a new publication dispatch after a kill following remote
-      acceptance; publication/lost-ack must detect a second receiver publication attempt.
+      Claim: An unconfirmed publication cannot establish completion or authorize another attempt.
+      Set and completeness: Present confirmed, failed and unknown target results to the original
+      dispatch; observe exact remote evidence for success and a named stop for unknown without
+      additional receive attempts. Falsifier: Create a new publication attempt for an unknown
+      result; the repeat-attempt check must fail.
     falsified_by: >
-      Allocate a new publication dispatch after a kill following remote acceptance;
-      publication/lost-ack must detect a second receiver publication attempt.
+      Create a new publication attempt for an unknown result; the repeat-attempt check must fail.
   - id: AC4
     text: >
-      Claim: Completion becomes authoritative only after remote confirmation and committed,
-      replicated landing receipt with spec.shipped; local-only finalize success cannot complete
-      work. Set: GitLandOps.finalize results including push disabled, signed control_landing
-      receipts, ordered event projection, and W37 work_state/plan/frontier completion readers.
-      Completeness: Derive all required landing receipt bindings from R76 and corrupt each
-      separately. Reject receipt export at the bare replica ref after source publication and kill
-      before export acknowledgment; readers must show publication pending, not completed. Reconcile
-      and publish the same receipt as the positive control. Build-only, review pass, and shipped
-      file strings must fail the same consumer checks. Falsifier: Report completion immediately
-      after local receipt commit while its replica export is rejected; publication/receipt-pending
-      must detect unsupported completion in work_state.work_report.
+      Claim: Completion is committed locally only after confirmed exact landing and records its full
+      evidence chain. Set and completeness: Enumerate R76 implementation, proof, reviewed digests,
+      old tip, candidate, tested tree, gate and final receipt bindings; corrupt each and test build-
+      only, push-disabled and valid remote-confirmed results through work/plan/frontier readers.
+      Falsifier: Complete after local finalize with push disabled; the remote-confirmation check
+      must fail.
     falsified_by: >
-      Report completion immediately after local receipt commit while its replica export is rejected;
-      publication/receipt-pending must detect unsupported completion in work_state.work_report.
+      Complete after local finalize with push disabled; the remote-confirmation check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Close publication permits, retain remote observations and unresolved dispatches, and recover by
-  original identity. Never undo a confirmed remote effect by deleting its local receipt.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Publish the exact verified candidate once and establish completion only from remotely confirmed, replicated evidence.
+Exact-tip publication, lost acknowledgement recovery, and completion receipt. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W42 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R23, R32-R33, R39, R49, R58, R74, and R76 govern this source-publication boundary. Incorrect retries or premature receipts could repeat effects or claim an unlanded revision complete. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W42 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Live remote activation and off-host operational durability qualification remain B/H obligations; source landing never activates new verifier or service code.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block authoritative publication and acknowledgment semantics; D3/D4 remain prerequisites for the runner and clone inputs. control_landing is a proposed fleet/contracts receipt adapter over B effects and recovery, not a second publisher; resolve inventory and architecture mapping before ready. W41 supplies candidates, W39/W40 consume governing decisions and regression, and W43 supplies the trusted verification observation connected in W44. Preserve distinct implementation, evidence, reviewed, and candidate identities. The exact-title spelling follows the plan. A local bare remote proves the protocol, not host-loss durability. Each falsifier must change real execution, retain its diff and failing row, and be reverted; a second no-op receive attempt still violates lost-ack recovery.
+VELDO-0056 supplies candidates and 0058 supplies the final trusted external observation.
+Remote confirmation is required even though off-host receipt replication moves to Release 2.
+Lost or ambiguous publication stays stopped under its original identity; no recovery is
+implemented by this MVP spec.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 lost-ack recovery, AC2 replacement-generation
+fencing, and AC4 replica-failure recovery; keep exact-old-tip publication, current approval,
+and completion after confirmed landing. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.

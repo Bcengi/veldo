@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W41
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0050]
+plan_revision: 3
+depends_on: [VELDO-0042, VELDO-0050, VELDO-0052]
 placement: [fleet, contracts]
 protected_paths: []
 footprint:
@@ -26,85 +26,84 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Candidate construction records old remote tip, implementation and evidence commits, workspace
-    identity, projection watermark, and each failed Git stage.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count constructed candidates, merge refusals, regeneration failures, policy rejections, and
-    trunk-ref changes before acceptance.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace the serialized lock through fetch, detached candidate merge, projection materialization,
-    commit, gate, and cleanup.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish fetch failure, merge conflict, forbidden union resolution, regeneration failure,
-    commit failure, red gate, and rejected approval.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Lander.land and GitLandOps.sync_main/reconcile construct the whole integrated candidate
-      in a dedicated detached workspace without checking out or moving local trunk. Set: Real lander
-      processes, authority-backed land lock, git fetch and merge, implementation/evidence objects,
-      accepted projections at a fixed watermark, and a disposable bare remote. Completeness: Run
-      with trunk held by another fixture worktree, with a nondefault trunk name, and with concurrent
-      landers. Record refs, HEAD, index, and working bytes in the caller and trunk workspaces.
-      Verify candidate ancestry includes both implementation and evidence and every projection is
-      committed before gate; SIGKILL after merge and restart without altering either trunk.
-      Falsifier: Restore sync_main checkout of self.trunk before candidate construction;
-      landing/detached-candidate must fail while another fixture worktree holds that branch.
+      Claim: Candidate construction occurs in a dedicated detached workspace and includes
+      implementation, evidence and fixed-watermark projections. Set and completeness: Use real
+      fetch/merge with a bare fixture remote, another worktree holding trunk and a nondefault trunk
+      name; compare caller HEAD/index/bytes/refs and candidate ancestry/tree before verification.
+      Falsifier: Check out trunk in sync_main; the held-trunk detached-candidate check must fail.
     falsified_by: >
-      Restore sync_main checkout of self.trunk before candidate construction;
-      landing/detached-candidate must fail while another fixture worktree holds that branch.
+      Check out trunk in sync_main; the held-trunk detached-candidate check must fail.
   - id: AC2
     text: >
-      Claim: GitLandOps.reconcile stops on any failed construction operation and never union-merges
-      capability catalogs, self-tests, or authoritative history. Set: Actual fetch, merge, conflict
-      enumeration, deterministic index/event regeneration, staging, and merge-commit operations
-      reached by GitLandOps._git, reconcile, and _union_resolve_one. Completeness: Enumerate
-      subprocess operations and conflict paths from implementation call sites, then inject real
-      missing refs, receive/fetch failure, text and binary conflicts, failing regeneration commands,
-      and a rejecting commit hook. Race projection input advancement and kill before candidate
-      commit. Require failure, preserved evidence, zero gate/finalize calls on incomplete
-      candidates, and unchanged trunk refs. Falsifier: Ignore a failing merge commit as current
-      reconcile does and return ok; landing/failed-commit must detect progression to gate with an
-      incomplete candidate.
+      Claim: Every required Git operation failure refuses the candidate. Set and completeness:
+      Enumerate fetch, merge, object lookup and commit operations from the actual candidate path;
+      provoke a real failed fetch and merge conflict plus missing required evidence, and inspect
+      named failure and unmodified trunk. Falsifier: Ignore merge failure and continue to gate; the
+      failed-candidate check must fail.
     falsified_by: >
-      Ignore a failing merge commit as current reconcile does and return ok; landing/failed-commit
-      must detect progression to gate with an incomplete candidate.
+      Ignore merge failure and continue to gate; the failed-candidate check must fail.
   - id: AC3
     text: >
-      Claim: Gate, contextual proof, review obligations, current scope, and protected-path policy
-      are evaluated on the complete candidate; any refusal leaves local and remote trunk unchanged.
-      Set: GitLandOps.gate/finalize invoked through Lander.land with the real canonical gate,
-      installed policy checker, immutable proof, signed fixture approvals, and bare remote.
-      Completeness: Run a clean positive candidate and candidates with a real red test, rejected or
-      stale approval, wrong proof digest, builder as reviewer, and unresolved blocking finding.
-      Compare both refs and caller/trunk bytes before and after each failure; kill during gate and
-      policy evaluation and require restart to retain an unaccepted candidate, never advance trunk.
-      Falsifier: Merge into local trunk before running the red candidate gate;
-      landing/red-trunk-isolation must detect local trunk movement even though the push was
-      withheld.
+      Claim: Rejected verification or policy leaves local and remote trunk unchanged. Set and
+      completeness: Run candidate red gate, invalid proof, unresolved finding and rejected approval
+      against real Git refs; compare refs/index/working bytes before and after each rejection.
+      Falsifier: Move trunk before policy acceptance; the rejected-candidate ref comparison must
+      fail.
     falsified_by: >
-      Merge into local trunk before running the red candidate gate; landing/red-trunk-isolation must
-      detect local trunk movement even though the push was withheld.
+      Move trunk before policy acceptance; the rejected-candidate ref comparison must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop new landing attempts, preserve candidate and lock/effect records, and discard only reconciled
-  disposable workspaces. Never reset trunk to conceal a failed candidate.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Build and reject landing candidates in isolation so failed verification cannot modify trunk.
+Disposable landing candidate construction and failure isolation. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W41 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R48, R51, R58, and R76 replace the inspected lander behavior that checks out trunk, ignores some Git failures, and union-resolves shared files. This code controls source publication and is critical. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W41 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-This item does not activate an authority service, publish to the project remote during qualification, or implement provider adapters.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block authoritative land-lock and projection inputs; D3/D4 block qualified contained execution and isolated worker inputs. Candidate workspaces here are disposable integration workspaces, distinct from B worker clone provisioning. W42 owns exact-tip publication and recovery; W43 owns trusted external gate output. The candidate-only boundary must work before those are connected by W44, without claiming their unfinished evidence. Test Git operations only inside disposable fixture repositories. Retain before/after refs and failure outputs alongside each mutation diff. Event projection comes from ordered accepted records, never _union_resolve_one. Engine lander changes must synchronize byte-identically to repository and packs.
+Build the whole candidate, including deterministic accepted projections, before the gate. Git
+test operations belong in disposable fixture repositories. Keep distinct implementation and
+evidence ancestry and do not check out or move the caller trunk.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1-AC3 SIGKILL/restart and competing-lander matrices;
+keep isolated candidate construction, checked Git failures, and unchanged trunk on rejection.
+Removed recovery, durability and failure-matrix obligations belong to Release 2; additional
+host/channel/version and full distribution breadth belongs to Release 4. Normal function and
+the checks stated above remain Release 1.

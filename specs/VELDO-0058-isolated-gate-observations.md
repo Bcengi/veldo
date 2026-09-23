@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W43
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0056]
+plan_revision: 3
+depends_on: [VELDO-0050, VELDO-0056]
 placement: [distribution, enforcement, fleet, loop, metrics]
 protected_paths: [scripts/verify.sh, engine/scripts/verify.sh]
 footprint:
@@ -41,17 +41,15 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Verification records name trusted executable digests, candidate commit/tree, invocation ID,
-    observation destination, catalog results, and post-run equality.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count candidate mutations, observation-write failures, missing terminal records, redirected
-    event writes, and verifier substitutions.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace the installed gate launch through captured process results and external signed observation
-    to the exact candidate consumed by publication.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unsafe destination, unavailable sink, interrupted gate, missing required check,
-    candidate mutation, and untrusted executable.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -73,16 +71,16 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: GitLandOps.gate and LiveLoop.gate produce an external trusted observation binding exact
-      candidate commit/tree, command, verifier digests, required checks, actual results, and
-      post-run equality. Set: Real installed verifier process, Git candidate
-      objects/index/workspace, external observation files, and signed Evidence Service receipts in
-      control.sqlite3. Completeness: Compare catalog required checks with captured terminal results,
-      then SIGKILL the gate before terminal output and corrupt a captured check result or candidate
-      identity. Use a separate process to modify tracked bytes, index entries, or add untracked
-      output during verification. Every incomplete or changed subject refuses; evidence that changes
-      candidate bytes requires a new commit and verification. Falsifier: Omit post-run tree equality
-      and write a tracked candidate file after the final check but before receipt acceptance;
-      gate-output/post-run-mutation must detect invalid acceptance.
+      candidate commit/tree, command, verifier digests, required checks, actual results, and post-
+      run equality. Set: Real installed verifier process, Git candidate objects/index/workspace,
+      external observation files, and signed Evidence Service receipts in control.sqlite3.
+      Completeness: Compare catalog required checks with captured terminal results, then omit
+      terminal output and corrupt a captured check result or candidate identity. Use a separate
+      process to modify tracked bytes, index entries, or add untracked output during verification.
+      Every incomplete or changed subject refuses; evidence that changes candidate bytes requires a
+      new commit and verification. Falsifier: Omit post-run tree equality and write a tracked
+      candidate file after the final check but before receipt acceptance; gate-output/post-run-
+      mutation must detect invalid acceptance.
     falsified_by: >
       Omit post-run tree equality and write a tracked candidate file after the final check but
       before receipt acceptance; gate-output/post-run-mutation must detect invalid acceptance.
@@ -97,31 +95,53 @@ acceptance_criteria:
       real red check and rejected fixture approval and require unchanged trunk. Move the external
       observation under the candidate or alter its digest before acceptance and refuse. Then prove a
       valid candidate can be verified without adding the receipt to its own tree. Falsifier: Launch
-      candidate policy_check.py from finalize after replacing it with a success stub;
-      gate-output/installed-policy must detect publication past the real rejected approval.
+      candidate policy_check.py from finalize after replacing it with a success stub; gate-
+      output/installed-policy must detect publication past the real rejected approval.
     falsified_by: >
-      Launch candidate policy_check.py from finalize after replacing it with a success stub;
-      gate-output/installed-policy must detect publication past the real rejected approval.
+      Launch candidate policy_check.py from finalize after replacing it with a success stub; gate-
+      output/installed-policy must detect publication past the real rejected approval.
 required_evidence: [unit, integration]
 rollback: >
-  Disable candidate publication if external observations cannot be trusted, retain all tested-tree
-  evidence, and restore the prior installed verifier through separately authorized activation.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Keep final gate observations outside the candidate and bind publication to the exact tree actually tested by trusted enforcement.
+Gate-output isolation and exact tested-tree evidence. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W43 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R47, R50-R51, and R76 require trusted observations without self-certification. This footprint edits protected gate scripts and determines whether candidate bytes are authorized to publish. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W43 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Ordinary gate catalog obligations are not weakened; service upgrade activation and live channel decisions remain separate.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block accepted verification receipts and their publication; D3 blocks controlled execution activation and D4 the isolated-clone path. Both scripts/verify.sh and engine/scripts/verify.sh are protected, with corresponding pack copies in the footprint. The current home gate writes .veldo/last_verify and .veldo/events.jsonl after running checks; its review stage also appends. Inventory all three paths and any newly introduced writer. control_verification is a proposed enforcement/loop adapter requiring architecture and distribution registration before ready. Trusted policy is consumed from its installed location; this spec does not amend policy_check.py. Retain actual argv/executable digests, mutation diffs, and failing rows. An environment variable alone is not a trusted sink selection, and no new receipt may require embedding itself in the commit it certifies.
+All existing trusted gate-output, installed policy and post-run equality obligations remain.
+Only process-kill qualification moves to Release 2. Gate stamps, gate events and review-event
+reconciliation must all write to the trusted external sink; the final receipt cannot be
+required inside its own candidate.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. No whole criterion should go: optionally defer AC2 process-
+kill qualification; retain external observations, trusted installed enforcement, actual
+results, and post-run tree equality. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.

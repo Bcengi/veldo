@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W45
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059]
+plan_revision: 3
+depends_on: [VELDO-0028, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0062]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -38,100 +38,98 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Claude qualification records executable digest, installed version, host/helper profile,
-    dispatch identity, invocation contract, and actual acceptance and exit observations.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure Claude launches per dispatch, observed provider charges, malformed terminal streams,
-    stop latency, and unresolved invocations for each qualified profile.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join the installed Claude binary and explicit input digests to B launch intent, containment
-    identity, streamed artifacts, usage allocation, and retirement receipt.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unsupported Claude version, mismatched executable, unsafe authentication profile,
-    missing terminal output, malformed usage, and uncertain recovery.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The Claude Code adapter fulfills every R42 operation through B durable runner
-      acceptance with explicit accepted inputs and tool permissions. Set:
-      fleet.WorkerSpawner.spawn/retire and the enrolled replacement for fleet.in_session_start,
-      using actual Claude Code executables on every advertised version and host/helper profile.
-      Completeness: Freeze the supported matrix from installed adapter registrations before
-      qualification; compare every R42 operation to executable rows. Run version validation,
-      launch, acceptance/process identity, observation streaming, cooperative stop, exit, recovery
-      query, and artifact return using real processes, SQLite, signatures, and contained clones.
-      Alter the executable after qualification and require pre-launch refusal. Falsifier: Skip
-      executable digest verification after replacing the qualified Claude executable;
-      claude/executable-binding must detect an unauthorized launch.
+      Claim: The real Claude Code adapter implements normal launch, acceptance, observation
+      streaming, stop, exit and artifact return through the trusted runner. Set and completeness:
+      Enumerate these lifecycle operations from installed adapter registrations for the chosen
+      configuration and explicit accepted source/input/tool bindings; invoke the actual binary in an
+      isolated clone and reject an unknown version or changed digest before spawn. Falsifier: Skip
+      executable binding after its digest changes; the unexpected-launch check must fail.
     falsified_by: >
-      Skip executable digest verification after replacing the qualified Claude executable;
-      claude/executable-binding must detect an unauthorized launch.
+      Skip executable binding after its digest changes; the unexpected-launch check must fail.
   - id: AC2
     text: >
-      Claim: Claude terminal output becomes observed artifacts for independent validation, and
-      zero exit never establishes completed work. Set: Actual Claude normal exit, nonzero exit,
-      signal exit, truncated stream, absent terminal record, malformed output, and missing or
-      malformed usage at the production decoder and WorkerSpawner result boundary. Completeness:
-      Enumerate accepted output/usage variants from each recorded binary version. Capture real
-      live streams and apply byte-level faults at the transport boundary, retaining originals and
-      fault diffs. Drive the same parser and independent artifact validator as production, inspect
-      authority state, and retain unknown cost exposure under B reservations when usage is
-      missing. Falsifier: Treat a zero Claude exit with its terminal record removed as artifact
-      acceptance; claude/missing-terminal must reject that result.
+      Claim: Terminal output yields independently validated artifacts, never automatic completion.
+      Set and completeness: Capture live normal/nonzero/signal exits and perturb actual stream bytes
+      for absent terminal record, malformed output and missing usage; feed the production decoder,
+      inspect resulting artifacts and retained unknown charge exposure. Falsifier: Accept zero exit
+      with its terminal record removed; the missing-result check must fail.
     falsified_by: >
-      Treat a zero Claude exit with its terminal record removed as artifact acceptance;
-      claude/missing-terminal must reject that result.
+      Accept zero exit with its terminal record removed; the missing-result check must fail.
   - id: AC3
     text: >
-      Claim: A retried Claude dispatch observes the original invocation or records uncertainty
-      without launching another process. Set: The production spawn and recovery paths reached from
-      fleet.WorkerSpawner.spawn, B launch records, real Claude descendants, receiver acceptance,
-      and output persistence. Completeness: Kill the trusted adapter before and after spawn and
-      before terminal receipt commit, then redeliver the original dispatch from another client.
-      Correlate boot/start identity, cgroup census, durable acceptance, and actual charges;
-      exercise orphan recovery, PID identity mismatch, hangs, and missing accounting. Require one
-      invocation or a fenced AWAITING_AUTHORITY with retained exposure, never inference from
-      silence. Falsifier: Relaunch Claude from an ambiguous launch-intent record after killing the
-      adapter just after spawn; claude/ambiguous-launch must detect a second invocation.
+      Claim: Ordinary stop terminates the adapter worker and records its original invocation
+      outcome. Set and completeness: Use the real chosen configuration to perform cooperative and
+      bounded forced stop through the host wrapper; compare OS exit, descendant termination and
+      invocation identity. A stopped call with missing cost retains its exposure. Falsifier: Report
+      stopped when a real worker descendant remains alive; the termination check must fail.
     falsified_by: >
-      Relaunch Claude from an ambiguous launch-intent record after killing the adapter just after
-      spawn; claude/ambiguous-launch must detect a second invocation.
+      Report stopped when a real worker descendant remains alive; the termination check must fail.
   - id: AC4
     text: >
-      Claim: A live Claude invocation stays inside B credential, spend, and containment boundaries
-      during tool execution and cancellation. Set: Qualified Claude profiles through
-      fleet.InSessionSpawner._assemble_env/spawn/retire replacements, with real tool descendants
-      and initial, retry, and follow-on billable calls. Completeness: Inspect OS access refusals
-      for reusable account profiles and authority files; enforce the B maximum-charge allocation
-      before each request and hard aggregate memory, descendant CPU-time, storage-byte and inode
-      limits before launch. Run actual signals and a hostile tool that forks and creates a
-      session; retain costs and quarantine until empty containment, outcome, accounting, and
-      cleanup are proven. Profiles unable to enforce these boundaries remain disabled. Falsifier:
-      Pass a reusable account profile into the Claude tool environment;
-      claude/tool-credential-access must detect the forbidden read from a real tool child.
+      Claim: Tools cannot read reusable provider credentials and every billable path enforces its
+      pre-call maximum. Set and completeness: Run a real tool child attempting credential access,
+      then exercise initial/retry/follow-on request boundaries with fitting and excessive maxima
+      under 0062; unsupported auth separation or an unenforceable maximum refuses qualification.
+      Falsifier: Expose the reusable provider credential to a real tool child; the custody check
+      must fail.
     falsified_by: >
-      Pass a reusable account profile into the Claude tool environment;
-      claude/tool-credential-access must detect the forbidden read from a real tool child.
+      Expose the reusable provider credential to a real tool child; the custody check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Disable the affected Claude profile, stop or quarantine its invocations, retain usage and launch
-  records, and restore only a previously qualified compatible adapter.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Qualify an installed Claude Code adapter against the existing runner contract using observed execution and costs.
+Claude Code production adapter qualification. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package D, W45 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R42-R45 and R59 require a real production adapter. The baseline fleet start is an in-session refusing seam, and its environment builder exposes an account profile. Unsafe replacement could expose credentials or launch ungoverned work. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W45 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Codex qualification, new neutral supervision machinery, and activation of production workers are separate work.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1 and D2 block inherited durable launch and acknowledgment; D3 blocks the production host profile, and D4 blocks isolated-clone provisioning until Dmitry rules. Resolve control_engine_claude paths and architecture mapping before ready, and inventory code and qualification profile assets through W30 with byte-identical engine copies. Record exact binary, invocation flags, terminal schema, pricing evidence, supported matrix, and finite qualification budget; no binary or safe authentication mode is presumed available. W47 owns shared provider-accounting qualification and W48 the combined governor failure matrix; this adapter must consume their underlying B predicates from its first live call. Retain each applied mutation diff and named failing row, then revert it. No fake provider or fixture cost certifies Claude.
+Qualify one actual Claude Code version/configuration on Linux in delivery, then that
+configuration on the Mac in the host stage. Record executable digest, flags, terminal
+protocol, pricing/authentication mode and bounded live cost. 0062 supplies provider
+custody/caps; 0063 recovery/governor matrices are not prerequisites. Worker configuration is
+handed through exactly, never silently reduced.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 recovery, AC1 multiple-version/host matrix and
+recovery query, AC4 exhaustive escape/resource/quarantine qualification; retain one real
+Claude configuration, artifact handling, credentials, stop, and caps. Removed recovery,
+durability and failure-matrix obligations belong to Release 2; additional host/channel/version
+and full distribution breadth belongs to Release 4. Normal function and the checks stated
+above remain Release 1.
