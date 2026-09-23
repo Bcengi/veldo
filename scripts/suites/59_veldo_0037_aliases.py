@@ -1121,6 +1121,116 @@ def _s37_run():
                'plan-floor-commits': True, 'allocation-attach-elsewhere': 'repository_binding_conflict',
                'allocation-direct-elsewhere': 'wrong_repository'})
         env.conn.close()
+
+        # 15. An owned command is its owning CODE, not its name. The declaration records the module
+        # file whose code writes what it owns and the digest of that file's bytes; a transition this
+        # suite registers under enable_artifact_kind, accept_revision or accept_snapshot, and the
+        # genuine allocation wrapper around a body from this suite, are refused by name, while the
+        # genuine module attached on another connection still allocates. A copy of the modules whose
+        # alias module is edited after it declared is refused until its bytes are restored.
+        env = fresh('code-owned', before_attach=lambda env: rs.attach(st, env.conn, env.origins['repository'], 'domain',
+                                                                      'repository'))
+        enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+        for index in (1, 2):
+            allocate(env, 'code-owned-%d' % index, 'specification', 'code-owned-%d' % index, b'code owned %d\n' % index)
+        counter_id = al.kind_id('repository', 'specification')
+        _, kind_now = env.service.current(counter_id)
+        owned_code = {}
+        handles = []
+
+        def forged(params, before):
+            return {params['entity_id']: {'kind': params['kind'], 'data': params['data']}}
+
+        def forged_body(conn, params, before):
+            return {params['entity_id']: {'kind': params['kind'], 'data': params['data']}}
+
+        def register_and_run(label, operation, entry, entity_id, entity_kind, data):
+            connection = st.open_store(env.db)
+            handles.append(connection)
+            connection.command_registry[operation] = dict(entry, writes=('entities', 'journal', 'commands', 'nonces'))
+            row = connection.execute('SELECT version FROM entities WHERE id=?', (entity_id,)).fetchone()
+            _, error = attempt(lambda: st.execute(connection, {'command_id': 'code-owned-' + label, 'principal': 'anyone',
+                'operation': operation, 'parameters': {'entity_id': entity_id, 'kind': entity_kind, 'data': data},
+                'nonce': 'code-owned-%s/nonce' % label, 'expected_versions': {entity_id: row[0] if row else 0},
+                'artifact_digests': []}, **signing))
+            owned_code[label] = code(error)
+
+        register_and_run('forged-enable', 'enable_artifact_kind', {'transition': forged}, counter_id, 'artifact_kind',
+                         dict(kind_now or {}, next=1))
+        register_and_run('forged-accept-revision', 'accept_revision', {'transition': forged}, 'revision/forged',
+                         'accepted_revision', {'domain_uuid': 'domain', 'repository_uuid': 'repository',
+                                               'commit': 'f' * 40, 'documents': {}, 'statuses': {}})
+        register_and_run('forged-accept-snapshot', 'accept_snapshot', {'transition': forged}, 'snapshot/forged',
+                         'control_snapshot', {'schema': rs.SN.SCHEMA, 'snapshot_id': 'snapshot/forged'})
+        wrapper, error = attempt(lambda: al.Allocations(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()}))
+        if wrapper is not None:
+            register_and_run('wrapped-foreign-body', 'enable_artifact_kind',
+                             {'transaction_transition': wrapper._transition(forged_body)}, counter_id, 'artifact_kind',
+                             dict(kind_now or {}, next=1))
+        else:
+            owned_code['wrapped-foreign-body'] = 'no-wrapper:%s' % code(error)
+        owned_code['counter-after'] = (env.service.current(counter_id)[1] or {}).get('next')
+        genuine = st.open_store(env.db)
+        handles.append(genuine)
+        genuine_service, error = attempt(lambda: al.attach(st, genuine, 'domain', {r: str(p) for r, p in env.origins.items()}))
+        allocated, error = (attempt(lambda: genuine_service.allocate(request('code-owned-3', 'telegram', 'code-owned-3', 'r1',
+            'specification', 'genuine', b'genuine elsewhere\n', env.base), **signing))
+                            if genuine_service is not None else (None, error))
+        owned_code['genuine-other-connection'] = (allocated or {}).get('alias') or code(error)
+        declared = {(row[0], row[1]): tuple(row[4:]) for row in st.entity_owners(env.conn)}
+
+        def declared_as(path):
+            real = _s37_Path(str(path)).resolve()
+            return (str(real), _s37_digest(real.read_bytes()))
+
+        owned_code['declared'] = (declared.get(('kind', 'artifact_kind')) == declared_as(modules / 'control_alias.py')
+                                  and declared.get(('prefix', 'alias/')) == declared_as(modules / 'control_alias.py')
+                                  and declared.get(('kind', 'accepted_revision')) == declared_as(modules / 'control_readset.py')
+                                  and declared.get(('kind', 'control_snapshot')) == declared_as(modules / 'control_readset.py'))
+        # The same modules copied elsewhere, attached to a store of their own, then one edited.
+        altered = env.base / 'altered-modules'
+        _s37_shutil.copytree(modules, altered, ignore=_s37_shutil.ignore_patterns('__pycache__'))
+        rs_altered = _s37_load('s37_readset_altered', altered / 'control_readset.py')
+        al_altered = _s37_load('s37_alias_altered', altered / 'control_alias.py')
+        altered_conn = st.open_store(env.base / 'altered.sqlite3')
+        handles.append(altered_conn)
+        mapping = {'repository': str(env.origins['repository'])}
+        accepting_altered, _ = attempt(lambda: rs_altered.attach_revisions(st, altered_conn, 'domain', mapping))
+        if accepting_altered is not None:
+            attempt(lambda: accepting_altered.accept('revision/repository', 'repository',
+                                                     g(env.origins['repository'], 'rev-parse', 'HEAD'), 'operator', **signing))
+        service_altered, _ = attempt(lambda: al_altered.attach(st, altered_conn, 'domain', mapping))
+        # Observed, not asserted: the copy attached to the first store (a stated limit, not a claim).
+        copy_conn = st.open_store(env.db)
+        handles.append(copy_conn)
+        _, error = attempt(lambda: al_altered.attach(st, copy_conn, 'domain', {r: str(p) for r, p in env.origins.items()}))
+        defects['owned-code-copy-attach'] = code(error)
+
+        def enable_altered(kind, prefix):
+            if service_altered is None:
+                return 'no-service'
+            serial[0] += 1
+            _, error = attempt(lambda: service_altered.enable_kind({'request_id': 'enable-%d' % serial[0],
+                'principal': 'operator', 'repository_uuid': 'repository', 'kind': kind, 'prefix': prefix, 'width': 4,
+                'path_template': kind + 's/{alias}-{slug}.md', 'revision_id': 'revision/repository'}, **signing))
+            return code(error)
+
+        owned_code['altered-before-edit'] = enable_altered('plan', 'PLAN')
+        altered_file = altered / 'control_alias.py'
+        original_bytes = altered_file.read_bytes()
+        altered_file.write_bytes(original_bytes + b'\n# edited after the declaration\n')
+        owned_code['altered-after-edit'] = enable_altered('memo', 'MEMO')
+        altered_file.write_bytes(original_bytes)
+        owned_code['altered-restored'] = enable_altered('note', 'NOTE')
+        for handle in handles:
+            handle.close()
+        defects['owned-code'] = owned_code
+        expect('aliases/owned-by-code-not-name', owned_code == {
+               'forged-enable': 'foreign_transition', 'forged-accept-revision': 'foreign_transition',
+               'forged-accept-snapshot': 'foreign_transition', 'wrapped-foreign-body': 'foreign_transition',
+               'counter-after': 3, 'genuine-other-connection': 'VELDO-0003', 'declared': True,
+               'altered-before-edit': None, 'altered-after-edit': 'foreign_transition', 'altered-restored': None})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

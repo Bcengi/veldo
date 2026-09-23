@@ -9,7 +9,9 @@ Registrations are connection-local; direct store calls on that connection use th
 What a command may WRITE is not: attach declares in the store (control_store.declare_owners) that
 only accept_snapshot writes a control_snapshot, so no generic command on any connection to that
 store forges an accepted snapshot, and the ownership another service declared binds a read-set
-command exactly as it binds that command unregistered, whichever registered first.
+command exactly as it binds that command unregistered, whichever registered first. Each
+declaration names this file as the code of accept_snapshot and accept_revision, so the store runs
+either only when the registered transition is this file's code with the bytes it declared.
 Authentication and business authorization remain the registering service's responsibility.
 """
 import copy
@@ -301,7 +303,7 @@ def attach_revisions(store, conn, domain_uuid, repositories):
     if 'accept_revision' in conn.command_registry:
         raise SN.Refused('invalid_registration', 'connection already accepts revisions')
     service = Revisions(store, conn, domain_uuid, repositories)
-    store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS)
+    store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS, module=__file__)
     store.bind_repositories(conn, domain_uuid, service.paths)
     conn.command_registry['accept_revision'] = {
         'transaction_transition': service.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
@@ -312,7 +314,7 @@ def attach(store, conn, repo, domain_uuid, repository_uuid):
     if 'accept_snapshot' in conn.command_registry:
         raise SN.Refused('invalid_registration', 'connection already has a snapshot authority')
     reader = ReadSets(store, conn, repo, domain_uuid, repository_uuid)
-    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)
+    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)
     conn.command_registry['accept_snapshot'] = {
         'transaction_transition': reader.accept, 'writes': ('entities', 'journal', 'commands', 'nonces'),
         'read_set': 'enabled operation declaration plus accepted revision projections'}

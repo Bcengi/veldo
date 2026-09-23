@@ -44,7 +44,10 @@ which of them writes each, with control_store.declare_owners; the declaration is
 store and control_store.execute enforces it inside every command's transaction on every connection
 to that store. So the store's generic upsert_entity, retire_entity and record_receipt, a read set
 enabled for them before or after attach, and any other process or connection all refuse
-entity_owned when they would write one of these entities. Registration order decides nothing.
+entity_owned when they would write one of these entities. Registration order decides nothing, and
+neither does a command's name: the declaration names this file and its digest as the code of these
+four commands, so a transition registered under one of their names from other code is refused
+foreign_transition.
 
 ACCEPTED BYTES. Document content is UTF-8 text committed in the store beside its sha256 digest.
 Version entities are immutable, so the prior bytes stay readable after every edit. Publication to a
@@ -95,6 +98,7 @@ CATEGORIES = {
     'wrong_repository': 'invalid_input', 'transition_refused': 'invalid_input',
     'missing_authority': 'missing_authority', 'entity_owned': 'missing_authority',
     'ownership_conflict': 'invalid_input', 'repository_binding_conflict': 'invalid_input',
+    'foreign_transition': 'missing_authority',
     'unregistered_inputs': 'invalid_input', 'reserved_path': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
     'source_content_conflict': 'stale_subject', 'command_content_conflict': 'stale_subject',
@@ -748,9 +752,9 @@ def attach(store, conn, domain_uuid, repositories):
         raise SN.Refused('invalid_registration', 'connection already has an allocation authority')
     service = Allocations(store, conn, domain_uuid, repositories)
     store.bind_repositories(conn, domain_uuid, service.paths)
-    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES)
+    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)
     # First numbers come from accepted revisions: they are VELDO-0035's accept_revision's alone.
-    store.declare_owners(conn, RS.REVISION_OWNER, kinds=RS.REVISION_KINDS)
+    store.declare_owners(conn, RS.REVISION_OWNER, kinds=RS.REVISION_KINDS, module=RS.__file__)
     for operation, body in zip(OPERATIONS, (service._t_enable, service._t_allocate, service._t_edit, service._t_publish)):
         conn.command_registry[operation] = {'transaction_transition': service._transition(body),
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}

@@ -25,7 +25,8 @@ library only.
 ENTITY OWNERSHIP. A service whose commands alone may write some entities (VELDO-0035's snapshots
 and accepted revisions, VELDO-0037's alias counters, reservations and immutable document versions)
 DECLARES that with declare_owners: for each owned entity kind, and for each owned entity id prefix,
-the commands allowed to write it. The declaration is persisted in the store itself (the
+the commands allowed to write it, and the one module file whose code those commands are, with the
+sha256 of that file's bytes. The declaration is persisted in the store itself (the
 entity_owners table, created by the first declaration, so a store nobody declared into has none),
 and execute reads it inside every command's own BEGIN IMMEDIATE, so it binds EVERY connection to
 the file: one another process opened, one opened before the declaration, one whose module copy
@@ -33,6 +34,20 @@ registered nothing, and one on which a later registration replaced an earlier on
 writing an entity refuses entity_owned unless it is allowed by every declaration matching that
 entity: its kind after the write, its kind before it, and every declared prefix of its id. So
 where a command is registered, and in what order, decides nothing about what it may write.
+Nor does its NAME: before an owned command's transition runs, execute requires that the callable
+registered for it, and every function its closure holds, was compiled from exactly the declared
+module file, and that the file's bytes still have the declared digest; a same-named registration
+from any other code, a genuine wrapper around a foreign body, or an edited module is refused
+foreign_transition and nothing is written.
+STATED LIMITS, not claims. Enforcement is code in execute, under a same-account threat model: raw
+SQL on the file, a copy of this module from before the rule, and deleting entity_owners all write
+owned entities, and code that deliberately compiles a function under the declared file name, or
+patches the owning module's globals in the same process, passes the origin check. The declaration
+names one file and its bytes, so the owning service runs only from that copy as it was when it
+first attached: an upgraded module, or the same module attached from another checkout's copy, is
+refused ownership_conflict at attach, and Release 1 has no re-declaration path (Release 2).
+Declarations and repository bindings are not part of the journal, so a store rebuilt from its
+journal carries neither (Release 2 recovery).
 A declaration is immutable: the same declaration again is a no-op, a different one for a declared
 kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
 that entities already occupy, because they were written while nobody owned them.
@@ -78,7 +93,7 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
-            "ownership_conflict", "repository_binding_conflict")
+            "ownership_conflict", "repository_binding_conflict", "foreign_transition")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 _DDL = (
@@ -106,7 +121,8 @@ _DDL = (
 # a store into which nothing was ever declared carries exactly the DOMAIN_TABLES and no owner rule.
 OWNERS_TABLE = "entity_owners"
 _OWNERS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owners (selector TEXT NOT NULL CHECK (selector IN ('kind', 'prefix')), "
-               "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, PRIMARY KEY (selector, value))")
+               "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, module TEXT NOT NULL, "
+               "module_digest TEXT NOT NULL, PRIMARY KEY (selector, value))")
 
 
 # Accepted repositories (see the module docstring), created by the first binding like entity_owners.
@@ -425,6 +441,13 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         reg = registry[command["operation"]]
         if "snapshot_id" in command["parameters"] and "transaction_transition" not in reg:
             raise StoreRefused("unregistered_inputs", "snapshot command requires a connection-local guard")
+        owners = entity_owners(conn)
+        # An owned command runs only the code its declaration names, whoever registered it.
+        origin = owning_modules(owners).get(command["operation"])
+        if origin is not None:
+            problem = transition_origin_problem(reg.get("transaction_transition", reg.get("transition")), *origin)
+            if problem is not None:
+                raise StoreRefused("foreign_transition", "%s is owned by the code in %s: %s" % (command["operation"], origin[0], problem))
         if "transaction_transition" in reg:
             changes = reg["transaction_transition"](conn, command["parameters"], before)
         else:
@@ -432,10 +455,9 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         for eid in changes:
             if eid not in command["expected_versions"]:
                 raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
-        owners = entity_owners(conn)
         for eid, new in changes.items():
             kinds = {new["kind"], before.get(eid, {}).get("kind")}
-            for selector, value, owner, commands in owners:
+            for selector, value, owner, commands, _module, _digest in owners:
                 hit = value in kinds if selector == "kind" else eid.startswith(value)
                 if hit and command["operation"] not in commands:
                     raise StoreRefused("entity_owned", "%s may not write %s: %s %r belongs to %s, written only by %s"
@@ -518,16 +540,75 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
 # ---------------------------------------------------------------------------------------------
 
 def entity_owners(conn):
-    """Every persisted declaration as (selector, value, owner, commands), or [] when none exists."""
+    """Every persisted declaration as (selector, value, owner, commands, module, module_digest), or
+    [] when none exists."""
     if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (OWNERS_TABLE,)).fetchone():
         return []
-    return [(r[0], r[1], r[2], tuple(json.loads(r[3])))
-            for r in conn.execute("SELECT selector, value, owner, commands FROM entity_owners ORDER BY selector, value")]
+    return [(r[0], r[1], r[2], tuple(json.loads(r[3])), r[4], r[5]) for r in conn.execute(
+        "SELECT selector, value, owner, commands, module, module_digest FROM entity_owners ORDER BY selector, value")]
 
 
-def _ownership_rows(owner, kinds, prefixes):
+def owning_modules(owners):
+    """{command: (module, module_digest)} for every command a declaration names."""
+    return {command: (row[4], row[5]) for row in owners for command in row[3]}
+
+
+def module_digest(path):
+    """sha256 of a module file's bytes, or None when it cannot be read."""
+    try:
+        with open(path, "rb") as handle:
+            return "sha256:" + hashlib.sha256(handle.read()).hexdigest()
+    except OSError:
+        return None
+
+
+def transition_files(transition):
+    """The resolved source file of every function a registered transition is, or holds: through
+    bound methods and closure cells. None stands for a callable with no Python function code (a
+    builtin, a partial, a callable object), whose source nothing here names, so it is never the
+    declared module."""
+    files, seen, pending = set(), set(), [transition]
+    while pending:
+        function = pending.pop()
+        if id(function) in seen:
+            continue
+        seen.add(id(function))
+        if hasattr(function, "__func__") and hasattr(function, "__self__"):
+            pending.append(function.__func__)
+            continue
+        code = getattr(function, "__code__", None)
+        if code is None or not hasattr(code, "co_filename") or not hasattr(function, "__closure__"):
+            if callable(function) and not isinstance(function, type):
+                files.add(None)
+            continue
+        files.add(os.path.realpath(code.co_filename))
+        for cell in function.__closure__ or ():
+            try:
+                pending.append(cell.cell_contents)
+            except ValueError:
+                continue
+    return files
+
+
+def transition_origin_problem(transition, module, digest):
+    """Why a registered transition is not the declared module's code, or None when it is."""
+    files = transition_files(transition)
+    if files != {module}:
+        return "the registered transition runs code from %s" % ", ".join(sorted(str(f) for f in files - {module}) or ["nowhere"])
+    if module_digest(module) != digest:
+        return "%s no longer has the declared bytes %s" % (module, digest)
+    return None
+
+
+def _ownership_rows(owner, kinds, prefixes, module):
     if not _is_str(owner):
         raise StoreRefused("malformed_command", "an ownership declaration names its owner")
+    if not _is_str(module):
+        raise StoreRefused("malformed_command", "an ownership declaration names the module file whose code writes what it owns")
+    module = os.path.realpath(module)
+    digest = module_digest(module)
+    if digest is None:
+        raise StoreRefused("malformed_command", "the owning module %s cannot be read" % module)
     rows = []
     for selector, table in (("kind", kinds or {}), ("prefix", prefixes or {})):
         if not isinstance(table, dict):
@@ -535,7 +616,7 @@ def _ownership_rows(owner, kinds, prefixes):
         for value, commands in table.items():
             if not _is_str(value) or isinstance(commands, str) or not commands or not all(_is_str(c) for c in commands):
                 raise StoreRefused("malformed_command", "owned %s %r needs a value and at least one command" % (selector, value))
-            rows.append((selector, value, owner, tuple(sorted(set(commands)))))
+            rows.append((selector, value, owner, tuple(sorted(set(commands))), module, digest))
     if not rows:
         raise StoreRefused("malformed_command", "an ownership declaration owns at least one kind or prefix")
     return rows
@@ -547,12 +628,14 @@ def _occupied(conn, selector, value):
     return conn.execute("SELECT 1 FROM entities WHERE substr(id, 1, ?)=? LIMIT 1", (len(value), value)).fetchone() is not None
 
 
-def declare_owners(conn, owner, kinds=None, prefixes=None):
+def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
     """Persist that the entities of each kind in `kinds`, and every entity whose id begins with a
-    prefix in `prefixes`, are written only by the commands mapped to it. Idempotent for the same
-    declaration; ownership_conflict for a different one, or for a first declaration of a kind or
-    prefix that entities already occupy. Its own transaction, like the publication cursor's writes."""
-    rows = _ownership_rows(owner, kinds, prefixes)
+    prefix in `prefixes`, are written only by the commands mapped to it, and that those commands are
+    the code in the file `module` (the caller's own __file__), whose bytes the store digests now.
+    Idempotent for the same declaration; ownership_conflict for a different one, for a command
+    another declaration binds to other code, or for a first declaration of a kind or prefix that
+    entities already occupy. Its own transaction, like the publication cursor's writes."""
+    rows = _ownership_rows(owner, kinds, prefixes, module)
     if set(rows) <= set(entity_owners(conn)):
         return rows
     try:
@@ -562,7 +645,12 @@ def declare_owners(conn, owner, kinds=None, prefixes=None):
     try:
         conn.execute(_OWNERS_DDL)
         declared = {(r[0], r[1]): r for r in entity_owners(conn)}
+        bound = owning_modules(declared.values())
         for row in rows:
+            for command in row[3]:
+                if bound.get(command, row[4:]) != row[4:]:
+                    raise StoreRefused("ownership_conflict", "%s is bound to the code in %s (%s); %s declares %s (%s)"
+                                       % (command, bound[command][0], bound[command][1], owner, row[4], row[5]))
             prior = declared.get(row[:2])
             if prior is not None:
                 if prior != row:
@@ -572,8 +660,8 @@ def declare_owners(conn, owner, kinds=None, prefixes=None):
             if _occupied(conn, row[0], row[1]):
                 raise StoreRefused("ownership_conflict", "entities of %s %r exist already, written while nobody owned them"
                                    % (row[0], row[1]))
-            conn.execute("INSERT INTO entity_owners (selector, value, owner, commands) VALUES (?,?,?,?)",
-                         (row[0], row[1], owner, json.dumps(list(row[3]))))
+            conn.execute("INSERT INTO entity_owners (selector, value, owner, commands, module, module_digest) VALUES (?,?,?,?,?,?)",
+                         (row[0], row[1], owner, json.dumps(list(row[3])), row[4], row[5]))
         conn.execute("COMMIT")
     except BaseException:
         if conn.in_transaction:

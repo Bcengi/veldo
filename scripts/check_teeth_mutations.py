@@ -458,7 +458,7 @@ def cases():
             "                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):",
             "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),):", 'aliases/historical-floor')
     aliases('alias-owners-undeclared', 'control_alias.py',
-            '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES)', '    pass',
+            '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)', '    pass',
             'aliases/generic-writes-refused')
     aliases('store-owner-by-new-kind-only', 'control_store.py',
             '                hit = value in kinds if selector == "kind" else eid.startswith(value)',
@@ -525,7 +525,7 @@ def cases():
             '        problems = EN.verify_binding(root, binding, lambda message, signature: True, host_identity, domain_uuid=domain_uuid)',
             'publication/bound-by-enrollment')
     aliases('readset-snapshots-undeclared', 'control_readset.py',
-            '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)\n', '',
+            '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)\n', '',
             'aliases/owned-whatever-registration-order')
     # Third review (2026-09-23): each row's reintroducing mutation, then distinct second ones.
     aliases('revision-any-repository', 'control_readset.py',
@@ -539,6 +539,12 @@ def cases():
             'aliases/revision-in-enrolled-repository')
     aliases('repository-binding-unchecked', 'control_store.py',
             '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
+    aliases('store-owner-by-name', 'control_store.py',
+            '        if origin is not None:', '        if False:', 'aliases/owned-by-code-not-name')
+    aliases('store-owner-ignores-digest', 'control_store.py',
+            '    if module_digest(module) != digest:', '    if False:', 'aliases/owned-by-code-not-name')
+    aliases('store-owner-outer-code-only', 'control_store.py',
+            '        for cell in function.__closure__ or ():', '        for cell in ():', 'aliases/owned-by-code-not-name')
     return result
 
 
