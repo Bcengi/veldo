@@ -882,6 +882,9 @@ def _s43_run():
             'identifier-dots': dict(request_cases['accepted'], _identity=dict(identity, cycle_id='..')),
             'two-megabytes': with_value(['x' * 1000] * 2000),
             'self-referential': with_value(cycle),
+            'huge-integer': with_value(10 ** 5000),
+            'huge-version': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
+                                 supplied_results=[dict(result, version=10 ** 5000)]),
         })
         answered = {}
         for name, fields in request_cases.items():
@@ -917,7 +920,8 @@ def _s43_run():
             'division-slash': 'path_in_request', 'fullwidth-solidus': 'path_in_request',
             'percent-encoded': 'path_in_request', 'url-field-file': 'path_in_request',
             'url-field-no-host': 'path_in_request', 'identifier-control': 'invalid_input',
-            'identifier-dots': 'invalid_input', 'two-megabytes': 'invalid_input', 'self-referential': 'invalid_input'})
+            'identifier-dots': 'invalid_input', 'two-megabytes': 'invalid_input', 'self-referential': 'invalid_input',
+            'huge-integer': 'invalid_input', 'huge-version': 'invalid_input'})
 
         # Every bad shape at the stage that is not a link is a named, counted, observed refusal.
         import hashlib as _s43_hashlib
