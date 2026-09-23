@@ -933,7 +933,7 @@ def cases():
     presentation('framing-signature-unchecked',
                  "                or not self._framing_signed(request, framing, state, c)):\n",
                  "                or False):\n", 'presentation/receipt-binds-shown-content')
-    presentation('published-at-from-clock', "published_at=parts[-1]['date'], platform_texts=",
+    presentation('published-at-from-clock', "published_at=every[-1]['date'], platform_texts=",
                  "published_at=int(time.time()), platform_texts=",
                  'presentation/receipt-binds-shown-content')
     presentation('presentation-key-without-digest',
@@ -1045,6 +1045,11 @@ def cases():
                  "            changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}\n",
                  "            pass\n", 'projection/notice-superseded')
 
+    # VELDO-0065 second review n2: a definitely refused part is sent again after its retry_after.
+    presentation('partial-never-sent-again', "RETRYABLE = ('refused', 'partial')\n", "RETRYABLE = ('refused',)\n",
+                 'presentation/refused-part-sent-again')
+    presentation('retry-after-ignored', "                and self.clock() < existing['retry_not_before']):\n",
+                 "                and False):\n", 'presentation/refused-part-sent-again')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

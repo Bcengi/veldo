@@ -42,6 +42,12 @@ class _V65BotApi(_v65_http.BaseHTTPRequestHandler):
             return self._answer(404, {'ok': False, 'error_code': 404, 'description': 'Not Found'})
         if st['mode'] == 'refuse':
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: chat not found'})
+        if st.get('flood_after') is not None:  # flood control: this many sends pass, then one 429
+            if st['flood_after'] == 0:
+                st['flood_after'] = None
+                return self._answer(429, {'ok': False, 'error_code': 429, 'description': 'Too Many Requests: retry after 3',
+                                          'parameters': {'retry_after': 3}})
+            st['flood_after'] -= 1
         if len(body.get('text', '').encode('utf-16-le')) // 2 > 4096:  # the documented Bot API text limit
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: message is too long'})
         chat = body.get('chat_id')
@@ -82,7 +88,8 @@ def _v65_checks(base):
                                   'presentation/private-chat-only', 'presentation/replacement-without-reply-target',
                                   'presentation/reply-link-verified', 'presentation/long-brief-split',
                                   'projection/one-message-per-version', 'framing/key-by-store-order',
-                                  'projection/notice-superseded', 'projection/silent-from-store')}
+                                  'projection/notice-superseded', 'projection/silent-from-store',
+                                  'presentation/refused-part-sent-again')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -951,6 +958,40 @@ def _v65_checks(base):
                   reason(presenter.present(k41)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
             check(order_row, 'the ledger this reads is the revocation organ\'s',
                   getattr(V, 'REVOCATION_LEDGER', None) == _v65_load('v65_revocation', organs / 'control_revocation.py').LEDGER_ENTITY)
+
+        # Review 2 n2: a part Telegram definitely refused is sent again, after its retry_after
+        again_row = 'presentation/refused-part-sent-again'
+        with section(again_row):
+            flood_brief = ' '.join(['The specification needs a decision on the parser and the rollout order (%d).' % n
+                                    for n in range(60)])
+            f2 = opened('F-2', brief=flood_brief)
+            api['flood_after'] = 1
+            asked = len(api['requests'])
+            first_try = presenter.present(f2)
+            partial = (presenter.receipts(f2) or [{}])[0]
+            check(again_row, 'a part the platform refused leaves the earlier parts and a named refusal',
+                  reason(first_try) == ('partial', 'channel_refused') and len(partial.get('rendered') or []) >= 2
+                  and len(partial.get('message_ids') or []) == 1 and len(api['requests']) == asked + 1)
+            wait = presenter.present(f2)
+            check(again_row, 'a run inside the platform\'s retry_after sends nothing',
+                  reason(wait) == ('refused', 'retry_after') and len(api['requests']) == asked + 1)
+            real_clock = presenter.clock
+            presenter.clock = lambda: real_clock() + 5
+            try:
+                done = presenter.present(f2)
+            finally:
+                presenter.clock = real_clock
+            f2_r = presenter.current(f2) or {}
+            check(again_row, 'after retry_after only the missing parts are sent and the presentation completes',
+                  reason(done) == ('published', None) and len(api['requests']) == asked + len(partial.get('rendered') or [])
+                  and (f2_r.get('message_ids') or [None])[0] == (partial.get('message_ids') or [0])[0]
+                  and len(f2_r.get('message_ids') or []) == len(f2_r.get('rendered') or []))
+            check(again_row, 'the completed receipt verifies against every part the platform holds',
+                  V.receipt_problems(f2_r, [platform(owner_chat, m) for m in f2_r.get('message_ids') or []]) == [])
+            check(again_row, 'the owner\'s reply to the first part then settles',
+                  reason(answer(owner_reply(dict(f2_r, message_id=(f2_r.get('message_ids') or [None])[0]),
+                                            'accept: read both parts'))) == ('accepted', None))
+
     finally:
         server.shutdown()
         server.server_close()

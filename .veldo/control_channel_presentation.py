@@ -66,9 +66,11 @@ RECORD_OPERATION = 'channel_presentation_record'
 FRAME_OPERATION = 'presentation_frame'
 ANSWER_OPERATION = 'presentation_answer'
 CHANNEL = 'telegram_chat'
-OUTCOMES = ('pending', 'published', 'anomaly', 'refused', 'unknown_outcome')
+OUTCOMES = ('pending', 'published', 'anomaly', 'refused', 'partial', 'unknown_outcome')
 ANOMALIES = ('presentation_mismatch', 'chat_mismatch', 'supersession_mismatch', 'incomplete_parts')
-RETRYABLE = ('refused',)
+# A definite refusal is attempted again: of the whole presentation (`refused`), or of the parts still
+# unsent after some were published (`partial`), never before the platform's retry_after.
+RETRYABLE = ('refused', 'partial')
 # The revocation organ's ledger entity (control_revocation.LEDGER_ENTITY; the suite binds the two).
 REVOCATION_LEDGER = 'authority:revocations'
 # Telegram's sendMessage text limit, counted as the platform counts it: UTF-16 code units.
@@ -99,6 +101,7 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
             'invalid_enrollment': 'missing_evidence', 'group_chat': 'missing_evidence',
             'presentation_too_long': 'invalid_input', 'incomplete_parts': 'unknown_outcome',
+            'retry_after': 'unavailable_service',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
             'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
@@ -353,9 +356,14 @@ class TelegramPresentationEdge:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 answer = json.loads(response.read())
         except urllib.error.HTTPError as exc:
-            if not 400 <= exc.code < 500 or not self.P.telegram_refusal(exc, exc.code):
+            error = self.P.telegram_error_answer(exc, exc.code) if 400 <= exc.code < 500 else None
+            if error is None:
                 raise EdgeRefused('unknown_outcome', 'HTTP %d is not a definite refusal' % exc.code) from None
-            raise EdgeRefused('channel_refused', 'HTTP %d' % exc.code) from None
+            refused = EdgeRefused('channel_refused', 'HTTP %d' % exc.code)
+            # Flood control names how long to wait before the next send (Bot API ResponseParameters).
+            wait = (error.get('parameters') or {}).get('retry_after') if isinstance(error.get('parameters'), dict) else None
+            refused.retry_after = wait if type(wait) in (int, float) and wait >= 0 else None
+            raise refused from None
         except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as exc:
             raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None
         result = answer.get('result') if isinstance(answer, dict) and answer.get('ok') is True else None
@@ -407,12 +415,18 @@ def _record_transition(params, before):
             raise ValueError('a receipt is immutable; only a definite refusal is attempted again')
         data = dict(record, attempt=current['attempt'] + 1 if current else 1, outcome='pending', chat_id=None,
                     message_id=None, message_ids=[], external_id=None, published_at=None, platform_texts=[],
-                    reply_to_message_id=None, reply_linked=None, refusal=None, anomalies=[])
+                    platform_parts=[], reply_to_message_id=None, reply_linked=None, refusal=None,
+                    retry_not_before=None, anomalies=[])
+        if current is not None and current.get('outcome') == 'partial':
+            # The parts already published stay published; this attempt sends the rest.
+            data.update({k: current[k] for k in ('chat_id', 'message_id', 'message_ids', 'external_id', 'published_at',
+                                                 'platform_texts', 'platform_parts', 'reply_to_message_id', 'reply_linked')})
         return {pid: {'kind': RECEIPT_KIND, 'data': data}}
     if current is None or current.get('outcome') != 'pending' or current.get('attempt') != params.get('attempt'):
         raise ValueError('a completion finishes the pending attempt it names')
-    parts, refusal = params.get('parts'), params.get('refusal')
-    if not isinstance(parts, list) or len(parts) > len(current['rendered']) or not (refusal is None or isinstance(refusal, str)):
+    parts, refusal, wait = params.get('parts'), params.get('refusal'), params.get('retry_not_before')
+    if (not isinstance(parts, list) or len(current['platform_parts']) + len(parts) > len(current['rendered'])
+            or not (refusal is None or isinstance(refusal, str)) or not (wait is None or type(wait) in (int, float))):
         raise ValueError('a completion carries the parts the platform published and the refusal of the next one')
     for platform in parts:
         if (not isinstance(platform, dict) or set(platform) != set(PLATFORM_FIELDS)
@@ -422,22 +436,31 @@ def _record_transition(params, before):
             raise ValueError('a platform answer carries its chat, message, date, text and reply')
     data = dict(current)
     changes = {}
-    if not parts and refusal is not None:
+    every = list(current['platform_parts']) + parts
+    if not every and refusal is not None:
         data.update(outcome='refused', refusal=refusal)
-    elif not parts:
+        data.update(retry_not_before=wait)
+    elif not every:
         data.update(outcome='unknown_outcome')
     else:
-        # Every part the platform published is kept; a presentation missing a part is an anomaly,
-        # never published and never sent again.
-        found = _anomalies(data, parts)
-        ids = [p['message_id'] for p in parts]
-        data.update(outcome='anomaly' if found else 'published', chat_id=parts[0]['chat_id'],
-                    message_id=ids[-1], message_ids=ids,
-                    external_id='%d:%s' % (parts[0]['chat_id'], ','.join(str(m) for m in ids)),
-                    published_at=parts[-1]['date'], platform_texts=[p['text'] for p in parts],
-                    reply_to_message_id=parts[0]['reply_to_message_id'],
-                    reply_linked=record_linked(data, parts[0]['reply_to_message_id']), anomalies=found,
-                    refusal=refusal if found else None)
+        # Every part the platform published is kept. A later part the platform definitely refused is
+        # sent again (`partial`); one whose outcome is unknown, or a part that does not match what
+        # was sent, leaves the presentation unfinished and never sent again.
+        found = [a for a in _anomalies(data, every) if a != 'incomplete_parts']
+        complete = len(every) == len(data['rendered'])
+        if found or complete:
+            outcome = 'anomaly' if found else 'published'
+        else:
+            outcome = 'partial' if refusal is not None else 'unknown_outcome'
+        ids = [p['message_id'] for p in every]
+        data.update(outcome=outcome, chat_id=every[0]['chat_id'],
+                    message_id=ids[-1], message_ids=ids, platform_parts=every,
+                    external_id='%d:%s' % (every[0]['chat_id'], ','.join(str(m) for m in ids)),
+                    published_at=every[-1]['date'], platform_texts=[p['text'] for p in every],
+                    reply_to_message_id=every[0]['reply_to_message_id'],
+                    reply_linked=record_linked(data, every[0]['reply_to_message_id']), anomalies=found,
+                    refusal=refusal if outcome == 'partial' else None,
+                    retry_not_before=wait if outcome == 'partial' else None)
     if data['outcome'] == 'published':
         head = before.get(hid, {}).get('data') or {}
         prior = (data['supersedes'] or {}).get('presentation_id')
@@ -758,21 +781,24 @@ class Presenter:
             sent = self.edge.send(chat, text, reply_to)
         except self.P.EdgeRefused as exc:
             unknown = exc.code == 'unknown_outcome'
-            return {'platform': None, 'refusal': None if unknown else exc.code}
+            wait = getattr(exc, 'retry_after', None)
+            return {'platform': None, 'refusal': None if unknown else exc.code,
+                    'retry_not_before': None if unknown or wait is None else self.clock() + wait}
         except Exception:
-            return {'platform': None, 'refusal': None}
-        return {'platform': sent, 'refusal': None}
+            return {'platform': None, 'refusal': None, 'retry_not_before': None}
+        return {'platform': sent, 'refusal': None, 'retry_not_before': None}
 
-    def _send_parts(self, chat, parts, reply_to):
-        """Send the parts in order; the first carries the reply link. Stops at the first part the
-        platform did not confirm: the completion keeps the parts published before it."""
+    def _send_parts(self, chat, parts, reply_to, start=0):
+        """Send the parts from `start` in order; the first part carries the reply link. Stops at the
+        first part the platform did not confirm: the completion keeps the parts published before it
+        and when the platform said the next may be tried."""
         published = []
-        for i, text in enumerate(parts):
+        for i, text in enumerate(parts[start:], start):
             sent = self._send(chat, text, reply_to if i == 0 else None)
             if sent['platform'] is None:
-                return {'parts': published, 'refusal': sent['refusal']}
+                return {'parts': published, 'refusal': sent['refusal'], 'retry_not_before': sent['retry_not_before']}
             published.append(sent['platform'])
-        return {'parts': published, 'refusal': None}
+        return {'parts': published, 'refusal': None, 'retry_not_before': None}
 
     def compose(self, request):
         """(refusal, record, versions): the presentation current authority requires now. The
@@ -834,6 +860,9 @@ class Presenter:
         if self.answer_record(request, record['request_version'], record['owner']):
             return self._observe('publish', request, versions, 'answered', None, presentation_id=pid)
         existing = self.receipt(pid)
+        if (existing is not None and existing['outcome'] in RETRYABLE and existing.get('retry_not_before') is not None
+                and self.clock() < existing['retry_not_before']):
+            return self._observe('publish', request, versions, 'refused', 'retry_after', presentation_id=pid)
         if existing is not None and existing['outcome'] not in RETRYABLE:
             outcome = SETTLED_OUTCOMES.get(existing['outcome'], 'anomaly')
             reason = ','.join(existing['anomalies']) if outcome == 'anomaly' else 'unknown_outcome'
@@ -844,7 +873,8 @@ class Presenter:
         except self.store.StoreRefused as exc:
             return self._observe('publish', request, versions, 'refused', exc.code, presentation_id=pid)
         intent = self.receipt(pid)
-        completion = self._send_parts(record['enrolled_chat'], record['rendered'], record['reply_to'])
+        completion = self._send_parts(record['enrolled_chat'], record['rendered'], record['reply_to'],
+                                      start=len(intent['platform_parts']))
         try:
             self._commit(RECORD_OPERATION, dict(phase='complete', presentation_id=pid, head_id=hid,
                                                 attempt=intent['attempt'], **completion),
@@ -854,7 +884,8 @@ class Presenter:
         except self.store.StoreRefused as exc:
             return self._observe('publish', request, versions, 'unknown_outcome', exc.code, presentation_id=pid)
         done = self.receipt(pid)
-        reason = {'published': None, 'refused': done['refusal'], 'unknown_outcome': 'unknown_outcome'}.get(
+        reason = {'published': None, 'refused': done['refusal'], 'partial': done['refusal'],
+                  'unknown_outcome': 'unknown_outcome'}.get(
             done['outcome'], ','.join(done['anomalies']))
         return self._observe('publish', request, versions, done['outcome'], reason, presentation_id=pid)
 

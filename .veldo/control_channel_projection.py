@@ -191,14 +191,20 @@ class TelegramEdge:
                 'text': result['text']}
 
 
-def telegram_refusal(reply, status):
-    """Whether an HTTP error reply is the Bot API's own error answer for `status`: a JSON object
-    with `ok` false and `error_code` equal to the status. An unreadable body is not."""
+def telegram_error_answer(reply, status):
+    """The Bot API's own error answer for `status` carried by an HTTP error reply (a JSON object with
+    `ok` false and `error_code` equal to the status), or None. An unreadable body is None."""
     try:
         answer = json.loads(reply.read())
     except (http.client.HTTPException, OSError, ValueError):
-        return False
-    return isinstance(answer, dict) and answer.get('ok') is False and answer.get('error_code') == status
+        return None
+    ok = isinstance(answer, dict) and answer.get('ok') is False and answer.get('error_code') == status
+    return answer if ok else None
+
+
+def telegram_refusal(reply, status):
+    """Whether an HTTP error reply is the Bot API's own error answer for `status`."""
+    return telegram_error_answer(reply, status) is not None
 
 
 def anomalies(record, platform):
