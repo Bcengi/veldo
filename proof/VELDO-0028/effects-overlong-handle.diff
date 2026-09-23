@@ -1,5 +1,5 @@
 --- a/.veldo/control_effects.py
 +++ b/.veldo/control_effects.py
-@@ -121 +121 @@
+@@ -125 +125 @@
 -                    expires_at=min(contract['deadline'] + 900, time.time() + 900))
 +                    expires_at=contract['deadline'] + 901)

@@ -301,6 +301,11 @@ def cases():
            "    completed = status in ('accepted', 'completed') and bool(observation.get('evidence'))", 'completion')
     effect('effects-unbound-result', "    matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)",
            "    matches = isinstance(observation, dict)", 'completion')
+    revocation = "    if R.is_revoked(S, conn, principal, now):"
+    effect('effects-ignore-authorization-revocation', revocation,
+           "    if False:", 'revocation-committed')
+    effect('effects-revocation-preflight-only', revocation,
+           "    if not consume and R.is_revoked(S, conn, principal, now):", 'revocation-before-transaction')
     return result
 
 

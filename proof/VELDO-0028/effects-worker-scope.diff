@@ -1,6 +1,6 @@
 --- a/.veldo/control_effects.py
 +++ b/.veldo/control_effects.py
-@@ -72,2 +72,2 @@
+@@ -76,2 +76,2 @@
 -    if any(request.get(f) != contract[f] for f in BINDINGS):
 -        raise Refused('scope-mismatch')
 +    contract = dict(contract, **{f: request[f] for f in BINDINGS})

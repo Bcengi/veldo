@@ -1,6 +1,6 @@
 --- a/.veldo/control_effects.py
 +++ b/.veldo/control_effects.py
-@@ -137,5 +137,3 @@
+@@ -141,5 +141,3 @@
 -    if previous:
 -        if previous['data']['request_digest'] != SIG.digest(request):
 -            raise Refused('request-content-conflict')

@@ -20,7 +20,7 @@ def _v28_run():
         modules = root / 'installed'
         modules.mkdir()
         for name in ('control_signer', 'control_keys', 'control_membership', 'authority_contract',
-                     'control_store', 'git_process', 'credential_issue'):
+                     'control_store', 'git_process', 'credential_issue', 'control_revocation'):
             _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effects.py", modules / 'control_effects.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
@@ -198,6 +198,54 @@ print(json.dumps(result))
         ok, _ = E.AC.ssh_keygen_verify(E.S.journal_signed_bytes(signed), signed['signature'],
             E.AC.allowed_signers_line('effect-executor', key, 'veldo-journal'), 'effect-executor', 'veldo-journal')
         row('signed-store', ok and E.metrics(conn)['pending'] >= 4)
+        # R1: real authorization revocation after issuance, including a first ledger
+        # insertion between the acceptance preflight and its SQLite transaction.
+        R = E.organ('control_revocation')
+        R.attach(E.S)
+        for kind in E.KINDS:
+            for timing in ('committed', 'before-transaction'):
+                req, issued, contract, permit = setup(kind, 'revoked-' + timing)
+                copy_path = root / (kind + '-' + timing + '.sqlite3')
+                revoked_conn = E.S.open_store(str(copy_path))
+                conn.backup(revoked_conn)
+                isolated = dict(config, store=str(copy_path))
+                isolated_path = private / 'revoked-config.json'
+                isolated_path.write_text(_v28_json.dumps(isolated))
+                before_calls = len(calls(kind + '-good'))
+                def revoke():
+                    now = _v28_time.time()
+                    R.execute(E.S, revoked_conn, dict(command_id='revoke-worker', principal='owner',
+                        operation='revoke_authorization', parameters=dict(principal='worker', at=now,
+                            reason='operator withdrew authorization', revoked_by='owner'),
+                        expected_versions={}, artifact_digests=[], nonce='revoke-worker'), journal, now)
+                original = E.transact
+                if timing == 'committed':
+                    revoke()
+                    answer = _v28_executor.call(isolated_path, req, 'worker', private / 'worker')
+                else:
+                    def interleave(c, operation, *args):
+                        if operation == 'accept_protected_effect':
+                            revoke()
+                        return original(c, operation, *args)
+                    E.transact = interleave
+                    challenge = 'revocation-interleave'
+                    signature = E.SIG.sign_bytes(private / 'worker', E.SIG.canonical(
+                        dict(challenge=challenge, request_digest=E.SIG.digest(req))), E.NAMESPACE)
+                    try:
+                        answer = _v28_executor.execute(isolated, req, 'worker', challenge, signature)
+                    finally:
+                        E.transact = original
+                state = E.S.materialized_state(revoked_conn)
+                refused = (issued.get('accepted') is True
+                    and R.is_revoked(E.S, revoked_conn, 'worker', _v28_time.time())
+                    and answer.get('accepted') is False
+                    and len(calls(kind + '-good')) == before_calls
+                    and 'effect:' + req['dispatch_id'] not in state['entities']
+                    and 'handle:' + E.SIG.digest(req['handle']) not in state['nonces']
+                    and state['entities'][contract['permission_id']]['data'] == permit)
+                row('revocation-' + timing + '/' + kind, refused)
+                expect('VELDO-0028 effects/revocation-' + timing + '/' + kind, refused)
+                revoked_conn.close()
         # Linux custody witness: this isolated probe can execute but cannot read private
         # service files. Provisioning this boundary for real workers belongs to W26.
         probe = '''import ctypes,sys

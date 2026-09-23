@@ -1,5 +1,5 @@
 --- a/.veldo/control_effects.py
 +++ b/.veldo/control_effects.py
-@@ -169 +169 @@
+@@ -173 +173 @@
 -    completed = status == 'completed' and bool(observation.get('evidence'))
 +    completed = status in ('accepted', 'completed') and bool(observation.get('evidence'))

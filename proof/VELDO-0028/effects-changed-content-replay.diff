@@ -1,5 +1,5 @@
 --- a/.veldo/control_effects.py
 +++ b/.veldo/control_effects.py
-@@ -138 +138 @@
+@@ -142 +142 @@
 -        if previous['data']['request_digest'] != SIG.digest(request):
 +        if False:

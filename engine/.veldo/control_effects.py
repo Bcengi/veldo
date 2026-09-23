@@ -19,6 +19,7 @@ def organ(name):
 
 
 SIG = organ('control_signer')
+R = organ('control_revocation')
 S, CM, AC = SIG.S, SIG.CM, SIG.AC
 Refused = SIG.K.Refused
 NAMESPACE = 'veldo-effect-connection'
@@ -50,10 +51,13 @@ def authenticate(state, principal, challenge, request, signature):
         raise Refused('unauthenticated-worker')
 
 
-def authorize(state, config, principal, request, consume=True):
+def authorize(conn, state, config, principal, request, consume=True):
     entry = entity(state, request['contract_id'], 'effect_contract')
     contract = entry['data']
     now = time.time()
+    # The same connection observes the ledger under the acceptance write lock.
+    if R.is_revoked(S, conn, principal, now):
+        raise Refused('revoked')
     for identity, version in config.get('_auth_versions', {}).items():
         if state.get(identity, {}).get('version') != version:
             raise Refused('stale-authority')
@@ -113,7 +117,7 @@ def issue(conn, config, principal, request, journal):
     handle = secrets.token_urlsafe(32)
     hid = 'handle:' + SIG.digest(handle)
     def transition(params, before):
-        entry, _ = authorize(before, config, principal, request)
+        entry, _ = authorize(conn, before, config, principal, request)
         contract = entry['data']
         data = {f: contract[f] for f in BINDINGS}
         data.update(contract_id=request['contract_id'], contract_digest=entry['digest'],
@@ -126,7 +130,7 @@ def issue(conn, config, principal, request, journal):
 
 def accept(conn, config, principal, request, journal):
     state = S.materialized_state(conn)['entities']
-    entry, _ = authorize(state, config, principal, request, consume=False)
+    entry, _ = authorize(conn, state, config, principal, request, consume=False)
     hid = 'handle:' + SIG.digest(request['handle'])
     handle = entity(state, hid, 'effect_handle')['data']
     if (handle['worker'] != principal or handle['contract_id'] != request['contract_id']
@@ -140,7 +144,7 @@ def accept(conn, config, principal, request, journal):
         return previous['data'], False
     nonce = hid
     def transition(params, before):
-        current, permission = authorize(before, config, principal, request)
+        current, permission = authorize(conn, before, config, principal, request)
         saved = entity(before, hid, 'effect_handle')['data']
         if saved['contract_digest'] != current['digest'] or time.time() >= saved['expires_at']:
             raise Refused('stale-handle')
