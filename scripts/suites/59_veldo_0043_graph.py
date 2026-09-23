@@ -830,7 +830,7 @@ def _s43_run():
         # closed resume, and no filesystem location anywhere.
         good_digest = 'sha256:' + 'd' * 64
         result = {'id': 'result-1', 'version': 1, 'digest': good_digest,
-                  'value': {'rank': 2, 'source_url': 'https://example.com/a/b'}}
+                  'value': {'rank': 2, 'source': 'example.com'}}
         resume_ok = {'position': 'rank', 'step': 2, 'notes': '{"trail": ["groom"]}'}
         identity = dict(cycle_id='cycle-q', command_id='command-q', domain_uuid='domain', repository_uuid='repository')
         store_like = '/home/someone/repo/.git/veldo/control/control.sqlite3'
@@ -883,6 +883,10 @@ def _s43_run():
             'two-megabytes': with_value(['x' * 1000] * 2000),
             'self-referential': with_value(cycle),
             'huge-integer': with_value(10 ** 5000),
+            # A key name the author writes cannot switch the check off: the closed schema declares
+            # no URL field, so no value may carry an http(s) URL with a path.
+            'author-named-url-field': with_value({'source_url': 'https://example.com/a/b'}),
+            'nested-url-field': with_value({'a': [{'x_url': 'https://localhost/home/someone/repo'}]}),
             'huge-version': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
                                  supplied_results=[dict(result, version=10 ** 5000)]),
         })
@@ -921,7 +925,8 @@ def _s43_run():
             'percent-encoded': 'path_in_request', 'url-field-file': 'path_in_request',
             'url-field-no-host': 'path_in_request', 'identifier-control': 'invalid_input',
             'identifier-dots': 'invalid_input', 'two-megabytes': 'invalid_input', 'self-referential': 'invalid_input',
-            'huge-integer': 'invalid_input', 'huge-version': 'invalid_input'})
+            'huge-integer': 'invalid_input', 'huge-version': 'invalid_input',
+            'author-named-url-field': 'path_in_request', 'nested-url-field': 'path_in_request'})
 
         # Every bad shape at the stage that is not a link is a named, counted, observed refusal.
         import hashlib as _s43_hashlib
