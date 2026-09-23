@@ -122,6 +122,9 @@ Existing foundation contracts VELDO-0016-0023, 0025-0027, 0029, 0107 and 0109 ar
 the supplied trim table does not rewrite their existing historical qualification. VELDO-0108
 is the built relay: its criteria are unchanged and its added disposition records Mac reuse and
 Release 2 follow-up qualification. Their prior evidence is not proof of the new live integration.
+VELDO-0027 is already built and its gate is green, including AC2 rotation/restart. Its
+hardening criteria are already implemented and passing, so they carry no Release 1 cost;
+all criteria remain intact. See its [recorded clean-tree gate and signing observations](../VELDO-0027/README.md#f-05-and-f-06-clean-tree-acceptance).
 In particular 0047 requires an actual authenticated IPC mutation to the real SQLite store;
 0115's broader reusable fixture remains later. 0047 also carries the normal local exclusion
 from 0030, and 0088 carries normal cycle serialization from 0093. 0053 retains required architecture
