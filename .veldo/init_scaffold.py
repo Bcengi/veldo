@@ -86,6 +86,10 @@ _FILES = [
     # Runtime assets; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_snapshot.py",
     ".veldo/control_readset.py",
+    # VELDO-0043: the plain-data graph adapter and its isolated-enforcement command.
+    # Runtime assets; no validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_graph.py",
+    ".veldo/control_graph_isolation.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.
