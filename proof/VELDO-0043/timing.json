@@ -52,6 +52,11 @@
    "cases": 42,
    "suite_executions": 84,
    "wall_seconds": 752.82
+  },
+  "after_round_5": {
+   "cases": 61,
+   "jobs": 6,
+   "wall_seconds": 153.92
   }
  },
  "limit_seconds_for_suite_rows": 60,
@@ -102,5 +107,23 @@
   "budget_seconds": 560.0,
   "finding_43_mutant_workers": 42,
   "finding_43_mutant_worker_seconds": 389.5
+ },
+ "suite_runs_after_round_5": {
+  "rows": 21,
+  "assertions": 47,
+  "suite_seconds": [
+   10.25,
+   10.27,
+   11.17
+  ]
+ },
+ "gate_mutation_stage_after_round_5": {
+  "registered": 299,
+  "status": "passed",
+  "elapsed_seconds": 294.47,
+  "budget_seconds": 598.0,
+  "finding_43_mutant_workers": 61,
+  "finding_43_mutant_worker_seconds": 845.1,
+  "note": "first run failed mutation_survived signing/transition-clock (finding 27, time-dependent), passed on rerun"
  }
 }

@@ -176,3 +176,12 @@ field and a key name the author writes cannot switch a check off; a stage root w
 repository or placed inside the runtime is refused; a refused installed runtime names
 control_graph_install.py --rebuild. The retired url-field mutation is replaced. No criterion,
 status or historical proof was changed.
+
+2026-09-23 round 5 review: "inside a repository" is decided by asking Git through the shared Git
+boundary, with the earlier shape checks as a second opinion, so a Git directory planted as HEAD,
+refs/ and commondir is refused; the interpreter is resolved component by component the way the
+kernel does; symlink loops and NUL bytes in the stage and runtime checks are named refusals; a
+venv option's path value is judged and each pyvenv.cfg problem reported once; the rebuild swap
+restores the old runtime when the second rename fails; an unwritable request file is a named
+refusal. The round 5 reviewer's mutants are registered. No criterion, status or historical proof
+was changed.
