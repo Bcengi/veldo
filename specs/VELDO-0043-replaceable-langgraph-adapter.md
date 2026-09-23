@@ -101,13 +101,16 @@ recovery are Release 2.
 Stated limit: Release 1 runs graph execution as the same account with no OS-user boundary
 (owner rulings; hardening is later). What the adapter hands the graph child leads nowhere near
 the repository: a fixed environment, no inherited descriptors, a path-free closed request, a
-runtime whose interpreter and pyvenv.cfg name no repository, and a content-addressed runner copy
-and working directory in a per-account stage outside the runtime and every repository, reached
-through no link the adapter did not make; the child runs in its own session and its process
-group dies with the exchange. A deliberately
-hostile node can still reach the domain process through /proc (its working directory and open
-descriptors) as the same account. The proof keeps that limit visible in its own row. Real
-confinement, through a separate mount and process view or a separate account, is Release 2.
+runtime whose interpreter (at every link) and pyvenv.cfg name no repository, and a
+content-addressed runner copy, working directory and stdin/stdout files in a per-account stage
+outside the runtime and every repository. Below the stage root the adapter follows no link it did
+not make; the stage root and its ancestors are trusted, and the root is judged to lie outside
+every repository and the runtime. The child runs in its own session and its whole process group
+is killed with the exchange. Stated limits: a deliberately hostile node can still reach the
+domain process through /proc (its working directory and open descriptors) as the same account,
+and a grandchild that starts its own session leaves the process group and outlives the exchange.
+The proof keeps the first limit visible in its own row. Real confinement and containment, through
+a separate mount and process view or a separate account, are Release 2.
 
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
@@ -163,3 +166,13 @@ graph/authority/proc-limit row's two notes-path mutants were retired because the
 observation channel, not the limit; the review's real falsifier (the adapter made non-dumpable)
 replaces them. Verifying every file under the runtime against the lock and RECORD before use is
 an open item for VELDO-0045. No criterion, status or historical proof was changed.
+
+2026-09-23 third review: pyvenv.cfg values are parsed as key = value lines and judged whole (the
+command line shlex-split and over runs of words), and the interpreter at every hop of its link
+chain; runners/ is judged for a repository exactly as work/; every non-link bad stage shape is a
+named refusal; the child's stdin/stdout files live under the stage; unserializable request values
+are invalid_input; the URL exemption is removed, since the closed request schema declares no URL
+field and a key name the author writes cannot switch a check off; a stage root written inside a
+repository or placed inside the runtime is refused; a refused installed runtime names
+control_graph_install.py --rebuild. The retired url-field mutation is replaced. No criterion,
+status or historical proof was changed.
