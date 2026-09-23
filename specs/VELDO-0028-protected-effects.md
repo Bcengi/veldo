@@ -181,6 +181,10 @@ and a scheme-looking `ssh:user@` included) and must then start with a well-forme
 observed from outside. The record names URLs, not the repository a transport reaches with them:
 a remote's `receivepack` or `uploadpack` command, an SSH command, a remote helper, a proxy or an
 HTTP redirect decides that, and none of it is visible from the URL.
+Completion is conservative where the remote's advertisement cannot show the change as exactly the
+authorized one; these land and still end unknown: a server that changes another ref as a
+consequence of the push (for example a pull-request merge ref), an authorized ref that is itself
+a symbolic ref on the remote, and protocol v0, which does not advertise non-HEAD symbolic refs.
 
 ## History
 
@@ -241,3 +245,16 @@ and mutations `effects-destination-from-listing`, `effects-completion-ignores-de
 `effects-completion-compares-raw-listing`, `effects-destination-git-display-only`,
 `effects-pushed-from-every-to-line` and `effects-pushed-ignores-refspec`. No status or Release 2
 obligation changes.
+
+2026-09-23 review round R8: nothing is pushed unless every resolved destination could be listed
+first and holds the authorized ref at the expected old state (the old tip, or absent for a ref
+creation, which completes when the ref is absent before and at the tip after at every
+destination); otherwise the receiver refuses `stale-subject`. A refusal raised by the receiver
+reaches the caller as that named refusal, recorded as conclusive and reconciled as stopped, and a
+replay returns it. Each destination must resolve to itself under `git ls-remote --get-url`, or the
+publication is refused `rerouted-destination`; the insteadOf-chain limit becomes that rule, and the
+record is stated to name URLs, not the repository a transport reaches. Git steps are bounded per
+step and the push per destination, and the supervisor's limit follows the windows the executor
+announces. Recorded URLs that do not parse into a well-formed host are over-scrubbed. Rows now pin
+a clean push exit, both line-break guards, the report's shape and exit statuses, and the C locale.
+No status or Release 2 obligation changes.
