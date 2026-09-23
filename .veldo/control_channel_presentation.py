@@ -116,7 +116,7 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'presentation_too_long': 'invalid_input', 'incomplete_parts': 'unknown_outcome',
             'retry_after': 'unavailable_service', 'unmatched_choice': 'invalid_input',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
-            'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'unmapped_choice': 'invalid_input',
+            'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'request_closed': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
             'presentation_mismatch': 'missing_evidence', 'chat_mismatch': 'missing_evidence',
             'supersession_mismatch': 'missing_evidence',
@@ -1127,6 +1127,10 @@ class Presenter:
         if head is None or head['current'] != pid:
             raise Refused('superseded_presentation', 'the named presentation is not the current one')
         refusal, current, versions = self.bindings(request)
+        if refusal == 'stale_subject':
+            # The request has left pending (answered, declined or canceled in the inbox): say so, once.
+            self._tell(ev, receipt, 'This request is no longer open, so this reply changes nothing.')
+            raise Refused('request_closed', 'the request is no longer pending')
         if refusal or binding_mismatches(receipt, current):
             raise Refused('stale_presentation', 'the named presentation no longer binds the current request')
         if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):

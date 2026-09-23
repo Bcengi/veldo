@@ -107,7 +107,7 @@ def _v65_checks(base):
                                   'answer/after-answered-reply', 'answer/tell-once-per-message',
                                   'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed',
                                   'presentation/retry-after-capped', 'answer/reply-nfkc-before-split',
-                                  'answer/redelivered-answer-silent')}
+                                  'answer/redelivered-answer-silent', 'answer/reply-after-closed')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1366,6 +1366,25 @@ def _v65_checks(base):
             check(again, 'control: a different message after the answer is told the ruling',
                   reason(another) == ('refused', 'already_answered') and len(api['requests']) == asked + 1
                   and 'already answered: approve' in api['requests'][-1][1])
+
+        # Review 4 item 7: a reply after the request has left pending is told it is no longer open, once
+        closed_row = 'answer/reply-after-closed'
+        with section(closed_row):
+            no1 = opened('NO-1')
+            presenter.present(no1)
+            no1_r = presenter.current(no1) or {}
+            inbox_answer = command('owner', 'answer', 'NO-1', request_version=1, ruling='accept')
+            late = owner_reply(no1_r, 'accept: fine')
+            counts, results = [], []
+            for message in (late, late, owner_reply(no1_r, 'thanks')):
+                asked = len(api['requests'])
+                results.append(answer(message))
+                counts.append((len(api['requests']) - asked, api['requests'][-1][1] if len(api['requests']) > asked else ''))
+            check(closed_row, 'a reply after the request left pending is refused and told it is no longer open',
+                  inbox_answer.get('ok') is True and reason(results[0]) == ('refused', 'request_closed')
+                  and counts[0][0] == 1 and 'no longer open' in counts[0][1])
+            check(closed_row, 'the same message delivered again is not told again', counts[1][0] == 0)
+            check(closed_row, 'control: another message is told once', counts[2][0] == 1 and 'no longer open' in counts[2][1])
     finally:
         server.shutdown()
         server.server_close()

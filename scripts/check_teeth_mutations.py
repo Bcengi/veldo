@@ -1125,6 +1125,12 @@ def cases():
     presentation('redelivery-by-chat-only',
                  "            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):\n",
                  "            if was.get('chat_id') != ev['chat_id']:\n", 'answer/redelivered-answer-silent')
+    # VELDO-0065 fourth review item 7: a reply after the request left pending is told so, once.
+    presentation('closed-not-told',
+                 "            self._tell(ev, receipt, 'This request is no longer open, so this reply changes nothing.')\n", "",
+                 'answer/reply-after-closed')
+    presentation('closed-reported-as-stale', "            raise Refused('request_closed', 'the request is no longer pending')\n",
+                 "            raise Refused('stale_presentation', 'the request is no longer pending')\n", 'answer/reply-after-closed')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
