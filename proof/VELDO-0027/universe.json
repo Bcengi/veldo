@@ -75,7 +75,8 @@
       "signing/receipt-bound/payload",
       "signing/receipt-bound/delegation_id",
       "signing/receipt-bound/delegation_version",
-      "signing/personal-content-binding"
+      "signing/personal-content-binding",
+      "signing/personal-envelope-expiry"
     ],
     "AC4": [
       "signing/channel-comes-from-the-connection",

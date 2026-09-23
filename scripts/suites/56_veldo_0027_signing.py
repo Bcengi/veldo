@@ -229,6 +229,26 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
                  and _v27_keys.verify(_v27_state(), _v27_signed_control)
                  and all(not r['accepted'] and r.get('refusal') == 'provenance-mismatch' for r in _v27_conflicts))
 
+    # F-04: the very same signed expired envelope must refuse at both boundaries.
+    _v27_expired_request = _v27_source('signed_cli', 'decision_answer')
+    _v27_expiry_control = _v27_call(_v27_expired_request, 'signed_cli')
+    _v27_expired_personal = _v27_copy.deepcopy(_v27_expired_request['payload']['personal_command'])
+    _v27_expired_personal['envelope']['expires_at'] = _v27_time.time() - 60
+    _v27_expired_personal['signature'] = _v27_sign('owner',
+        _v27_ac.canonical_envelope_bytes(_v27_expired_personal['envelope']))
+    _v27_expiry_state = _v27_state()
+    _v27_authority = dict(_v27_ids, membership_version=_v27_expiry_state['membership_version'],
+        delegation_version=_v27_expiry_state['delegation_version'])
+    _v27_contract_ok, _v27_expiry_problems = _v27_ac.verify_signed_command(
+        _v27_expired_personal['envelope'], _v27_expired_personal['command'], _v27_expired_personal['signature'],
+        _v27_authority, _v27_time.time(), set(), _v27_expiry_state['keyring'], _v27_expiry_state['membership'])
+    _v27_expired_result = _v27_call(_v27_source('signed_cli', 'decision_answer',
+        {'personal_command': _v27_expired_personal}), 'signed_cli')
+    _v27_expect('signing/personal-envelope-expiry',
+        _v27_expiry_control['accepted'] and _v27_keys.verify(_v27_state(), _v27_expiry_control, fresh=True)
+        and not _v27_contract_ok and any('expired' in p for p in _v27_expiry_problems)
+        and not _v27_expired_result['accepted'] and _v27_expired_result.get('refusal') == 'missing-attribution')
+
     _v27_tg = _v27_controls['telegram_chat', 'acknowledgement'][0]
     _v27_jira = _v27_controls['jira', 'acknowledgement'][0]
     # F-03: an id-only unauthenticated lookup cannot reveal any stored metadata.

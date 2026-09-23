@@ -230,6 +230,12 @@ def cases():
     signing('signing-leak-revision-before-auth', 'control_signer.py', auth,
             "        diagnostic['delegation_revision'] = state['delegation_version']\n" + auth,
             'unauthenticated-diagnostic-is-empty')
+    envelope_check = "        if problems:\n            raise K.Refused('missing-attribution')"
+    signing('signing-ignore-envelope-problems', 'control_signer.py', envelope_check,
+            "        if False:\n            raise K.Refused('missing-attribution')", 'personal-envelope-expiry')
+    signing('signing-ignore-envelope-expiry', 'control_signer.py', envelope_check,
+            "        if any('expired' not in problem for problem in problems):\n            raise K.Refused('missing-attribution')",
+            'personal-envelope-expiry')
     return result
 
 

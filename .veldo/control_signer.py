@@ -159,6 +159,15 @@ def _payload(state, request, channel, now):
         if any(field not in parameters or parameters[field] != payload.get(field)
                for field in ('ruling', 'presentation_id')):
             raise K.Refused('provenance-mismatch')
+        # Coordinates come from the authority-captured source, not new admission.
+        # Recheck its envelope against current membership/delegation and time via
+        # the contract. Reading evidence neither executes nor consumes its nonce.
+        authority = dict(envelope, membership_version=state['membership_version'],
+                         delegation_version=state['delegation_version'])
+        problems = AC.envelope_problems(envelope, command, authority, now, set(),
+                                        state['keyring'], state['membership'], state['delegations'])
+        if problems:
+            raise K.Refused('missing-attribution')
         ok, _ = AC.ssh_keygen_verify(AC.canonical_envelope_bytes(envelope), source['signature'],
                                    AC.allowed_signers_line(payload['principal'], key['public_key']), payload['principal'])
         if not ok:
