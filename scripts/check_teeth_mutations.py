@@ -318,6 +318,12 @@ def cases():
     add(31, 'review-r6-routing-wrong-exception', '59_veldo_0031_review.py', 'control_claim_client.py',
         '            raise CL.ClaimStopped(exc.reason) from exc',
         '            raise RuntimeError(exc.reason) from exc', ['claims/review-r6'])
+    add(31, 'review-r3-publish-without-use', '59_veldo_0031_review.py', 'lander.py',
+        '                    self._check_ownership()',
+        '                    pass  # omitted publication ownership check', ['claims/review-r3'])
+    add(31, 'review-r3-swallow-heartbeat-stop', '59_veldo_0031_review.py', 'lander.py',
+        '                self._hb_error = exc',
+        '                self._hb_error = None', ['claims/review-r3'])
     return result
 
 

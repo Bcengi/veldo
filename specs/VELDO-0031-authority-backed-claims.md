@@ -14,6 +14,9 @@ depends_on: [VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107]
 placement: [fleet, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/lander.py"
+  - ".veldo/lander.py"
+  - "packs/*/.veldo/lander.py"
   - "engine/.veldo/claim.py"
   - ".veldo/claim.py"
   - "packs/*/.veldo/claim.py"
@@ -124,3 +127,7 @@ in scripts/suites/manifest.json and requires.json, with six driven negative cont
 existing scripts/check_teeth_mutations.py registry. Runtime changes remain within the declared
 claim and scaffold footprint. The proof README records the accepted-admission and receiver seams
 consumed ahead of the service-runner and exact-publication items on parallel branches.
+
+2026-09-23 independent review corrections: add lander.py and its installed copies to the
+footprint because AC3 explicitly includes landing callers. The caller checks protected use
+immediately before finalize and retains heartbeat ownership stops before publication.
