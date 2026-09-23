@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -371 +371 @@
+-    return record['reply_to'] is not None and replied == record['reply_to']
++    return record['reply_to'] is not None

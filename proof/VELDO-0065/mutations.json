@@ -1,4 +1,5 @@
 {
+ "all_by_assertion": true,
  "all_named_rows_red": true,
  "baseline": {
   "details": [],
@@ -32,13 +33,50 @@
    [
     "VELDO-0065 answer/unseen-refused",
     true
+   ],
+   [
+    "VELDO-0065 answer/settle-consumes-answer",
+    true
+   ],
+   [
+    "VELDO-0065 framing/requester-only",
+    true
+   ],
+   [
+    "VELDO-0065 framing/stored-framing-reverified",
+    true
+   ],
+   [
+    "VELDO-0065 answer/not-before-publication",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/private-chat-only",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/replacement-without-reply-target",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/reply-link-verified",
+    true
+   ],
+   [
+    "VELDO-0065 presentation/long-brief-split",
+    true
+   ],
+   [
+    "VELDO-0065 projection/one-message-per-version",
+    true
    ]
   ],
-  "seconds": 2.328
+  "seconds": 3.368
  },
  "controls_green": true,
  "mutants": [
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 full request digest covers identity, version and content",
     "VELDO-0065 presentation/revision-identity detail: equal revisions have distinct request digests",
@@ -52,7 +90,7 @@
     "VELDO-0065 presentation/revision-identity"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "078f6c45a36881ccb4dfd0413f71c696daed20dfad550a626e4d13583c8cacad",
+   "mutant_sha256": "58fd8b427dee99cd8ddba1049dc6575b03be245ba58d4bd211155b9e64044881",
    "name": "request-digest-omits-version",
    "named_row_red": true,
    "named_rows": [
@@ -87,12 +125,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.351,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.55,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/revision-identity detail: the first presentation does not bind the equal revision"
    ],
@@ -101,7 +176,7 @@
     "VELDO-0065 presentation/revision-identity"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "beb1bffcda9b1845d6b24dd756f9f94a962246abc17cb7ae0e46f0a0d1622c8e",
+   "mutant_sha256": "d53def7a58147a9d0a873cc82e7d6bda96c4cc727a7c9c29ec8381d523997dbb",
    "name": "bindings-ignore-request-identity",
    "named_row_red": true,
    "named_rows": [
@@ -136,22 +211,61 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.355,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.488,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 risk statement is the signed framing and is shown",
-    "VELDO-0065 presentation/receipt-binds-shown-content detail: a receipt with its risk_statement changed does not verify"
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: a receipt with its risk_statement changed does not verify",
+    "VELDO-0065 framing/requester-only detail: the shown bytes and the receipt name the requester as the one who stated the risk"
    ],
    "diff": "proof/VELDO-0065/render-omits-risk.diff",
    "failed_rows": [
-    "VELDO-0065 presentation/receipt-binds-shown-content"
+    "VELDO-0065 presentation/receipt-binds-shown-content",
+    "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "9e9975bfbf5c336c16222b66d981cc64ef5521c713dd8d35929263a925835cf9",
+   "mutant_sha256": "ccea5a51860d8081b7ac5a95f9cc6eded1f394c9a58f029333224bb0b98c6d70",
    "name": "render-omits-risk",
    "named_row_red": true,
    "named_rows": [
@@ -186,22 +300,66 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     false
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.457,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.49,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/receipt-binds-shown-content detail: a framing signed by another principal is not presented",
-    "VELDO-0065 presentation/receipt-binds-shown-content detail: a framing carrying another request's signed framing is not presented"
+    "VELDO-0065 presentation/receipt-binds-shown-content detail: a framing carrying another request's signed framing is not presented",
+    "VELDO-0065 framing/requester-only detail: a framing by anyone but the requester frames nothing, however it was committed",
+    "VELDO-0065 framing/requester-only detail: control: the requester's own framing is current again",
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing the requester signed but never submitted, written by a generic store write, is not presented",
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing a stranger signed, written by a generic store write, is not presented",
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing the store accepted after the key was revoked is not presented"
    ],
    "diff": "proof/VELDO-0065/framing-signature-unchecked.diff",
    "failed_rows": [
-    "VELDO-0065 presentation/receipt-binds-shown-content"
+    "VELDO-0065 presentation/receipt-binds-shown-content",
+    "VELDO-0065 framing/requester-only",
+    "VELDO-0065 framing/stored-framing-reverified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "9aead9eb12f2a56148ad60e65ad546f2deb9e582551db67311ce1498f6a8444a",
+   "mutant_sha256": "f131dcb30ab09341647ecc2b025a7fb058a82cbc641dcf29687acc0d18836ad3",
    "name": "framing-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -236,24 +394,95 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     false
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     false
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.243,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.047,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 publication time is the platform date",
     "VELDO-0065 presentation/receipt-binds-shown-content detail: control: the receipt verifies against the platform bytes",
-    "VELDO-0065 presentation/visible-supersession detail: both immutable receipts still verify against the platform"
+    "VELDO-0065 presentation/revision-identity detail: an answer to the first presentation is refused as stale after the equal revision",
+    "VELDO-0065 answer/current-presentation-only detail: an answer to the presentation of the replaced brief is refused as stale",
+    "VELDO-0065 answer/current-presentation-only detail: an answer to a presentation whose risk changed is refused",
+    "VELDO-0065 answer/current-presentation-only detail: an answer to a presentation whose choices changed is refused",
+    "VELDO-0065 answer/current-presentation-only detail: after replacement the old presentation is refused as superseded",
+    "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
+    "VELDO-0065 answer/current-presentation-only detail: an answered request version refuses a second answer",
+    "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer keeps the platform's message, sender, time and reply identity",
+    "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone",
+    "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
+    "VELDO-0065 answer/ruling-and-rationale detail: a ruling with no rationale is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: a blank rationale is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: an unoffered ruling is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: an answer from another sender is refused",
+    "VELDO-0065 answer/ruling-and-rationale detail: control: the owner's answer then settles",
+    "VELDO-0065 presentation/visible-supersession detail: both immutable receipts still verify against the platform",
+    "VELDO-0065 presentation/visible-supersession detail: an answer to a superseded presentation is refused",
+    "VELDO-0065 answer/unseen-refused detail: control: once confirmed published, the same presentation settles",
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded approve answer as it was recorded",
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded reject answer as it was recorded",
+    "VELDO-0065 presentation/reply-link-verified detail: control: a linked replacement verifies against the platform",
+    "VELDO-0065 presentation/reply-link-verified detail: control: an unlinked replacement verifies against the platform",
+    "VELDO-0065 presentation/long-brief-split detail: the receipt binds every part's message and bytes",
+    "VELDO-0065 presentation/long-brief-split detail: an answer to the first part names the same presentation and settles",
+    "VELDO-0065 projection/one-message-per-version detail: the owner's reply to the one message settles the request version"
    ],
    "diff": "proof/VELDO-0065/published-at-from-clock.diff",
    "failed_rows": [
     "VELDO-0065 presentation/receipt-binds-shown-content",
-    "VELDO-0065 presentation/visible-supersession"
+    "VELDO-0065 presentation/revision-identity",
+    "VELDO-0065 answer/current-presentation-only",
+    "VELDO-0065 answer/ruling-and-rationale",
+    "VELDO-0065 presentation/visible-supersession",
+    "VELDO-0065 answer/unseen-refused",
+    "VELDO-0065 answer/settle-consumes-answer",
+    "VELDO-0065 presentation/reply-link-verified",
+    "VELDO-0065 presentation/long-brief-split",
+    "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "1bc9a3bd4b36668b262a40e82734bb4fe800e63384ae9d2e1ac0dcafa52f0eae",
+   "mutant_sha256": "9bb8564afbc142d73b2931513be566715c58db70e74a979e726736e08bb48d3c",
    "name": "published-at-from-clock",
    "named_row_red": true,
    "named_rows": [
@@ -271,15 +500,15 @@
     ],
     [
      "VELDO-0065 presentation/revision-identity",
-     true
+     false
     ],
     [
      "VELDO-0065 answer/current-presentation-only",
-     true
+     false
     ],
     [
      "VELDO-0065 answer/ruling-and-rationale",
-     true
+     false
     ],
     [
      "VELDO-0065 presentation/visible-supersession",
@@ -287,28 +516,67 @@
     ],
     [
      "VELDO-0065 answer/unseen-refused",
+     false
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     false
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
      true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     false
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
     ]
    ],
-   "seconds": 2.278,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.34,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
     "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
     "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
     "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
-    "VELDO-0065 presentation/visible-supersession detail: a re-run shows nothing twice"
+    "VELDO-0065 presentation/visible-supersession detail: a re-run shows nothing twice",
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded reject answer as it was recorded"
    ],
    "diff": "proof/VELDO-0065/presentation-key-without-digest.diff",
    "failed_rows": [
     "VELDO-0065 answer/current-presentation-only",
     "VELDO-0065 answer/ruling-and-rationale",
-    "VELDO-0065 presentation/visible-supersession"
+    "VELDO-0065 presentation/visible-supersession",
+    "VELDO-0065 answer/settle-consumes-answer"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "89cb96024b24ce8a1e6678e878d79ae4be1ce0393ac7e52a7958d3b5d2fd022e",
+   "mutant_sha256": "33e80dc5cdfc57dcbe88dcf25914dbe2b1a8187244e2d172d427ba92395dc39e",
    "name": "presentation-key-without-digest",
    "named_row_red": true,
    "named_rows": [
@@ -343,39 +611,66 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     false
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.216,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.567,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
-    "VELDO-0065 presentation/revision-identity detail: the revision is a new presentation with its own identity",
-    "VELDO-0065 answer/current-presentation-only detail: after replacement the old presentation is refused as superseded",
-    "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
-    "VELDO-0065 answer/current-presentation-only detail: a settled request version refuses a second answer",
-    "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
-    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
-    "VELDO-0065 answer/ruling-and-rationale detail: the answer keeps the platform's message, sender, time and reply identity",
-    "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone",
-    "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
     "VELDO-0065 presentation/visible-supersession detail: the replacement is sent as a reply to the superseded message",
-    "VELDO-0065 presentation/visible-supersession detail: the replacement names what it supersedes in the shown bytes",
-    "VELDO-0065 presentation/visible-supersession detail: the visible link is the current authority's supersession",
-    "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
     "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
-    "VELDO-0065 presentation/visible-supersession detail: a re-run shows nothing twice",
-    "VELDO-0065 presentation/visible-supersession detail: an answer to a superseded presentation is refused"
+    "VELDO-0065 presentation/replacement-without-reply-target detail: control: an ordinary replacement records its reply link",
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to_message_id changed to None does not verify",
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_linked changed to False does not verify",
+    "VELDO-0065 projection/one-message-per-version detail: the revision is again exactly one message, a reply to the first"
    ],
    "diff": "proof/VELDO-0065/replacement-without-reply-link.diff",
    "failed_rows": [
-    "VELDO-0065 presentation/revision-identity",
-    "VELDO-0065 answer/current-presentation-only",
-    "VELDO-0065 answer/ruling-and-rationale",
-    "VELDO-0065 presentation/visible-supersession"
+    "VELDO-0065 presentation/visible-supersession",
+    "VELDO-0065 presentation/replacement-without-reply-target",
+    "VELDO-0065 presentation/reply-link-verified",
+    "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c8ce79a5822e55b81791abdb60d92b555404cd4e908308c20d4aa4908e734c03",
+   "mutant_sha256": "f27c28dc74be193dea1d7bd101f4f8824294828c16807a651b33d57bf554fe6f",
    "name": "replacement-without-reply-link",
    "named_row_red": true,
    "named_rows": [
@@ -393,15 +688,15 @@
     ],
     [
      "VELDO-0065 presentation/revision-identity",
-     false
+     true
     ],
     [
      "VELDO-0065 answer/current-presentation-only",
-     false
+     true
     ],
     [
      "VELDO-0065 answer/ruling-and-rationale",
-     false
+     true
     ],
     [
      "VELDO-0065 presentation/visible-supersession",
@@ -410,12 +705,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
     ]
    ],
-   "seconds": 2.232,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.423,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 presentation/revision-identity detail: the first presentation does not bind the equal revision",
     "VELDO-0065 presentation/revision-identity detail: an answer to the first presentation is refused as stale after the equal revision",
@@ -429,7 +761,7 @@
     "VELDO-0065 answer/current-presentation-only detail: after replacement the old presentation is refused as superseded",
     "VELDO-0065 answer/current-presentation-only detail: an answer naming one presentation while replying to another is refused",
     "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
-    "VELDO-0065 answer/current-presentation-only detail: a settled request version refuses a second answer",
+    "VELDO-0065 answer/current-presentation-only detail: an answered request version refuses a second answer",
     "VELDO-0065 answer/current-presentation-only detail: control: the other current presentations still settle",
     "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
     "VELDO-0065 answer/ruling-and-rationale detail: the answer keeps the platform's message, sender, time and reply identity",
@@ -440,17 +772,34 @@
     "VELDO-0065 presentation/visible-supersession detail: the visible link is the current authority's supersession",
     "VELDO-0065 presentation/visible-supersession detail: changed text at the same request version is a new presentation and message",
     "VELDO-0065 presentation/visible-supersession detail: the third presentation replies to the second",
-    "VELDO-0065 presentation/visible-supersession detail: an answer to a superseded presentation is refused"
+    "VELDO-0065 presentation/visible-supersession detail: an answer to a superseded presentation is refused",
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded approve answer as it was recorded",
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded reject answer as it was recorded",
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the replacement is published without the missing reply target",
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the replacement still names what it supersedes in the shown text",
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the receipt records that no reply link was made",
+    "VELDO-0065 presentation/replacement-without-reply-target detail: control: an ordinary replacement records its reply link",
+    "VELDO-0065 presentation/reply-link-verified detail: control: a linked replacement verifies against the platform",
+    "VELDO-0065 presentation/reply-link-verified detail: control: an unlinked replacement verifies against the platform",
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to changed to None does not verify",
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to_message_id changed to None does not verify",
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_linked changed to False does not verify",
+    "VELDO-0065 projection/one-message-per-version detail: the revision is again exactly one message, a reply to the first",
+    "VELDO-0065 projection/one-message-per-version detail: the owner's reply to the one message settles the request version"
    ],
    "diff": "proof/VELDO-0065/answer-checks-subject-only.diff",
    "failed_rows": [
     "VELDO-0065 presentation/revision-identity",
     "VELDO-0065 answer/current-presentation-only",
     "VELDO-0065 answer/ruling-and-rationale",
-    "VELDO-0065 presentation/visible-supersession"
+    "VELDO-0065 presentation/visible-supersession",
+    "VELDO-0065 answer/settle-consumes-answer",
+    "VELDO-0065 presentation/replacement-without-reply-target",
+    "VELDO-0065 presentation/reply-link-verified",
+    "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8f8a458ab04a2bb036ae17d79b5069c17e528397b6895e0ae03c0753d611a3da",
+   "mutant_sha256": "638e431189a6eea4dd153b835133c48658f14a634e18b0299248e2814e256027",
    "name": "answer-checks-subject-only",
    "named_row_red": true,
    "named_rows": [
@@ -485,12 +834,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     false
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
     ]
    ],
-   "seconds": 2.112,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.319,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 answer/current-presentation-only detail: an answer that names no presentation is refused",
     "VELDO-0065 answer/current-presentation-only detail: control: an answer to the current presentation settles",
@@ -503,7 +889,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c38ac88d3492c5e86dabb62fd02c6df56fdd854d016a31fc601704c5395a5a5d",
+   "mutant_sha256": "3a03904b3e4cfa716e9ef0c2587a99876a12fcf9ebce03d993a5f4a63904d6c3",
    "name": "missing-reference-uses-current",
    "named_row_red": true,
    "named_rows": [
@@ -538,12 +924,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.354,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.761,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
     "VELDO-0065 answer/ruling-and-rationale detail: the recorded assertion verifies with the edge's restricted key and ssh-keygen alone",
@@ -554,7 +977,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "dcfbe29146fea382fff65b1d03aada47a44b1a648a1351c41d40ab0862d87b94",
+   "mutant_sha256": "77ac1894e136fb6d2675f30f74252b7ccd9d7f351d44bd80e5332b145849ddc2",
    "name": "answer-drops-rationale",
    "named_row_red": true,
    "named_rows": [
@@ -589,12 +1012,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.438,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.521,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 answer/ruling-and-rationale detail: an assertion changed after the edge signed it is refused",
     "VELDO-0065 answer/ruling-and-rationale detail: an assertion signed with the edge's ordinary key is refused",
@@ -607,7 +1067,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2e18a0fb38792d1f6573f04c0327a59b4ec6c7c1fe40b55fd41d58e9004cbca6",
+   "mutant_sha256": "510a75e80390d67c123ca04f7c4c9d14423982fb1e7fa62dc6c0a40a99509902",
    "name": "answer-skips-edge-signature",
    "named_row_red": true,
    "named_rows": [
@@ -642,12 +1102,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.466,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.703,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 answer/unseen-refused detail: a refused, a lost and an unrecorded send leave no confirmed publication",
     "VELDO-0065 answer/unseen-refused detail: an answer to a refused presentation is refused as unseen",
@@ -659,7 +1156,7 @@
     "VELDO-0065 answer/unseen-refused"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8afa111de88e0dc70ab10e21ed59c9e81400615f045f95fe45e33755a7bf1128",
+   "mutant_sha256": "960b1d11d94fe492f9a6cee104a05e43f9fa9a818320ea66b3e3c8803f5f79fb",
    "name": "unsent-marked-published",
    "named_row_red": true,
    "named_rows": [
@@ -694,12 +1191,49 @@
     [
      "VELDO-0065 answer/unseen-refused",
      false
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.376,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.56,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
   },
   {
+   "by_assertion": true,
    "details": [
     "VELDO-0065 answer/unseen-refused detail: an answer to a lost presentation is refused as unseen",
     "VELDO-0065 answer/unseen-refused detail: an answer to an unrecorded presentation is refused as unseen"
@@ -709,7 +1243,7 @@
     "VELDO-0065 answer/unseen-refused"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8381e53288258fb535d0d4649ae99f877ba318d07892b28904f392f28c68f4ec",
+   "mutant_sha256": "c97771aaa4fb79f25cc206540da9905dc12f3d885b30eb0cae193d5c2e035a15",
    "name": "unseen-only-refused-outcome",
    "named_row_red": true,
    "named_rows": [
@@ -744,53 +1278,1777 @@
     [
      "VELDO-0065 answer/unseen-refused",
      false
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
     ]
    ],
-   "seconds": 2.398,
-   "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.649,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+    "VELDO-0065 answer/ruling-and-rationale detail: control: the owner's answer then settles",
+    "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded approve answer as it was recorded",
+    "VELDO-0065 answer/settle-consumes-answer detail: recorded rulings are in the contract vocabulary"
+   ],
+   "diff": "proof/VELDO-0065/answer-records-typed-choice-as-ruling.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/ruling-and-rationale",
+    "VELDO-0065 answer/settle-consumes-answer"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "0ccd4d7f5fc9fb769430671d2d7fd1fd3ec402632b5145d600e2a9ab6b47cd34",
+   "name": "answer-records-typed-choice-as-ruling",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/settle-consumes-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     false
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.414,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/settle-consumes-answer detail: a decision whose choices have no contract ruling is not presented"
+   ],
+   "diff": "proof/VELDO-0065/unmapped-choice-presented.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/settle-consumes-answer"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "53bf93036e2c7b28f4de5414d368b5216643fd96e7ba738ce7b64db93fce1382",
+   "name": "unmapped-choice-presented",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/settle-consumes-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     false
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.554,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/requester-only detail: a project owner cannot replace the requester's risk statement"
+   ],
+   "diff": "proof/VELDO-0065/project-owner-frames-again.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/requester-only"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "021fd712c92450eec1cb76d4454bc37956c691d9d3435e5b6d9bcae52b945119",
+   "name": "project-owner-frames-again",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/requester-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     false
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.416,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/requester-only detail: a framing by anyone but the requester frames nothing, however it was committed",
+    "VELDO-0065 framing/requester-only detail: control: the requester's own framing is current again"
+   ],
+   "diff": "proof/VELDO-0065/stored-framing-any-framer.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/requester-only"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "8c565f7a23352ca8a0ce47faaaab45f5fbdd315af0e2bf85a9c818ca773092b3",
+   "name": "stored-framing-any-framer",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/requester-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     false
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.608,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing the requester signed but never submitted, written by a generic store write, is not presented",
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing a stranger signed, written by a generic store write, is not presented",
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing the store accepted after the key was revoked is not presented"
+   ],
+   "diff": "proof/VELDO-0065/stored-framing-any-writer.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/stored-framing-reverified"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "cf754f566dbd0a34dad9309c9b2098314bc03eca3529b38f8e3b89c00be3a49b",
+   "name": "stored-framing-any-writer",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/stored-framing-reverified"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     false
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.523,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 framing/stored-framing-reverified detail: a framing the store accepted after the key was revoked is not presented"
+   ],
+   "diff": "proof/VELDO-0065/stored-framing-key-at-any-time.diff",
+   "failed_rows": [
+    "VELDO-0065 framing/stored-framing-reverified"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "9b8984c19680deb19ca35f266d735665a08c99dce589e532dba1857eb70923bf",
+   "name": "stored-framing-key-at-any-time",
+   "named_row_red": true,
+   "named_rows": [
+    "framing/stored-framing-reverified"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     false
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.615,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/not-before-publication detail: an answer timestamped before the presentation was published is refused by name",
+    "VELDO-0065 answer/not-before-publication detail: control: an answer in the same second as the publication settles"
+   ],
+   "diff": "proof/VELDO-0065/answer-time-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/not-before-publication"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "2104020cd168e452269f27c303ee6cdda6bcb6c7d5df2e68c3a995222457a233",
+   "name": "answer-time-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/not-before-publication"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.444,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/not-before-publication detail: control: an answer in the same second as the publication settles"
+   ],
+   "diff": "proof/VELDO-0065/answer-time-same-second-refused.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/not-before-publication"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "e1388724b30a98d1ed11464c07f515e2b4eefe88631f5801a2685c5be2a0f2e4",
+   "name": "answer-time-same-second-refused",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/not-before-publication"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.463,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/private-chat-only detail: a decision whose owner is enrolled in a group chat is refused by name and not sent",
+    "VELDO-0065 presentation/private-chat-only detail: the refusal is visible in the presentation metrics",
+    "VELDO-0065 projection/one-message-per-version detail: the projection's metrics show what could not be presented, by reason"
+   ],
+   "diff": "proof/VELDO-0065/group-chat-presented.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/private-chat-only",
+    "VELDO-0065 projection/one-message-per-version"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "8a22cba5a5f3bde087543f9b8ccdc1335505c7cb1f3172860615db4a09c2f210",
+   "name": "group-chat-presented",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/private-chat-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
+    ]
+   ],
+   "seconds": 3.629,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/private-chat-only detail: the refusal is visible in the presentation metrics",
+    "VELDO-0065 projection/one-message-per-version detail: the projection's metrics show what could not be presented, by reason"
+   ],
+   "diff": "proof/VELDO-0065/unpresented-reason-not-counted.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/private-chat-only",
+    "VELDO-0065 projection/one-message-per-version"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "10e5fc71b5b76be05b4ef02d6527421517ee7c0dcc63711cd814d560a886b1c3",
+   "name": "unpresented-reason-not-counted",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/private-chat-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
+    ]
+   ],
+   "seconds": 3.485,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the replacement is published without the missing reply target",
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the replacement still names what it supersedes in the shown text",
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the receipt records that no reply link was made",
+    "VELDO-0065 presentation/reply-link-verified detail: control: an unlinked replacement verifies against the platform"
+   ],
+   "diff": "proof/VELDO-0065/replacement-requires-reply-target.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/replacement-without-reply-target",
+    "VELDO-0065 presentation/reply-link-verified"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "da4d569fe30795cefb9c3f4b0bd32dbf847efbb8847d22cb6034f9f8c7ac84b3",
+   "name": "replacement-requires-reply-target",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/replacement-without-reply-target"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.678,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/replacement-without-reply-target detail: the receipt records that no reply link was made"
+   ],
+   "diff": "proof/VELDO-0065/reply-link-always-claimed.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/replacement-without-reply-target"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "0276f11b5ff103bbff0d11dc84e61174b1d5a7e643656eac48671f2797cd6d7e",
+   "name": "reply-link-always-claimed",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/replacement-without-reply-target"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.575,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_linked changed to False does not verify"
+   ],
+   "diff": "proof/VELDO-0065/receipt-reply-link-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/reply-link-verified"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "617385966396db01b82c0e0247a15872ea2024ef41d2269a1bab29df5e322aed",
+   "name": "receipt-reply-link-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/reply-link-verified"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.677,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/reply-link-verified detail: a receipt whose platform message replies to another message does not verify"
+   ],
+   "diff": "proof/VELDO-0065/receipt-platform-reply-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/reply-link-verified"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "b01d64971f58a4fc405e0b6a877edf7384a219b1c6857ae067e569834a5a093a",
+   "name": "receipt-platform-reply-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/reply-link-verified"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     false
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.782,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/long-brief-split detail: a presentation longer than one message is published as consecutive messages",
+    "VELDO-0065 presentation/long-brief-split detail: every part fits the platform limit",
+    "VELDO-0065 presentation/long-brief-split detail: only the last part carries the choices and how to answer",
+    "VELDO-0065 presentation/long-brief-split detail: the whole brief is shown in order, across the parts",
+    "VELDO-0065 presentation/long-brief-split detail: the receipt binds every part's message and bytes",
+    "VELDO-0065 presentation/long-brief-split detail: an answer to the first part names the same presentation and settles"
+   ],
+   "diff": "proof/VELDO-0065/part-length-in-characters.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/long-brief-split"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "8dcd9ab36b099c15b49e3eeaa44bcf48a14599ab86b0f7efe68be303c9f856c0",
+   "name": "part-length-in-characters",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/long-brief-split"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     false
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.753,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 presentation/long-brief-split detail: an answer to the first part names the same presentation and settles"
+   ],
+   "diff": "proof/VELDO-0065/answer-only-to-last-part.diff",
+   "failed_rows": [
+    "VELDO-0065 presentation/long-brief-split"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "1e81afb951c19b22ff34d30c6fa02addb45cafb5b88da6d02954dc9252aaa6cb",
+   "name": "answer-only-to-last-part",
+   "named_row_red": true,
+   "named_rows": [
+    "presentation/long-brief-split"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     false
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
+   ],
+   "seconds": 3.596,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 projection/one-message-per-version detail: one request version reaches the owner as exactly one message",
+    "VELDO-0065 projection/one-message-per-version detail: that one message carries the choices and how to answer",
+    "VELDO-0065 projection/one-message-per-version detail: the inbox projection sends no notice of its own and says the presentation carries it",
+    "VELDO-0065 projection/one-message-per-version detail: once presented, the projection reports the entry as presented",
+    "VELDO-0065 projection/one-message-per-version detail: the revision is again exactly one message, a reply to the first"
+   ],
+   "diff": "proof/VELDO-0065/projection-notice-beside-presentation.diff",
+   "failed_rows": [
+    "VELDO-0065 projection/one-message-per-version"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "a62c88e593c89f6e549c5cd9a9df934a3db92024dd524b1f813555c6ab0d6b4d",
+   "name": "projection-notice-beside-presentation",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/one-message-per-version"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
+    ]
+   ],
+   "seconds": 3.853,
+   "source_sha256": "50877abfd706f475a7e3bac124a4caf3f5f0983f706416b757f5e00c0182a047"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 projection/one-message-per-version detail: one request version reaches the owner as exactly one message",
+    "VELDO-0065 projection/one-message-per-version detail: that one message carries the choices and how to answer",
+    "VELDO-0065 projection/one-message-per-version detail: the inbox projection sends no notice of its own and says the presentation carries it"
+   ],
+   "diff": "proof/VELDO-0065/projection-defers-only-once-presented.diff",
+   "failed_rows": [
+    "VELDO-0065 projection/one-message-per-version"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "0a1c10f0686bd75c818851531a34c9a4ba0d176303c866846570aac3cbc18b23",
+   "name": "projection-defers-only-once-presented",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/one-message-per-version"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     false
+    ]
+   ],
+   "seconds": 3.748,
+   "source_sha256": "50877abfd706f475a7e3bac124a4caf3f5f0983f706416b757f5e00c0182a047"
   }
  ],
  "noop": {
-  "copy_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810",
-  "details": [],
-  "failed_rows": [],
-  "preamble_rows": 26,
-  "rows": [
-   [
-    "VELDO-0065 install/assets",
-    true
+  "control_channel_presentation.py": {
+   "copy_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
    ],
-   [
-    "VELDO-0065 presentation/receipt-binds-shown-content",
-    true
+   "seconds": 3.494,
+   "source_sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  "control_channel_projection.py": {
+   "copy_sha256": "50877abfd706f475a7e3bac124a4caf3f5f0983f706416b757f5e00c0182a047",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ]
    ],
-   [
-    "VELDO-0065 presentation/revision-identity",
-    true
-   ],
-   [
-    "VELDO-0065 answer/current-presentation-only",
-    true
-   ],
-   [
-    "VELDO-0065 answer/ruling-and-rationale",
-    true
-   ],
-   [
-    "VELDO-0065 presentation/visible-supersession",
-    true
-   ],
-   [
-    "VELDO-0065 answer/unseen-refused",
-    true
-   ]
-  ],
-  "seconds": 2.335,
-  "source_sha256": "68c9af7bf923b807b27fee409f30cef51883a4adbd734af8bfa21253f86c2810"
+   "seconds": 3.4,
+   "source_sha256": "50877abfd706f475a7e3bac124a4caf3f5f0983f706416b757f5e00c0182a047"
+  }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 65",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 34.939,
+ "serial_seconds": 120.493,
  "spec_id": "VELDO-0065",
  "suite": "scripts/suites/62_veldo_0065_presentations.py"
 }

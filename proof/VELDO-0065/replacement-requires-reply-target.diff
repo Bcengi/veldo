@@ -2,4 +2,4 @@
 +++ b/.veldo/control_channel_presentation.py
 @@ -344 +344 @@
 -            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': True}
-+            pass
++            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': False}

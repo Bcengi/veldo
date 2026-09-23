@@ -142,3 +142,13 @@ version. With presentations enabled the presentation is that message: a projecti
 presenter sends no notice of its own and reports each entry as presented or awaiting
 presentation, and its metrics are the presenter's. A projection built without a presenter is
 unchanged, so no VELDO-0064 row was changed. The criteria, status and risk are unchanged.
+
+2026-09-23, review r1: an independent review reproduced nine defects at `f4361d1`. Each was fixed
+test first with its own suite row and two registered mutations, recorded in the proof README: only
+the requester frames and the framer is named; a stored framing counts only as the frame operation
+accepted it, verified with the key active at the store's acceptance; one decision message per request
+version when presentations are enabled; long presentations are split, never truncated; an answer
+cannot predate its presentation; a replacement publishes without its deleted reply target; receipt
+verification binds the reply link; decisions go only to a private chat; and the answer is recorded
+in the authority contract's vocabulary for its one settlement, with no second settlement record. The
+criteria, status and risk are unchanged.

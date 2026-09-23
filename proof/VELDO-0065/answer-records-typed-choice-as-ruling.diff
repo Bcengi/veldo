@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -931 +931 @@
+-                  'assertion_kind': a['assertion_kind'], 'choice': a['choice'], 'ruling': a['ruling'],
++                  'assertion_kind': a['assertion_kind'], 'choice': a['choice'], 'ruling': a['choice'],

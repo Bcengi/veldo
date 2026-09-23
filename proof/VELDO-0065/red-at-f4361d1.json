@@ -1,0 +1,147 @@
+{
+ "commit": "f4361d18f6ce363de04d2bbfc680bb8b9c32cd97",
+ "details": [
+  "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 rendered brief bytes are the bytes the platform holds",
+  "VELDO-0065 presentation/receipt-binds-shown-content detail: R72 risk statement is the signed framing and is shown",
+  "VELDO-0065 answer/current-presentation-only detail: an answered request version refuses a second answer",
+  "VELDO-0065 answer/ruling-and-rationale detail: the answer records its ruling, rationale and the presentation it names",
+  "VELDO-0065 answer/ruling-and-rationale detail: a rejection is an answer with its own ruling and rationale",
+  "VELDO-0065 answer/ruling-and-rationale detail: control: the owner's answer then settles",
+  "VELDO-0065 answer/settle-consumes-answer detail: authority_contract.settle settles the recorded approve answer as it was recorded",
+  "VELDO-0065 answer/settle-consumes-answer detail: recorded rulings are in the contract vocabulary",
+  "VELDO-0065 answer/settle-consumes-answer detail: no second settlement record exists",
+  "VELDO-0065 answer/settle-consumes-answer detail: a decision whose choices have no contract ruling is not presented",
+  "VELDO-0065 framing/requester-only detail: the shown bytes and the receipt name the requester as the one who stated the risk",
+  "VELDO-0065 framing/requester-only detail: a project owner cannot replace the requester's risk statement",
+  "VELDO-0065 framing/requester-only detail: control: the requester's own framing is current again",
+  "VELDO-0065 framing/stored-framing-reverified detail: a framing the requester signed but never submitted, written by a generic store write, is not presented",
+  "VELDO-0065 framing/stored-framing-reverified detail: a framing a stranger signed, written by a generic store write, is not presented",
+  "VELDO-0065 framing/stored-framing-reverified detail: a framing the store accepted after the key was revoked is not presented",
+  "VELDO-0065 answer/not-before-publication detail: an answer timestamped before the presentation was published is refused by name",
+  "VELDO-0065 answer/not-before-publication detail: control: an answer in the same second as the publication settles",
+  "VELDO-0065 presentation/private-chat-only detail: a decision whose owner is enrolled in a group chat is refused by name and not sent",
+  "VELDO-0065 presentation/private-chat-only detail: the refusal is visible in the presentation metrics",
+  "VELDO-0065 presentation/replacement-without-reply-target detail: the replacement is published without the missing reply target",
+  "VELDO-0065 presentation/replacement-without-reply-target detail: the replacement still names what it supersedes in the shown text",
+  "VELDO-0065 presentation/replacement-without-reply-target detail: the receipt records that no reply link was made",
+  "VELDO-0065 presentation/replacement-without-reply-target detail: control: an ordinary replacement records its reply link",
+  "VELDO-0065 presentation/reply-link-verified detail: control: an unlinked replacement verifies against the platform",
+  "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to changed to None does not verify",
+  "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to changed to 9002 does not verify",
+  "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_to_message_id changed to None does not verify",
+  "VELDO-0065 presentation/reply-link-verified detail: a receipt with its reply_linked changed to False does not verify",
+  "VELDO-0065 presentation/reply-link-verified detail: a receipt whose platform message replies to another message does not verify",
+  "VELDO-0065 presentation/long-brief-split detail: a presentation longer than one message is published as consecutive messages",
+  "VELDO-0065 presentation/long-brief-split detail: every part fits the platform limit",
+  "VELDO-0065 presentation/long-brief-split detail: only the last part carries the choices and how to answer",
+  "VELDO-0065 presentation/long-brief-split detail: the whole brief is shown in order, across the parts",
+  "VELDO-0065 presentation/long-brief-split detail: the receipt binds every part's message and bytes",
+  "VELDO-0065 presentation/long-brief-split detail: an answer to the first part names the same presentation and settles",
+  "VELDO-0065 presentation/long-brief-split detail: control: a short presentation is one message",
+  "VELDO-0065 projection/one-message-per-version detail: one request version reaches the owner as exactly one message",
+  "VELDO-0065 projection/one-message-per-version detail: that one message carries the choices and how to answer",
+  "VELDO-0065 projection/one-message-per-version detail: the inbox projection sends no notice of its own and says the presentation carries it",
+  "VELDO-0065 projection/one-message-per-version detail: once presented, the projection reports the entry as presented",
+  "VELDO-0065 projection/one-message-per-version detail: the revision is again exactly one message, a reply to the first",
+  "VELDO-0065 projection/one-message-per-version detail: the projection's metrics show what could not be presented, by reason"
+ ],
+ "failed_rows": [
+  "VELDO-0065 presentation/receipt-binds-shown-content",
+  "VELDO-0065 answer/current-presentation-only",
+  "VELDO-0065 answer/ruling-and-rationale",
+  "VELDO-0065 answer/settle-consumes-answer",
+  "VELDO-0065 framing/requester-only",
+  "VELDO-0065 framing/stored-framing-reverified",
+  "VELDO-0065 answer/not-before-publication",
+  "VELDO-0065 presentation/private-chat-only",
+  "VELDO-0065 presentation/replacement-without-reply-target",
+  "VELDO-0065 presentation/reply-link-verified",
+  "VELDO-0065 presentation/long-brief-split",
+  "VELDO-0065 projection/one-message-per-version"
+ ],
+ "modules": {
+  "control_channel_presentation.py": {
+   "changed": [
+    "def __init__(self, store, membership, projection, inbox, edge, conn, journal_signer, sign,\n                 authority_generation=1, clock=time.time, **_ignored):"
+   ],
+   "sha256": "dba3b3e2ce53bf2fabe0a8d26c3ae15bbf89c05fac73c6515591104b64b45940"
+  },
+  "control_channel_projection.py": {
+   "changed": [
+    "def __init__(self, store, inbox, edge, conn, journal_signer, sign, authority_generation=1, clock=time.time, **_ignored):"
+   ],
+   "sha256": "ddfae77dd5695eb819e708d5cf9c8a7cb13a0f7542281f7fb608ae8545058a32"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0065 install/assets",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/receipt-binds-shown-content",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/revision-identity",
+   true
+  ],
+  [
+   "VELDO-0065 answer/current-presentation-only",
+   false
+  ],
+  [
+   "VELDO-0065 answer/ruling-and-rationale",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/visible-supersession",
+   true
+  ],
+  [
+   "VELDO-0065 answer/unseen-refused",
+   true
+  ],
+  [
+   "VELDO-0065 answer/settle-consumes-answer",
+   false
+  ],
+  [
+   "VELDO-0065 framing/requester-only",
+   false
+  ],
+  [
+   "VELDO-0065 framing/stored-framing-reverified",
+   false
+  ],
+  [
+   "VELDO-0065 answer/not-before-publication",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/private-chat-only",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/replacement-without-reply-target",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/reply-link-verified",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/long-brief-split",
+   false
+  ],
+  [
+   "VELDO-0065 projection/one-message-per-version",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.073,
+ "spec_id": "VELDO-0065",
+ "suite": "scripts/suites/62_veldo_0065_presentations.py"
+}
