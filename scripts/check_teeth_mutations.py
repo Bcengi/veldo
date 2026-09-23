@@ -1050,8 +1050,8 @@ def cases():
     presentation('retry-after-ignored', "                and self.clock() < existing['retry_not_before']):\n",
                  "                and False):\n", 'presentation/refused-part-sent-again')
     # VELDO-0065 second review n5: choices match whatever case and spacing; a reply is never met with silence.
-    presentation('choice-match-case-sensitive', "    return ' '.join(str(text).split()).casefold()\n",
-                 "    return ' '.join(str(text).split())\n", 'answer/choice-matching-and-feedback')
+    presentation('choice-match-case-sensitive', "    text = unicodedata.normalize('NFKC', str(text)).casefold()\n",
+                 "    text = unicodedata.normalize('NFKC', str(text))\n", 'answer/choice-matching-and-feedback')
     presentation('owner-not-told', "        sent = self._send(ev['chat_id'], text, ev['platform_message_id'])\n",
                  "        sent = {'platform': None, 'refusal': None}\n", 'answer/choice-matching-and-feedback')
     # VELDO-0065 third review item 6: only the projection's own notice of the same request is superseded.
@@ -1075,6 +1075,11 @@ def cases():
                  "wait if type(wait) in (int, float) and 0 <= wait <= MAX_RETRY_AFTER else None", 'presentation/retry-after-bounded')
     presentation('retry-after-unbounded', "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None",
                  "wait if type(wait) is int and 0 <= wait else None", 'presentation/retry-after-bounded')
+    # VELDO-0065 third review item 8: choices under NFKC, case folding and separator equivalence.
+    presentation('choice-without-nfkc', "    text = unicodedata.normalize('NFKC', str(text)).casefold()\n",
+                 "    text = str(text).casefold()\n", 'answer/choice-normalization')
+    presentation('choice-separators-distinct', "    text = text.replace('_', ' ').replace('-', ' ')\n", "",
+                 'answer/choice-normalization')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

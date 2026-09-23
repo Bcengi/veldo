@@ -102,7 +102,7 @@ def _v65_checks(base):
                                   'projection/notice-superseded', 'projection/silent-from-store',
                                   'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
                                   'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
-                                  'presentation/retry-after-bounded')}
+                                  'presentation/retry-after-bounded', 'answer/choice-normalization')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1121,6 +1121,24 @@ def _v65_checks(base):
                 next_run = presenter.present(rb)
                 check(bounded, 'retry_after as %s means the next run sends the rest' % label,
                       reason(first_run) == ('partial', 'channel_refused') and reason(next_run) == ('published', None))
+
+        # Review 3 item 8: choices match under NFKC and case folding, with spaces, underscores and hyphens alike
+        nfkc = 'answer/choice-normalization'
+        with section(nfkc):
+            for n, (choices, text, choice, rationale) in enumerate((
+                    (('accept', 'reject'), '\uff21\uff23\uff23\uff25\uff30\uff34: full-width letters', 'accept', 'full-width letters'),
+                    (('accept', 'reject'), 'accept\uff1a full-width colon', 'accept', 'full-width colon'),
+                    (('accept', 'reject', 'return_for_elaboration'), 'return for elaboration: need more',
+                     'return_for_elaboration', 'need more'),
+                    (('accept', 'reject', 'return_for_elaboration'), 'Return-For-Elaboration: need more',
+                     'return_for_elaboration', 'need more'))):
+                nid = opened('NF-%d' % n, choices=choices)
+                presenter.present(nid)
+                result = answer(owner_reply(presenter.current(nid) or {}, text))
+                recorded = answered(nid, 1) or {}
+                check(nfkc, '%r is the offered choice %s' % (text, choice),
+                      reason(result) == ('accepted', None) and recorded.get('choice') == choice
+                      and recorded.get('rationale') == rationale)
     finally:
         server.shutdown()
         server.server_close()

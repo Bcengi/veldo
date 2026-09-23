@@ -54,6 +54,7 @@ import http.client
 import json
 import sqlite3
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 
@@ -192,7 +193,20 @@ def usable_key(key, principal, now):
 
 
 def _fold(text):
-    return ' '.join(str(text).split()).casefold()
+    """A choice as the owner may type it: Unicode NFKC (full-width letters become ASCII), case
+    folded, with spaces, underscores and hyphens alike and runs of them collapsed."""
+    text = unicodedata.normalize('NFKC', str(text)).casefold()
+    text = text.replace('_', ' ').replace('-', ' ')
+    return ' '.join(text.split())
+
+
+def split_reply(text):
+    """(choice, reason) of `<choice>: <reason>`, at the first colon, ASCII or full-width."""
+    text = text or ''
+    cuts = [i for i in (text.find(':'), text.find('\uff1a')) if i >= 0]
+    if not cuts:
+        return text, ''
+    return text[:min(cuts)], text[min(cuts) + 1:]
 
 
 def offered_choice(typed, choices):
@@ -941,7 +955,7 @@ class Presenter:
         receipt = self.receipt_for_message(chat.get('id'), reply.get('message_id'))
         if receipt is None:
             raise Refused('unknown_presentation', 'the reply addresses no published presentation')
-        typed, _, rationale = (message.get('text') or '').partition(':')
+        typed, rationale = split_reply(message.get('text'))
         choice = offered_choice(typed, receipt['choices'])
         choice = typed.strip() if choice is None else choice
         return dict(self.ids, schema=ANSWER_SCHEMA, channel=CHANNEL,
