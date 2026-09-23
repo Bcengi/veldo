@@ -553,6 +553,20 @@ def cases():
           "                    guard.launch(invocation, configuration)  # defect: retries skip the reservation\n"
           "                    receipt = {'replayed': False}\n"
           "                else:\n  " + invoke, 'unknown-usage-retained')
+    # VELDO-0052, the 2026-09-23 review: each reproduced defect reintroduced, and a second, different
+    # mutation for the same row.
+    def review(name, module, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', module, old, new, [row])
+
+    review('enrolled-git-error-reads-unenrolled', 'control_eligibility.py',
+           "        if _claims_a_repository(repo_root):\n            raise Stopped('enrollment_unanswerable') from error\n"
+           "        return False\n",
+           "        return False  # defect: any git error reads as not enrolled\n",
+           'eligibility/enrollment-git-error-stops')
+    review('enrolled-discovery-ignores-ancestors', 'control_eligibility.py',
+           "        parent = os.path.dirname(current)\n        if parent == current:\n            return False\n",
+           "        return False  # defect: discovery looks only at the directory it was given\n",
+           'eligibility/enrollment-git-error-stops')
     return result
 
 

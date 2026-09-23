@@ -222,6 +222,15 @@ def _v52_suite():
             clock[0] += 1
             return clock[0]
 
+        def observe_effect(fn):
+            # What an entry did, or the named stop or refusal it raised: a raise is an observation
+            # the row asserts on, so the row fails by its assertion and its region still completes.
+            try:
+                return ('ok', fn())
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                name = getattr(error, 'reason', None) or getattr(error, 'code', None) or str(error)
+                return ('raised', '%s:%s' % (type(error).__name__, name))
+
         def policies(account, project, sid, caps):
             for scope, subject in zip(RES.SCOPES, (account, project, sid)):
                 cap = dict(capacity=50, invocations=100, wall_seconds=10000)
@@ -717,6 +726,32 @@ def _v52_suite():
             check('reservations/unknown-usage-retained',
                    outcomes == ['unknown_allowance:tokens'] * 2
                    and [i for _, i, _, _ in receiver[before:]] == ['u-initial', 'u-after'])
+
+        # --- The six reproduced defects and the production entries (2026-09-23 review) -----------
+        with region('eligibility/enrollment-git-error-stops'):
+            # DEFECT c. A git error while determining enrollment stops by name; only a directory in which
+            # Git's own discovery finds no repository at all is "not enrolled".
+            binding = Path(EL.E.binding_path(str(base)))
+            binding.parent.mkdir(parents=True, exist_ok=True)
+            binding.write_text('{}')
+            config = base / '.git' / 'config'
+            healthy_config = config.read_bytes()
+            try:
+                config.write_bytes(healthy_config + b'\n[broken\n')
+                broken = {'root': observe_effect(lambda: EL.gate_for(str(base), None)),
+                          'subdirectory': observe_effect(lambda: EL.gate_for(str(base / 'specs'), None)),
+                          'frontier': observe_effect(lambda: FR.claimable(repo_root=str(base), claims_root=str(claims)))}
+            finally:
+                config.write_bytes(healthy_config)
+                binding.unlink()
+            with tempfile.TemporaryDirectory(prefix='v52-plain-', dir=fast) as plain:
+                unrepository = observe_effect(lambda: EL.enrolled(plain))
+            healthy = observe_effect(lambda: EL.gate_for(str(base), None))
+            observed['enrollment_git_error'] = {k: [v[0], sorted(u['spec'] for u in v[1]) if k == 'frontier' and v[0] == 'ok'
+                                                    else v[1]] for k, v in broken.items()}
+            stop = ('raised', 'Stopped:enrollment_unanswerable')
+            check('eligibility/enrollment-git-error-stops',
+                   all(v == stop for v in broken.values()) and unrepository == ('ok', False) and healthy == ('ok', None))
 
         with region('eligibility/observations'):
             # Observability: every decision is recorded with identity, versions, outcome and taxonomy.
