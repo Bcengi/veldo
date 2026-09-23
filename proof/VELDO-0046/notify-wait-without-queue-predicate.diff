@@ -1,0 +1,5 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -127 +127 @@
+-            self._condition.wait_for(lambda: self._queue or self._closed, timeout)
++            self._condition.wait(timeout)

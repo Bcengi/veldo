@@ -23,10 +23,15 @@ def _n46_load(name, path):
 
 
 def _n46_checks(directory):
-    # Exercise the actual installer. Mutations substitute ONLY the installed module.
+    # Exercise the installer file writer and declared asset inventory. Mutation gate
+    # snapshots intentionally omit docs and engine/scripts, so install only this seam.
     scaffold = _n46_load('notify_scaffold', ROOT / '.veldo' / 'init_scaffold.py')
     target = directory / 'installed'
-    scaffold.scaffold(target, templates=ROOT / 'engine')
+    created, skipped = [], []
+    for rel in ('.veldo/control_notify.py', '.veldo/control_store.py'):
+        if rel not in scaffold._FILES:
+            return False, False, False
+        scaffold._lay(ROOT / 'engine' / rel, target / rel, rel, created, skipped)
     installed = target / '.veldo' / 'control_notify.py'
     source = ROOT / ".veldo" / "control_notify.py"
     installed.write_bytes(source.read_bytes())
@@ -234,6 +239,19 @@ def _n46_checks(directory):
         ac2 = ac2 and delivered and not thread.is_alive() and not errors and not any(wait_with_pending)
         ac2 = ac2 and len(outcomes) == 1 and outcomes[0] is not None and outcomes[0]['outcome'] == 'delivered'
         ac2 = ac2 and len(reading) == 1 and loop.metrics()['pending'] == 0
+    # Ordinary absence and handler uncertainty are named; neither is a success.
+    unavailable = delivery.Delivery(store, str(directory / 'missing.sqlite3'), coords,
+                                    ['completion'], {'completion': handler('completion')})
+    unavailable.notify(service.hint(result))
+    ac3 = ac3 and unavailable.run_once(timeout=0)['outcome'] == 'service_unavailable'
+    unavailable.close()
+    def uncertain(event):
+        raise RuntimeError('private diagnostic must not enter observations')
+    service.handlers['completion'] = uncertain
+    service.execute(writer, command('completion'), 'journal', sign, 1)
+    stopped = service.run_once(timeout=0)
+    ac3 = ac3 and stopped is not None and stopped['outcome'] == 'unknown_outcome' and not stopped['accepted']
+    ac3 = ac3 and 'private diagnostic' not in _n46_json.dumps(service.observations)
     service.close()
     writer.close()
     return ac1, ac2, ac3

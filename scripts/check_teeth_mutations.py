@@ -278,6 +278,38 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
+    # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
+    def notification(name, old, new, row):
+        add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
+            old, new, ['notify/' + row])
+
+    notification('notify-before-commit',
+                 "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+                 "        if 'event' in hint and 'transition' in hint['event']:\n"
+                 "            for handler in self.handlers.values():\n"
+                 "                handler(hint['event'])\n"
+                 "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+                 'committed-event')
+    notification('notify-omit-committed-wakeup',
+                 "                self.notify(self.hint(result))",
+                 "                pass  # defective: committed event never signals",
+                 'committed-event')
+    notification('notify-check-outside-idle-lock',
+                 "        with self._condition:\n            self._condition.wait_for(lambda: self._queue or self._closed, timeout)",
+                 "        ready = bool(self._queue) or self._closed\n"
+                 "        with self._condition:\n"
+                 "            if not ready:\n                self._condition.wait(timeout)",
+                 'event-in-the-gap')
+    notification('notify-wait-without-queue-predicate',
+                 "            self._condition.wait_for(lambda: self._queue or self._closed, timeout)",
+                 "            self._condition.wait(timeout)",
+                 'event-in-the-gap')
+    notification('notify-trust-invented-event-identity',
+                 "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+                 "        if row[1] != hint['record_digest']:", 'fabricated-event')
+    notification('notify-trust-invented-event-digest',
+                 "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+                 "        if row[0] != hint['command_id']:", 'fabricated-event')
     return result
 
 
@@ -348,7 +380,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 46, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
