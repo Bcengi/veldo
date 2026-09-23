@@ -745,20 +745,29 @@ def _v53_suite():
             farm_stub = farm_arch + b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n'
             real_read, rewritten = Path.read_bytes, []
 
+            installed_arch = (mods / 'arch.py').read_bytes()
+            after_read = {os.path.realpath(str(keep / 'arch.py')): farm_stub, os.path.realpath(str(mods / 'arch.py')): stub}
+
             def read_then_write(self_):
                 data = real_read(self_)
                 target = os.path.realpath(str(self_))
-                if self_.name == 'arch.py' and target == os.path.realpath(str(keep / 'arch.py')):
-                    Path(target).write_bytes(farm_stub)  # the concurrent writer, after the one read
+                if self_.name == 'arch.py' and target in after_read:
+                    Path(target).write_bytes(after_read[target])  # the concurrent writer, after the one read
                     rewritten.append(target)
                 return data
 
+            # The same writer in the window between the one read and the compile, over the regular engine.
+            read_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
             Path.read_bytes, importlib.util.spec_from_file_location = read_then_write, watched_spec
             try:
                 farm_raced = stations(farm_gate)
+                read_raced = stations(read_gate)
             finally:
                 Path.read_bytes, importlib.util.spec_from_file_location = real_read, real_spec
-            (keep / 'arch.py').write_bytes(farm_arch)
+                (keep / 'arch.py').write_bytes(farm_arch)
+                (mods / 'arch.py').write_bytes(installed_arch)
+            read_recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
+                             for d in read_raced.values()]
             farm_digests = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
                             for d in farm_raced.values()]
             reset('valid')
@@ -768,14 +777,17 @@ def _v53_suite():
                 'refusals': sorted({r for d in raced.values() for r in d['refusals']}),
                 'engine_loads_from_disk': len(loads), 'swapped': len(swaps), 'left_on_disk': left_on_disk,
                 'recorded_is_installed': all(r == installed_digests for r in recorded),
+                'writes_after_the_one_read': len(rewritten),
                 'link_farm': {'refusals': sorted({r for d in farm_raced.values() for r in d['refusals']}),
-                              'rewritten_after_read': len(rewritten),
-                              'recorded_arch_is_bytes_read': all(g_ == sha(farm_arch) for g_ in farm_digests)}}
+                              'recorded_arch_is_bytes_read': all(g_ == sha(farm_arch) for g_ in farm_digests)},
+                'rewritten_after_read': {'refusals': sorted({r for d in read_raced.values() for r in d['refusals']}),
+                                         'recorded_is_bytes_read': all(r == installed_digests for r in read_recorded)}}
             check('architecture/snapshot-in-memory',
                    outcome(raced, CODES['invalid_structure']) and loads == [] and swaps == [] and left_on_disk == []
                    and all(r == installed_digests for r in recorded)
-                   and outcome(farm_raced, CODES['invalid_structure']) and len(rewritten) == 1
-                   and all(g_ == sha(farm_arch) for g_ in farm_digests))
+                   and outcome(farm_raced, CODES['invalid_structure']) and len(rewritten) == 2
+                   and all(g_ == sha(farm_arch) for g_ in farm_digests)
+                   and outcome(read_raced, CODES['invalid_structure']) and all(r == installed_digests for r in read_recorded))
 
         with region('architecture/not-text-refused'):
             # A contract that is not valid UTF-8 is a named parse failure with the digest of the bytes read,
