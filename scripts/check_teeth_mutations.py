@@ -466,6 +466,93 @@ def cases():
     add(31, 'review-r5-release-ignores-holder', '59_veldo_0031_review.py', 'control_claim.py',
         "    if current.get('holder') != holder:",
         "    if op != 'release' and current.get('holder') != holder:", ['claims/review-r5'])
+    # VELDO-0052: every declared falsifier and a second, different defect for its row, plus a
+    # driven defect for every other row the suite asserts.
+    def floor(name, module, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', module, old, new, ['eligibility/' + row])
+
+    review_gate = ('            decision = gate.decide("review", sid, context=context, ticket=unit.get("eligibility"))\n'
+                   '            if not decision["eligible"]:\n'
+                   '                return self._refused("review", sid, decision, verdict=None, shipped=False, landed=False)\n')
+    floor('eligibility-review-bypass', 'dispatch.py', review_gate,
+          '            pass  # defect: direct review launches without the shared review decision\n',
+          'entry-dispatch-review')
+    floor('eligibility-review-as-provider-request', 'dispatch.py',
+          'gate.decide("review", sid, context=context,', 'gate.decide("provider_request", sid, context=context,',
+          'entry-dispatch-review')
+    floor('eligibility-status-only-recheck', 'control_eligibility.py',
+          '        for label in sorted(set(before) | set(accepted)):',
+          "        for label in ['unit']:  # defect: only the unit's own record, its current status",
+          'stale-input')
+    floor('eligibility-recheck-ignores-collections', 'control_eligibility.py',
+          '            elif old != new:',
+          "            elif 'members' not in (old or new or {}) and old != new:", 'stale-input')
+    floor('eligibility-frontier-bypass', 'frontier.py',
+          '            if not decision["eligible"]:\n                return\n',
+          '            if False:\n                return\n', 'entry-frontier')
+    floor('eligibility-executor-bypass', 'executor.py',
+          '            if not decision["eligible"]:\n                return finish("halted", ELIGIBILITY_STEP,',
+          '            if False:\n                return finish("halted", ELIGIBILITY_STEP,', 'entry-executor')
+    floor('eligibility-plan-bypass', 'plan.py',
+          '        reasons.extend("eligibility refused: %s" % r for r in decision["refusals"])',
+          '        pass  # defect: the direct-execution refusals are dropped', 'entry-plan')
+    floor('eligibility-build-bypass', 'dispatch.py',
+          '            if not decision["eligible"]:\n                return self._refused("build", sid, decision, reviewed=False)',
+          '            if False:\n                return self._refused("build", sid, decision, reviewed=False)',
+          'entry-dispatch-build')
+    floor('eligibility-publication-bypass', 'dispatch.py',
+          '            if not decision["eligible"]:\n                return self._refused("publication",',
+          '            if False:\n                return self._refused("publication",', 'entry-publication')
+    floor('eligibility-work-no-preclaim-decision', 'work.py',
+          '            if gate is not None and not gate.decide("claim", u["spec"], ticket=u.get("eligibility"))["eligible"]:\n'
+          '                continue\n', '', 'entry-work-rechecks')
+    floor('eligibility-work-no-postclaim-recheck', 'work.py',
+          '                if not after["eligible"]:', '                if False:', 'entry-work-rechecks')
+    floor('eligibility-enrolled-default-runs', 'control_eligibility.py',
+          "        raise Stopped('eligibility_required')", '        return None', 'enrolled-entry-stops')
+    floor('eligibility-unregistered-work-entry', 'control_eligibility.py',
+          "    ('work.py', 'WorkLoop._claim_next', 'claim'),\n", '', 'registrations-from-call-sites')
+    floor('eligibility-ignores-scope', 'control_eligibility.py',
+          "            return [] if a.get('scope_digest') == data.get('scope_digest') and a.get('scope_digest') else ['stale_scope']",
+          "            return []", 'named-refusals')
+    floor('eligibility-refusals-not-pending', 'control_eligibility.py',
+          "        self.last[decision['unit']] = outcome", "        self.last[decision['unit']] = 'accepted'",
+          'observations')
+
+    def completion(name, module, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', module, old, new, ['completion/' + row])
+
+    completion('completion-manifest-verdict-landed', 'work_state.py',
+               '        facts = gate.completion(sid) if gate is not None else None',
+               '        facts = (dict(gate.completion(sid), revision_landed=bool(concluded(entry, base, vc=vc, passing=passing)))\n'
+               '                 if gate is not None else None)', 'readers-agree')
+    completion('completion-frontier-reads-status-text', 'frontier.py',
+               '    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))',
+               '    status = _status_map(idx)', 'readers-agree')
+    completion('completion-any-revision-lands', 'control_eligibility.py',
+               "            if CC.fact_problems('revision_landed', r, subject):",
+               "            if CC.fact_problems('revision_landed', r, None):", 'readers-agree')
+    completion('completion-unregistered-consumer', 'control_eligibility.py',
+               "    ('work_state.py', 'completion_view'),\n", '', 'consumers-from-call-sites')
+
+    def calls(name, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', 'control_eligibility.py', old, new, ['reservations/' + row])
+
+    invoke = "                receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,"
+    calls('reservation-review-follow-on-bypass', invoke,
+          "                if self.station == 'review' and boundary == 'follow_on':\n"
+          "                    guard.launch(invocation, configuration)  # defect: no reservation\n"
+          "                    receipt = {'replayed': False}\n"
+          "                else:\n  " + invoke, 'forbidden-call-observation')
+    calls('reservation-refusal-fails-open',
+          "                raise Refused(code if ':' in code or code in TAXONOMY else 'usage_refused:' + code) from error",
+          "                guard.launch(invocation, configuration)  # defect: a refused reservation still launches\n"
+          "                receipt = {'replayed': False}", 'forbidden-call-observation')
+    calls('reservation-retry-bypass', invoke,
+          "                if boundary == 'retry':\n"
+          "                    guard.launch(invocation, configuration)  # defect: retries skip the reservation\n"
+          "                    receipt = {'replayed': False}\n"
+          "                else:\n  " + invoke, 'unknown-usage-retained')
     return result
 
 
@@ -536,7 +623,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 52, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

@@ -101,8 +101,15 @@ def _load_module(name, rel):
     return mod
 
 
-# VELDO-0052: the shared floor eligibility service every enabled floor entry calls.
-EL = _load_module("veldo_eligibility_exec", ".veldo/control_eligibility.py")
+_ELIGIBILITY = []
+
+
+def _eligibility_organ():
+    """VELDO-0052: the shared floor eligibility service, loaded on the first run rather than at
+    import, because readers such as work_state load this module for PASSING_VERDICTS alone."""
+    if not _ELIGIBILITY:
+        _ELIGIBILITY.append(_load_module("veldo_eligibility_exec", ".veldo/control_eligibility.py"))
+    return _ELIGIBILITY[0]
 
 
 class LoopSteps:
@@ -448,7 +455,7 @@ class Executor:
         record("resolve", True)
 
         # 1b. VELDO-0052: the shared direct-execution eligibility over the real store.
-        gate = EL.gate_for(getattr(self.hooks, "root", ROOT), self.eligibility)
+        gate = _eligibility_organ().gate_for(getattr(self.hooks, "root", ROOT), self.eligibility)
         if gate is not None:
             ob("on_step", ELIGIBILITY_STEP)
             decision = gate.decide("direct_execution", spec.get("id", spec_id))
