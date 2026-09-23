@@ -99,3 +99,14 @@ The local endpoint is VELDO-0107 and the unavailable case is VELDO-0109. Host an
 The relay is a command channel, so its qualification is about what it refuses to change, not about throughput.
 
 2026-09-22 follow-ups: VELDO-0111 (reusable during-call process and all-family listener census); VELDO-0114 (census-backed relay no-listener consumer); VELDO-0121 (endpoint close/failure interleavings and bounded relay completion); VELDO-0123 (required every-gate mutation drivers with a 600-second stage budget).
+
+## Revision 3 release disposition
+
+2026-09-22, owner Telegram 28852: the built relay is reused in Release 1 stage 2 by
+Mac workers reaching the Linux authority. Its existing criteria and evidence remain the
+recorded relay contract; they do not certify a macOS worker profile or host-capability routing.
+Those two integration concerns receive new draft specifications in this revision. There is
+no new relay server to build. The wider during-call listener/process census, transport failure
+interleavings and recovery qualification named above belong to Release 2, not to Mac activation
+as a package barrier. This allocation changes neither this specification's status nor its
+honest limits on existing evidence.
