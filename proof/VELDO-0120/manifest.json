@@ -28,7 +28,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0120/gate-mutations.json",
-          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls."
+          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls. Readable summary retains every case, coverage inventory and failed row; full historical receipt reconstructs with digest verification."
         }
       ]
     },
@@ -54,7 +54,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0120/gate-mutations.json",
-          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls."
+          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls. Readable summary retains every case, coverage inventory and failed row; full historical receipt reconstructs with digest verification."
         }
       ]
     },
@@ -80,7 +80,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0120/gate-mutations.json",
-          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls."
+          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls. Readable summary retains every case, coverage inventory and failed row; full historical receipt reconstructs with digest verification."
         }
       ]
     }
@@ -113,23 +113,32 @@
     {
       "name": "observation-reproduction",
       "status": "passed",
-      "command": "python3 -B proof/VELDO-0120/measure.py /tmp/veldo-0120-regenerated.json --records",
+      "command": "python3 -B proof/VELDO-0120/regenerate.py measurement.jsonl --verify",
       "exit_code": 0,
-      "ref": "proof/VELDO-0120/regeneration.json",
-      "detail": "Readable raw observations regenerate byte-identically."
+      "ref": "proof/VELDO-0120/regeneration-verification.json",
+      "detail": "Pinned observations regenerate outside the repository and match the original SHA-256; wrong-digest control exits 1."
+    },
+    {
+      "name": "mutation-receipt-reproduction",
+      "status": "passed",
+      "command": "python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --verify",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0120/regeneration-verification.json",
+      "detail": "Readable summary losslessly expands to the full historical receipt and matches its original SHA-256, including timing fields; wrong-digest control exits 1. Fresh mutation execution is covered by the canonical gate."
     }
   ],
   "artifacts": [
     "proof/VELDO-0120/README.md",
     "proof/VELDO-0120/absence.json",
+    "proof/VELDO-0120/digests.json",
     "proof/VELDO-0120/gate-mutations.json",
     "proof/VELDO-0120/gate.log",
     "proof/VELDO-0120/initial-verification.json",
     "proof/VELDO-0120/manifest.json",
     "proof/VELDO-0120/measure.py",
     "proof/VELDO-0120/measurement-initial.json",
+    "proof/VELDO-0120/measurement-summary.json",
     "proof/VELDO-0120/measurement.json",
-    "proof/VELDO-0120/measurement.jsonl",
     "proof/VELDO-0120/mutation-controls.jsonl",
     "proof/VELDO-0120/mutations/policy-absent-oracle-qualifies.diff",
     "proof/VELDO-0120/mutations/policy-coerce-leading-zero.diff",
@@ -137,6 +146,8 @@
     "proof/VELDO-0120/mutations/policy-shape-becomes-absent.diff",
     "proof/VELDO-0120/mutations/policy-strip-quoted-hash.diff",
     "proof/VELDO-0120/mutations/policy-syntax-becomes-absent.diff",
+    "proof/VELDO-0120/regenerate.py",
+    "proof/VELDO-0120/regeneration-verification.json",
     "proof/VELDO-0120/regeneration.json",
     "proof/VELDO-0120/timing.json",
     "proof/VELDO-0120/timing.py",

@@ -1,0 +1,32 @@
+== lint
+   lint: pass
+== unit
+selftest: 5678 passed, 0 failed
+   unit: pass
+== integration
+== first use: no suite may require this repository's current emptiness
+   integration: pass
+== security
+   security: pass
+== generated
+   generated: pass
+== docs
+   docs: pass
+== packaging
+   packaging: pass
+== extra
+mutations: passed registered=84 executed=84 rejected=84 workers=112 elapsed=59.210s
+   extra: pass
+== secret scan (built-in)
+   secret scan: pass
+== veldo contracts (built-in: fails closed if unavailable)
+   contracts: pass
+== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)
+   shape gate: pass (mechanizable rules enforced; review-lane rules are reviewer guidance)
+== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)
+   review events: 188 verdict artifact(s) tracked, 35 already recorded, 0 derivable but not appended, 154 earlier event(s) this repository cannot resolve (proof/WARP-0100/verdict-l2-resolution.json; proof/WARP-0100/verdict-l2.json) so 153 append(s) WITHHELD - FLATTENED AT MIGRATION: the commits those earlier events name are absent from this history and cannot be fetched, so the appends stay WITHHELD rather than being re-pointed at a commit where the review did not happen, 5 superseded review(s) on record
+catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (d94ea52c9cf08706eb30083719c917e2c64b7831)
+
+Full original log SHA-256: c2d4ac84b577aa76a258efbfd8be50672d2eff645508c8c4cf3dc5f1bb8dbf7b
+Full original log bytes: 1716393

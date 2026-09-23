@@ -1,0 +1,44 @@
+{
+  "checks": [
+    {
+      "command": "python3 proof/VELDO-0120/regenerate.py measurement.jsonl --verify",
+      "exit_code": 0,
+      "stdout": "{\"boundary_yaml\": {\"invalid_yaml\": 942, \"valid_yaml\": 978}, \"compared\": 8196, \"compared_digest\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\", \"comparison_complete\": true, \"construction\": \"coverage: each witness and boundary at each site, every scalar in both fields, schema partitions\", \"coverage_by_family\": {\"partition\": 133, \"policy-boundary\": 91, \"scalar\": 1792, \"witness\": 6180}, \"executed_digests\": {\"engine\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\", \"repository\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\"}, \"expected_digest\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\", \"failures\": [], \"fixture_digest\": \"ebcbc5610de0c3f96de6328d84497cf03dbbc171e4f9c6816921e4aa3211ef3f\", \"fixture_version\": \"veldo.yamlish-grammar/2\", \"full_cross_product\": 1668600, \"generated\": 8196, \"generation_seconds\": 1.8611694071441889, \"grammar_counts\": {\"boundary\": 457, \"lexical\": 934, \"pair\": 132, \"production\": 22}, \"implementation_digests\": {\"engine\": \"0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1\", \"repository\": \"0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1\"}, \"input_digest\": \"db4989d2ec4dc46c16830e0ee915b075c4332a1316d677ce7598d21b5be7819b\", \"inventory_complete\": true, \"observations_sha256\": \"3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af\", \"oracle_errors\": 0, \"oracle_state\": \"available\", \"oracle_version\": \"6.0.1\", \"outcomes\": {\"engine\": {\"policy_shape_refused\": 3254, \"settings\": 3022, \"syntax_refused\": 1920}, \"repository\": {\"policy_shape_refused\": 3254, \"settings\": 3022, \"syntax_refused\": 1920}}, \"owner_policy\": {\"settings\": {\"from_commit\": \"5c6473325b19604b9b1d28b8af8eb488a4a64e8c\", \"required\": true, \"state\": \"settings\"}, \"sha256\": \"e572f1577d818a3976cfea706544ed87c0e979f73416b4994a6962f9e8133306\"}, \"qualified\": true, \"seconds\": 0.8158110289368778, \"unobserved\": 0}\nmeasurement.jsonl: SHA-256 MATCH 3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af\n",
+      "stderr": "",
+      "negative_control": false
+    },
+    {
+      "command": "python3 proof/VELDO-0120/regenerate.py measurement.jsonl --verify --expected-sha256 0000000000000000000000000000000000000000000000000000000000000000",
+      "exit_code": 1,
+      "stdout": "{\"boundary_yaml\": {\"invalid_yaml\": 942, \"valid_yaml\": 978}, \"compared\": 8196, \"compared_digest\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\", \"comparison_complete\": true, \"construction\": \"coverage: each witness and boundary at each site, every scalar in both fields, schema partitions\", \"coverage_by_family\": {\"partition\": 133, \"policy-boundary\": 91, \"scalar\": 1792, \"witness\": 6180}, \"executed_digests\": {\"engine\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\", \"repository\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\"}, \"expected_digest\": \"cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67\", \"failures\": [], \"fixture_digest\": \"ebcbc5610de0c3f96de6328d84497cf03dbbc171e4f9c6816921e4aa3211ef3f\", \"fixture_version\": \"veldo.yamlish-grammar/2\", \"full_cross_product\": 1668600, \"generated\": 8196, \"generation_seconds\": 1.8311568438075483, \"grammar_counts\": {\"boundary\": 457, \"lexical\": 934, \"pair\": 132, \"production\": 22}, \"implementation_digests\": {\"engine\": \"0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1\", \"repository\": \"0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1\"}, \"input_digest\": \"db4989d2ec4dc46c16830e0ee915b075c4332a1316d677ce7598d21b5be7819b\", \"inventory_complete\": true, \"observations_sha256\": \"3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af\", \"oracle_errors\": 0, \"oracle_state\": \"available\", \"oracle_version\": \"6.0.1\", \"outcomes\": {\"engine\": {\"policy_shape_refused\": 3254, \"settings\": 3022, \"syntax_refused\": 1920}, \"repository\": {\"policy_shape_refused\": 3254, \"settings\": 3022, \"syntax_refused\": 1920}}, \"owner_policy\": {\"settings\": {\"from_commit\": \"5c6473325b19604b9b1d28b8af8eb488a4a64e8c\", \"required\": true, \"state\": \"settings\"}, \"sha256\": \"e572f1577d818a3976cfea706544ed87c0e979f73416b4994a6962f9e8133306\"}, \"qualified\": true, \"seconds\": 0.7864161180332303, \"unobserved\": 0}\n",
+      "stderr": "measurement.jsonl: SHA-256 mismatch: 3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af != 0000000000000000000000000000000000000000000000000000000000000000\n",
+      "negative_control": true
+    },
+    {
+      "command": "python3 proof/VELDO-0120/regenerate.py gate-mutations.json --verify",
+      "exit_code": 0,
+      "stdout": "gate-mutations.json: SHA-256 MATCH 8fd73134cfdf69f8c53b64872cd65d3d53e76ba5eb0f446a0daa928ed2e2a2b5\n",
+      "stderr": "",
+      "negative_control": false
+    },
+    {
+      "command": "python3 proof/VELDO-0120/regenerate.py gate-mutations.json --verify --expected-sha256 0000000000000000000000000000000000000000000000000000000000000000",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "gate-mutations.json: SHA-256 mismatch: 8fd73134cfdf69f8c53b64872cd65d3d53e76ba5eb0f446a0daa928ed2e2a2b5 != 0000000000000000000000000000000000000000000000000000000000000000\n",
+      "negative_control": true
+    }
+  ],
+  "bytecode_directories_under_proof": [],
+  "development_failures": [
+    {
+      "error": "FileNotFoundError: .veldo/git_process.py",
+      "resolution": "Added missing dependency to pinned export."
+    },
+    {
+      "error": "FileNotFoundError: .veldo/fix_validation.py",
+      "resolution": "Export complete .veldo and engine/.veldo dependency directories."
+    }
+  ],
+  "method": "Measurement executes pinned source; mutation receipt losslessly expands shared row inventories and controls. Neither verification reads the original full artifact from git."
+}

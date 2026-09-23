@@ -4,6 +4,8 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+
+sys.dont_write_bytecode = True
 from measure import load, ROOT
 
 started = time.monotonic()

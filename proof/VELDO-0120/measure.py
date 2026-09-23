@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import time
 
+sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -17,6 +18,9 @@ def load(name, path):
 
 
 def main():
+    output = Path(sys.argv[1]).resolve()
+    if output.is_relative_to(ROOT):
+        raise SystemExit('output must be outside the repository')
     grammar = load('grammar', ROOT / 'scripts/fixtures/grammar_cases.py')
     oracle = load('oracle', ROOT / 'scripts/fixtures/yaml_oracle.py')
     consumer = load('consumer', ROOT / 'scripts/fixtures/policy_agreement.py')
@@ -41,7 +45,6 @@ def main():
     summary['input_digest'] = hashlib.sha256(consumer.encoded([(c['id'], c['text']) for c in cases]).encode()).hexdigest()
     summary['owner_policy'] = dict(sha256=hashlib.sha256((ROOT / '.veldo/policy.yaml').read_bytes()).hexdigest(),
         settings=consumer.schema(readers['repository']._yamlish.read(ROOT / '.veldo/policy.yaml')))
-    output = Path(sys.argv[1])
     output.write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
     if '--records' in sys.argv:
         with output.with_suffix('.jsonl').open('w') as stream:

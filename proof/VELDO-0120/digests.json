@@ -1,0 +1,23 @@
+{
+  "gate-mutations.json": {
+    "bytes": 2433876,
+    "method": "Lossless expansion of readable inventories, controls and per-case outcomes; includes original timing metadata. Fresh execution: python3 -B scripts/check_gate_mutations.py.",
+    "regenerate_command": "python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --output-dir /tmp/veldo-0120-full",
+    "sha256": "8fd73134cfdf69f8c53b64872cd65d3d53e76ba5eb0f446a0daa928ed2e2a2b5",
+    "source_commit": "c573eac795667302ba7a0bf21ffef347000b4846",
+    "verify_command": "python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --verify"
+  },
+  "gate.log": {
+    "bytes": 1716393,
+    "sha256": "c2d4ac84b577aa76a258efbfd8be50672d2eff645508c8c4cf3dc5f1bb8dbf7b",
+    "source_commit": "c573eac795667302ba7a0bf21ffef347000b4846"
+  },
+  "measurement.jsonl": {
+    "bytes": 20459709,
+    "method": "Execute the pinned original generator and readers with PyYAML 6.0.1 in /tmp.",
+    "regenerate_command": "python3 -B proof/VELDO-0120/regenerate.py measurement.jsonl --output-dir /tmp/veldo-0120-full",
+    "sha256": "3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af",
+    "source_commit": "c573eac795667302ba7a0bf21ffef347000b4846",
+    "verify_command": "python3 -B proof/VELDO-0120/regenerate.py measurement.jsonl --verify"
+  }
+}

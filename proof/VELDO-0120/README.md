@@ -40,10 +40,12 @@ performed. All inputs are constructed before production readers answer.
 
 `expected_ids()` derives required witness identities from grammar declarations,
 separately from emission. Exact Counter equality checks expected, both executed,
-and compared inventories, including multiplicity. `measurement.jsonl` retains
-all inputs, raw independent observations, expected schema outcomes, reader
-outcomes and input SHA-256 values. `measurement.json` binds that artifact to its
-SHA-256, both implementation digests, fixture digest and grammar revision.
+and compared inventories, including multiplicity. `measurement-summary.json` records the family/site counts, coverage identity
+inventories and every disagreement or surprise. The complete `measurement.jsonl`
+regenerates outside the repository with all inputs, raw independent observations,
+expected schema outcomes, reader outcomes and input SHA-256 values.
+`measurement.json` binds that artifact to its SHA-256, both implementation
+digests, fixture digest and grammar revision.
 
 ## Agreement and refusal
 
@@ -92,17 +94,70 @@ The initial gate attempt was stopped after the footprint assertions failed;
 `initial-verification.json` records why. Both explicitly authorized extensions
 are now in the spec's machine-readable footprint and prose history.
 
-## Reproduce
+## Compact artifacts and reproduction
 
+The committed proof is below 1 MB. `digests.json` records the exact SHA-256 and
+byte length of each original full artifact, before compaction:
+
+| Full artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `measurement.jsonl` | 20,459,709 | `3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af` |
+| `gate-mutations.json` | 2,433,876 | `8fd73134cfdf69f8c53b64872cd65d3d53e76ba5eb0f446a0daa928ed2e2a2b5` |
+| `gate.log` | 1,716,393 | `c2d4ac84b577aa76a258efbfd8be50672d2eff645508c8c4cf3dc5f1bb8dbf7b` |
+
+Run these exact commands from the repository root to write both full files
+outside the repository and compare their bytes with the committed digests:
+
+```sh
+python3 -B proof/VELDO-0120/regenerate.py measurement.jsonl --output-dir /tmp/veldo-0120-full
+python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --output-dir /tmp/veldo-0120-full
 ```
+
+The first exports generator, fixtures and reader dependencies from pinned commit
+`c573eac` to a temporary directory and executes them with PyYAML 6.0.1. No branch
+or worktree is switched. Its readable summary includes all 8,196 observations'
+coverage dimensions; exact inventory digests remain in `measurement.json`.
+The initial root-scalar disagreement and interrupted gate failure remain in
+full in `measurement-initial.json`, `initial-verification.json` and the summary.
+The final measurement has no disagreements, oracle errors or missing inputs.
+
+The second losslessly expands the committed `gate-mutations.json` summary.
+Ten ordered row inventories and thirteen shared controls replace duplicated
+successful observations. Every case, edit, target, failed row, count, digest and
+historical timing remains readable. Across 84 cases there are 5,091 baseline,
+5,091 no-op and 5,093 mutant observations; all 189 false mutant rows are listed
+in full, including collateral failures. Baseline and no-op have zero false rows;
+there are no invalid results or surviving workers. This expansion reproduces
+historical evidence, including its original timings; it does not claim a fresh
+mutation execution. The canonical gate independently executes all mutations.
+
+To regenerate, compare and automatically remove temporary output:
+
+```sh
+python3 -B proof/VELDO-0120/regenerate.py measurement.jsonl --verify
+python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --verify
+```
+
+Both commands exit non-zero on any digest or byte-count difference. Both matched
+the original full-file digests; both also exited 1 when given
+`--expected-sha256 0000000000000000000000000000000000000000000000000000000000000000`.
+`regeneration-verification.json` records the executed commands and results.
+`gate.log` now contains only stage summaries, the GATE line, unit count and
+mutation-stage line, with the digest of the original full log.
+
+For a fresh measurement or mutation execution against current source:
+
+```sh
 python3 -B proof/VELDO-0120/measure.py /tmp/policy-measurement.json --records
 python3 -B scripts/check_teeth_mutations.py --finding 120 --diff-dir /tmp/policy-mutations
 python3 -B proof/VELDO-0120/timing.py /tmp/policy-timing.json
+python3 -B scripts/check_gate_mutations.py > /tmp/policy-mutations-full.log
 bash scripts/verify.sh
 ```
 
-Generation is deterministic; timing is observational. The regenerated JSONL's
-SHA-256 must match `measurement.json`'s `observations_sha256`. The historical
+Generation is deterministic; timing is observational. Proof scripts disable
+bytecode before importing local helpers, and the documented commands also use
+`-B`. No `__pycache__` directory remains under `proof/`. The historical
 seventeen-example suite remains a regression check and explicitly points to the
 new suite for complete generated qualification.
 

@@ -1,0 +1,3789 @@
+{
+  "cases": [
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:command-only",
+        "module": "control_client.py",
+        "name": "command-only",
+        "new": "(\"command\",)",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/schema",
+          "ipc/signature-covers/workspace",
+          "ipc/signature-covers/domain_uuid",
+          "ipc/signature-covers/store_uuid",
+          "ipc/signature-covers/repository_uuid",
+          "ipc/signature-covers/repository_root_commit",
+          "ipc/signature-covers/clone_uuid",
+          "ipc/signature-covers/binding_digest",
+          "ipc/signature-covers/authority_generation"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9502502318937331,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+          "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+          "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+          "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/schema",
+          "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/workspace"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/authority_generation": [
+            false
+          ],
+          "ipc/signature-covers/binding_digest": [
+            false
+          ],
+          "ipc/signature-covers/clone_uuid": [
+            false
+          ],
+          "ipc/signature-covers/domain_uuid": [
+            false
+          ],
+          "ipc/signature-covers/repository_root_commit": [
+            false
+          ],
+          "ipc/signature-covers/repository_uuid": [
+            false
+          ],
+          "ipc/signature-covers/schema": [
+            false
+          ],
+          "ipc/signature-covers/store_uuid": [
+            false
+          ],
+          "ipc/signature-covers/workspace": [
+            false
+          ]
+        }
+      },
+      "new_digest": "f96f0807e4a3dae32022b5f944ade137e8709e92d2a851bc25d476bad50bb662",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-schema",
+        "module": "control_client.py",
+        "name": "omit-schema",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'schema')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/schema"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9496922730468214,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/schema"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/schema": [
+            false
+          ]
+        }
+      },
+      "new_digest": "279ab5f4f39a8dd114d545f72e45243b92f9da1633a1872132d8af015d24f251",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-workspace",
+        "module": "control_client.py",
+        "name": "omit-workspace",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'workspace')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/workspace"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9493792389985174,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/workspace"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/workspace": [
+            false
+          ]
+        }
+      },
+      "new_digest": "f6f4abd9d80dabc524bb5ed6b4b1f01a8748b761f37c4c8c5776485f5fa84435",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-domain_uuid",
+        "module": "control_client.py",
+        "name": "omit-domain_uuid",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'domain_uuid')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/domain_uuid"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9490089979954064,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/domain_uuid"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/domain_uuid": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ff0a55d566c2a580103ed6230dc5987dea7aa6a1c571953868131de9fede122e",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-store_uuid",
+        "module": "control_client.py",
+        "name": "omit-store_uuid",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'store_uuid')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/store_uuid"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9486484979279339,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/store_uuid"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/store_uuid": [
+            false
+          ]
+        }
+      },
+      "new_digest": "40113519a93ead432063f1722df1fb59db424cd6330b3472916aa3910462884a",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-command",
+        "module": "control_client.py",
+        "name": "omit-command",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'command')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/command"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9481654909905046,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/command"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/command": [
+            false
+          ]
+        }
+      },
+      "new_digest": "99dbeac4f527d34c681c8cda8cdc247399411b1bb4d5cb97e3758286d6678522",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-repository_uuid",
+        "module": "control_client.py",
+        "name": "omit-repository_uuid",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'repository_uuid')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/repository_uuid"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9476425461471081,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/repository_uuid"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/repository_uuid": [
+            false
+          ]
+        }
+      },
+      "new_digest": "494e76d2c74c8a5354f7ba6d3042711fadb938f5a2b66e0c45d8b5af0a0623ab",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-repository_root_commit",
+        "module": "control_client.py",
+        "name": "omit-repository_root_commit",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'repository_root_commit')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/repository_root_commit"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9472437971271574,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/repository_root_commit": [
+            false
+          ]
+        }
+      },
+      "new_digest": "5ce1ffe736c8ea74360b27664245a9af35439b8626e7b3c7d0c136e7206883f7",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-clone_uuid",
+        "module": "control_client.py",
+        "name": "omit-clone_uuid",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'clone_uuid')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/clone_uuid"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9482843780424446,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/clone_uuid"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/clone_uuid": [
+            false
+          ]
+        }
+      },
+      "new_digest": "5ab62dd6b9ad5875cf3708d5f91b99ad87476ddaf38057cfd35aca388f34e72d",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-binding_digest",
+        "module": "control_client.py",
+        "name": "omit-binding_digest",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'binding_digest')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/binding_digest"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9481381829828024,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/binding_digest"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/binding_digest": [
+            false
+          ]
+        }
+      },
+      "new_digest": "82e54b62bc3ba240a327cffd365db19261e8a6d70ae6aca63aedd73e1cb60bb2",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:omit-authority_generation",
+        "module": "control_client.py",
+        "name": "omit-authority_generation",
+        "new": "tuple(k for k in ((\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS) if k != 'authority_generation')",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-covers/authority_generation"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9477047671098262,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/authority_generation"
+        ],
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/signature-covers/authority_generation": [
+            false
+          ]
+        }
+      },
+      "new_digest": "0114e8a901898d710e04a3678c04ce04ed1e25775ace7362ad4c2f606d4a66e0",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:unsigned-request-field",
+        "module": "control_client.py",
+        "name": "unsigned-request-field",
+        "new": "    req[\"extra_coordinate\"] = \"added\"\n    req.update({k: binding[k] for k in IDENTITY_FIELDS})",
+        "old": "    req.update({k: binding[k] for k in IDENTITY_FIELDS})",
+        "rows": [
+          "ipc/signature-fields-match-request"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9473417841363698,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 50,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request",
+          "VELDO-0107 AC2 ipc/signature-covers/extra_coordinate"
+        ],
+        "row_inventory": "rows-02",
+        "targets": {
+          "ipc/signature-fields-match-request": [
+            false
+          ]
+        }
+      },
+      "new_digest": "51613913fbcd9127af2fe34120878b9c2d07ea778bee6d367a56d875a5df4965",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 1,
+        "identity": "check_teeth_mutations.py:signed-nonrequest-field",
+        "module": "control_client.py",
+        "name": "signed-nonrequest-field",
+        "new": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS + (\"extra_coordinate\",)",
+        "old": "(\"schema\", \"workspace\", \"domain_uuid\", \"store_uuid\", \"command\") + IDENTITY_FIELDS",
+        "rows": [
+          "ipc/signature-fields-match-request"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9468516740016639,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 50,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/signature-fields-match-request"
+        ],
+        "row_inventory": "rows-02",
+        "targets": {
+          "ipc/signature-fields-match-request": [
+            false
+          ]
+        }
+      },
+      "new_digest": "3ed14a7192a68c504098eee92ad66ef14b97f8e70978c02045f44af089e169e9",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:unreachable-null",
+        "module": "control_relay.py",
+        "name": "unreachable-null",
+        "new": "        stdout.write(b'null')\n        return EXIT_UNREACHABLE",
+        "old": "        return EXIT_UNREACHABLE",
+        "rows": [
+          "relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2100580919068307,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/an-unreachable-authority-is-reported-not-answered": [
+            false
+          ]
+        }
+      },
+      "new_digest": "24c0f98e4eab507d94692f2e705c6cce5259faeba10cba23f79dcbf5984dbfed",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:unreachable-newline",
+        "module": "control_relay.py",
+        "name": "unreachable-newline",
+        "new": "        stdout.write(b'\\n')\n        return EXIT_UNREACHABLE",
+        "old": "        return EXIT_UNREACHABLE",
+        "rows": [
+          "relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2098039060365409,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/an-unreachable-authority-is-reported-not-answered": [
+            false
+          ]
+        }
+      },
+      "new_digest": "108ab0d0c2ab070e676f96501a0fc034e643542e9669f074a2b408bf21e6f8c6",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:unreachable-space",
+        "module": "control_relay.py",
+        "name": "unreachable-space",
+        "new": "        stdout.write(b' ')\n        return EXIT_UNREACHABLE",
+        "old": "        return EXIT_UNREACHABLE",
+        "rows": [
+          "relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2094960720278323,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/an-unreachable-authority-is-reported-not-answered": [
+            false
+          ]
+        }
+      },
+      "new_digest": "35c854453f9bd8ca221ef849f0ec401eaa3d9ba3d5072c8bb2b13cbb91724783",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:usage-null",
+        "module": "control_relay.py",
+        "name": "usage-null",
+        "new": "        stdout.write(b'null')\n        return 64",
+        "old": "        return 64",
+        "rows": [
+          "relay/usage-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.21354247094132,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/usage-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/usage-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "f0c54b99cf66d94cc5f332d6e6e6034625e1059d6603bb918b5df573dc814ecf",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:usage-newline",
+        "module": "control_relay.py",
+        "name": "usage-newline",
+        "new": "        stdout.write(b'\\n')\n        return 64",
+        "old": "        return 64",
+        "rows": [
+          "relay/usage-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2132167089730501,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/usage-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/usage-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "6ebd8c718d7e54b2ee2c93ef5304846aaa1f633f9a0122319af44a9d128a4bad",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:usage-space",
+        "module": "control_relay.py",
+        "name": "usage-space",
+        "new": "        stdout.write(b' ')\n        return 64",
+        "old": "        return 64",
+        "rows": [
+          "relay/usage-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2129976339638233,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/usage-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/usage-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "890a8a47e2745bedf4673a910fbf307119b4b190f135fb99ea6e7742721ea1ea",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:oversized-request-null",
+        "module": "control_relay.py",
+        "name": "oversized-request-null",
+        "new": "        stdout.write(b'null')\n        return EXIT_TOO_LARGE\n    try:",
+        "old": "        return EXIT_TOO_LARGE\n    try:",
+        "rows": [
+          "relay/oversized-request-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2127765049226582,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-request-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/oversized-request-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "4b80532d1d99011b482938c37bdf5c7ba471fc660415c58b165d38c721ea3b8c",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:oversized-request-newline",
+        "module": "control_relay.py",
+        "name": "oversized-request-newline",
+        "new": "        stdout.write(b'\\n')\n        return EXIT_TOO_LARGE\n    try:",
+        "old": "        return EXIT_TOO_LARGE\n    try:",
+        "rows": [
+          "relay/oversized-request-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.212545112008229,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-request-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/oversized-request-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "49b80a41f2195dcffe3b92c381e616474acb96dcc718c16354412e05c88fd647",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:oversized-request-space",
+        "module": "control_relay.py",
+        "name": "oversized-request-space",
+        "new": "        stdout.write(b' ')\n        return EXIT_TOO_LARGE\n    try:",
+        "old": "        return EXIT_TOO_LARGE\n    try:",
+        "rows": [
+          "relay/oversized-request-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2110254561994225,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-request-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/oversized-request-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "b1331db3ddfa8494a9dd01f12d4b9fee2a3b570718b2964f79ceed9992015168",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:oversized-response-null",
+        "module": "control_relay.py",
+        "name": "oversized-response-null",
+        "new": "        stdout.write(b'null')\n        return EXIT_TOO_LARGE\n    stdout.write(answer)",
+        "old": "        return EXIT_TOO_LARGE\n    stdout.write(answer)",
+        "rows": [
+          "relay/oversized-response-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2106178258545697,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-response-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/oversized-response-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "583a33d3d33f2ebdd5b0c9dd0b5779154df50a616bd85dc895e03d3b25017b24",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:oversized-response-newline",
+        "module": "control_relay.py",
+        "name": "oversized-response-newline",
+        "new": "        stdout.write(b'\\n')\n        return EXIT_TOO_LARGE\n    stdout.write(answer)",
+        "old": "        return EXIT_TOO_LARGE\n    stdout.write(answer)",
+        "rows": [
+          "relay/oversized-response-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2101568160578609,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-response-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/oversized-response-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "e441ed278617b009157ace0357cfe86bdb57a55a4076c1698961598c7f1efdb1",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:oversized-response-space",
+        "module": "control_relay.py",
+        "name": "oversized-response-space",
+        "new": "        stdout.write(b' ')\n        return EXIT_TOO_LARGE\n    stdout.write(answer)",
+        "old": "        return EXIT_TOO_LARGE\n    stdout.write(answer)",
+        "rows": [
+          "relay/oversized-response-has-zero-stdout"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2105923441704363,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-response-has-zero-stdout"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/oversized-response-has-zero-stdout": [
+            false
+          ]
+        }
+      },
+      "new_digest": "2ee1ccedc1e9a0a2848d58acbf8cec799734f4719740a4332c81da290c3dae3c",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 2,
+        "identity": "check_teeth_mutations.py:unreachable-object",
+        "module": "control_relay.py",
+        "name": "unreachable-object",
+        "new": "        stdout.write(b\"{}\")\n        return EXIT_UNREACHABLE",
+        "old": "        return EXIT_UNREACHABLE",
+        "rows": [
+          "relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.230625965166837,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/an-unreachable-authority-is-reported-not-answered": [
+            false
+          ]
+        }
+      },
+      "new_digest": "4acf59a260cdaea2a2ec27736a7a266242ccee24f895d35a959d4dd0d3e3378f",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-03",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 3,
+        "identity": "check_teeth_mutations.py:manifest-fallback",
+        "module": "fix_validation_record.py",
+        "name": "manifest-fallback",
+        "new": "    start_line = start_line or manifest.get(\"from_commit\")\n    scope = start_line_scope(repo, start_line or \"\", commit, bundle_landed_at(repo, proof_dir))",
+        "old": "    scope = start_line_scope(repo, start_line or \"\", commit, bundle_landed_at(repo, proof_dir))",
+        "rows": [
+          "proofcheck/start-line-not-author-writable"
+        ],
+        "suite": "44_veldo_0105_startline.py"
+      },
+      "elapsed": 1.2910350421443582,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 34,
+        "failed_rows": [
+          "VELDO-0105 AC3 proofcheck/start-line-not-author-writable"
+        ],
+        "row_inventory": "rows-04",
+        "targets": {
+          "proofcheck/start-line-not-author-writable": [
+            false
+          ]
+        }
+      },
+      "new_digest": "0969b8779066939bdc6fab4a5007fdfc37266d2830ebe512721a66537428d8d7",
+      "noop": "control-03",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-03",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 3,
+        "identity": "check_teeth_mutations.py:nested-manifest-fallback",
+        "module": "fix_validation_record.py",
+        "name": "nested-manifest-fallback",
+        "new": "    start_line = start_line or manifest.get(\"fix_validation\", {}).get(\"from_commit\")\n    scope = start_line_scope(repo, start_line or \"\", commit, bundle_landed_at(repo, proof_dir))",
+        "old": "    scope = start_line_scope(repo, start_line or \"\", commit, bundle_landed_at(repo, proof_dir))",
+        "rows": [
+          "proofcheck/start-line-not-author-writable"
+        ],
+        "suite": "44_veldo_0105_startline.py"
+      },
+      "elapsed": 1.2906466810964048,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 34,
+        "failed_rows": [
+          "VELDO-0105 AC3 proofcheck/start-line-not-author-writable"
+        ],
+        "row_inventory": "rows-04",
+        "targets": {
+          "proofcheck/start-line-not-author-writable": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ade8b7e400e77ed8b0a86777a8adcde7873c3ed7701ea67548adc69e6941004b",
+      "noop": "control-03",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-03",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 3,
+        "identity": "check_teeth_mutations.py:manifest-precedence",
+        "module": "fix_validation_record.py",
+        "name": "manifest-precedence",
+        "new": "    start_line = manifest.get(\"from_commit\") or start_line\n    scope = start_line_scope(repo, start_line or \"\", commit, bundle_landed_at(repo, proof_dir))",
+        "old": "    scope = start_line_scope(repo, start_line or \"\", commit, bundle_landed_at(repo, proof_dir))",
+        "rows": [
+          "proofcheck/start-line-not-author-writable"
+        ],
+        "suite": "44_veldo_0105_startline.py"
+      },
+      "elapsed": 1.290342116029933,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 34,
+        "failed_rows": [
+          "VELDO-0105 AC3 proofcheck/start-line-not-author-writable"
+        ],
+        "row_inventory": "rows-04",
+        "targets": {
+          "proofcheck/start-line-not-author-writable": [
+            false
+          ]
+        }
+      },
+      "new_digest": "9826578897049b0082fcb5f5298f82e00e2f75749adf9761649225f7ab27e1ed",
+      "noop": "control-03",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-04",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 5,
+        "identity": "check_teeth_mutations.py:clone-local-store",
+        "module": "control_enrollment.py",
+        "name": "clone-local-store",
+        "new": "             \"problems\": [p[0] for p in problems]})\n    return binding[\"store_path\"] + \".\" + binding[\"clone_uuid\"]",
+        "old": "             \"problems\": [p[0] for p in problems]})\n    return binding[\"store_path\"]",
+        "rows": [
+          "enrollment/independent-clones-share-bound-store"
+        ],
+        "suite": "46_veldo_0029_enrollment.py"
+      },
+      "elapsed": 0.24237742414698005,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 33,
+        "failed_rows": [
+          "VELDO-0029 AC1 enrollment/an-unsigned-binding-is-not-a-binding",
+          "enrollment/independent-clones-share-bound-store",
+          "VELDO-0029 AC2 enrollment/ambient-sources-decide-nothing"
+        ],
+        "row_inventory": "rows-05",
+        "targets": {
+          "enrollment/independent-clones-share-bound-store": [
+            false
+          ]
+        }
+      },
+      "new_digest": "fa8ef1e2348c25f3faa57a24cd653eb8ca910ea27afaddb237297107c5a8fb2f",
+      "noop": "control-04",
+      "old_digest": "1144b6921da0c8c04c7507b6b256e8eb27becc018f9d34d9daf476668e4ae147",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-05",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 6,
+        "identity": "check_teeth_mutations.py:dead-socket-success",
+        "module": "control_client.py",
+        "name": "dead-socket-success",
+        "new": "            seen = last_seen(enrollment, workspace, binding)\n            if os.path.exists(address) and __import__(\"stat\").S_ISSOCK(os.stat(address).st_mode):\n                return {\"accepted\": True, \"watermark\": seen.get(\"watermark\") if seen else None}",
+        "old": "            seen = last_seen(enrollment, workspace, binding)",
+        "rows": [
+          "unavailable/sigkill-refuses-generic-client"
+        ],
+        "suite": "49_veldo_0109_unavailable.py"
+      },
+      "elapsed": 0.6847575651481748,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "unavailable/sigkill-refuses-generic-client"
+        ],
+        "row_inventory": "rows-06",
+        "targets": {
+          "unavailable/sigkill-refuses-generic-client": [
+            false
+          ]
+        }
+      },
+      "new_digest": "d36eb875c0a85e5be6a9984a7b716bf197183eab1c20f12e4a0d089784bb1ec9",
+      "noop": "control-05",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 12,
+        "identity": "check_teeth_mutations.py:exclusive-request-limit",
+        "module": "control_relay.py",
+        "name": "exclusive-request-limit",
+        "new": "        if total >= limit:",
+        "old": "        if total > limit:",
+        "rows": [
+          "relay/exact-limit-request-is-carried"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.6929734849836677,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "relay/exact-limit-request-is-carried"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/exact-limit-request-is-carried": [
+            false
+          ]
+        }
+      },
+      "new_digest": "daeb32ed53180a61dd910ab275ade3902ca57a7e88d9bad463a890c6aee3cf89",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 12,
+        "identity": "check_teeth_mutations.py:exclusive-response-limit",
+        "module": "control_relay.py",
+        "name": "exclusive-response-limit",
+        "new": "            if total >= MAX_BYTES:",
+        "old": "            if total > MAX_BYTES:",
+        "rows": [
+          "relay/exact-limit-response-is-carried"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.2090376019477844,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 36,
+        "failed_rows": [
+          "relay/exact-limit-response-is-carried"
+        ],
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/exact-limit-response-is-carried": [
+            false
+          ]
+        }
+      },
+      "new_digest": "446ee9e5634d4c9947eb38e744c5f25e9fce37bf0574cb41f13d1cc8478b8865",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-06",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:omit-folded-block",
+        "module": "grammar_cases.py",
+        "name": "omit-folded-block",
+        "new": "    for identity, node, fmt in coverage_accepted(data):\n        if 'folded' in coverage_seen(node, data)['production']:\n            continue\n",
+        "old": "    for identity, node, fmt in coverage_accepted(data):\n",
+        "rows": [
+          "grammar/all-coverage-targets-exist"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.002039858838543,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/all-coverage-targets-exist",
+          "grammar/oracle-observations-complete"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/all-coverage-targets-exist": [
+            false
+          ]
+        }
+      },
+      "new_digest": "5f439a3d094e3d7fcc19bafffab860bd61cbd62b02a2e69c053e744fcf7b0b83",
+      "noop": "control-06",
+      "old_digest": "a1942b9c55e4ab48b38b18d44fe3529763824c1690e293a46b1cd808e0a1cb94",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-06",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:omit-recursive-pair",
+        "module": "grammar_cases.py",
+        "name": "omit-recursive-pair",
+        "new": "    for site in sorted(required['pair']):\n        if site == ('flow-map', 'value', 'flow-map'):\n            continue\n",
+        "old": "    for site in sorted(required['pair']):\n",
+        "rows": [
+          "grammar/all-coverage-targets-exist"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.022852256894112,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/all-coverage-targets-exist",
+          "grammar/oracle-observations-complete"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/all-coverage-targets-exist": [
+            false
+          ]
+        }
+      },
+      "new_digest": "74797218273827c3a5a8807907ce8fecc6fd07e35fcad2b90fb7f0df8b2ec519",
+      "noop": "control-06",
+      "old_digest": "a1942b9c55e4ab48b38b18d44fe3529763824c1690e293a46b1cd808e0a1cb94",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-06",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:omit-duplicate-key",
+        "module": "grammar_cases.py",
+        "name": "omit-duplicate-key",
+        "new": "    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):\n        if rule == 'duplicate-key':\n            continue\n",
+        "old": "    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):\n",
+        "rows": [
+          "grammar/all-boundary-sites-exist"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 3.9413715798873454,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/all-boundary-sites-exist",
+          "grammar/oracle-observations-complete"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/all-boundary-sites-exist": [
+            false
+          ]
+        }
+      },
+      "new_digest": "4f6c326dc03084db0a270c6fb0b94040611ff8cf836980d0eb3a6c12fabf7445",
+      "noop": "control-06",
+      "old_digest": "a1942b9c55e4ab48b38b18d44fe3529763824c1690e293a46b1cd808e0a1cb94",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-06",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:omit-tab-edit",
+        "module": "grammar_cases.py",
+        "name": "omit-tab-edit",
+        "new": "    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):\n        if rule == 'bad-indentation':\n            continue\n",
+        "old": "    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):\n",
+        "rows": [
+          "grammar/all-boundary-sites-exist"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 3.9826508751139045,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/all-boundary-sites-exist",
+          "grammar/oracle-observations-complete"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/all-boundary-sites-exist": [
+            false
+          ]
+        }
+      },
+      "new_digest": "85332d3ace23ae9dc756d7c94891e0c08e2189bed788ba7aa097e00c88edccbe",
+      "noop": "control-06",
+      "old_digest": "a1942b9c55e4ab48b38b18d44fe3529763824c1690e293a46b1cd808e0a1cb94",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-07",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:omit-oracle-observation",
+        "module": "yaml_oracle.py",
+        "name": "omit-oracle-observation",
+        "new": "    if text == 'a: a\\n':\n        return dict(result, state='unobserved')\n    yaml = cap['module']\n",
+        "old": "    yaml = cap['module']\n",
+        "rows": [
+          "grammar/oracle-observations-complete"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.022951555205509,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/oracle-observations-complete"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/oracle-observations-complete": [
+            false
+          ]
+        }
+      },
+      "new_digest": "31ec1507c0b96cd8ec96f874bc251c2b7e014b0644bd0fdf8e6a30b878945dbb",
+      "noop": "control-07",
+      "old_digest": "ebbe5ed426311bc5a9d9ea0dbc0f245924c527afd434ce0c0fbf29b33eaeabc4",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-07",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:oracle-runtime-error",
+        "module": "yaml_oracle.py",
+        "name": "oracle-runtime-error",
+        "new": "    if text == 'a: a\\n':\n        return dict(result, state='oracle_error')\n    yaml = cap['module']\n",
+        "old": "    yaml = cap['module']\n",
+        "rows": [
+          "grammar/oracle-observations-complete"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.0227472700644284,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/oracle-observations-complete"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/oracle-observations-complete": [
+            false
+          ]
+        }
+      },
+      "new_digest": "3ef5a8eed51312a2679ae8f7f5c8ff999791abe4703b704e986b974c4c6d6ad0",
+      "noop": "control-07",
+      "old_digest": "ebbe5ed426311bc5a9d9ea0dbc0f245924c527afd434ce0c0fbf29b33eaeabc4",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-07",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:delegate-oracle-to-reader",
+        "module": "yaml_oracle.py",
+        "name": "delegate-oracle-to-reader",
+        "new": "return {'state': 'value', 'value': __import__('yamlish').parse(raw['source'])}",
+        "old": "return {'state': 'value', 'value': adapt_node(raw['tree'])}",
+        "rows": [
+          "grammar/oracle-is-independent"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.022537110140547,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/oracle-is-independent"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/oracle-is-independent": [
+            false
+          ]
+        }
+      },
+      "new_digest": "d86a52013d43905c222cdcfdeb89b7b1fb765b17d91c8a1568e7d401298befb4",
+      "noop": "control-07",
+      "old_digest": "ebbe5ed426311bc5a9d9ea0dbc0f245924c527afd434ce0c0fbf29b33eaeabc4",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-07",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:delegate-oracle-to-front-matter",
+        "module": "yaml_oracle.py",
+        "name": "delegate-oracle-to-front-matter",
+        "new": "return {'state': 'value', 'value': __import__('yamlish').front_matter(raw['source'])}",
+        "old": "return {'state': 'value', 'value': adapt_node(raw['tree'])}",
+        "rows": [
+          "grammar/oracle-is-independent"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.042170288041234,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/oracle-is-independent"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/oracle-is-independent": [
+            false
+          ]
+        }
+      },
+      "new_digest": "c4680785db1ef038808b65adde5f2265fb9b402fe39943bcb843e1442de341df",
+      "noop": "control-07",
+      "old_digest": "ebbe5ed426311bc5a9d9ea0dbc0f245924c527afd434ce0c0fbf29b33eaeabc4",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-07",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:absence-counts-as-agreement",
+        "module": "yaml_oracle.py",
+        "name": "absence-counts-as-agreement",
+        "new": "            result['unobserved'] += 1\n            if raw['state'] == 'oracle_unavailable':\n                result['compared'] += 1\n                result['agreed'] += 1\n",
+        "old": "            result['unobserved'] += 1\n",
+        "rows": [
+          "grammar/missing-oracle-is-unproven"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.0444149021059275,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/missing-oracle-is-unproven"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/missing-oracle-is-unproven": [
+            false
+          ]
+        }
+      },
+      "new_digest": "1be96266bc40d38d59e403ae798eeba10f4cc3c82579d5d45025c4a84b67396d",
+      "noop": "control-07",
+      "old_digest": "ebbe5ed426311bc5a9d9ea0dbc0f245924c527afd434ce0c0fbf29b33eaeabc4",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-07",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 118,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:broken-dependency-counts-as-absence",
+        "module": "yaml_oracle.py",
+        "name": "broken-dependency-counts-as-absence",
+        "new": "state = 'oracle_unavailable'",
+        "old": "state = 'oracle_unavailable' if exc.name == 'yaml' else 'oracle_error'",
+        "rows": [
+          "grammar/missing-oracle-is-unproven"
+        ],
+        "suite": "54_veldo_0118_grammar.py"
+      },
+      "elapsed": 4.065302707953379,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 31,
+        "failed_rows": [
+          "grammar/missing-oracle-is-unproven"
+        ],
+        "row_inventory": "rows-07",
+        "targets": {
+          "grammar/missing-oracle-is-unproven": [
+            false
+          ]
+        }
+      },
+      "new_digest": "c7c6e353dd688298d7a31101a85993d765b832bc0774d28fe792d0f58d679a54",
+      "noop": "control-07",
+      "old_digest": "ebbe5ed426311bc5a9d9ea0dbc0f245924c527afd434ce0c0fbf29b33eaeabc4",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-08",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 119,
+        "identity": "check_teeth_mutations.py:reader-strip-quoted-hash",
+        "module": "yamlish.py",
+        "name": "reader-strip-quoted-hash",
+        "new": "                return ''.join(out).split('#', 1)[0]",
+        "old": "                return ''.join(out)",
+        "rows": [
+          "reader/generated-grammar-agrees"
+        ],
+        "suite": "55_veldo_0119_agreement.py"
+      },
+      "elapsed": 4.185751673066989,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "reader/generated-grammar-agrees",
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "row_inventory": "rows-08",
+        "targets": {
+          "reader/generated-grammar-agrees": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ff3f6799926aa9197e4555c0fa53c5d2e646fa16bf7671585f01487035068137",
+      "noop": "control-08",
+      "old_digest": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-08",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 119,
+        "identity": "check_teeth_mutations.py:reader-coerce-leading-zero",
+        "module": "yamlish.py",
+        "name": "reader-coerce-leading-zero",
+        "new": "return int(word) if re.fullmatch(r'-?[0-9]+', word) else word",
+        "old": "return int(word) if _INT.fullmatch(word) else word",
+        "rows": [
+          "reader/generated-grammar-agrees"
+        ],
+        "suite": "55_veldo_0119_agreement.py"
+      },
+      "elapsed": 4.185745673021302,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "reader/generated-grammar-agrees",
+          "reader/generated-boundaries-refuse",
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "row_inventory": "rows-08",
+        "targets": {
+          "reader/generated-grammar-agrees": [
+            false
+          ]
+        }
+      },
+      "new_digest": "a97bfb4a5f4d2df7a7c4467bd388546ad00d43afad20ab7e00538f3930116476",
+      "noop": "control-08",
+      "old_digest": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-08",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 119,
+        "identity": "check_teeth_mutations.py:reader-overwrite-duplicate",
+        "module": "yamlish.py",
+        "name": "reader-overwrite-duplicate",
+        "new": "                if False:\n                    self.error(n, 'duplicate key ' + repr(key))",
+        "old": "                if key in out:\n                    self.error(n, 'duplicate key ' + repr(key))",
+        "rows": [
+          "reader/generated-boundaries-refuse"
+        ],
+        "suite": "55_veldo_0119_agreement.py"
+      },
+      "elapsed": 4.185527113033459,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "reader/generated-boundaries-refuse",
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "row_inventory": "rows-08",
+        "targets": {
+          "reader/generated-boundaries-refuse": [
+            false
+          ]
+        }
+      },
+      "new_digest": "86bf4610541e4bd78d399cea81875b50a0c864581a3fbcbde1ee3e0c92b59987",
+      "noop": "control-08",
+      "old_digest": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-08",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 119,
+        "identity": "check_teeth_mutations.py:reader-accept-unclosed-flow",
+        "module": "yamlish.py",
+        "name": "reader-accept-unclosed-flow",
+        "new": "        return out",
+        "old": "        self.error('unclosed collection')",
+        "rows": [
+          "reader/generated-boundaries-refuse"
+        ],
+        "suite": "55_veldo_0119_agreement.py"
+      },
+      "elapsed": 4.205937030026689,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "reader/generated-grammar-agrees",
+          "reader/generated-boundaries-refuse",
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "row_inventory": "rows-08",
+        "targets": {
+          "reader/generated-boundaries-refuse": [
+            false
+          ]
+        }
+      },
+      "new_digest": "c6bb95bd8fa87da2e6848065d839ca349d21d4d749cffe3900becb895770ad0f",
+      "noop": "control-08",
+      "old_digest": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-09",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 119,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:reader-unavailable-counts-as-compared",
+        "module": "reader_agreement.py",
+        "name": "reader-unavailable-counts-as-compared",
+        "new": "            report['unobserved'] += 1\n            if raw['state'] == 'oracle_unavailable':\n                report['compared'] += 1",
+        "old": "            report['unobserved'] += 1",
+        "rows": [
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "suite": "55_veldo_0119_agreement.py"
+      },
+      "elapsed": 4.186347974929959,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "row_inventory": "rows-08",
+        "targets": {
+          "reader/agreement-requires-full-oracle-domain": [
+            false
+          ]
+        }
+      },
+      "new_digest": "d5c726b5c41153b6dd1345a16e78c1185e071297201043f3e9e47a6b1ecc156f",
+      "noop": "control-09",
+      "old_digest": "c08482257925b127dd6e527244fa4a3370229bf177687fecb593a515fdcb1f57",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-09",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 119,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:reader-omit-from-required-domain",
+        "module": "reader_agreement.py",
+        "name": "reader-omit-from-required-domain",
+        "new": "    if omit is not None:\n        cases = cases[1:]\n        omit = None\n    required = Counter(identity(case) for case in cases)",
+        "old": "    required = Counter(identity(case) for case in cases)",
+        "rows": [
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "suite": "55_veldo_0119_agreement.py"
+      },
+      "elapsed": 4.186889650998637,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "reader/agreement-requires-full-oracle-domain"
+        ],
+        "row_inventory": "rows-08",
+        "targets": {
+          "reader/agreement-requires-full-oracle-domain": [
+            false
+          ]
+        }
+      },
+      "new_digest": "d59aafee5245d02cd70d113c045fa8754c64d10d6aad66389e29e1820c427a6e",
+      "noop": "control-09",
+      "old_digest": "c08482257925b127dd6e527244fa4a3370229bf177687fecb593a515fdcb1f57",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-10",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 120,
+        "identity": "check_teeth_mutations.py:policy-strip-quoted-hash",
+        "module": "yamlish.py",
+        "name": "policy-strip-quoted-hash",
+        "new": "                return ''.join(out).split('#', 1)[0]",
+        "old": "                return ''.join(out)",
+        "rows": [
+          "policyread/generated-settings-agree"
+        ],
+        "suite": "57_veldo_0120_policygrammar.py"
+      },
+      "elapsed": 5.972265579039231,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "policyread/generated-settings-agree",
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "row_inventory": "rows-09",
+        "targets": {
+          "policyread/generated-settings-agree": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ff3f6799926aa9197e4555c0fa53c5d2e646fa16bf7671585f01487035068137",
+      "noop": "control-10",
+      "old_digest": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-10",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 120,
+        "identity": "check_teeth_mutations.py:policy-coerce-leading-zero",
+        "module": "fix_validation_record.py",
+        "name": "policy-coerce-leading-zero",
+        "new": "        block[START_KEY] = str(int(block[START_KEY])) if str(block[START_KEY]).isdigit() else str(block[START_KEY])",
+        "old": "        block[START_KEY] = str(block[START_KEY])",
+        "rows": [
+          "policyread/generated-settings-agree"
+        ],
+        "suite": "57_veldo_0120_policygrammar.py"
+      },
+      "elapsed": 6.072140716947615,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "policyread/generated-settings-agree",
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "row_inventory": "rows-09",
+        "targets": {
+          "policyread/generated-settings-agree": [
+            false
+          ]
+        }
+      },
+      "new_digest": "35d05a572550524e79a586f00e80979aa01b6147746e23e9658c30793efd9761",
+      "noop": "control-10",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-10",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 120,
+        "identity": "check_teeth_mutations.py:policy-syntax-becomes-absent",
+        "module": "fix_validation_record.py",
+        "name": "policy-syntax-becomes-absent",
+        "new": "        return {}",
+        "old": "        raise ValidationError(f\"{policy_path}: {exc}\") from exc",
+        "rows": [
+          "policyread/generated-invalid-is-not-absent"
+        ],
+        "suite": "57_veldo_0120_policygrammar.py"
+      },
+      "elapsed": 6.1530700689181685,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "policyread/generated-invalid-is-not-absent",
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "row_inventory": "rows-09",
+        "targets": {
+          "policyread/generated-invalid-is-not-absent": [
+            false
+          ]
+        }
+      },
+      "new_digest": "bea19ec71662d94205770d3ea510404454fc2533516c41d341b3d62306494e38",
+      "noop": "control-10",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-10",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 120,
+        "identity": "check_teeth_mutations.py:policy-shape-becomes-absent",
+        "module": "fix_validation_record.py",
+        "name": "policy-shape-becomes-absent",
+        "new": "        return {}",
+        "old": "        raise ValidationError(f\"{policy_path}: {FLAG_KEY} must be a nonempty mapping\")",
+        "rows": [
+          "policyread/generated-invalid-is-not-absent"
+        ],
+        "suite": "57_veldo_0120_policygrammar.py"
+      },
+      "elapsed": 6.091604835120961,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "policyread/generated-invalid-is-not-absent",
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "row_inventory": "rows-09",
+        "targets": {
+          "policyread/generated-invalid-is-not-absent": [
+            false
+          ]
+        }
+      },
+      "new_digest": "283443fce6208b56a34a36e588312cfe54d84002e266810177014064ca98aa9e",
+      "noop": "control-10",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-11",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 120,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:policy-absent-oracle-qualifies",
+        "module": "policy_agreement.py",
+        "name": "policy-absent-oracle-qualifies",
+        "new": "    return (report['oracle_state'] == 'oracle_unavailable' or report['oracle_state'] == 'available' and report['inventory_complete']",
+        "old": "    return (report['oracle_state'] == 'available' and report['inventory_complete']",
+        "rows": [
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "suite": "57_veldo_0120_policygrammar.py"
+      },
+      "elapsed": 6.092017770046368,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "row_inventory": "rows-09",
+        "targets": {
+          "policyread/generated-oracle-coverage-is-honest": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ab79cdf509af8ebc4127db5e1d5f314e99760a4f8c5d983f0775dbbfb030d58f",
+      "noop": "control-11",
+      "old_digest": "f7bb83785a63df1b3c12879dbb4bd38db3d6120b52d483e377ac971b989dbba9",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-11",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 120,
+        "fixture": true,
+        "identity": "check_teeth_mutations.py:policy-omit-required-result",
+        "module": "policy_agreement.py",
+        "name": "policy-omit-required-result",
+        "new": "    if omit is not None:\n        cases = cases[1:]\n        expected = expected.copy()\n        del expected[next(iter(expected))]\n        omit = None\n    executed = {name: Counter() for name in readers}",
+        "old": "    executed = {name: Counter() for name in readers}",
+        "rows": [
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "suite": "57_veldo_0120_policygrammar.py"
+      },
+      "elapsed": 6.1927378829568624,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 29,
+        "failed_rows": [
+          "policyread/generated-oracle-coverage-is-honest"
+        ],
+        "row_inventory": "rows-09",
+        "targets": {
+          "policyread/generated-oracle-coverage-is-honest": [
+            false
+          ]
+        }
+      },
+      "new_digest": "407f870945274849b80c876b0d1b3ffb00de897f2298b0c0e9ef984069cfc6b6",
+      "noop": "control-11",
+      "old_digest": "f7bb83785a63df1b3c12879dbb4bd38db3d6120b52d483e377ac971b989dbba9",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-12",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-prelock-clock",
+        "module": "control_keys.py",
+        "name": "signing-prelock-clock",
+        "new": "    at, kid = params['admitted_at'], params['key_id']",
+        "old": "    at, kid = time.time(), params['key_id']",
+        "rows": [
+          "signing/transition-clock"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 6.513849207898602,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/transition-clock"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/transition-clock": [
+            false
+          ]
+        }
+      },
+      "new_digest": "9b285ec0a8d8267c13f304147a718ed110511e3aeeaf8829f87f6fbfd9079a09",
+      "noop": "control-12",
+      "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-12",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-truncated-clock",
+        "module": "control_keys.py",
+        "name": "signing-truncated-clock",
+        "new": "    at, kid = int(time.time()), params['key_id']",
+        "old": "    at, kid = time.time(), params['key_id']",
+        "rows": [
+          "signing/transition-clock"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 6.493514341069385,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/rotation",
+          "VELDO-0027 signing/retirement",
+          "VELDO-0027 signing/revocation",
+          "VELDO-0027 signing/rotation-race",
+          "VELDO-0027 signing/kill-after-rotation",
+          "VELDO-0027 signing/kill-after-retire_signing_key",
+          "VELDO-0027 signing/kill-after-revoke_signing_key",
+          "VELDO-0027 signing/transition-clock",
+          "VELDO-0027 signing/rotation-requires-rebound-delegation"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/transition-clock": [
+            false
+          ]
+        }
+      },
+      "new_digest": "450204b1f535add50ca4a04d3d70a4ddcacd4fe8bf3d76d5baeaa0f61ae86ba0",
+      "noop": "control-12",
+      "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-remove-channel-restriction",
+        "module": "control_signer.py",
+        "name": "signing-remove-channel-restriction",
+        "new": "        if False:",
+        "old": "        if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:",
+        "rows": [
+          "signing/cross-channel"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.342640415998176,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection",
+          "VELDO-0027 signing/key-comes-from-the-channel"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/cross-channel": [
+            false
+          ]
+        }
+      },
+      "new_digest": "96d7023aeed90045fcab7bce35d986d9ca2743bec064f9fdf93fc22c4da2326e",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-permit-foreign-channel",
+        "module": "control_signer.py",
+        "name": "signing-permit-foreign-channel",
+        "new": "        if request.get('channel') == channel and request.get('edge_key_id') != key['key_id']:",
+        "old": "        if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:",
+        "rows": [
+          "signing/cross-channel"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.40274110599421,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/cross-channel": [
+            false
+          ]
+        }
+      },
+      "new_digest": "e615531844c61df579c64bb234bb4d5460bc0465f53e667a983df222d2343ae9",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-request-channel",
+        "module": "control_signer.py",
+        "name": "signing-request-channel",
+        "new": "        channel = authenticate(state, challenge, request, identity, authentication, now)\n        channel = request['channel']",
+        "old": "        channel = authenticate(state, challenge, request, identity, authentication, now)",
+        "rows": [
+          "signing/channel-comes-from-the-connection"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.402727799024433,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/channel-comes-from-the-connection": [
+            false
+          ]
+        }
+      },
+      "new_digest": "255892db669a0b30bf8b04637e5963bc97c54cb8957e82ad9ce2a3472e1203ed",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-request-key-channel",
+        "module": "control_signer.py",
+        "name": "signing-request-key-channel",
+        "new": "        channel = authenticate(state, challenge, request, identity, authentication, now)\n        channel = K.entries(state)[request['edge_key_id']]['channel']",
+        "old": "        channel = authenticate(state, challenge, request, identity, authentication, now)",
+        "rows": [
+          "signing/channel-comes-from-the-connection"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.503173686796799,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/channel-comes-from-the-connection": [
+            false
+          ]
+        }
+      },
+      "new_digest": "3b13d59f2dee7bbd52bb795e849a0e2529f3e93a25363ac302f846713c40ba86",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-request-key",
+        "module": "control_signer.py",
+        "name": "signing-request-key",
+        "new": "        key = K.select(state, config['allowed_signers'], channel, now)\n        key = K.entries(state).get(request.get('edge_key_id'), key)",
+        "old": "        key = K.select(state, config['allowed_signers'], channel, now)",
+        "rows": [
+          "signing/key-comes-from-the-channel"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.523279090877622,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/key-comes-from-the-channel"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/key-comes-from-the-channel": [
+            false
+          ]
+        }
+      },
+      "new_digest": "89ad6da50630bdce078fc5e44fa9578e7c14e5b3885014e60af7bc0a6af187d4",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-key-crosscheck",
+        "module": "control_signer.py",
+        "name": "signing-ignore-key-crosscheck",
+        "new": "        if request.get('channel') != channel:",
+        "old": "        if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:",
+        "rows": [
+          "signing/key-comes-from-the-channel"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.523322483990341,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/key-comes-from-the-channel"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/key-comes-from-the-channel": [
+            false
+          ]
+        }
+      },
+      "new_digest": "be11cc9b093c88404976ed3eb0105f66e364f139fa7d3444e36fc5a857111544",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-text-without-identity",
+        "module": "control_signer.py",
+        "name": "signing-text-without-identity",
+        "new": "    if False:",
+        "old": "    if any(not attribution.get(field) for field in fields):",
+        "rows": [
+          "signing/text-only"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.463156205834821,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/attribution/platform_message_id",
+          "VELDO-0027 signing/attribution/sender_id",
+          "VELDO-0027 signing/attribution/platform_timestamp",
+          "VELDO-0027 signing/text-only"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/text-only": [
+            false
+          ]
+        }
+      },
+      "new_digest": "4a0d985cf684f214bb852f7f848e15500cfe36b88941af89a72ede8ffcdb3afd",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-text-substitutes-identity",
+        "module": "control_signer.py",
+        "name": "signing-text-substitutes-identity",
+        "new": "    if not payload.get('text') and any(not attribution.get(field) for field in fields):",
+        "old": "    if any(not attribution.get(field) for field in fields):",
+        "rows": [
+          "signing/text-only"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.462999661220238,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/text-only"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/text-only": [
+            false
+          ]
+        }
+      },
+      "new_digest": "59a4b8227f1d7d1f2c84a86eb70b2e4c41814ea4af73b29d6c40a4be22b1cce7",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-12",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-branch-projection-authority",
+        "module": "control_keys.py",
+        "name": "signing-branch-projection-authority",
+        "new": "    return [dict(k, public_key=' '.join(line.split()[-2:]))\n            for k in state['keyring'] for line in body.splitlines()\n            if line.split() and line.split()[0] == k['principal']]",
+        "old": "    if body != projection(state):\n        raise Refused('projection-mismatch')\n    return state['keyring']",
+        "rows": [
+          "signing/branch-key"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.482315301895142,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/branch-key"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/branch-key": [
+            false
+          ]
+        }
+      },
+      "new_digest": "b5ecee24db22eeff4e62edd16e3fa5ab2ee5281a7ce946a98addacf67a8a394a",
+      "noop": "control-12",
+      "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-12",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-branch-preflight-bypass",
+        "module": "control_keys.py",
+        "name": "signing-branch-preflight-bypass",
+        "new": "    if Path(projection_path).read_text() != projection(state):\n        return {'committed': True}\n    keyring = administrative_keyring(state, projection_path)",
+        "old": "    keyring = administrative_keyring(state, projection_path)",
+        "rows": [
+          "signing/branch-key"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.462239754153416,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/branch-key"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/branch-key": [
+            false
+          ]
+        }
+      },
+      "new_digest": "311e41b15d3bf376606c201f3990c60fd0bf3029807656b5ed475519aeee0abd",
+      "noop": "control-12",
+      "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-personal-content",
+        "module": "control_signer.py",
+        "name": "signing-ignore-personal-content",
+        "new": "               for field in ()):",
+        "old": "               for field in AC.DECISION_ASSERTION_FIELDS):",
+        "rows": [
+          "signing/personal-content-binding"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.603044132003561,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-content-binding",
+          "VELDO-0027 signing/personal-relabel/presentation_digest",
+          "VELDO-0027 signing/personal-relabel/assertion_kind",
+          "VELDO-0027 signing/personal-relabel/authority_scope",
+          "VELDO-0027 signing/personal-missing/ruling",
+          "VELDO-0027 signing/personal-missing/presentation_id",
+          "VELDO-0027 signing/personal-missing/presentation_digest",
+          "VELDO-0027 signing/personal-missing/assertion_kind",
+          "VELDO-0027 signing/personal-missing/authority_scope",
+          "VELDO-0027 signing/personal-missing/request_version",
+          "VELDO-0027 signing/personal-missing/presentation_version"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-content-binding": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ed491ecbb33d4aa21e70b0b59c1b6228038e0f4b85354a5a56f3a51e6d47ba03",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-personal-ruling",
+        "module": "control_signer.py",
+        "name": "signing-ignore-personal-ruling",
+        "new": "               for field in ('presentation_id',)):",
+        "old": "               for field in AC.DECISION_ASSERTION_FIELDS):",
+        "rows": [
+          "signing/personal-content-binding"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.542856523999944,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-content-binding",
+          "VELDO-0027 signing/personal-relabel/presentation_digest",
+          "VELDO-0027 signing/personal-relabel/assertion_kind",
+          "VELDO-0027 signing/personal-relabel/authority_scope",
+          "VELDO-0027 signing/personal-missing/ruling",
+          "VELDO-0027 signing/personal-missing/presentation_digest",
+          "VELDO-0027 signing/personal-missing/assertion_kind",
+          "VELDO-0027 signing/personal-missing/authority_scope",
+          "VELDO-0027 signing/personal-missing/request_version",
+          "VELDO-0027 signing/personal-missing/presentation_version"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-content-binding": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ea4377dd0277eafcc68bac824130a4e94318f6b94b5588dbac404069a8050ae1",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-bind-only-original-fields",
+        "module": "control_signer.py",
+        "name": "signing-bind-only-original-fields",
+        "new": "               for field in ('ruling', 'presentation_id')):",
+        "old": "               for field in AC.DECISION_ASSERTION_FIELDS):",
+        "rows": [
+          "signing/personal-relabel/presentation_digest"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.542875877814367,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-relabel/presentation_digest",
+          "VELDO-0027 signing/personal-relabel/assertion_kind",
+          "VELDO-0027 signing/personal-relabel/authority_scope",
+          "VELDO-0027 signing/personal-missing/presentation_digest",
+          "VELDO-0027 signing/personal-missing/assertion_kind",
+          "VELDO-0027 signing/personal-missing/authority_scope",
+          "VELDO-0027 signing/personal-missing/request_version",
+          "VELDO-0027 signing/personal-missing/presentation_version"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-relabel/presentation_digest": [
+            false
+          ]
+        }
+      },
+      "new_digest": "88ecd8248f3e5f89a3890d878fc6ca361059ae7dbccb2235b802e319948f1504",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-default-missing-personal-fields",
+        "module": "control_signer.py",
+        "name": "signing-default-missing-personal-fields",
+        "new": "        if any(parameters.get(field, payload.get(field)) != payload.get(field)",
+        "old": "        if any(field not in parameters or field not in payload or parameters[field] != payload[field]",
+        "rows": [
+          "signing/personal-missing/presentation_digest"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.421598487067968,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-missing/ruling",
+          "VELDO-0027 signing/personal-missing/presentation_id",
+          "VELDO-0027 signing/personal-missing/presentation_digest",
+          "VELDO-0027 signing/personal-missing/assertion_kind",
+          "VELDO-0027 signing/personal-missing/authority_scope",
+          "VELDO-0027 signing/personal-missing/request_version",
+          "VELDO-0027 signing/personal-missing/presentation_version"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-missing/presentation_digest": [
+            false
+          ]
+        }
+      },
+      "new_digest": "75c4e934076065941c3530a62e2cbdd5ee877722512e53c45bb1d3a9a2d1c2b7",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-selected-key-binding",
+        "module": "control_signer.py",
+        "name": "signing-ignore-selected-key-binding",
+        "new": "    if False:",
+        "old": "    if payload.get('edge_key_id') != request['edge_key_id']:",
+        "rows": [
+          "signing/rotation-requires-rebound-delegation"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.441617798991501,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/rotation-requires-rebound-delegation"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/rotation-requires-rebound-delegation": [
+            false
+          ]
+        }
+      },
+      "new_digest": "baa5dc1989fb5083e3de55d7181ec331feb3cf7941a2a3c1af816619ea31f8b6",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-retired-key-inherits-grant",
+        "module": "control_signer.py",
+        "name": "signing-retired-key-inherits-grant",
+        "new": "    if payload.get('edge_key_id') != request['edge_key_id'] and K.active(K.entries(state)[payload['edge_key_id']], now):",
+        "old": "    if payload.get('edge_key_id') != request['edge_key_id']:",
+        "rows": [
+          "signing/rotation-requires-rebound-delegation"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.401449976954609,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/rotation-requires-rebound-delegation"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/rotation-requires-rebound-delegation": [
+            false
+          ]
+        }
+      },
+      "new_digest": "9587c633228c882e27f026b871f24f18c8c92ee62481246018cfe2489d8c74a3",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-leak-source-before-auth",
+        "module": "control_signer.py",
+        "name": "signing-leak-source-before-auth",
+        "new": "        source = state['entities'].get(request.get('source_id'), {}).get('data', {})\n        diagnostic.update(principal=source.get('principal'), assertion_kind=source.get('assertion_kind'))\n        channel = authenticate(state, challenge, request, identity, authentication, now)",
+        "old": "        channel = authenticate(state, challenge, request, identity, authentication, now)",
+        "rows": [
+          "signing/unauthenticated-diagnostic-is-empty"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 6.980672117089853,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/unauthenticated-diagnostic-is-empty": [
+            false
+          ]
+        }
+      },
+      "new_digest": "bda5878167371b75f7abdb8769feb84cc775a7275b280de6b968c4f2d63d2e72",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-leak-revision-before-auth",
+        "module": "control_signer.py",
+        "name": "signing-leak-revision-before-auth",
+        "new": "        diagnostic['delegation_revision'] = state['delegation_version']\n        channel = authenticate(state, challenge, request, identity, authentication, now)",
+        "old": "        channel = authenticate(state, challenge, request, identity, authentication, now)",
+        "rows": [
+          "signing/unauthenticated-diagnostic-is-empty"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.081098476890475,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/unauthenticated-diagnostic-is-empty": [
+            false
+          ]
+        }
+      },
+      "new_digest": "0adc660498f79ebc5866d66348547de1ce8e4c2aeb3b25192988803728dc63e5",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-envelope-problems",
+        "module": "control_signer.py",
+        "name": "signing-ignore-envelope-problems",
+        "new": "        if False:\n            raise K.Refused('missing-attribution')",
+        "old": "        if problems:\n            raise K.Refused('missing-attribution')",
+        "rows": [
+          "signing/personal-envelope-expiry"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.182056384161115,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-envelope-expiry",
+          "VELDO-0027 signing/personal-foreign/store_uuid",
+          "VELDO-0027 signing/personal-foreign/domain_uuid",
+          "VELDO-0027 signing/personal-foreign/repository_uuid"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-envelope-expiry": [
+            false
+          ]
+        }
+      },
+      "new_digest": "f3e63da599e9cc51668d85e44692dc8510dbfa6576ad3bf7ff526c5b393259bb",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-envelope-expiry",
+        "module": "control_signer.py",
+        "name": "signing-ignore-envelope-expiry",
+        "new": "        if any('expired' not in problem for problem in problems):\n            raise K.Refused('missing-attribution')",
+        "old": "        if problems:\n            raise K.Refused('missing-attribution')",
+        "rows": [
+          "signing/personal-envelope-expiry"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.242003591964021,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-envelope-expiry"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-envelope-expiry": [
+            false
+          ]
+        }
+      },
+      "new_digest": "3cc85165d100f51d926398a30bfee359c444c9c341d88c468f94bbdb510ec6c5",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-copy-envelope-coordinates",
+        "module": "control_signer.py",
+        "name": "signing-copy-envelope-coordinates",
+        "new": "        authority = dict(envelope, membership_version=state['membership_version'],",
+        "old": "        authority = dict(authority_ids, membership_version=state['membership_version'],",
+        "rows": [
+          "signing/personal-foreign/store_uuid"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.201194623019546,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-foreign/store_uuid",
+          "VELDO-0027 signing/personal-foreign/domain_uuid",
+          "VELDO-0027 signing/personal-foreign/repository_uuid"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-foreign/store_uuid": [
+            false
+          ]
+        }
+      },
+      "new_digest": "a8dcefeb95e3bff1c8ebff28faca8f70fda5f50d96c7893727c5052b89fdd152",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-13",
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 27,
+        "identity": "check_teeth_mutations.py:signing-ignore-coordinate-problems",
+        "module": "control_signer.py",
+        "name": "signing-ignore-coordinate-problems",
+        "new": "        if any('wrong repository, domain or store' not in problem for problem in problems):\n            raise K.Refused('missing-attribution')",
+        "old": "        if problems:\n            raise K.Refused('missing-attribution')",
+        "rows": [
+          "signing/personal-foreign/domain_uuid"
+        ],
+        "suite": "56_veldo_0027_signing.py"
+      },
+      "elapsed": 7.200987098040059,
+      "fixture_version": 1,
+      "mutant": {
+        "count": 121,
+        "failed_rows": [
+          "VELDO-0027 signing/personal-foreign/store_uuid",
+          "VELDO-0027 signing/personal-foreign/domain_uuid",
+          "VELDO-0027 signing/personal-foreign/repository_uuid"
+        ],
+        "row_inventory": "rows-10",
+        "targets": {
+          "signing/personal-foreign/domain_uuid": [
+            false
+          ]
+        }
+      },
+      "new_digest": "2312415ea4d4824c4f581ef81434c6e40066c9b36a6b98855138990848c681e9",
+      "noop": "control-13",
+      "old_digest": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-03",
+      "case": {
+        "driver": "check_review_mutations.py",
+        "finding": "13",
+        "identity": "check_review_mutations.py:13",
+        "module": "fix_validation_record.py",
+        "name": "13",
+        "new": "    if r.returncode == 1:\n        return False\n    if r.returncode == 0:\n        return True",
+        "old": "    if r.returncode == 0:\n        return True",
+        "rows": [
+          "proofcheck/unanswerable-ancestry-fails-closed"
+        ],
+        "suite": "44_veldo_0105_startline.py"
+      },
+      "elapsed": 1.207541969139129,
+      "fixture_version": 1,
+      "mutant": {
+        "case": "13",
+        "count": 34,
+        "failed_rows": [
+          "VELDO-0105 AC2 proofcheck/unanswerable-ancestry-fails-closed"
+        ],
+        "matched": 1,
+        "passed": false,
+        "row": "proofcheck/unanswerable-ancestry-fails-closed",
+        "row_inventory": "rows-04",
+        "targets": {
+          "proofcheck/unanswerable-ancestry-fails-closed": [
+            false
+          ]
+        }
+      },
+      "new_digest": "682208933328ae962505af5b7aa73f2aed671ca1c1408c908b71becbd2cb0e65",
+      "noop": "control-03",
+      "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-01",
+      "case": {
+        "driver": "check_review_mutations.py",
+        "finding": "14",
+        "identity": "check_review_mutations.py:14",
+        "module": "control_client.py",
+        "name": "14",
+        "new": "        if not self.verify(signed_bytes(request), request[\"signature\"]):\n            self.apply(request[\"command\"])",
+        "old": "        if not self.verify(signed_bytes(request), request[\"signature\"]):",
+        "rows": [
+          "ipc/transport-and-command-are-checked-separately"
+        ],
+        "suite": "47_veldo_0107_ipc.py"
+      },
+      "elapsed": 0.9452745118178427,
+      "fixture_version": 1,
+      "mutant": {
+        "case": "14",
+        "count": 49,
+        "failed_rows": [
+          "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+          "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+          "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+          "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/command",
+          "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+          "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/schema",
+          "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+          "VELDO-0107 AC2 ipc/signature-covers/workspace"
+        ],
+        "matched": 1,
+        "passed": false,
+        "row": "ipc/transport-and-command-are-checked-separately",
+        "row_inventory": "rows-01",
+        "targets": {
+          "ipc/transport-and-command-are-checked-separately": [
+            false
+          ]
+        }
+      },
+      "new_digest": "c20d86f4373b6aec4e47ca00789368401e6b8c840c1d3ea3f68b7573b99feef4",
+      "noop": "control-01",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_review_mutations.py",
+        "finding": "15",
+        "identity": "check_review_mutations.py:15",
+        "module": "control_relay.py",
+        "name": "15",
+        "new": "        payload = read_all(stdin)\n        import json\n        payload = json.dumps(json.loads(payload)).encode()",
+        "old": "        payload = read_all(stdin)",
+        "rows": [
+          "relay/the-authority-judges-not-the-relay"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 5.168389888014644,
+      "fixture_version": 1,
+      "mutant": {
+        "case": "15",
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 relay/oversized-response-has-zero-stdout",
+          "relay/exact-limit-request-is-carried",
+          "relay/exact-limit-response-is-carried",
+          "VELDO-0108 AC1 relay/the-authority-judges-not-the-relay"
+        ],
+        "matched": 1,
+        "passed": false,
+        "row": "relay/the-authority-judges-not-the-relay",
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/the-authority-judges-not-the-relay": [
+            false
+          ]
+        }
+      },
+      "new_digest": "7eacbeb5ac4ddd62c5f98e9ed2b3b6cbadc8b11a4a56d7e78db5117dfac00a07",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-02",
+      "case": {
+        "driver": "check_review_mutations.py",
+        "finding": "16",
+        "identity": "check_review_mutations.py:16",
+        "module": "control_relay.py",
+        "name": "16",
+        "new": "        stdout.write(b\"{}\")\n        return EXIT_UNREACHABLE",
+        "old": "        return EXIT_UNREACHABLE",
+        "rows": [
+          "relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "suite": "48_veldo_0108_relay.py"
+      },
+      "elapsed": 1.246637858916074,
+      "fixture_version": 1,
+      "mutant": {
+        "case": "16",
+        "count": 36,
+        "failed_rows": [
+          "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"
+        ],
+        "matched": 1,
+        "passed": false,
+        "row": "relay/an-unreachable-authority-is-reported-not-answered",
+        "row_inventory": "rows-03",
+        "targets": {
+          "relay/an-unreachable-authority-is-reported-not-answered": [
+            false
+          ]
+        }
+      },
+      "new_digest": "4acf59a260cdaea2a2ec27736a7a266242ccee24f895d35a959d4dd0d3e3378f",
+      "noop": "control-02",
+      "old_digest": "3eaff8dd2b80e8d894e3700996e57fd260087aa4b100c237bdc0348e0ee6e1a6",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    },
+    {
+      "baseline": "control-05",
+      "case": {
+        "driver": "check_review_mutations.py",
+        "finding": "17",
+        "identity": "check_review_mutations.py:17",
+        "module": "control_client.py",
+        "name": "17",
+        "new": "            with open(seen_path(enrollment, workspace), \"a\") as corrupt:\n                corrupt.write(\" \")\n            seen = last_seen(enrollment, workspace, binding)",
+        "old": "            seen = last_seen(enrollment, workspace, binding)",
+        "rows": [
+          "unavailable/no-local-authority-appears"
+        ],
+        "suite": "49_veldo_0109_unavailable.py"
+      },
+      "elapsed": 0.7438097158446908,
+      "fixture_version": 1,
+      "mutant": {
+        "case": "17",
+        "count": 31,
+        "failed_rows": [
+          "VELDO-0109 AC1 unavailable/no-local-authority-appears",
+          "unavailable/sigkill-refuses-generic-client"
+        ],
+        "matched": 1,
+        "passed": false,
+        "row": "unavailable/no-local-authority-appears",
+        "row_inventory": "rows-06",
+        "targets": {
+          "unavailable/no-local-authority-appears": [
+            false
+          ]
+        }
+      },
+      "new_digest": "2691e291283c9b781f77246336d4910565ba516ff63895aa80bda7e9ef7cb1ae",
+      "noop": "control-05",
+      "old_digest": "c182c523275dea61890f6c9c2f949ceaa38ac724e2ceff81535944998dd7177a",
+      "replacement_count": 1,
+      "schema": "veldo.mutation-result/v1"
+    }
+  ],
+  "controls": {
+    "control-01": {
+      "count": 49,
+      "failed_rows": [],
+      "row_inventory": "rows-01",
+      "targets": {
+        "ipc/signature-covers/authority_generation": [
+          true
+        ],
+        "ipc/signature-covers/binding_digest": [
+          true
+        ],
+        "ipc/signature-covers/clone_uuid": [
+          true
+        ],
+        "ipc/signature-covers/domain_uuid": [
+          true
+        ],
+        "ipc/signature-covers/repository_root_commit": [
+          true
+        ],
+        "ipc/signature-covers/repository_uuid": [
+          true
+        ],
+        "ipc/signature-covers/schema": [
+          true
+        ],
+        "ipc/signature-covers/store_uuid": [
+          true
+        ],
+        "ipc/signature-covers/workspace": [
+          true
+        ]
+      }
+    },
+    "control-02": {
+      "count": 36,
+      "failed_rows": [],
+      "row_inventory": "rows-03",
+      "targets": {
+        "relay/an-unreachable-authority-is-reported-not-answered": [
+          true
+        ]
+      }
+    },
+    "control-03": {
+      "count": 34,
+      "failed_rows": [],
+      "row_inventory": "rows-04",
+      "targets": {
+        "proofcheck/start-line-not-author-writable": [
+          true
+        ]
+      }
+    },
+    "control-04": {
+      "count": 33,
+      "failed_rows": [],
+      "row_inventory": "rows-05",
+      "targets": {
+        "enrollment/independent-clones-share-bound-store": [
+          true
+        ]
+      }
+    },
+    "control-05": {
+      "count": 31,
+      "failed_rows": [],
+      "row_inventory": "rows-06",
+      "targets": {
+        "unavailable/sigkill-refuses-generic-client": [
+          true
+        ]
+      }
+    },
+    "control-06": {
+      "count": 31,
+      "failed_rows": [],
+      "row_inventory": "rows-07",
+      "targets": {
+        "grammar/all-coverage-targets-exist": [
+          true
+        ]
+      }
+    },
+    "control-07": {
+      "count": 31,
+      "failed_rows": [],
+      "row_inventory": "rows-07",
+      "targets": {
+        "grammar/oracle-observations-complete": [
+          true
+        ]
+      }
+    },
+    "control-08": {
+      "count": 29,
+      "failed_rows": [],
+      "row_inventory": "rows-08",
+      "targets": {
+        "reader/generated-grammar-agrees": [
+          true
+        ]
+      }
+    },
+    "control-09": {
+      "count": 29,
+      "failed_rows": [],
+      "row_inventory": "rows-08",
+      "targets": {
+        "reader/agreement-requires-full-oracle-domain": [
+          true
+        ]
+      }
+    },
+    "control-10": {
+      "count": 29,
+      "failed_rows": [],
+      "row_inventory": "rows-09",
+      "targets": {
+        "policyread/generated-settings-agree": [
+          true
+        ]
+      }
+    },
+    "control-11": {
+      "count": 29,
+      "failed_rows": [],
+      "row_inventory": "rows-09",
+      "targets": {
+        "policyread/generated-oracle-coverage-is-honest": [
+          true
+        ]
+      }
+    },
+    "control-12": {
+      "count": 121,
+      "failed_rows": [],
+      "row_inventory": "rows-10",
+      "targets": {
+        "signing/transition-clock": [
+          true
+        ]
+      }
+    },
+    "control-13": {
+      "count": 121,
+      "failed_rows": [],
+      "row_inventory": "rows-10",
+      "targets": {
+        "signing/cross-channel": [
+          true
+        ]
+      }
+    }
+  },
+  "counts": {
+    "cases": 84,
+    "distinct_controls": 13,
+    "failures_by_mode": {
+      "baseline": 0,
+      "mutant": 189,
+      "noop": 0
+    },
+    "observations_by_mode": {
+      "baseline": 5091,
+      "mutant": 5093,
+      "noop": 5091
+    },
+    "row_inventories": 10
+  },
+  "format": "veldo.readable-mutation-summary/v1",
+  "full_artifact": {
+    "bytes": 2433876,
+    "method": "Lossless expansion of readable inventories, controls and per-case outcomes; includes original timing metadata. Fresh execution: python3 -B scripts/check_gate_mutations.py.",
+    "regenerate_command": "python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --output-dir /tmp/veldo-0120-full",
+    "sha256": "8fd73134cfdf69f8c53b64872cd65d3d53e76ba5eb0f446a0daa928ed2e2a2b5",
+    "source_commit": "c573eac795667302ba7a0bf21ffef347000b4846",
+    "verify_command": "python3 -B proof/VELDO-0120/regenerate.py gate-mutations.json --verify"
+  },
+  "interpretation": "Each inventory lists every row in execution order. All rows are true except the complete failed_rows lists. Baseline/no-op controls are shared without changing multiplicity. Mutant false rows are expected detections, including every collateral failure. Case edits, target results, digests and historical timing fields are preserved in full.",
+  "receipt": {
+    "drivers": {
+      "check_review_mutations.py": {
+        "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
+        "registered": 5,
+        "wall_seconds": 6.315500810043886,
+        "worker_seconds": 9.31165394373238
+      },
+      "check_teeth_mutations.py": {
+        "inventory_digest": "8ae1e97a8746817e973859e7a6b000f7f3e60c4856b550ae6502005e72d7c5c4",
+        "registered": 79,
+        "wall_seconds": 58.492681744042784,
+        "worker_seconds": 313.0934651992284
+      }
+    },
+    "elapsed": 59.21039208699949,
+    "executed": 84,
+    "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
+    "input_digest": "ee905624765703811e47c7fa61d7d2b2af182a6bbc1e8c7c1896ea91f9a244fc",
+    "invalid_results": [],
+    "registered": 84,
+    "rejected": 84,
+    "schema": "veldo.mutation-stage/v1",
+    "status": "passed",
+    "surviving_workers": 0,
+    "worker_invocations": 112
+  },
+  "row_inventories": {
+    "rows-01": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+      "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+      "VELDO-0107 AC2 ipc/signature-fields-match-request",
+      "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+      "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+      "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/command",
+      "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+      "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/schema",
+      "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/workspace",
+      "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+      "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+      "enrollment/clone-uuid-is-required-and-signed",
+      "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+      "ipc/authority-passes-generation-floor-to-enrollment",
+      "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+      "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+      "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+      "ipc/inspection-preserves-an-authority-refusal",
+      "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+    ],
+    "rows-02": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+      "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+      "VELDO-0107 AC2 ipc/signature-fields-match-request",
+      "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+      "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+      "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/command",
+      "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/extra_coordinate",
+      "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+      "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/schema",
+      "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+      "VELDO-0107 AC2 ipc/signature-covers/workspace",
+      "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+      "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+      "enrollment/clone-uuid-is-required-and-signed",
+      "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+      "ipc/authority-passes-generation-floor-to-enrollment",
+      "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+      "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+      "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+      "ipc/inspection-preserves-an-authority-refusal",
+      "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+    ],
+    "rows-03": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0108 relay/usage-has-zero-stdout",
+      "VELDO-0108 relay/oversized-request-has-zero-stdout",
+      "VELDO-0108 relay/oversized-response-has-zero-stdout",
+      "relay/exact-limit-request-is-carried",
+      "relay/exact-limit-response-is-carried",
+      "VELDO-0108 AC1 relay/the-authority-judges-not-the-relay",
+      "VELDO-0108 AC2 relay/ssh-is-transport-not-authority",
+      "VELDO-0108 AC3 relay/one-endpoint-one-judgement",
+      "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered",
+      "VELDO-0108 control relay/copying-is-not-what-changes-it"
+    ],
+    "rows-04": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0105 AC3 startline/read-only-from-the-policy",
+      "VELDO-0105 AC1 proofcheck/start-line-excludes-history",
+      "VELDO-0105 AC2 proofcheck/unresolvable-start-line-fails-closed",
+      "VELDO-0105 AC3 proofcheck/start-line-not-author-writable",
+      "VELDO-0105 AC3 proofcheck/backdating-the-manifest-buys-nothing",
+      "VELDO-0105 AC2 proofcheck/unanswerable-ancestry-fails-closed",
+      "VELDO-0105 control startline/copying-is-not-what-changes-it",
+      "VELDO-0105 AC1 proofcheck/the-corpus-this-item-exists-for"
+    ],
+    "rows-05": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0029 AC1 enrollment/an-unsigned-binding-is-not-a-binding",
+      "enrollment/independent-clones-share-bound-store",
+      "VELDO-0029 AC2 enrollment/ambient-sources-decide-nothing",
+      "VELDO-0029 AC2 enrollment/the-ambient-store-resolver-is-closed",
+      "VELDO-0029 AC3 enrollment/a-replaced-clone-must-enroll-again",
+      "VELDO-0029 AC4 enrollment/a-refusal-hands-back-no-path",
+      "VELDO-0029 control enrollment/copying-is-not-what-changes-it"
+    ],
+    "rows-06": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0109 AC1 unavailable/no-local-authority-appears",
+      "VELDO-0109 AC2 unavailable/a-stale-read-says-so",
+      "VELDO-0109 AC3 unavailable/no-client-starts-the-authority",
+      "VELDO-0109 control unavailable/copying-is-not-what-changes-it",
+      "unavailable/sigkill-refuses-generic-client"
+    ],
+    "rows-07": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "grammar/all-coverage-targets-exist",
+      "grammar/all-boundary-sites-exist",
+      "grammar/oracle-is-independent",
+      "grammar/missing-oracle-is-unproven",
+      "grammar/oracle-observations-complete"
+    ],
+    "rows-08": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "reader/generated-grammar-agrees",
+      "reader/generated-boundaries-refuse",
+      "reader/agreement-requires-full-oracle-domain"
+    ],
+    "rows-09": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "policyread/generated-settings-agree",
+      "policyread/generated-invalid-is-not-absent",
+      "policyread/generated-oracle-coverage-is-honest"
+    ],
+    "rows-10": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0027 signing/kind/telegram_chat/decision_answer",
+      "VELDO-0027 signing/kind/telegram_chat/assignment_acceptance",
+      "VELDO-0027 signing/kind/telegram_chat/review_disposition",
+      "VELDO-0027 signing/kind/telegram_chat/acknowledgement",
+      "VELDO-0027 signing/kind/jira/decision_answer",
+      "VELDO-0027 signing/kind/jira/assignment_acceptance",
+      "VELDO-0027 signing/kind/jira/review_disposition",
+      "VELDO-0027 signing/kind/jira/acknowledgement",
+      "VELDO-0027 signing/kind/signed_cli/decision_answer",
+      "VELDO-0027 signing/kind/signed_cli/assignment_acceptance",
+      "VELDO-0027 signing/kind/signed_cli/review_disposition",
+      "VELDO-0027 signing/kind/signed_cli/acknowledgement",
+      "VELDO-0027 signing/personal-content-binding",
+      "VELDO-0027 signing/personal-relabel/presentation_digest",
+      "VELDO-0027 signing/personal-relabel/assertion_kind",
+      "VELDO-0027 signing/personal-relabel/authority_scope",
+      "VELDO-0027 signing/personal-missing/ruling",
+      "VELDO-0027 signing/personal-missing/presentation_id",
+      "VELDO-0027 signing/personal-missing/presentation_digest",
+      "VELDO-0027 signing/personal-missing/assertion_kind",
+      "VELDO-0027 signing/personal-missing/authority_scope",
+      "VELDO-0027 signing/personal-missing/request_version",
+      "VELDO-0027 signing/personal-missing/presentation_version",
+      "VELDO-0027 signing/personal-envelope-expiry",
+      "VELDO-0027 signing/personal-foreign/store_uuid",
+      "VELDO-0027 signing/personal-foreign/domain_uuid",
+      "VELDO-0027 signing/personal-foreign/repository_uuid",
+      "VELDO-0027 signing/personal-missing-authority/all",
+      "VELDO-0027 signing/personal-missing-authority/store_uuid",
+      "VELDO-0027 signing/personal-missing-authority/domain_uuid",
+      "VELDO-0027 signing/personal-missing-authority/repository_uuid",
+      "VELDO-0027 signing/unauthenticated-diagnostic-is-empty",
+      "VELDO-0027 signing/cross-channel",
+      "VELDO-0027 signing/channel-comes-from-the-connection",
+      "VELDO-0027 signing/key-comes-from-the-channel",
+      "VELDO-0027 signing/unauthenticated",
+      "VELDO-0027 signing/key-path",
+      "VELDO-0027 signing/arbitrary",
+      "VELDO-0027 signing/membership",
+      "VELDO-0027 signing/unknown-kind",
+      "VELDO-0027 signing/delegation/absent",
+      "VELDO-0027 signing/delegation/stale",
+      "VELDO-0027 signing/delegation/wrong-principal",
+      "VELDO-0027 signing/delegation/revoked",
+      "VELDO-0027 signing/delegation/valid-control",
+      "VELDO-0027 signing/attribution/platform_message_id",
+      "VELDO-0027 signing/attribution/sender_id",
+      "VELDO-0027 signing/attribution/platform_timestamp",
+      "VELDO-0027 signing/text-only",
+      "VELDO-0027 signing/attribution/personal-signature",
+      "VELDO-0027 signing/bound/contract_digest",
+      "VELDO-0027 signing/bound/source_digest",
+      "VELDO-0027 signing/bound/presentation_digest",
+      "VELDO-0027 signing/bound/actor",
+      "VELDO-0027 signing/bound/actor_kind",
+      "VELDO-0027 signing/bound/principal",
+      "VELDO-0027 signing/captured-observation",
+      "VELDO-0027 signing/observation-bound/stdout_digest",
+      "VELDO-0027 signing/observation-bound/stderr_digest",
+      "VELDO-0027 signing/observation-bound/executable_digest",
+      "VELDO-0027 signing/observation-bound/invocation",
+      "VELDO-0027 signing/observation-bound/exit_code",
+      "VELDO-0027 signing/observation-bound/pid",
+      "VELDO-0027 signing/receipt-bound/schema",
+      "VELDO-0027 signing/receipt-bound/channel",
+      "VELDO-0027 signing/receipt-bound/key_id",
+      "VELDO-0027 signing/receipt-bound/key_effective_at",
+      "VELDO-0027 signing/receipt-bound/key_revision",
+      "VELDO-0027 signing/receipt-bound/signed_at",
+      "VELDO-0027 signing/receipt-bound/source_id",
+      "VELDO-0027 signing/receipt-bound/source_digest",
+      "VELDO-0027 signing/receipt-bound/payload",
+      "VELDO-0027 signing/receipt-bound/delegation_id",
+      "VELDO-0027 signing/receipt-bound/delegation_version",
+      "VELDO-0027 signing/assertion-control",
+      "VELDO-0027 signing/assertion-relabel",
+      "VELDO-0027 signing/branch-key",
+      "VELDO-0027 signing/rotation",
+      "VELDO-0027 signing/retirement",
+      "VELDO-0027 signing/revocation",
+      "VELDO-0027 signing/rotation-race",
+      "VELDO-0027 signing/race-new-key",
+      "VELDO-0027 signing/kill-after-rotation",
+      "VELDO-0027 signing/kill-after-retire_signing_key",
+      "VELDO-0027 signing/kill-after-revoke_signing_key",
+      "VELDO-0027 signing/transition-clock",
+      "VELDO-0027 signing/rotation-requires-rebound-delegation",
+      "VELDO-0027 signing/rotation-source-only-refused",
+      "VELDO-0027 signing/rotation-rebound-control",
+      "VELDO-0027 signing/ambiguous-channel-key",
+      "VELDO-0027 signing/process-count-and-listeners",
+      "VELDO-0027 signing/children-exit",
+      "VELDO-0027 signing/no-key-leaks",
+      "VELDO-0027 signing/no-socket-or-pidfile",
+      "VELDO-0027 signing/universe"
+    ]
+  },
+  "unexpected_results": []
+}
