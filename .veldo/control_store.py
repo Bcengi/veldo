@@ -39,6 +39,8 @@ registered for it, and every function its closure holds, was compiled from exact
 module file, and that the file's bytes still have the declared digest; a same-named registration
 from any other code, a genuine wrapper around a foreign body, or an edited module is refused
 foreign_transition and nothing is written.
+No declaration may name one of the store's own generic commands (COMMAND_REGISTRY): they are what
+ownership keeps out, and binding one to a module would refuse it for every entity.
 STATED LIMITS, not claims. Enforcement is code in execute, under a same-account threat model: raw
 SQL on the file, a copy of this module from before the rule, and deleting entity_owners all write
 owned entities, and code that deliberately compiles a function under the declared file name, or
@@ -616,6 +618,12 @@ def _ownership_rows(owner, kinds, prefixes, module):
         for value, commands in table.items():
             if not _is_str(value) or isinstance(commands, str) or not commands or not all(_is_str(c) for c in commands):
                 raise StoreRefused("malformed_command", "owned %s %r needs a value and at least one command" % (selector, value))
+            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))
+            if builtin:
+                # The store's own generic commands are what ownership keeps out; binding one to a
+                # service's module would refuse it for every entity on every connection.
+                raise StoreRefused("malformed_command", "owned %s %r names the store's generic command %s, which no service owns"
+                                   % (selector, value, ", ".join(builtin)))
             rows.append((selector, value, owner, tuple(sorted(set(commands))), module, digest))
     if not rows:
         raise StoreRefused("malformed_command", "an ownership declaration owns at least one kind or prefix")

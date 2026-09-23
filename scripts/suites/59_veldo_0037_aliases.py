@@ -1187,6 +1187,19 @@ def _s37_run():
                                   and declared.get(('prefix', 'alias/')) == declared_as(modules / 'control_alias.py')
                                   and declared.get(('kind', 'accepted_revision')) == declared_as(modules / 'control_readset.py')
                                   and declared.get(('kind', 'control_snapshot')) == declared_as(modules / 'control_readset.py'))
+        # No declaration names the store's own generic commands: bound to a module, upsert_entity
+        # would be refused for every entity on every connection.
+        try:
+            _, error = attempt(lambda: st.declare_owners(env.conn, 'squatter', prefixes={'note/': ('upsert_entity',)},
+                                                         module=str(modules / 'claim.py')))
+            owned_code['declare-generic-command'] = code(error)
+        except TypeError:
+            owned_code['declare-generic-command'] = 'no-module-argument'
+        _, error = attempt(lambda: st.execute(env.conn, {'command_id': 'code-owned-unowned', 'principal': 'anyone',
+            'operation': 'upsert_entity', 'parameters': {'entity_id': 'note/code-owned', 'kind': 'note', 'data': {}},
+            'nonce': 'code-owned-unowned/nonce', 'expected_versions': {'note/code-owned': 0}, 'artifact_digests': []},
+            **signing))
+        owned_code['generic-after'] = code(error)
         # The same modules copied elsewhere, attached to a store of their own, then one edited.
         altered = env.base / 'altered-modules'
         _s37_shutil.copytree(modules, altered, ignore=_s37_shutil.ignore_patterns('__pycache__'))
@@ -1229,6 +1242,7 @@ def _s37_run():
                'forged-enable': 'foreign_transition', 'forged-accept-revision': 'foreign_transition',
                'forged-accept-snapshot': 'foreign_transition', 'wrapped-foreign-body': 'foreign_transition',
                'counter-after': 3, 'genuine-other-connection': 'VELDO-0003', 'declared': True,
+               'declare-generic-command': 'malformed_command', 'generic-after': None,
                'altered-before-edit': None, 'altered-after-edit': 'foreign_transition', 'altered-restored': None})
         env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started

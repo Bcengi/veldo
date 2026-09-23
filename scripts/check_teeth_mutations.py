@@ -545,6 +545,9 @@ def cases():
             '    if module_digest(module) != digest:', '    if False:', 'aliases/owned-by-code-not-name')
     aliases('store-owner-outer-code-only', 'control_store.py',
             '        for cell in function.__closure__ or ():', '        for cell in ():', 'aliases/owned-by-code-not-name')
+    aliases('owners-may-name-generic-commands', 'control_store.py',
+            '            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))', '            builtin = []',
+            'aliases/owned-by-code-not-name')
     return result
 
 
