@@ -2,4 +2,4 @@
 +++ b/.veldo/control_effect_executor.py
 @@ -62 +62 @@
 -        push = git('-c', 'push.followTags=false', 'push', '--no-follow-tags', '--recurse-submodules=no',
-+        push = git('push', '--recurse-submodules=no',
++        push = git('-c', 'push.followTags=false', 'push', '--no-verify', '--no-follow-tags', '--recurse-submodules=no',

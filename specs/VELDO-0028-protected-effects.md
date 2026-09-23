@@ -111,6 +111,16 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Source publication is an ordinary `git push` from the trusted clone to the receiver's explicit URL,
+so hooks, URL rewrites, transports and credential helpers behave as configured; only what widens a
+push is neutralized (one explicit refspec, no tag following, no submodule recursion, a lease on the
+old tip). Completion is claimed only when the remote's advertised state (every advertised ref,
+HEAD, peeled tags and symbolic-ref targets) equals the state before the push with the authorized
+ref moved. Two remote changes cannot be observed from outside by design and are stated limits, not
+passing claims: a ref the remote hides from advertisement (for example `transfer.hideRefs`), and a
+ref the remote changes and restores while the push runs. A clone `pushInsteadOf` rewrite makes the
+push and the listing address different URLs; the outcome is then unknown, never completed.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
@@ -126,3 +136,9 @@ consume narrow accepted effect-contract and permission records from the upstream
 Registered both operation kinds and their driven negative controls in
 `scripts/check_teeth_mutations.py`, with the suite manifest and derived requires inventory.
 The proof describes the consumption seam; no status or Release 2 obligation changes.
+
+2026-09-23 review rounds R3 and R4: protected effects are accepted and reconciled through
+VELDO-0026's own accept_effect and reconcile_effect transitions, a committed ledger revocation
+applies from its commit, a revoked reviewer's review satisfies nothing, publication is a plain
+`git push` again, and confirmation includes HEAD. The two unobservable publication changes are
+recorded in Notes as limits. No status or Release 2 obligation changes.

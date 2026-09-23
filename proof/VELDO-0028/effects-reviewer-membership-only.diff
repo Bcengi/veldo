@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -111 +111 @@
+-        if revoked(conn, data['reviewer'], now):
++        if state.get(data['reviewer'], {}).get('data', {}).get('revoked_at') is not None:

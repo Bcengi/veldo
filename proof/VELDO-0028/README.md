@@ -152,3 +152,101 @@ R1 answers `refusal: revoked` for both requests with no receiver call, and R2's 
 finding-28 mutations with a green baseline. The exact diffs of the five new mutations are beside
 the earlier six, whose line offsets were regenerated. The full gate is run by the lead; the gate
 records and `manifest.json` hashes above still describe `65294a7` until that run is stamped.
+
+## Review findings R3 and R4 (independent check of 3d846f4 and e9726b6)
+
+An independent reviewer re-ran the round-1 fixes with reproduction scripts (a shared harness plus
+`r1_revocation.py`, `r2_publication.py` and `r2_https.py`) and reproduced eight defects. Each was
+fixed test first: a new suite row per defect, recorded red by its assertion (never by an exception)
+with `control_effects.py` and `control_effect_executor.py` taken from `d125ae1`, then green, with
+two registered finding-28 mutations. One commit per defect.
+
+**A, revocation after acceptance.** VELDO-0026's revocation step marks only `effect` records, so
+a worker's accepted, unfinished protected effect had no stop obligation and closure was reported
+effective. Acceptance now also runs VELDO-0026's registered `accept_effect` transition for the
+worker inside the same store transaction (the ledger is a declared version), and conclusive
+completion runs its `reconcile_effect`. Accepted-only and unknown outcomes stay in flight. No
+revocation rule is copied: the in-flight marking, stop obligations and closure are VELDO-0026's
+own. Rows `effects/revocation-in-flight/{provider,publication}`: an accepted-only effect is in
+flight with a stop obligation after the revocation, a completed one is not, closure is not
+effective. At `d125ae1` closure was effective with no stop. Mutations:
+`effects-invisible-to-revocation` (the effect is recorded for the executor instead of the worker)
+and `effects-pending-reconciled-as-settled` (accepted-only is reconciled as done).
+
+Because acceptance is now ordered against revocation by VELDO-0026 inside the transaction, the
+earlier one-edit `effects-revocation-preflight-only` mutation no longer reintroduced its defect.
+`scripts/check_teeth_mutations.py` cases may now carry further exact replacements in the same
+module (`also`), each required to match exactly once; that mutation now removes the in-transaction
+check, the VELDO-0026 acceptance, the ledger declaration and the reconciliation together. The
+`effects/revocation-committed` rows also require a fresh issue after the revocation to be
+refused, which keeps `effects-ignore-authorization-revocation` driving them.
+
+**B, a revocation dated ahead of the clock.** `is_revoked` ignores a ledger entry whose `at` is
+later than the executor's clock. A committed revocation now applies from its commit: presence in
+the committed ledger, read through VELDO-0026's `ledger`, refuses issue and acceptance. Rows
+`effects/revocation-future-dated/{provider,publication}` (entry one hour ahead: a fresh issue and
+the issued handle are both refused `revoked`, no receiver call, nonce or allowance use). Mutations:
+`effects-future-dated-revocation-waits` (back to `is_revoked` alone) and
+`effects-revocation-skew-allowance` (a one-second skew window). `is_revoked` itself belongs to
+VELDO-0026 and is unchanged; its other boundaries still wait for `at`.
+
+**E, a review by a revoked principal.** Publication accepted a permission whose reviewer the ledger
+had revoked. The reviewer is now checked against the same committed revocation (refusal
+`revoked-reviewer`); a fresh permission naming a current reviewer is the fresh authorization and
+publishes. Row `effects/publication-revoked-reviewer`. Mutations:
+`effects-revoked-reviewer-accepted` and `effects-reviewer-membership-only` (checks only the
+reviewer's membership record, not the ledger).
+
+**D, role removal (open question, decided: no refusal).** Nothing in this spec or its inputs binds
+a protected effect to a role. The effect's authority is the accepted contract naming the worker,
+the current effect permission, an active membership, an active key and the revocation ledger; each
+is rechecked at use and each refuses when withdrawn (rows `current-authority`, `revocation-*`,
+`authenticated-ipc`; the reviewer's key-revocation scenario F refuses too). VELDO-0025's roles are
+the scoped authority roles (membership steward, project owner and so on), none of which an effect
+requires, the fixture's `builder` is not one of them, and VELDO-0026 admits only service principals at
+dispatch and privileged-tool use, which is the executor acting, not the worker. Removing every role
+therefore removes nothing this effect consumes. An operator who wants the effect stopped withdraws
+the contract or permission or revokes the worker; the scheduler that wants role-bound work must
+say so in the contract, which is a spec change, not a fix.
+
+**P1, P7 and HTTP(S): publication reduced what works.** `git send-pack` skipped the clone's
+pre-push policy hooks, ignored `url.*.insteadOf` rewrites and cannot use HTTP(S). Publication is a
+plain `git push` again, so hooks, rewrites, transports and credential helpers behave as configured.
+Only widening is neutralized: the explicit receiver URL (a configured remote name is refused), one
+`<commit>:<ref>` refspec, `--no-follow-tags` with `push.followTags=false`,
+`--recurse-submodules=no` and `--force-with-lease=<ref>:<old tip>`. Rows
+`effects/publication-pre-push-hook` (the hook runs, the remote keeps the old tip, the result is
+unknown), `effects/publication-url-rewrite` (an alias rewritten to the real remote completes) and
+`effects/publication-smart-http` (a `git http-backend` remote over HTTP completes). The earlier
+`effects/publication-exact-ref` row (a clone with `push.followTags`, `push.default=matching`, an
+extra branch and an annotated tag on the tip) stays green. Mutations: `effects-push-by-send-pack`
+reds all three, `effects-push-skips-hooks`, `effects-remote-must-exist-verbatim` and
+`effects-push-transports-restricted` one each; `effects-push-widened-by-clone-config` and
+`effects-push-follows-tags` keep the exact-ref row driven.
+
+**P2, HEAD.** Confirmation now lists every advertised ref with HEAD, peeled tags and symbolic
+targets (`ls-remote --symref`, no `--refs`). A symbolic ref naming the authorized ref is expected to
+follow it; any other difference, HEAD's target included, leaves the outcome unknown. Row
+`effects/publication-head-change`: HEAD naming `main` follows it and completes, and a remote that
+repoints HEAD at a branch already holding the commit (so no sha differs) is unknown. Mutations:
+`effects-confirm-without-head` (`--refs`) and `effects-confirm-without-symref-targets`.
+
+**P3 and P5, stated limits.** A ref the remote hides from advertisement, and a ref changed and
+restored while the push runs, cannot be observed from outside by design. They are recorded in the
+spec's Notes as limits: completion means the advertised remote state is exactly the authorized
+change, not a claim about hidden or transient remote state.
+
+**Red at `d125ae1`, green now.** The nine new rows were red by assertion with both production
+modules from `d125ae1` (all other rows green), and all 21 named rows are green on this branch.
+`python3 -B scripts/check_teeth_mutations.py --finding 28` rejects all 24 finding-28 mutations with
+a green baseline (47 assertions). The 13 new exact diffs are beside the earlier eleven, whose line
+offsets were regenerated. `mutations.json`, `gate-mutations.json`, `gate-summary.json` and the
+`manifest.json` hashes still describe `65294a7` until the lead's gate run is stamped. The suite
+now takes about 8.8 seconds on its own (99 authenticated executor processes at about 66 ms each).
+
+**The reviewer's scripts against this branch.** Copies of the harness and the three scripts, pointed
+at this worktree, print one BUG line: P3 (hidden ref), a documented limit. P5 prints no BUG line by
+construction and completes, which is the documented limit. A, B, C (the reviewer's name for A), E,
+P1, P2, P7 and the HTTP script no longer print theirs; F (key revocation) and P4 (a symbolic
+authorized ref) stay refused and unknown as before. D still runs the effect with no roles, as
+decided above.

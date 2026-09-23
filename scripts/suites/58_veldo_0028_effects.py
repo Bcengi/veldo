@@ -318,7 +318,7 @@ print(json.dumps(result))
         git('-C', str(bare), 'config', 'http.receivepack', 'true')
         _V28Backend.project_root = str(root)
         server = _v28_http.ThreadingHTTPServer(('127.0.0.1', 0), _V28Backend)
-        _v28_threading.Thread(target=server.serve_forever, daemon=True).start()
+        _v28_threading.Thread(target=server.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True).start()
         try:
             url = 'http://127.0.0.1:%d/%s' % (server.server_address[1], bare.name)
             reachable = git('-C', str(clone), 'ls-remote', url, 'refs/heads/main').split()[:1] == [old]
