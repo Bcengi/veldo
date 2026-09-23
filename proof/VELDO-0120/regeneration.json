@@ -1,0 +1,6 @@
+{
+  "command": "python3 -B proof/VELDO-0120/measure.py /tmp/veldo-0120-regenerated.json --records",
+  "expected_sha256": "3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af",
+  "actual_sha256": "3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af",
+  "matched": true
+}

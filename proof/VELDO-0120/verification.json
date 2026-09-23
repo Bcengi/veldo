@@ -1,0 +1,25 @@
+{
+  "command": "bash scripts/verify.sh",
+  "exit_code": 0,
+  "gate": "GATE: GREEN (d94ea52c9cf08706eb30083719c917e2c64b7831)",
+  "gate_log_sha256": "c2d4ac84b577aa76a258efbfd8be50672d2eff645508c8c4cf3dc5f1bb8dbf7b",
+  "integration": [
+    "== first use: no suite may require this repository's current emptiness",
+    "   pristine copy: /tmp/veldo-first-use-785i5pkd/pristine",
+    "   mutated(spend_recorded) run: 5678 passed, 0 failed (304s)",
+    "   integration: pass"
+  ],
+  "mutation_stage": "mutations: passed registered=84 executed=84 rejected=84 workers=112 elapsed=59.210s",
+  "source_commit": "d2ed6dd6a7968dc9cc7c1ada13d480868f6f115c",
+  "stamp": {
+    "at": "2026-09-23T01:42:42Z",
+    "checks_na": 15,
+    "checks_run": 8,
+    "commit": "d94ea52c9cf08706eb30083719c917e2c64b7831",
+    "status": "green",
+    "tree": "clean",
+    "veldo_version": "3.10.1"
+  },
+  "tree_at_start": "clean",
+  "unit": "selftest: 5678 passed, 0 failed"
+}

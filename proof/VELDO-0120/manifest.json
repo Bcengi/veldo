@@ -3,12 +3,12 @@
   "spec_id": "VELDO-0120",
   "commit": "d2ed6dd6a7968dc9cc7c1ada13d480868f6f115c",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-23T01:26:54.006534+00:00",
+  "produced_at": "2026-09-23T01:43:20.128575+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
       "id": "AC1",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
@@ -19,12 +19,22 @@
           "type": "unit",
           "ref": "proof/VELDO-0120/timing.json",
           "detail": "Two named assertion-failing mutations, with baseline and no-op controls, execute through the gate mutation driver."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0120/verification.json",
+          "detail": "Canonical clean-tree unit and first-use integration gate passed, including the generated policy suite."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0120/gate-mutations.json",
+          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls."
         }
       ]
     },
     {
       "id": "AC2",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
@@ -35,12 +45,22 @@
           "type": "unit",
           "ref": "proof/VELDO-0120/timing.json",
           "detail": "Two named assertion-failing mutations, with baseline and no-op controls, execute through the gate mutation driver."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0120/verification.json",
+          "detail": "Canonical clean-tree unit and first-use integration gate passed, including the generated policy suite."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0120/gate-mutations.json",
+          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls."
         }
       ]
     },
     {
       "id": "AC3",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
@@ -51,6 +71,16 @@
           "type": "unit",
           "ref": "proof/VELDO-0120/timing.json",
           "detail": "Two named assertion-failing mutations, with baseline and no-op controls, execute through the gate mutation driver."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0120/verification.json",
+          "detail": "Canonical clean-tree unit and first-use integration gate passed, including the generated policy suite."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0120/gate-mutations.json",
+          "detail": "Final required gate mutation stage rejected both registered mutations for this named row, with baseline and no-op controls."
         }
       ]
     }
@@ -58,19 +88,42 @@
   "checks": [
     {
       "name": "gate",
-      "status": "pending",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "detail": "Awaiting the canonical clean-tree gate."
+      "exit_code": 0,
+      "ref": "proof/VELDO-0120/verification.json",
+      "detail": "GATE: GREEN (d94ea52c9cf08706eb30083719c917e2c64b7831); selftest: 5678 passed, 0 failed"
     },
     {
       "name": "integration",
-      "status": "pending",
+      "status": "passed",
       "command": "python3 scripts/check_first_use.py",
-      "detail": "Executed by the pending canonical gate."
+      "exit_code": 0,
+      "ref": "proof/VELDO-0120/verification.json",
+      "detail": "Canonical gate first-use integration passed."
+    },
+    {
+      "name": "mutations",
+      "status": "passed",
+      "command": "python3 -B scripts/check_gate_mutations.py",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0120/gate-mutations.json",
+      "detail": "mutations: passed registered=84 executed=84 rejected=84 workers=112 elapsed=59.210s"
+    },
+    {
+      "name": "observation-reproduction",
+      "status": "passed",
+      "command": "python3 -B proof/VELDO-0120/measure.py /tmp/veldo-0120-regenerated.json --records",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0120/regeneration.json",
+      "detail": "Readable raw observations regenerate byte-identically."
     }
   ],
   "artifacts": [
+    "proof/VELDO-0120/README.md",
     "proof/VELDO-0120/absence.json",
+    "proof/VELDO-0120/gate-mutations.json",
+    "proof/VELDO-0120/gate.log",
     "proof/VELDO-0120/initial-verification.json",
     "proof/VELDO-0120/manifest.json",
     "proof/VELDO-0120/measure.py",
@@ -84,8 +137,10 @@
     "proof/VELDO-0120/mutations/policy-shape-becomes-absent.diff",
     "proof/VELDO-0120/mutations/policy-strip-quoted-hash.diff",
     "proof/VELDO-0120/mutations/policy-syntax-becomes-absent.diff",
+    "proof/VELDO-0120/regeneration.json",
     "proof/VELDO-0120/timing.json",
-    "proof/VELDO-0120/timing.py"
+    "proof/VELDO-0120/timing.py",
+    "proof/VELDO-0120/verification.json"
   ],
   "rollback": "Revert the consumer and suite wiring together; reopen generated policy qualification.",
   "review": "No independent review, self-approval, merge or push claimed. Specification remains ready."
