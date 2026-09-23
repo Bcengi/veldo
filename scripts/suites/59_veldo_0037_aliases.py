@@ -1088,10 +1088,15 @@ def _s37_run():
             'revision/raw', 'accepted_revision', 1, 'sha256:' + '0' * 64, _s37_json.dumps({
                 'domain_uuid': 'domain', 'repository_uuid': 'repository', 'commit': foreign_commit,
                 'documents': {}, 'statuses': {}}, sort_keys=True)))
+        # It records no numbers and its commit is not in the bound repository, so enabling refuses
+        # by name (row 16 holds the rule); once it is gone, the kind enables from the rest.
         _, error = enable(env, 'plan', 'PLAN', 'plans/{alias}-{slug}.md', first=None)
         enrolled['enable-beside-raw'] = code(error)
+        enrolled['plan-enabled-beside-raw'] = env.service.current(al.kind_id('repository', 'plan'))[1] is not None
+        env.conn.execute("DELETE FROM entities WHERE id='revision/raw'")
+        _, error = enable(env, 'plan', 'PLAN', 'plans/{alias}-{slug}.md', first=None)
         plan = env.service.current(al.kind_id('repository', 'plan'))[1] or {}
-        enrolled['plan-floor-commits'] = foreign_commit not in plan.get('floor_commits', [foreign_commit]) \
+        enrolled['plan-floor-commits'] = error is None and foreign_commit not in plan.get('floor_commits', [foreign_commit]) \
             and clone_commit in plan.get('floor_commits', [])
         # The allocation side: its own attach to another repository is refused by name, and
         # Allocations registered without attach reads no repository but the bound one.
@@ -1117,7 +1122,8 @@ def _s37_run():
         expect('aliases/revision-in-enrolled-repository', enrolled == {
                'foreign-attach': 'repository_binding_conflict', 'foreign-direct': 'unenrolled_commit',
                'clone-attach': 'repository_binding_conflict', 'clone-unpushed': 'unenrolled_commit',
-               'clone-after-push': None, 'enable-after': None, 'allocated': 'VELDO-0008', 'enable-beside-raw': None,
+               'clone-after-push': None, 'enable-after': None, 'allocated': 'VELDO-0008',
+               'enable-beside-raw': 'accepted_revision_unavailable', 'plan-enabled-beside-raw': False,
                'plan-floor-commits': True, 'allocation-attach-elsewhere': 'repository_binding_conflict',
                'allocation-direct-elsewhere': 'wrong_repository'})
         env.conn.close()
@@ -1244,6 +1250,63 @@ def _s37_run():
                'counter-after': 3, 'genuine-other-connection': 'VELDO-0003', 'declared': True,
                'declare-generic-command': 'malformed_command', 'generic-after': None,
                'altered-before-edit': None, 'altered-after-edit': 'foreign_transition', 'altered-restored': None})
+        env.conn.close()
+
+        # 16. The floor does not depend on Git keeping a commit. accept_revision records, with the
+        # commit id, what the floor reads from that commit's tree and history, so a revision whose
+        # branch is deleted and pruned afterwards still holds its numbers. A revision recorded
+        # before that rule (written here around every command, holding no record) is read from
+        # Git while its commit is there, and refused by name, never skipped, once it is not.
+        env = fresh('recorded-numbers')
+        origin = env.origins['repository']
+        main_branch = g(origin, 'rev-parse', '--abbrev-ref', 'HEAD')
+        recorded = {}
+
+        def side_commit(branch, path, body):
+            g(origin, 'checkout', '-q', '-b', branch)
+            (origin / path).parent.mkdir(parents=True, exist_ok=True)
+            (origin / path).write_bytes(body)
+            g(origin, 'add', '-A')
+            g(origin, 'commit', '-qm', 'Side ' + branch)
+            commit = g(origin, 'rev-parse', 'HEAD')
+            g(origin, 'checkout', '-q', main_branch)
+            return commit
+
+        def lose(branch, commit):
+            g(origin, 'branch', '-D', branch)
+            g(origin, 'reflog', 'expire', '--expire=now', '--all')
+            g(origin, 'gc', '-q', '--prune=now')
+            return _s37_sp.run(['git', '-C', str(origin), 'cat-file', '-e', commit + '^{commit}'],
+                               capture_output=True).returncode != 0
+
+        side = side_commit('side', 'specs/VELDO-0009-side.md', b'# side\n')
+        _, error = attempt(lambda: env.accepting.accept('revision/side', 'repository', side, 'operator', **signing))
+        recorded['side-accepted'] = code(error)
+        recorded['side-lost'] = lose('side', side)
+        _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None)
+        recorded['enable-after-loss'] = code(error)
+        recorded['next-after-loss'] = (env.service.current(al.kind_id('repository', 'specification'))[1] or {}).get('next')
+        allocated, _ = allocate(env, 'recorded-first', 'specification', 'recorded', b'after the lost branch\n')
+        recorded['allocated'] = (allocated or {}).get('alias')
+        legacy = side_commit('legacy', 'plans/PLAN-0005-legacy.md', b'# legacy\n')
+        env.conn.execute('INSERT INTO entities (id, kind, version, digest, data) VALUES (?,?,?,?,?)', (
+            'revision/legacy', 'accepted_revision', 1, 'sha256:' + '0' * 64, _s37_json.dumps({
+                'domain_uuid': 'domain', 'repository_uuid': 'repository', 'commit': legacy,
+                'documents': {}, 'statuses': {}}, sort_keys=True)))
+        _, error = enable(env, 'plan', 'PLAN', 'plans/{alias}-{slug}.md', first=None)
+        recorded['legacy-held-enable'] = code(error)
+        recorded['legacy-held-next'] = (env.service.current(al.kind_id('repository', 'plan'))[1] or {}).get('next')
+        recorded['legacy-lost'] = lose('legacy', legacy)
+        _, error = enable(env, 'decision', 'DEC', 'decisions/{alias}-{slug}.md', first=None)
+        recorded['legacy-lost-enable'] = code(error)
+        recorded['legacy-lost-names-commit'] = error is not None and legacy in str(getattr(error, 'detail', error))
+        recorded['decision-enabled'] = env.service.current(al.kind_id('repository', 'decision'))[1] is not None
+        defects['recorded-numbers'] = recorded
+        expect('aliases/floor-from-recorded-numbers', recorded == {
+               'side-accepted': None, 'side-lost': True, 'enable-after-loss': None, 'next-after-loss': 10,
+               'allocated': 'VELDO-0010', 'legacy-held-enable': None, 'legacy-held-next': 6, 'legacy-lost': True,
+               'legacy-lost-enable': 'accepted_revision_unavailable', 'legacy-lost-names-commit': True,
+               'decision-enabled': False})
         env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations

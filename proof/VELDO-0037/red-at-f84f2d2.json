@@ -1,0 +1,191 @@
+{
+  "completed": true,
+  "defect_observations": {
+    "enrolled-repository": {
+      "allocated": "VELDO-0008",
+      "allocation-attach-elsewhere": "repository_binding_conflict",
+      "allocation-direct-elsewhere": "wrong_repository",
+      "clone-after-push": null,
+      "clone-attach": "repository_binding_conflict",
+      "clone-unpushed": "unenrolled_commit",
+      "enable-after": null,
+      "enable-beside-raw": null,
+      "foreign-attach": "repository_binding_conflict",
+      "foreign-direct": "unenrolled_commit",
+      "plan-enabled-beside-raw": true,
+      "plan-floor-commits": false
+    },
+    "recorded-numbers": {
+      "allocated": "VELDO-0001",
+      "decision-enabled": true,
+      "enable-after-loss": null,
+      "legacy-held-enable": null,
+      "legacy-held-next": 6,
+      "legacy-lost": true,
+      "legacy-lost-enable": null,
+      "legacy-lost-names-commit": false,
+      "next-after-loss": 1,
+      "side-accepted": null,
+      "side-lost": true
+    }
+  },
+  "defect_rows_red": {
+    "aliases/floor-from-recorded-numbers": true,
+    "aliases/revision-in-enrolled-repository": true
+  },
+  "failed_rows": [
+    "aliases/revision-in-enrolled-repository",
+    "aliases/floor-from-recorded-numbers"
+  ],
+  "module_sha256": {
+    "control_alias.py": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+    "control_readset.py": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+    "control_store.py": "4c5229e50d0bef76063ac6dacff3a7532443d34508137ff738aa4e5cb251dd76"
+  },
+  "reviewed_commit": "f84f2d21a5446ac5416031ee732f9239cea84fa1",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      true
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      false
+    ],
+    [
+      "aliases/owned-by-code-not-name",
+      true
+    ],
+    [
+      "aliases/floor-from-recorded-numbers",
+      false
+    ]
+  ],
+  "shims": {},
+  "suite_sha256": "656f66082f0bc9e43f5fd57344922bc41bf091c50a61b34387cd3f3349a088e7",
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}
