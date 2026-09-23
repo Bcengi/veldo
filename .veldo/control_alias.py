@@ -10,7 +10,12 @@ it writes are one transaction.
                         trees and histories of EVERY accepted revision of the repository (a caller
                         may name a later one, never an earlier one), counting every file whose
                         name carries a number. Accepted revisions are written only by VELDO-0035's
-                        accept_revision and never move back. The kind entity IS the kind's counter.
+                        accept_revision and never move back, and accept_revision records what each
+                        accepted commit carries, so the floor reads the store, not Git: a branch
+                        deleted or pruned afterwards lowers nothing. A revision accepted before that
+                        record existed is read from Git while its commit is there and refused
+                        accepted_revision_unavailable once it is not. The kind entity IS the
+                        kind's counter.
   allocate_document     one new alias from the stored counter, its reservation, the source
                         mapping, the accepted document head, its immutable version 1 and a pending
                         publication obligation, all in one signed journal record.
@@ -34,8 +39,7 @@ spelling of that rule.
 ONE CHECKOUT PER REPOSITORY. attach maps every enrolled repository UUID to its accepted Git
 repository and binds that mapping in the store (control_store.bind_repositories), the binding
 VELDO-0035's accept_revision checks every accepted commit against; another repository for a bound
-UUID is refused repository_binding_conflict, and enabling reads only the bound repository and only
-the accepted commits it holds. Which repository a CHECKOUT is comes from the VELDO-0029 binding it carries (see
+UUID is refused repository_binding_conflict, and enabling reads only the bound repository. Which repository a CHECKOUT is comes from the VELDO-0029 binding it carries (see
 control_document), never from root commits, which two repositories can share. A kind's template is ASCII and can reach neither .git/ nor .veldo/, and no two kinds
 of one repository may declare one path, or a directory of the other's path, compared case-folded
 because the Mac's default filesystem is case-insensitive. Prefixes are compared case-folded too.
@@ -61,7 +65,7 @@ Standard library only.
 import importlib.util
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import re
 
 
@@ -98,6 +102,7 @@ CATEGORIES = {
     'wrong_repository': 'invalid_input', 'transition_refused': 'invalid_input',
     'missing_authority': 'missing_authority', 'entity_owned': 'missing_authority',
     'ownership_conflict': 'invalid_input', 'repository_binding_conflict': 'invalid_input',
+    'accepted_revision_unavailable': 'missing_authority',
     'foreign_transition': 'missing_authority',
     'unregistered_inputs': 'invalid_input', 'reserved_path': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
@@ -207,35 +212,23 @@ def root_commits(repo, revision='HEAD'):
     return sorted(line for line in result.stdout.decode().split() if line) or None
 
 
-def _static_directory(template):
-    """The deepest directory every path of a template lies under: its leading placeholder-free
-    components, or '' for the whole tree."""
-    parts = []
-    for part in PurePosixPath(template).parts[:-1]:
-        if '{' in part:
-            break
-        parts.append(part)
-    return '/'.join(parts)
-
-
 def accepted_maximum(repo, commit, kind):
-    """The kind's highest number among the paths carrying one in an EXACT accepted commit,
-    counting the commit's tree AND its history, so a number whose file was later deleted or renamed
-    stays taken (C9). Only the enabling transition calls it; allocation never reads any tree."""
-    SN.commit_id(repo, commit)
-    directory = _static_directory(kind['path_template'])
-    # A plain pathspec is case-sensitive and the directory the template names is not, on the Mac:
-    # the history walk narrows case-insensitively, and ls-tree (which has no icase magic) lists the
-    # whole tree, which the carrier pattern filters.
-    scope = ['--', ':(icase)' + directory] if directory else []
-    names = []
-    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),
-                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):
-        result = _git_process.run(['git', '-C', str(repo), *command, *narrowed], capture_output=True, timeout=30)
-        if result.returncode:
-            raise SN.Refused('missing_authority', 'accepted tree is unreadable')
-        names += result.stdout.decode('utf-8', 'surrogateescape').split('\0')
-    return maximum(names, kind)
+    """The kind's highest number among the paths carrying one in an EXACT accepted commit, read
+    from Git: the commit's tree AND its history, so a number whose file was later deleted or renamed
+    stays taken (C9). Only a revision accepted before carriers were recorded is read this way."""
+    return maximum(RS.carrier_paths(repo, commit), kind)
+
+
+def recorded_carriers(conn, repository, commit):
+    """The carrier paths accept_revision recorded for an accepted commit, or None for a revision
+    accepted before that record existed."""
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (RS.carriers_id(repository, commit),)).fetchone()
+    if row is None or row[0] != 'accepted_carriers':
+        return None
+    data = json.loads(row[1])
+    if data.get('commit') != commit or data.get('repository_uuid') != repository:
+        return None
+    return data['paths']
 
 
 def accepted_commits(conn, domain_uuid, repository):
@@ -632,10 +625,22 @@ class Allocations:
         roots = root_commits(bound, accepted['commit'])
         if roots != self.identities[repository]:
             self._refuse('wrong_repository', 'the accepted commit is not in the enrolled repository')
-        # Only revisions whose commit the bound repository holds count: accept_revision refuses any
-        # other, so one that is here anyway was written around it and holds no number of this one.
-        commits = [commit for commit in accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]
-        floor = max(accepted_maximum(bound, commit, data) for commit in commits) + 1
+        # Every accepted revision counts, from what accept_revision recorded it carries, never from
+        # Git: a branch deleted, pruned or force-pushed afterwards changes no number it holds. A
+        # revision accepted before that record existed is read from the bound repository while it
+        # holds the commit, and refused by name once it does not: skipping it would drop numbers.
+        commits = accepted_commits(conn, self.domain_uuid, repository)
+        highest = 0
+        for commit in commits:
+            paths = recorded_carriers(conn, repository, commit)
+            if paths is not None:
+                highest = max(highest, maximum(paths, data))
+            elif RS._holds(bound, commit):
+                highest = max(highest, accepted_maximum(bound, commit, data))
+            else:
+                self._refuse('accepted_revision_unavailable', 'accepted commit %s of repository %s records no numbers and '
+                             'the bound repository %s no longer holds it' % (commit, repository, bound))
+        floor = highest + 1
         if first is None:
             data['next'] = floor
         elif first < floor:
@@ -754,7 +759,7 @@ def attach(store, conn, domain_uuid, repositories):
     store.bind_repositories(conn, domain_uuid, service.paths)
     store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)
     # First numbers come from accepted revisions: they are VELDO-0035's accept_revision's alone.
-    store.declare_owners(conn, RS.REVISION_OWNER, kinds=RS.REVISION_KINDS, module=RS.__file__)
+    store.declare_owners(conn, RS.REVISION_OWNER, kinds=RS.REVISION_KINDS, prefixes=RS.REVISION_PREFIXES, module=RS.__file__)
     for operation, body in zip(OPERATIONS, (service._t_enable, service._t_allocate, service._t_edit, service._t_publish)):
         conn.command_registry[operation] = {'transaction_transition': service._transition(body),
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
