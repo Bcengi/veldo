@@ -74,9 +74,10 @@ REQUEST_FIELDS = ('kind', 'owner', 'scope', 'deadline', 'budget', 'brief', 'choi
                   'requested_by')
 # What an answered receipt must still share with current authority before its answer settles.
 BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',
-                'authority_statement', 'choices', 'owner', 'enrolled_chat')
+                'framed_by', 'authority_statement', 'choices', 'owner', 'enrolled_chat')
 INTENT_FIELDS = ('schema', 'channel', 'request_id', 'request_version', 'request_digest', 'request',
-                 'assignment_version', 'subject_digests', 'presentation_version', 'risk_statement', 'framing_id', 'rulings',
+                 'assignment_version', 'subject_digests', 'presentation_version', 'risk_statement', 'framed_by',
+                 'framing_id', 'rulings',
                  'framing_version', 'authority_statement', 'choices', 'owner', 'enrollment_id', 'enrollment_version',
                  'enrolled_chat', 'supersedes', 'reply_to', 'rendered', 'brief_digest', 'presentation_id')
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text', 'reply_to_message_id')
@@ -195,7 +196,7 @@ def render(record):
               'Deadline: %s' % c['deadline'],
               'Budget: %s' % budget,
               'Subject: %s' % '; '.join('%s %s %s' % (s['kind'], s['ref'], s['digest']) for s in record['subject_digests']),
-              'Risk: %s' % _words(record['risk_statement']),
+              'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),
               'Authority: %s' % record['authority_statement'],
               'Choices: %s' % ' | '.join(record['choices']),
               '',
@@ -479,7 +480,7 @@ class Presenter:
         fdata = framing['data'] if framing and framing['kind'] == FRAMING_KIND else {}
         state = self.membership.authority_state(self.store, self.conn)
         if (fdata.get('request_version') != c['request_version'] or not _is_str(fdata.get('risk_statement'))
-                or not self._framing_signed(request, fdata, state)):
+                or not self._framing_signed(request, fdata, state, c['requested_by'])):
             return 'missing_framing', None, versions
         entry = self.AC.membership_entry(state['membership'], c['owner'])
         active, _ = self.AC.active_member(entry, self.clock())
@@ -502,7 +503,7 @@ class Presenter:
             'request_id': request, 'request_version': c['request_version'], 'assignment_version': brief['version'],
             'request': content, 'request_digest': request_digest(request, c['request_version'], content),
             'subject_digests': subject_digests(content), 'risk_statement': fdata['risk_statement'],
-            'framing_id': framing_id(request), 'framing_version': framing['version'],
+            'framing_id': framing_id(request), 'framing_version': framing['version'], 'framed_by': fdata['framed_by'],
             'authority_statement': authority_statement(request, c['request_version'], c['owner'], entry),
             'choices': list(c['choices']), 'rulings': rulings, 'owner': c['owner'], 'enrollment_id': eid,
             'enrollment_version': enrollment['version'], 'enrolled_chat': enrollment['data']['chat_id']}, versions
@@ -519,7 +520,7 @@ class Presenter:
             raise ValueError('the framing names another request version')
         return {fid: {'kind': FRAMING_KIND, 'data': framing}}
 
-    def _framing_signed(self, request, fdata, state):
+    def _framing_signed(self, request, fdata, state, requester):
         """Whether a stored framing is the requester's own signed command for exactly this request,
         version and risk statement, verified against the key that accepted it (a later rotation
         strands nothing; a revocation dated at or before the framing refuses it). A framing written
@@ -529,6 +530,8 @@ class Presenter:
         if not isinstance(command, dict) or not isinstance(signature, str) or not signature.isascii():
             return False
         principal, at = fdata.get('framed_by'), fdata.get('framed_at')
+        if principal != requester:
+            return False
         if (command.get('operation') != 'frame' or not _is_str(command.get('alias'))
                 or self.inbox_request(command['alias']) != request or command.get('principal') != principal
                 or command.get('request_version') != fdata.get('request_version')
@@ -545,8 +548,9 @@ class Presenter:
                                          self.AC.allowed_signers_line(principal, key['public_key']), principal)[0]
 
     def frame(self, packet):
-        """Record the risk statement the requester (or a project owner) signed for the current
-        request version. A changed statement makes the current presentation stale."""
+        """Record the risk statement the requester signed for the current request version. Only the
+        requester frames: no one else, a project owner included, replaces what the requester stated.
+        A changed statement makes the current presentation stale."""
         command = packet.get('command') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
         request = None
@@ -575,8 +579,8 @@ class Presenter:
             active, _ = self.AC.active_member(entry, now)
             if (not active or entry['principal_type'] not in self.AC.BOUNDARIES['proposal_commit']
                     or not self.membership.scope_covers(entry.get('scope'), c['scope'])
-                    or (principal != c['requested_by'] and 'project_owner' not in (entry.get('roles') or []))):
-                raise Refused('not_authorized', 'only the requester or a project owner frames a request')
+                    or principal != c['requested_by']):
+                raise Refused('not_authorized', 'only the requester frames a request')
             fid = framing_id(request)
             versions = {request: brief['version'], fid: (self._entity(fid) or {}).get('version', 0),
                         principal: entry['entity_version'], key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0),

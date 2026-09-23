@@ -73,7 +73,7 @@ def _v65_checks(base):
     rows = {name: [] for name in ('install/assets', 'presentation/receipt-binds-shown-content',
                                   'presentation/revision-identity', 'answer/current-presentation-only',
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
-                                  'answer/unseen-refused', 'answer/settle-consumes-answer')}
+                                  'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -229,6 +229,24 @@ def _v65_checks(base):
         row = conn.execute('SELECT version, digest, data FROM entities WHERE id=?', (eid,)).fetchone()
         return None if row is None else {'version': row[0], 'digest': row[1], 'data': _v65_json.loads(row[2])}
 
+    def direct_frame(who, alias, version, risk, key=None, signer=None):
+        """A framing committed through the registered frame operation itself, bypassing frame()'s
+        checks, as any holder of the store connection could."""
+        counter[0] += 1
+        rid = I.assignment_id(ids['repository_uuid'], alias)
+        fid = 'presentation-framing:' + rid
+        body = dict(ids, operation='frame', alias=alias, principal=who, request_version=version, risk_statement=risk,
+                    command_id='direct-%d' % counter[0], nonce='direct-n-%d' % counter[0])
+        framing = {'schema': V.FRAMING_SCHEMA, 'request_id': rid, 'request_version': version, 'risk_statement': risk,
+                   'framed_by': who, 'command_id': body['command_id'], 'key_id': key or 'key-' + who, 'framed_at': _v65_time.time(),
+                   'signed': {'command': body, 'signature': sign_as(signer or who, S.canonical_bytes(body))}}
+        current = S.materialized_state(conn)['entities']
+        return S.execute(conn, dict(command_id=body['command_id'], principal=who, operation=V.FRAME_OPERATION,
+                                    parameters=dict(framing_id=fid, request_id=rid, framing=framing),
+                                    expected_versions={fid: current.get(fid, {}).get('version', 0),
+                                                       rid: current[rid]['version']},
+                                    artifact_digests=[], nonce=body['nonce']), 'authority', journal_sign, 1)
+
     def answered(rid, version):
         """The answer record of one request version, read from the store itself."""
         for (text,) in conn.execute("SELECT data FROM entities WHERE kind='presentation_answer'"):
@@ -270,7 +288,7 @@ def _v65_checks(base):
             unframed = presenter.present(d1)
             check(shown, 'an unframed request is not presented and nothing is sent',
                   reason(unframed) == ('refused', 'missing_framing') and api['requests'] == [])
-            check(shown, 'only the requester or a project owner frames a request',
+            check(shown, 'a stranger does not frame a request',
                   reason(frame('stranger', 'D-1', 1, 'None.')) == ('refused', 'not_authorized'))
             risk = 'Medium: approving starts two builder runs on the example specification.'
             check(shown, 'the requester frames the request', reason(frame('pm', 'D-1', 1, risk)) == ('accepted', None))
@@ -298,7 +316,7 @@ def _v65_checks(base):
                   and r1.get('brief_digest') == 'sha256:' + _v65_hashlib.sha256(text.encode('utf-8')).hexdigest()
                   and stored['brief'] in text)
             check(shown, 'R72 risk statement is the signed framing and is shown',
-                  r1.get('risk_statement') == risk and 'Risk: ' + risk in lines
+                  r1.get('risk_statement') == risk and 'Risk (stated by pm): ' + risk in lines
                   and (entity(V.framing_id(d1)) or {}).get('data', {}).get('framed_by') == 'pm')
             check(shown, 'R72 authority statement names the owner and is shown',
                   'Only owner answers this' in r1.get('authority_statement', '')
@@ -611,6 +629,28 @@ def _v65_checks(base):
             asked = len(api['requests'])
             check(consume, 'a decision whose choices have no contract ruling is not presented',
                   reason(presenter.present(m1)) == ('refused', 'unmapped_choice') and len(api['requests']) == asked)
+
+        # Review r1: only the requester frames, and what is shown names who did
+        own = 'framing/requester-only'
+        with section(own):
+            q1 = opened('Q-1', risk='High: approving deploys to production.')
+            presenter.present(q1)
+            q1_r = presenter.current(q1) or {}
+            held = api['messages'].get((q1_r.get('chat_id'), q1_r.get('message_id'))) or {}
+            check(own, 'the shown bytes and the receipt name the requester as the one who stated the risk',
+                  'Risk (stated by pm): High: approving deploys to production.' in held.get('text', '').split('\n')
+                  and q1_r.get('framed_by') == 'pm')
+            owner_frame = frame('owner', 'Q-1', 1, 'None: nothing can go wrong.')
+            check(own, 'a project owner cannot replace the requester\'s risk statement',
+                  reason(owner_frame) == ('refused', 'not_authorized')
+                  and (entity('presentation-framing:' + q1) or {}).get('data', {}).get('framed_by') == 'pm')
+            asked = len(api['requests'])
+            direct_frame('owner', 'Q-1', 1, 'None: nothing can go wrong.')
+            check(own, 'a framing by anyone but the requester frames nothing, however it was committed',
+                  reason(presenter.present(q1)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+            direct_frame('pm', 'Q-1', 1, 'High: approving deploys to production.')
+            check(own, 'control: the requester\'s own framing is current again',
+                  reason(presenter.present(q1)) == ('already_presented', None))
     finally:
         server.shutdown()
         server.server_close()

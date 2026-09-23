@@ -709,9 +709,11 @@ def cases():
     presentation('bindings-ignore-request-identity',
                  "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
                  "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
-    presentation('render-omits-risk', "              'Risk: %s' % _words(record['risk_statement']),\n", "",
+    presentation('render-omits-risk',
+                 "              'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
                  'presentation/receipt-binds-shown-content')
-    presentation('framing-signature-unchecked', "                or not self._framing_signed(request, fdata, state)):\n",
+    presentation('framing-signature-unchecked',
+                 "                or not self._framing_signed(request, fdata, state, c['requested_by'])):\n",
                  "                or False):\n", 'presentation/receipt-binds-shown-content')
     presentation('published-at-from-clock', "published_at=platform['date'], platform_text=platform['text'],",
                  "published_at=int(time.time()), platform_text=platform['text'],",
@@ -753,6 +755,12 @@ def cases():
                  "'choice': a['choice'], 'ruling': a['choice'],\n", 'answer/settle-consumes-answer')
     presentation('unmapped-choice-presented', "            return 'unmapped_choice', None, versions\n",
                  "            pass\n", 'answer/settle-consumes-answer')
+    # VELDO-0065 review r1: only the requester frames, and the framer is named.
+    presentation('project-owner-frames-again', "                    or principal != c['requested_by']):\n",
+                 "                    or (principal != c['requested_by'] and 'project_owner' not in (entry.get('roles') or []))):\n",
+                 'framing/requester-only')
+    presentation('stored-framing-any-framer', "        if principal != requester:\n            return False\n", "",
+                 'framing/requester-only')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
