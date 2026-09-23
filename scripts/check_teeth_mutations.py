@@ -453,10 +453,12 @@ def cases():
             'aliases/one-path-per-kind')
     aliases('alias-trusts-first-number', 'control_alias.py',
             '        elif first < floor:', '        elif False:', 'aliases/historical-floor')
-    aliases('alias-floor-ignores-history', 'control_alias.py',
-            "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),\n"
-            "                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):",
-            "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),):", 'aliases/historical-floor')
+    # Since the recorded-numbers fix the tree and history are read once, at acceptance, by
+    # control_readset.carrier_paths; this is the same defect at the code that now reads them.
+    aliases('alias-floor-ignores-history', 'control_readset.py',
+            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],\n"
+            "                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):",
+            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):", 'aliases/historical-floor')
     aliases('alias-owners-undeclared', 'control_alias.py',
             '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)', '    pass',
             'aliases/generic-writes-refused')
@@ -489,13 +491,11 @@ def cases():
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')
     # Second review (2026-09-23): each row's reintroducing mutation, then a second, distinct one.
-    aliases('alias-floor-pathspec-case-sensitive', 'control_alias.py',
-            "    scope = ['--', ':(icase)' + directory] if directory else []",
-            "    scope = ['--', directory] if directory else []\n"
-            "    names = [n for n in _git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit,"
-            " *scope], capture_output=True).stdout.decode().split('\\0') if n]\n"
-            "    return maximum(names + [n for n in _git_process.run(['git', '-C', str(repo), 'log', '-m', '-z', '--no-renames',"
-            " '--format=', '--name-only', commit, *scope], capture_output=True).stdout.decode().split('\\0') if n], kind)",
+    # The history walk no longer narrows by a pathspec (it records every path holding a digit), so
+    # the case-sensitive pathspec this replaced has no code left; the carrier pattern's case is
+    # what now decides whether Specs/ counts for specs/.
+    aliases('alias-floor-carrier-case-sensitive', 'control_alias.py',
+            '    return re.compile(regex, re.IGNORECASE)', '    return re.compile(regex)',
             'aliases/floor-counts-every-carrier')
     aliases('alias-floor-slug-grammar', 'control_alias.py',
             "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'",
@@ -511,7 +511,7 @@ def cases():
             '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
             'aliases/owned-whatever-registration-order')
     aliases('alias-floor-named-revision-only', 'control_alias.py',
-            '        commits = [commit for commit in accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]\n',
+            '        commits = accepted_commits(conn, self.domain_uuid, repository)\n',
             "        commits = [accepted['commit']]\n", 'aliases/floor-from-every-accepted-revision')
     aliases('revision-regression-allowed', 'control_readset.py',
             "                if not _descends(repo, data['commit'], commit):", '                if False:',
@@ -531,9 +531,6 @@ def cases():
     aliases('revision-any-repository', 'control_readset.py',
             '            if bound is None or not _holds(bound, commit):', '            if False:',
             'aliases/revision-in-enrolled-repository')
-    aliases('floor-counts-unheld-revisions', 'control_alias.py',
-            'accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]',
-            'accepted_commits(conn, self.domain_uuid, repository)]', 'aliases/revision-in-enrolled-repository')
     aliases('enable-reads-unbound-repository', 'control_alias.py',
             '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
             'aliases/revision-in-enrolled-repository')
@@ -548,6 +545,16 @@ def cases():
     aliases('owners-may-name-generic-commands', 'control_store.py',
             '            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))', '            builtin = []',
             'aliases/owned-by-code-not-name')
+    # Recorded numbers (2026-09-23): the floor reads what accept_revision recorded, and a revision
+    # recorded before that rule whose commit is gone is refused by name, never skipped.
+    aliases('floor-rederives-ignoring-record', 'control_alias.py',
+            '            if paths is not None:', '            if False:', 'aliases/floor-from-recorded-numbers')
+    aliases('legacy-lost-commit-skipped', 'control_alias.py',
+            "            else:\n                self._refuse('accepted_revision_unavailable',",
+            "            elif False:\n                self._refuse('accepted_revision_unavailable',", 'aliases/floor-from-recorded-numbers')
+    aliases('acceptance-records-no-paths', 'control_readset.py',
+            "                    'paths': carrier_paths(bound, commit)}}", "                    'paths': []}}",
+            'aliases/floor-from-recorded-numbers')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
