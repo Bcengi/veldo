@@ -844,8 +844,33 @@ def _v54_suite():
             check('decisions/deep-blocks-named',
                    deep_seen[0] == 'ok' and verdict(deep_seen[1]['VELDO-9401'], set())
                    and verdict(deep_seen[1]['VELDO-9496'], {'invalid_input:decision:D-DEEP/blocks'})
-                   and unexpected == ('ok', ['unknown_outcome:evaluation_error/RuntimeError'],
-                                      ['unknown_outcome:evaluation_error/RuntimeError']))
+                   and unexpected[0] == 'ok' and len(unexpected[1]) == 1 and unexpected[1] == unexpected[2]
+                   and unexpected[1][0].startswith('unknown_outcome:evaluation_error/RuntimeError'))
+
+        def faulting(error):
+            class Verifier:
+                def verify(self, message, signature, principal):
+                    raise error
+            return EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, settlement_trust=Verifier())
+
+        def outcome(call):
+            try:
+                return ('ok', call())
+            except EL.Stopped as stop:
+                return ('stopped', stop.reason)
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                return ('raised', type(error).__name__)
+
+        with region('decisions/stops-propagate'):
+            # A named stop raised under decide (here by the settlement verifier) propagates as the stop it
+            # is: the catch-all that names unexpected faults never turns a stop into a unit hold.
+            stopping = faulting(EL.Stopped('host_trust_unreadable'))
+            stops = {'decide': outcome(lambda: stopping.decide('selection', 'VELDO-9401')['refusals']),
+                     'decision_blockers': outcome(lambda: stopping.decision_blockers('VELDO-9401'))}
+            observed['stops'] = stops
+            check('decisions/stops-propagate',
+                   stops == {'decide': ('stopped', 'host_trust_unreadable'),
+                             'decision_blockers': ('stopped', 'host_trust_unreadable')})
 
         with region('decisions/status-names-its-stop'):
             # veldo status names a burn-down it cannot build instead of crashing the whole read model. The

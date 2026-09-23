@@ -637,6 +637,8 @@ class Gate:
             codes = [self.refusal_code(error)]
         except sqlite3.Error:
             codes = ['unavailable_service:store']
+        except Stopped:
+            raise  # a named stop is the caller's, never a unit hold
         except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
             codes = [unexpected(error)]
         event.update(outcome='refused' if codes else 'accepted', refusals=list(codes),
@@ -779,6 +781,8 @@ class Gate:
             decision['refusals'] = [self.refusal_code(error)]
         except sqlite3.Error:
             decision['refusals'] = ['unavailable_service:store']
+        except Stopped:
+            raise  # a named stop is the caller's, never a unit hold
         except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
             decision['refusals'] = [unexpected(error)]
         decision['eligible'] = not decision['refusals']

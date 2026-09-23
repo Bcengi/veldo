@@ -1080,6 +1080,15 @@ def cases():
     decisions('settlement-unencodable-passed', 'control_decision_dependency.py',
               "    try:\n        text.encode('utf-8')\n    except UnicodeEncodeError:\n        return False\n", "",
               'settlement-text-encodable')
+    # Item 2: a named stop under decide propagates as the stop it is.
+    decisions('decide-holds-a-stop', 'control_eligibility.py',
+              "            decision['refusals'] = ['unavailable_service:store']\n        except Stopped:\n"
+              "            raise  # a named stop is the caller's, never a unit hold\n",
+              "            decision['refusals'] = ['unavailable_service:store']\n", 'stops-propagate')
+    decisions('blockers-hold-a-stop', 'control_eligibility.py',
+              "            codes = ['unavailable_service:store']\n        except Stopped:\n"
+              "            raise  # a named stop is the caller's, never a unit hold\n",
+              "            codes = ['unavailable_service:store']\n", 'stops-propagate')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
