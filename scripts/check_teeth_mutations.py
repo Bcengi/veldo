@@ -453,12 +453,14 @@ def cases():
             'aliases/one-path-per-kind')
     aliases('alias-trusts-first-number', 'control_alias.py',
             '        elif first < floor:', '        elif False:', 'aliases/historical-floor')
-    # Since the recorded-numbers fix the tree and history are read once, at acceptance, by
-    # control_readset.carrier_paths; this is the same defect at the code that now reads them.
+    # Since the recorded-numbers fix the history is read once, at acceptance, by
+    # control_readset.carrier_paths; this is the same defect at the code that now reads it: the
+    # commit's tree listed instead of its history.
     aliases('alias-floor-ignores-history', 'control_readset.py',
-            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],\n"
-            "                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):",
-            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):", 'aliases/historical-floor')
+            "    result = SN._git_process.run(['git', '-C', str(repo), 'log', '-m', '--root', '-z', '--no-renames', '--format=',\n"
+            "                                  '--name-only', '--ignore-missing', '--stdin', commit, '--'],",
+            "    result = SN._git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],",
+            'aliases/historical-floor')
     aliases('alias-owners-undeclared', 'control_alias.py',
             '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)', '    pass',
             'aliases/generic-writes-refused')
@@ -511,8 +513,9 @@ def cases():
             '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
             'aliases/owned-whatever-registration-order')
     aliases('alias-floor-named-revision-only', 'control_alias.py',
-            '        commits = accepted_commits(conn, self.domain_uuid, repository)\n',
-            "        commits = [accepted['commit']]\n", 'aliases/floor-from-every-accepted-revision')
+            "        union = [path for record in records.values() for path in record['paths']]\n",
+            "        union = list((records.get(accepted['commit']) or {}).get('paths', []))\n",
+            'aliases/floor-from-every-accepted-revision')
     aliases('revision-regression-allowed', 'control_readset.py',
             "                if not _descends(repo, data['commit'], commit):", '                if False:',
             'aliases/floor-from-every-accepted-revision')
@@ -548,13 +551,25 @@ def cases():
     # Recorded numbers (2026-09-23): the floor reads what accept_revision recorded, and a revision
     # recorded before that rule whose commit is gone is refused by name, never skipped.
     aliases('floor-rederives-ignoring-record', 'control_alias.py',
-            '            if paths is not None:', '            if False:', 'aliases/floor-from-recorded-numbers')
+            '            if commit in records:\n                continue\n', '', 'aliases/floor-from-recorded-numbers')
     aliases('legacy-lost-commit-skipped', 'control_alias.py',
             "            else:\n                self._refuse('accepted_revision_unavailable',",
             "            elif False:\n                self._refuse('accepted_revision_unavailable',", 'aliases/floor-from-recorded-numbers')
     aliases('acceptance-records-no-paths', 'control_readset.py',
-            "                    'paths': carrier_paths(bound, commit)}}", "                    'paths': []}}",
+            "'paths': carrier_paths(bound, commit, base)}}", "'paths': []}}",
             'aliases/floor-from-recorded-numbers')
+    # Incremental records (2026-09-23): each record holds what its commit adds over every recorded
+    # commit, and the floor reads the union of every record.
+    aliases('floor-reads-current-records-only', 'control_alias.py',
+            "        union = [path for record in records.values() for path in record['paths']]\n",
+            "        union = [path for commit in commits if commit in records for path in records[commit]['paths']]\n",
+            'aliases/records-hold-only-what-a-commit-adds')
+    aliases('increment-against-head', 'control_readset.py',
+            '                base = sorted(carrier_records(conn, self.domain_uuid, repository))',
+            "                base = ['HEAD']", 'aliases/records-hold-only-what-a-commit-adds')
+    aliases('named-revision-reads-git', 'control_alias.py',
+            "        if named is not None:\n            roots = named['root_commits']",
+            "        if False:\n            roots = named['root_commits']", 'aliases/records-hold-only-what-a-commit-adds')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
