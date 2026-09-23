@@ -516,6 +516,10 @@ def cases():
           "        raise Refused('invalid_response', 'answer nests too deeply to parse') from error\n",
           "        value = json.loads(raw, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n",
           'shape/deep-answer')
+    graph('graph-url-field-trusted', 'control_graph.py',
+          '        if declared and is_url(text):\n', '        if declared:\n', 'shape/closed-request')
+    graph('graph-request-size-unbounded', 'control_graph.py',
+          'MAX_REQUEST_BYTES = 1 << 20\n', 'MAX_REQUEST_BYTES = 1 << 30\n', 'shape/closed-request')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
