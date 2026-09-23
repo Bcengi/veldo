@@ -28,16 +28,67 @@ FIXTURE_VERSION = 1
 # qualification host (116 cases measured at 91.8 s on 2026-09-23), so a fixed cap would turn red for
 # growth alone. BUDGET is the floor; budget_for() is the cap actually enforced.
 BUDGET = 120
-PER_CASE_SECONDS = 2.0
+PER_CASE_SECONDS = 2.0        # measured at REFERENCE_WORKERS workers
+REFERENCE_WORKERS = 8
 WORKER_BUDGET = 120
 
-PARALLEL = 8
+def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
+    """The CPUs a cgroup v2 quota allows this process: the smallest cpu.max quota on the process's
+    OWN cgroup or any parent up to the mount (a quota set on a host scope or slice sits there, not
+    at the mount root), or None when none applies. cgroup v1 is not read (stated limit)."""
+    try:
+        with open(membership, errors='surrogateescape') as handle:
+            own = next((line.split('::', 1)[1].strip() for line in handle if line.startswith('0::')), None)
+    except OSError:
+        own = None
+    if own is None:
+        return None
+    top = os.path.normpath(root)
+    best, path = None, os.path.normpath(os.path.join(top, own.lstrip('/')))
+    if path != top and not path.startswith(top.rstrip(os.sep) + os.sep):
+        return None
+    while True:
+        try:
+            with open(os.path.join(path, 'cpu.max')) as handle:
+                quota, period = handle.read().split()[:2]
+            if quota != 'max' and int(period) > 0:
+                cpus = max(1, -(-int(quota) // int(period)))
+                best = cpus if best is None else min(best, cpus)
+        except (OSError, ValueError):
+            pass
+        parent = os.path.dirname(path)
+        if path == top or parent == path:      # the mount, or the filesystem root: stop
+            return best
+        path = parent
+
+
+def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
+    """Workers the stage runs at once: the CPUs this process may use (its affinity set, bounded by
+    a cgroup CPU quota), never fewer than 2 or more than 16. A fixed 8 left most of a 20-core host
+    idle while the stage grew with every item, and would oversubscribe a small one. Verdicts do not
+    depend on the count; the combined budget scales with it (budget_for)."""
+    if cpus is None:
+        try:
+            cpus = len(os.sched_getaffinity(0))
+        except (AttributeError, OSError):
+            cpus = os.cpu_count() or 2
+        quota = _quota_cpus(cgroup_root, membership)
+        if quota:
+            cpus = min(cpus, quota)
+    return max(2, min(16, int(cpus)))
+
+
+PARALLEL = worker_count()
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 
-def budget_for(count):
-    """The combined cap for a registered inventory of `count` cases, never below BUDGET."""
-    return max(BUDGET, PER_CASE_SECONDS * count)
+def budget_for(count, workers=REFERENCE_WORKERS):
+    """The combined cap for a registered inventory of `count` cases run by `workers` workers at
+    once, never below BUDGET. The per-case figure was measured at REFERENCE_WORKERS. Fewer workers
+    get proportionally more time; MORE workers get no less than the reference figure, because the
+    measured speedup past REFERENCE_WORKERS is well below linear (8 -> 16 was about 1.5x), so the
+    extra workers buy margin instead of a tighter cap."""
+    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
 
 
 class Refused(Exception):
@@ -359,7 +410,7 @@ def run_stage(root=ROOT):
     try:
         cases = inventory(root)
         receipt['registered'] = len(cases)
-        budget = budget_for(len(cases))
+        budget = budget_for(len(cases), PARALLEL)
         receipt['budget_seconds'] = budget
         workers.deadline = started + budget
         signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
