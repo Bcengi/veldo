@@ -333,6 +333,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     expect('graph/runtime/installed' + absent, runtime is not None
            and runtime['python'] == str(_s43_Path(home) / '.local/share/veldo/langgraph' / lock.digest() / 'bin/python')
            and runtime['runner'] == str(repo / '.veldo/control_graph_langgraph.py')
+           and runtime['stage'] == str(directory)
            and sorted(census) == sorted((_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES)
            and not (directory / 'bin/pip').exists())
     rows = ('graph/runtime/lifecycle', 'graph/runtime/plain-data', 'graph/runtime/tracing-off',
@@ -406,7 +407,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         lifecycle_counts = dict(adapter.counts)
         # Runtime evidence is what the locked LangGraph produced: a stub's own label is refused.
         try:
-            stub_answer = graph.Adapter({'python': _s43_sys.executable, 'runner': str(root / 'stub_runner.py')},
+            stub_answer = graph.Adapter({'python': _s43_sys.executable, 'runner': str(root / 'stub_runner.py'),
+                                         'stage': str(root / 'stage')},
                                         'domain', 'repository', evidence=graph.runtime_evidence()).start(
                 'cycle-stub', 'command-stub', snapshot, workflow('lifecycle'))
             stub_evidence = 'accepted: ' + stub_answer['runtime']['name']
@@ -424,6 +426,14 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         proposed = call('advance', 'cycle-store', 'command-store-2', snapshot, workflow('store-access'),
                         probe.get('resume'), [_s43_result(1)])
         reach = call('start', 'cycle-proc', 'command-proc', snapshot, workflow('proc-reach'))
+        # A stage inside a repository is refused before anything launches.
+        try:
+            graph.Adapter(dict(runtime, runner=str(installed_runner), stage=str(checkout / '.veldo')),
+                          domain, 'repository').start('cycle-in-repo', 'command-in-repo', snapshot,
+                                                      workflow('lifecycle'))
+            in_repository = 'launched'
+        except Exception as error:
+            in_repository = getattr(error, 'code', type(error).__name__)
     finally:
         _s43_os.chdir(previous)
         _s43_os.close(handle)
@@ -488,8 +498,11 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
            and not any(word in source for word in ('langgraph_sdk', 'RemoteGraph', 'get_client')))
     notes = _s43_notes(probe)
+    observations['stage_in_repository'] = in_repository
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
-           and notes.get('wrote') == [] and probe.get('outcome') == 'suspended')
+           and notes.get('wrote') == [] and probe.get('outcome') == 'suspended'
+           and in_repository == 'runtime_unavailable' and not (checkout / '.veldo/veldo').exists()
+           and all(a and not a['argv0'].startswith(str(root)) for a in audits))
     # The stated limit (Release 2: real confinement): as the same account, a node can still read
     # the domain process through /proc. This row keeps that limit visible; it is not a pass.
     limit = _s43_notes(reach)
@@ -562,7 +575,8 @@ def _s43_run():
         snapshot = {'id': 'snapshot-1', 'version': 1, 'digest': 'sha256:' + 'b' * 64}
         refusals = []
         adapter = graph.Adapter(None, 'domain', 'repository')
-        for runtime in (None, {'python': str(root / 'absent/bin/python'), 'runner': str(root / 'absent.py')}):
+        for runtime in (None, {'python': str(root / 'absent/bin/python'), 'runner': str(root / 'absent.py'),
+                               'stage': str(root / 'stage')}):
             adapter.runtime = runtime
             try:
                 adapter.start('cycle-0', 'command-0', snapshot, version)
@@ -577,7 +591,8 @@ def _s43_run():
         # Shape-only rows against a deterministic stub runner (not AC1/AC2 runtime evidence).
         stub = root / 'stub_runner.py'
         stub.write_text(_S43_STUB)
-        adapter = graph.Adapter({'python': _s43_sys.executable, 'runner': str(stub)}, 'domain', 'repository')
+        adapter = graph.Adapter({'python': _s43_sys.executable, 'runner': str(stub), 'stage': str(root / 'stage')},
+                                'domain', 'repository')
         started_cycle = adapter.start('cycle-1', 'command-1', snapshot, version)
         pending = adapter.pending()
         suspended = adapter.suspend('cycle-1', 'command-2', version, started_cycle['resume'])

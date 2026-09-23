@@ -481,6 +481,16 @@ def cases():
     graph('graph-runtime-evidence-unchecked', 'control_graph.py',
           '            if self.evidence is not None and not evidenced(result, self.evidence):\n',
           '            if False:\n', 'runtime/lifecycle')
+    graph('graph-runner-launched-in-place', 'control_graph.py',
+          "            proc = subprocess.run([runtime['python'], '-I', '-B', str(staged)],",
+          "            proc = subprocess.run([runtime['python'], '-I', '-B', runtime['runner']],",
+          'authority/no-direct-write')
+    graph('graph-suspended-notes-dropped', 'control_graph_langgraph.py',
+          "'step': final['step'], 'notes': final['notes']})", "'step': final['step'], 'notes': {}})",
+          'authority/proc-limit')
+    graph('graph-node-notes-ignored', 'control_graph_langgraph.py',
+          "            update = dict(base, notes=dict(state['notes'], **(out.get('notes') or {})),",
+          "            update = dict(base, notes=dict(state['notes']),", 'authority/proc-limit')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])

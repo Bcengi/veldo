@@ -10,10 +10,16 @@ identities, versions and digests but no filesystem location. Its response is ref
 is exactly one of the plain versioned shapes below. Typed proposals are data for separately
 authorized commands; this module holds no store and commits nothing.
 
-The runtime is {'python': interpreter, 'runner': runner file}. Adapter.installed() resolves the
-locked LangGraph runtime: the virtual environment at <account home>/.local/share/veldo/langgraph/
-<lock digest>/ (control_graph_lock.py; the home comes from the password database, never $HOME)
-and the sibling runner control_graph_langgraph.py, launched as a child of that interpreter. None,
+The runtime is {'python': interpreter, 'runner': runner source file, 'stage': directory}.
+Adapter.installed() resolves the locked LangGraph runtime: the virtual environment at
+<account home>/.local/share/veldo/langgraph/<lock digest>/ (control_graph_lock.py; the home comes
+from the password database, never $HOME), the sibling runner source control_graph_langgraph.py,
+and that runtime directory as the stage. Before each launch the runner is copied, content-addressed,
+to <stage>/veldo/runners/<sha256>.py and run from there in a fresh working directory under
+<stage>/veldo/work/, so the child's argv[0], __file__, script directory, working directory and any
+Git discovery from them lead to no repository and no store. A stage inside a Git repository is
+refused. What the adapter hands the child leads nowhere; a hostile node reading its parent
+through /proc as the same account is a stated limit, confined in Release 2. None,
 or an interpreter that is not present, is the named refusal runtime_unavailable, whose detail
 names the install command. Release 1 is nonpersistent, so a suspended cycle's resume data is
 returned to the caller and never stored by the runtime.
@@ -21,8 +27,10 @@ returned to the caller and never stored by the runtime.
 The child's environment turns LangSmith tracing off by construction: the fixed ENVIRONMENT sets
 every tracing switch langsmith reads to false, and nothing is inherited from the caller.
 """
+import hashlib
 import importlib.util
 import json
+import os
 import math
 from pathlib import Path
 import re
@@ -104,7 +112,8 @@ def evidenced(result, evidence):
 def resolve_runtime(home=None):
     """The locked runtime for this account, or None when it is not installed."""
     lock = _lock()
-    runtime = {'python': str(lock.runtime_directory(home) / 'bin' / 'python'), 'runner': str(HERE / RUNNER)}
+    directory = lock.runtime_directory(home)
+    runtime = {'python': str(directory / 'bin' / 'python'), 'runner': str(HERE / RUNNER), 'stage': str(directory)}
     return runtime if available(runtime) else None
 
 
@@ -329,8 +338,34 @@ def _proposal_values(item):
 
 
 def available(runtime):
-    return (type(runtime) is dict and set(runtime) == {'python', 'runner'}
-            and all(type(runtime[key]) is str and Path(runtime[key]).is_file() for key in runtime))
+    return (type(runtime) is dict and set(runtime) == {'python', 'runner', 'stage'}
+            and all(type(runtime[key]) is str for key in runtime)
+            and Path(runtime['python']).is_file() and Path(runtime['runner']).is_file()
+            and Path(runtime['stage']).is_absolute())
+
+
+def inside_repository(path):
+    """Whether a directory lies inside a Git working tree or Git directory."""
+    path = Path(path).resolve()
+    return any((parent / '.git').exists() or parent.name == '.git' or (parent / 'HEAD').is_file()
+               and (parent / 'objects').is_dir() for parent in (path, *path.parents))
+
+
+def stage(runtime):
+    """The runner, copied content-addressed into the stage, outside every repository."""
+    base = Path(runtime['stage']) / 'veldo'
+    if inside_repository(runtime['stage']):
+        raise Refused('runtime_unavailable', 'the runtime stage lies inside a repository')
+    source = Path(runtime['runner']).read_bytes()
+    target = base / 'runners' / (hashlib.sha256(source).hexdigest() + '.py')
+    if not target.is_file() or target.read_bytes() != source:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        descriptor, temporary = tempfile.mkstemp(prefix='.staging-', dir=target.parent)
+        with os.fdopen(descriptor, 'wb') as out:
+            out.write(source)
+        os.replace(temporary, target)
+    (base / 'work').mkdir(parents=True, exist_ok=True)
+    return target, base / 'work'
 
 
 def exchange(runtime, sent, timeout=120):
@@ -338,9 +373,10 @@ def exchange(runtime, sent, timeout=120):
     if not available(runtime):
         raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
                       + INSTALL_COMMAND)
-    with tempfile.TemporaryDirectory(prefix='veldo-graph-') as empty:
+    staged, work = stage(runtime)
+    with tempfile.TemporaryDirectory(prefix='veldo-graph-', dir=work) as empty:
         try:
-            proc = subprocess.run([runtime['python'], '-I', '-B', runtime['runner']],
+            proc = subprocess.run([runtime['python'], '-I', '-B', str(staged)],
                                   input=canonical(sent), capture_output=True, cwd=empty,
                                   env=dict(ENVIRONMENT), close_fds=True, timeout=timeout)
         except subprocess.TimeoutExpired as error:
