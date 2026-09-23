@@ -67,15 +67,27 @@ sys.stdout.write(json.dumps(reply))
 
 # The suite's workflows, registered through the PRODUCTION runner's serve() and run by the actual
 # LangGraph in the locked runtime. The audit hook records every network egress event (name
-# resolution, connect, send; urllib3's import-time loopback IPv6 probe is a bind, not egress) and,
-# at exit, the tracing switches and langsmith's own tracing verdict, one line per runner process.
+# resolution, connect, send; urllib3's import-time loopback IPv6 probe is a bind, not egress),
+# refuses it so nothing is ever sent even under a tracing mutant, and,
+# after the answer, the tracing switches and langsmith's own tracing verdict, one line per runner
+# process.
 _S43_RUNNER = r'''
-import atexit, importlib.util, json, os, sqlite3, sys
+import importlib.util, json, os, sqlite3, sys
 from pathlib import Path
 SOCKETS = []
 EGRESS = ('socket.connect', 'socket.getaddrinfo', 'socket.gethostbyname', 'socket.gethostbyname_ex',
           'socket.gethostbyaddr', 'socket.sendto', 'socket.sendmsg')
-sys.addaudithook(lambda event, args: SOCKETS.append(event) if event in EGRESS else None)
+
+
+
+def egress(event, args):
+    # Recorded, then refused: no packet leaves this machine even when a mutant turns tracing on.
+    if event in EGRESS:
+        SOCKETS.append(event)
+        raise ConnectionRefusedError('network egress refused by the VELDO-0043 suite: ' + event)
+
+
+sys.addaudithook(egress)
 spec = importlib.util.spec_from_file_location('veldo_graph_runner', PRODUCTION)
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
@@ -90,8 +102,6 @@ def audit():
                               'tracing': langsmith.utils.tracing_is_enabled(),
                               'sockets': sorted(set(SOCKETS))}) + '\n')
 
-
-atexit.register(audit)
 
 
 def groom(view):
@@ -186,7 +196,12 @@ WORKFLOWS = {
     'assert-completion': one(assert_completion),
     'store-access': {'version': 1, 'entry': 'probe', 'nodes': {'probe': probe_store, 'propose': propose}},
 }
-sys.exit(runner.serve(WORKFLOWS))
+code = runner.serve(WORKFLOWS)
+audit()
+sys.stdout.flush()
+# No interpreter shutdown: a tracing mutant's exporter would otherwise retry its refused egress
+# at exit for many seconds. The answer and the audit line are already written.
+os._exit(code)
 '''
 _S43_SWITCHES = ('LANGSMITH_TRACING', 'LANGSMITH_TRACING_V2', 'LANGCHAIN_TRACING', 'LANGCHAIN_TRACING_V2')
 

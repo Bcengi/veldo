@@ -429,9 +429,33 @@ def cases():
     graph('graph-start-without-runtime-launches', 'control_graph.py',
           '    if not available(runtime):\n', '    if False:\n', 'start-unavailable')
     graph('graph-start-unavailable-mislabelled', 'control_graph.py',
-          "        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation')",
-          "        raise Refused('unknown_outcome', 'no graph runtime is installed for this operation')",
+          "        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation",
+          "        raise Refused('unknown_outcome', 'no graph runtime is installed for this operation",
           'start-unavailable')
+    # VELDO-0043 AC1 and AC2 against the actual installed LangGraph: each declared falsifier, a
+    # second different defect per row, and two for the tracing-off and typed-proposal rows.
+    graph('graph-runner-emits-langgraph-object', 'control_graph_langgraph.py',
+          '        body = json.dumps(plain_copy(reply), allow_nan=False)\n',
+          "        body = json.dumps(reply, allow_nan=False, default=lambda o: {'__class__': "
+          "type(o).__module__ + '.' + type(o).__qualname__, 'repr': repr(o)})\n", 'runtime/plain-data')
+    graph('graph-runner-tuple-as-plain', 'control_graph_langgraph.py',
+          '    if kind is list:\n', '    if isinstance(value, (list, tuple)):\n', 'runtime/plain-data')
+    graph('graph-child-inherits-working-directory', 'control_graph.py',
+          'cwd=empty,', 'cwd=None,', 'authority/no-direct-write')
+    graph('graph-child-inherits-store-descriptor', 'control_graph.py',
+          'close_fds=True,', 'close_fds=False,', 'authority/no-direct-write')
+    graph('graph-runner-accepts-untyped-assertion', 'control_graph_langgraph.py',
+          '            if untyped:\n', '            if False:\n', 'authority/typed-proposals-only')
+    graph('graph-untyped-proposal-read-as-priority', 'control_graph.py',
+          "            if kind not in PROPOSALS:\n"
+          "                raise Refused('invalid_response', where + ': untyped proposal')\n",
+          "            if kind not in PROPOSALS:\n"
+          "                item, kind = dict(item, type='priority'), 'priority'\n",
+          'authority/typed-proposals-only')
+    graph('graph-child-inherits-caller-environment', 'control_graph.py',
+          'env=dict(ENVIRONMENT),', 'env=None,', 'runtime/tracing-off')
+    graph('graph-tracing-switch-on', 'control_graph.py',
+          "'LANGSMITH_TRACING_V2': 'false'", "'LANGSMITH_TRACING_V2': 'true'", 'runtime/tracing-off')
     return result
 
 
