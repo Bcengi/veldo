@@ -1,12 +1,12 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 54 --diff-dir proof/VELDO-0054/mutations",
  "summary": {
-  "mutations_rejected": 24,
+  "mutations_rejected": 32,
   "green_suites": {
-   "62_veldo_0054_decisions.py": 41
+   "62_veldo_0054_decisions.py": 49
   }
  },
- "wall_seconds_here": 82.99,
+ "wall_seconds_here": 166.58,
  "mutations": [
   {
    "mutation": "framing-receipt-without-digest",
@@ -66,6 +66,9 @@
     "decisions/unsigned-resolution",
     "decisions/scope-binding",
     "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/malformed-blocks-held",
+    "decisions/invalid-before-unsupported",
     "decisions/production-gate-verifies",
     "decisions/observations"
    ],
@@ -251,7 +254,9 @@
    "baseline": "green",
    "red_rows": [
     "decisions/status-reader-agrees",
-    "decisions/malformed-records-named"
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/status-names-its-stop"
    ],
    "diff": "mutations/status-reader-inline-decisions.diff",
    "review_item": "A"
@@ -266,7 +271,9 @@
    "red_rows": [
     "decisions/consumers-from-call-sites",
     "decisions/status-reader-agrees",
-    "decisions/malformed-records-named"
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/status-names-its-stop"
    ],
    "diff": "mutations/status-reader-ignores-decisions.diff",
    "review_item": "A"
@@ -292,7 +299,10 @@
    ],
    "baseline": "green",
    "red_rows": [
-    "decisions/malformed-records-named"
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/malformed-blocks-held",
+    "decisions/invalid-before-unsupported"
    ],
    "diff": "mutations/record-invalid-ignored.diff",
    "review_item": "B"
@@ -322,6 +332,112 @@
    ],
    "diff": "mutations/reference-invalid-dropped.diff",
    "review_item": "B"
+  },
+  {
+   "mutation": "subject-digest-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "diff": "mutations/subject-digest-type-unchecked.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "subject-kind-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "diff": "mutations/subject-kind-type-unchecked.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "status-stop-crashes",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "diff": "mutations/status-stop-crashes.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "status-stop-unnamed",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "diff": "mutations/status-stop-unnamed.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "malformed-blocks-govern-nothing",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-blocks-held"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-blocks-held"
+   ],
+   "diff": "mutations/malformed-blocks-govern-nothing.diff",
+   "review_item": "2.2"
+  },
+  {
+   "mutation": "malformed-blocks-unrecorded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/malformed-blocks-held"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-blocks-held"
+   ],
+   "diff": "mutations/malformed-blocks-unrecorded.diff",
+   "review_item": "2.2"
+  },
+  {
+   "mutation": "schema-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/invalid-before-unsupported"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/invalid-before-unsupported"
+   ],
+   "diff": "mutations/schema-type-unchecked.diff",
+   "review_item": "2.3"
+  },
+  {
+   "mutation": "invalid-after-unresolved",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/invalid-before-unsupported"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named",
+    "decisions/malformed-blocks-held",
+    "decisions/invalid-before-unsupported"
+   ],
+   "diff": "mutations/invalid-after-unresolved.diff",
+   "review_item": "2.3"
   },
   {
    "mutation": "verifier-unavailable-as-unsigned",

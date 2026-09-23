@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -230 +230 @@
+-    except Exception as error:  # noqa: BLE001 - a burn-down it cannot build is named, never a crash
++    except ZeroDivisionError as error:  # defect: any other failure escapes

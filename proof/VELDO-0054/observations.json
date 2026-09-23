@@ -443,7 +443,7 @@
    "runstatus.py:_burndown"
   ],
   "decision_status": {
-   "accepted": 248,
+   "accepted": 334,
    "blocked": [
     "VELDO-9402",
     "VELDO-9403",
@@ -479,13 +479,38 @@
     "VELDO-9472",
     "VELDO-9473",
     "VELDO-9474",
-    "VELDO-9475"
+    "VELDO-9475",
+    "VELDO-9481",
+    "VELDO-9482",
+    "VELDO-9483",
+    "VELDO-9484",
+    "VELDO-9485",
+    "VELDO-9486",
+    "VELDO-9487",
+    "VELDO-9491",
+    "VELDO-9492",
+    "VELDO-9493"
    ],
    "invalid_records": [
+    "decision:D-9485",
+    "decision:D-9486",
+    "decision:D-9487",
+    "decision:D-NOBODY",
     "settlement:malformed-data",
     "settlement:malformed-decision"
    ],
-   "refused": 573
+   "refused": 1023
+  },
+  "invalid_order": {
+   "VELDO-9491": [
+    "invalid_input:decision:D-9491/schema"
+   ],
+   "VELDO-9492": [
+    "invalid_input:decision:D-9492/schema"
+   ],
+   "VELDO-9493": [
+    "invalid_input:decision:D-9493/obligations"
+   ]
   },
   "malformed": {
    "direct": [
@@ -548,7 +573,7 @@
      "settlement:malformed-data",
      "settlement:malformed-decision"
     ],
-    "refused": 573
+    "refused": 569
    },
    "sweep": {
     "VELDO-9401": {
@@ -625,6 +650,103 @@
     }
    }
   },
+  "malformed_blocks": {
+   "invalid_records": [
+    "decision:D-9485",
+    "decision:D-9486",
+    "decision:D-9487",
+    "decision:D-NOBODY",
+    "settlement:malformed-data",
+    "settlement:malformed-decision"
+   ],
+   "sweep": {
+    "VELDO-9401": {
+     "blocks": [],
+     "lens": "ready (frontier)",
+     "stations": []
+    },
+    "VELDO-9485": {
+     "blocks": [
+      "invalid_input:decision:D-9485/blocks"
+     ],
+     "lens": "blocked: decision invalid_input:decision:D-9485/blocks",
+     "stations": [
+      "invalid_input:decision:D-9485/blocks"
+     ]
+    },
+    "VELDO-9486": {
+     "blocks": [
+      "invalid_input:decision:D-9486/blocks"
+     ],
+     "lens": "blocked: decision invalid_input:decision:D-9486/blocks",
+     "stations": [
+      "invalid_input:decision:D-9486/blocks"
+     ]
+    },
+    "VELDO-9487": {
+     "blocks": [
+      "invalid_input:decision:D-9487/blocks"
+     ],
+     "lens": "blocked: decision invalid_input:decision:D-9487/blocks",
+     "stations": [
+      "invalid_input:decision:D-9487/blocks"
+     ]
+    },
+    "VELDO-9488": {
+     "blocks": [],
+     "lens": "ready (frontier)",
+     "stations": []
+    }
+   }
+  },
+  "malformed_subject": {
+   "VELDO-9401": {
+    "blocks": [],
+    "lens": "ready (frontier)",
+    "stations": []
+   },
+   "VELDO-9406": {
+    "blocks": [],
+    "lens": "ready (frontier)",
+    "stations": []
+   },
+   "VELDO-9481": {
+    "blocks": [
+     "invalid_input:decision:D-9481/subject"
+    ],
+    "lens": "blocked: decision invalid_input:decision:D-9481/subject",
+    "stations": [
+     "invalid_input:decision:D-9481/subject"
+    ]
+   },
+   "VELDO-9482": {
+    "blocks": [
+     "invalid_input:decision:D-9482/subject"
+    ],
+    "lens": "blocked: decision invalid_input:decision:D-9482/subject",
+    "stations": [
+     "invalid_input:decision:D-9482/subject"
+    ]
+   },
+   "VELDO-9483": {
+    "blocks": [
+     "invalid_input:decision:D-9483/subject"
+    ],
+    "lens": "blocked: decision invalid_input:decision:D-9483/subject",
+    "stations": [
+     "invalid_input:decision:D-9483/subject"
+    ]
+   },
+   "VELDO-9484": {
+    "blocks": [
+     "invalid_input:decision:D-9484/subject"
+    ],
+    "lens": "blocked: decision invalid_input:decision:D-9484/subject",
+    "stations": [
+     "invalid_input:decision:D-9484/subject"
+    ]
+   }
+  },
   "mismatched": [],
   "production": {
    "host": [
@@ -648,12 +770,24 @@
   },
   "raised": [],
   "status_reader": {},
+  "status_stop": "burndown_unanswerable:TypeError",
   "taxonomy": {
    "ambiguous_decision:DEC-AMB": "missing_authority",
    "ambiguous_decision:decision:D-9424": "missing_authority",
    "decision_ruling:decision:D-9408/reject": "missing_authority",
    "invalid_input:decision:D-9471/decision_id": "invalid_input",
    "invalid_input:decision:D-9472/revision": "invalid_input",
+   "invalid_input:decision:D-9481/subject": "invalid_input",
+   "invalid_input:decision:D-9482/subject": "invalid_input",
+   "invalid_input:decision:D-9483/subject": "invalid_input",
+   "invalid_input:decision:D-9484/subject": "invalid_input",
+   "invalid_input:decision:D-9485/blocks": "invalid_input",
+   "invalid_input:decision:D-9486/blocks": "invalid_input",
+   "invalid_input:decision:D-9487/blocks": "invalid_input",
+   "invalid_input:decision:D-9491/schema": "invalid_input",
+   "invalid_input:decision:D-9492/schema": "invalid_input",
+   "invalid_input:decision:D-9493/obligations": "invalid_input",
+   "invalid_input:decision:D-NOBODY/blocks": "invalid_input",
    "invalid_input:decision_reference": "invalid_input",
    "invalid_input:settlement:decision:D-9473:1/settlement": "invalid_input",
    "invalid_input:settlement:decision:D-9474:1/signature": "invalid_input",
@@ -696,7 +830,7 @@
    "unavailable_service:settlement_verifier"
   ]
  },
- "passed": 15,
+ "passed": 23,
  "rows": [
   [
    "VELDO-0054 decisions/consumers-from-call-sites",
@@ -731,11 +865,27 @@
    true
   ],
   [
+   "VELDO-0054 decisions/malformed-subject-named",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/malformed-blocks-held",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/invalid-before-unsupported",
+   true
+  ],
+  [
    "VELDO-0054 decisions/production-gate-verifies",
    true
   ],
   [
    "VELDO-0054 decisions/observations",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/status-names-its-stop",
    true
   ],
   [
@@ -751,14 +901,30 @@
    true
   ],
   [
+   "VELDO-0054 ran/decisions/malformed-subject-named",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/malformed-blocks-held",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/invalid-before-unsupported",
+   true
+  ],
+  [
    "VELDO-0054 ran/decisions/production-gate-verifies",
    true
   ],
   [
    "VELDO-0054 ran/decisions/observations",
    true
+  ],
+  [
+   "VELDO-0054 ran/decisions/status-names-its-stop",
+   true
   ]
  ],
  "suite": "62_veldo_0054_decisions.py",
- "suite_seconds": 1.658
+ "suite_seconds": 2.497
 }

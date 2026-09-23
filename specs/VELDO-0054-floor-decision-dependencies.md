@@ -145,3 +145,9 @@ raise an unnamed error for every unit. A malformed governing or settlement recor
 invalid_input refusal for the units it concerns, and a settlement nothing can associate is recorded
 and left out of every read. The footprint is unchanged. No criterion, status or evidence universe
 changed.
+
+2026-09-23, second review fixes: an unhashable subject field crashed every consumer, a malformed
+`blocks` governed nothing, and a wrong-typed schema was reported unsupported or unresolved. Each is
+now a named invalid_input for the unit the record concerns, decided before unsupported and
+unresolved, and veldo status names a burn-down it cannot build. The footprint is unchanged. No
+criterion, status or evidence universe changed.

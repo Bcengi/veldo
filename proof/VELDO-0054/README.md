@@ -49,8 +49,8 @@ reports `decisions` (accepted, refused, and the units whose latest decision eval
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/62_veldo_0054_decisions.py`, 15 rows (10 assertions and 5 `ran/` rows, one per
-region; 12 before the review fixes). One temporary tree is both the repository the plan and frontier readers read and the
+Suite `scripts/suites/62_veldo_0054_decisions.py`, 23 rows (14 assertions and 9 `ran/` rows, one per
+region; 12 before the first review, 15 before the second). One temporary tree is both the repository the plan and frontier readers read and the
 installed `.veldo` they run from; a real SQLite store with keyed journal signatures; settlements
 signed by real Ed25519 keys through `ssh-keygen -Y sign` and verified by the production
 `SettlementTrust`. 34 units are admitted, claimed, approved and dependency-free under ready plans,
@@ -62,7 +62,7 @@ burn-down and `cmd_run_check` (its exit and every named refusal it prints). `obs
 
 Every mutation below is registered as finding 54 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and required to turn its named row red by a failed assertion while the unmutated
-copy is green; none reddened a `ran/` row. All 24 were rejected (18 before the review fixes) (`mutations.json`, each diff in
+copy is green; none reddened a `ran/` row. All 32 were rejected (18 before the first review, 24 before the second) (`mutations.json`, each diff in
 `mutations/`).
 
 **AC1, exact binding.** Rows `decisions/consumers-from-call-sites`, `decisions/exact-binding` and
@@ -184,16 +184,59 @@ accepted. This predates VELDO-0054 (the enrollment rule is the same predicate, f
 needs its own ticket: enumerate every worktree of the common directory, and compare by device and
 inode rather than by path.
 
+## 2026-09-23 second review: three shape fixes and three open items
+
+A fresh review of c4a33bc..53847df found fix A correct and two gaps in fix B, plus a naming
+inconsistency. Each was fixed test first, one commit per item: its row fails by assertion over
+53847df's production modules (`red-53847df-suite62.json`: exactly the four new rows red, no region
+raised), then the fix, then two mutations per new row with the unmutated copy as control.
+
+**1, an unhashable subject field (2babe03).** A governing record whose `subject.kind` was a list or a
+mapping made the Gate's read raise `TypeError`, so decide, plan status, the frontier and `veldo
+status` crashed. `subject_entity` and `record_problems` check the subject's types before any lookup,
+and the unit is held by `invalid_input:<id>/subject` at every consumer. `runstatus._burndown_or_stop`
+now names a burn-down it cannot build (`refused:<code>`, `burndown_unanswerable:<type>`) instead of
+letting one malformed accepted record take the whole read model down. Rows
+`decisions/malformed-subject-named` (kind a list, a mapping, id a list, digest a mapping) and
+`decisions/status-names-its-stop`; mutations `subject-digest-type-unchecked`,
+`subject-kind-type-unchecked`, `status-stop-crashes`, `status-stop-unnamed`.
+
+**2, a malformed blocks (d315d7c).** A `blocks` that was a mapping or a nested list governed nothing,
+so the unit its author meant to hold was offered and built. A `blocks` present and not a list of ids
+now governs every unit it names anywhere inside it, where it is refused by `invalid_input:<id>/blocks`,
+and the record is recorded once in `invalid_records` with a named observation; one naming no unit
+holds no one. Row `decisions/malformed-blocks-held`; mutations `malformed-blocks-govern-nothing`,
+`malformed-blocks-unrecorded`.
+
+**3, a wrong-typed schema (a7f2e53).** A schema that is a list or a number is
+`invalid_input:<id>/schema`, not unsupported or unresolved, and every `invalid_input` is decided before
+unsupported and before unresolved. Row `decisions/invalid-before-unsupported`; mutations
+`schema-type-unchecked`, `invalid-after-unresolved`.
+
+**Open items, each for its own ticket (all predate VELDO-0054).**
+- A unit record whose `plan` field is a list makes `Gate.read` raise (`'plan:' + data['plan']`, VELDO-0052
+  code); every consumer that visits that unit raises. `veldo status` now names it
+  (`burndown_unanswerable:TypeError`, the probe row `decisions/status-names-its-stop`) but the other
+  consumers still raise.
+- A plan file whose `open_decisions` entry has a `blocks` holding a nested list makes
+  `plan._decision_blocks` (its inline half) and `.veldo/validate.py` raise on the unhashable member.
+- `scripts/update_index.py` derives each plan item's frontier state in the committed `specs/index.md`
+  from the inline `open_decisions` text. That is by design: the committed index is generated from the
+  checkout and cannot read the control store, so it shows every inline entry as blocking and knows
+  nothing of settlements; the store-backed readers (plan status, `veldo status`, the frontier) are
+  the authority.
+
 ## Cost and verification
 
-After the review fixes suite 62 runs in 1.66 s here (`observations.json`, `suite_seconds`; 1.2 s
-before them, and this host was carrying other builds). `--finding 54` drives 24 mutations in 83 s
-here (48 suite runs); in the gate's mutation stage (8 workers) that is about 29 runs (24 mutants and 5
-control groups) or roughly 6 s of wall time, and it raises the stage's scaled budget by 48 s.
-`--finding 52` drives 49 mutations (47 before review A) in 150 s here. Targeted checks run on this branch:
-`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (41 passed, 15 of them this suite's),
+After both reviews suite 62 runs in 2.5 s here (`observations.json`, `suite_seconds`; 1.2 s as first
+built; the growth is the new regions' sweeps, and this host was carrying other builds).
+`--finding 54` drives 32 mutations in 167 s here (64 suite runs); in the gate's mutation stage (8
+workers) that is about 37 runs (32 mutants and 5 control groups) or roughly 12 s of wall time, and it
+raises the stage's scaled budget by 64 s. `--finding 52` drives 49 mutations (47 before review A) in
+157 s here. Targeted checks run on this branch:
+`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (49 passed, 23 of them this suite's),
 `--suite 60_veldo_0052_eligibility` (80 passed), `python3 -B scripts/check_teeth_mutations.py --finding 54`
-(24 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
+(32 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs,
 install-and-run, and every other suite that loads a module touched here, suite 60 included. The full gate is run by the lead.
 

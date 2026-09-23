@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -261,0 +262,2 @@
+@@ -279,0 +280,2 @@
 +    if isinstance(record, dict) and record.get('state') == 'settled':
 +        return []

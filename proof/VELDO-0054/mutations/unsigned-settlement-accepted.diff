@@ -1,6 +1,6 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -274 +274,4 @@
+@@ -292 +292,4 @@
 -        if verify is None or not isinstance(body, dict) or not _is_str(signature) or not _is_str(signer):
 +        if isinstance(body, dict) and not _is_str(signature):
 +            verified.append(body)
