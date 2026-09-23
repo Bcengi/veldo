@@ -123,26 +123,46 @@ operator's transport variables: `git_process.py`'s network profile, used by the 
 query that decides where it goes, strips only the variables that change which repository or objects
 git acts on. The selection and injection variables name operator configuration, not a repository,
 and a plain `git push` from the same environment honors them, so stripping them would reduce what
-the operator's configured tools can do. Only what widens a push is neutralized (one explicit refspec, no tag following, no
-push options, no submodule recursion, a lease on the old tip). The push is addressed to the
-authorized URL and routed by the operator's configured routing: `url.*.insteadOf` and `pushInsteadOf` rewrites, a remote
-section named by the URL (its `url` and `pushurl` values) and a legacy `remotes/` or `branches/` file
-of that name, in every scope the push reads. None of them is refused. Routing is the operator's, and
-the owner's rule is that what configured tools can do is never reduced, so there is no claim that
-the push reaches exactly the authorized URL. Instead the effect record stores, without credentials,
-the authorized URL, the URL the remote's state is read from (`git ls-remote --get-url`) and every
-repository the push reached, so the evidence shows where it went. Where the push went is read only
-from git's own account: a porcelain `To` line counts when git's status line for the authorized
-refspec follows it, because a pre-push hook writes to the same stream. URLs are compared as git
-itself displays them (the user information of a scheme URL and the user of an scp-style address
-dropped), and each recorded URL also loses any user information that display leaves.
-Completion is claimed only when the push reached exactly one repository, the one whose state is
-read, and that remote's advertised state (every advertised ref, HEAD, peeled tags and symbolic-ref
-targets) equals the state before the push with the authorized ref moved. A route that moves only
-the push (a `pushInsteadOf` or a `pushurl`), or sends it to more than one repository, therefore
-ends unknown with its destinations recorded. Two remote changes cannot be observed from outside
-by design and are stated limits, not passing claims: a ref the remote hides from advertisement (for example `transfer.hideRefs`), and a
-ref the remote changes and restores while the push runs.
+the operator's configured tools can do. Only what widens a push is neutralized (one explicit
+refspec, no tag following, no push options, no submodule recursion, a lease on the old tip).
+
+The push is addressed to the authorized URL and routed by the operator's configured routing:
+`url.*.insteadOf` and `pushInsteadOf` rewrites, a remote section named by the URL (its `url` and
+`pushurl` values, fan-out included) and a legacy `remotes/` or `branches/` file of that name, in
+every scope the push reads. None of them is refused, and there is no claim that the push reaches
+exactly the authorized URL.
+
+**Destination rule.** Where the push goes is git's own resolution of this push from configuration,
+read before pushing under the same network profile: `git remote show -n` names every push URL git
+push would use for the remote, for a configured remote and a plain URL alike (`git remote get-url`
+answers only for remotes in the clone's own file), without contacting a remote or running a hook.
+Nothing the push prints is evidence of where it went or whether it worked: a client pre-push hook
+shares its standard output and a server's proc-receive report can reshape it, so that output is
+diagnostic text only, decoded losslessly. Git reports push URLs one per line, so a receiver URL or
+any configured URL or rewrite holding a line break is refused before anything is pushed.
+
+**Completion rule.** Each resolved destination is listed before and after the push (`git ls-remote
+--symref`, same profile). A destination is at the tip when it held the old tip at the authorized
+ref before, and after the push its advertised state (every advertised ref, HEAD, peeled tags and
+symbolic-ref targets) equals the state before with the authorized ref, and any symbolic ref that
+targets it, moved to the exact tested commit; it is unreachable when either listing failed; it is
+otherwise not at the tip (rejected, accepted under another ref as an AGit-style server does, or
+anything else changed). The effect is completed only when the push exited cleanly and every
+resolved destination is at the tip; otherwise it is unknown. The effect record stores the
+authorized URL and every resolved destination with its outcome.
+
+**Recorded URLs.** Every recorded URL is scrubbed by parsing it, never taken from git's display:
+`<transport>::<address>` is scrubbed in its address, recursively; a scheme URL loses everything up
+to the last `@` of its authority (which ends at the first `/`, `?` or `#`, as git and RFC 3986 read
+it) and, except a file URL, its query and fragment; an scp-style address loses everything before
+the last `@` ahead of its host. A password must be percent-encoded as RFC 3986 requires: an
+unencoded `/`, `?` or `#` in it ends the authority for git as well.
+
+**Stated limits, not passing claims.** A ref the remote hides from advertisement (for example
+`transfer.hideRefs`), and a ref the remote changes and restores while the push runs, cannot be
+observed from outside. Each destination is listed by its resolved URL, and `git ls-remote` applies
+`url.*.insteadOf` to that URL once more: where one rewrite's result matches another rewrite, the
+destination is listed one rewrite further than the push went.
 
 ## History
 
@@ -186,3 +206,20 @@ one repository whose state is read. Where the push went is read only from git's 
 now passes the variables that select or inject operator configuration, as a plain git command
 honors them, and still strips every variable that changes which repository or objects git acts on.
 No status or Release 2 obligation changes.
+
+2026-09-23 review round R7: an independent review of 525c69c..0a97547 showed that reading where
+the push went, and whether it completed, from the push's printed output lets client pre-push hooks
+and server proc-receive reports hide, forge or reshape both. The object changes instead of the
+parsing: the destinations are git's own resolution of the push from configuration (`git remote show
+-n`, read before pushing), completion is each resolved destination's actual state after the push,
+and every recorded URL is scrubbed by parsing (transport prefixes, the last `@` of scp-style user
+information, queries and fragments). A pushInsteadOf or pushurl route and a pushurl fan-out now
+complete when every destination holds exactly the authorized change. Retired because they only
+pinned the old output parsing: rows `publication-destination-as-git-displays` and
+`publication-destination-from-push-status` (their scp, `@`-in-password and talking-hook cases now
+live in `publication-scrub-scp-user-information` and `publication-destination-despite-hook-text`),
+and mutations `effects-destination-from-listing`, `effects-completion-ignores-destination`,
+`effects-listed-url-isolated-profile`, `effects-scp-url-as-given`,
+`effects-completion-compares-raw-listing`, `effects-destination-git-display-only`,
+`effects-pushed-from-every-to-line` and `effects-pushed-ignores-refspec`. No status or Release 2
+obligation changes.
