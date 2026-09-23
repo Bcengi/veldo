@@ -177,14 +177,14 @@ def _s37_run():
                 return {'failed': proc.returncode}
 
         # Exactness fixtures: CRLF, non-ASCII, no trailing newline, trailing spaces.
-        doc_a = 'API contract\r\n\r\nCafé résumé über\r\nno final newline'.encode('utf-8')
+        doc_a = 'API contract\r\n\r\nCaf\u00e9 r\u00e9sum\u00e9 \u00fcber\r\nno final newline'.encode('utf-8')
         doc_a2 = 'API contract, second accepted edit\r\n'.encode('utf-8')
         doc_a4 = b'API contract, fourth version\n'
         doc_evil = b'bytes nobody accepted\n'
         bodies = {name: ('%s body   \n' % name).encode('utf-8') for name in
                   ('b', 'c', 'd', 'e', 'f', 'g', 'h', 'other')}
         plan_doc = b'Plan: journey\n\n1. build\n'
-        decision_doc = 'decision: store choice é\n'.encode('utf-8')
+        decision_doc = 'decision: store choice \u00e9\n'.encode('utf-8')
 
         # --- enabling kinds: first numbers come once from an exact accepted commit (C9) -----
         kinds = {'specification': ('VELDO', 'specs/{alias}-{slug}.md'),
