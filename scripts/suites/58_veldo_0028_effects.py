@@ -27,7 +27,7 @@ def _v28_run():
         _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
         _v28_executor = _v28_import.module_from_spec(_v28_executor_spec)
         _v28_executor_spec.loader.exec_module(_v28_executor)
-        E, G = _v28_executor.E, _v28_executor.G
+        E, G = _v28_executor.E, _v28_executor._git_process
         private = root / 'private'
         private.mkdir(mode=0o700)
         for name in ('journal', 'worker', 'stranger'):

@@ -18,7 +18,7 @@ import importlib.util
 _spec = importlib.util.spec_from_file_location('effects', Path(__file__).with_name('control_effects.py'))
 E = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(E)
-G = E.organ('git_process')
+_git_process = E.organ('git_process')
 
 
 def receive(config, contract, accepted):
@@ -30,7 +30,7 @@ def receive(config, contract, accepted):
         payload = contract['payload']
         repo, remote, ref = receiver['repository'], receiver['remote'], receiver['ref']
         def git(*args):
-            return G.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20)
+            return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20)
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
