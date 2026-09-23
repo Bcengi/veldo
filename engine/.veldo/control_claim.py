@@ -112,6 +112,8 @@ class Receiver:
 
     def apply(self, packet):
         command = packet.get('command', {}) if isinstance(packet, dict) else {}
+        if not isinstance(command, dict):
+            command = {}
         observation = dict(self.ids, operation=command.get('operation'), unit_id=command.get('unit_id'),
                            command_id=command.get('command_id'), accepted_versions={})
         try:
@@ -124,6 +126,9 @@ class Receiver:
         return result
 
     def _apply(self, packet, command, observation):
+        if (not isinstance(packet, dict) or not isinstance(packet.get('command'), dict)
+                or not isinstance(packet.get('signature'), str)):
+            raise S.StoreRefused('malformed_request', 'command must be a mapping and signature a string')
         validate_alias(command.get('unit_id'))
         required = {'operation', 'unit_id', 'principal', 'command_id', 'nonce', 'generation', 'capabilities', *self.ids}
         if (not required <= command.keys() or command['operation'] not in OPERATIONS

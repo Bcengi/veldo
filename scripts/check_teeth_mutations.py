@@ -300,6 +300,12 @@ def cases():
     claims('claims-detector-as-owned', 'control_claim.py',
            "        return 'unanswerable'",
            "        return 'owned'", 'uncertainty-stop')
+    add(31, 'review-r1-command-crash', '59_veldo_0031_review.py', 'control_claim.py',
+        '        if not isinstance(command, dict):\n            command = {}',
+        '', ['claims/review-r1'])
+    add(31, 'review-r1-signature-crash', '59_veldo_0031_review.py', 'control_claim.py',
+        "                or not isinstance(packet.get('signature'), str)",
+        '                or False', ['claims/review-r1'])
     return result
 
 

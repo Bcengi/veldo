@@ -537,6 +537,14 @@
     "58_veldo_0031_claims"
    ],
    "regions": "Authority claims: real clone race, SQLite activation, receiver generations and uncertainty stops"
+  },
+  {
+   "name": "59_veldo_0031_review",
+   "file": "59_veldo_0031_review.py",
+   "requires": [
+    "59_veldo_0031_review"
+   ],
+   "regions": "Six independent review regression scenarios for authority claims"
   }
  ]
 }
