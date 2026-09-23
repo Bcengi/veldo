@@ -180,3 +180,11 @@ a pending notice is reconciled against every presentation that named it; an over
 capped; the whole reply is NFKC-normalized before the split and Unicode hyphens separate; a reply
 after the request left pending is told it is no longer open; an unreadable ledger fails closed. The
 criteria, status and risk are unchanged.
+
+2026-09-23, review r5: a fifth review left four items and a missing message, each fixed test first
+with its own row or row cases and registered mutations, recorded in the proof README: the recorded
+answer delivered again is silent even after the request closed; the edge scope check precedes every
+message back; frame() refuses an unreadable ledger as the presenter does; the recorded rationale is
+the owner's own text; a reply to a presentation that no longer binds is told a new one is coming.
+The reviewer's uncaught mutants now fail rows and are registered. The criteria, status and risk are
+unchanged.

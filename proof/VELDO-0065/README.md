@@ -403,13 +403,57 @@ allows only ASCII), so the full-width and hyphen probes read as their code point
 notice named, newest request version first, with `notice_id`, `notice_state` and `message_id` of the
 first. New refusal `request_closed`. `control_channel_presentation.UNREADABLE` and `CHOICE_SEPARATORS`.
 
+## Fifth review fixes, 2026-09-23
+
+A fifth review found items 1 to 8 of the fourth holding, and left four items, a missing message and
+six uncaught mutants, probed by p1 to p6. Each item was fixed test first in its own commit, with a new
+row or row cases red at `be386e6` by their own assertions, then green, and two registered mutations.
+The branch merged `origin/main` twice (`9bde509`, and `32e6ee2`, which brings the faster mutation
+driver: one honest run per suite and parallel mutants with `--jobs`).
+
+| Item | Gap at be386e6 | Fix | Row | Mutations | Commit |
+| --- | --- | --- | --- | --- | --- |
+| 1 (p2, blocking) | The accepted answer delivered again after the request left pending was told "no longer open" | The recorded answer (same chat and message id) is recognized before any message back | `answer/redelivered-after-closed` | `redelivery-silent-only-while-pending`, `redelivery-after-closed-told` | `ab760c6` |
+| 2 (p3) | The "no longer open" message was sent before the edge scope check | The edge scope check comes before every message back | `answer/closed-tell-after-edge-scope` | `edge-scope-unchecked`, `edge-scope-against-itself` | `6223bed` |
+| 3 (p1) | frame() accepted with a ledger of another kind, which the presenter refuses | frame() refuses a ledger of another kind or one that does not match its digest | `framing/ledger-read-fails-closed` (two frame() cases) | `frame-ledger-any-kind`, `frame-ledger-digest-unchecked` | `dc54e25` |
+| 4 (p4) | The recorded rationale was the NFKC fold of the owner's words | Normalization only finds the split; both parts are the owner's original text | `answer/rationale-original-text` | `rationale-nfkc-folded`, `rationale-keeps-the-colon` | `e44418e` |
+| message | A reply to a pending request whose presentation no longer binds met silence | Told once per message that a new presentation is coming | `answer/stale-current-told` | `stale-not-told`, `stale-told-only-on-mismatch`, `x-closed-any-refusal` | `44b6bb2` |
+
+The reviewer's uncaught mutants now each fail a row by assertion and are registered under their
+own names (`531a545`): `x-closed-any-refusal` (a pending request whose framing no longer counts is not
+closed), `x-membership-pin-later` and `x-versions-pin-later` (a membership revocation and a change of
+the membership versions inside frame()'s gap), `x-drop-2043` (a U+2043 choice), `x-notice-transition-any-notice`
+(a presentation cannot mark a notice it did not name) and `x-reconcile-only-in-already-presented`
+(reconciliation on a run that composes a new presentation). The redelivery mutations of the pending
+row were re-pointed at the shared check (`_is_recorded_answer`).
+
+**Red at be386e6.** `python3 -B proof/VELDO-0065/drive.py --red be386e6` runs the current suite once
+against the modules of `be386e6`, unchanged, and writes `red-at-be386e6.json`: the five new rows and
+the two new frame() cases fail by their own assertions, with no section raising, and no other row is
+red there. The mutant-catching cases are green there, as they should be: the code already behaved;
+they exist to make its mutants red.
+
+**The fifth reviewer's probes, re-run unchanged.** `review-r5-rerun.log` (paths shortened to
+`<probes>`, non-ASCII escaped): p1 refuses at frame() and at the presenter alike; p2's redelivered
+answer gets no reply after an inbox answer or a cancel; p3 sends nothing for an edge out of scope;
+p4 records the owner's own words; p5 runs every row with `/dev/shm` missing and with it unwritable,
+in the platform's temporary directory, leaving nothing behind. p6 prints its `BUG (teeth)` lines
+whenever a mutant behaves differently from the real module, which is its demonstration that the two
+mutants are not equivalent; both are now registered and red (see above), so those lines no longer
+describe a gap.
+
+**Temporary directories.** The suite has no probe-style fixtures: its store, keys and loopback state
+live in one `TemporaryDirectory` it removes itself; `drive.py` and the mutation driver likewise.
+
 ## Measurements
 
-The suite runs in about 5.8 s (`VELDO-0065 suite seconds` 6.00, 5.86 and 5.78 on three runs), 35
-rows; before the `/dev/shm` change the same suite with 28 rows took 6.4 to 7.9 s. Finding 65 has 73
-mutations. The gate's mutation stage runs one baseline and one no-op per mutated module (presentation
-and projection) and one run per mutant: 77 runs of about 6 s, 8 in parallel, so about 58 s of wall
-time, and its budget grows by 2 s per case (146 s). The unit stage gains the suite's 6 s. That puts
-the time this suite adds to the gate at about 64 s: over the 60 s limit, reported here rather than
-assumed to fit. `python3 -B scripts/check_teeth_mutations.py --finding 65` took 15 min 4 s serially
-(`{"mutations_rejected": 73, ...}`); `drive.py` took 7 min 26 s serially on a shared host.
+The suite runs in about 6 to 7 s on this host when it is quiet (7.16 s measured) and 13 to 18 s
+under a load average of 38 on 20 cores (13.44, 14.18 and 18.06 s measured while other agents ran),
+39 rows. Finding 65 has 89 mutations. With the merged driver, `python3 -B
+scripts/check_teeth_mutations.py --finding 65 --jobs 8` took 3 min 31 s under that load
+(`{"mutations_rejected": 89, ...}`); `drive.py`, which runs every case serially with a baseline and
+no-op per module, took 11 min 28 s. The gate's mutation stage runs 93 runs of the suite (89 mutants,
+one baseline and one no-op per mutated module) 8 in parallel, about 70 to 80 s of wall time at 6 to
+7 s a run, and its budget grows by 2 s per case (178 s); the unit stage gains the suite's 6 to 7 s.
+That is over the 60 s limit, as the previous two rounds already were, and is reported, not assumed
+to fit.
