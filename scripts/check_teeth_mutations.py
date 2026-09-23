@@ -330,6 +330,12 @@ def cases():
     add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
         "    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):",
         "    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):", ['claims/review-r4'])
+    add(31, 'review-r5-expiry-revokes-owner', '59_veldo_0031_review.py', 'control_claim.py',
+        "    if live == 'stale' and action in ('renew', 'release'):",
+        '    if False:', ['claims/review-r5'])
+    add(31, 'review-r5-release-ignores-holder', '59_veldo_0031_review.py', 'control_claim.py',
+        "    if current.get('holder') != holder:",
+        "    if op != 'release' and current.get('holder') != holder:", ['claims/review-r5'])
     return result
 
 

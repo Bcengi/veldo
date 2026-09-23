@@ -44,7 +44,7 @@ ACTIVE_UNIT_STATES = ('CLAIMED', 'DISPATCHING', 'RUNNING', 'VERIFYING',
                       'REVIEWING', 'READY_TO_LAND', 'LANDING')
 
 
-def ownership(data, unit, backlog):
+def ownership(data, unit, backlog, action='inspect'):
     """One consistency and liveness answer for reads and transactional operations."""
     if not data:
         return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'
@@ -57,14 +57,22 @@ def ownership(data, unit, backlog):
     live = CL.liveness(data)
     if live == 'unanswerable':
         return 'unanswerable'
-    return 'owned' if live == 'live' else 'ownership_uncertain'
+    if live == 'stale' and action in ('renew', 'release'):
+        # Expiration denies use and takeover, but does not revoke the stored owner.
+        # A malformed heartbeat remains uncertain rather than being treated as old.
+        try:
+            CL.datetime.strptime(data.get('heartbeat_at'), '%Y-%m-%dT%H:%M:%SZ')
+        except (TypeError, ValueError):
+            return 'ownership_uncertain'
+        return 'owned'
+    return 'owned' if live == 'live' else 'ownership_uncertain' 
 
 
 def transition(params, before):
     unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
     u, b = before[unit]['data'], before[backlog]['data']
     current = before.get(cid, {}).get('data', {})
-    status = ownership(current, u, b)
+    status = ownership(current, u, b, params['action'])
     if status in ('unanswerable', 'ownership_uncertain'):
         raise S.StoreRefused(status, 'ownership cannot be established; stop without takeover')
     op, holder = params['action'], params['holder']
