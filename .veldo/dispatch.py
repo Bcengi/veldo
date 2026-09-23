@@ -162,12 +162,18 @@ class Dispatcher(WK.Dispatcher):
         return dict({"holder": (unit or {}).get("holder") or self.worker_id,
                      "generation": (unit or {}).get("generation")}, **extra)
 
-    def _handle(self, station, unit, context, decision):
-        """The station's only path to a subscription CLI: every call is decided and reserved."""
+    def _open(self, unit, context):
+        """THIS dispatch's identity: the runner opens it, reserving its worker slot (VELDO-0036),
+        because the unit the work loop hands over carries none and must not choose one."""
         if self._calls is None:
             raise EL.Stopped("reservation_required")
-        return self._calls.handle(station, unit["spec"], unit.get("dispatch"),
-                                  context=context, ticket=decision)
+        return self._calls.open_dispatch(unit["spec"], context=context)
+
+    def _handle(self, station, unit, context, decision):
+        """The station's only path to a subscription CLI: every call is decided and reserved
+        against this dispatch's own worker slot."""
+        dispatch = self._open(unit, context)
+        return self._calls.handle(station, unit["spec"], dispatch, context=context, ticket=decision)
 
     @staticmethod
     def _refused(kind, sid, decision, **extra):
@@ -266,7 +272,10 @@ class Dispatcher(WK.Dispatcher):
             decision = gate.decide("build", sid, context=context, ticket=unit.get("eligibility"))
             if not decision["eligible"]:
                 return self._refused("build", sid, decision, reviewed=False)
-            handle = self._handle("build", unit, context, decision)
+            try:
+                handle = self._handle("build", unit, context, decision)
+            except EL.Refused as error:
+                return self._refused("build", sid, {"refusals": [error.code]}, reviewed=False)
         result = EX.Executor(self._build_hooks(), eligibility=gate, calls=handle).run(sid, stop_after="proof")
         if result.get("state") != "built":
             return {"ok": False, "kind": "build", "spec": sid, "reviewed": False,
@@ -298,7 +307,12 @@ class Dispatcher(WK.Dispatcher):
         if decision is None:
             rv = self._reviewer.review(spec, unit) or {}
         else:
-            rv = self._reviewer.review(spec, unit, calls=self._handle("review", unit, context, decision)) or {}
+            try:
+                handle = self._handle("review", unit, context, decision)
+            except EL.Refused as error:
+                return self._refused("review", sid, {"refusals": [error.code]}, verdict=None, shipped=False,
+                                     landed=False)
+            rv = self._reviewer.review(spec, unit, calls=handle) or {}
         verdict = rv.get("verdict")
         if not self._verdict_passes(rv):
             self._set_status(sid, self.fail_status)

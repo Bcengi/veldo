@@ -544,8 +544,10 @@ def cases():
           "                    guard.launch(invocation, configuration)  # defect: no reservation\n"
           "                    receipt = {'replayed': False}\n"
           "                else:\n  " + invoke, 'forbidden-call-observation')
-    calls('reservation-refusal-fails-open',
-          "                raise Refused(code if ':' in code or code in TAXONOMY else 'usage_refused:' + code) from error",
+    refused_call = ("                    raise  # a launch failure after its reservation: outcome unknown, exposure retained\n"
+                    "                raise named from error")
+    calls('reservation-refusal-fails-open', refused_call,
+          "                    raise  # a launch failure after its reservation: outcome unknown, exposure retained\n"
           "                guard.launch(invocation, configuration)  # defect: a refused reservation still launches\n"
           "                receipt = {'replayed': False}", 'forbidden-call-observation')
     calls('reservation-retry-bypass', invoke,
@@ -583,6 +585,15 @@ def cases():
            '    except EL.Stopped as stop:\n        return [], stop.reason',
            '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
            'completion/status-reader-agrees')
+    review('dispatch-without-identity', 'dispatch.py',
+           '        return self._calls.open_dispatch(unit["spec"], context=context)',
+           '        return unit.get("dispatch")  # defect: the work loop\'s unit carries no identity',
+           'reservations/work-loop-dispatch-identity')
+    review('dispatch-identity-not-reserved', 'control_eligibility.py',
+           "                self._reservations().reserve_worker('worker/' + dispatch, dispatch, self.account, project, unit,\n"
+           "                                                    now=self.clock())",
+           "                pass  # defect: an identity no worker slot was reserved for",
+           'reservations/work-loop-dispatch-identity')
     return result
 
 

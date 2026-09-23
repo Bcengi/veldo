@@ -40,6 +40,7 @@ import os
 from pathlib import Path
 import sqlite3
 import subprocess
+import time
 import uuid
 
 SCHEMA = 'veldo.control_eligibility/v1'
@@ -285,6 +286,17 @@ class Gate:
     def landed(self, unit):
         return self.completion(unit)['revision_landed']
 
+    def unit_record(self, unit):
+        """The unit's accepted execution_unit data, read in one read transaction, or None."""
+        with self._reading():
+            try:
+                item = self._entity(unit)
+            except (SN.Refused, self.store.StoreRefused):
+                return None
+        if not item or item['value']['kind'] != 'execution_unit':
+            return None
+        return self._data(item)
+
     def _reading(self):
         gate = self
 
@@ -491,13 +503,64 @@ class Gate:
 CALL_STATIONS = ('build', 'review')
 
 
-class StationCalls:
-    """Hands out one CallHandle per station dispatch. `guards` maps each registered adapter
-    (control_reservation_runtime.ADAPTERS) to its InvocationGuard over real reservations."""
+def _reservation_refusal(error):
+    """A reservation service refusal as a named Refused, or None when `error` carries no name (an
+    unnamed failure is re-raised by the caller: its outcome is unknown, never a refusal)."""
+    code = getattr(error, 'code', None)
+    if not isinstance(code, str) or not code:
+        return None
+    return Refused(code if ':' in code or code in TAXONOMY else 'usage_refused:' + code)
 
-    def __init__(self, gate, guards):
+
+class StationCalls:
+    """The runner's side of every station dispatch (VELDO-0036's trusted runner seam). It opens the
+    dispatch, reserving that dispatch's worker slot, and hands out one CallHandle per station
+    dispatch. `guards` maps each registered adapter (control_reservation_runtime.ADAPTERS) to its
+    InvocationGuard over ONE real reservation service; `account` is the subscription account this
+    runner's calls are made under; `clock` is the runner's time source for reservation commands."""
+
+    def __init__(self, gate, guards, *, account=None, clock=None):
         self.gate, self.guards = gate, dict(guards)
+        self.account = account
+        self.clock = clock or time.time
         self.observations = collections.deque(maxlen=OBSERVATION_LIMIT)
+
+    def _reservations(self):
+        services = {id(g.reservations): g.reservations for g in self.guards.values()}
+        if len(services) != 1:
+            raise Refused('unavailable_service:reservations', 'the guards do not share one reservation service')
+        return next(iter(services.values()))
+
+    def open_dispatch(self, unit, *, context=None):
+        """THE DISPATCH IDENTITY: reserve one worker slot (control_reservations.reserve_worker) for
+        this station dispatch of `unit`, under this runner's account and the unit's ACCEPTED project,
+        and return its identity. Every CallHandle of that dispatch reserves its calls against it, so
+        the work loop's own unit (which carries no identity, and must not choose one) can reach a
+        subscription CLI. The slot is retired only by the supervisor's actual lifecycle observation
+        (Reservations.retire); until then it counts, which is the conservative direction."""
+        event = {'operation': 'open_dispatch', 'unit': unit, 'holder': (context or {}).get('holder')}
+        try:
+            if not isinstance(self.account, str) or not self.account.strip():
+                raise Refused('reservation_required:account', 'this runner names no subscription account')
+            project = (self.gate.unit_record(unit) or {}).get('project')
+            if not isinstance(project, str) or not project.strip():
+                raise Refused('missing_authority:project', 'the unit has no accepted project')
+            dispatch = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
+            try:
+                self._reservations().reserve_worker('worker/' + dispatch, dispatch, self.account, project, unit,
+                                                    now=self.clock())
+            except Refused:
+                raise
+            except Exception as error:
+                named = _reservation_refusal(error)
+                if named is None:
+                    raise
+                raise named from error
+        except Refused as error:
+            self.observations.append(dict(event, outcome='refused', refusal=error.code))
+            raise
+        self.observations.append(dict(event, outcome='reserved', dispatch=dispatch))
+        return dispatch
 
     def handle(self, station, unit, dispatch, *, context, ticket):
         if station not in CALL_STATIONS:
@@ -520,6 +583,8 @@ class CallHandle:
             guard = self.calls.guards.get(adapter)
             if guard is None:
                 raise Refused('unavailable_service:adapter', str(adapter))
+            if not isinstance(self.dispatch, str) or not self.dispatch:
+                raise Refused('reservation_required:dispatch', 'no dispatch was opened for this station')
             decision = self.calls.gate.require('provider_request', self.unit, context=self.context, ticket=self.ticket)
             event['decision_id'] = decision['decision_id']
             try:
@@ -528,10 +593,10 @@ class CallHandle:
             except Refused:
                 raise
             except Exception as error:
-                code = getattr(error, 'code', None)
-                if not isinstance(code, str) or not code:
+                named = _reservation_refusal(error)
+                if named is None:
                     raise  # a launch failure after its reservation: outcome unknown, exposure retained
-                raise Refused(code if ':' in code or code in TAXONOMY else 'usage_refused:' + code) from error
+                raise named from error
         except Refused as error:
             self.calls.observations.append(dict(event, outcome='refused', refusal=error.code))
             raise

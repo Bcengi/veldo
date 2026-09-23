@@ -215,13 +215,23 @@ def _v52_suite():
                                         authorize=authorize, signer='authority', sign=sign)
         stops = []
         guards = {a: RT.InvocationGuard(reservations, a, launcher(a), stops.append) for a in RT.ADAPTERS}
-        calls = EL.StationCalls(gate, guards)
         CONFIG = {'mcp_servers': ['configured'], 'tools': ['configured-tool']}
         clock = [100.0]
 
         def tick():
             clock[0] += 1
             return clock[0]
+
+        # The runner's calls: every station dispatch reserves its own worker slot under this
+        # runner's subscription account and the unit's accepted project (p1), before any call.
+        calls = EL.StationCalls(gate, guards, account='acct-floor', clock=tick)
+        CEILING = dict(capacity=50, invocations=100, wall_seconds=10000)
+        reservations.configure('ceiling-account-acct-floor', 'account', 'acct-floor', CEILING, now=tick())
+        reservations.configure('ceiling-project-p1', 'project', 'p1', CEILING, now=tick())
+
+        def ceilings(tag, sid, account='acct-floor', project='p1'):
+            for scope, subject in zip(RES.SCOPES, (account, project, sid)):
+                reservations.configure('ceiling-%s-%s-%s' % (tag, scope, subject), scope, subject, CEILING, now=tick())
 
         def observe_effect(fn):
             # What an entry did, or the named stop or refusal it raised: a raise is an observation
@@ -788,6 +798,42 @@ def _v52_suite():
                    and plan_stop == ('raised', 'Stopped:eligibility_required')
                    and model[0] == 'ok' and model[1].get('burndown_stopped') == 'eligibility_required'
                    and model[1].get('burndown') == [])
+
+        with region('reservations/work-loop-dispatch-identity'):
+            # DEFECT e. The real path with nothing hand-built, WorkLoop -> Dispatcher -> executor ->
+            # builder: the dispatcher reserves this dispatch's worker slot, and the builder's call launches.
+            sid = 'VELDO-9106'
+            handed = []
+
+            class LoopHooks(Hooks):
+                def build(self, spec, calls=None):
+                    self.builds.append(spec['id'])
+                    if calls is not None:
+                        calls.invoke('claude_code', 'initial', 'loop-build-' + spec['id'], 10, CONFIG, now=tick())
+                    return {'ok': True, 'commit': 'c', 'evidence': {}}
+
+            class Seen(DSP.Dispatcher):
+                def dispatch(self, unit):
+                    handed.append(sorted(unit))
+                    return super().dispatch(unit)
+
+            hooks, before = LoopHooks(), len(receiver)
+            disp = Seen(repo_root=str(base), hooks=hooks, eligibility=gate, calls=calls, worker_id='worker-a')
+            drained = observe_effect(lambda: WK.WorkLoop('worker-a', [], disp, scope={'plan': 'PLAN-9001'}, repo_root=str(base),
+                                                  claims_root=str(claims) + '-loop', eligibility=gate).run())
+            restore()
+            launched = [(a, i, c) for a, i, c, _ in receiver[before:]]
+            records = reservations._records()
+            call = [r for r in records.values() if r['type'] == 'invocation' and r['invocation'] == 'loop-build-' + sid]
+            slot = [r for r in records.values() if r['type'] == 'worker' and call and r['dispatch'] == call[0]['dispatch']]
+            observed['work_loop'] = {'handed_keys': handed, 'launched': launched,
+                                     'slot_context': slot[0]['context'] if slot else None}
+            check('reservations/work-loop-dispatch-identity',
+                   drained[0] == 'ok' and hooks.builds == [sid] and handed and all('dispatch' not in keys for keys in handed)
+                   and launched == [('claude_code', 'loop-build-' + sid, True)]
+                   and len(slot) == 1 and not slot[0]['retired']
+                   and slot[0]['context'] == dict(domain=DOMAIN, repository=REPOSITORY, account='acct-floor',
+                                                  project='p1', unit=sid))
 
         with region('completion/landed-units-not-reoffered'):
             # DEFECT f. Every lane asks the one completion reader, never the front matter: a landed unit is
