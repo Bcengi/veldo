@@ -93,6 +93,7 @@ MAX_DEPTH = 32
 MAX_ANSWER_BYTES = 1 << 20
 HERE = Path(__file__).resolve().parent
 INSTALL_COMMAND = 'python3 .veldo/control_graph_install.py'
+REBUILD_COMMAND = INSTALL_COMMAND + ' --rebuild'
 RUNNER = 'control_graph_langgraph.py'
 # Staged runner copies and child working directories: per account, separate from the runtime,
 # which holds only what the lock installed.
@@ -550,7 +551,7 @@ def exchange(runtime, sent, timeout=120):
                       + INSTALL_COMMAND)
     problems = runtime_problems(runtime)
     if problems:
-        raise Refused('runtime_unavailable', '; '.join(problems))
+        raise Refused('runtime_unavailable', '; '.join(problems) + '; rebuild it with: ' + REBUILD_COMMAND)
     try:
         staged, work = stage(runtime)
         empty = _working_directory(work)

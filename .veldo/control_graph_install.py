@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Install the locked LangGraph runtime for this account (VELDO-0043). Standard library only.
 
-  python3 .veldo/control_graph_install.py
+  python3 .veldo/control_graph_install.py [--rebuild]
 
 Builds <account home>/.local/share/veldo/langgraph/<lock digest>/ as a virtual environment,
 created from the RESOLVED base interpreter (so pyvenv.cfg names no repository virtual environment;
@@ -12,7 +12,9 @@ lock's exact pins and sha256 hashes, so the runtime holds the locked distributio
 else. The environment is built beside
 its final name and renamed into place only after the install and an import of langgraph succeed,
 so the adapter never finds a half-built runtime. The account home comes from the password
-database, never $HOME. An existing runtime for this lock digest is left as it is.
+database, never $HOME. An existing runtime for this lock digest is left as it is, unless
+--rebuild is given: then a fresh runtime is built beside it and swapped in, and the old one is
+removed only after the new one is in place (the recovery for a runtime the adapter refuses).
 
 Run it by hand; never from the gate or a suite. VELDO-0045 later owns distribution and activation.
 """
@@ -63,10 +65,10 @@ def _environment():
     return env
 
 
-def install(python=sys.executable, home=None, out=sys.stdout):
+def install(python=sys.executable, home=None, out=sys.stdout, rebuild=False):
     lock = _lock()
     target = lock.runtime_directory(home)
-    if (target / 'bin' / 'python').is_file():
+    if (target / 'bin' / 'python').is_file() and not rebuild:
         out.write('present: ' + str(target) + '\n')
         return target
     python, version = base_interpreter(python)
@@ -87,7 +89,16 @@ def install(python=sys.executable, home=None, out=sys.stdout):
                            check=True, env=env)
         subprocess.run([str(building / 'bin' / 'python'), '-I', '-B', '-c', 'import langgraph.graph'],
                        check=True, env=env)
-        os.rename(building, target)
+        if target.exists() or target.is_symlink():
+            retired = target.with_name('.retired-' + target.name + '-' + str(os.getpid()))
+            os.rename(target, retired)
+            os.rename(building, target)
+            if retired.is_symlink() or not retired.is_dir():
+                retired.unlink()
+            else:
+                shutil.rmtree(retired)
+        else:
+            os.rename(building, target)
     finally:
         if building.exists():
             shutil.rmtree(building)
@@ -96,6 +107,6 @@ def install(python=sys.executable, home=None, out=sys.stdout):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 1:
-        sys.exit('usage: ' + COMMAND)
-    install()
+    if sys.argv[1:] not in ([], ['--rebuild']):
+        sys.exit('usage: ' + COMMAND + ' [--rebuild]')
+    install(rebuild=sys.argv[1:] == ['--rebuild'])
