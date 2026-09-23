@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph_langgraph.py
++++ b/.veldo/control_graph_langgraph.py
+@@ -110 +110 @@
+-            if untyped:
++            if False:

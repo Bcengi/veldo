@@ -554,8 +554,8 @@
    "requires": [
     "59_veldo_0043_graph"
    ],
-   "regions": "Plain-data graph adapter boundary and isolated stdlib enforcement",
-   "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store handle and a stdlib interface stub runner; the actual LangGraph runtime is not installed."
+   "regions": "Plain-data graph adapter over the actual LangGraph runtime, no direct graph authority, tracing off and isolated stdlib enforcement",
+   "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store in a real Git repository, a stdlib interface stub runner, and the actual LangGraph runtime installed from .veldo/control_graph_lock.py (absent: the runtime rows fail by name with the install command)."
   }
  ]
 }

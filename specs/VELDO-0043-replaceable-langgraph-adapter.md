@@ -124,3 +124,12 @@ two for unavailable graph start, and fresh unmutated controls. AC1 and AC2 are n
 actual LangGraph runtime is not installed because its dependency closure conflicts with C16
 and needs an owner decision, recorded in proof/VELDO-0043/README.md. No criterion, status or
 historical proof was changed.
+
+2026-09-23 implementation: AC1 and AC2 built on the actual LangGraph runtime after the owner
+approved xxhash, langsmith, langgraph-sdk (Telegram 28927 answering 28926) and orjson as named
+exceptions, with dependencies of chosen software approved automatically (28929) and every pin
+at the latest compatible release (28931). The lock is the data module
+`.veldo/control_graph_lock.py`, inside the existing `.veldo/control_graph*.py` footprint; the
+per-account runtime is built by `.veldo/control_graph_install.py`. Eight more finding 43
+negative controls are registered in `scripts/check_teeth_mutations.py`. No criterion, status or
+historical proof was changed.

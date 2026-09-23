@@ -1,18 +1,20 @@
 {
- "schema": "veldo.dependency-probe/v2",
- "how": "pip install --dry-run --report for langgraph==1.2.12 (latest stable on PyPI, read 2026-09-23) in a throwaway venv under the session scratchpad, Python 3.12.3, pip 24.0. Nothing was installed. Licenses from PyPI project metadata, origin from the GitHub owner profiles (gh api users/<login>) read 2026-09-23.",
+ "schema": "veldo.dependency-closure/v3",
+ "how": "pip install --dry-run --only-binary=:all: --report for langgraph==1.2.12 in a throwaway venv, Python 3.12.3, pip 24.0, linux x86_64; latest_on_pypi is the highest non-prerelease, non-yanked release in https://pypi.org/pypi/<name>/json, checked 2026-09-23. Licenses from PyPI metadata, origin from the GitHub owner profiles. The same pins and hashes are .veldo/control_graph_lock.py.",
  "closure": [
   {
    "name": "annotated-types",
-   "version": "0.8.0",
    "license": "MIT",
    "origin": "github.com/annotated-types (org, no location); author Adrian Garcia Badaracco, Chicago, IL, US",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.8.0",
+   "latest_on_pypi": "0.8.0",
+   "wheel": "annotated_types-0.8.0-py3-none-any.whl",
+   "sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0"
   },
   {
    "name": "anyio",
-   "version": "4.15.1",
    "license": "MIT",
    "origin": "github.com/agronholm, Alex Gronholm, Nurmijarvi, Finland",
    "requires": [
@@ -20,65 +22,86 @@
     "idna",
     "typing_extensions"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "4.15.1",
+   "latest_on_pypi": "4.15.1",
+   "wheel": "anyio-4.15.1-py3-none-any.whl",
+   "sha256": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101"
   },
   {
    "name": "certifi",
-   "version": "2026.7.22",
    "license": "MPL-2.0",
    "origin": "github.com/certifi (org, no location); PyPI author Kenneth Reitz",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2026.7.22",
+   "latest_on_pypi": "2026.7.22",
+   "wheel": "certifi-2026.7.22-py3-none-any.whl",
+   "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775"
   },
   {
    "name": "charset-normalizer",
-   "version": "3.5.1",
    "license": "MIT",
    "origin": "github.com/jawah (org, France); Ahmed R. Tahri (Ousret), France",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "3.5.1",
+   "latest_on_pypi": "3.5.1",
+   "wheel": "charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+   "sha256": "b9af956078716df40d985fb0dfeb2c2120c5ca92ba4ff4b388acfd01cdc14d08"
   },
   {
    "name": "distro",
-   "version": "1.9.0",
    "license": "Apache-2.0",
    "origin": "github.com/python-distro (org, no location); author Nir Cohen (nir0s, no location)",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.9.0",
+   "latest_on_pypi": "1.9.0",
+   "wheel": "distro-1.9.0-py3-none-any.whl",
+   "sha256": "7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"
   },
   {
    "name": "h11",
-   "version": "0.16.0",
    "license": "MIT",
    "origin": "github.com/python-hyper (org, no location); author Nathaniel J. Smith (no location)",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.16.0",
+   "latest_on_pypi": "0.16.0",
+   "wheel": "h11-0.16.0-py3-none-any.whl",
+   "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"
   },
   {
    "name": "httpcore",
-   "version": "1.0.9",
    "license": "BSD-3-Clause",
    "origin": "github.com/encode (org, no location); author Tom Christie (no location)",
    "requires": [
     "certifi",
     "h11"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.0.9",
+   "latest_on_pypi": "1.0.9",
+   "wheel": "httpcore-1.0.9-py3-none-any.whl",
+   "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"
   },
   {
    "name": "httpcore2",
-   "version": "2.13.1",
    "license": "BSD-3-Clause",
    "origin": "github.com/pydantic/httpx2; maintainer Pydantic Services Inc.; Samuel Colvin, London, UK",
    "requires": [
     "h11",
     "truststore"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2.13.1",
+   "latest_on_pypi": "2.13.1",
+   "wheel": "httpcore2-2.13.1-py3-none-any.whl",
+   "sha256": "e1e05d4f25f7d7d496bfb96748f6f4b67657b03da069b3a68c36069f3db73d0a"
   },
   {
    "name": "httpx",
-   "version": "0.28.1",
    "license": "BSD-3-Clause",
    "origin": "github.com/encode (org, no location); author Tom Christie (no location)",
    "requires": [
@@ -87,11 +110,14 @@
     "httpcore",
     "idna"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.28.1",
+   "latest_on_pypi": "0.28.1",
+   "wheel": "httpx-0.28.1-py3-none-any.whl",
+   "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"
   },
   {
    "name": "httpx2",
-   "version": "2.13.1",
    "license": "BSD-3-Clause",
    "origin": "github.com/pydantic/httpx2; maintainer Pydantic Services Inc.; Samuel Colvin, London, UK",
    "requires": [
@@ -102,37 +128,49 @@
     "truststore",
     "typing-extensions"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2.13.1",
+   "latest_on_pypi": "2.13.1",
+   "wheel": "httpx2-2.13.1-py3-none-any.whl",
+   "sha256": "6dff50fabc270ee5fd25d845d0b078ed20564579744d6d962850975996d2f9a4"
   },
   {
    "name": "idna",
-   "version": "3.20",
    "license": "BSD-3-Clause",
    "origin": "github.com/kjd, Kim Davies (ICANN/IANA, no location)",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "3.20",
+   "latest_on_pypi": "3.20",
+   "wheel": "idna-3.20-py3-none-any.whl",
+   "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c"
   },
   {
    "name": "jsonpatch",
-   "version": "1.33",
    "license": "BSD (Modified BSD License)",
    "origin": "github.com/stefankoegl, Stefan Koegl, Austria",
    "requires": [
     "jsonpointer("
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.33",
+   "latest_on_pypi": "1.33",
+   "wheel": "jsonpatch-1.33-py2.py3-none-any.whl",
+   "sha256": "0ae28c0cd062bbd8b8ecc26d7d164fbbea9652a1a3693f3b956c1eae5145dade"
   },
   {
    "name": "jsonpointer",
-   "version": "3.1.1",
    "license": "BSD (Modified BSD License)",
    "origin": "github.com/stefankoegl, Stefan Koegl, Austria",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "3.1.1",
+   "latest_on_pypi": "3.1.1",
+   "wheel": "jsonpointer-3.1.1-py3-none-any.whl",
+   "sha256": "8ff8b95779d071ba472cf5bc913028df06031797532f08a7d5b602d8b2a488ca"
   },
   {
    "name": "langchain-core",
-   "version": "1.6.4",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
@@ -147,21 +185,27 @@
     "typing-extensions",
     "uuid-utils"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.6.4",
+   "latest_on_pypi": "1.6.4",
+   "wheel": "langchain_core-1.6.4-py3-none-any.whl",
+   "sha256": "2f940c83f787676ad4dc651d49d053c7ec34bda5a6afcd224da2863ff53a0b84"
   },
   {
    "name": "langchain-protocol",
-   "version": "0.0.19",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "typing-extensions"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.0.19",
+   "latest_on_pypi": "0.0.19",
+   "wheel": "langchain_protocol-0.0.19-py3-none-any.whl",
+   "sha256": "4cdf879a492a35980fd859ae792d3c65458ccaae504e183c9a10d7eac1f0720f"
   },
   {
    "name": "langgraph",
-   "version": "1.2.12",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
@@ -172,33 +216,42 @@
     "pydantic",
     "xxhash"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.2.12",
+   "latest_on_pypi": "1.2.12",
+   "wheel": "langgraph-1.2.12-py3-none-any.whl",
+   "sha256": "95403af7b510de8d79164742f71daaf866c69ca804a8cb72bef2cc1fa1ab9813"
   },
   {
    "name": "langgraph-checkpoint",
-   "version": "4.2.0",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "langchain-core",
     "ormsgpack"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "4.2.0",
+   "latest_on_pypi": "4.2.0",
+   "wheel": "langgraph_checkpoint-4.2.0-py3-none-any.whl",
+   "sha256": "0547fd228935a0b758865de3a3d6d7a2537c308895d0f9ab092ce9151b5da942"
   },
   {
    "name": "langgraph-prebuilt",
-   "version": "1.1.0",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "langchain-core",
     "langgraph-checkpoint"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.1.0",
+   "latest_on_pypi": "1.1.0",
+   "wheel": "langgraph_prebuilt-1.1.0-py3-none-any.whl",
+   "sha256": "51e311747d755b751d5c6b39b0c1446124d3a7643d2515017e6714b323508fc9"
   },
   {
    "name": "langgraph-sdk",
-   "version": "0.4.5",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
@@ -208,11 +261,14 @@
     "orjson",
     "websockets"
    ],
-   "status": "CONFLICT: client of the LangSmith Deployment / LangGraph Agent Server service, sold in free and paid tiers; not approved"
+   "status": "named exception, owner Telegram 28927 \"Allow\" answering 28926; client never pointed at LangChain hosting",
+   "pinned": "0.4.5",
+   "latest_on_pypi": "0.4.5",
+   "wheel": "langgraph_sdk-0.4.5-py3-none-any.whl",
+   "sha256": "e03ef033a20d21288af496e9b6c08ae3afcc1b58dc5abcd37575bfd1a93045de"
   },
   {
    "name": "langsmith",
-   "version": "0.14.0",
    "license": "MIT",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
@@ -231,35 +287,47 @@
     "xxhash",
     "zstandard"
    ],
-   "status": "owner-approved exception (client of a free and paid tier service)"
+   "status": "named exception (client of a free and paid tier service), owner approval relayed by the lead 2026-09-23; tracing off",
+   "pinned": "0.14.0",
+   "latest_on_pypi": "0.14.0",
+   "wheel": "langsmith-0.14.0-py3-none-any.whl",
+   "sha256": "1a89e52c24edd6f4c24d8cfb32857814ceb5b9bec344a2850e86ab38475de362"
   },
   {
    "name": "orjson",
-   "version": "3.12.0",
    "license": "MPL-2.0 AND (Apache-2.0 OR MIT)",
    "origin": "github.com/ijl, no public name or location (commit mail at mailbox.org); origin NOT verified",
    "requires": [],
-   "status": "origin not verified"
+   "status": "named exception (origin not verified), owner Telegram 28927 \"Allow\" answering 28926",
+   "pinned": "3.12.0",
+   "latest_on_pypi": "3.12.0",
+   "wheel": "orjson-3.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "sha256": "1192a7021b6d071aaf909864f6e924d6a2675ca360485b972b8401749311750b"
   },
   {
    "name": "ormsgpack",
-   "version": "1.12.2",
    "license": "Apache-2.0 OR MIT",
    "origin": "github.com/ormsgpack (org); Aviram Hassan, Tel Aviv, Israel; Emanuele Giaquinta (exg, no location)",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.12.2",
+   "latest_on_pypi": "1.12.2",
+   "wheel": "ormsgpack-1.12.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "sha256": "58d379d72b6c5e964851c77cfedfb386e474adee4fd39791c2c5d9efb53505cc"
   },
   {
    "name": "packaging",
-   "version": "26.3",
    "license": "Apache-2.0 OR BSD-2-Clause",
    "origin": "github.com/pypa, Python Packaging Authority, United States",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "26.3",
+   "latest_on_pypi": "26.3",
+   "wheel": "packaging-26.3-py3-none-any.whl",
+   "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
   },
   {
    "name": "pydantic",
-   "version": "2.13.5",
    "license": "MIT",
    "origin": "github.com/pydantic (org, no location); Samuel Colvin, London, UK",
    "requires": [
@@ -268,29 +336,39 @@
     "typing-extensions",
     "typing-inspection"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2.13.5",
+   "latest_on_pypi": "2.13.5",
+   "wheel": "pydantic-2.13.5-py3-none-any.whl",
+   "sha256": "346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73"
   },
   {
    "name": "pydantic_core",
-   "version": "2.46.5",
    "license": "MIT",
    "origin": "github.com/pydantic (org, no location); Samuel Colvin, London, UK",
    "requires": [
     "typing-extensions"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2.46.5",
+   "latest_on_pypi": "2.49.0",
+   "wheel": "pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "sha256": "0fc5be0abd4a407e200d844b404e33639a554e7bd0d448e7b9ae181be4789ac2",
+   "why_not_latest": "pydantic 2.13.5 requires \"pydantic-core==2.46.5\""
   },
   {
    "name": "PyYAML",
-   "version": "6.0.3",
    "license": "MIT",
    "origin": "github.com/yaml, The YAML Project (org, no location)",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "6.0.3",
+   "latest_on_pypi": "6.0.3",
+   "wheel": "pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+   "sha256": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc"
   },
   {
    "name": "requests",
-   "version": "2.34.2",
    "license": "Apache-2.0",
    "origin": "github.com/psf, Python Software Foundation; maintainer Ian Stapleton Cordasco, Madison, WI, US",
    "requires": [
@@ -299,99 +377,138 @@
     "idna",
     "urllib3"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2.34.2",
+   "latest_on_pypi": "2.34.2",
+   "wheel": "requests-2.34.2-py3-none-any.whl",
+   "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
   },
   {
    "name": "requests-toolbelt",
-   "version": "1.0.0",
    "license": "Apache-2.0",
    "origin": "github.com/requests (org); Ian Stapleton Cordasco, Madison, WI, US",
    "requires": [
     "requests("
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.0.0",
+   "latest_on_pypi": "1.0.0",
+   "wheel": "requests_toolbelt-1.0.0-py2.py3-none-any.whl",
+   "sha256": "cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"
   },
   {
    "name": "sniffio",
-   "version": "1.3.1",
    "license": "MIT OR Apache-2.0",
    "origin": "github.com/python-trio (org, no location); author Nathaniel J. Smith",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "1.3.1",
+   "latest_on_pypi": "1.3.1",
+   "wheel": "sniffio-1.3.1-py3-none-any.whl",
+   "sha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"
   },
   {
    "name": "tenacity",
-   "version": "9.1.4",
    "license": "Apache-2.0",
    "origin": "github.com/jd, Julien Danjou, Toulouse, France",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "9.1.4",
+   "latest_on_pypi": "9.1.4",
+   "wheel": "tenacity-9.1.4-py3-none-any.whl",
+   "sha256": "6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55"
   },
   {
    "name": "truststore",
-   "version": "0.10.4",
    "license": "MIT",
    "origin": "github.com/sethmlarson, Seth Larson, Minneapolis, MN, US",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.10.4",
+   "latest_on_pypi": "0.10.4",
+   "wheel": "truststore-0.10.4-py3-none-any.whl",
+   "sha256": "adaeaecf1cbb5f4de3b1959b42d41f6fab57b2b1666adb59e89cb0b53361d981"
   },
   {
    "name": "typing-inspection",
-   "version": "0.4.4",
    "license": "MIT",
    "origin": "github.com/pydantic; Victorien Plot (Viicos), Amsterdam, Netherlands",
    "requires": [
     "typing-extensions"
    ],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.4.4",
+   "latest_on_pypi": "0.4.4",
+   "wheel": "typing_inspection-0.4.4-py3-none-any.whl",
+   "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147"
   },
   {
    "name": "typing_extensions",
-   "version": "4.16.0",
    "license": "PSF-2.0",
    "origin": "github.com/python, Python (org)",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "4.16.0",
+   "latest_on_pypi": "4.16.0",
+   "wheel": "typing_extensions-4.16.0-py3-none-any.whl",
+   "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
   },
   {
    "name": "urllib3",
-   "version": "2.8.0",
    "license": "MIT",
    "origin": "github.com/urllib3 (org); Andrey Petrov, Toronto, Canada; Seth Larson, Minneapolis, MN, US",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "2.8.0",
+   "latest_on_pypi": "2.8.0",
+   "wheel": "urllib3-2.8.0-py3-none-any.whl",
+   "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
   },
   {
    "name": "uuid_utils",
-   "version": "0.17.1",
    "license": "BSD-3-Clause",
    "origin": "github.com/aminalaee, Amin Alaee, Netherlands",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.17.1",
+   "latest_on_pypi": "1.0.0",
+   "wheel": "uuid_utils-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "sha256": "d45f93f362d39f63ba14bbd9e4e1dd89fbed4de9bbef6bb428a379bd86571da2",
+   "why_not_latest": "langchain-core 1.6.4 and langsmith 0.14.0 both require \"uuid-utils<1.0,>=0.12.0\""
   },
   {
    "name": "websockets",
-   "version": "16.1.1",
    "license": "BSD-3-Clause",
    "origin": "github.com/python-websockets (org); Aymeric Augustin, Paris, France",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "16.1.1",
+   "latest_on_pypi": "17.1",
+   "wheel": "websockets-16.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+   "sha256": "0f62863e8a00a6d33c3d6566ec0b89f23787b747ffe0c3bc71ec0e76b82c94b1",
+   "why_not_latest": "langgraph-sdk 0.4.5 requires \"websockets<17,>=14\""
   },
   {
    "name": "xxhash",
-   "version": "4.0.1",
    "license": "BSD-2-Clause",
    "origin": "github.com/ifduyue, Yue Du, location China",
    "requires": [],
-   "status": "owner-approved exception (Chinese origin)"
+   "status": "named exception (Chinese origin), owner approval relayed by the lead 2026-09-23",
+   "pinned": "4.0.1",
+   "latest_on_pypi": "4.0.1",
+   "wheel": "xxhash-4.0.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+   "sha256": "237b8f63a2a0fcfb1ffc06e21dad23add44e6d354b2b014364a1d41e419a4dee"
   },
   {
    "name": "zstandard",
-   "version": "0.25.0",
    "license": "BSD-3-Clause",
    "origin": "github.com/indygreg, Gregory Szorc, San Francisco, CA, US",
    "requires": [],
-   "status": "no conflict found"
+   "status": "dependency of software we chose: approved automatically (owner Telegram 28929)",
+   "pinned": "0.25.0",
+   "latest_on_pypi": "0.25.0",
+   "wheel": "zstandard-0.25.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+   "sha256": "5a56ba0db2d244117ed744dfa8f6f5b366e14148e00de44723413b2f3938a902"
   }
  ]
 }

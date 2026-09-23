@@ -1,33 +1,24 @@
 {
  "suite": "59_veldo_0043_graph",
- "suite_runs": [
-  {
-   "suite_seconds": 0.79,
-   "suite_rows_passed": 6,
-   "process_wall_seconds": 0.852,
-   "exit": 2
-  },
-  {
-   "suite_seconds": 0.77,
-   "suite_rows_passed": 6,
-   "process_wall_seconds": 0.834,
-   "exit": 2
-  },
-  {
-   "suite_seconds": 0.77,
-   "suite_rows_passed": 6,
-   "process_wall_seconds": 0.838,
-   "exit": 2
-  }
- ],
- "teeth_finding_43_wall_seconds": 8.352,
- "teeth_exit": 0,
- "teeth_note": "serial: 5 cases, each one honest and one mutant full suite run (10 suite executions)",
- "gate_estimate": {
-  "unit_and_first_use_suite_runs_seconds": 1.58,
-  "mutation_stage_worker_invocations_added": 9,
-  "mutation_stage_serial_worker_seconds_upper_bound": 7.517,
-  "total_upper_bound_seconds_serial": 9.097
+ "measured": "2026-09-23 on the Linux box, 20 cores, other agents running (load average 6 to 13)",
+ "suite_runs_before": {"commit": "f346524", "rows": 6, "suite_seconds": [0.79, 0.77, 0.77]},
+ "suite_runs_after": {"commit": "b3415d0", "rows": 12, "suite_seconds": [4.79, 4.69, 4.66],
+                      "process_wall_seconds": [4.84, 4.73, 4.70]},
+ "suite_seconds_added_per_run": 3.9,
+ "runtime_exchanges_per_run": 15,
+ "teeth_finding_43": {
+  "before": {"cases": 5, "suite_executions": 10, "wall_seconds": 8.35},
+  "after": {"cases": 13, "suite_executions": 26, "wall_seconds": 125.94},
+  "wall_seconds_added": 117.6,
+  "note": "serial driver: each case runs one honest and one mutant full suite"
  },
- "limit_seconds": 60
+ "gate_mutation_stage": {
+  "command": "python3 -B scripts/check_gate_mutations.py (whole stage, all drivers, parallel 8, combined budget 120 s)",
+  "after": {"commit": "b3415d0", "registered": 129, "status": "passed", "elapsed_seconds": 119.14,
+            "finding_43_mutant_workers": 13, "finding_43_mutant_worker_seconds": 68.8},
+  "before": {"commit": "f346524", "registered": 121, "status": "failed: mutation_budget_exceeded",
+             "elapsed_seconds": 120.16},
+  "note": "the stage is at its 120 s budget before and after this change under the same load; finding 43 adds about 94 worker seconds (13 mutants and 6 controls near 5 s each, against about 7 before), about 12 s of wall time at 8 workers"
+ },
+ "limit_seconds_for_suite_rows": 60
 }

@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -181 +181 @@
--        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation')
-+        raise Refused('unknown_outcome', 'no graph runtime is installed for this operation')
+@@ -215 +215 @@
+-        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
++        raise Refused('unknown_outcome', 'no graph runtime is installed for this operation; install it with: '

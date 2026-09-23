@@ -1,130 +1,893 @@
 [
  {
-  "failed_entries": [
-   {
-    "entry": "authorization",
-    "exception": "ModuleNotFoundError",
-    "exit": 0,
-    "refused_imports": [
-     "langgraph"
-    ],
-    "static_violations": [
-     {
-      "import": "langgraph",
-      "module": "authorization.py"
-     }
-    ]
-   },
-   {
-    "entry": "graph_start",
-    "exception": null,
-    "exit": 0,
-    "refused_imports": [],
-    "static_violations": [
-     {
-      "import": "langgraph",
-      "module": "authorization.py"
-     }
-    ]
-   }
-  ],
-  "isolation_exit": 1,
   "module": "authorization.py",
   "mutation": "graph-authorization-imports-langgraph",
-  "passed": false,
+  "red_rows": [
+   "graph/isolated-enforcement"
+  ],
+  "target_red": true,
   "target_rows": [
    "graph/isolated-enforcement"
-  ]
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [
+    {
+     "entry": "authorization",
+     "exception": "ModuleNotFoundError",
+     "exit": 0,
+     "refused_imports": [
+      "langgraph"
+     ],
+     "static_violations": [
+      {
+       "import": "langgraph",
+       "module": "authorization.py"
+      }
+     ]
+    },
+    {
+     "entry": "graph_start",
+     "exception": null,
+     "exit": 0,
+     "refused_imports": [],
+     "static_violations": [
+      {
+       "import": "langgraph",
+       "module": "authorization.py"
+      }
+     ]
+    }
+   ],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
  },
  {
-  "failed_entries": [
-   {
-    "entry": "authorization",
-    "exception": "ModuleNotFoundError",
-    "exit": 0,
-    "refused_imports": [
-     "langgraph"
-    ],
-    "static_violations": []
-   }
-  ],
-  "isolation_exit": 1,
   "module": "authorization.py",
   "mutation": "graph-authorization-dynamic-runtime-import",
-  "passed": false,
+  "red_rows": [
+   "graph/isolated-enforcement"
+  ],
+  "target_red": true,
   "target_rows": [
    "graph/isolated-enforcement"
-  ]
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [
+    {
+     "entry": "authorization",
+     "exception": "ModuleNotFoundError",
+     "exit": 0,
+     "refused_imports": [
+      "langgraph"
+     ],
+     "static_violations": []
+    }
+   ],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
  },
  {
-  "failed_entries": [
-   {
-    "entry": "authorization",
-    "exception": null,
-    "exit": 0,
-    "refused_imports": [],
-    "static_violations": [
-     {
-      "import": "langgraph.graph",
-      "module": "authorization.py"
-     }
-    ]
-   },
-   {
-    "entry": "graph_start",
-    "exception": null,
-    "exit": 0,
-    "refused_imports": [],
-    "static_violations": [
-     {
-      "import": "langgraph.graph",
-      "module": "authorization.py"
-     }
-    ]
-   }
-  ],
-  "isolation_exit": 1,
   "module": "authorization.py",
   "mutation": "graph-authorization-unexercised-runtime-import",
-  "passed": false,
+  "red_rows": [
+   "graph/isolated-enforcement"
+  ],
+  "target_red": true,
   "target_rows": [
    "graph/isolated-enforcement"
-  ]
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [
+    {
+     "entry": "authorization",
+     "exception": null,
+     "exit": 0,
+     "refused_imports": [],
+     "static_violations": [
+      {
+       "import": "langgraph.graph",
+       "module": "authorization.py"
+      }
+     ]
+    },
+    {
+     "entry": "graph_start",
+     "exception": null,
+     "exit": 0,
+     "refused_imports": [],
+     "static_violations": [
+      {
+       "import": "langgraph.graph",
+       "module": "authorization.py"
+      }
+     ]
+    }
+   ],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
  },
  {
-  "failed_entries": [
-   {
-    "entry": "graph_start",
-    "exception": "TypeError",
-    "exit": 0,
-    "refused_imports": [],
-    "static_violations": []
-   }
-  ],
-  "isolation_exit": 1,
   "module": "control_graph.py",
   "mutation": "graph-start-without-runtime-launches",
-  "passed": false,
+  "red_rows": [
+   "graph/isolated-enforcement",
+   "graph/start-unavailable"
+  ],
+  "target_red": true,
   "target_rows": [
    "graph/start-unavailable"
-  ]
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [
+    {
+     "entry": "graph_start",
+     "exception": "TypeError",
+     "exit": 0,
+     "refused_imports": [],
+     "static_violations": []
+    }
+   ],
+   "start_without_runtime": [
+    "TypeError",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
  },
  {
-  "failed_entries": [
-   {
-    "entry": "graph_start",
-    "exception": null,
-    "exit": 1,
-    "refused_imports": [],
-    "static_violations": []
-   }
-  ],
-  "isolation_exit": 1,
   "module": "control_graph.py",
   "mutation": "graph-start-unavailable-mislabelled",
-  "passed": false,
+  "red_rows": [
+   "graph/isolated-enforcement",
+   "graph/start-unavailable"
+  ],
+  "target_red": true,
   "target_rows": [
    "graph/start-unavailable"
-  ]
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [
+    {
+     "entry": "graph_start",
+     "exception": null,
+     "exit": 1,
+     "refused_imports": [],
+     "static_violations": []
+    }
+   ],
+   "start_without_runtime": [
+    "unknown_outcome",
+    "unknown_outcome"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_langgraph.py",
+  "mutation": "graph-runner-emits-langgraph-object",
+  "red_rows": [
+   "graph/runtime/plain-data"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/plain-data"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "refused": "invalid_response"
+    },
+    {
+     "refused": "invalid_response"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_langgraph.py",
+  "mutation": "graph-runner-tuple-as-plain",
+  "red_rows": [
+   "graph/runtime/plain-data"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/plain-data"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "refused": "invalid_response"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-child-inherits-working-directory",
+  "red_rows": [
+   "graph/boundary/no-store-handle",
+   "graph/authority/no-direct-write"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/no-direct-write"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [
+     "/tmp/graph-43-irtrg640/authority-repository/.git/veldo/control/control.sqlite3"
+    ],
+    "wrote": [
+     "/tmp/graph-43-irtrg640/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "store_unchanged_by_graph": false,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-child-inherits-store-descriptor",
+  "red_rows": [
+   "graph/boundary/no-store-handle",
+   "graph/authority/no-direct-write"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/no-direct-write"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [
+     "/tmp/graph-43-09w3o7pb/authority-repository/.git/veldo/control/control.sqlite3"
+    ],
+    "wrote": [
+     "/tmp/graph-43-09w3o7pb/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "store_unchanged_by_graph": false,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_langgraph.py",
+  "mutation": "graph-runner-accepts-untyped-assertion",
+  "red_rows": [
+   "graph/authority/typed-proposals-only"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/typed-proposals-only"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "missing_evidence",
+     "detail": "the cycle ended without a proposal"
+    },
+    "assert-completion": {
+     "code": "missing_evidence",
+     "detail": "the cycle ended without a proposal"
+    },
+    "assert-priority": {
+     "code": "missing_evidence",
+     "detail": "the cycle ended without a proposal"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-untyped-proposal-read-as-priority",
+  "red_rows": [
+   "graph/shape/plain-data",
+   "graph/runtime/plain-data",
+   "graph/authority/typed-proposals-only"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/typed-proposals-only"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "command_id": "command-u",
+    "cycle_id": "cycle-u",
+    "domain_uuid": "domain",
+    "operation": "start",
+    "outcome": "proposal",
+    "proposals": [
+     {
+      "priority": 1,
+      "proposal_id": "p1",
+      "subject": "unit-1"
+     }
+    ],
+    "repository_uuid": "repository",
+    "runtime": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "schema": "veldo.graph/v1"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-child-inherits-caller-environment",
+  "red_rows": [
+   "graph/boundary/no-store-handle",
+   "graph/runtime/tracing-off"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/tracing-off"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [
+     "socket.getaddrinfo"
+    ],
+    "switches": {
+     "LANGCHAIN_TRACING": "true",
+     "LANGCHAIN_TRACING_V2": "true",
+     "LANGSMITH_TRACING": "true",
+     "LANGSMITH_TRACING_V2": "true"
+    },
+    "tracing": true
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-tracing-switch-on",
+  "red_rows": [
+   "graph/runtime/tracing-off"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/tracing-off"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "first_runner_audit": {
+    "sockets": [
+     "socket.getaddrinfo"
+    ],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "true"
+    },
+    "tracing": true
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": {
+    "found": [],
+    "wrote": []
+   },
+   "store_unchanged_by_graph": true,
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
  }
 ]

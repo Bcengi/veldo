@@ -9,6 +9,10 @@
   ],
   "environment": [
    "LANG",
+   "LANGCHAIN_TRACING",
+   "LANGCHAIN_TRACING_V2",
+   "LANGSMITH_TRACING",
+   "LANGSMITH_TRACING_V2",
    "LC_ALL",
    "PATH",
    "PYTHONDONTWRITEBYTECODE",
@@ -16,7 +20,7 @@
   ],
   "store_descriptor": 6
  },
- "elapsed_seconds": 0.6763536420185119,
+ "elapsed_seconds": 5.004319555126131,
  "isolated": {
   "returncode": 0,
   "verdict": {
@@ -135,6 +139,7 @@
       "contract_loader.py",
       "control_graph.py",
       "control_graph_isolation.py",
+      "control_graph_lock.py",
       "decision.py",
       "decision_review.py",
       "fix_validation.py",
@@ -166,36 +171,410 @@
     }
    ],
    "passed": true,
-   "root": "<temporary>/installed",
+   "root": "/tmp/graph-43-mahq9ppj/installed",
    "schema": "veldo.isolated_enforcement/v1"
   }
  },
- "rows": [
-  [
-   "graph/installed-assets",
-   true
+ "runtime": {
+  "advanced": {
+   "command_id": "command-r3",
+   "cycle_id": "cycle-r1",
+   "domain_uuid": "domain",
+   "operation": "advance",
+   "outcome": "proposal",
+   "proposals": [
+    {
+     "priority": 2,
+     "proposal_id": "p-cycle-r1",
+     "subject": "unit-1",
+     "type": "priority"
+    }
+   ],
+   "repository_uuid": "repository",
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "assertions": {
+   "assert-admission": {
+    "command_id": "command-assert-admission",
+    "cycle_id": "cycle-assert-admission",
+    "domain_uuid": "domain",
+    "failure": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "operation": "start",
+    "outcome": "failure",
+    "repository_uuid": "repository",
+    "runtime": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "schema": "veldo.graph/v1"
+   },
+   "assert-completion": {
+    "command_id": "command-assert-completion",
+    "cycle_id": "cycle-assert-completion",
+    "domain_uuid": "domain",
+    "failure": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "operation": "start",
+    "outcome": "failure",
+    "repository_uuid": "repository",
+    "runtime": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "schema": "veldo.graph/v1"
+   },
+   "assert-priority": {
+    "command_id": "command-assert-priority",
+    "cycle_id": "cycle-assert-priority",
+    "domain_uuid": "domain",
+    "failure": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    },
+    "operation": "start",
+    "outcome": "failure",
+    "repository_uuid": "repository",
+    "runtime": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "schema": "veldo.graph/v1"
+   }
+  },
+  "audits": [
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   {
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   }
   ],
-  [
-   "graph/isolated-enforcement",
-   true
+  "canceled": {
+   "command_id": "command-r5",
+   "cycle_id": "cycle-r2",
+   "domain_uuid": "domain",
+   "operation": "cancel",
+   "outcome": "canceled",
+   "repository_uuid": "repository",
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "failed": {
+   "command_id": "command-r6",
+   "cycle_id": "cycle-r3",
+   "domain_uuid": "domain",
+   "failure": {
+    "code": "missing_evidence",
+    "detail": "no accepted evidence for unit-1"
+   },
+   "operation": "start",
+   "outcome": "failure",
+   "repository_uuid": "repository",
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "foreign": [
+   {
+    "command_id": "command-f-foreign-command",
+    "cycle_id": "cycle-f-foreign-command",
+    "domain_uuid": "domain",
+    "failure": {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    "operation": "start",
+    "outcome": "failure",
+    "repository_uuid": "repository",
+    "runtime": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "schema": "veldo.graph/v1"
+   },
+   {
+    "command_id": "command-f-foreign-snapshot",
+    "cycle_id": "cycle-f-foreign-snapshot",
+    "domain_uuid": "domain",
+    "failure": {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    "operation": "start",
+    "outcome": "failure",
+    "repository_uuid": "repository",
+    "runtime": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "schema": "veldo.graph/v1"
+   }
   ],
-  [
-   "graph/start-unavailable",
-   true
+  "held": {
+   "command_id": "command-r2",
+   "cycle_id": "cycle-r1",
+   "domain_uuid": "domain",
+   "operation": "suspend",
+   "outcome": "suspended",
+   "repository_uuid": "repository",
+   "resume": {
+    "notes": {
+     "snapshot": "snapshot-1",
+     "trail": [
+      "groom",
+      "size"
+     ]
+    },
+    "position": "rank",
+    "step": 2
+   },
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "journal": [
+   [
+    "owner",
+    "seed-unit-1"
+   ],
+   [
+    "owner",
+    "commit-p-store"
+   ]
   ],
-  [
-   "graph/shape/lifecycle",
-   true
+  "lock_digest": "b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37",
+  "probe": {
+   "notes": {
+    "found": [],
+    "wrote": []
+   },
+   "position": "propose",
+   "step": 1
+  },
+  "production": {
+   "command_id": "command-r7",
+   "cycle_id": "cycle-r4",
+   "domain_uuid": "domain",
+   "failure": {
+    "code": "unsupported_workflow",
+    "detail": "no registered workflow lifecycle version 1"
+   },
+   "operation": "start",
+   "outcome": "failure",
+   "repository_uuid": "repository",
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "proposed": {
+   "command_id": "command-store-2",
+   "cycle_id": "cycle-store",
+   "domain_uuid": "domain",
+   "operation": "advance",
+   "outcome": "proposal",
+   "proposals": [
+    {
+     "priority": 1,
+     "proposal_id": "p-store",
+     "subject": "unit-1",
+     "type": "priority"
+    }
+   ],
+   "repository_uuid": "repository",
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "python": "3.12",
+  "runner_processes": 14,
+  "runtime_directory": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37",
+  "started": {
+   "command_id": "command-r1",
+   "cycle_id": "cycle-r1",
+   "domain_uuid": "domain",
+   "operation": "start",
+   "outcome": "suspended",
+   "repository_uuid": "repository",
+   "resume": {
+    "notes": {
+     "snapshot": "snapshot-1",
+     "trail": [
+      "groom",
+      "size"
+     ]
+    },
+    "position": "rank",
+    "step": 2
+   },
+   "runtime": {
+    "name": "langgraph",
+    "version": "1.2.12"
+   },
+   "schema": "veldo.graph/v1"
+  },
+  "store_unchanged_by_graph": true,
+  "unit": [
+   2,
+   "{\"priority\": 1}"
   ],
-  [
-   "graph/shape/plain-data",
-   true
-  ],
-  [
-   "graph/boundary/no-store-handle",
-   true
-  ]
- ],
+  "untyped": {
+   "refused": "invalid_response"
+  }
+ },
  "shape_refusals": [
   "invalid_response",
   "invalid_response",

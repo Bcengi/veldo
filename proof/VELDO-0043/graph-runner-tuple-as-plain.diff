@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph_langgraph.py
++++ b/.veldo/control_graph_langgraph.py
+@@ -47 +47 @@
+-    if kind is list:
++    if isinstance(value, (list, tuple)):
