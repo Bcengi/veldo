@@ -326,6 +326,8 @@ if 'expect' in globals():
         raise _m123_budget.Refused('driver_error', 'stop after the cap is armed')
 
     _m123_caps = {}
+    _m123_budget_parallel = _m123_budget.PARALLEL
+    _m123_budget.PARALLEL = 2       # below the reference, so a run_stage that ignores its workers is caught
     try:
         _m123_budget.read_inputs = _m123_stop_after_arm
         _m123_budget.Workers = _m123_Workers
@@ -334,13 +336,17 @@ if 'expect' in globals():
             _m123_caps[_m123_count] = _m123_budget.run_stage(ROOT).get('budget_seconds')
     finally:
         _m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers = _m123_saved
-    _m123_want = {10: 120, 116: 232.0, 300: 600.0}
+        _m123_budget.PARALLEL = _m123_budget_parallel
+    _m123_want = {n: _m123_budget.budget_for(n, 2) for n in (10, 116, 300)}
     _m123_enforced = [abs(left - _m123_want[n]) < 5 and abs(alarm - _m123_want[n]) < 5
                       for n, (left, alarm) in zip((10, 116, 300), _m123_seen)]
     expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: run_stage records, enforces as the '
            'worker deadline, and arms as the alarm a cap of the floor or 2 s per registered case, '
-           'whichever is larger (10 -> 120, 116 -> 232, 300 -> 600)',
-           _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced))
+           'whichever is larger, scaled to the workers the stage runs (at 8 or more workers: 10 -> 120, 116 -> 232, '
+           '300 -> 600; four times that per case at 2, never less than the 8-worker figure at 16)',
+           _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced)
+           and [_m123_budget.budget_for(n, 8) for n in (10, 116, 300)] == [120, 232.0, 600.0]
+           and [_m123_budget.budget_for(300, w) for w in (2, 16)] == [2400.0, 600.0])
 
     # THE INPUT CLOSURE IS THE WORKING TREE, not a hand list of directories. The snapshot workers run
     # in holds only what read_inputs returns, so a suite row reading anything outside it (the front
@@ -579,3 +585,87 @@ if 'expect' in globals():
            and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o644, b'ONE')}))
            and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o600, b'one')}))
            and _m123_id(_m123_base) != _m123_id({'a/B.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}))
+
+    # The stage's parallelism follows the host: the CPUs this process may use, clamped to 2..16.
+    # Driven, not read: a child whose CPU set is narrowed sees that count, and Workers.run really
+    # keeps exactly PARALLEL workers running at once when there are more jobs than that.
+    _m123_affinity = None
+    if hasattr(_m123_os, 'sched_setaffinity'):
+        _m123_cpus = sorted(_m123_os.sched_getaffinity(0))
+        _m123_affinity = {}
+        for _m123_n in (1, 4):
+            if len(_m123_cpus) >= _m123_n:
+                _m123_pick = set(_m123_cpus[:_m123_n])
+                _m123_child = _m123_sp.run(
+                    [_m123_sys.executable, '-B', '-c',
+                     'import importlib.util as u; s = u.spec_from_file_location("g", %r); '
+                     'm = u.module_from_spec(s); s.loader.exec_module(m); print(m.PARALLEL)'
+                     % str(ROOT / 'scripts/check_gate_mutations.py')],
+                    capture_output=True, text=True, timeout=60,
+                    preexec_fn=lambda pick=_m123_pick: _m123_os.sched_setaffinity(0, pick))
+                _m123_affinity[_m123_n] = _m123_child.stdout.strip()
+    _m123_real_popen = _m123_gate.subprocess.Popen
+    _m123_live = []
+    _m123_peak = [0]
+
+    def _m123_fake_popen(args, **kwargs):
+        _m123_live[:] = [p for p in _m123_live if p.poll() is None]
+        proc = _m123_real_popen([_m123_sys.executable, '-c', 'import time; time.sleep(0.3); print("{}")'],
+                                **{k: v for k, v in kwargs.items() if k in ('stdout', 'stderr', 'start_new_session')})
+        _m123_live.append(proc)
+        _m123_peak[0] = max(_m123_peak[0], len(_m123_live))
+        return proc
+
+    # Drive at a count that is not the host's own, so a literal equal to the host count cannot pass.
+    _m123_saved_parallel = _m123_gate.PARALLEL
+    _m123_gate.PARALLEL = 3
+    _m123_jobs = {'j%d' % i: {'case': {'driver': 'synthetic'}, 'mode': 'baseline'}
+                  for i in range(_m123_gate.PARALLEL + 4)}
+    _m123_gate.subprocess.Popen = _m123_fake_popen
+    try:
+        with _m123_tmp.TemporaryDirectory(prefix='m123-workers-') as _m123_wd:
+            _m123_done = _m123_gate.Workers(_m123_time.monotonic() + 60).run(
+                _m123_jobs, _m123_Path(_m123_wd), ROOT)
+    except Exception as _m123_error:
+        _m123_done = {'raised': repr(_m123_error)}
+    finally:
+        _m123_gate.subprocess.Popen = _m123_real_popen
+    _m123_driven_parallel = _m123_gate.PARALLEL
+    _m123_gate.PARALLEL = _m123_saved_parallel
+    # The quota: a temporary cgroup tree where the process's own cgroup is two levels below a slice
+    # carrying a 2-CPU quota and its own cgroup carries a 3-CPU one: the smallest (2) applies; with
+    # no quota anywhere, none; a cgroup outside the tree is not read.
+    with _m123_tmp.TemporaryDirectory(prefix='m123-cgroup-') as _m123_cg:
+        _m123_cgp = _m123_Path(_m123_cg)
+        (_m123_cgp / 'user.slice/app.scope').mkdir(parents=True)
+        (_m123_cgp / 'cpu.max').write_text('max 100000\n')
+        (_m123_cgp / 'user.slice/cpu.max').write_text('200000 100000\n')
+        (_m123_cgp / 'user.slice/app.scope/cpu.max').write_text('250000 100000\n')
+        (_m123_cgp / 'self-cgroup').write_text('0::/user.slice/app.scope\n')
+        (_m123_cgp / 'none-cgroup').write_text('0::/\n')
+        (_m123_cgp / 'v1-cgroup').write_text('4:cpu,cpuacct:/user.slice\n')
+        (_m123_cgp / 'half.scope').mkdir()
+        (_m123_cgp / 'half.scope/cpu.max').write_text('350000 100000\n')
+        (_m123_cgp / 'half-cgroup').write_text('0::/half.scope\n')
+        (_m123_cgp / 'wide.slice/tight.scope').mkdir(parents=True)
+        (_m123_cgp / 'wide.slice/cpu.max').write_text('600000 100000\n')
+        (_m123_cgp / 'wide.slice/tight.scope/cpu.max').write_text('150000 100000\n')
+        (_m123_cgp / 'tight-cgroup').write_text('0::/wide.slice/tight.scope\n')
+        (_m123_cgp.parent / (_m123_cgp.name + '-evil')).mkdir()
+        (_m123_cgp.parent / (_m123_cgp.name + '-evil') / 'cpu.max').write_text('100000 100000\n')
+        (_m123_cgp / 'escape-cgroup').write_text('0::/../' + _m123_cgp.name + '-evil\n')
+        _m123_quotas = [_m123_gate._quota_cpus(str(_m123_cgp), str(_m123_cgp / n))
+                        for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup', 'half-cgroup', 'tight-cgroup',
+                                  'escape-cgroup')]
+        _m123_sp.run(['rm', '-rf', str(_m123_cgp.parent / (_m123_cgp.name + '-evil'))], check=True)
+        # And the worker count really applies it: a 3.5-CPU quota rounds UP to 4 workers.
+        _m123_quota_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'half-cgroup'))
+        _m123_host_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'none-cgroup'))
+    expect('VELDO-0123 gate/workers-follow-the-host: the mutation stage runs as many workers as the CPUs it '
+           'may use (its affinity set, bounded by a cgroup quota), never fewer than 2 or more than 16: a '
+           'child pinned to 1 or 4 CPUs computes 2 or 4, and Workers.run really runs exactly that many at once',
+           [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
+           and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, n)) for n in _m123_affinity))
+           and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_driven_parallel == 3
+           and _m123_quotas == [2, None, None, 4, 2, None]
+           and _m123_quota_workers == min(4, _m123_host_workers))
