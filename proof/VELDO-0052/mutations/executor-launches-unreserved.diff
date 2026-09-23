@@ -1,0 +1,6 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -522,2 +522 @@
+-                # The dispatcher stops here in the same situation: nothing launches unreserved.
+-                raise EL.Stopped("reservation_required")
++                gate = None  # defect: run on with no reservation handle and no later station

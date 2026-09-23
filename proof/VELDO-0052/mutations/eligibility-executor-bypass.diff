@@ -1,0 +1,6 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -407 +407,2 @@
+-        return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)
++        return dict(gate.decide("direct_execution", sid, context=self.context, ticket=ticket),
++                    eligible=True)  # defect: the direct executor ignores every refusal

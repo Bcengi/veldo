@@ -131,17 +131,22 @@ def _project_run(entry, now):
     }
 
 
-def _burndown(root):
+def _burndown(root, eligibility=None):
     """The plan burn-down, REUSED from .veldo/plan.py - the same per-item state
     and frontier the index derives, never a second implementation. plan.py keys
     off its module ROOT; we point it at the target root and restore it, so this
-    stays a read-only projection with no lasting side effect."""
+    stays a read-only projection with no lasting side effect.
+
+    VELDO-0052: the status map is plan.py's own _status, the one completion reader plan status
+    reads, so with the floor enabled 'shipped' here means a landed revision exactly as it does
+    there, and an enrolled repository with no Gate wired stops by the same name (eligibility_required)
+    rather than answering from status text."""
     PL = _load("veldo_runstatus_plan", ".veldo/plan.py")
     orig = PL.ROOT
     try:
         PL.ROOT = Path(root)
         reg = PL.V.plan_registry(Path(root) / "plans")
-        status_by_id = PL.spec_status_by_id()
+        status_by_id = PL._status(eligibility)
         plans = []
         for pid in sorted(reg):
             fm = reg[pid]["fm"]
@@ -197,11 +202,48 @@ def _project_event(ev):
     return out
 
 
+def production_eligibility(root=None):
+    """(gate, stop) for a production reader of this model (the status command and its served view):
+    the Gate control_eligibility.entry_gate builds, from an enrolled repository's signed binding or
+    none when unenrolled, or the named stop that construction ended in."""
+    EL = _load("veldo_runstatus_plan", ".veldo/plan.py").EL
+    try:
+        return EL.entry_gate(Path(root) if root else ROOT), None
+    except EL.Stopped as stop:
+        return None, stop.reason
+
+
+def _burndown_or_stop(root, eligibility, eligibility_stop):
+    """(burndown, stop): the burn-down, or the named eligibility stop that prevented it. A stop is
+    reported by name in the read model, never replaced by a burn-down read from status text, and
+    the rest of the model (runs, events, replication) is still shown."""
+    if eligibility_stop:
+        return [], eligibility_stop
+    EL = _load("veldo_runstatus_plan", ".veldo/plan.py").EL
+    try:
+        return _burndown(root, eligibility), None
+    except EL.Stopped as stop:
+        return [], stop.reason
+
+
+def production_status(root=None, **kwargs):
+    """The read model as the production readers show it: status() over the Gate
+    production_eligibility() builds, whose store connection is closed when the model is assembled."""
+    gate, stop = production_eligibility(root)
+    try:
+        return status(root=root, eligibility=gate, eligibility_stop=stop, **kwargs)
+    finally:
+        if gate is not None:
+            gate.close()
+
+
 def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
-           now_epoch=None, control_db=None):
+           now_epoch=None, control_db=None, eligibility=None, eligibility_stop=None):
     """Assemble the Run Lens read model. Pure read: git queries, registry reads,
     and an events read only. runs_root and events_path are overridable for tests
-    (and for a caller that keeps the run folder elsewhere)."""
+    (and for a caller that keeps the run folder elsewhere). eligibility is the VELDO-0052 Gate the
+    burn-down reads completion through; eligibility_stop is the named stop a caller's own
+    resolution of that Gate ended in, reported instead of a burn-down."""
     root = Path(root) if root else ROOT
     now = now_epoch if now_epoch is not None else time.time()
     RL = _load("veldo_runstatus_runlog", ".veldo/runlog.py")
@@ -215,7 +257,8 @@ def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
                 if e.get("type") == "verdict.recorded"]
     verdicts = verdicts[-tail:] if tail else verdicts
 
-    return {
+    burndown, stopped = _burndown_or_stop(root, eligibility, eligibility_stop)
+    model = {
         "schema": "veldo.runstatus/v1",
         "at": _now_iso(),
         "repo": {
@@ -223,13 +266,16 @@ def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
             "head": _git(["rev-parse", "HEAD"], root) or "unknown",
             "branch": _git(["rev-parse", "--abbrev-ref", "HEAD"], root) or "unknown",
         },
-        "burndown": _burndown(root),
+        "burndown": burndown,
         "runs": runs,
         "events_tail": [_project_event(e) for e in tail_events],
         "recent_verdicts": verdicts,
         "tripwires": _tripwires(root),
         "replication": _replication(root, now, db_path=control_db),
     }
+    if stopped:
+        model["burndown_stopped"] = stopped
+    return model
 
 
 def _replication(root, now, db_path=None):
@@ -323,7 +369,9 @@ def render_text(model):
                 be_s, r.get("question") or "(no question recorded)"))
 
     lines.append("burn-down:")
-    if not model.get("burndown"):
+    if model.get("burndown_stopped"):
+        lines.append("  STOPPED: %s (no burn-down is read from status text)" % model["burndown_stopped"])
+    elif not model.get("burndown"):
         lines.append("  (no plans)")
     for p in model.get("burndown", []):
         fr = ", ".join(p.get("frontier") or []) or "none"
@@ -388,14 +436,14 @@ def _cli(argv=None):
             # the browser view and the CLI never show a second projection.
             srv = _load("veldo_runstatus_server", ".veldo/status_server.py")
             return srv.serve(port=args.port)
-        model = status()
+        model = production_status()
         print(json.dumps(model, indent=2) if args.json else render_text(model))
         return 0
     if args.cmd == "watch":
         if args.interval and args.interval > 0:
             try:
                 while True:
-                    model = status()
+                    model = production_status()
                     # clear screen + home cursor, then render; interruptible.
                     sys.stdout.write("\x1b[2J\x1b[H")
                     print(render_text(model))
@@ -404,7 +452,7 @@ def _cli(argv=None):
             except KeyboardInterrupt:
                 return 0
         else:
-            print(render_text(status()))
+            print(render_text(production_status()))
             return 0
     return 2
 

@@ -1,0 +1,5 @@
+--- a/.veldo/plan.py
++++ b/.veldo/plan.py
+@@ -323 +323 @@
+-        reasons.extend("eligibility refused: %s" % r for r in decision["refusals"])
++        pass  # defect: the direct-execution refusals are dropped

@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -149 +149 @@
+-        status_by_id = PL._status(eligibility)
++        status_by_id = PL.spec_status_by_id()

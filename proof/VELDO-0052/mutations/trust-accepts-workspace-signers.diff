@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -260,2 +260 @@
+-        if any(os.path.commonpath([resolved, area]) == area for area in _workspace_areas(workspace)):
+-            raise Stopped('host_trust_refused:signers_inside_workspace')
++        pass  # defect: the workspace's own signers file vouches for the workspace

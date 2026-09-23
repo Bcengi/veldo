@@ -71,7 +71,8 @@ def build_model(config):
     caller's roots and serves exactly what it returns, so the browser view and
     the CLI can never disagree."""
     RS = _load("veldo_status_server_runstatus", ".veldo/runstatus.py")
-    return RS.status(
+    # VELDO-0052: the same production Gate the status command builds, so the two never disagree.
+    return RS.production_status(
         root=config.get("root"),
         runs_root=config.get("runs_root"),
         events_path=config.get("events_path"),
