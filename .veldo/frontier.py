@@ -104,19 +104,28 @@ def _status_map(idx):
     return {sid: fm.get("status", "?") for sid, fm in idx.items()}
 
 
-def _is_standalone_build(fm):
+def _lane_status(fm, status=None):
+    """The status every lane decides on: the unit's entry in the status map (VELDO-0052), which with
+    the floor enabled is the one completion reader's answer, so a LANDED unit reads shipped whatever
+    its file still says. Without a map it is the file's own word, which is exactly what the map says
+    when no Gate is wired (completion_status passes the file statuses through unchanged)."""
+    return fm.get("status") if status is None else status.get(fm.get("id"))
+
+
+def _is_standalone_build(fm, status=None):
     """A standalone build unit's own shape: the standalone lane (no plan carries its order)
     at status ready. Whether it may be CLAIMED additionally depends on its declared
-    dependencies, its requirements, the claim ledger and the placement gate."""
-    return fm.get("lane") == "standalone" and fm.get("status") == "ready"
+    dependencies, its requirements, the claim ledger and the placement gate. The status is
+    read through the completion map like every other lane's (VELDO-0052 AC3)."""
+    return fm.get("lane") == "standalone" and _lane_status(fm, status) == "ready"
 
 
-def _is_build_shaped(fm):
+def _is_build_shaped(fm, status=None):
     """A spec that build work can be offered for at all: status ready, whatever lane found it.
     LANE-INDEPENDENT on purpose. The withheld report used to ask _is_standalone_build, which
     made it silent about exactly the planned specs the gate below withholds, and a report
     narrower than the rule it explains is this same defect one layer up."""
-    return fm.get("status") == "ready"
+    return _lane_status(fm, status) == "ready"
 
 
 def unmet_dependencies(fm, status):
@@ -184,7 +193,7 @@ def withheld(repo_root=None, scope=None, eligibility=None):
     out = []
     for sid in sorted(idx):
         fm = idx[sid]
-        if not _is_build_shaped(fm) or not _in_scope(fm, fm.get("plan"), scope):
+        if not _is_build_shaped(fm, status) or not _in_scope(fm, fm.get("plan"), scope):
             continue
         unmet = unmet_dependencies(fm, status)
         if unmet:
@@ -311,11 +320,12 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
     # orders. This loop SELECTS the lane's candidates and nothing more - the dependency rule is
     # not repeated here, because _add asks it for every candidate from either lane.
     for sid, fm in idx.items():
-        if _is_standalone_build(fm):
+        if _is_standalone_build(fm, status):
             _add(sid, None, "build")
-    # REVIEW work: any spec awaiting its verdict.
+    # REVIEW work: any spec awaiting its verdict, by the same completion map, so a landed unit whose
+    # file still says review is not offered for another verdict.
     for sid, fm in idx.items():
-        if fm.get("status") == "review":
+        if _lane_status(fm, status) == "review":
             _add(sid, fm.get("plan"), "review")
     return out
 

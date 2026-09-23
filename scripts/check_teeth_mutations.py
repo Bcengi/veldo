@@ -567,6 +567,14 @@ def cases():
            "        parent = os.path.dirname(current)\n        if parent == current:\n            return False\n",
            "        return False  # defect: discovery looks only at the directory it was given\n",
            'eligibility/enrollment-git-error-stops')
+    review('standalone-lane-reads-front-matter', 'frontier.py',
+           '    return fm.get("lane") == "standalone" and _lane_status(fm, status) == "ready"',
+           '    return fm.get("lane") == "standalone" and fm.get("status") == "ready"',
+           'completion/landed-units-not-reoffered')
+    review('review-lane-reads-front-matter', 'frontier.py',
+           '        if _lane_status(fm, status) == "review":',
+           '        if fm.get("status") == "review":',
+           'completion/landed-units-not-reoffered')
     return result
 
 

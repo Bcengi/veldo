@@ -753,6 +753,26 @@ def _v52_suite():
             check('eligibility/enrollment-git-error-stops',
                    all(v == stop for v in broken.values()) and unrepository == ('ok', False) and healthy == ('ok', None))
 
+        with region('completion/landed-units-not-reoffered'):
+            # DEFECT f. Every lane asks the one completion reader, never the front matter: a landed unit is
+            # offered for neither a build nor a review, whatever its file still says.
+            extra = (('VELDO-9161', 'ready'), ('VELDO-9162', 'review'), ('VELDO-9163', 'ready'))
+            for sid, st in extra:
+                unit(sid, plan=None)
+                spec(sid, status=st, lane='standalone')
+            landed('VELDO-9161')
+            landed('VELDO-9162')
+            try:
+                offers = observe_effect(lambda: {u['spec']: u['kind'] for u in FR.claimable(
+                    repo_root=str(base), claims_root=str(claims) + '-landed', eligibility=gate)})
+            finally:
+                for sid, _ in extra:
+                    (base / 'specs' / (sid + '-fixture.md')).unlink()
+            mine = ({k: v for k, v in offers[1].items() if k in dict(extra)} if offers[0] == 'ok' else list(offers))
+            observed['landed_offers'] = mine
+            check('completion/landed-units-not-reoffered',
+                   mine == {'VELDO-9163': 'build'} and gate.landed('VELDO-9161') and gate.landed('VELDO-9162'))
+
         with region('eligibility/observations'):
             # Observability: every decision is recorded with identity, versions, outcome and taxonomy.
             status = gate.status()
