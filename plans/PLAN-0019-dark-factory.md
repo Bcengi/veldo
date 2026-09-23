@@ -16,15 +16,15 @@ outcomes:
       Project owners can trace an accepted objective through deliberately admitted work and give a
       version-bound decision on the enrolled input surface where they are working.
     measure: >
-      Every admitted item resolves to its owner, accepted request and priority; concurrent answers
+      Release 1: every admitted item resolves to its owner, accepted request and priority; answers
       from enrolled channels produce one attributable settlement with the exact presentation
-      receipt.
+      receipt. Release 2 qualifies the exhaustive concurrent-answer and recovery matrix.
   - id: O2
     becomes_true: >
       Operators can restart or replace the authority without repeating an uncertain effect or losing
       acknowledged history.
     measure: >
-      Real-process boundary crashes, replica restoration, and the combined scope-change and lost-
+      Release 2: real-process boundary crashes, replica restoration, and the combined scope-change and lost-
       effect-acknowledgement journey produce verified recovery or a named authority stop; no
       acknowledged command lacks its durable off-host export.
   - id: O3
@@ -32,7 +32,7 @@ outcomes:
       Builders and reviewers can rely on completion meaning verified, independently reviewed,
       authorized publication of the exact candidate and accepted outcomes.
     measure: >
-      The installed floor slice lands successfully; red gates, rejected approvals, stale
+      Release 1: the installed floor slice lands successfully; red gates, rejected approvals, stale
       dependencies, missing regression receipts, and build-only attempts cannot establish
       completion.
   - id: O4
@@ -40,15 +40,18 @@ outcomes:
       Project owners can delegate bounded coordination and engineering to qualified workers without
       granting models admission authority or unlimited cost and process lifetime.
     measure: >
-      Every supported engine and host profile passes containment, stopping, credential, accounting,
-      and revocation qualification; repeated graphs and deleted checkpoints cannot repeat a
-      committed effect or change authoritative decisions.
+      Release 1: real Claude Code and Codex workers on Linux and Mac pass normal containment,
+      stopping, credential custody, subscription usage-cap accounting and current-authorization
+      checks. Release 2: recovery, revocation and exhaustive containment qualification, including
+      repeated graphs and deleted checkpoints that cannot repeat a committed effect or change
+      authoritative decisions. Release 4: qualification extends to every additional supported
+      engine configuration and host profile.
   - id: O5
     becomes_true: >
       Adopters can install the same governed factory from every composed pack and recover with a
       compatible previous release.
     measure: >
-      Every installed pack runs the first slice and migration, clone replacement, host-loss,
+      Release 4: every installed pack runs the first slice and migration, clone replacement, host-loss,
       corruption, and rollback qualification using its declared inventory.
 
 non_goals:
