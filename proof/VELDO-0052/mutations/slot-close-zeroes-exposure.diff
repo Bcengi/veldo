@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -777 +777 @@
+-                                   final=True, now=self.clock())
++                                   final=True, outcome='not_executed', now=self.clock())  # defect

@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -328 +328 @@
+-        if _lane_status(fm, status) == "review":
++        if fm.get("status") == "review":

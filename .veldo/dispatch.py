@@ -87,6 +87,10 @@ SR = _load("veldo_shape_review_dsp", ".veldo/shape_review.py")
 # PLAN-0013 W9: the security review dimension, read the same way through the same
 # dimension interface. Pure over the verdict mapping, so it needs nothing here.
 SEC = _load("veldo_security_review_dsp", ".veldo/security_review.py")
+# VELDO-0052: the shared floor eligibility service. With the floor enabled the build, review and
+# publication stations each decide over the real store before their effect, against the ticket the
+# previous station handed on, and every subscription CLI call goes through a reserved CallHandle.
+EL = _load("veldo_eligibility_dsp", ".veldo/control_eligibility.py")
 
 
 class Reviewer:
@@ -96,7 +100,9 @@ class Reviewer:
     dispatcher talks only to this interface, so its control logic is testable with
     a fake and its reference cannot fabricate a verdict."""
 
-    def review(self, spec, unit):
+    def review(self, spec, unit, calls=None):
+        """calls, when the floor is enabled, is the station's CallHandle: the reviewer's only path
+        to a subscription CLI, every call decided and reserved before launch (VELDO-0052)."""
         raise NotImplementedError
 
 
@@ -106,7 +112,7 @@ class LiveReviewer(Reviewer):
     returns its verdict. Refusing to fabricate a verdict is the honest default,
     exactly as the executor's LiveLoop refuses to fabricate a build."""
 
-    def review(self, spec, unit):
+    def review(self, spec, unit, calls=None):
         raise EX.ExecutorError(
             "review is a delegated fresh-context step; no reviewer is wired. Inject "
             "a reviewer that dispatches a fresh context over the built commit and "
@@ -133,7 +139,7 @@ class Dispatcher(WK.Dispatcher):
     needs a human)."""
 
     def __init__(self, repo_root=None, hooks=None, reviewer=None, lander=None,
-                 worker_id=None, claims_root=None, fail_status="ready"):
+                 worker_id=None, claims_root=None, fail_status="ready", eligibility=None, calls=None):
         self.repo_root = str(repo_root or ROOT)
         self._hooks = hooks
         self._reviewer = reviewer or LiveReviewer()
@@ -141,6 +147,36 @@ class Dispatcher(WK.Dispatcher):
         self.worker_id = worker_id or ("dispatcher-" + uuid.uuid4().hex[:12])
         self.claims_root = claims_root
         self.fail_status = fail_status
+        # VELDO-0052: the shared eligibility Gate and the StationCalls that reserve every
+        # subscription CLI call. An enrolled repository with neither wired stops by name.
+        self._eligibility = eligibility
+        self._calls = calls
+
+    # VELDO-0052 floor wiring
+
+    def _gate(self):
+        return EL.gate_for(self.repo_root, self._eligibility)
+
+    def _context(self, unit, **extra):
+        """Whose station this is: the claim holder and generation the work loop handed on."""
+        return dict({"holder": (unit or {}).get("holder") or self.worker_id,
+                     "generation": (unit or {}).get("generation")}, **extra)
+
+    def _launch(self, station, unit, context, decision):
+        """The station's only path to a subscription CLI: the scope of this launch
+        (StationCalls.launch). The runner opens THIS dispatch's identity, reserving its worker slot
+        (VELDO-0036), because the unit the work loop hands over carries none and must not choose
+        one; every call is decided and reserved against that slot, and the slot is retired when the
+        launched call returns."""
+        if self._calls is None:
+            raise EL.Stopped("reservation_required")
+        return self._calls.launch(station, unit["spec"], context=context, ticket=decision)
+
+    @staticmethod
+    def _refused(kind, sid, decision, **extra):
+        return dict({"ok": False, "kind": kind, "spec": sid, "state": "refused",
+                     "halted_at": "eligibility", "reason": "; ".join(decision["refusals"]),
+                     "refusals": list(decision["refusals"])}, **extra)
 
     # seam wiring
 
@@ -226,7 +262,21 @@ class Dispatcher(WK.Dispatcher):
         (a non-ready spec, a plan refusal, a failed build, a red gate, an invalid
         proof) return ok False and DO NOT flip - the change never reaches review."""
         sid = unit["spec"]
-        result = EX.Executor(self._build_hooks()).run(sid, stop_after="proof")
+        gate = self._gate()
+        executor = EX.Executor(self._build_hooks(), eligibility=gate)
+        if gate is not None:
+            context = self._context(unit)
+            decision = gate.decide("build", sid, context=context, ticket=unit.get("eligibility"))
+            if not decision["eligible"]:
+                return self._refused("build", sid, decision, reviewed=False)
+            if self._calls is None:
+                raise EL.Stopped("reservation_required")
+            # The executor launches the build through the SAME build station, rechecking before the
+            # launch against this decision as its ticket. It opens the build's dispatch (its worker
+            # slot) only after every pre-launch decision passed, and retires it when the build returns.
+            executor = EX.Executor(self._build_hooks(), eligibility=gate, calls=self._calls, station="build",
+                                   context=context, ticket=decision)
+        result = executor.run(sid, stop_after="proof")
         if result.get("state") != "built":
             return {"ok": False, "kind": "build", "spec": sid, "reviewed": False,
                     "state": result.get("state"), "halted_at": result.get("halted_at"),
@@ -244,14 +294,34 @@ class Dispatcher(WK.Dispatcher):
         shipped, never landed. A land that itself fails leaves the spec in review
         (not shipped) so the land can be retried."""
         sid = unit["spec"]
+        gate = self._gate()
+        decision = None
+        if gate is not None:
+            # THE REVIEW STATION: the same draft-plan, decision, dependency and admission questions
+            # as build, plus reviewer independence, decided before any reviewer is launched.
+            context = self._context(unit, reviewer=getattr(self._reviewer, "identity", None))
+            decision = gate.decide("review", sid, context=context, ticket=unit.get("eligibility"))
+            if not decision["eligible"]:
+                return self._refused("review", sid, decision, verdict=None, shipped=False, landed=False)
         spec = self._resolve(sid)
-        rv = self._reviewer.review(spec, unit) or {}
+        if decision is None:
+            rv = self._reviewer.review(spec, unit) or {}
+        else:
+            # A refusal at the open, or inside the review at a call's own boundary, is this station's
+            # named refusal: nothing is shipped or landed and the spec keeps its status for a retry.
+            try:
+                with self._launch("review", unit, context, decision) as handle:
+                    rv = self._reviewer.review(spec, unit, calls=handle) or {}
+            except EL.Refused as error:
+                codes = (error.decision or {}).get("refusals") or [error.code]
+                return self._refused("review", sid, {"refusals": list(codes)}, verdict=None, shipped=False,
+                                     landed=False)
         verdict = rv.get("verdict")
         if not self._verdict_passes(rv):
             self._set_status(sid, self.fail_status)
             return {"ok": False, "kind": "review", "spec": sid, "verdict": verdict,
                     "shipped": False, "landed": False, "status": self.fail_status}
-        land = self._land(unit) or {}
+        land = self._land(unit, decision) or {}
         if not land.get("ok"):
             return {"ok": False, "kind": "review", "spec": sid, "verdict": verdict,
                     "shipped": False, "landed": False, "land": land}
@@ -259,11 +329,20 @@ class Dispatcher(WK.Dispatcher):
         return {"ok": True, "kind": "review", "spec": sid, "verdict": verdict,
                 "shipped": True, "landed": True, "status": "shipped", "land": land}
 
-    def _land(self, unit):
+    def _land(self, unit, ticket=None):
         """Land the built evidence through the serialized lander. The lander is
         reused machinery, but the built ref it lands is context the real worker
         supplies, so an unwired lander refuses rather than pretend a build reached
-        the trunk (the same fail-loud posture as the delegated agent steps)."""
+        the trunk (the same fail-loud posture as the delegated agent steps).
+
+        VELDO-0052: with the floor enabled the PUBLICATION station decides first, against the
+        review station's decision as its ticket, so an input that moved during review (a withdrawn
+        dependency, a changed authority or admission) is a named refusal and nothing is landed."""
+        gate = self._gate()
+        if gate is not None:
+            decision = gate.decide("publication", unit["spec"], context=self._context(unit), ticket=ticket)
+            if not decision["eligible"]:
+                return self._refused("publication", unit["spec"], decision, landed=False)
         if self._lander is None:
             raise EX.ExecutorError(
                 "no lander is wired; inject a serialized lander over GitLandOps for "
@@ -272,11 +351,11 @@ class Dispatcher(WK.Dispatcher):
 
 
 def veldo_dispatch(unit, repo_root=None, hooks=None, reviewer=None, lander=None,
-                  worker_id=None, claims_root=None, fail_status="ready"):
+                  worker_id=None, claims_root=None, fail_status="ready", eligibility=None, calls=None):
     """Front door: build a Dispatcher for a repo and dispatch a single unit. A real
     caller injects the agent-backed build hooks, the fresh-context reviewer, and a
     lander over the built ref; this fabricates none of them."""
     disp = Dispatcher(repo_root=repo_root, hooks=hooks, reviewer=reviewer,
                       lander=lander, worker_id=worker_id, claims_root=claims_root,
-                      fail_status=fail_status)
+                      fail_status=fail_status, eligibility=eligibility, calls=calls)
     return disp.dispatch(unit)

@@ -1,0 +1,6 @@
+--- a/.veldo/work_state.py
++++ b/.veldo/work_state.py
+@@ -336 +336,2 @@
+-        facts = gate.completion(sid) if gate is not None else None
++        facts = (dict(gate.completion(sid), revision_landed=bool(concluded(entry, base, vc=vc, passing=passing)))
++                 if gate is not None else None)

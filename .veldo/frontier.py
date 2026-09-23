@@ -39,6 +39,9 @@ def _load(name, rel):
 V = _load("veldo_validate_fr", ".veldo/validate.py")
 PL = _load("veldo_plan_fr", ".veldo/plan.py")
 CL = _load("veldo_claim_fr", ".veldo/claim.py")
+# VELDO-0052: the shared floor eligibility. An enrolled repository's frontier offers only what the
+# selection station accepts from the real store, and reads completion only from landing receipts.
+EL = _load("veldo_eligibility_fr", ".veldo/control_eligibility.py")
 
 
 def _spec_index(repo_root):
@@ -101,19 +104,28 @@ def _status_map(idx):
     return {sid: fm.get("status", "?") for sid, fm in idx.items()}
 
 
-def _is_standalone_build(fm):
+def _lane_status(fm, status=None):
+    """The status every lane decides on: the unit's entry in the status map (VELDO-0052), which with
+    the floor enabled is the one completion reader's answer, so a LANDED unit reads shipped whatever
+    its file still says. Without a map it is the file's own word, which is exactly what the map says
+    when no Gate is wired (completion_status passes the file statuses through unchanged)."""
+    return fm.get("status") if status is None else status.get(fm.get("id"))
+
+
+def _is_standalone_build(fm, status=None):
     """A standalone build unit's own shape: the standalone lane (no plan carries its order)
     at status ready. Whether it may be CLAIMED additionally depends on its declared
-    dependencies, its requirements, the claim ledger and the placement gate."""
-    return fm.get("lane") == "standalone" and fm.get("status") == "ready"
+    dependencies, its requirements, the claim ledger and the placement gate. The status is
+    read through the completion map like every other lane's (VELDO-0052 AC3)."""
+    return fm.get("lane") == "standalone" and _lane_status(fm, status) == "ready"
 
 
-def _is_build_shaped(fm):
+def _is_build_shaped(fm, status=None):
     """A spec that build work can be offered for at all: status ready, whatever lane found it.
     LANE-INDEPENDENT on purpose. The withheld report used to ask _is_standalone_build, which
     made it silent about exactly the planned specs the gate below withholds, and a report
     narrower than the rule it explains is this same defect one layer up."""
-    return fm.get("status") == "ready"
+    return _lane_status(fm, status) == "ready"
 
 
 def unmet_dependencies(fm, status):
@@ -159,7 +171,7 @@ def dependency_gate(fm, status, kind):
     return kind == "build" and bool(unmet_dependencies(fm, status))
 
 
-def withheld(repo_root=None, scope=None):
+def withheld(repo_root=None, scope=None, eligibility=None):
     """The BUILD work a declared prerequisite is holding back, as
     [{spec, unmet: [(dep_id, state)]}] ordered by spec id.
 
@@ -176,11 +188,12 @@ def withheld(repo_root=None, scope=None):
     dependency, an open decision) is the plan burn-down's report, not this one; this report is
     exactly the front-matter rule."""
     idx = _spec_index(repo_root or ROOT)
-    status = _status_map(idx)
+    # VELDO-0052 AC3: with the floor enabled, "shipped" means a landed revision, never status text.
+    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))
     out = []
     for sid in sorted(idx):
         fm = idx[sid]
-        if not _is_build_shaped(fm) or not _in_scope(fm, fm.get("plan"), scope):
+        if not _is_build_shaped(fm, status) or not _in_scope(fm, fm.get("plan"), scope):
             continue
         unmet = unmet_dependencies(fm, status)
         if unmet:
@@ -230,17 +243,23 @@ def _plan_build_candidates(repo_root, status):
                 yield sid, fm.get("id")
 
 
-def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None):
+def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, eligibility=None):
     """Return the claimable units for a worker with worker_caps, within scope.
 
     Each unit is {spec, plan, kind ('build'|'review'), requires}. A unit is excluded
     if it is already claimed (live), if its requires are not a subset of worker_caps,
     or if it is out of scope. repo_root defaults to this repo; claims_root is passed
-    through to the claim ledger (both overridable for tests)."""
+    through to the claim ledger (both overridable for tests).
+
+    VELDO-0052: with the floor enabled (an explicit eligibility Gate, or an enrolled repository,
+    which stops by name without one) every offer additionally passes the shared SELECTION
+    decision over the real store, and carries that decision as its `eligibility` ticket so the
+    claim and every later station can refuse a changed input by name."""
     repo_root = repo_root or ROOT
+    gate = EL.gate_for(repo_root, eligibility)
     caps = set(worker_caps or [])
     idx = _spec_index(repo_root)
-    status = _status_map(idx)
+    status = EL.completion_status(gate, _status_map(idx))
     claimed = CL.claimed_units(root=claims_root)
     # Load this repository's architecture contract ONCE (adoption safe: (None, None)
     # when absent). The mandatory placement gate below refuses a BUILD unit whose spec
@@ -281,8 +300,16 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None):
             return
         if kind == "build" and contract is not None and arch.placement_gate(fm, contract):
             return  # placeless build with a contract present: never claimed
+        unit = {"spec": sid, "plan": plan_id, "kind": kind, "requires": list(reqs)}
+        if gate is not None:
+            # THE SELECTION STATION, for build and review offers alike: review cannot bypass the
+            # draft-plan, decision, dependency or admission checks by being a different kind.
+            decision = gate.decide("selection", sid)
+            if not decision["eligible"]:
+                return
+            unit["eligibility"] = decision
         seen.add(sid)
-        out.append({"spec": sid, "plan": plan_id, "kind": kind, "requires": list(reqs)})
+        out.append(unit)
 
     # BUILD work from every ACTIVE plan's frontier (the plan's ordering question, in
     # _plan_build_candidates), then from the standalone lane, then review work. Every one of
@@ -293,11 +320,12 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None):
     # orders. This loop SELECTS the lane's candidates and nothing more - the dependency rule is
     # not repeated here, because _add asks it for every candidate from either lane.
     for sid, fm in idx.items():
-        if _is_standalone_build(fm):
+        if _is_standalone_build(fm, status):
             _add(sid, None, "build")
-    # REVIEW work: any spec awaiting its verdict.
+    # REVIEW work: any spec awaiting its verdict, by the same completion map, so a landed unit whose
+    # file still says review is not offered for another verdict.
     for sid, fm in idx.items():
-        if fm.get("status") == "review":
+        if _lane_status(fm, status) == "review":
             _add(sid, fm.get("plan"), "review")
     return out
 
@@ -318,7 +346,18 @@ def main(argv=None):
         scope["plan"] = args.plan
     if args.label:
         scope["label"] = args.label
-    units = claimable(worker_caps=caps, scope=scope or None)
+    try:
+        # VELDO-0052: an enrolled repository's frontier is decided by the Gate built from its signed
+        # binding; a named stop (no host trust, an unverified binding, the claim authority) is said.
+        gate = EL.entry_gate(ROOT)
+        units = claimable(worker_caps=caps, scope=scope or None, eligibility=gate)
+        held = withheld(scope=scope or None, eligibility=gate)
+    except EL.Stopped as stop:
+        sys.stderr.write("frontier stopped: %s\n" % stop.reason)
+        return 2
+    except CL.ClaimStopped as stop:
+        sys.stderr.write("frontier stopped: %s\n" % stop.reason)
+        return 2
     if args.json:
         print(json.dumps(units, indent=2))
     else:
@@ -333,7 +372,7 @@ def main(argv=None):
     refusal = contract_refusal()
     if refusal:
         sys.stderr.write("architecture contract REFUSED, nothing is claimable: %s\n" % refusal)
-    for h in withheld(scope=scope or None):
+    for h in held:
         sys.stderr.write("withheld %-12s waiting on %s\n"
                          % (h["spec"], ", ".join("%s (%s)" % (d, s) for d, s in h["unmet"])))
     return 0

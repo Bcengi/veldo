@@ -79,6 +79,10 @@ ROOT = Path(__file__).resolve().parent.parent
 STEP_SEQUENCE = ("resolve", "plan_check", "build", "gate", "proof", "review",
                  "merge_ready")
 
+# VELDO-0052: with the floor enabled the direct-execution eligibility decision runs after resolve
+# and before the plan check and the build. It is not part of the pre-factory sequence above.
+ELIGIBILITY_STEP = "eligibility"
+
 # A review verdict that lets the loop proceed to merge readiness. Anything else
 # is a failed cycle.
 PASSING_VERDICTS = ("pass", "pass_with_notes")
@@ -95,6 +99,17 @@ def _load_module(name, rel):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+_ELIGIBILITY = []
+
+
+def _eligibility_organ():
+    """VELDO-0052: the shared floor eligibility service, loaded on the first run rather than at
+    import, because readers such as work_state load this module for PASSING_VERDICTS alone."""
+    if not _ELIGIBILITY:
+        _ELIGIBILITY.append(_load_module("veldo_eligibility_exec", ".veldo/control_eligibility.py"))
+    return _ELIGIBILITY[0]
 
 
 class LoopSteps:
@@ -114,14 +129,17 @@ class LoopSteps:
         (an unshipped dependency or a stale plan revision)."""
         raise NotImplementedError
 
-    def build(self, spec):
+    def build(self, spec, calls=None):
         """AGENT step, run in a FRESH sub-context. Return a mapping with ok
         (default True), commit, and an evidence map. The executor pauses here and
         cannot fabricate the result. CLEAN-CONTEXT CONTRACT (WARP-0909): a
         long-running orchestrator dispatches this step to a fresh sub-agent and
         retains only its compact receipt (the bounded projection in work.py,
         dispatch_receipt / RECEIPT_FIELDS), never the build transcript, so a
-        many-spec loop's memory stays flat instead of accumulating every spec."""
+        many-spec loop's memory stays flat instead of accumulating every spec.
+        calls, when the floor is enabled, is the build station's CallHandle: the
+        builder's only path to a subscription CLI, each call decided and reserved
+        before launch (VELDO-0052)."""
         raise NotImplementedError
 
     def gate(self):
@@ -137,12 +155,19 @@ class LoopSteps:
         """MECHANICAL. Return (ok, errors) for the assembled manifest."""
         raise NotImplementedError
 
-    def review(self, spec, proof):
+    # VELDO-0052: who reviews. The review station decides reviewer independence over this identity
+    # before any reviewer is launched; None is refused (reviewer_not_independent), never presumed.
+    reviewer_identity = None
+
+    def review(self, spec, proof, calls=None):
         """AGENT step, run in a FRESH sub-context. Return {verdict, human_minutes}.
         CLEAN-CONTEXT CONTRACT (WARP-0909): a long-running orchestrator dispatches
         this step to a fresh sub-agent and holds only its receipt (the verdict and
         summary via work.py dispatch_receipt), never the reviewer's full reasoning
-        transcript, so the orchestrator's footprint does not grow per spec."""
+        transcript, so the orchestrator's footprint does not grow per spec.
+        calls, when the floor is enabled, is the review station's CallHandle: the
+        reviewer's only path to a subscription CLI, each call decided and reserved
+        before launch (VELDO-0052)."""
         raise NotImplementedError
 
     def merge_ready(self, spec, proof, verdict):
@@ -198,7 +223,7 @@ class LiveLoop(LoopSteps):
             capture_output=True, text=True, cwd=str(self.root))
         return (r.returncode == 0, (r.stdout + r.stderr).strip())
 
-    def build(self, spec):
+    def build(self, spec, calls=None):
         raise ExecutorError(
             "build is a delegated agent step; LiveLoop has no agent wired. Inject "
             "a build callable that dispatches the implementer and returns its "
@@ -241,7 +266,7 @@ class LiveLoop(LoopSteps):
             errs = V.check_json(f.name, V.PROOF_REQ, "proof")
         return (errs == 0, errs)
 
-    def review(self, spec, proof):
+    def review(self, spec, proof, calls=None):
         raise ExecutorError(
             "review is a delegated fresh-context agent step; LiveLoop has no "
             "reviewer wired. Inject a review callable that dispatches the "
@@ -348,9 +373,57 @@ class Executor:
     entirely here; the seam supplies the surfaces. Nothing is fabricated: a
     build, a verdict, and an approval come from the delegated callables."""
 
-    def __init__(self, hooks, observer=None):
+    def __init__(self, hooks, observer=None, eligibility=None, calls=None, station="direct_execution",
+                 context=None, ticket=None):
         self.hooks = hooks
         self.observer = observer
+        # VELDO-0052: the shared eligibility Gate and the runner's StationCalls. With the floor
+        # enabled (a Gate, or an enrolled repository, which stops by name without one) every build
+        # and every review this run launches goes through the same station decisions and reserved
+        # CallHandles as the dispatcher's: `station` is direct_execution for a direct run and build
+        # when the dispatcher drives the build for a claim holder; `context` names the holder and
+        # `ticket` is the decision the caller already made. Each launch opens its OWN dispatch (one
+        # worker slot) through StationCalls.launch only after every pre-launch decision passed, and
+        # that dispatch is closed, its slot retired, when the launched call returns. With the floor
+        # enabled and no StationCalls the run stops with reservation_required, exactly as the
+        # dispatcher does.
+        if station not in ("direct_execution", "build"):
+            raise ExecutorError("an executor runs at the direct_execution or build station, not %r" % station)
+        self.eligibility = eligibility
+        self.calls = calls
+        self.station = station
+        self.context = dict(context or {})
+        self.ticket = ticket
+
+    def _decide(self, gate, sid, launch, ticket):
+        """The station decision for one launch: a build asks this run's own station (direct
+        execution, or build for a claim holder) and a review asks the review station, with the
+        reviewer's identity, exactly as the dispatcher's build and review do."""
+        if launch == "review":
+            context = dict(self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))
+            return gate.decide("review", sid, context=context, ticket=ticket)
+        if self.station == "build":
+            return gate.decide("build", sid, context=self.context, ticket=ticket)
+        return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)
+
+    def _launch_context(self, launch):
+        return self.context if launch == "build" else dict(
+            self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))
+
+    def _decide_calls(self, gate, sid, launch):
+        """The predicates every call of the launch will be decided by (provider_request), asked before
+        the builder or reviewer is entered. Direct execution asks no claim question, but each of its
+        calls does: a launch whose calls would all be refused is not entered. It carries no ticket:
+        staleness against the last decision is the station recheck's question, and each call asks it
+        again against the station decision as its ticket."""
+        return gate.decide("provider_request", sid, context=self._launch_context(launch))
+
+    def _launch(self, sid, launch, decision):
+        """The launch's only path to a subscription CLI: the scope of THIS launch (StationCalls.launch),
+        which opens its own dispatch, one worker slot, and yields a CallHandle reserved against it,
+        then retires that slot when the launched call returns. A second build cycle is a second
+        launch with a slot of its own, and the build's slot is free again before the review opens."""
+        return self.calls.launch(launch, sid, context=self._launch_context(launch), ticket=decision)
 
     def run(self, spec_id, max_review_cycles=2, stop_after=None):
         """Drive the spec through the loop. stop_after is a DEFAULTED build-only
@@ -433,6 +506,56 @@ class Executor:
             return finish("halted", "resolve", reason, None)
         record("resolve", True)
 
+        # 1b. VELDO-0052: this run's station decision over the real store, then its reservation.
+        EL = _eligibility_organ()
+        gate = EL.gate_for(getattr(self.hooks, "root", ROOT), self.eligibility)
+        sid = spec.get("id", spec_id)
+        decision = None
+        if gate is not None:
+            ob("on_step", ELIGIBILITY_STEP)
+            decision = self._decide(gate, sid, "build", self.ticket)
+            reason = "; ".join(decision["refusals"]) or None
+            record(ELIGIBILITY_STEP, decision["eligible"], reason=reason)
+            if not decision["eligible"]:
+                return finish("halted", ELIGIBILITY_STEP, "eligibility refused: " + reason, None)
+            if self.calls is None:
+                # The dispatcher stops here in the same situation: nothing launches unreserved.
+                raise EL.Stopped("reservation_required")
+
+        def launched(launch, cycle, call):
+            """ONE launch, (its result, None), or (None, the halt that replaces it). Every launch, the
+            second build cycle's included, re-decides its station over the COMPLETE current read set
+            against the last accepted decision as its ticket, so an input that moved since (a
+            withdrawn admission, or one re-accepted with its predicate still true) is refused by name
+            before the effect, and then at the provider_request boundary its calls will face. Only
+            then is its dispatch opened; it is closed when `call` returns. A refusal inside the
+            launch (a call's usage reservation, or its provider_request decision) is a named halt
+            like every other refusal, never an exception out of run()."""
+            nonlocal decision
+            current = self._decide(gate, sid, launch, decision)
+            if current["eligible"]:
+                boundary = self._decide_calls(gate, sid, launch)
+                if not boundary["eligible"]:
+                    current = dict(current, eligible=False, refusals=boundary["refusals"])
+            if not current["eligible"]:
+                reason = "; ".join(current["refusals"])
+                record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=reason)
+                return None, finish("halted", ELIGIBILITY_STEP,
+                                    "eligibility refused before %s: %s" % (launch, reason), None,
+                                    proof, gate_green, verdict)
+            decision = current
+            opened = False
+            try:
+                with self._launch(sid, launch, current) as handle:
+                    opened = True
+                    return call(handle), None
+            except EL.Refused as error:
+                codes = "; ".join((error.decision or {}).get("refusals") or [error.code])
+                record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=codes)
+                said = ("call refused during %s: %s" if opened
+                        else "reservation refused before %s: %s") % (launch, codes)
+                return None, finish("halted", ELIGIBILITY_STEP, said, None, proof, gate_green, verdict)
+
         # 1a. plan enforcement for a planned spec (mechanical refusal)
         if spec.get("plan") and spec.get("work"):
             ob("on_step", "plan_check")
@@ -449,7 +572,12 @@ class Executor:
             cycle += 1
             # 2. build (delegated agent step; the executor pauses here)
             ob("on_step", "build")
-            build = self.hooks.build(spec)
+            if gate is None:
+                build = self.hooks.build(spec)
+            else:
+                build, halt = launched("build", cycle, lambda handle: self.hooks.build(spec, calls=handle))
+                if halt is not None:
+                    return halt
             ob("on_heartbeat", "build")
             b_ok = bool(build.get("ok", True))
             record("build", b_ok, cycle=cycle, commit=build.get("commit"))
@@ -492,8 +620,18 @@ class Executor:
 
             # 5. review (delegated fresh-context agent step; the executor pauses)
             ob("on_step", "review")
-            self.hooks.emit("review.requested", spec=spec.get("id"))
-            rv = self.hooks.review(spec, proof)
+            if gate is None:
+                self.hooks.emit("review.requested", spec=spec.get("id"))
+                rv = self.hooks.review(spec, proof)
+            else:
+                # THE REVIEW STATION, before any reviewer is launched, and the review's own launch.
+                def reviewed(handle):
+                    self.hooks.emit("review.requested", spec=spec.get("id"))
+                    return self.hooks.review(spec, proof, calls=handle)
+
+                rv, halt = launched("review", cycle, reviewed)
+                if halt is not None:
+                    return halt
             verdict = rv.get("verdict")
             rmin = int(rv.get("human_minutes", 0) or 0)
             state["human_minutes"] += rmin
@@ -567,7 +705,8 @@ def loop_respected(result):
     return True
 
 
-def veldo_run(spec_id, hooks, root=None, head=None, max_review_cycles=2, runlog=None):
+def veldo_run(spec_id, hooks, root=None, head=None, max_review_cycles=2, runlog=None,
+              eligibility=None, calls=None, context=None, trust=None):
     """veldo run <spec>: allocate an observed run in the WARP-0501 registry, drive
     the ready spec through the executor with the run observer ON, and return the
     receipt plus the run id.
@@ -581,11 +720,18 @@ def veldo_run(spec_id, hooks, root=None, head=None, max_review_cycles=2, runlog=
     wires a RunLogObserver, and drives the executor. If the loop raises before it
     can finish (for example a loop with no agent-backed build), the run is marked
     aborted with the error recorded so a crashed build never lingers as falsely
-    active, and the error is re-raised."""
+    active, and the error is re-raised.
+
+    VELDO-0052: the Gate is resolved BEFORE a run is allocated, through the production
+    construction (control_eligibility.entry_gate): in an enrolled repository it is built from the
+    workspace's signed binding, so a named stop leaves no run behind. calls (the runner's
+    StationCalls) and context (the claim holder) are what the build and review launches reserve
+    against."""
+    gate = _eligibility_organ().entry_gate(getattr(hooks, "root", ROOT), eligibility, trust)
     rl = runlog or _load_module("veldo_runlog_run", ".veldo/runlog.py")
     run_id = rl.start_run(spec_id, head=head, root=root)
     observer = RunLogObserver(run_id, root=root, runlog=rl)
-    ex = Executor(hooks, observer=observer)
+    ex = Executor(hooks, observer=observer, eligibility=gate, calls=calls, context=context)
     try:
         result = ex.run(spec_id, max_review_cycles=max_review_cycles)
     except BaseException as err:
@@ -714,13 +860,20 @@ def run_checkpoint_loop(run_id, steps, root=None, runlog=None):
 
 def _cli():
     import argparse
+    import sys
     ap = argparse.ArgumentParser(
         description="Drive a ready spec through the VELDO loop (LiveLoop reference).")
     ap.add_argument("spec_id", help="the spec id to drive, for example WARP-0401")
     ap.add_argument("--max-review-cycles", type=int, default=2)
     args = ap.parse_args()
-    ex = Executor(LiveLoop())
-    result = ex.run(args.spec_id, max_review_cycles=args.max_review_cycles)
+    EL = _eligibility_organ()
+    try:
+        # VELDO-0052: the Gate an enrolled repository's signed binding builds, or none when unenrolled.
+        ex = Executor(LiveLoop(), eligibility=EL.entry_gate(ROOT))
+        result = ex.run(args.spec_id, max_review_cycles=args.max_review_cycles)
+    except EL.Stopped as stop:
+        sys.stderr.write("executor stopped: %s\n" % stop.reason)
+        return 2
     print(json.dumps(result, indent=2))
     return 0 if result["state"] == "ready" else 1
 

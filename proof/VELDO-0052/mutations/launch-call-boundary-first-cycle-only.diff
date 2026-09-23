@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -536 +536 @@
+-            if current["eligible"]:
++            if current["eligible"] and cycle == 1:  # defect

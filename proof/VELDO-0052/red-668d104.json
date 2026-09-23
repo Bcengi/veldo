@@ -1,0 +1,282 @@
+{
+ "production_at": "668d104",
+ "substituted_modules": [
+  ".veldo/control_eligibility.py",
+  ".veldo/dispatch.py",
+  ".veldo/executor.py",
+  ".veldo/frontier.py",
+  ".veldo/plan.py",
+  ".veldo/runstatus.py",
+  ".veldo/work.py",
+  ".veldo/work_state.py",
+  "bin/veldo"
+ ],
+ "fixture_substitution": null,
+ "failed": [
+  "VELDO-0052 reservations/work-loop-dispatch-identity",
+  "VELDO-0052 reservations/dispatch-slot-retired",
+  "VELDO-0052 eligibility/provider-refusal-halts",
+  "VELDO-0052 eligibility/launch-decides-its-calls",
+  "VELDO-0052 eligibility/host-trust-outside-workspace"
+ ],
+ "passed": 49,
+ "observed": {
+  "executor": {
+   "unwired": [
+    "raised",
+    "Stopped:reservation_required"
+   ],
+   "unwired_builds": [],
+   "unwired_reviews": [],
+   "wired_launches": [
+    [
+     "claude_code",
+     true
+    ],
+    [
+     "codex",
+     true
+    ],
+    [
+     "codex",
+     true
+    ]
+   ],
+   "producer_as_reviewer": "eligibility refused before review: reviewer_not_independent",
+   "rechecks": {
+    "withdrawn": {
+     "builds": 1,
+     "outcome": "eligibility refused before build: stale_input:admission; missing_authority:admission"
+    },
+    "reaccepted": {
+     "builds": 1,
+     "outcome": "eligibility refused before build: stale_input:admission"
+    }
+   }
+  },
+  "enrollment_git_error": {
+   "root": [
+    "raised",
+    "Stopped:enrollment_unanswerable"
+   ],
+   "subdirectory": [
+    "raised",
+    "Stopped:enrollment_unanswerable"
+   ],
+   "frontier": [
+    "raised",
+    "Stopped:enrollment_unanswerable"
+   ]
+  },
+  "status_reader": {
+   "items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "ready (frontier)",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "plan_items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "ready (frontier)",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "plan_enrolled": [
+    "raised",
+    "Stopped:eligibility_required"
+   ],
+   "status_enrolled": "eligibility_required"
+  },
+  "work_loop": {
+   "handed_keys": [
+    [
+     "eligibility",
+     "generation",
+     "holder",
+     "kind",
+     "plan",
+     "requires",
+     "spec"
+    ],
+    [
+     "eligibility",
+     "generation",
+     "holder",
+     "kind",
+     "plan",
+     "requires",
+     "spec"
+    ]
+   ],
+   "launched": [
+    [
+     "claude_code",
+     "loop-build-VELDO-9106",
+     true
+    ]
+   ],
+   "slot_context": {
+    "account": "acct-floor",
+    "domain": "domain-52",
+    "project": "p1",
+    "repository": "repository-52",
+    "unit": "VELDO-9106"
+   }
+  },
+  "slot_retirement": {
+   "dispatches": {
+    "resolve": [
+     "resolve",
+     [],
+     1
+    ],
+    "plan_check": [
+     "eligibility",
+     [],
+     1
+    ],
+    "recheck": [
+     "eligibility",
+     [],
+     1
+    ],
+    "no-call": [
+     "eligibility",
+     [],
+     1
+    ],
+    "first": [
+     "eligibility",
+     [],
+     1
+    ],
+    "second": [
+     "eligibility",
+     [],
+     1
+    ]
+   },
+   "launched": [],
+   "unit_balance": {
+    "capacity": 1,
+    "invocations": 0,
+    "wall_seconds": 0,
+    "tokens": 0,
+    "messages": 0
+   },
+   "slots": [
+    {
+     "retired": false,
+     "retirement": null
+    }
+   ],
+   "calls": [],
+   "reviews": [
+    null,
+    null
+   ],
+   "direct": "halted",
+   "direct_slots": [
+    false
+   ]
+  },
+  "provider_refusal": {
+   "direct-cap": [
+    "raised",
+    "Refused:usage_cap:unit:invocations"
+   ],
+   "direct-moved": [
+    "raised",
+    "Refused:stale_input:admission"
+   ],
+   "dispatch-build": [
+    "raised",
+    "Refused:usage_cap:unit:invocations"
+   ],
+   "dispatch-review": [
+    "raised",
+    "Refused:usage_cap:unit:invocations"
+   ],
+   "review_status": "review",
+   "launched": []
+  },
+  "launch_calls": {
+   "taken": [
+    "raised",
+    "Refused:missing_authority:claim"
+   ],
+   "unheld": [
+    "raised",
+    "Refused:missing_authority:claim"
+   ],
+   "taken_builds": 2,
+   "unheld_builds": 1
+  },
+  "landed_offers": {
+   "VELDO-9163": "build"
+  },
+  "production_entries": {
+   "executor": {
+    "exit": 2,
+    "said": [
+     "executor stopped: reservation_required"
+    ]
+   },
+   "plan": {
+    "exit": 1,
+    "said": [
+     "  - eligibility refused: missing_authority:admission"
+    ]
+   },
+   "work": {
+    "exit": 2,
+    "said": [
+     "veldo work stopped: authority_required"
+    ]
+   },
+   "status": {
+    "exit": 0,
+    "said": [
+     "}"
+    ]
+   },
+   "untrusted": {
+    "exit": 2,
+    "said": [
+     "executor stopped: host_trust_required"
+    ]
+   }
+  },
+  "host_trust": {
+   "inside": [
+    "ok",
+    "Gate"
+   ],
+   "relative": [
+    "ok",
+    "Gate"
+   ],
+   "symlink-into-workspace": [
+    "ok",
+    "Gate"
+   ],
+   "git-directory": [
+    "ok",
+    "Gate"
+   ],
+   "host": [
+    "ok",
+    "Gate"
+   ],
+   "host-through-symlink": [
+    "ok",
+    "Gate"
+   ]
+  },
+  "raised": []
+ }
+}
