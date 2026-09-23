@@ -1,0 +1,649 @@
+"""VELDO-0053: architecture failure handling at every eligibility entry, over real files and a real store.
+
+Only shared ROOT and expect are consumed. One temporary Git repository is both the workspace the
+entries read and the installed .veldo they run from (as in VELDO-0052's suite), so a registered
+mutation of a production module reaches every entry that loads it. A second tree is a clone that
+carries its own .veldo with a success-stub structural validator and a deleted, weakened or unaccepted
+architecture; the installed Gate judges it. Real SQLite store, real files in every contract state
+(permission denial by chmod under the running worker, a directory and a FIFO at the path), the
+installed validator run as a real process, real VELDO-0036 reservation transactions and an observed
+receiver. Launch counters stand in for the delegated build and review agents.
+"""
+
+
+def _v53_suite():
+    import contextlib
+    import hashlib
+    import hmac
+    import importlib.util
+    import io
+    import json
+    import os
+    from pathlib import Path
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    # Literal anchors: the registered mutation driver substitutes each production copy here.
+    PRODUCTION = {
+        'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
+        'validate_checks.py': ROOT / ".veldo" / "validate_checks.py",
+        'contract_loader.py': ROOT / ".veldo" / "contract_loader.py",
+    }
+
+    def load(name, path):
+        spec = importlib.util.spec_from_file_location(name, str(path))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def sha(data):
+        return 'sha256:' + hashlib.sha256(data).hexdigest()
+
+    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    with tempfile.TemporaryDirectory(prefix='v53-', dir=fast) as directory:
+        top = Path(directory)
+        base = top / 'repo'
+        mods = base / '.veldo'
+        mods.mkdir(parents=True)
+        for source in sorted((ROOT / '.veldo').glob('*.py')):
+            shutil.copyfile(source, mods / source.name)
+        for name, source in PRODUCTION.items():
+            shutil.copyfile(source, mods / name)
+        GP = load('v53_git', mods / 'git_process.py')
+        EL = load('v53_eligibility', mods / 'control_eligibility.py')
+        S = load('v53_store', mods / 'control_store.py')
+        RES = load('v53_reservations', mods / 'control_reservations.py')
+        RT = load('v53_runtime', mods / 'control_reservation_runtime.py')
+        V = load('v53_validate', mods / 'validate.py')
+        CLM = EL._organ('control_claim')
+        DOMAIN, REPOSITORY, SID = 'domain-53', 'repository-53', 'VELDO-9301'
+        db = top / 'authority' / 'control.sqlite3'
+        writer = S.open_store(str(db))
+        key = os.urandom(32)
+
+        def sign(message):
+            return hmac.new(key, message, hashlib.sha256).hexdigest()
+
+        serial = [0]
+
+        def put(identity, kind, data):
+            serial[0] += 1
+            row = writer.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+            S.execute(writer, dict(command_id='c%d' % serial[0], principal='owner', operation='upsert_entity',
+                                   nonce='n%d' % serial[0], artifact_digests=[],
+                                   expected_versions={identity: row[0] if row else 0},
+                                   parameters=dict(entity_id=identity, kind=kind, data=data)),
+                      'authority', sign, 1)
+
+        # Accepted authority records for ONE unit that every station accepts: the architecture is the
+        # only thing each scenario below changes.
+        put('project:p1', 'project', dict(name='floor'))
+        put('authority:' + DOMAIN, 'authority', dict(state='active', generation=1))
+        put('plan:PLAN-9301', 'plan', dict(status='ready', revision=1))
+        put(SID, 'execution_unit', dict(state='CLAIMED', repository_uuid=REPOSITORY, backlog_item_uuid='backlog:' + SID,
+                                        requirements=[], eligible_holders=['worker-a'], plan='PLAN-9301', project='p1',
+                                        depends_on=[], scope_digest='sha256:scope', revision=1, producer='builder-a',
+                                        approvals_required=['owner']))
+        put('backlog:' + SID, 'backlog_item', dict(state='ACTIVE', repository_uuid=REPOSITORY))
+        put('admission:' + SID, 'admission', dict(unit=SID, state='accepted', scope_digest='sha256:scope'))
+        put('approval:%s:owner' % SID, 'approval', dict(unit=SID, name='owner', state='granted', revision=1))
+        put(CLM.claim_id(REPOSITORY, SID), 'claim', dict(unit_id=SID, holder='worker-a', generation=1,
+                                                         state='owned', heartbeat_at=CLM.CL._now()))
+
+        # The checkout: one ready planned spec with a placement in the fixture architecture's one area.
+        VALID = ('schema: veldo.arch/v1\nid: ARCH-9301\ntitle: Fixture architecture\nstatus: draft\nversion: 1\n'
+                 'areas:\n  - id: floor\n    title: Floor\n    includes: ["src/**", "specs/**"]\n')
+        WEAKENED = VALID.replace('version: 1\n', 'version: 2\n') + '  - id: anything\n    title: Anything\n    includes: ["**"]\n'
+        WRONG_FIELDS = ('schema: veldo.arch/v1\nid: ARCH-9301\ntitle: Fixture architecture\nstatus: draft\n'
+                        'version: one\nareas: none\n')
+
+        def spec_text(sid):
+            return '\n'.join(['---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Architecture fixture ' + sid,
+                              'status: ready', 'risk: low', 'owner: dmitry', 'lane: planned', 'plan: PLAN-9301',
+                              'work: W1', 'plan_revision: 1', 'depends_on: []', 'placement: [floor]',
+                              'footprint: ["src/**"]', '---', '', 'Fixture.', ''])
+
+        for tree in (base, top / 'clone'):
+            (tree / 'specs').mkdir(parents=True)
+            (tree / 'plans').mkdir()
+            (tree / 'specs' / (SID + '-fixture.md')).write_text(spec_text(SID))
+            (tree / 'plans' / 'PLAN-9301-fixture.md').write_text('\n'.join(
+                ['---', 'schema: veldo.plan/v1', 'id: PLAN-9301', 'title: Architecture fixture plan', 'status: ready',
+                 'revision: 1', 'work:', '  - item: W1', '    spec: ' + SID, '    order: 1', '---', '', 'Plan.', '']))
+        spec_path = base / 'specs' / (SID + '-fixture.md')
+        plan_path = str(base / 'plans' / 'PLAN-9301-fixture.md')
+        originals = {p: p.read_bytes() for p in list((base / 'specs').glob('*.md')) + list((top / 'clone' / 'specs').glob('*.md'))}
+
+        def restore():
+            for p, body in originals.items():
+                p.write_bytes(body)
+
+        contract, policy = mods / 'architecture.yaml', mods / 'policy.yaml'
+        GP.run(['git', '-C', str(base), 'init', '-q'], check=True, capture_output=True)
+        GP.run(['git', '-C', str(base), 'add', '-A'], check=True, capture_output=True)
+        GP.run(['git', '-C', str(base), 'commit', '-q', '-m', 'architecture fixture'], check=True, capture_output=True,
+               identity=('Fixture', 'fixture@example.invalid'))
+
+        def trunk():
+            refs = GP.run(['git', '-C', str(base), 'for-each-ref', '--format=%(refname) %(objectname)'], check=True,
+                          capture_output=True, text=True).stdout
+            head = GP.run(['git', '-C', str(base), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout
+            return head + refs
+
+        def clear(target):
+            if os.path.lexists(str(target)):
+                if os.path.isdir(str(target)) and not os.path.islink(str(target)):
+                    shutil.rmtree(str(target))
+                else:
+                    os.unlink(str(target))
+
+        # Every contract state a real file can be in, with the policy flag in force. `expect` is the
+        # outcome the installed loader and policy owe it, written out here, not read back from them.
+        STATES = {
+            'valid': ('optional', 'valid', True),
+            'optional_absent': ('optional', 'optional_absence', True),
+            'required_absent': ('required', 'required_absence', False),
+            'unreadable': ('optional', 'unreadable', False),
+            'malformed_not_mapping': ('optional', 'parse_failure', False),
+            'malformed_outside_subset': ('optional', 'parse_failure', False),
+            'wrong_type_directory': ('optional', 'unreadable', False),
+            'wrong_type_fifo': ('optional', 'unreadable', False),
+            'wrong_type_fields': ('optional', 'invalid_structure', False),
+        }
+        denied = {}
+
+        def arrange(state, tree=base, text=None):
+            target, flag = tree / '.veldo' / 'architecture.yaml', tree / '.veldo' / 'policy.yaml'
+            clear(target)
+            flag.write_text('architecture_contract: %s\n' % STATES[state][0])
+            if text is not None:
+                target.write_text(text)
+            elif state in ('valid', 'unreadable'):
+                target.write_text(VALID)
+            elif state == 'malformed_not_mapping':
+                target.write_text('- floor\n- fleet\n')
+            elif state == 'malformed_outside_subset':
+                target.write_text('schema: veldo.arch/v1\nareas: [unclosed\n')
+            elif state == 'wrong_type_directory':
+                target.mkdir()
+            elif state == 'wrong_type_fifo':
+                os.mkfifo(str(target))
+            elif state == 'wrong_type_fields':
+                target.write_text(WRONG_FIELDS)
+            if state == 'unreadable':
+                # ACTUAL permission denial under the identity running this suite, never a mocked error.
+                os.chmod(str(target), 0)
+                try:
+                    with open(str(target), 'rb'):
+                        denied[state] = False
+                except PermissionError:
+                    denied[state] = True
+            return target
+
+        def bytes_at(target):
+            return target.read_bytes() if os.path.isfile(str(target)) and os.access(str(target), os.R_OK) else None
+
+        reader = S.open_store(str(db), mode='r')
+        observed = {}
+        CTX = {'holder': 'worker-a', 'reviewer': 'reviewer-b'}
+        CODES = {'required_absence': 'missing_evidence:architecture/required_absence',
+                 'unreadable': 'invalid_input:architecture/unreadable',
+                 'parse_failure': 'invalid_input:architecture/parse_failure',
+                 'invalid_structure': 'invalid_input:architecture/invalid_structure',
+                 'unaccepted_artifact': 'missing_authority:architecture/unaccepted_artifact'}
+
+        def stations(gate):
+            return {st: gate.decide(st, SID, context=CTX) for st in EL.FLOOR_STATIONS}
+
+        def outcome(decisions, code):
+            """True when every station said exactly `code` (None: every station accepted)."""
+            wanted = [] if code is None else [code]
+            return all(d['refusals'] == wanted and d['eligible'] == (code is None) for d in decisions.values())
+
+        emitted, raised, regions = set(), [], []
+
+        def check(label, condition):
+            emitted.add(label)
+            expect('VELDO-0053 ' + label, condition)
+
+        @contextlib.contextmanager
+        def region(*labels):
+            regions.append(labels[0])
+            try:
+                yield
+            except Exception as error:  # noqa: BLE001 - a raise reds its rows, never skips them
+                raised.append((labels[0], repr(error)))
+                for label in labels:
+                    if label not in emitted:
+                        check(label, False)
+
+        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+        # The code every judgement must come from: the installed files, by resolved path and digest.
+        installed = {role: os.path.realpath(str(mods / name)) for role, name in (
+            ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'), ('validator', 'arch.py'),
+            ('parser', 'yamlish.py'))}
+        installed_digests = {role: sha(Path(path).read_bytes()) for role, path in installed.items()}
+
+        # --- AC1: valid, absent and invalid contracts at every loader/ready entry -------------------------
+        with region('architecture/state-kinds', 'architecture/ready-refusal'):
+            kinds, processes, ready, policy_rows = {}, {}, {}, {}
+            store_only = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY)
+            store_only_ok = outcome(stations(store_only), None)
+            for state, (flag, kind, proceeds) in STATES.items():
+                target = arrange(state)
+                kinds[state] = V.load_contract_state(str(base)).kind
+                # The installed structural validator as a real process, for every present state.
+                if os.path.lexists(str(target)):
+                    run = subprocess.run([sys.executable, '-B', str(mods / 'validate.py'), 'arch', str(target)],
+                                         capture_output=True, text=True, timeout=60)
+                    processes[state] = run.returncode
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    ready[state] = V.check_ready(str(spec_path), repo_root=str(base))
+                policy_rows[state] = stations(gate)
+                clear(target)
+            observed['state_kinds'] = kinds
+            observed['validator_process_exit'] = processes
+            observed['permission_denied'] = denied
+            check('architecture/state-kinds',
+                   kinds == {s: k for s, (_, k, _) in STATES.items()} and denied == {'unreadable': True}
+                   and processes == {s: (0 if s == 'valid' else 1) for s in STATES if s not in ('optional_absent', 'required_absent')})
+
+            # The same states under the authority's accepted record: the record's digest names the bytes at
+            # the path (the valid contract's when nothing readable is there), so absence is required.
+            accepted_rows = {}
+            for state in STATES:
+                target = arrange(state)
+                body = bytes_at(target)
+                put('architecture:' + REPOSITORY, 'architecture_contract',
+                    dict(state='accepted', digest=sha(body if body is not None else VALID.encode())))
+                accepted_rows[state] = stations(gate)
+                clear(target)
+            ready_ok = store_only_ok
+            for state, (_, kind, proceeds) in STATES.items():
+                ready_ok &= (ready[state] == 0) == proceeds
+                ready_ok &= outcome(policy_rows[state], None if proceeds else CODES[kind])
+                wanted = None if state == 'valid' else CODES['required_absence' if kind == 'optional_absence' else kind]
+                ready_ok &= outcome(accepted_rows[state], wanted)
+            observed['ready_errors'] = ready
+            observed['station_refusals'] = {
+                basis: {state: sorted({r for d in rows.values() for r in d['refusals']}) for state, rows in table.items()}
+                for basis, table in (('policy', policy_rows), ('accepted', accepted_rows))}
+            check('architecture/ready-refusal', ready_ok)
+
+        # --- AC2: invalid or required-missing accepted architecture blocks every enabled entry ------------
+        FR = load('v53_frontier', mods / 'frontier.py')
+        WK = load('v53_work', mods / 'work.py')
+        PL = load('v53_plan', mods / 'plan.py')
+        EX = load('v53_executor', mods / 'executor.py')
+        DSP = load('v53_dispatch', mods / 'dispatch.py')
+        claims = top / 'claims'
+        receiver = []
+        observer = S.open_store(str(db), mode='r')
+
+        def launcher(adapter):
+            def launch(invocation, configuration):
+                committed = observer.execute('SELECT 1 FROM entities WHERE id=?',
+                                             (RES.entity('invocation', [DOMAIN, invocation]),)).fetchone() is not None
+                receiver.append((adapter, invocation, committed))
+            return launch
+
+        def authorize(conn, command):
+            row = conn.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
+            return bool(row) and json.loads(row[0]).get('roles') == ['reservation_service']
+
+        put('runner', 'membership', dict(roles=['reservation_service']))
+        reservations = RES.Reservations(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
+                                        authorize=authorize, signer='authority', sign=sign)
+        guards = {a: RT.InvocationGuard(reservations, a, launcher(a), lambda *_: None) for a in RT.ADAPTERS}
+        CONFIG = {'mcp_servers': ['configured'], 'tools': ['configured-tool']}
+        clock = [100.0]
+
+        def tick():
+            clock[0] += 1
+            return clock[0]
+
+        CEILING = dict(capacity=100, invocations=200, wall_seconds=100000)
+        for scope, subject in zip(RES.SCOPES, ('acct-floor', 'p1', SID)):
+            reservations.configure('ceiling-%s-%s' % (scope, subject), scope, subject, CEILING, now=tick())
+        reservations.reserve_worker('slot-direct-call', 'dispatch-direct-call', 'acct-floor', 'p1', SID, now=tick())
+
+        class Hooks(EX.LoopSteps):
+            reviewer_identity = 'reviewer-b'
+
+            def __init__(self, during_build=None):
+                self.builds, self.reviews, self.root = [], [], str(base)
+                self.during_build = during_build
+
+            def resolve(self, sid):
+                return {'id': sid, 'status': FR.current_status(sid, str(base)), 'plan': 'PLAN-9301', 'work': 'W1'}
+
+            def run_check(self, spec):
+                return True, 'checked'
+
+            def build(self, spec, calls=None):
+                self.builds.append(spec['id'])
+                if calls is not None:
+                    calls.invoke('claude_code', 'initial', 'build-%d-%s' % (tick(), spec['id']), 10, CONFIG, now=tick())
+                if self.during_build:
+                    self.during_build()
+                return {'ok': True, 'commit': 'c', 'evidence': {}}
+
+            def gate(self):
+                return {'green': True, 'detail': 'green'}
+
+            def assemble_proof(self, spec, build):
+                return {'criteria': []}
+
+            def validate_proof(self, proof):
+                return True, 0
+
+            def emit(self, *args, **kwargs):
+                return None
+
+            def review(self, spec, proof, calls=None):
+                self.reviews.append(spec['id'])
+                if calls is not None:
+                    calls.invoke('codex', 'initial', 'exec-review-%d' % tick(), 10, CONFIG, now=tick())
+                return {'verdict': 'pass'}
+
+            def merge_ready(self, spec, proof, verdict):
+                return True, None
+
+            def approve(self, spec, info):
+                return {'decision': 'approved'}
+
+        class Reviewer(DSP.Reviewer):
+            identity = 'reviewer-b'
+
+            def __init__(self):
+                self.reviews = []
+
+            def review(self, spec, unit, calls=None):
+                self.reviews.append(spec['id'])
+                if calls is not None:
+                    calls.invoke('codex', 'initial', 'review-%d' % tick(), 10, CONFIG, now=tick())
+                return {'verdict': 'pass', 'findings': []}
+
+        class Lander:
+            def __init__(self):
+                self.lands = []
+
+            def land(self, unit):
+                self.lands.append(unit['spec'])
+                return {'ok': True}
+
+        class Counter(WK.Dispatcher):
+            def __init__(self):
+                self.units = []
+
+            def dispatch(self, unit):
+                self.units.append(unit['spec'])
+                return {'ok': False}
+
+        def observe_effect(fn):
+            try:
+                return ('ok', fn())
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                name = getattr(error, 'reason', None) or getattr(error, 'code', None) or str(error)
+                return ('raised', '%s:%s' % (type(error).__name__, name))
+
+        calls = EL.StationCalls(gate, guards, account='acct-floor', clock=tick)
+        HOLDER = {'holder': 'worker-a'}
+
+        def entry_drivers(condition):
+            """One driver per shared registration: (what it launched, the refusal text it reported)."""
+            restore()
+
+            def frontier():
+                offers = FR.claimable(repo_root=str(base), claims_root=str(claims), eligibility=gate)
+                return [u['spec'] for u in offers], ''
+
+            def work():
+                counter = Counter()
+                WK.WorkLoop('worker-a', [], counter, repo_root=str(base), claims_root=str(claims), eligibility=gate).run()
+                return list(counter.units), ''
+
+            def plan():
+                out = io.StringIO()
+                with contextlib.redirect_stdout(out):
+                    rc = PL.cmd_run_check(plan_path, SID, eligibility=gate)
+                return ([SID] if rc == 0 else []), out.getvalue()
+
+            def executor(station):
+                def run():
+                    hooks = Hooks()
+                    got = EX.Executor(hooks, eligibility=gate, calls=calls, station=station, context=HOLDER).run(
+                        SID, stop_after='proof')
+                    return list(hooks.builds), got.get('reason') or ''
+                return run
+
+            def executor_review():
+                # The review launch follows a build, so the build starts against the accepted valid
+                # contract and the architecture turns invalid (or goes missing while required) during it:
+                # the review station is the first to face it. Its build is counted by the caller.
+                put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('valid')))
+                flips = {'invalid': lambda: contract.write_text(WRONG_FIELDS), 'missing': lambda: clear(contract)}
+                hooks = Hooks(during_build=flips.get(condition))
+                got = EX.Executor(hooks, eligibility=gate, calls=calls, context=HOLDER).run(SID)
+                put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset(condition)))
+                review_builds[condition] = list(hooks.builds)
+                return list(hooks.reviews), got.get('reason') or ''
+
+            def executor_calls():
+                # The provider_request boundary a direct execution asks before it enters its builder.
+                return executor('direct_execution')()
+
+            def dispatch_build():
+                hooks = Hooks()
+                disp = DSP.Dispatcher(repo_root=str(base), hooks=hooks, eligibility=gate, calls=calls, worker_id='worker-a')
+                got = disp.dispatch(dict(kind='build', spec=SID, holder='worker-a'))
+                restore()
+                return list(hooks.builds), got.get('reason') or ''
+
+            def dispatch_review():
+                reviewer, lander = Reviewer(), Lander()
+                disp = DSP.Dispatcher(repo_root=str(base), reviewer=reviewer, lander=lander, eligibility=gate,
+                                      calls=calls, worker_id='worker-a')
+                got = disp.dispatch(dict(kind='review', spec=SID, holder='worker-a'))
+                restore()
+                return list(reviewer.reviews), got.get('reason') or ''
+
+            def publication():
+                lander = Lander()
+                disp = DSP.Dispatcher(repo_root=str(base), lander=lander, eligibility=gate, calls=calls, worker_id='worker-a')
+                got = disp._land(dict(kind='review', spec=SID, holder='worker-a'))
+                return list(lander.lands), got.get('reason') or ''
+
+            def invoke():
+                before = len(receiver)
+                handle = calls.handle('build', SID, 'dispatch-direct-call', context=HOLDER, ticket=None)
+                got = observe_effect(lambda: handle.invoke('claude_code', 'initial', 'direct-%d' % tick(), 10, CONFIG,
+                                                           now=tick()))
+                return [SID for _, i, _ in receiver[before:] if i.startswith('direct-')], '' if got[0] == 'ok' else got[1]
+
+            return {
+                ('frontier.py', 'claimable._add', 'selection'): frontier,
+                ('work.py', 'WorkLoop._claim_next', 'claim'): work,
+                ('plan.py', 'cmd_run_check', 'direct_execution'): plan,
+                ('executor.py', 'Executor._decide', 'direct_execution'): executor('direct_execution'),
+                ('executor.py', 'Executor._decide', 'build'): executor('build'),
+                ('executor.py', 'Executor._decide', 'review'): executor_review,
+                ('executor.py', 'Executor._decide_calls', 'provider_request'): executor_calls,
+                ('dispatch.py', 'Dispatcher._dispatch_build', 'build'): dispatch_build,
+                ('dispatch.py', 'Dispatcher._dispatch_review', 'review'): dispatch_review,
+                ('dispatch.py', 'Dispatcher._land', 'publication'): publication,
+                ('control_eligibility.py', 'CallHandle.invoke', 'provider_request'): invoke,
+            }
+
+        def reset(condition):
+            """Invalid: the accepted bytes are present and structurally invalid. Missing: the accepted
+            contract is absent while the workspace's own policy says optional. Valid: the control."""
+            text = {'invalid': WRONG_FIELDS, 'missing': VALID, 'valid': VALID}[condition]
+            arrange('optional_absent')
+            if condition != 'missing':
+                contract.write_text(text)
+            return sha(text.encode())
+
+        EXEC_REVIEW = ('executor.py', 'Executor._decide', 'review')
+        review_builds = {}
+
+        def snapshot():
+            return dict(trunk=trunk(), ledger=len(ledger), receiver=len(receiver),
+                        opened=sum(o.get('operation') == 'open_dispatch' for o in calls.observations),
+                        claims=writer.execute("SELECT id, version FROM entities WHERE kind='claim' ORDER BY id").fetchall())
+
+        with region('architecture/registrations', 'architecture/entries-blocked', 'architecture/forbidden-review-launch'):
+            drivers = entry_drivers('valid')
+            registered = set(EL.REGISTRATIONS)
+            check('architecture/registrations',
+                   set(drivers) == registered
+                   and all(EL.ARCHITECTURE_PREDICATE in EL.STATION_PREDICATES[s] for _, _, s in registered))
+            ledger, real_claim = [], WK.CL.claim
+
+            def spy_claim(sid, *args, **kwargs):
+                ledger.append(sid)
+                return real_claim(sid, *args, **kwargs)
+
+            WK.CL.claim = spy_claim
+            ran = {}
+            try:
+                for condition in ('valid', 'invalid', 'missing'):
+                    put('architecture:' + REPOSITORY, 'architecture_contract',
+                        dict(state='accepted', digest=reset(condition)))
+                    drivers = entry_drivers(condition)
+                    before = snapshot()
+                    # The executor's review registration runs last and apart: it needs its build first.
+                    effects = {reg: observe_effect(fn) for reg, fn in drivers.items() if reg != EXEC_REVIEW}
+                    after = snapshot()
+                    effects[EXEC_REVIEW] = observe_effect(drivers[EXEC_REVIEW])
+                    ran[condition] = (effects, before, after, trunk())
+            finally:
+                WK.CL.claim = real_claim
+                restore()
+                reset('valid')
+            want = {'invalid': CODES['invalid_structure'], 'missing': CODES['required_absence']}
+            valid_effects = ran['valid'][0]
+            blocked_ok = all(r[0] == 'ok' and r[1][0] == [SID] for r in valid_effects.values())
+            blocked_ok &= review_builds.get('valid') == [SID]
+            for condition, code in want.items():
+                effects, before, after, final = ran[condition]
+                blocked_ok &= all(r[0] == 'ok' and r[1][0] == [] for r in effects.values())
+                # Every refusal an entry reports names the architecture, except the frontier and the work
+                # loop, which offer and claim nothing and have nothing to report.
+                blocked_ok &= all(code in r[1][1] for reg, r in effects.items() if reg[0] not in ('frontier.py', 'work.py'))
+                # Zero claims, zero launches, zero worker slots and the same trunk, across every entry.
+                blocked_ok &= before == after and final == before['trunk']
+                # The executor's review registration: its build ran against the valid contract, nothing else.
+                blocked_ok &= review_builds.get(condition) == [SID]
+            observed['entries'] = {condition: {'%s %s %s' % reg: (list(r[1]) if r[0] == 'ok' else list(r))
+                                               for reg, r in sorted(effects.items())}
+                                   for condition, (effects, _, _, _) in ran.items()}
+            observed['entries_unchanged'] = {c: ran[c][1] == ran[c][2] and ran[c][3] == ran[c][1]['trunk'] for c in want}
+            observed['executor_review_builds'] = review_builds
+            check('architecture/entries-blocked', blocked_ok)
+            # Direct review, the dispatcher's and the executor's: no reviewer is ever launched.
+            review_regs = sorted(r for r in registered if r[2] == 'review')
+            review_ok = len(review_regs) == 2 and all(ran['valid'][0][reg][1][0] == [SID] for reg in review_regs)
+            for condition, code in want.items():
+                review_ok &= all(ran[condition][0][reg][0] == 'ok' and ran[condition][0][reg][1][0] == []
+                                 and code in ran[condition][0][reg][1][1] for reg in review_regs)
+            check('architecture/forbidden-review-launch', review_ok)
+
+        # --- AC3: the installed validator and the accepted artifact, whatever the clone carries -----------
+        with region('architecture/substitution'):
+            clone = top / 'clone'
+            (clone / '.veldo').mkdir()
+            for source in sorted(mods.glob('*.py')):
+                shutil.copyfile(source, clone / '.veldo' / source.name)
+            marker = clone / '.veldo' / 'STUB_RAN'
+            # The clone's structural validator is a success stub that says so when it is loaded.
+            (clone / '.veldo' / 'arch.py').write_text(
+                'from pathlib import Path as _StubPath\n'
+                "_StubPath(__file__).with_name('STUB_RAN').write_text('the clone validator ran\\n')\n"
+                + (mods / 'arch.py').read_text()
+                + '\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n')
+            gate_c = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(clone))
+            calls_c = EL.StationCalls(gate_c, guards, account='acct-floor', clock=tick)
+            cases = {
+                # (what the clone carries, the digest the authority accepted, the refusal owed)
+                'deleted': (None, sha(VALID.encode()), CODES['required_absence']),
+                'weakened': (WEAKENED, sha(VALID.encode()), CODES['unaccepted_artifact']),
+                'accepted_invalid': (WRONG_FIELDS, sha(WRONG_FIELDS.encode()), CODES['invalid_structure']),
+                'accepted_valid': (VALID, sha(VALID.encode()), None),
+            }
+            substitution_ok, identities = True, {}
+            for name, (text, digest, code) in cases.items():
+                arrange('optional_absent', tree=clone, text=text)
+                put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=digest))
+                decisions = stations(gate_c)
+                reviewer, lander = Reviewer(), Lander()
+                disp = DSP.Dispatcher(repo_root=str(clone), reviewer=reviewer, lander=lander, eligibility=gate_c,
+                                      calls=calls_c, worker_id='worker-a')
+                got = observe_effect(lambda: disp.dispatch(dict(kind='review', spec=SID, holder='worker-a')))
+                restore()
+                found = decisions['review'].get('architecture') or {}
+                validator = found.get('validator') or {}
+                artifact = found.get('artifact') or {}
+                present = text.encode() if text is not None else None
+                substitution_ok &= outcome(decisions, code)
+                substitution_ok &= reviewer.reviews == ([] if code else [SID]) and got[0] == 'ok'
+                substitution_ok &= {r: v.get('path') for r, v in validator.items()} == installed
+                substitution_ok &= {r: v.get('digest') for r, v in validator.items()} == installed_digests
+                substitution_ok &= artifact.get('path') == str(clone / '.veldo' / 'architecture.yaml')
+                substitution_ok &= artifact.get('digest') == (sha(present) if present is not None else None)
+                substitution_ok &= found.get('basis') == 'accepted' and (found.get('accepted') or {}).get('digest') == digest
+                identities[name] = {'refusals': decisions['review']['refusals'], 'reviews': list(reviewer.reviews),
+                                    'artifact': dict(artifact, path='clone:.veldo/architecture.yaml'),
+                                    'validator': {r: {'path': 'installed:.veldo/' + Path(v['path']).name,
+                                                      'digest': v['digest']} for r, v in validator.items()}}
+            substitution_ok &= not marker.exists()
+            observed['substitution'] = identities
+            observed['clone_validator_ran'] = marker.exists()
+            check('architecture/substitution', substitution_ok)
+
+        with region('architecture/record-states'):
+            # The record itself: one not in the accepted state, or naming no digest, is not an acceptance;
+            # a store-only Gate cannot look at the file an accepted record names.
+            reset('valid')
+            states = {}
+            for record in (dict(state='withdrawn', digest=sha(VALID.encode())), dict(state='accepted'),
+                           dict(state='accepted', digest='md5:nothing')):
+                put('architecture:' + REPOSITORY, 'architecture_contract', record)
+                states[json.dumps(record, sort_keys=True)] = outcome(stations(gate), 'missing_authority:architecture')
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=sha(VALID.encode())))
+            states['store_only'] = outcome(stations(EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY)),
+                                           'missing_evidence:architecture/workspace')
+            states['accepted'] = outcome(stations(gate), None)
+            observed['record_states'] = states
+            check('architecture/record-states', all(states.values()) and len(states) == 5)
+
+        with region('architecture/observations'):
+            # Every decision records the architecture it judged, and its refusals keep their taxonomy.
+            judged = [e for e in gate.observations if e.get('architecture')]
+            obs_ok = len(judged) == len(gate.observations) > 0
+            obs_ok &= all(set(e['architecture']) == {'basis', 'kind', 'artifact_digest', 'validator'} for e in judged)
+            refused_arch = [e for e in gate.observations if any('architecture' in r for r in e['refusals'])]
+            obs_ok &= len(refused_arch) > 0 and all(
+                set(e['taxonomy']) <= {'invalid_input', 'missing_evidence', 'missing_authority'} for e in refused_arch)
+            obs_ok &= all(e['architecture']['validator'] == installed_digests for e in judged
+                          if e['architecture']['basis'] != 'store_only' and e['architecture']['validator'])
+            status = gate.status()
+            obs_ok &= status['accepted'] > 0 and status['refused'] > 0
+            observed['gate_status'] = status
+            observed['decision_sample'] = [e for e in gate.observations if e['refusals']][:2]
+            check('architecture/observations', obs_ok)
+
+        for first in regions:
+            check('ran/' + first, first not in {label for label, _ in raised})
+        observed['raised'] = raised
+        globals()['_V53_OBSERVED'] = observed
+        reader.close()
+        observer.close()
+        writer.close()
+
+
+_v53_started = __import__('time').monotonic()
+_v53_suite()
+_V53_SECONDS = __import__('time').monotonic() - _v53_started
