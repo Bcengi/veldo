@@ -28,7 +28,8 @@ only where the source decides it: from a spec variable bound once, or one whose 
 spec call or a `del` standing as a plain statement of a fragment's module body (those run in line
 order). A spec variable rebound anywhere else (in a function, under an if or a loop, by plain
 assignment, through global or nonlocal), or read from another scope while bound more than once,
-depends on control flow or call order and maps no alias. The resolver is judged against CPython's symtable over the
+depends on control flow or call order and maps no alias. NOT modeled, stated as limits: a star
+import and a write through globals() rebind names this reader cannot see; the corpus has neither. The resolver is judged against CPython's symtable over the
 real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to keep the signal clean
 is right; lowering the BAR by allowlisting the noisy names would not be.
 
@@ -73,6 +74,8 @@ def _spec_var_of_module_call(node):
 
 MODULE = "<module>"   # the ONE namespace every fragment execs into, in manifest order
 _COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+_COMPOUND = tuple(getattr(ast, n) for n in ("If", "For", "AsyncFor", "While", "Try", "TryStar", "With",
+                                              "AsyncWith", "Match") if hasattr(ast, n))
 
 
 class _Scope:
@@ -81,6 +84,7 @@ class _Scope:
     def __init__(self, key, kind, parent, node=None):
         self.key, self.kind, self.parent, self.node = key, kind, parent, node
         self.bound, self.globals, self.nonlocals = set(), set(), set()
+        self.depth = 0                                 # compound statements open in this scope
 
     def local(self, name):
         return name in self.bound and name not in self.globals and name not in self.nonlocals
@@ -112,6 +116,10 @@ class _Walk:
                 scope = scope.parent
         scope.bound.add(name)
         self.bindings.append((scope, name))
+        if scope.kind == "class" and scope.depth:
+            # A class body that binds a name only on a path not taken reads the GLOBAL instead (a
+            # function would raise), so a conditional class binding is never the only one.
+            self.bindings.append((scope, name))
 
     def visit(self, node):
         for child in ast.iter_child_nodes(node) if not isinstance(node, list) else node:
@@ -182,6 +190,13 @@ class _Walk:
             self.stack.pop()
 
     def statement(self, n):
+        if isinstance(n, _COMPOUND):
+            self.stack[-1].depth += 1
+            try:
+                self.visit(n)
+            finally:
+                self.stack[-1].depth -= 1
+            return
         if isinstance(n, ast.Lambda):
             self.defaults(n)
             self.definition(n)
@@ -263,7 +278,7 @@ def resolve(scope, name):
         if cur.kind == "class":
             if name == "__class__":
                 return cur.key                         # the implicit cell super() reads
-            if prev.kind == "annotation" and cur.local(name):
+            if prev is scope and scope.kind == "annotation" and cur.local(name):
                 return cur.key                         # PEP 695: annotation scopes see their class
         elif cur.local(name):
             return cur.key
