@@ -6,11 +6,13 @@ missing rows and process failures are errors, never successful mutation detectio
 """
 import argparse
 import ast
+import concurrent.futures
 import contextlib
 import difflib
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -1011,47 +1013,62 @@ def main():
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
+    parser.add_argument('--jobs', type=int, default=min(8, os.cpu_count() or 1),
+                        help='mutant runs in parallel (the honest run is once per suite)')
     args = parser.parse_args()
     selected = [c for c in cases() if args.finding is None or c['finding'] == args.finding]
     if args.worker:
         case = next(c for c in selected if c['name'] == args.worker)
         print(json.dumps(worker(case, args.mutant)))
         return
+    def run(case, path=None):
+        command = [sys.executable, __file__, '--worker', case['name']]
+        if path:
+            command += ['--mutant', str(path)]
+        proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        if proc.returncode:
+            raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
+        return json.loads(proc.stdout)
+
+    def targets(observed, case):
+        return {label: [ok for name, ok in observed['observations'] if name.split()[-1] == label]
+                for label in case['rows']}
+
     baselines = {}
     with tempfile.TemporaryDirectory(prefix='teeth-mutants-') as directory:
+        prepared = {}
         for case in selected:
-            prepared = materialize(case, 'mutant', Path(directory) / case['name'])
-            mutant = prepared['mutant']
+            prepared[case['name']] = materialize(case, 'mutant', Path(directory) / case['name'])
             if args.diff_dir:
-                source = prepared['source'].read_text()
+                source = prepared[case['name']]['source'].read_text()
                 changed = source.replace(case['old'], case['new'])
-                relative = str(prepared['source'].relative_to(ROOT))
+                relative = str(prepared[case['name']]['source'].relative_to(ROOT))
                 args.diff_dir.mkdir(parents=True, exist_ok=True)
                 (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
                     source.splitlines(keepends=True), changed.splitlines(keepends=True), n=0,
                     fromfile='a/' + relative, tofile='b/' + relative)))
-
-            def run(path=None):
-                command = [sys.executable, __file__, '--worker', case['name']]
-                if path:
-                    command += ['--mutant', str(path)]
-                proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
-                if proc.returncode:
-                    raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
-                return json.loads(proc.stdout)
-
-            # Keep each case's baseline target observations, not just the suite's exit code.
-            honest = run()
-            broken = run(mutant)
-            assert not honest['failed_rows'], honest
-            assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
-            for label in case['rows']:
-                assert honest['targets'][label] == [True], honest
-                assert broken['targets'][label] == [False], broken
-            baselines[case['suite']] = honest['count']
-            print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
-                              'baseline': 'green', 'assertions': honest['count'],
-                              'red_rows': broken['failed_rows']}), flush=True)
+        # The honest run of a suite does not depend on the mutant, so each suite runs honestly ONCE
+        # and every case of it is judged against that run; the mutant runs are independent and run
+        # in parallel. Each case's own targets are taken from the shared observations.
+        first = {}
+        for case in selected:
+            first.setdefault(case['suite'], case)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+            honest_runs = {suite: pool.submit(run, case) for suite, case in first.items()}
+            broken_runs = {case['name']: pool.submit(run, case, prepared[case['name']]['mutant'])
+                           for case in selected}
+            for case in selected:
+                honest = honest_runs[case['suite']].result()
+                broken = broken_runs[case['name']].result()
+                assert not honest['failed_rows'], honest
+                assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
+                for label in case['rows']:
+                    assert targets(honest, case)[label] == [True], (case['name'], label, honest['failed_rows'])
+                    assert targets(broken, case)[label] == [False], (case['name'], label, broken['failed_rows'])
+                baselines[case['suite']] = honest['count']
+                print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
+                                  'baseline': 'green', 'assertions': honest['count'],
+                                  'red_rows': broken['failed_rows']}), flush=True)
     print(json.dumps({'mutations_rejected': len(selected), 'green_suites': baselines}))
 
 
