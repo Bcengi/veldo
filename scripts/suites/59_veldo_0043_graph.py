@@ -216,6 +216,21 @@ def _s43_exact_plain(value):
                                 for k, v in value.items())
 
 
+def _s43_canon(name):
+    import re as _s43_re
+    return _s43_re.sub(r'[-_.]+', '-', name).lower()
+
+
+def _s43_census(directory):
+    """(name, version) of every distribution installed in the runtime, read from its metadata."""
+    import email.parser as _s43_email
+    found = []
+    for info in sorted(directory.glob('lib/python*/site-packages/*.dist-info')):
+        meta = _s43_email.Parser().parsestr((info / 'METADATA').read_text(errors='replace'), headersonly=True)
+        found.append((_s43_canon(meta['Name']), meta['Version']))
+    return found
+
+
 def _s43_runtime(root, repo, graph, store, snapshot):
     import pwd as _s43_pwd
     lock = _s43_load('s43_lock', repo / '.veldo/control_graph_lock.py')
@@ -226,9 +241,14 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     runtime = graph.resolve_runtime()
     absent = ('' if runtime else ': runtime absent at ' + str(directory) + '; install it with: '
               + graph.INSTALL_COMMAND)
+    # The runtime holds exactly the locked distributions: no installer's own pip, nothing unpinned.
+    census = _s43_census(directory)
+    observations['census_unlocked'] = sorted(set(census) - {(_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES})
     expect('graph/runtime/installed' + absent, runtime is not None
            and runtime['python'] == str(_s43_Path(home) / '.local/share/veldo/langgraph' / lock.digest() / 'bin/python')
-           and runtime['runner'] == str(repo / '.veldo/control_graph_langgraph.py'))
+           and runtime['runner'] == str(repo / '.veldo/control_graph_langgraph.py')
+           and sorted(census) == sorted((_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES)
+           and not (directory / 'bin/pip').exists())
     rows = ('graph/runtime/lifecycle', 'graph/runtime/plain-data', 'graph/runtime/tracing-off',
             'graph/authority/no-direct-write', 'graph/authority/typed-proposals-only')
     if runtime is None:
