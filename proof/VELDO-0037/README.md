@@ -542,8 +542,12 @@ already recorded for that domain's repository given on stdin as `^<commit>`, and
 holding a digit. `--root` lists a root commit as the creation of its whole tree, so the first
 record of a repository holds its whole history; `--ignore-missing` means a recorded commit the
 repository has lost excludes nothing, so its history is listed again rather than dropped; stdin
-means the number of excluded commits is not bounded by a command line. The tree listing is gone:
-every path of a commit's tree is named by some commit of its history. By induction the union of a
+means the number of excluded commits is not bounded by a command line. The tree listing is gone,
+because every path of a commit's tree was added or changed by some commit of its history, and so is
+named by it. That holds only when the history is complete and read the same way whatever the
+repository's configuration; as written here it was not (`-m` follows `log.diffMerges`, and a shallow
+repository's history is cut off), which the fourth check found and the last section fixes; grafts
+remain a stated limit. By induction the union of a
 repository's records is every digit-bearing path of every recorded commit's history, each path
 named once per recorded increment whose commits changed it, so storage grows with the history.
 The record also holds the commit's root commits. Its id is now
@@ -563,7 +567,7 @@ unrecorded named revision whose commit is gone refuses `accepted_revision_unavai
 |---|---|---|
 | (b) a descendant records only what it adds | the first record is `['specs/VELDO-0002-base.md']`; after `revision/repository` moves to a descendant adding `specs/VELDO-0004-descendant.md`, that commit's record is exactly that one path (and under 512 bytes); two side commits record `['specs/VELDO-0009-first-side.md']` and `['specs/VELDO-0005-second-side.md']` | each record held the whole history: the descendant's record held both paths, the second side commit's three |
 | (c) lost ancestors change nothing | both side commits deleted and pruned; enabling NAMING the lost `revision/side` commits with `next = 10`, from VELDO-0009 in the first side commit's record | refused `wrong_repository` (the named commit's roots were read from Git) |
-| (a) the union equals the whole history on Veldo | this repository cloned, `revision/veldo` accepted at four points of its first-parent line (a quarter, half, three quarters, HEAD), then each of the seven templates enabled on its own copy of that store: every `next` equals `accepted_maximum(HEAD) + 1` from the whole history | equal too (whole-history records), so this part was not what failed |
+| (a) the union equals the whole history on Veldo | this repository cloned, `revision/veldo` accepted at four points of its first-parent line (a quarter, half, three quarters, HEAD), then each of the seven templates enabled on its own copy of that store: every `next` equals `accepted_maximum(HEAD) + 1` from the whole history (a reference the fourth check found to be the code under test itself; since 40d7dad it is every reachable tree, listed with `ls-tree`) | equal too (whole-history records), so this part was not what failed |
 
 `red_at_7bd70d2.py` runs the final suite with the three modules from 7bd70d2 and no shims: the
 suite completes and only this row fails. `red_at_f84f2d2.py` and `red_at_9930b32.py` now stand as
@@ -599,3 +603,66 @@ process), up from 4.2 s: row 17 clones this repository and accepts four points o
 executed and rejected, 306 workers, 180.9 s against its scaled budget of 476 s (`budget_for(238)`).
 Every control-store suite is green on the final code, `check_teeth_mutations.py --finding 35` still
 rejects all 12, `validate.py all` exits 0 and `check_generated.sh` passes.
+
+## Fourth check fixes (2026-09-23)
+
+A fresh review of f84f2d2..2ffffda, with its own probes and an independent oracle (the
+digit-bearing paths of `git ls-tree -r` of every commit reachable from every accepted commit),
+found one blocking regression and three gaps. Each was fixed test first, one commit per item.
+
+**RED record.** `red-at-2ffffda.json` (from `red_at_2ffffda.py`) runs the final suite with the three
+modules from 2ffffda, no shims: the suite completes and exactly rows 18 and 20 fail by assertion.
+Row 19 covers behavior 2ffffda already had and passes there; it is recorded as a control, and its
+mutations are what show it has teeth.
+
+| Item | Row | At 2ffffda (recorded) | Fix | Mutations (each reds the row) |
+|---|---|---|---|---|
+| F1, blocking: `git log -m` follows repository configuration, and `log.diffMerges=off` names nothing a merge adds, so a path only a merge adds, kept in the tree, was never recorded and its number could be issued again | `aliases/history-read-whatever-repository-config` (18): a repository whose root commit adds `specs/VELDO-0030-root.md` and whose merge alone adds `specs/VELDO-0090-resolution.md`, both kept, with `log.diffMerges=off` and `log.showRoot=false` set in its own config | the record held only the root path; enabling committed `next = 31` where every reachable tree gives 91 | `HISTORY_OPTIONS` passes every option configuration could change about which paths `git log --name-only` names: `--diff-merges=separate` (instead of `-m`), `--root`, `--no-renames`, `--no-relative`, `--ignore-submodules=none`, `--no-ext-diff`, `--no-color`, `--no-notes`, `--no-show-signature`; `-z` already keeps `core.quotePath` out. The other Git reads on this path (`rev-parse --verify`, `rev-list --max-parents=0`, `merge-base --is-ancestor`, `cat-file -e`, `rev-parse --is-shallow-repository`) print object ids or exit codes only | `history-merges-by-config` (back to `-m`), `history-root-by-config` (drops `--root`) |
+| Missing row: accepting again after a recorded commit is lost, which is what `--ignore-missing` is for | `aliases/increment-after-a-lost-record` (19): a side commit holding VELDO-0009 is accepted, deleted and pruned; the next commit on the main line is accepted | passed (control): accepted, its record exactly `['specs/VELDO-0011-next.md']`, `next = 12` | none needed | `increment-without-ignore-missing` (the lost commit makes Git fail, so acceptance refuses), `increment-ignores-recorded-base` (the record lists the whole history again) |
+| F2: a shallow bound repository hides the history behind its boundary, so a record made there misses numbers the deepened repository holds | `aliases/shallow-repository-refused` (20): a depth-1 clone of a history where VELDO-0080 was added and deleted, then `fetch --unshallow` | the shallow acceptance committed a record without VELDO-0080; after deepening, enabling refused `wrong_repository` (the recorded root commits were the shallow boundary's) | `carrier_paths` refuses `shallow_repository` (taxonomy `missing_authority`) unless `rev-parse --is-shallow-repository` answers `false`, before reading any history; that covers acceptance and the legacy Git read. Deepened, the same commit is accepted and `next = 81`, as every reachable tree gives | `shallow-accepted` (the check removed), `shallow-check-reads-bare` (`--is-bare-repository` asked instead) |
+| F3: grafts | none | not changed | `.git/info/grafts` can still hide history, since the shared Git boundary disables replace objects but not grafts and the review asked not to change it: a same-account limit, stated in the specification's Notes. The review's `R3` probe still prints its BUG line for it | none |
+
+**The oracle, replaced.** Row 17(a) compared the union floor with `accepted_maximum`, which calls
+`carrier_paths` itself: a writer and a reader built together. Since 40d7dad its reference is every
+tree of every commit reachable from the accepted commits, listed with `git ls-tree -r`, which the
+code under test never runs. Rows 18 and 20 use the same reference. The kind's carrier pattern
+(`maximum`) is still applied to both sides; it is judged separately, against literal expected
+numbers, by `aliases/floor-counts-every-carrier`.
+
+**The claim corrected.** The earlier sentence that every path of a commit's tree is named by some
+commit of its history now says when that holds: a complete history read the same way whatever the
+repository's configuration.
+
+**The review's probes, re-run on the final code** (RV37_MODULES pointing at this tree):
+`q1c_merge_config_regression` and `q1_q2_floor` print no BUG line. `q1b_repository_state`: every
+`log.diffMerges` value (`off`, `combined`, `first-parent`, `separate`) with the merge-only path
+deleted or kept is OK; R2 (shallow, deepened later) refuses the shallow acceptance and is then OK
+at 81; R3 (grafts) prints its one BUG line, the stated limit. `q1d_prefix_records` refuses an
+old-shape record beside new ones `accepted_revision_unavailable` once its commit is lost (a refusal,
+not a lowered floor). `review3-rerun.txt` is unchanged apart from commit ids: `p6`'s `BUG(limit)` is
+still the only BUG line there.
+
+**Mutations.** 53 finding-37 cases, all rejected, with the baseline and a no-op copy green; none of
+the 47 before was dropped. `alias-floor-ignores-history` is re-anchored to the new `git log` line.
+Between d67b802 and 44ddf21 that anchor had moved and the registry did not load, so neither of
+those two commits is a runnable point.
+
+**Gate cost.** `check_teeth_mutations.py --finding 37` took 985.9 s wall, serial, for 53 cases
+(load average 6 to 7 on 20 cores). The suite runs in 6.9 to 8.3 s under `selftest.py --suite`, up
+from about 5.5 s: the `ls-tree` oracle over this repository's history adds about 1.5 s, and rows 18
+to 20 about 1 s.
+`drive.py` took 1966.4 s and records 1473.3 s of serial baseline, no-op and mutant runs, with the
+suite at 8.2 s in process (`timing.json`).
+
+**Record sizes on the final code**, measured the same way as before on this repository's
+first-parent line at c05968b (599 commits): 939, 144, 245 and 481 paths (39.4, 5.7, 11.1 and 24.4 KB,
+80.6 KB in all) against 69.7 KB for one whole-history record. Accepting HEAD after HEAD~1 is
+recorded adds 1 path. `observations.json` shows the same counts for the suite's own clone.
+
+**Regressions and the gate.** Every control-store suite is green on the final code (`36`, `37`,
+`38`, `39`, `46`, `56`, `58_veldo_0035`, `58_veldo_0036`, `59`), `check_teeth_mutations.py
+--finding 35` still rejects all 12, `validate.py all` exits 0 and `check_generated.sh` passes.
+`check_gate_mutations.py`, run once as a measurement at load average 8.7 to 20.8, passed: 244
+registered, executed and rejected, 312 workers, 283.7 s against its scaled budget of 488 s
+(`budget_for(244)`). That run also shows the gate's frozen copy is a complete clone, since row 17
+clones it and would refuse `shallow_repository` otherwise.
