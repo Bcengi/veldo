@@ -1,0 +1,614 @@
+{
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0064 install/assets",
+    true
+   ],
+   [
+    "VELDO-0064 inbox/states-and-authority",
+    true
+   ],
+   [
+    "VELDO-0064 inbox/waiting-resources",
+    true
+   ],
+   [
+    "VELDO-0064 projection/correlation",
+    true
+   ],
+   [
+    "VELDO-0064 projection/send-outcomes",
+    true
+   ],
+   [
+    "VELDO-0064 inbox/visible-invalid",
+    true
+   ],
+   [
+    "VELDO-0064 inbox/unauthorized-admission",
+    true
+   ]
+  ],
+  "seconds": 1.388
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "details": [
+    "VELDO-0064 inbox/states-and-authority detail: nothing waits while answers are outstanding",
+    "VELDO-0064 inbox/waiting-resources detail: the claim is released in the store",
+    "VELDO-0064 inbox/waiting-resources detail: no claim is pending at the claim receiver",
+    "VELDO-0064 inbox/waiting-resources detail: no pending assignment holds a claim",
+    "VELDO-0064 inbox/waiting-resources detail: control: a pending assignment over a held claim is reported",
+    "VELDO-0064 inbox/waiting-resources detail: control: the fixture assignment is canceled again"
+   ],
+   "diff": "proof/VELDO-0064/inbox-retain-claim-while-waiting.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/states-and-authority",
+    "VELDO-0064 inbox/waiting-resources"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "edd69b27d1fd88550c996e7fe3f0d5fe3a867474adc5b36817fae1f22a3b20f6",
+   "name": "inbox-retain-claim-while-waiting",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/waiting-resources"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     false
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     false
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.338,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/states-and-authority detail: open acknowledgement accepted and stops the requester",
+    "VELDO-0064 inbox/states-and-authority detail: open decision accepted and stops the requester",
+    "VELDO-0064 inbox/states-and-authority detail: open review_disposition accepted and stops the requester",
+    "VELDO-0064 inbox/waiting-resources detail: the worker process exited instead of waiting"
+   ],
+   "diff": "proof/VELDO-0064/inbox-requester-keeps-waiting.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/states-and-authority",
+    "VELDO-0064 inbox/waiting-resources"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "2b12a274255b2465b75393bf671a48bf2c01d127470118bec1071b668aee1c5c",
+   "name": "inbox-requester-keeps-waiting",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/waiting-resources"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     false
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     false
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 3.352,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:K-acknowledgement Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:K-decision Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:K-review_disposition Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:W-1 Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-acknowledgement keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-acknowledgement bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-decision keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-decision bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-review_disposition keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-review_disposition bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:W-1 keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:W-1 bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: the changed version is a new message; older versions are kept",
+    "VELDO-0064 projection/correlation detail: the current record matches the inbox request version and platform bytes"
+   ],
+   "diff": "proof/VELDO-0064/projection-discard-message-id.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/states-and-authority",
+    "VELDO-0064 projection/correlation"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "23510bbb9923361737f60d9064cd817726c2b0c3c50ed16c95dec6159eb79cfa",
+   "name": "projection-discard-message-id",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/correlation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     false
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     false
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.38,
+   "source_sha256": "611b7184340ebd00a434c2d84328a8a4ec3d8fb5ae0c3d7b13e0ad06ee7dfeff"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:K-acknowledgement Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:K-decision Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:K-review_disposition Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 inbox/states-and-authority detail: assignment:inbox-repository:W-1 Telegram shows owner, scope, deadline and budget",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-acknowledgement keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-acknowledgement bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-decision keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-decision bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-review_disposition keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:K-review_disposition bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:W-1 keeps the returned chat and message identity",
+    "VELDO-0064 projection/correlation detail: assignment:inbox-repository:W-1 bytes retrieved from the platform match the record",
+    "VELDO-0064 projection/correlation detail: the current record matches the inbox request version and platform bytes"
+   ],
+   "diff": "proof/VELDO-0064/projection-configured-chat.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/states-and-authority",
+    "VELDO-0064 projection/correlation"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "b501bd1fa91e4c6a6c5a57476aed2b72be5a1a2f404662de357ec41ad033aabc",
+   "name": "projection-configured-chat",
+   "named_row_red": true,
+   "named_rows": [
+    "projection/correlation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     false
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     false
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.376,
+   "source_sha256": "611b7184340ebd00a434c2d84328a8a4ec3d8fb5ae0c3d7b13e0ad06ee7dfeff"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/unauthorized-admission detail: refused: displayed assigned status on a pending record",
+    "VELDO-0064 inbox/unauthorized-admission detail: refused: displayed assigned status on an invalid record",
+    "VELDO-0064 inbox/unauthorized-admission detail: refusals are named"
+   ],
+   "diff": "proof/VELDO-0064/inbox-admit-displayed-assigned-status.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/unauthorized-admission"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "b65fd37593bf1921be24c252494ab8934dbbc54c89789505a583edc30aced305",
+   "name": "inbox-admit-displayed-assigned-status",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/unauthorized-admission"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     false
+    ]
+   ],
+   "seconds": 1.408,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/unauthorized-admission detail: refused: answer copied onto another record by a service write",
+    "VELDO-0064 inbox/unauthorized-admission detail: refusals are named"
+   ],
+   "diff": "proof/VELDO-0064/inbox-admit-without-journal-authority.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/unauthorized-admission"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "657b98286a3d4159de638fe00ea0ed362326f0d81044f9e7cd3fc9ec665c4324",
+   "name": "inbox-admit-without-journal-authority",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/unauthorized-admission"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     false
+    ]
+   ],
+   "seconds": 1.339,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/unauthorized-admission detail: refused: answer whose owner is no longer a member",
+    "VELDO-0064 inbox/unauthorized-admission detail: refusals are named"
+   ],
+   "diff": "proof/VELDO-0064/inbox-admit-ignores-owner-membership.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/unauthorized-admission"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "174965cba14d58dba0d15f9fb6ac4dc65756154a0683d5dce5ab9a866477068e",
+   "name": "inbox-admit-ignores-owner-membership",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/unauthorized-admission"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     false
+    ]
+   ],
+   "seconds": 1.371,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-state is listed as invalid with its problems",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-state index entry carries no content",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-kind is listed as invalid with its problems",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-kind index entry carries no content",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-tamper is listed as invalid with its problems",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-tamper index entry carries no content"
+   ],
+   "diff": "proof/VELDO-0064/inbox-index-skips-invalid.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/visible-invalid"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "a1de152d6ab0612422d09ea29aa798598acdfd997441cf36b81f5001237b2be2",
+   "name": "inbox-index-skips-invalid",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/visible-invalid"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     false
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.358,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  {
+   "details": [
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-tamper is listed as invalid with its problems",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-tamper index entry carries no content",
+    "VELDO-0064 inbox/visible-invalid detail: assignment:inbox-repository:X-tamper brief is visibly invalid"
+   ],
+   "diff": "proof/VELDO-0064/inbox-trust-tampered-content.diff",
+   "failed_rows": [
+    "VELDO-0064 inbox/visible-invalid"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "62618168efa5e813109062edac60e2b15174af1d09e3c342d73e6fe6b4f4e06b",
+   "name": "inbox-trust-tampered-content",
+   "named_row_red": true,
+   "named_rows": [
+    "inbox/visible-invalid"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     false
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.33,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  }
+ ],
+ "noop": {
+  "control_assignment.py": {
+   "copy_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.396,
+   "source_sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  "control_channel_projection.py": {
+   "copy_sha256": "611b7184340ebd00a434c2d84328a8a4ec3d8fb5ae0c3d7b13e0ad06ee7dfeff",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0064 install/assets",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/states-and-authority",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/waiting-resources",
+     true
+    ],
+    [
+     "VELDO-0064 projection/correlation",
+     true
+    ],
+    [
+     "VELDO-0064 projection/send-outcomes",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/visible-invalid",
+     true
+    ],
+    [
+     "VELDO-0064 inbox/unauthorized-admission",
+     true
+    ]
+   ],
+   "seconds": 1.382,
+   "source_sha256": "611b7184340ebd00a434c2d84328a8a4ec3d8fb5ae0c3d7b13e0ad06ee7dfeff"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 64",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 18.418,
+ "spec_id": "VELDO-0064",
+ "suite": "scripts/suites/60_veldo_0064_inbox.py"
+}

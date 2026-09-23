@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -344 +344 @@
+-                changes.update(self.claims.transition(params['release'], before))
++                pass  # defective: the claim stays owned while the person is asked

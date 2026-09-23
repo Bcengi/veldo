@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -187 +187 @@
+-                record.update(outcome='sent', chat_id=sent['chat_id'], message_id=sent['message_id'],
++                record.update(outcome='sent', chat_id=self.edge.chat, message_id=sent['message_id'],
