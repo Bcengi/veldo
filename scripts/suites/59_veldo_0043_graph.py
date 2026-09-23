@@ -887,6 +887,7 @@ def _s43_run():
             # no URL field, so no value may carry an http(s) URL with a path.
             'author-named-url-field': with_value({'source_url': 'https://example.com/a/b'}),
             'nested-url-field': with_value({'a': [{'x_url': 'https://localhost/home/someone/repo'}]}),
+            'path-in-key': with_value({store_like: 1}),
             'huge-version': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
                                  supplied_results=[dict(result, version=10 ** 5000)]),
         })
@@ -926,7 +927,8 @@ def _s43_run():
             'url-field-no-host': 'path_in_request', 'identifier-control': 'invalid_input',
             'identifier-dots': 'invalid_input', 'two-megabytes': 'invalid_input', 'self-referential': 'invalid_input',
             'huge-integer': 'invalid_input', 'huge-version': 'invalid_input',
-            'author-named-url-field': 'path_in_request', 'nested-url-field': 'path_in_request'})
+            'author-named-url-field': 'path_in_request', 'nested-url-field': 'path_in_request',
+            'path-in-key': 'path_in_request'})
 
         # Every bad shape at the stage that is not a link is a named, counted, observed refusal.
         import hashlib as _s43_hashlib

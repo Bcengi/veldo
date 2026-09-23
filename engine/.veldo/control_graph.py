@@ -43,7 +43,6 @@ import subprocess
 import tempfile
 import time
 import unicodedata
-import urllib.parse
 
 SCHEMA = 'veldo.graph/v1'
 OPERATIONS = ('start', 'advance', 'suspend', 'cancel')
@@ -227,27 +226,12 @@ def _resume_shape(value, where, code):
 
 
 def looks_like_path(text):
-    """A filesystem location in any form: a path separator (ASCII, look-alike or compatibility
-    form), a percent-encoded one, or a leading ~. No URL exemption here."""
+    """A filesystem location: a path separator (ASCII, the look-alikes listed in SEPARATORS, or
+    an NFKC compatibility form of one), a percent-encoded separator, or a leading ~. Encodings a
+    reader must decode first (base64, a path split across fields) are not seen."""
     folded = unicodedata.normalize('NFKC', text).lower()
     return (any(separator in folded for separator in SEPARATORS) or '%2f' in folded or '%5c' in folded
             or folded.lstrip().startswith('~'))
-
-
-def is_url(text):
-    """An http(s) URL with a non-empty host and no whitespace or control characters."""
-    if any(char.isspace() or ord(char) < 32 for char in text):
-        return False
-    try:
-        parts = urllib.parse.urlsplit(text)
-        return parts.scheme in ('http', 'https') and bool(parts.hostname)
-    except ValueError:
-        return False
-
-
-def url_field(key):
-    """A declared URL field: a key named url or ending in _url."""
-    return type(key) is str and (key == 'url' or key.endswith('_url'))
 
 
 def value_bounds(value, depth_limit=MAX_DEPTH, size_limit=MAX_REQUEST_BYTES):
@@ -278,18 +262,17 @@ def value_bounds(value, depth_limit=MAX_DEPTH, size_limit=MAX_REQUEST_BYTES):
 
 
 def _strings(value):
-    """(string, declared URL field) for every string in a plain value, keys included, walked with
-    an explicit stack."""
-    stack = [(value, False)]
+    """Every string in a plain value, keys included, walked with an explicit stack."""
+    stack = [value]
     while stack:
-        item, declared = stack.pop()
+        item = stack.pop()
         if type(item) is str:
-            yield item, declared
+            yield item
         elif type(item) is dict:
-            stack.extend((key, False) for key in item)
-            stack.extend((child, url_field(key)) for key, child in item.items())
+            stack.extend(item.keys())
+            stack.extend(item.values())
         elif type(item) is list:
-            stack.extend((child, False) for child in item)
+            stack.extend(item)
 
 
 def request(operation, identity, **fields):
@@ -319,9 +302,9 @@ def request(operation, identity, **fields):
         plain(body, 'request')
     except Refused as error:
         raise Refused('invalid_input', error.detail) from error
-    for text, declared in _strings({key: value for key, value in body.items() if key != 'schema'}):
-        if declared and is_url(text):
-            continue
+    # The closed request schema declares no URL field, so no value is exempt: a key name the
+    # author writes cannot switch this check off.
+    for text in _strings({key: value for key, value in body.items() if key != 'schema'}):
         if looks_like_path(text):
             raise Refused('path_in_request', 'a request carries no filesystem location: ' + repr(text[:80]))
     try:

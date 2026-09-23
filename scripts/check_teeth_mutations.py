@@ -546,8 +546,9 @@ def cases():
           "        raise Refused('invalid_response', 'answer nests too deeply to parse') from error\n",
           "        value = json.loads(raw, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n",
           'shape/deep-answer')
-    graph('graph-url-field-trusted', 'control_graph.py',
-          '        if declared and is_url(text):\n', '        if declared:\n', 'shape/closed-request')
+    graph('graph-path-check-skips-keys', 'control_graph.py',
+          '            stack.extend(item.keys())\n            stack.extend(item.values())\n',
+          '            stack.extend(item.values())\n', 'shape/closed-request')
     graph('graph-request-size-unbounded', 'control_graph.py',
           'MAX_REQUEST_BYTES = 1 << 20\n', 'MAX_REQUEST_BYTES = 1 << 30\n', 'shape/closed-request')
     graph('graph-child-shares-session', 'control_graph.py',
