@@ -2,4 +2,4 @@
 +++ b/.veldo/control_effect_executor.py
 @@ -86 +86 @@
 -        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',
-+        push = transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',
++        push = transport('-c', 'push.followTags=false', 'push',

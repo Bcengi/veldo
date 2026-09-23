@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -64 +64 @@
+-        listed = transport('config', '-z', '--list')
++        listed = git('config', '-z', '--list')

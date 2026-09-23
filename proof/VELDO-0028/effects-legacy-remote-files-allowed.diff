@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -73 +73 @@
+-            for legacy in ('remotes/', 'branches/'):
++            for legacy in ():

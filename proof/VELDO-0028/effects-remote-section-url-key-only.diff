@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -68 +68 @@
+-            if key.startswith('remote.') and key[len('remote.'):key.rindex('.')] == remote:
++            if key == 'remote.' + remote + '.url':

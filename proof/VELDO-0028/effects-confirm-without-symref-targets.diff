@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -36 +36 @@
--            listed = git('ls-remote', '--symref', remote)
-+            listed = git('ls-remote', remote)
+@@ -42 +42 @@
+-            listed = transport('ls-remote', '--symref', remote)
++            listed = transport('ls-remote', remote)

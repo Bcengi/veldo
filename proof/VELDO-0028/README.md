@@ -250,3 +250,119 @@ construction and completes, which is the documented limit. A, B, C (the reviewer
 P1, P2, P7 and the HTTP script no longer print theirs; F (key revocation) and P4 (a symbolic
 authorized ref) stay refused and unknown as before. D still runs the effect with no roles, as
 decided above.
+
+## Review round R5 (third independent check of c5dc41a)
+
+A third independent check reproduced three publication defects with its own scripts (a shared
+harness plus `p1_widen.py`, cases a and b, and `p2_capabilities.py`). Each was fixed test first: a
+suite row per defect, recorded red by its assertion with the production modules taken from
+`c5dc41a`, then green, with registered finding-28 mutations. One commit per defect.
+
+**1, push options reached the receiver.** The clone's `push.pushOption` values traveled with the
+authorized push, and on GitLab-style servers an option opens a merge request or skips CI. The push
+now runs with `-c push.pushOption=`, which resets the list from every configuration scope.
+`--no-push-option` is not the fix: it clears only options given on the command line. Row
+`effects/publication-push-options`: the clone carries two options and the operator's global
+configuration a third; a control plain push of another ref from the same clone shows the receiver's
+hook seeing `count=2 merge_request.create ci.skip`, and the publication completes with the hook
+seeing `count=0`. At `c5dc41a` the hook saw both options on the publication. Mutations:
+`effects-push-options-from-config` (the reset removed) and `effects-push-options-flag-only`
+(`--no-push-option` in its place).
+
+**2, the push could land in an unauthorized repository.** The configured-remote refusal matched
+`remote in names.stdout.split()`, so a `file://` URL with a space in its path, with a
+`[remote "<url>"]` section carrying a pushurl, passed it and the commit landed in the pushurl's
+repository. The check now reads every configuration entry (`git config -z --list`) and compares
+each remote section's name with the URL exactly. The push must reach exactly the authorized URL,
+so every other configured route that could send it elsewhere is refused before anything is pushed:
+a section named by the URL in any scope (a pushurl alone is enough), a `url.*.pushInsteadOf` whose
+value is a prefix of the URL (it rewrites the push and not the listing), and, for a URL that is a
+valid remote nickname, a legacy `remotes/` or `branches/` file of that name. The legacy file was
+the worst route found: it replaces the URL for the listing and the push alike, so at `c5dc41a` the
+commit landed in the unauthorized repository and the result was `completed`. Row
+`effects/publication-push-reaches-only-authorized-url` drives six redirect cases (space-in-path
+section with pushurl, pushurl-only section, local `pushInsteadOf`, global `pushInsteadOf`, legacy
+remotes file, legacy branches file), each with a decoy repository holding the old tip so the lease
+would hold; each must end unknown with the authorized remote and the decoy both unchanged. A
+control, a differently named remote whose URL is the authorized one with its own pushurl,
+publishes normally, so the check is by name and not by URL. At `c5dc41a` the space-in-path section
+and the local `pushInsteadOf` pushed to the decoy (unknown) and both legacy files pushed to the
+decoy and reported completed. The spec's former note that a `pushInsteadOf` rewrite leaves the
+outcome unknown is replaced: it is now refused. Mutations: `effects-remote-name-as-words` (the
+whitespace-split match reintroduced), `effects-remote-section-url-key-only`,
+`effects-push-instead-of-allowed`, `effects-legacy-remote-files-allowed` and
+`effects-redirect-check-isolated-profile` (the check reads only the clone's own configuration, so
+a global `pushInsteadOf` is missed once the push reads global configuration).
+
+**3, the publication push lost the operator's configured capabilities.** `git_process.py`'s
+environment disables global and system configuration and strips every GIT_* variable, so the push
+lost global and system credential helpers (`osxkeychain` on the Mac, `gh auth setup-git`), global
+`url.*.insteadOf`, `http.proxy`, `core.sshCommand` and `GIT_SSH_COMMAND` / `GIT_ASKPASS`, all of
+which a plain `git push` from the same clone uses. The owner's rule is that what configured tools
+can do today is never reduced. The neutralization exists to stop ambient values overriding
+explicit coordinates, so `git_process.py` (shared code, added to the footprint with a History line)
+gains an explicit `network` profile, selected per call with `profile='network'` and used only for
+transport operations and the queries that decide where they go. It still strips every GIT_*
+variable by prefix and adds back only a named list of transport and credential variables
+(`GIT_SSH_COMMAND`, `GIT_SSH`, `GIT_SSH_VARIANT`, `GIT_ASKPASS`, `GIT_TERMINAL_PROMPT`, the
+`GIT_PROXY_*`, `GIT_SSL_*` and `GIT_HTTP_*` transport settings, `GIT_ALLOW_PROTOCOL`,
+`GIT_PROTOCOL_FROM_USER`); `SSH_AUTH_SOCK`, `SSH_ASKPASS` and proxy variables are not GIT_* and pass
+in every profile. Global and system configuration are discovered the ordinary way from HOME and
+XDG_CONFIG_HOME. Config-file selectors (`GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`,
+`GIT_CONFIG_NOSYSTEM`, `GIT_CONFIG`) are coordinates and stay stripped. `GIT_TERMINAL_PROMPT`
+defaults to `0` when the operator has not set it, because the executor has no terminal. The
+default `isolated` profile, and every other caller, is unchanged; `scripts/check_git_boundary.py`
+and suite 50 stay green. In the executor the listing, the push and the redirect check use the
+network profile; the tree check and the legacy-file lookup stay isolated.
+
+Rows `effects/publication-global-insteadof`, `effects/publication-global-credential-helper` (a
+smart-HTTP remote behind Basic authentication; a control shows the server refuses a client without
+the helper, and the helper's log shows it was asked), `effects/publication-env-ssh-command` and
+`effects/publication-global-ssh-command` (an `ssh://` remote reached only through a fake SSH command
+whose log shows it ran) are the checker's four cases, each set for that one executor call. At
+`c5dc41a` all four ended unknown with the remote unchanged. Row
+`effects/publication-network-profile-strips-coordinates` publishes with GIT_DIR and GIT_WORK_TREE
+naming a decoy repository, a missing index, object directory and alternates, a namespace,
+`GIT_CONFIG_COUNT` and `GIT_CONFIG_PARAMETERS` rewrites toward a decoy remote and every
+config-file selector: the push completes to the authorized remote, the decoy is unchanged and no
+namespaced ref exists. It also requires `clean_env(..., profile='network')` to drop each of those
+variables and keep each transport variable, and the default profile to keep pinning global
+configuration to the null device. Behaviorally this row was already green at `c5dc41a` (the old
+environment stripped everything); it was red there only because the profile did not exist. It is
+a guard against the new profile keeping too much. Mutations: `effects-transport-isolated-profile`
+(the executor's transport calls back in the isolated profile) reds all four capability rows;
+`effects-network-profile-without-global-config` reds the three global rows,
+`effects-network-profile-drops-transport-variables` the SSH-command row, and
+`effects-network-profile-keeps-coordinates` (the network profile keeps every GIT_* variable) the
+coordinate row.
+
+Every executor call in the suite now runs with no ambient GIT_* variable and an empty operator home,
+so the operator's real global configuration cannot reach a row; the rows above set theirs for one
+call.
+
+**Commits.** `6175de8` (push options), `7859e6c` (exact URL) and `3f04a33` (network profile), each
+with its rows, its fix, its mutations and the `engine/.veldo` copies. The global `pushInsteadOf`
+case joined the exact-URL row in `3f04a33`, because only from then does the push read global
+configuration. Existing finding-28 mutations whose anchors moved (the push, the listing and the
+former remote-name check) were re-anchored with the same meaning.
+
+**Red at `c5dc41a`, green now.** `r5-red-at-c5dc41a.json` records suite 58 at `3f04a33` run over a
+copy of the tree with `control_effect_executor.py`, `git_process.py` and `control_effects.py` from
+`c5dc41a`: the seven new rows fail by assertion, none by an exception, and every earlier row
+passes. On this branch all 28 named rows are green (54 assertions).
+`python3 -B scripts/check_teeth_mutations.py --finding 28` rejects all 35 finding-28 mutations with
+a green baseline; the eleven new exact diffs are beside the earlier 24, and the ten whose anchors
+moved were regenerated. The suite takes about 12 seconds on its own (11.97 to 12.62 seconds over
+three runs, against about 8.6 before this round). `mutations.json`, `gate-mutations.json`,
+`gate-summary.json` and the `manifest.json` hashes still describe `65294a7` until the lead's gate
+run is stamped.
+
+**The checker's scripts against this branch.** Copies of the harness, `p1_widen.py` and
+`p2_capabilities.py`, pointed at this worktree, print no BUG line (`r5-scripts-at-3f04a33.txt`):
+case a delivers no push option, cases b and b2 leave the decoy at the old tip, case e (a
+`pushInsteadOf` plus `remote.pushDefault`) is now refused with nothing pushed, cases c and d stay
+unknown, and all four capability cases plus the local-helper control complete.
+
+**Outside this footprint.** `.veldo/lander.py` (fetch and push) and `.veldo/control_replica.py`
+(ls-remote and push) also run transport operations through `git_process.py`'s isolated profile,
+so they have the same capability loss. They are not changed here.

@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -53 +53 @@
--        if names.returncode or remote in names.stdout.split():
-+        if names.returncode or remote in names.stdout.split() or not (Path(remote).exists() or '://' in remote):
+@@ -65 +65 @@
+-        if listed.returncode:
++        if listed.returncode or not (Path(remote).exists() or '://' in remote):
