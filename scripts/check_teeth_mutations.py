@@ -312,6 +312,12 @@ def cases():
     add(31, 'review-r2-activation-without-owner', '59_veldo_0031_review.py', 'control_claim.py',
         "        return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'",
         "        return 'unowned'", ['claims/review-r2'])
+    add(31, 'review-r6-private-stop-class', '59_veldo_0031_review.py', 'claim.py',
+        'ClaimStopped = _claim_errors.ClaimStopped\n',
+        '', ['claims/review-r6'])
+    add(31, 'review-r6-routing-wrong-exception', '59_veldo_0031_review.py', 'control_claim_client.py',
+        '            raise CL.ClaimStopped(exc.reason) from exc',
+        '            raise RuntimeError(exc.reason) from exc', ['claims/review-r6'])
     return result
 
 

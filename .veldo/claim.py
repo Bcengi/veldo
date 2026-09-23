@@ -131,6 +131,16 @@ class ClaimStopped(RuntimeError):
         super().__init__('claim stopped: ' + reason)
 
 
+# File-location imports are used by installed callers, often under different names.
+# Keep the exception identity process-wide even when claim.py itself is loaded again.
+import sys as _sys
+import types as _types
+_claim_errors = _sys.modules.setdefault('veldo_claim_errors', _types.ModuleType('veldo_claim_errors'))
+if not hasattr(_claim_errors, 'ClaimStopped'):
+    _claim_errors.ClaimStopped = ClaimStopped
+ClaimStopped = _claim_errors.ClaimStopped
+
+
 def _authority(root):
     if getattr(root, 'authority_claim_client', False):
         return root
