@@ -776,16 +776,33 @@ def cases():
     architecture('architecture-private-seam', 'control_eligibility.py', SEAM,
                  "        return self.validate._VC.entry_contract(workspace, required, arch=self.arch)  # defect: around the public name",
                  ['public-seam'])
-    snapshot_load = ("            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))\n"
-                     "            module = importlib.util.module_from_spec(spec)\n"
-                     "            spec.loader.exec_module(module)\n"
-                     "            self.validate, self.arch = module, module.entry_validator()\n")
+    snapshot_load = ("        spec = self._spec('eligibility_validator_snapshot', str(installed / 'validate.py'))\n"
+                     "        module = importlib.util.module_from_spec(spec)\n"
+                     "        spec.loader.exec_module(module)\n"
+                     "        self.validate, self.arch = module, module.entry_validator()\n")
     architecture('architecture-validate-checks-direct', 'control_eligibility.py', snapshot_load,
-                 snapshot_load.replace("str(engine / 'validate.py')", "str(engine / 'validate_checks.py')")
-                 .replace("            self.validate, self.arch = module, module.entry_validator()\n",
-                          "            module.parse_yamlish = module._Y.parse  # defect: around validate.py\n"
-                          "            self.validate, self.arch = module, module._arch_module()\n"),
+                 snapshot_load.replace("str(installed / 'validate.py')", "str(installed / 'validate_checks.py')")
+                 .replace("        self.validate, self.arch = module, module.entry_validator()\n",
+                          "        module.parse_yamlish = module._Y.parse  # defect: around validate.py\n"
+                          "        self.validate, self.arch = module, module._arch_module()\n"),
                  ['public-seam'])
+    # Review fix: the snapshot runs from the bytes in memory; no copy on disk stands between digest and code.
+    architecture('architecture-snapshot-private-copy', 'control_eligibility.py', snapshot_load,
+                 "        import tempfile  # defect: a private copy on disk, loaded after it is written\n"
+                 "        with tempfile.TemporaryDirectory(prefix='veldo-validator-') as private:\n"
+                 "            engine = Path(private) / '.veldo'\n"
+                 "            engine.mkdir()\n"
+                 "            for name, body in bodies.items():\n"
+                 "                (engine / name).write_bytes(body)\n"
+                 "            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))\n"
+                 "            module = importlib.util.module_from_spec(spec)\n"
+                 "            spec.loader.exec_module(module)\n"
+                 "            self.validate, self.arch = module, module.entry_validator()\n",
+                 ['snapshot-in-memory'])
+    architecture('architecture-siblings-from-disk', 'control_eligibility.py',
+                 "        util.spec_from_file_location = self._spec\n",
+                 "        pass  # defect: a sibling loaded by path is read from disk\n",
+                 ['snapshot-in-memory'])
     # Review fix: the identity is taken once, from the bytes loaded, and every decision records that.
     architecture('architecture-identity-read-at-decision', 'control_eligibility.py', IDENTITY,
                  "            found['validator'] = {role: {'path': entry['path'], 'digest': 'sha256:' + hashlib.sha256(\n"

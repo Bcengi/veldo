@@ -693,6 +693,48 @@ def _v53_suite():
                    and changed != installed_digests and outcome(fresh, None) and all(r == changed for r in fresh_recorded))
             reset('valid')
 
+        with region('architecture/snapshot-in-memory'):
+            # The snapshot executes the validator from the bytes it holds in memory, so nothing on disk can
+            # stand between the bytes digested and the code that runs. A same-account writer acts at the
+            # one moment a copy on disk would be exposed: just before any engine module is loaded from a
+            # path outside the installed engine, it replaces the arch.py beside that path with a validator
+            # that passes everything. Every path the validator's modules are loaded from is also recorded.
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+            scratch = top / 'tmp'
+            scratch.mkdir()
+            stub = (mods / 'arch.py').read_bytes() + b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n'
+            real_spec, loads, swaps, real_tempdir = importlib.util.spec_from_file_location, [], [], tempfile.tempdir
+
+            def watched_spec(name, location=None, *args, **kwargs):
+                where = os.path.realpath(str(location)) if location is not None else ''
+                if where.startswith(str(scratch) + os.sep) or os.path.dirname(where) == os.path.realpath(str(mods)):
+                    loads.append(where)
+                    beside = os.path.join(os.path.dirname(where), 'arch.py')
+                    if where.startswith(str(scratch) + os.sep) and os.path.exists(beside):
+                        Path(beside).write_bytes(stub)  # the concurrent writer, just before the load
+                        swaps.append(beside)
+                return real_spec(name, location, *args, **kwargs)
+
+            # The Gate itself is built first (it loads its own organs); its validator snapshot is built at its
+            # first architecture decision, inside the watched window.
+            fresh_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+            importlib.util.spec_from_file_location, tempfile.tempdir = watched_spec, str(scratch)
+            try:
+                raced = stations(fresh_gate)
+            finally:
+                importlib.util.spec_from_file_location, tempfile.tempdir = real_spec, real_tempdir
+            left_on_disk = sorted(p_.name for p_ in scratch.iterdir())
+            reset('valid')
+            recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
+                        for d in raced.values()]
+            observed['snapshot_in_memory'] = {
+                'refusals': sorted({r for d in raced.values() for r in d['refusals']}),
+                'engine_loads_from_disk': len(loads), 'swapped': len(swaps), 'left_on_disk': left_on_disk,
+                'recorded_is_installed': all(r == installed_digests for r in recorded)}
+            check('architecture/snapshot-in-memory',
+                   outcome(raced, CODES['invalid_structure']) and loads == [] and swaps == [] and left_on_disk == []
+                   and all(r == installed_digests for r in recorded))
+
         with region('architecture/validated-is-digested'):
             # The digest compared with the accepted record is the digest of the very bytes the loader parsed
             # and validated, never a second read: a writer lands while the contract is being validated.

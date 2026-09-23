@@ -54,7 +54,7 @@ consumption attaches to the same registrations. Standard library only.
 
 ARCHITECTURE AT EVERY ENTRY (VELDO-0053, R50). Every station asks architecture_accepted. The answer
 comes from the structural validator INSTALLED beside this module (never the copy a workspace carries),
-loaded once per Gate from one read of its bytes (ValidatorSnapshot) and asked through validate.py's
+executed once per Gate from one in-memory read of its bytes (ValidatorSnapshot) and asked through validate.py's
 public entry_contract, over the workspace's .veldo/architecture.yaml. A Gate with no workspace always
 refuses (missing_evidence:architecture/workspace). The authority's record
 architecture:<repository> (state accepted, digest of the accepted bytes) makes the contract required
@@ -67,6 +67,7 @@ contract that is unreadable, malformed, of the wrong type or structurally invali
 loader parsed. Each decision records the artifact it judged and the snapshot of the code that judged it
 (installed path and the digest of the bytes loaded).
 """
+import builtins
 import collections
 import contextlib
 import hashlib
@@ -76,7 +77,6 @@ import os
 from pathlib import Path
 import sqlite3
 import subprocess
-import tempfile
 import time
 import uuid
 
@@ -414,28 +414,66 @@ VALIDATOR_ROLES = (('entry_point', 'validate.py'), ('entry', 'validate_checks.py
                    ('validator', 'arch.py'), ('parser', 'yamlish.py'))
 
 
+class _MemoryLoader:
+    """Executes one engine module from source bytes the snapshot holds in memory."""
+
+    def __init__(self, snapshot, body):
+        self.snapshot, self.body = snapshot, body
+
+    def create_module(self, spec):
+        return None
+
+    def exec_module(self, module):
+        # The module's own `import importlib.util` resolves to the snapshot's, so every sibling it loads
+        # by path is executed from the same bytes in memory, never read from disk.
+        module.__dict__['__builtins__'] = self.snapshot.builtins
+        exec(compile(self.body, module.__spec__.origin, 'exec', dont_inherit=True), module.__dict__)
+
+
 class ValidatorSnapshot:
     """The installed structural validator, loaded ONCE from ONE read of the installed engine's bytes
-    (VELDO-0053, R50). The engine's modules are read once, written to a private directory only this
-    process can reach, and executed from there, so the digests recorded are of the bytes that run: a
-    later change on disk is neither run nor recorded by a decision of this snapshot. The structural
-    validator (arch.py) is loaded once here and reused for every contract; the private copy is removed
-    as soon as it is loaded."""
+    (VELDO-0053, R50). Every engine module is read once into memory and executed from those bytes:
+    compiled from them into a fresh module object whose __file__ and name are what loading from the
+    installed path gives today, with each sibling a module loads by path (importlib.util's
+    spec_from_file_location, the one way the engine loads its organs) resolved to the in-memory bytes of
+    that sibling. Nothing is written to or loaded from disk, so the digests recorded are of exactly the
+    code that runs, and a later change on disk is neither run nor recorded by a decision of this snapshot.
+    The structural validator (arch.py) is loaded once here and reused for every contract."""
 
     def __init__(self, installed=None):
-        installed = Path(installed or Path(__file__).resolve().parent)
+        installed = Path(os.path.realpath(str(installed or Path(__file__).resolve().parent)))
         bodies = {path.name: path.read_bytes() for path in sorted(installed.glob('*.py'))}
-        with tempfile.TemporaryDirectory(prefix='veldo-validator-') as private:
-            engine = Path(private) / '.veldo'
-            engine.mkdir()
-            for name, body in bodies.items():
-                (engine / name).write_bytes(body)
-            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            self.validate, self.arch = module, module.entry_validator()
+        self._bodies = {str(installed / name): body for name, body in bodies.items()}
+        util = _types.ModuleType('importlib.util')
+        util.__dict__.update({k: v for k, v in vars(importlib.util).items() if not k.startswith('__')})
+        util.spec_from_file_location = self._spec
+        package = _types.ModuleType('importlib')
+        package.__dict__.update({k: v for k, v in vars(importlib).items() if not k.startswith('__')})
+        package.util = util
+        self._importlib = package
+        self.builtins = dict(vars(builtins))
+        self.builtins['__import__'] = self._import
+        spec = self._spec('eligibility_validator_snapshot', str(installed / 'validate.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.validate, self.arch = module, module.entry_validator()
         self.identity = {role: {'path': str(installed / name), 'digest': 'sha256:' + hashlib.sha256(bodies[name]).hexdigest()}
                          for role, name in VALIDATOR_ROLES}
+
+    def _import(self, name, globals=None, locals=None, fromlist=(), level=0):
+        if level == 0 and name in ('importlib', 'importlib.util'):
+            return self._importlib.util if name == 'importlib.util' and fromlist else self._importlib
+        return builtins.__import__(name, globals, locals, fromlist, level)
+
+    def _spec(self, name, location=None, *args, **kwargs):
+        """spec_from_file_location for the snapshot's modules: an installed engine file is executed from
+        its bytes in memory; any other path is the ordinary import machinery's."""
+        body = self._bodies.get(os.path.realpath(str(location))) if location is not None else None
+        if body is None:
+            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)
+        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, body), origin=os.path.realpath(str(location)))
+        spec.has_location = True
+        return spec
 
     def contract(self, workspace, required):
         """(ContractLoad, digest of the bytes the loader parsed) through validate.py's public entry_contract."""

@@ -17,8 +17,11 @@ review and publication, and `CallHandle.invoke`) now refuses by name when the ar
 entry module changed.
 
 **The installed validator, loaded once.** Each Gate builds one `ValidatorSnapshot` of the engine
-installed beside it, never the copy a workspace carries: every module is read once, written to a private
-directory only this process reaches, executed from there, and the copy is removed. The snapshot keeps one
+installed beside it, never the copy a workspace carries: every engine module is read once into memory
+and executed from those bytes, compiled into a fresh module object with the same name and `__file__` as
+loading from the installed path gives, and each sibling a module loads by path resolves to the in-memory
+bytes of that sibling. Nothing is written to or loaded from disk, so no file can be swapped between the
+digest and the code that runs (2026-09-23 second review, below). The snapshot keeps one
 structural validator (arch.py) instance for every contract and asks validate.py's PUBLIC `entry_contract`
 (re-exported on validate.py, with `entry_validator`), which runs VELDO-0016's one tri-state loader. Every
 decision records the snapshot's identity, the installed path and the digest of the bytes loaded for
