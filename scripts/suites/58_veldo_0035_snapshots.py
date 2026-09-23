@@ -173,6 +173,22 @@ def _s35_run():
         expect('snapshots/stale-input', all(row['passed'] for row in observations['stale']) and len(observations['stale']) == 45)
 
         store, conn, reader, snapshot, consume, accepted = fixture('upsert_entity')
+        before_seq = conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+        for label, invalid in [
+            ('unregistered', command('reserve', operations['reserve'], {})),
+            ('missing-snapshot', command('upsert_entity', operations['upsert_entity'], {'target': 1})),
+        ]:
+            refusal = None
+            try:
+                reader.execute(invalid, **signing)
+            except store.StoreRefused as error:
+                refusal = error.code
+            expect('snapshots/refusal/' + label, refusal == {
+                   'unregistered': 'unregistered_inputs', 'missing-snapshot': 'missing_snapshot'}[label]
+                   and conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == before_seq)
+        expect('snapshots/refusal-observations', reader.counts == {'accepted': 1, 'refused': 2}
+               and reader.pending() == ['snapshot'] and reader.observations[-1]['outcome'] == 'refused'
+               and reader.observations[-1]['refusal'] == 'missing_snapshot')
         # An ordinary signed journal entry was really written and its signature verifies.
         record = store.export_journal(conn)[-1]
         signature = root / 'record.sig'

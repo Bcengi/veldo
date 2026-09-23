@@ -81,6 +81,8 @@ class ReadSets:
                 return result
             except SN.Refused as error:
                 raise self.store.StoreRefused(error.code, error.detail) from error
+            except (KeyError, TypeError, ValueError) as error:
+                raise self.store.StoreRefused('invalid_input', 'malformed registered inputs') from error
 
         self.store.COMMAND_REGISTRY[operation] = dict(original, transition=transition,
                                                      read_set=declaration)
@@ -157,6 +159,8 @@ class ReadSets:
                  'domain_uuid': self.domain_uuid, 'repository_uuid': self.repository_uuid,
                  'snapshot_id': command['parameters'].get('snapshot_id')}
         try:
+            if command['operation'] != 'accept_snapshot' and command['operation'] not in self.registrations:
+                raise self.store.StoreRefused('unregistered_inputs', command['operation'])
             result = self.store.execute(self.conn, command, **signing)
         except self.store.StoreRefused as error:
             self.counts['refused'] += 1
