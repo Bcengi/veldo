@@ -77,7 +77,8 @@ def _v65_checks(base):
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
                                   'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
                                   'framing/stored-framing-reverified', 'answer/not-before-publication',
-                                  'presentation/private-chat-only', 'presentation/replacement-without-reply-target')}
+                                  'presentation/private-chat-only', 'presentation/replacement-without-reply-target',
+                                  'presentation/reply-link-verified')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -197,7 +198,7 @@ def _v65_checks(base):
 
     def platform(chat, message):
         held = api['messages'].get((chat, message))
-        return None if held is None else {'text': held['text'], 'date': held['date']}
+        return None if held is None else {'text': held['text'], 'date': held['date'], 'reply_to': held['reply_to']}
 
     def owner_reply(receipt, text, sender=owner_chat, chat=None, is_bot=False, reply_to=None):
         """A message the owner sends in reply, as the platform holds and delivers it."""
@@ -749,6 +750,24 @@ def _v65_checks(base):
                   and x1_r2.get('reply_to') == x1_r1.get('message_id'))
             check(gone, 'control: an ordinary replacement records its reply link',
                   (presenter.receipt(r2.get('presentation_id', '')) or {}).get('reply_linked') is True)
+
+        # Review r8: receipt verification binds the reply link to what was sent and what the platform holds
+        link = 'presentation/reply-link-verified'
+        with section(link):
+            linked = presenter.receipt(r2.get('presentation_id', '')) or {}
+            held_link = platform(linked.get('chat_id'), linked.get('message_id'))
+            check(link, 'control: a linked replacement verifies against the platform',
+                  linked.get('reply_to') == r1.get('message_id') and V.receipt_problems(linked, held_link) == [])
+            check(link, 'control: an unlinked replacement verifies against the platform',
+                  V.receipt_problems(x1_r2, platform(x1_r2.get('chat_id'), x1_r2.get('message_id'))) == [])
+            for field, value in (('reply_to', None), ('reply_to', (r1.get('message_id') or 0) + 1),
+                                 ('reply_to_message_id', None), ('reply_linked', False)):
+                altered = _v65_copy.deepcopy(linked)
+                altered[field] = value
+                check(link, 'a receipt with its %s changed to %r does not verify' % (field, value),
+                      V.receipt_problems(altered, held_link) != [])
+            check(link, 'a receipt whose platform message replies to another message does not verify',
+                  V.receipt_problems(linked, dict(held_link or {}, reply_to=(r1.get('message_id') or 0) + 1)) != [])
     finally:
         server.shutdown()
         server.server_close()

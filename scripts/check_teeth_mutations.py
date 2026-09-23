@@ -787,6 +787,13 @@ def cases():
                  "'message_id': reply_to, 'allow_sending_without_reply': False}", 'presentation/replacement-without-reply-target')
     presentation('reply-link-always-claimed', "    return record['reply_to'] is not None and replied == record['reply_to']\n",
                  "    return record['reply_to'] is not None\n", 'presentation/replacement-without-reply-target')
+    # VELDO-0065 review r8: receipt verification binds the reply link.
+    presentation('receipt-reply-link-unchecked',
+                 "    if replied not in (receipt['reply_to'], None) or receipt.get('reply_linked') is not record_linked(receipt, replied):\n",
+                 "    if False:\n", 'presentation/reply-link-verified')
+    presentation('receipt-platform-reply-unchecked',
+                 "        if platform.get('reply_to') != receipt.get('reply_to_message_id'):\n", "        if False:\n",
+                 'presentation/reply-link-verified')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

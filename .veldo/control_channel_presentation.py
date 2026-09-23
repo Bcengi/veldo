@@ -235,6 +235,10 @@ def receipt_problems(receipt, platform=None, retrieved=True):
             problems.append('presentation digest is not the digest of the rendered bytes')
         if receipt['presentation_id'] != presentation_id(receipt['request_id'], receipt['request_version'], receipt['brief_digest']):
             problems.append('presentation id is not the key of request, version and presentation digest')
+        prior = receipt['supersedes']
+        wanted = prior.get('message_id') if prior and prior.get('chat_id') == receipt['enrolled_chat'] else None
+        if receipt['reply_to'] != wanted:
+            problems.append('the reply target is not the superseded message')
     except (KeyError, TypeError, AttributeError, ValueError):
         problems.append('receipt fields are malformed')
         return problems
@@ -245,6 +249,9 @@ def receipt_problems(receipt, platform=None, retrieved=True):
         problems.append('external identity is not the platform chat and message')
     if receipt.get('platform_text') != receipt['rendered']:
         problems.append('the platform text is not the rendered bytes')
+    replied = receipt.get('reply_to_message_id')
+    if replied not in (receipt['reply_to'], None) or receipt.get('reply_linked') is not record_linked(receipt, replied):
+        problems.append('the reply link is not the one that was sent')
     if not retrieved:
         return problems
     if platform is None:
@@ -254,6 +261,8 @@ def receipt_problems(receipt, platform=None, retrieved=True):
             problems.append('the platform message is not the rendered bytes')
         if platform.get('date') != receipt['published_at']:
             problems.append('publication time is not the platform date')
+        if platform.get('reply_to') != receipt.get('reply_to_message_id'):
+            problems.append('the platform message replies to another message than the receipt records')
     return problems
 
 
