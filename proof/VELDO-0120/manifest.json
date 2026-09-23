@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0120",
-  "commit": "b5d3449e6be224219b0e52330d8f1a19a4326ec3",
+  "commit": "d2ed6dd6a7968dc9cc7c1ada13d480868f6f115c",
   "producer": "Codex implementing agent",
   "produced_at": "2026-09-23T01:26:54.006534+00:00",
   "veldo_version": "3.10.1",
@@ -70,8 +70,9 @@
     }
   ],
   "artifacts": [
-    "proof/VELDO-0120/__pycache__/measure.cpython-312.pyc",
     "proof/VELDO-0120/absence.json",
+    "proof/VELDO-0120/initial-verification.json",
+    "proof/VELDO-0120/manifest.json",
     "proof/VELDO-0120/measure.py",
     "proof/VELDO-0120/measurement-initial.json",
     "proof/VELDO-0120/measurement.json",
