@@ -1040,6 +1040,52 @@ def _v53_suite():
             observed['snapshot_held_names'] = {'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked)}
             check('architecture/snapshot-held-names', all(held_names.values()) and len(held_names) == 2)
 
+        with region('architecture/snapshot-file-bounded'):
+            # A held file is read up to the snapshot's stated size limit and no further: one over it is the named
+            # stop ImportError, in the decision and in the durable stop event, whether or not anything runs it.
+            # A sparse 64 MiB zz.py (no disk, no gigabyte) is judged with Python's allocations traced: a read of
+            # the whole file allocates its 64 MiB, a bounded read allocates the limit. A file of exactly the
+            # limit is held, and the engine judges as usual (the accepted contract is structurally invalid).
+            import tracemalloc
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+            bounded, largest = {}, max(p_.stat().st_size for p_ in mods.glob('*.py'))
+            stated = getattr(EL, 'ENGINE_FILE_LIMIT', None)
+            limit = stated if isinstance(stated, int) else 1 << 20
+            bounded['limit_stated'] = isinstance(stated, int) and largest < stated <= 16 << 20
+            SPARSE = 64 << 20
+
+            def sparse_engine(tag, size):
+                engine = engine_copy(top / ('bounded-' + tag) / '.veldo')
+                with open(str(engine / 'zz.py'), 'wb') as handle:
+                    handle.truncate(size)
+                return engine
+
+            huge, huge_events = sparse_engine('huge', SPARSE), []
+            tracing = tracemalloc.is_tracing()
+            if not tracing:
+                tracemalloc.start()
+            tracemalloc.reset_peak()
+            try:
+                decided, _, _ = judge(huge, 'bounded_huge', events=huge_events)
+                peak = tracemalloc.get_traced_memory()[1]
+            finally:
+                if not tracing:
+                    tracemalloc.stop()
+            bounded['over_limit_is_named_stop'] = (
+                outcome(decided, 'unavailable_service:architecture_validator')
+                and all((d.get('architecture') or {}).get('error') == 'ImportError' for d in decided.values())
+                and len(huge_events) == len(decided)
+                and all((e.get('architecture') or {}).get('error') == 'ImportError' for e in huge_events))
+            bounded['read_is_bounded'] = peak < SPARSE // 2
+            decided, _, _ = judge(sparse_engine('over', limit + 1), 'bounded_over')
+            bounded['one_over_limit_refused'] = outcome(decided, 'unavailable_service:architecture_validator')
+            decided, _, _ = judge(sparse_engine('at', limit), 'bounded_at')
+            bounded['at_limit_held'] = outcome(decided, CODES['invalid_structure'])
+            reset('valid')
+            observed['snapshot_file_bounded'] = dict(bounded, limit=stated, largest_engine_file=largest,
+                                                     traced_peak_mib=round(peak / (1 << 20), 1))
+            check('architecture/snapshot-file-bounded', all(bounded.values()) and len(bounded) == 5)
+
         with region('architecture/snapshot-module-files'):
             # Each held module's __file__ is the installed path of its name, never the file a link resolves to,
             # in a per-file link farm too; and linecache holds a module's lines BEFORE it runs, so an error

@@ -937,6 +937,21 @@ def cases():
                  "_read_engine_file(path) for path in sorted(installed.glob('*.py'))",
                  "path.read_bytes() for path in sorted(installed.glob('*.py'))",
                  ['snapshot-held-names'])
+    # Round 6: a held file is read up to the stated limit and no further; one over it is the named stop.
+    bounded_read = "        body = handle.read(ENGINE_FILE_LIMIT + 1)\n"
+    over_limit = "    if len(body) > ENGINE_FILE_LIMIT:\n"
+    architecture('architecture-snapshot-read-unbounded', 'control_eligibility.py', bounded_read,
+                 "        body = handle.read()  # defect: the whole file is read before its length is judged\n",
+                 ['snapshot-file-bounded'])
+    architecture('architecture-snapshot-read-limit-short', 'control_eligibility.py', bounded_read,
+                 "        body = handle.read(ENGINE_FILE_LIMIT)  # defect: a longer file is cut to the limit and held\n",
+                 ['snapshot-file-bounded'])
+    architecture('architecture-snapshot-length-unjudged', 'control_eligibility.py', over_limit,
+                 "    if False:  # defect: a file over the limit is held\n",
+                 ['snapshot-file-bounded'])
+    architecture('architecture-snapshot-limit-exclusive', 'control_eligibility.py', over_limit,
+                 "    if len(body) >= ENGINE_FILE_LIMIT:  # defect: a file of exactly the limit is refused\n",
+                 ['snapshot-file-bounded'])
     # Round 5 pins: __file__ is the installed path of the name, and linecache is seeded before a module runs.
     origin = "origin=str(self._installed / (held + '.py')))\n"
     architecture('architecture-snapshot-file-resolved', 'control_eligibility.py', origin,

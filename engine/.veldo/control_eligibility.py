@@ -432,10 +432,18 @@ class _MemoryLoader:
         exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
 
 
+# The most bytes the snapshot reads from any one engine file (the largest is under 100 KiB). Every held file
+# is read at snapshot construction, whether or not anything runs it, so without a limit one large file (a
+# sparse 1 GiB zz.py) costs its whole size in time and memory before the first decision answers.
+ENGINE_FILE_LIMIT = 1 << 20
+
+
 def _read_engine_file(path):
     """The bytes of one engine file, read once. The file is opened without waiting and judged by the open
     descriptor: only a regular file (after links) is read; a FIFO, a directory or anything else under a
-    '.py' name is the named stop ImportError, never a wait."""
+    '.py' name is the named stop ImportError, never a wait. At most ENGINE_FILE_LIMIT + 1 bytes are read,
+    and a file longer than the limit is the named stop ImportError (the length read decides, not the size
+    the file reports, so a file that grows or reports no size is bounded too)."""
     try:
         fd = os.open(str(path), os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
     except OSError as error:
@@ -443,7 +451,10 @@ def _read_engine_file(path):
     with os.fdopen(fd, 'rb') as handle:
         if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
             raise ImportError('engine file %s is not a regular file' % (path,))
-        return handle.read()
+        body = handle.read(ENGINE_FILE_LIMIT + 1)
+    if len(body) > ENGINE_FILE_LIMIT:
+        raise ImportError('engine file %s is longer than the %d byte limit' % (path, ENGINE_FILE_LIMIT))
+    return body
 
 
 def _forget_lines(keys):
