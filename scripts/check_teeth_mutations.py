@@ -283,11 +283,11 @@ def cases():
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
 
     claims('claims-ownership-without-unit', 'control_claim.py',
-           "'data': dict(u, state='active')",
-           "'data': dict(u, state=u['state'] if unit == 'unit' else 'active')", 'atomic-activation')
+           "'data': dict(u, state='CLAIMED')",
+           "'data': dict(u, state=u['state'] if unit == 'unit' else 'CLAIMED')", 'atomic-activation')
     claims('claims-ownership-without-backlog', 'control_claim.py',
-           "'data': dict(b, state='active')",
-           "'data': dict(b, state=b['state'] if unit == 'unit' else 'active')", 'atomic-activation')
+           "'data': dict(b, state='ACTIVE')",
+           "'data': dict(b, state=b['state'] if unit == 'unit' else 'ACTIVE')", 'atomic-activation')
     claims('claims-ignore-use-generation', 'control_claim.py',
            "    if current.get('generation') != params['generation']:",
            "    if op != 'use' and current.get('generation') != params['generation']:", 'current-generation')

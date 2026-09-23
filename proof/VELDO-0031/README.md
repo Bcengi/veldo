@@ -14,8 +14,8 @@ Fixture keys and signatures are temporary and are never retained in this proof.
 
 | Criterion | Row | Observed set |
 | --- | --- | --- |
-| AC1 | `claims/atomic-activation` | Two child clone processes race for one admitted unit; one owner; a single journal transition includes claim, unit and first backlog activation; SQLite states agree; capability denial; four invalid alias forms produce no writes; enrolled default caller stops; neither clone creates a ledger or database. |
-| AC2 | `claims/current-generation` | Renew, release and use each receive the current holder/generation and three mismatched combinations at the real receiver; release retains the generation and the next explicit claim increments it; old generation remains refused; revoked membership and another holder's signature refuse. |
+| AC1 | `claims/atomic-activation` | Two child clone processes race for one admitted unit; one owner; a single journal transition includes ownership, unit READY -> CLAIMED and backlog PRIORITIZED -> ACTIVE; SQLite states agree; capability denial; four invalid alias forms produce no writes; enrolled default caller stops; neither clone creates a ledger or database. |
+| AC2 | `claims/current-generation` | Renew, release and use each receive the current holder/generation and three mismatched combinations at the real receiver; release retains the generation and the next explicit claim increments it; old generation remains refused through DISPATCHING, RUNNING, VERIFYING, REVIEWING, READY_TO_LAND and LANDING; revoked membership and another holder's signature refuse. |
 | AC3 | `claims/uncertainty-stop` | Unowned, owned, explicit uncertain, stale and existing detector-unanswerable states; the actual existing Lander takes an explicit authority client; known contention is bounded; uncertainty raises a named terminal stop; holder/state and local/remote refs stay unchanged; service unavailability is named. Receiver diagnostics, accepted/refused counts and pending claims are observed. |
 
 ## Driven falsification
@@ -37,7 +37,7 @@ usable so later assertions complete instead of throwing.
 | `claims-uncertainty-as-contention` (declared AC3 falsifier) | `claims/uncertainty-stop` |
 | `claims-detector-as-owned` (second AC3 defect) | `claims/uncertainty-stop` |
 
-The activation defects also invalidate dependent AC2/AC3 observations. These are
+The activation defects also invalidate dependent AC2 observations. These are
 additional detected failures; the declared AC1 row itself fails its stored-state
 assertion. `mutations.jsonl` records the actual red rows and green controls.
 
@@ -52,8 +52,9 @@ items. This change provides only their narrow claim seam:
   binds authorization and activation entity versions, and calls `control_store.execute`.
   The store alone writes the entire signed transaction. Receiver construction fixes
   domain, repository, store and authority generation; requests cannot select a store.
-- Minimal accepted `execution_unit` records name repository, backlog, requirements
-  and eligible holders; an accepted backlog starts admitted. The suite provisions these
+- Minimal accepted `execution_unit` records name repository, `backlog_item_uuid`, requirements
+  and eligible holders, starting READY; the `backlog_item` starts PRIORITIZED. These
+  reuse the existing lifecycle names; claiming produces CLAIMED and ACTIVE together. The suite provisions these
   through signed store commands. This does not implement owner admission or scheduling.
 - `control_claim_client.Client` is passed as `claim.py`'s `root` or the existing
   Lander's `claims_root`. Enrolled default calls stop with `authority_required` rather

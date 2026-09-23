@@ -1,8 +1,8 @@
 """Authority claim transitions and authenticated IPC-to-store receiver (VELDO-0031).
 
 Only control_store writes. The accepted admission seam is an execution_unit entity
-with state=admitted, repository_uuid, backlog_id, requirements and eligible_holders;
-its backlog is admitted or active. Provisioning/admission belongs to other specs.
+with state=READY, repository_uuid, backlog_item_uuid, requirements and eligible_holders;
+its backlog_item is PRIORITIZED or ACTIVE (the existing entity lifecycle). Provisioning/admission belongs to other specs.
 Release never rewinds activation. It retains the generation, so a later explicit
 claim increments it. No stale or uncertain claim is automatically reclaimed.
 
@@ -53,7 +53,7 @@ def ownership(data):
 
 
 def transition(params, before):
-    unit, backlog, cid = params['unit_id'], params['backlog_id'], params['claim_id']
+    unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
     u, b = before[unit]['data'], before[backlog]['data']
     current = before.get(cid, {}).get('data', {})
     status = ownership(current)
@@ -63,25 +63,28 @@ def transition(params, before):
     if op == 'claim':
         if status == 'owned':
             raise S.StoreRefused('claimed', 'an owner already holds this unit')
-        if u.get('state') not in ('admitted', 'active') or b.get('state') not in ('admitted', 'active'):
-            raise S.StoreRefused('not_admitted', 'unit and backlog must be admitted')
+        if (u.get('state') != 'READY' and not (u.get('state') == 'CLAIMED' and current.get('state') == 'released')
+                or b.get('state') not in ('PRIORITIZED', 'ACTIVE')):
+            raise S.StoreRefused('not_admitted', 'unit must be READY and backlog PRIORITIZED or ACTIVE')
         if holder not in u.get('eligible_holders', []):
             raise S.StoreRefused('not_authorized', 'holder is not assigned to this unit')
         if not CL.capability_ok(params['capabilities'], u.get('requirements', [])):
             raise S.StoreRefused('capability', 'worker lacks an accepted requirement')
-        data = dict(unit_id=unit, backlog_id=backlog, repository_uuid=params['repository_uuid'],
+        data = dict(unit_id=unit, backlog_item_uuid=backlog, repository_uuid=params['repository_uuid'],
                     holder=holder, generation=current.get('generation', 0) + 1,
                     state='owned', heartbeat_at=CL._now())
         return {cid: {'kind': 'claim', 'data': data},
-                unit: {'kind': 'execution_unit', 'data': dict(u, state='active')},
-                backlog: {'kind': 'backlog', 'data': dict(b, state='active')}}
+                unit: {'kind': 'execution_unit', 'data': dict(u, state='CLAIMED')},
+                backlog: {'kind': 'backlog_item', 'data': dict(b, state='ACTIVE')}}
     if status != 'owned':
         raise S.StoreRefused('unowned', 'there is no current owner')
     if current.get('holder') != holder:
         raise S.StoreRefused('not_owner', 'operation requires the stored holder')
     if current.get('generation') != params['generation']:
         raise S.StoreRefused('stale_generation', 'operation requires the stored claim generation')
-    if u.get('state') != 'active' or b.get('state') != 'active':
+    if op != 'release' and (u.get('state') not in ('CLAIMED', 'DISPATCHING', 'RUNNING', 'VERIFYING',
+                                                      'REVIEWING', 'READY_TO_LAND', 'LANDING')
+                            or b.get('state') != 'ACTIVE'):
         raise S.StoreRefused('ownership_uncertain', 'claim and activation disagree')
     if op == 'release':
         data = dict(current, state='released', holder=None)
@@ -145,9 +148,9 @@ class Receiver:
         entities = state['entities']
         unit = command['unit_id']
         u = entities.get(unit, {})
-        backlog = u.get('data', {}).get('backlog_id')
+        backlog = u.get('data', {}).get('backlog_item_uuid')
         b = entities.get(backlog, {})
-        if (u.get('kind') != 'execution_unit' or b.get('kind') != 'backlog'
+        if (u.get('kind') != 'execution_unit' or b.get('kind') != 'backlog_item'
                 or u['data'].get('repository_uuid') != self.ids['repository_uuid']
                 or b['data'].get('repository_uuid') != self.ids['repository_uuid']):
             raise S.StoreRefused('missing_authority', 'accepted unit/backlog missing from this repository')
@@ -160,7 +163,7 @@ class Receiver:
         touched = {unit, backlog, cid, principal, key['key_id'], CM.VERSIONS_ENTITY}
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in touched}
         observation['accepted_versions'] = versions
-        params = dict(action=command['operation'], unit_id=unit, backlog_id=backlog, claim_id=cid,
+        params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
                       holder=principal, generation=command['generation'], capabilities=command['capabilities'],
                       repository_uuid=self.ids['repository_uuid'])
         stored = dict(command_id=command['command_id'], principal=principal, operation='claim_operation',

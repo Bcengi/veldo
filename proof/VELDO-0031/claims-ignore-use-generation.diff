@@ -1,5 +1,5 @@
 --- a/.veldo/control_claim.py
 +++ b/.veldo/control_claim.py
-@@ -82 +82 @@
+@@ -83 +83 @@
 -    if current.get('generation') != params['generation']:
 +    if op != 'use' and current.get('generation') != params['generation']:

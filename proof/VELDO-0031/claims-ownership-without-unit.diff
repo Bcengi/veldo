@@ -1,5 +1,5 @@
 --- a/.veldo/control_claim.py
 +++ b/.veldo/control_claim.py
-@@ -76 +76 @@
--                unit: {'kind': 'execution_unit', 'data': dict(u, state='active')},
-+                unit: {'kind': 'execution_unit', 'data': dict(u, state=u['state'] if unit == 'unit' else 'active')},
+@@ -77 +77 @@
+-                unit: {'kind': 'execution_unit', 'data': dict(u, state='CLAIMED')},
++                unit: {'kind': 'execution_unit', 'data': dict(u, state=u['state'] if unit == 'unit' else 'CLAIMED')},

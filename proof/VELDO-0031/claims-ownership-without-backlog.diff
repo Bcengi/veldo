@@ -1,5 +1,5 @@
 --- a/.veldo/control_claim.py
 +++ b/.veldo/control_claim.py
-@@ -77 +77 @@
--                backlog: {'kind': 'backlog', 'data': dict(b, state='active')}}
-+                backlog: {'kind': 'backlog', 'data': dict(b, state=b['state'] if unit == 'unit' else 'active')}}
+@@ -78 +78 @@
+-                backlog: {'kind': 'backlog_item', 'data': dict(b, state='ACTIVE')}}
++                backlog: {'kind': 'backlog_item', 'data': dict(b, state=b['state'] if unit == 'unit' else 'ACTIVE')}}

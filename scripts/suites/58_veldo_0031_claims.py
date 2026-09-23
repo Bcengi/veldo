@@ -92,10 +92,10 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_write(_v31_w, 'membership', dict(principal_type='agent_run', roles=[], scope='*'))
         _v31_write('key-' + _v31_w, 'verification_key', dict(principal=_v31_w,
                     public_key=_v31_public[_v31_w], effective_at=0))
-    _v31_write('backlog', 'backlog', dict(state='admitted', repository_uuid=_v31_ids['repository_uuid']))
+    _v31_write('backlog', 'backlog_item', dict(state='PRIORITIZED', repository_uuid=_v31_ids['repository_uuid']))
     for _v31_unit in ('unit', '__land_lock__', 'capability-unit'):
-        _v31_write(_v31_unit, 'execution_unit', dict(state='admitted', repository_uuid=_v31_ids['repository_uuid'],
-                    backlog_id='backlog', requirements=['mac'] if _v31_unit == 'capability-unit' else [],
+        _v31_write(_v31_unit, 'execution_unit', dict(state='READY', repository_uuid=_v31_ids['repository_uuid'],
+                    backlog_item_uuid='backlog', requirements=['mac'] if _v31_unit == 'capability-unit' else [],
                     eligible_holders=['worker-a', 'worker-b']))
     _v31_ctx = _v31_mp.get_context('fork')
     _v31_stop, _v31_ready = _v31_ctx.Event(), _v31_ctx.Event()
@@ -155,6 +155,10 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
             "); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
             "m.claim('unit', 'worker-a')"], cwd=_v31_repos[0], capture_output=True, text=True, timeout=10)
         _v31_check(1, 'enrolled-default-stops', _v31_local.returncode != 0 and 'authority_required' in _v31_local.stderr)
+        _v31_backlog_data = _v31_S.materialized_state(_v31_conn)['entities']['backlog']['data']
+        _v31_write('backlog', 'backlog_item', dict(_v31_backlog_data, state='ADMITTED'))
+        _v31_check(1, 'priority-required', _v31_request(_v31_clients[0], 'claim')['reason'] == 'not_admitted')
+        _v31_write('backlog', 'backlog_item', _v31_backlog_data)
         _v31_queue, _v31_go = _v31_ctx.Queue(), _v31_ctx.Event()
 
         def _v31_race(index):
@@ -181,8 +185,8 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_claim = _v31_state.get(_v31_cid, {}).get('data', {})
         _v31_generation = _v31_claim.get('generation', 1)
         _v31_entries = [r for r in _v31_S.export_journal(_v31_conn) if _v31_cid in r['transition']]
-        _v31_check(1, 'stored-activation', _v31_state['unit']['data']['state'] == 'active'
-                    and _v31_state['backlog']['data']['state'] == 'active'
+        _v31_check(1, 'stored-activation', _v31_state['unit']['data']['state'] == 'CLAIMED'
+                    and _v31_state['backlog']['data']['state'] == 'ACTIVE'
                     and _v31_claim.get('holder') == _v31_owner.principal)
         _v31_check(1, 'atomic-journal', len(_v31_entries) == 1
                     and set(_v31_entries[0]['transition']) == {_v31_cid, 'unit', 'backlog'})
@@ -202,6 +206,14 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_check(2, 'generation-increases', _v31_result.get('claim', {}).get('generation') == _v31_generation + 1)
         _v31_check(2, 'old-generation-after-release',
                     _v31_request(_v31_owner, 'use', generation=_v31_generation)['reason'] == 'stale_generation')
+        _v31_unit_data = _v31_S.materialized_state(_v31_conn)['entities']['unit']['data']
+        for _v31_phase in ('DISPATCHING', 'RUNNING', 'VERIFYING', 'REVIEWING', 'READY_TO_LAND', 'LANDING'):
+            _v31_write('unit', 'execution_unit', dict(_v31_unit_data, state=_v31_phase))
+            _v31_check(2, 'protected-use-' + _v31_phase,
+                        _v31_request(_v31_owner, 'use', generation=_v31_generation + 1)['ok'])
+            _v31_check(2, 'stale-use-' + _v31_phase,
+                        _v31_request(_v31_owner, 'use', generation=_v31_generation)['reason'] == 'stale_generation')
+        _v31_write('unit', 'execution_unit', _v31_unit_data)
         _v31_member = _v31_S.materialized_state(_v31_conn)['entities'][_v31_owner.principal]['data']
         _v31_write(_v31_owner.principal, 'membership', dict(_v31_member, revoked_at=0))
         for _v31_op in ('claim', 'renew', 'release', 'use'):
@@ -213,6 +225,11 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_check(2, 'signature-binds-holder',
                     _v31_request(_v31_other, 'use', generation=_v31_generation + 1)['reason'] == 'not_authorized')
         _v31_other.sign = _v31_original_sign
+        _v31_write('unit', 'execution_unit', dict(_v31_unit_data, state='COMPLETED'))
+        _v31_check(2, 'terminal-use-stops',
+                    _v31_request(_v31_owner, 'use', generation=_v31_generation + 1)['reason'] == 'ownership_uncertain')
+        _v31_check(2, 'terminal-release',
+                    _v31_request(_v31_owner, 'release', generation=_v31_generation + 1)['ok'])
         # An actual caller of the existing Lander must stop without retry or touching refs.
         _v31_L = _v31_load('lander31', ROOT / '.veldo/lander.py')
         _v31_land_client = _v31_clients[0]
