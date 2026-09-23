@@ -458,8 +458,8 @@ def cases():
         '        ledgers = [claims_root(root)]',
         "        ledgers = [os.path.join(_enrollment_ledger() or os.sep, 'claims')]", ['claims/review-r4'])
     add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
-        "        if enrolled:\n            raise ClaimStopped('authority_required')",
-        "        if enrolled or root:\n            raise ClaimStopped('authority_required')", ['claims/review-r4'])
+        "            if enrolled:\n                raise ClaimStopped('authority_required')",
+        "            if enrolled or root:\n                raise ClaimStopped('authority_required')", ['claims/review-r4'])
     add(31, 'review-r5-expiry-revokes-owner', '59_veldo_0031_review.py', 'control_claim.py',
         "    if live == 'stale' and action in ('renew', 'release'):",
         '    if False:', ['claims/review-r5'])
