@@ -59,16 +59,20 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Provider authentication stays in protected services and internal handles derive from
-      accepted contracts. Set and completeness: For both configured providers enumerate environment,
-      mounts, descriptors, sockets and provider config available to real model/tool/build children
-      on Linux and Mac; attempt credential reads and substituted
-      contract/unit/station/sandbox/expiry. Require refusal and no reusable profile mounts.
-      Falsifier: Mount a reusable account profile into the worker tool environment; the real
-      credential-read check must fail.
+      Claim: Provider model authentication stays in its protected adapter service and internal
+      handles derive from accepted contracts. Set and completeness: For Claude Code and Codex,
+      enumerate provider model credentials reachable through environment, mounts, descriptors,
+      sockets and provider configuration by real tool/build children on Linux and Mac. Attempt
+      reads of those model credentials and substitute contract/unit/station/sandbox/expiry;
+      require refusal and no reusable provider model profile mounts in tool/build children.
+      The authenticated model CLI may use its own protected subscription profile. MCP server
+      credentials and profiles are passed exactly as configured under VELDO-0127; they are not
+      provider model credentials and are not refused by this check. Falsifier: Mount a reusable
+      provider model account profile into a worker tool environment; the credential-read check
+      must fail.
     falsified_by: >
-      Mount a reusable account profile into the worker tool environment; the real credential-read
-      check must fail.
+      Mount a reusable provider model account profile into a worker tool environment; the
+      credential-read check must fail.
   - id: AC2
     text: >
       Claim: Each billable request allocates its enforceable maximum from all applicable remaining

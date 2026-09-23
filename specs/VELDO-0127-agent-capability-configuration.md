@@ -56,7 +56,10 @@ acceptance_criteria:
       and completeness: For actual Claude Code and Codex workers on Linux and Mac, enumerate
       effective engine-native and MCP capabilities at launch and compare set equality and settings
       with the accepted role revision in both directions. Include a configured Jira-capable MCP tool
-      as an ordinary tool, with no special factory channel. Falsifier: Remove one configured MCP
+      as an ordinary tool, with no special factory channel. Verify each server authenticates
+      using exactly its configured credential delivery, including the Atlassian server's own
+      configured profile, without gaining another server's or the model provider's credentials.
+      Compare redacted credential-source identities, never secret values. Falsifier: Remove one configured MCP
       tool while allowing launch; the exact-handoff comparison must fail.
     falsified_by: >
       Remove one configured MCP tool while allowing launch; the exact-handoff comparison must fail.
@@ -100,8 +103,18 @@ Owner Telegram 28859 forbids the factory silently reducing agent capability. Con
 describes engine-native tools and MCP server/tool selections, launch arguments, enabled
 settings and protected credential references. The handoff must preserve them for Claude Code
 and Codex; an unsupported configuration produces a visible refusal, not a reduced run.
-Credentials remain protected and tool use still obeys the execution contract and C13
-attachments.
+Each MCP server receives exactly the credentials its accepted configuration gives it today:
+configured environment values or protected references are resolved into that server's launch;
+configured profile files, paths or mounts remain available to that server; remote transport
+authentication uses that server's configured headers or credential mechanism. Inherited values
+are passed only when that server's configuration includes them. Preserve the Atlassian server's
+own configured authentication profile. Do not replace, strip or broaden these mechanisms.
+A missing or unsupported credential source causes a named configuration stop, not a reduced
+capability run. Secret values never enter ordinary views, journal payloads or proof.
+
+VELDO-0062 separates provider model subscription credentials from tool/build children; it does
+not prohibit an MCP server from using its own configured credentials or reusable profile.
+Tool use still obeys the execution contract and C13 attachments.
 
 Use canonical engine assets and synchronize installed copies. Resolve the proposed footprint's
 architecture mapping before ready, including the new UI assets where applicable; this draft does
