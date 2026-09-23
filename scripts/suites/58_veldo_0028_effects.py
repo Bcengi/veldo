@@ -24,10 +24,10 @@ def _v28_run():
             _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effects.py", modules / 'control_effects.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
-        spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
-        executor = _v28_import.module_from_spec(spec)
-        spec.loader.exec_module(executor)
-        E, G = executor.E, executor.G
+        _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
+        _v28_executor = _v28_import.module_from_spec(_v28_executor_spec)
+        _v28_executor_spec.loader.exec_module(_v28_executor)
+        E, G = _v28_executor.E, _v28_executor.G
         private = root / 'private'
         private.mkdir(mode=0o700)
         for name in ('journal', 'worker', 'stranger'):
@@ -95,7 +95,7 @@ print(json.dumps(result))
         config_path.write_text(_v28_json.dumps(config))
         observations = []
         def call(request, key='worker'):
-            answer = executor.call(config_path, request, 'worker', private / key if key else None)
+            answer = _v28_executor.call(config_path, request, 'worker', private / key if key else None)
             observations.append(answer)
             return answer
         def setup(kind, name, outcome='completed', target=None, payload=None):
