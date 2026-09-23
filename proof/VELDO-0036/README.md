@@ -101,5 +101,22 @@ or filesystem durability qualification. Every temporary store and process is cle
 
 ## Gate and timing
 
-Full canonical gate and incremental timing results will be recorded after the committed
-implementation is verified. The proof does not assert an independent review verdict.
+Clean-tree canonical verification of `862538f5cc1c620bc58e39d81721eab025fa68a6`:
+
+```text
+selftest: 5685 passed, 0 failed
+mutations: passed registered=98 executed=98 rejected=98 workers=130 elapsed=61.878s
+GATE: GREEN (862538f5cc1c620bc58e39d81721eab025fa68a6)
+```
+
+The full log stays outside the repository. `gate-summary.json` records its SHA-256
+digest and summary lines. Gate byproducts are restored and excluded from every commit.
+
+Measured added suite work: **4.877 seconds**, below the 60-second limit.
+`timing.json` records a conservative serial wall-time bound: the normal unit run,
+the first-use integration run, and all 18 added mutation workers (14 defects plus
+baseline/no-op controls for both modules). The real gate parallelizes those workers;
+no concurrency discount was applied. This is incremental suite cost, not total gate
+duration, which includes the existing corpus.
+
+The proof does not assert an independent review verdict.
