@@ -19,7 +19,7 @@ def _git_boundary():
     return module
 
 
-GIT = _git_boundary()
+_git_process = _git_boundary()
 SCHEMA = 'veldo.control_snapshot/v1'
 
 
@@ -49,7 +49,7 @@ def artifact(repo, commit, path, expected):
     safe_path(path)
     if not isinstance(commit, str) or not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', commit):
         raise Refused('invalid_input', 'accepted commit must be an exact object id')
-    result = GIT.run(['git', '-C', str(repo), 'cat-file', 'blob', commit + ':' + path],
+    result = _git_process.run(['git', '-C', str(repo), 'cat-file', 'blob', commit + ':' + path],
                      capture_output=True, timeout=15)
     if result.returncode:
         raise Refused('missing_artifact', path)

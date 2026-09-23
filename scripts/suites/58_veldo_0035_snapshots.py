@@ -39,7 +39,7 @@ def _s35_run():
         sn = _s35_load('s35_snapshot', modules / 'control_snapshot.py')
         rs = _s35_load('s35_readset', modules / 'control_readset.py')
         st = _s35_load('s35_store', modules / 'control_store.py')
-        git = sn.GIT
+        git = sn._git_process
         repo = root / 'repository'
         repo.mkdir()
 

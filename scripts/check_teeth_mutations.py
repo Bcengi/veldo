@@ -294,7 +294,7 @@ def cases():
               '    return body\n', '    return (Path(repo) / path).read_bytes()\n', 'accepted-bytes')
     snapshots('snapshot-head-bytes', 'control_snapshot.py',
               '    return body\n',
-              "    return GIT.check_output(['git', '-C', str(repo), 'cat-file', 'blob', 'HEAD:' + path])\n",
+              "    return _git_process.check_output(['git', '-C', str(repo), 'cat-file', 'blob', 'HEAD:' + path])\n",
               'accepted-bytes')
     snapshots('snapshot-working-status', 'control_snapshot.py',
               '        result[safe_path(path)] = canonical(value)',

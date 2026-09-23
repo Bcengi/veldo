@@ -9,5 +9,14 @@
     "SELFTEST FAIL: WARP-1102 AC5 dogfood: over the real change set, footprint-versus-diff passes (this spec's footprint covers every path it touches)",
     "SELFTEST FAIL: WARP-1102 AC6 RJ1: the current change under evaluation yields NO shape-gate problems (green safe, the enforcement did not break our own build)"
   ],
-  "log_sha256": "43608094432e9e3ba00ac2c481cfff6ccd202122029618d6859b35160c7c9133"
+  "log_sha256": "43608094432e9e3ba00ac2c481cfff6ccd202122029618d6859b35160c7c9133",
+  "second_attempt": {
+    "commit": "86f04a236b7a0db6e2a73c6fdfcc7daf738b821e",
+    "clean_start": true,
+    "exit_code": -15,
+    "elapsed_seconds": 162.00361691392027,
+    "status": "aborted_after_diagnosed_failure",
+    "reason": "The Git boundary scanner requires the helper module to be named _git_process. Calls already used git_process.py; renamed the alias to the repository convention.",
+    "log_sha256": "f1b091b196c77840fedc04100e82dfd862110c1cc9bf4c5325936b8e3026c31f"
+  }
 }

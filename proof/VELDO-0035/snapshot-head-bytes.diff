@@ -2,4 +2,4 @@
 +++ b/.veldo/control_snapshot.py
 @@ -59 +59 @@
 -    return body
-+    return GIT.check_output(['git', '-C', str(repo), 'cat-file', 'blob', 'HEAD:' + path])
++    return _git_process.check_output(['git', '-C', str(repo), 'cat-file', 'blob', 'HEAD:' + path])
