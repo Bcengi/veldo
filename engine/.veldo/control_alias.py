@@ -194,7 +194,8 @@ def _carrier(kind):
     else:
         regex += _loose(components[index].split('{number}')[0])
     regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'
-    return re.compile(regex, re.IGNORECASE)
+    # DOTALL: a newline is a legal byte in a Git path, and one below the number still carries it.
+    return re.compile(regex, re.IGNORECASE | re.DOTALL)
 
 
 def maximum(paths, kind):
