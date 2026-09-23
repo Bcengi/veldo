@@ -219,11 +219,12 @@ principal, the project context from the unit, and the question identity and answ
 identity as the source request identity, so repeating `dispose` returns the same proposal; the
 unit stays parked as `routed_to_intake`, naming the proposal.
 
-Open point for VELDO-0126. Its AC1 and AC3 admit exactly two source kinds, a Telegram message
-and an authenticated API call. The signed inbox answer is the authenticated source of an `other`
-instruction; whether VELDO-0126 accepts it as a third source kind, or as its authenticated API
-source with the signed answer as the authentication, is decided in VELDO-0126 with its owner
-before this item is ready. This item does not change VELDO-0126.
+Intake source. The answer reaches Veldo through the Telegram edge or through the authenticated
+API (the UI's message box uses the API), which are exactly the two source kinds VELDO-0126 admits.
+The `other` instruction is submitted under the source kind it actually arrived on, with that
+inbound message or request identity as the source identity, and the signed answer's command
+identity recorded beside it as the evidence that makes it an owner instruction. No third source
+kind exists and this item does not change VELDO-0126 (decided by the lead, 2026-09-23).
 
 Implement canonical engine assets with synchronized installed copies. Derive executable check
 registrations from each criterion's declared set; retain the actual observations and each driven
