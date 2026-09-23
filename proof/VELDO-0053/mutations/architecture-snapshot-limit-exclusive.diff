@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -456 +456 @@
+-    if len(body) > ENGINE_FILE_LIMIT:
++    if len(body) >= ENGINE_FILE_LIMIT:  # defect: a file of exactly the limit is refused

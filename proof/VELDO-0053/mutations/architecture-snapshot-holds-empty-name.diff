@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -469 +469 @@
+@@ -483 +483 @@
 -        self._bodies = {path.name[:-3]: _read_engine_file(path) for path in sorted(installed.glob('*.py')) if path.name[:-3]}
 +        self._bodies = {path.name[:-3]: _read_engine_file(path) for path in sorted(installed.glob('*.py'))}  # defect: a file named .py is held under the empty name

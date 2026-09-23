@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -506 +506,2 @@
+-                for held, digest in self._executed.items()}
++                for held, digest in self._executed.items()
++                if held not in ROLE_LABELS.values()}  # defect: a module named after a role is left out

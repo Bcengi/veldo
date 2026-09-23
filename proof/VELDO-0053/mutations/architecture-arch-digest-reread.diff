@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -429 +429,2 @@
+@@ -432 +432,2 @@
 -        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()
 +        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(
 +            self.body if self.held != 'arch' else (self.snapshot._installed / 'arch.py').read_bytes()).hexdigest()  # defect: arch.py digested from a second read

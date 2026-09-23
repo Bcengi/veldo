@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -481,4 +481,10 @@
+@@ -495,4 +495,10 @@
 -        spec = self._named('eligibility_validator_snapshot', 'validate')
 -        module = importlib.util.module_from_spec(spec)
 -        spec.loader.exec_module(module)

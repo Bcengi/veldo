@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -850 +850,2 @@
+@@ -865 +865,2 @@
 -            found['refusals'] = ['missing_evidence:architecture/workspace']
 +            if accepted:  # defect: without a record a store-only Gate passes
 +                found['refusals'] = ['missing_evidence:architecture/workspace']

@@ -53,7 +53,8 @@ named after a role label (parser.py) taking that role's key in the identity, and
 file (a sparse 1 GiB zz.py) read whole before the first decision. Both are filed for a later release.
 Fixes for both were committed on this branch before the scope changed (b34e367, the identity keyed by
 module name; c9d0205, the 1 MiB read limit) and are kept, not reverted; their rows and mutations are
-registered, but this proof's counts, records and mutation evidence below were not regenerated for them.
+registered, and this proof's counts, records and mutation evidence below include them (`red-8a3c709.json`
+records both rows red at 8a3c709, together with `architecture/observations`, whose events were still keyed by role).
 
 **The accepted artifact.** The authority's record `architecture:<repository>` (state `accepted`, the
 sha256 digest of the accepted bytes) makes the contract required whatever the workspace's own policy
@@ -74,15 +75,15 @@ success. `enrolled_gate` passes the workspace it verified, so every production G
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/60_veldo_0053_architecture.py`, 35 rows: 19 assertions and 16 `ran/` rows, one per
+Suite `scripts/suites/60_veldo_0053_architecture.py`, 39 rows: 21 assertions and 18 `ran/` rows, one per
 region, which stay green under every mutation, so each red row below failed its assertion with its region
 completing. A temporary Git repository is both the workspace and the installed `.veldo`; a second tree is
 a clone with its own `.veldo` whose `arch.py` is a success stub that writes a marker file when loaded.
 One unit passes every other predicate at every station, so each refusal is the architecture's.
 
-All 46 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
+All 52 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and each turned its named rows red while the unmutated copy (the driver's baseline run
-of the same suite) was green with 61 assertions (`mutations.json`, each diff in `mutations/`).
+of the same suite) was green with 65 assertions (`mutations.json`, each diff in `mutations/`).
 
 **AC1, valid, absent and invalid contracts.** Rows `architecture/state-kinds` and
 `architecture/ready-refusal`. Nine real-file states: valid, optional absent, required absent (policy
@@ -359,15 +360,15 @@ Each red record was taken with the suite as of that review's fixes (`red-60d5018
 
 ## Cost and verification
 
-Suite 60_veldo_0053 runs in about 1.9 s (`observations.json`, `suite_seconds`), including seven
+Suite 60_veldo_0053 runs in about 2.3 s (`observations.json`, `suite_seconds`), including seven
 installed-validator processes and the separately installed engine fixtures; a validator snapshot costs
-about 22 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 46 mutations in 15 s with
-main's parallel driver at its default of 8 jobs. Targeted checks on this branch after the fifth review's
-fixes: `python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (35 rows, 61 assertions with the
-shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (46 rejected, no
+about 22 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 52 mutations with the parallel
+driver (4 jobs here). Targeted checks on this branch after the fifth review's
+fixes: `python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (39 rows, 65 assertions with the
+shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (52 rejected, no
 `ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), the whole
 `python3 -B scripts/selftest.py` (5866 passed, 0 failed; not the gate), `python3 .veldo/validate.py all`
 (exit 0), `bash scripts/check_generated.sh` and `bash scripts/check_template_sync.sh` (pass). The full
 gate is run by the lead.
 
-`red.py <commit>` regenerates `red-60d5018.json`, `red-8798a78.json`, `red-e299772.json`, `red-4c29526.json` and `red-e12aab1.json`. `drive.py` regenerates `observations.json` from one run of the suite.
+`red.py <commit>` regenerates `red-8a3c709.json`, `red-60d5018.json`, `red-8798a78.json`, `red-e299772.json`, `red-4c29526.json` and `red-e12aab1.json`. `drive.py` regenerates `observations.json` from one run of the suite.

@@ -1,4 +1,4 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -106,0 +107 @@
+@@ -107,0 +108 @@
 +STATION_PREDICATES['review'] = tuple(p for p in STATION_PREDICATES['review'] if p != ARCHITECTURE_PREDICATE)  # defect: direct review skips the architecture

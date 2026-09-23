@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -442 +442 @@
+@@ -453 +453 @@
 -        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
 +        if False:  # defect: a FIFO or other non-regular file is read like a file

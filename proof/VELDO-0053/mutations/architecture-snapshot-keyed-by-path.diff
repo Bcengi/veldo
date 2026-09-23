@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -514 +514,6 @@
+@@ -529 +529,6 @@
 -        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')
 +        by_path = {}
 +        for held in self._bodies:
