@@ -110,7 +110,7 @@ def _v65_checks(base):
                                   'answer/redelivered-answer-silent', 'answer/reply-after-closed',
                                   'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
                                   'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope',
-                                  'answer/rationale-original-text')}
+                                  'answer/rationale-original-text', 'answer/stale-current-told')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -138,7 +138,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'grouped', 'stranger',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'pm10', 'grouped', 'stranger',
                 'telegram-edge',
                 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
@@ -184,6 +184,7 @@ def _v65_checks(base):
                'pm7': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm8': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm9': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm10': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1554,6 +1555,36 @@ def _v65_checks(base):
                 check(own_words, 'the reply %r records the choice %s and the owner\'s own words' % (text, choice),
                       reason(result) == ('accepted', None) and recorded.get('choice') == choice
                       and recorded.get('rationale') == rationale)
+
+        # Review 5: a reply to a pending request whose presentation no longer binds is told a new one is coming
+        coming = 'answer/stale-current-told'
+        with section(coming):
+            sp1 = opened('SP-1')
+            presenter.present(sp1)
+            sp1_r = presenter.current(sp1) or {}
+            command('pm', 'revise', 'SP-1', request_version=1, changes={'brief': 'A changed brief not yet presented.'})
+            stale_msg = owner_reply(sp1_r, 'accept: as shown')
+            told = []
+            for message in (stale_msg, stale_msg):
+                asked = len(api['requests'])
+                result = answer(message)
+                told.append((reason(result), len(api['requests']) - asked,
+                             api['requests'][-1][1] if len(api['requests']) > asked else ''))
+            check(coming, 'a reply to a presentation the request has moved past is told a new one is coming',
+                  told[0][0] == ('refused', 'stale_presentation') and told[0][1] == 1 and 'new presentation' in told[0][2])
+            check(coming, 'the same message delivered again is not told again', told[1][1] == 0)
+            for alias in ('SP-2', 'SP-3'):
+                command('pm10', 'open', alias, assignment=content())
+                frame('pm10', alias, 1, 'Low: a wrong choice costs one review cycle.')
+                presenter.present(I.assignment_id(ids['repository_uuid'], alias))
+            sp2_r = presenter.current(I.assignment_id(ids['repository_uuid'], 'SP-2')) or {}
+            pm10 = entity('pm10') or {}
+            fixture('pm10', 'membership', dict(pm10.get('data') or {}, revoked_at=_v65_time.time() - 1))
+            asked = len(api['requests'])
+            result = answer(owner_reply(sp2_r, 'accept: as shown'))
+            check(coming, 'a reply while the framing no longer counts (its requester revoked) is told a new one is coming',
+                  reason(result) == ('refused', 'stale_presentation') and len(api['requests']) == asked + 1
+                  and 'new presentation' in api['requests'][-1][1])
     finally:
         server.shutdown()
         server.server_close()

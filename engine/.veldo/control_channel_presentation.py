@@ -1164,6 +1164,8 @@ class Presenter:
             self._tell(ev, receipt, 'This request is no longer open, so this reply changes nothing.')
             raise Refused('request_closed', 'the request is no longer pending')
         if refusal or binding_mismatches(receipt, current):
+            # Still pending, but what the owner saw no longer binds: say a new presentation is coming.
+            self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')
             raise Refused('stale_presentation', 'the named presentation no longer binds the current request')
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.

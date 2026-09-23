@@ -1177,6 +1177,16 @@ def cases():
                  "    return text[:cut], unicodedata.normalize('NFKC', text[cut + 1:])\n", 'answer/rationale-original-text')
     presentation('rationale-keeps-the-colon', "    return text[:cut], text[cut + 1:]\n",
                  "    return text[:cut], text[cut:]\n", 'answer/rationale-original-text')
+    # VELDO-0065 fifth review: a reply to a presentation that no longer binds is told a new one is coming,
+    # and only a request that left pending is closed.
+    presentation('stale-not-told',
+                 "            self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')\n",
+                 "", 'answer/stale-current-told')
+    presentation('stale-told-only-on-mismatch', "        if refusal or binding_mismatches(receipt, current):\n",
+                 "        if refusal:\n            raise Refused('stale_presentation', 'the named presentation no longer binds the current request')\n"
+                 "        if binding_mismatches(receipt, current):\n", 'answer/stale-current-told')
+    presentation('x-closed-any-refusal', "        if refusal == 'stale_subject':\n", "        if refusal:\n",
+                 'answer/stale-current-told')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
