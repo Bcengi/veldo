@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -379 +379 @@
+-            proc = subprocess.run([runtime['python'], '-I', '-B', str(staged)],
++            proc = subprocess.run([runtime['python'], '-I', '-B', runtime['runner']],

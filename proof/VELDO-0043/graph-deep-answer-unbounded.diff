@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -373 +373 @@
--    if not available(runtime):
+@@ -282 +282 @@
+-    if text_depth(raw) > MAX_DEPTH:
 +    if False:

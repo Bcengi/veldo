@@ -1,24 +1,60 @@
 {
  "suite": "59_veldo_0043_graph",
- "measured": "2026-09-23 on the Linux box, 20 cores, other agents running (load average 6 to 13)",
- "suite_runs_before": {"commit": "f346524", "rows": 6, "suite_seconds": [0.79, 0.77, 0.77]},
- "suite_runs_after": {"commit": "b3415d0", "rows": 12, "suite_seconds": [4.79, 4.69, 4.66],
-                      "process_wall_seconds": [4.84, 4.73, 4.70]},
- "suite_seconds_added_per_run": 3.9,
- "runtime_exchanges_per_run": 15,
+ "measured": "2026-09-23 on the Linux box, 20 cores, other agents running (load average about 7)",
+ "suite_runs_before_runtime_rows": {
+  "commit": "f346524",
+  "rows": 6,
+  "suite_seconds": [
+   0.79,
+   0.77,
+   0.77
+  ]
+ },
+ "suite_runs_after_review_fixes": {
+  "commit": "d41c4e4",
+  "rows": 16,
+  "assertions": 42,
+  "suite_seconds": [
+   5.79,
+   5.7,
+   5.64
+  ]
+ },
+ "suite_seconds_added_per_run": 5.0,
+ "processes_per_run": {
+  "langgraph_runner": 17,
+  "stub_runner": 17
+ },
  "teeth_finding_43": {
-  "before": {"cases": 5, "suite_executions": 10, "wall_seconds": 8.35},
-  "after": {"cases": 13, "suite_executions": 26, "wall_seconds": 125.94},
-  "wall_seconds_added": 117.6,
+  "before_runtime_rows": {
+   "cases": 5,
+   "suite_executions": 10,
+   "wall_seconds": 8.35
+  },
+  "at_456284a": {
+   "cases": 13,
+   "suite_executions": 26,
+   "wall_seconds": 125.94
+  },
+  "after_review_fixes": {
+   "commit": "d41c4e4",
+   "cases": 24,
+   "suite_executions": 48,
+   "wall_seconds": 277.5
+  },
   "note": "serial driver: each case runs one honest and one mutant full suite"
  },
- "gate_mutation_stage": {
-  "command": "python3 -B scripts/check_gate_mutations.py (whole stage, all drivers, parallel 8, combined budget 120 s)",
-  "after": {"commit": "b3415d0", "registered": 129, "status": "passed", "elapsed_seconds": 119.14,
-            "finding_43_mutant_workers": 13, "finding_43_mutant_worker_seconds": 68.8},
-  "before": {"commit": "f346524", "registered": 121, "status": "failed: mutation_budget_exceeded",
-             "elapsed_seconds": 120.16},
-  "note": "the stage is at its 120 s budget before and after this change under the same load; finding 43 adds about 94 worker seconds (13 mutants and 6 controls near 5 s each, against about 7 before), about 12 s of wall time at 8 workers"
+ "gate_mutation_stage_estimate": {
+  "cap": "after the merge of main: max(120 s, 2 s x registered cases), 8 workers",
+  "finding_43_workers": {
+   "mutants": 24,
+   "controls": 6,
+   "seconds_each": 5.7
+  },
+  "finding_43_worker_seconds": 171,
+  "finding_43_wall_seconds_at_8_workers": 21,
+  "finding_43_cap_added_seconds": 48,
+  "note": "estimated from measured suite time; the whole stage was not rerun after the review fixes"
  },
  "limit_seconds_for_suite_rows": 60
 }

@@ -49,6 +49,13 @@ def why(observed):
         'assertion_answers': {k: v.get('failure', v) for k, v in runtime.get('assertions', {}).items()},
         'untyped_proposal_answer': runtime.get('untyped'),
         'first_runner_audit': (runtime.get('audits') or [None])[0],
+        'suspend_and_cancel_graphs_invoked': [(a or {}).get('invoked') for a in (runtime.get('audits') or [])[1:5:3]],
+        'stub_label_as_evidence': runtime.get('stub_evidence'),
+        'deep_answer': observed.get('deep_answer'),
+        'closed_request': observed.get('closed_request'),
+        'closed_response': observed.get('closed_response'),
+        'proc_limit': runtime.get('proc_limit'),
+        'stage_in_repository': runtime.get('stage_in_repository'),
     }
 
 

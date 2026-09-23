@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -272 +272 @@
+-        if looks_like_path(text):
++        if False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph_langgraph.py
++++ b/.veldo/control_graph_langgraph.py
+@@ -234,0 +235,2 @@
++    if request['operation'] == 'suspend':
++        return _reply(request, 'suspended', {'name': 'langgraph', 'version': '1.2.12'}, resume=resume)

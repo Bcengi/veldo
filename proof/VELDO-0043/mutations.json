@@ -24,7 +24,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -42,6 +72,10 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [
@@ -72,15 +106,28 @@
      ]
     }
    ],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-c_7srfak/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-c_7srfak/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -111,7 +158,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -129,6 +206,10 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [
@@ -142,15 +223,28 @@
      "static_violations": []
     }
    ],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-cscl1mr4/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-cscl1mr4/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -181,7 +275,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -199,6 +323,10 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [
@@ -227,15 +355,28 @@
      ]
     }
    ],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-ez8v01vq/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-ez8v01vq/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -267,7 +408,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -285,6 +456,10 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [
@@ -296,15 +471,28 @@
      "static_violations": []
     }
    ],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-yondiwzy/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-yondiwzy/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "TypeError",
-    "runtime_unavailable"
+    "FileNotFoundError"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -336,7 +524,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -354,6 +572,10 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [
@@ -365,15 +587,28 @@
      "static_violations": []
     }
    ],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-cqlhqqtu/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-cqlhqqtu/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "unknown_outcome",
     "unknown_outcome"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -383,7 +618,12 @@
   "module": "control_graph_langgraph.py",
   "mutation": "graph-runner-emits-langgraph-object",
   "red_rows": [
-   "graph/runtime/plain-data"
+   "graph/runtime/lifecycle",
+   "graph/runtime/plain-data",
+   "graph/runtime/tracing-off",
+   "graph/authority/no-direct-write",
+   "graph/authority/proc-limit",
+   "graph/authority/typed-proposals-only"
   ],
   "target_red": true,
   "target_rows": [
@@ -404,7 +644,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/602229854cd293ad3b26277544764a3e7bfa64e4feb5aeefe4a33d1590dec2f9.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -420,18 +690,25 @@
     },
     {
      "refused": "invalid_response"
+    },
+    {
+     "refused": "invalid_response"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {},
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": null,
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    null,
+    null
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -462,7 +739,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f6107c663e090b2f53e556a6ab645fa3e97c7daafc626046325991d2b3468cd4.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -479,18 +786,35 @@
     },
     {
      "refused": "invalid_response"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-tmf1yrh0/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-tmf1yrh0/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -501,7 +825,10 @@
   "mutation": "graph-child-inherits-working-directory",
   "red_rows": [
    "graph/boundary/no-store-handle",
-   "graph/authority/no-direct-write"
+   "graph/runtime/plain-data",
+   "graph/runtime/tracing-off",
+   "graph/authority/no-direct-write",
+   "graph/authority/typed-proposals-only"
   ],
   "target_red": true,
   "target_rows": [
@@ -522,7 +849,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -540,22 +897,35 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-naqnb0pl/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-naqnb0pl/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [
-     "/tmp/graph-43-irtrg640/authority-repository/.git/veldo/control/control.sqlite3"
-    ],
-    "wrote": [
-     "/tmp/graph-43-irtrg640/authority-repository/.git/veldo/control/control.sqlite3"
-    ]
-   },
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-naqnb0pl/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-naqnb0pl/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -566,7 +936,10 @@
   "mutation": "graph-child-inherits-store-descriptor",
   "red_rows": [
    "graph/boundary/no-store-handle",
-   "graph/authority/no-direct-write"
+   "graph/runtime/plain-data",
+   "graph/runtime/tracing-off",
+   "graph/authority/no-direct-write",
+   "graph/authority/typed-proposals-only"
   ],
   "target_red": true,
   "target_rows": [
@@ -587,7 +960,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -605,22 +1008,35 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-wfuh6yhf/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-wfuh6yhf/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [
-     "/tmp/graph-43-09w3o7pb/authority-repository/.git/veldo/control/control.sqlite3"
-    ],
-    "wrote": [
-     "/tmp/graph-43-09w3o7pb/authority-repository/.git/veldo/control/control.sqlite3"
-    ]
-   },
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-wfuh6yhf/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-wfuh6yhf/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -651,7 +1067,37 @@
      "detail": "the cycle ended without a proposal"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/8fc5f8e52ffabbe31c6f688cdc21c83dcb4863fe8abdd9430de310374cc0fd0a.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -669,18 +1115,35 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-rqn2ng0e/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-rqn2ng0e/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -713,7 +1176,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [],
     "switches": {
      "LANGCHAIN_TRACING": "false",
@@ -731,22 +1224,39 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-m2l803hq/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-m2l803hq/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "command_id": "command-u",
     "cycle_id": "cycle-u",
-    "domain_uuid": "domain",
+    "domain_uuid": "domain-0592ef651a5e",
     "operation": "start",
     "outcome": "proposal",
     "proposals": [
@@ -791,7 +1301,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [
      "socket.getaddrinfo"
     ],
@@ -811,18 +1351,35 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-yjdd69ft/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-yjdd69ft/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }
@@ -853,7 +1410,37 @@
      "detail": "only returned an untyped assertion: priority"
     }
    },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
    "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
     "sockets": [
      "socket.getaddrinfo"
     ],
@@ -873,18 +1460,1235 @@
     {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-__tb1nak/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-__tb1nak/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": {
-    "found": [],
-    "wrote": []
-   },
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-deep-answer-unbounded",
+  "red_rows": [
+   "graph/shape/deep-answer"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/deep-answer"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "RecursionError",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-3fs_vbda/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-3fs_vbda/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-deep-answer-unnamed",
+  "red_rows": [
+   "graph/shape/deep-answer"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/deep-answer"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "ValueError",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-benbuy86/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-benbuy86/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-digest-prefix-only",
+  "red_rows": [
+   "graph/shape/closed-request"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/closed-request"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "accepted",
+    "digest-uppercase": "accepted",
+    "evidence-malformed": "accepted",
+    "evidence-ok": "accepted",
+    "evidence-path": "accepted",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "accepted",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "path_in_request",
+    "workflow-digest-relative": "path_in_request"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-rfefq_yu/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-rfefq_yu/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-request-path-unchecked",
+  "red_rows": [
+   "graph/shape/closed-request"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/closed-request"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "accepted",
+    "path-in-notes": "accepted",
+    "path-in-result": "accepted",
+    "relative-path-in-result": "accepted",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-_1tsg0ih/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-_1tsg0ih/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-answer-resume-open",
+  "red_rows": [
+   "graph/shape/closed-response"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/closed-response"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "accepted-structure",
+    "resume-bad-position": "accepted",
+    "resume-no-notes": "KeyError",
+    "resume-open": "accepted"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-8783fkcx/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-8783fkcx/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-answer-notes-any-plain",
+  "red_rows": [
+   "graph/shape/closed-response",
+   "graph/shape/closed-request"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/closed-response"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "accepted",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "accepted-structure",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-wyrq0jak/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-wyrq0jak/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_langgraph.py",
+  "mutation": "graph-suspend-without-graph",
+  "red_rows": [
+   "graph/runtime/lifecycle"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/lifecycle"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/c7a95d85903c78c16b590eacfb722b169418ad99b2000ab5bbe51bb74447fccb.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-dc3hqon8/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-dc3hqon8/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-runtime-evidence-unchecked",
+  "red_rows": [
+   "graph/runtime/lifecycle"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/lifecycle"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-vrnfk3ke/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-vrnfk3ke/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "accepted: interface-stub",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-runner-launched-in-place",
+  "red_rows": [
+   "graph/runtime/plain-data",
+   "graph/runtime/tracing-off",
+   "graph/authority/no-direct-write",
+   "graph/authority/typed-proposals-only"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/no-direct-write"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-9o8f2xqw/domain-checkout/.veldo/control_graph_langgraph.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-9o8f2xqw/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-9o8f2xqw/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-9o8f2xqw/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-9o8f2xqw/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_unchanged_by_graph": false,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_langgraph.py",
+  "mutation": "graph-suspended-notes-dropped",
+  "red_rows": [
+   "graph/runtime/lifecycle",
+   "graph/runtime/plain-data",
+   "graph/authority/no-direct-write",
+   "graph/authority/proc-limit"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/proc-limit"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/0c48c782d5cafe8089d769e8c74fdd493a0c3216d318f26677e1eb632e9f3d6e.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "command_id": "command-f-foreign-in-notes",
+     "cycle_id": "cycle-f-foreign-in-notes",
+     "domain_uuid": "domain-38441304c2d7",
+     "operation": "start",
+     "outcome": "suspended",
+     "repository_uuid": "repository",
+     "resume": {
+      "notes": "{}",
+      "position": "only",
+      "step": 1
+     },
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     },
+     "schema": "veldo.graph/v1"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {},
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_langgraph.py",
+  "mutation": "graph-node-notes-ignored",
+  "red_rows": [
+   "graph/runtime/lifecycle",
+   "graph/runtime/plain-data",
+   "graph/runtime/tracing-off",
+   "graph/authority/no-direct-write",
+   "graph/authority/proc-limit"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/proc-limit"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "home-path-in-result": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": "invalid_response",
+   "first_runner_audit": {
+    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/e52601fe5794803d1934dfba3ad60416ba57c02a820084b0dc88e25a773b8050.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "command_id": "command-f-foreign-in-notes",
+     "cycle_id": "cycle-f-foreign-in-notes",
+     "domain_uuid": "domain-51274fc2732f",
+     "operation": "start",
+     "outcome": "suspended",
+     "repository_uuid": "repository",
+     "resume": {
+      "notes": "{}",
+      "position": "only",
+      "step": 1
+     },
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     },
+     "schema": "veldo.graph/v1"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {},
+   "stage_in_repository": "runtime_unavailable",
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    null,
+    null
+   ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"
    }

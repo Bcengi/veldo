@@ -18,134 +18,156 @@ targeted commands under Verification.
 - Owner Telegram 28931: LangGraph and every package in its closure are pinned to the latest stable
   release PyPI serves that satisfies the closure's own requirements.
 
+## Stated limit (Release 2): same-account confinement
+
+Under the owner's standing rulings (same-account threat model, no OS-user boundary, hardening
+later), **what the adapter hands the graph child leads nowhere near the repository**, and that is
+built and tested. The child gets a fixed environment, no inherited descriptors, a request that
+carries no filesystem location, and a runner copy outside every repository. It runs in a working
+directory outside every repository. **A deliberately hostile node can still reach the domain
+process through `/proc/<parent>/cwd` and `/proc/<parent>/fd` as the same account, and write the
+store.** Row `graph/authority/proc-limit` records that this is still true, so the limit is
+visible, not a hidden pass. Real confinement (a separate mount and process view, or a separate
+account) is Release 2.
+
 ## What was built
 
 **`.veldo/control_graph.py`** (standard library only) is the replaceable plain-data interface
-over `start`, `advance`, `suspend` and `cancel` and the proposal and failure outcomes, as
-before, now with three additions. `resolve_runtime()` and `Adapter.installed()` find the locked
-runtime. Each proposal's value is typed: a priority is a non-negative integer, an admission
-decision is `admit` or `decline`, and completion evidence is a list of `sha256:` digests. A
-suspended answer's resume must be an object. The child's fixed environment now also sets
-`LANGSMITH_TRACING`, `LANGSMITH_TRACING_V2`, `LANGCHAIN_TRACING` and `LANGCHAIN_TRACING_V2` to
-`false`, so tracing is off by construction, and nothing is inherited from the caller. With no
-runtime, the refusal `runtime_unavailable` names the install command.
+over `start`, `advance`, `suspend` and `cancel` and the proposal and failure outcomes.
+
+- **Closed request.** Every digest must be exactly `sha256:<64 lowercase hex>`. Each supplied
+  result is plain versioned data (`{id, version, digest, value}`). A resume is exactly
+  `{position, step, notes}`, with the notes as text. A filesystem location anywhere in a request
+  (after http(s) URLs are removed: any `/` or `\`, or a leading `~`) is the named refusal
+  `path_in_request`. A request nested deeper than 32 is refused.
+- **Closed answer.** The adapter accepts only declared keys, each of a declared plain type.
+  Proposals are typed (a priority is a non-negative integer, an admission is `admit` or
+  `decline`, completion evidence is well-formed digests). A resume is exactly
+  `{position, step, notes as text}`, and a failure detail is bounded text. An answer nested deeper
+  than 32 or larger than 1 MB is refused as `invalid_response` before parsing. The nesting is
+  scanned without recursion. Every refusal is counted and observed.
+- **Runtime evidence.** `Adapter.installed()` binds the adapter to the locked LangGraph's label
+  (`runtime_evidence()`, langgraph 1.2.12). An answer with any other label is refused as
+  `missing_evidence`. A failure may instead say that nothing ran (`{name: none}`), because a
+  failure confers nothing.
+- **Nothing handed leads to the repository.** Before each launch the runner is copied,
+  content-addressed, to `<runtime>/veldo/runners/<sha256>.py`. It is launched from there with a
+  fresh working directory under `<runtime>/veldo/work/`. A stage inside a Git repository is
+  refused. The fixed environment sets all four LangSmith tracing switches to `false`, so tracing
+  is off by construction.
 
 **`.veldo/control_graph_lock.py`** is the exact lock as a readable data module: 38 packages,
-each pinned to one version and to the sha256 of the one wheel resolved for CPython 3.12 on
-linux x86_64 (manylinux). `digest()` is the sha256 of the canonical lock data
-(`b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37` today). The Mac needs
-its own wheel hashes. VELDO-0045 later makes `engine/runtime/` the canonical lock location and
-enforces the hashes at activation; this module is what 0043 carries until then.
+each pinned to one version and to the sha256 of the one wheel resolved for CPython 3.12 on linux
+x86_64 (manylinux). `digest()` is `b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37`.
+The Mac needs its own wheel hashes. VELDO-0045 later makes `engine/runtime/` the canonical lock
+location and enforces the hashes at activation.
 
-**`.veldo/control_graph_install.py`** is the install command, `python3 .veldo/control_graph_install.py`.
-It builds a virtual environment at `<account home>/.local/share/veldo/langgraph/<lock digest>/`,
-where the account home comes from the password database and never from `$HOME`. It installs
-with `pip install --require-hashes --no-deps --only-binary=:all:` from the lock, imports
-`langgraph.graph`, and only then renames the environment into place. It strips `PIP_*`,
-`PYTHON*`, `VIRTUAL_ENV*` and `CONDA*` from its own environment and refuses a Python other than
-the lock's. It was run on this machine: 6.6 s, 38 packages plus pip, 86 MB. A fresh clone with
-`HOME` replaced (the gate's mutation stage) finds exactly the runtime matching its lock, and a
-lock change finds none.
+**`.veldo/control_graph_install.py`** (`python3 .veldo/control_graph_install.py`) builds the
+runtime at `<account home>/.local/share/veldo/langgraph/<lock digest>/`. The account home comes
+from the password database, never from `$HOME`. The runtime is a virtual environment **without
+pip**. A throwaway tool environment's pip (the interpreter's bundled copy, deleted afterward)
+runs `pip --python <runtime python> install --require-hashes --no-deps --only-binary=:all:` from
+the lock. The runtime then holds exactly the 38 locked distributions. This machine's runtime was
+deleted and rebuilt with it (7.3 s).
 
-**`.veldo/control_graph_langgraph.py`** is the runner, and it is the execution environment, not
-enforcement. The adapter launches it as a child of the locked interpreter (`-I -B`, empty working
-directory, fixed environment, no inherited descriptors) for exactly one exchange. It builds a
-nonpersistent `StateGraph` with no checkpointer. The graph is entered at a plain resume position
-through a conditional edge from `START`, and every node's output becomes a LangGraph `Command`. A
-node may return only `next`, `suspend`, `proposals`, `failure` and `notes`. Any other key is an
-untyped assertion and ends the cycle as `node_failed`. Anything that is not exact plain JSON
-data is refused as `node_failed` before it is written, naming the offending class. The module
-registers no workflows (VELDO-0132 supplies definitions), so production `main` answers
-`unsupported_workflow`.
+**`.veldo/control_graph_langgraph.py`** is the runner and the execution environment, not
+enforcement. It builds a nonpersistent `StateGraph` with no checkpointer. **Every operation
+executes the compiled graph.** `start` and `advance` enter it at the cycle's position, and
+`suspend` and `cancel` enter its control nodes. The answer's runtime label is produced by the
+nodes that ran: `executed_by()` calls `langgraph.config.get_config()`, which raises outside a
+running graph. An answer where nothing ran (unsupported workflow, LangGraph not importable) says
+`{name: none}`. Node output is limited to `next`, `suspend`, `proposals`, `failure` and `notes`.
+Any other key is an untyped assertion (`node_failed`). The single emit gate turns the answer into
+exact plain data with the notes as text, and refuses anything else as `node_failed`, naming the
+class.
 
-**`.veldo/control_graph_isolation.py`** now records the runner as a launch target when a module
-merely names it, instead of following it as an import. An import of it is still a violation.
-Its graph-start probe resolves the runtime over an empty account home, so "execution environment
-absent" is real resolution, not a `None` argument.
+**`.veldo/control_graph_isolation.py`** records the runner as a launch target, never as an
+import. Its graph-start probe resolves the runtime over an empty account home.
 
-All five modules are in `_FILES` in both `init_scaffold.py` copies. The validator does not
-import them, so they are not in `REQUIRED_SUBSTRATE`. Every `.veldo` change is byte-identical in
-`engine/.veldo`, and this checkout has no composed pack `.veldo` copies. Enforcement and contract
-code stays standard library only; only the runner imports LangGraph.
+All five modules are in `_FILES` in both `init_scaffold.py` copies, not in `REQUIRED_SUBSTRATE`.
+Every `.veldo` change is byte-identical in `engine/.veldo`. Enforcement code stays standard
+library only.
+
+## Review findings addressed (independent review of 456284a)
+
+Each item is in its own commits: the row went red first, by a failed assertion, then the fix
+turned it green.
+
+| Item | Red commit (row red at the pre-fix code) | Fix commit | Rows |
+|---|---|---|---|
+| N1 runtime held an unlocked pip | `a2a8567` (census found pip 24.0) | `397b1f6` (install without pip; runtime rebuilt) | `graph/runtime/installed` |
+| F5 over-deep answer escaped as RecursionError | `f2685cf` | `82a8c91` | `graph/shape/deep-answer` |
+| F4 paths and loose digests accepted in requests | `0e0e153` (all 16 cases accepted) | `5dce564` | `graph/shape/closed-request` |
+| F3 open answer schema; a LangGraph object in notes was accepted | `bd1ec9e` | `4479a3c` | `graph/shape/closed-response`, `graph/runtime/plain-data` (new notes-path workflow) |
+| F2 suspend and cancel never ran LangGraph; label read from metadata | `85cf9e4` (suspend and cancel invoked no graph) | `0d5f212`, `d41c4e4` | `graph/runtime/lifecycle` |
+| F1 the runner's own path and Git common directory led to the store | `3094a5f` (node wrote priority 99 through the runner's location in a linked worktree) | `23bd4f9` | `graph/authority/no-direct-write`, `graph/authority/proc-limit` |
+
+The review's own reproductions were rerun against the fixed tree, adapted only to the new
+interface (text notes, the `stage` key, the moved emit anchor). r1b, r2, r3, r4, r8 and r9 no
+longer show their bug. r1's argv route is closed. Its two `/proc` routes still write, and that is
+the stated limit above.
 
 ## Criteria and rows
 
-Suite `scripts/suites/59_veldo_0043_graph.py` has 12 rows (38 assertions with the shared preamble).
-The runtime rows register the suite's own workflows through the production runner's `serve()`
-and run them on the actual installed LangGraph through the production adapter. `observations.json`
-keeps the actual observations of the unmutated run.
+Suite `scripts/suites/59_veldo_0043_graph.py` has 16 rows (42 assertions with the shared preamble).
+The runtime rows run the suite's workflows, spliced into a copy of the production runner, on the
+actual installed LangGraph through the production adapter. Because the runner is installed in
+the domain's linked worktree, what the adapter stages and launches is exactly what production
+would. The domain process works inside that checkout, keeps its own store connection and an
+extra inheritable descriptor open, and the caller's environment turns all tracing switches on.
+`observations.json` holds the unmutated run.
 
 | Criterion | Rows | What they observe |
 |---|---|---|
-| AC1 | `graph/runtime/installed`, `graph/runtime/lifecycle`, `graph/runtime/plain-data` (plus the earlier stub shape rows `graph/shape/lifecycle`, `graph/shape/plain-data`) | The runtime resolves at the passwd home path for this lock digest. Through LangGraph 1.2.12: `start` runs groom then size and suspends at rank (resume `{position: rank, step: 2, notes}`). `suspend` returns the same resume. `advance` with supplied results returns the typed priority proposal. `cancel` answers canceled. A failing node answers `missing_evidence`. The production runner answers `unsupported_workflow`. Every answer names runtime `langgraph 1.2.12`, the lock's pin. A node returning a LangGraph `Command`, or a LangGraph `StateSnapshot`, answers `node_failed` naming `langgraph.types.Command` / `langgraph.types.StateSnapshot`. All 14 accepted answers are exact plain JSON with no `__` keys. |
-| AC1 (condition) | `graph/runtime/tracing-off` | The caller's environment sets all four tracing switches to `true`. In each of the 14 runner processes, the switches read `false`, `langsmith.utils.tracing_is_enabled()` is `False` and no network egress event occurs. The runner source contains no `langgraph_sdk`, `RemoteGraph` or `get_client`. |
-| AC2 | `graph/authority/no-direct-write`, `graph/authority/typed-proposals-only` (plus the stub boundary row `graph/boundary/no-store-handle`) | A real SQLite store sits at `<repository>/.git/veldo/control/control.sqlite3` in a real Git repository. The domain process runs inside that repository and holds an open, inheritable descriptor on the store. A graph node searches the working directory's parents, `/proc/self/fd`, the environment and the request, then writes to anything it finds. It finds nothing, and the store's tables are identical before and after every graph run. Nodes asserting `admitted`, `priority` and `shipped` answer `node_failed` naming the key. An untyped proposal is refused `invalid_response`. The one typed priority proposal is then committed by the store's `upsert_entity` command as principal `owner`: version 2, priority 1, journal `seed-unit-1` then `commit-p-store`. |
-| AC3 | `graph/isolated-enforcement`, `graph/start-unavailable`, `graph/installed-assets` | As before: six installed enforcement entries pass the static closure and the isolated `-I -S` run, graph start refuses `runtime_unavailable`, and the installation now includes the three new modules. |
+| AC1 | `graph/runtime/installed` | The runtime resolves at the passwd home path for this lock digest, with the stage set. Its distributions are exactly the 38 locked `(name, version)` pairs, with no `bin/pip`. |
+| AC1 | `graph/runtime/lifecycle` | Start runs groom then size and suspends at rank. Suspend returns the same resume, advance with a versioned result returns the typed priority proposal, and cancel answers canceled. A failing node answers `missing_evidence`. Every one of these six answers is labelled langgraph 1.2.12, and **each of their six runner processes executed exactly one `CompiledStateGraph`** (counted at `Pregel.invoke`). The production runner (no workflows) answers `unsupported_workflow` labelled `none`. A stub answer through an adapter requiring runtime evidence is refused `missing_evidence`. |
+| AC1 | `graph/runtime/plain-data` | A LangGraph `Command` or `StateSnapshot` in a proposal, and a `Command` in graph notes, each answer `node_failed` naming the class. No accepted non-failure answer carries `langgraph.` or `__class__`. All 16 accepted answers are exact plain JSON. |
+| AC1 | `graph/runtime/tracing-off` | In each of the 16 runner processes the switches read `false`, langsmith reports tracing off, and no egress event occurs. The runner source has no SDK client use. |
+| AC1 | `graph/shape/closed-response`, `graph/shape/deep-answer` (stub runner) | Notes that are an object (an encoded Command), an open resume, a resume without notes, and a position containing `/` are all refused `invalid_response`. A 20,000-deep answer is refused `invalid_response`, counted and observed. |
+| AC2 | `graph/shape/closed-request` | Five malformed digests (a path after `sha256:`, a relative path, uppercase, short, malformed evidence) are refused. Unversioned or badly digested results, an open resume and object notes are refused `invalid_input`. Four paths (absolute, in notes, `~/`, `../`) are refused `path_in_request`. A result carrying an https URL is accepted. |
+| AC2 | `graph/authority/no-direct-write` | The store lives in the Git common directory of a main repository; the runner source sits in the domain's linked worktree. A node searches from `argv[0]`, `__file__`, its working directory (ancestry, `.git` files followed to the common directory, and `git rev-parse --git-common-dir`), its own descriptors, its environment and its request, and writes to anything it finds. It finds nothing, and the store's tables are unchanged. Every runner ran from outside the suite's tree, and a stage inside the checkout is refused `runtime_unavailable`. |
+| AC2 | `graph/authority/typed-proposals-only` | Admission, priority and completion assertions answer `node_failed` naming the key. An untyped proposal is refused. The one typed priority proposal is committed by the store's `upsert_entity` command as `owner`: version 2, priority 1, journal `seed-unit-1` then `commit-p-store`. |
+| AC2 (stated limit) | `graph/authority/proc-limit` | A node reads `/proc/<parent>/cwd` (the domain checkout) and `/proc/<parent>/fd` (the parent's own store connection). It records both and writes nothing. The row asserts they are still reachable. |
+| AC2 | `graph/boundary/no-store-handle` (stub) | The child sees the fixed nine variables, an empty working directory, descriptors 0 to 3, and no store path in its request or argv. |
+| AC3 | `graph/isolated-enforcement`, `graph/start-unavailable`, `graph/installed-assets` | Unchanged: six enforcement entries pass the static closure and the isolated run, and graph start with no runtime refuses `runtime_unavailable`. |
+| (shape) | `graph/shape/lifecycle`, `graph/shape/plain-data` | The stub interface shapes, as before. |
 
 **When the runtime is absent**, every runtime row fails by name with the install command in its
-message. The suite never skips and never installs. This was observed by moving the runtime aside:
+message, for example `graph/runtime/installed: runtime absent at <path>; install it with:
+python3 .veldo/control_graph_install.py`. The suite never skips and never installs.
 
-```text
-SELFTEST FAIL: graph/runtime/installed: runtime absent at /home/dmitry/.local/share/veldo/langgraph/b45d1e37...; install it with: python3 .veldo/control_graph_install.py
-(the same message for lifecycle, plain-data, tracing-off, no-direct-write and typed-proposals-only)
-```
+**Tracing and egress.** The suite's runner block records every egress audit event and refuses it,
+so no packet leaves even under a tracing mutant. It then ends with `os._exit` after its answer and
+audit record. Before that refusal existed, two earlier drives let the tracing mutants attempt
+`socket.getaddrinfo` and `socket.connect` toward LangSmith. No key was set, and the payload was
+synthetic.
 
-**Tracing is off by construction, and the suite cannot send.** The suite's runner wrapper records
-every egress audit event (`socket.connect`, `socket.getaddrinfo`, `socket.gethostbyname*`,
-`socket.sendto`, `socket.sendmsg`) and then refuses it. urllib3's import-time loopback IPv6 probe
-is a bind, not egress. The wrapper ends with `os._exit` after writing its answer and its audit line,
-so a tracing mutant's exporter cannot stall on its refused retries. **Incident:** the two
-finding-43 drives run before the refusal was added let the two tracing mutants reach
-`socket.getaddrinfo` and `socket.connect` toward LangSmith's default endpoint. No API key was
-set, and the payload was the suite's synthetic trace (node names, `unit-1`). The unmutated
-adapter never attempted egress.
+## Driven negative controls (finding 43, 24 mutations)
 
-## Driven negative controls (finding 43 in `scripts/check_teeth_mutations.py`)
+Each mutation edits a temporary production copy, and each named row goes red by a failed
+assertion. `mutations.json` (reproduced by `drive.py`) records every red row and the observation
+that explains it. The `.diff` files are the exact edits.
 
-Each mutation edits a temporary production copy. Each named row goes red by a failed assertion,
-never by an exception or a hang. The driver also runs an unmutated baseline per case, and the gate's
-mutation stage adds an unchanged baseline and a byte-identical no-op copy per control group. The
-`.diff` files are the exact edits. `mutations.json` (reproduced by `drive.py`) records every red
-row and the observation that explains it.
+| Target row | Mutation | Rows red |
+|---|---|---|
+| `graph/isolated-enforcement` | `graph-authorization-imports-langgraph` (**AC3 declared**), `graph-authorization-dynamic-runtime-import`, `graph-authorization-unexercised-runtime-import` | `isolated-enforcement` |
+| `graph/start-unavailable` | `graph-start-without-runtime-launches`, `graph-start-unavailable-mislabelled` | `start-unavailable`, `isolated-enforcement` |
+| `graph/runtime/plain-data` | `graph-runner-emits-langgraph-object` (**AC1 declared**: the emit gate replaced by a class-tagging encoder; the notes-path object now reaches the adapter as a structure and is refused `invalid_response`, so the row reds on its named expectation) | plain-data, and every row that reads suspended notes |
+| `graph/runtime/plain-data` | `graph-runner-tuple-as-plain` | plain-data |
+| `graph/runtime/lifecycle` | `graph-suspend-without-graph` (suspend answers with a forged label and no graph; seen by the invocation count), `graph-runtime-evidence-unchecked` (the stub label accepted) | lifecycle |
+| `graph/runtime/tracing-off` | `graph-child-inherits-caller-environment`, `graph-tracing-switch-on` | tracing-off (plus the boundary row for the first) |
+| `graph/authority/no-direct-write` | `graph-child-inherits-working-directory` (**AC2 declared**: the node writes priority directly), `graph-child-inherits-store-descriptor`, `graph-runner-launched-in-place` (the runner run from the checkout; found through Git's common directory) | no-direct-write, and the rows downstream of the refused follow-up |
+| `graph/authority/typed-proposals-only` | `graph-runner-accepts-untyped-assertion`, `graph-untyped-proposal-read-as-priority` | typed-proposals-only (plus plain-data rows for the second) |
+| `graph/authority/proc-limit` | `graph-suspended-notes-dropped`, `graph-node-notes-ignored` (the row's observation channel) | proc-limit, lifecycle and the notes readers |
+| `graph/shape/deep-answer` | `graph-deep-answer-unbounded`, `graph-deep-answer-unnamed` | deep-answer |
+| `graph/shape/closed-request` | `graph-digest-prefix-only`, `graph-request-path-unchecked` | closed-request |
+| `graph/shape/closed-response` | `graph-answer-resume-open`, `graph-answer-notes-any-plain` | closed-response (plus closed-request for the second) |
 
-| Row | Mutation | What happened | Rows red |
-|---|---|---|---|
-| `graph/isolated-enforcement` | `graph-authorization-imports-langgraph` (**AC3 declared falsifier**) | static closure and isolated run both refuse `langgraph` | `graph/isolated-enforcement` |
-| `graph/isolated-enforcement` | `graph-authorization-dynamic-runtime-import` | isolated run only | `graph/isolated-enforcement` |
-| `graph/isolated-enforcement` | `graph-authorization-unexercised-runtime-import` | static closure only | `graph/isolated-enforcement` |
-| `graph/start-unavailable` | `graph-start-without-runtime-launches` | start crashes (TypeError), recorded as a wrong answer | `graph/start-unavailable`, `graph/isolated-enforcement` |
-| `graph/start-unavailable` | `graph-start-unavailable-mislabelled` | wrong refusal name | `graph/start-unavailable`, `graph/isolated-enforcement` |
-| `graph/runtime/plain-data` | `graph-runner-emits-langgraph-object` (**AC1 declared falsifier**: the runner writes LangGraph objects into the domain response through a class-tagging encoder) | both foreign workflows answer an encoded `langgraph.types.Command` / `StateSnapshot`, and the adapter refuses `invalid_response` instead of `node_failed` | `graph/runtime/plain-data` |
-| `graph/runtime/plain-data` | `graph-runner-tuple-as-plain` (a tuple counts as plain) | the `StateSnapshot` named tuple crosses as an array; refused `invalid_response` | `graph/runtime/plain-data` |
-| `graph/authority/no-direct-write` | `graph-child-inherits-working-directory` (**AC2 declared falsifier**: the graph child runs in the caller's repository) | the node finds the store through `.git`, writes priority 99 directly, the tables change | `graph/authority/no-direct-write`, `graph/boundary/no-store-handle` |
-| `graph/authority/no-direct-write` | `graph-child-inherits-store-descriptor` (`close_fds=False`) | the node finds the store through its inherited descriptor and writes directly | `graph/authority/no-direct-write`, `graph/boundary/no-store-handle` |
-| `graph/authority/typed-proposals-only` | `graph-runner-accepts-untyped-assertion` | assertions end the cycle without a proposal (`missing_evidence`), not `node_failed` | `graph/authority/typed-proposals-only` |
-| `graph/authority/typed-proposals-only` | `graph-untyped-proposal-read-as-priority` | the untyped proposal is accepted as a priority | `graph/authority/typed-proposals-only`, `graph/runtime/plain-data`, `graph/shape/plain-data` |
-| `graph/runtime/tracing-off` | `graph-child-inherits-caller-environment` (`env=None`) | the child sees the caller's `true` switches; langsmith reports tracing on and attempts `socket.getaddrinfo` (refused) | `graph/runtime/tracing-off`, `graph/boundary/no-store-handle` |
-| `graph/runtime/tracing-off` | `graph-tracing-switch-on` (`LANGSMITH_TRACING_V2` set to `true`) | langsmith reports tracing on and attempts egress (refused) | `graph/runtime/tracing-off` |
-
-Result lines from `python3 -B scripts/check_teeth_mutations.py --finding 43` (13 of 13 rejected,
-baseline green with 38 assertions each):
-
-```text
-graph-authorization-imports-langgraph            red: graph/isolated-enforcement
-graph-authorization-dynamic-runtime-import       red: graph/isolated-enforcement
-graph-authorization-unexercised-runtime-import   red: graph/isolated-enforcement
-graph-start-without-runtime-launches             red: graph/isolated-enforcement, graph/start-unavailable
-graph-start-unavailable-mislabelled              red: graph/isolated-enforcement, graph/start-unavailable
-graph-runner-emits-langgraph-object              red: graph/runtime/plain-data
-graph-runner-tuple-as-plain                      red: graph/runtime/plain-data
-graph-child-inherits-working-directory           red: graph/boundary/no-store-handle, graph/authority/no-direct-write
-graph-child-inherits-store-descriptor            red: graph/boundary/no-store-handle, graph/authority/no-direct-write
-graph-runner-accepts-untyped-assertion           red: graph/authority/typed-proposals-only
-graph-untyped-proposal-read-as-priority          red: graph/shape/plain-data, graph/runtime/plain-data, graph/authority/typed-proposals-only
-graph-child-inherits-caller-environment          red: graph/boundary/no-store-handle, graph/runtime/tracing-off
-graph-tracing-switch-on                          red: graph/runtime/tracing-off
-{"mutations_rejected": 13, "green_suites": {"59_veldo_0043_graph.py": 38}}
-```
-
-The lifecycle and installed rows have no registered mutation. Neither carries a declared
-falsifier, and every lifecycle operation also feeds the driven plain-data and tracing rows.
+Result of `python3 -B scripts/check_teeth_mutations.py --finding 43`: 24 of 24 rejected, each
+baseline green with 42 assertions (`{"mutations_rejected": 24, "green_suites": {"59_veldo_0043_graph.py": 42}}`).
+The installed row has no registered mutation: it checks this machine's installed state, which
+the suite never changes. The proc-limit row's two mutations target its observation channel,
+because no production edit short of confinement changes what `/proc` exposes.
 
 ## The dependency closure
 
@@ -208,40 +230,32 @@ Three pins are below the latest release, each because of a requirement in the cl
 ## Verification (targeted; the full gate was not run, per the brief)
 
 ```text
-python3 -B scripts/selftest.py --suite 59_veldo_0043_graph
-  59_veldo_0043_graph   12 passed   4.66-4.79s
-  selftest (PARTIAL, 1 of 67 suites): 38 passed, 0 failed
-python3 -B scripts/check_teeth_mutations.py --finding 43     13 of 13 rejected, baseline green (38)
-python3 -B proof/VELDO-0043/drive.py                         {"mutations": 13, "all_target_rows_red": true}
-python3 .veldo/validate.py all                               exit 0
-bash scripts/check_generated.sh                              generated: pass
-bash scripts/check_template_sync.sh                          pass (164 pairs)
-bash scripts/check_lint.sh                                   pass
-python3 .veldo/control_graph_isolation.py                    isolated enforcement: pass
-python3 -B scripts/check_install_and_run.py                  install-and-run: pass
-python3 -B scripts/secret_inventory.py                       0 outstanding
-bash scripts/check_docs.sh                                   docs hygiene: pass
-python3 -B scripts/selftest.py --suite 07_warp_1103_completion_mandatory   261 passed, 0 failed
-python3 -B scripts/check_gate_mutations.py                   passed, 129 registered, 119.14 s (see below)
+python3 -B scripts/selftest.py --suite 59_veldo_0043_graph    16 passed, 5.64-5.79 s (42 assertions)
+python3 -B scripts/check_teeth_mutations.py --finding 43      24 of 24 rejected, baseline green, 277.5 s
+python3 -B proof/VELDO-0043/drive.py                          {"mutations": 24, "all_target_rows_red": true}
+python3 .veldo/validate.py all                                exit 0
+bash scripts/check_generated.sh                               generated: pass
+bash scripts/check_template_sync.sh                           pass
+bash scripts/check_lint.sh                                    pass
+python3 .veldo/control_graph_isolation.py                     isolated enforcement: pass
 ```
 
 ## Gate cost (`timing.json`)
 
-The suite went from 0.77-0.79 s (6 rows) to 4.66-4.79 s (12 rows), which is about 3.9 s added per
-run, well under the 60 s limit. It makes 15 runtime exchanges, each a fresh LangGraph process
-of about 0.35 s. The serial driver `check_teeth_mutations.py --finding 43` went from 8.35 s (5
-cases) to 125.94 s (13 cases, 26 suite runs).
+The suite takes 5.6-5.8 s (16 rows; 0.77 s before the runtime rows), about 5 s added per run, under
+the 60 s limit. It makes 17 LangGraph runner processes and 17 stub processes. The serial driver
+`--finding 43` takes 277.5 s for 24 cases (48 suite runs), against 8.35 s for 5 cases before this
+work. In the gate's mutation stage (8 workers; after the merge of main, a combined cap of 2 s per
+registered case), finding 43 contributes 24 mutants and 6 controls near 5.7 s each, about 170
+worker seconds. That is about 22 s of wall time at 8 workers, against the 48 s of cap its 24 cases
+add.
 
-**The gate's mutation stage is at its budget.** `check_gate_mutations.py` runs every driver's
-cases with 8 workers against a combined 120 s deadline. At `b3415d0` it passed in 119.14 s
-(129 cases). At the pre-build commit `f346524` it failed `mutation_budget_exceeded` at 120.16 s
-(121 cases), under the same machine load (load average 6 to 13 from other agents). Finding 43
-adds about 94 worker seconds (13 mutants and 6 controls near 5 s each, against about 7 before),
-about 12 s of wall time at 8 workers. The stage was already at the edge before this change, and
-the lead needs to decide on the budget or the parallelism. That is outside this footprint.
+Runner copies accumulate under `<runtime>/veldo/runners/`, one per distinct runner content (22
+after this work, about 15 KB each). Collecting them is hardening, left for later. Working
+directories and audit records are removed after each exchange and each run.
 
 ## Evidence size
 
-The proof is about 86 KB: readable JSON, Markdown, Python and 13 small unified diffs. It holds
-no full gate log, no binary or encoded data, no bytecode and no credential-shaped text. The
-sha256 values are public wheel digests from PyPI.
+The proof is about 160 KB: readable JSON, Markdown, Python and 24 small unified diffs. There is no
+full log, no binary or encoded data, no bytecode and no credential-shaped text. The sha256
+values are public wheel digests.

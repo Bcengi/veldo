@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -220 +220 @@
+@@ -380 +380 @@
 -                                  input=canonical(sent), capture_output=True, cwd=empty,
 +                                  input=canonical(sent), capture_output=True, cwd=None,

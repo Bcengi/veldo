@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph_langgraph.py
 +++ b/.veldo/control_graph_langgraph.py
-@@ -68 +68 @@
--        body = json.dumps(plain_copy(reply), allow_nan=False)
+@@ -87 +87 @@
+-        body = json.dumps(closed(reply), allow_nan=False)
 +        body = json.dumps(reply, allow_nan=False, default=lambda o: {'__class__': type(o).__module__ + '.' + type(o).__qualname__, 'repr': repr(o)})

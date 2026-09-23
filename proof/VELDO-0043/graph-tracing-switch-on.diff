@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -61 +61 @@
+@@ -78 +78 @@
 -               'LANGSMITH_TRACING': 'false', 'LANGSMITH_TRACING_V2': 'false',
 +               'LANGSMITH_TRACING': 'false', 'LANGSMITH_TRACING_V2': 'true',

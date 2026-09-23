@@ -98,6 +98,14 @@ graph, with no persistent checkpointer or database access from graph/model execu
 owns cycle/action identity and domain results. 0044 checkpoint connection/isolation and
 recovery are Release 2.
 
+Stated limit: Release 1 runs graph execution as the same account with no OS-user boundary
+(owner rulings; hardening is later). What the adapter hands the graph child leads nowhere near
+the repository: a fixed environment, no inherited descriptors, a path-free closed request, and a
+content-addressed runner copy and working directory outside every repository. A deliberately
+hostile node can still reach the domain process through /proc (its working directory and open
+descriptors) as the same account. The proof keeps that limit visible in its own row. Real
+confinement, through a separate mount and process view or a separate account, is Release 2.
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
@@ -133,3 +141,11 @@ at the latest compatible release (28931). The lock is the data module
 per-account runtime is built by `.veldo/control_graph_install.py`. Eight more finding 43
 negative controls are registered in `scripts/check_teeth_mutations.py`. No criterion, status or
 historical proof was changed.
+
+2026-09-23 independent-review fixes: the runtime holds only locked distributions (installed
+without pip); an over-deep answer is a named refusal; requests and answers are closed schemas
+with exact digests, versioned supplied results, text notes and no filesystem path; suspend and
+cancel execute the compiled graph and the runtime label comes from what ran; the runner is
+launched from a content-addressed copy outside every repository, with the /proc reach recorded
+as the stated limit in Notes. Eleven more finding 43 negative controls are registered. No
+criterion, status or historical proof was changed.
