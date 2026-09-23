@@ -1064,6 +1064,14 @@ def cases():
     decisions('settlement-signature-type-unchecked', 'control_decision_dependency.py',
               "    for name in ('signature', 'signer'):\n", "    for name in ('signer',):\n",
               'settlement-invalid-before-unsupported')
+    # Minor: a blocks string names every id it lists; malformed references are recorded.
+    decisions('blocks-string-not-split', 'control_decision_dependency.py',
+              "        ids.update(text.replace(',', ' ').split())\n", "        pass\n", 'minor-shapes')
+    decisions('plan-reference-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(inputs['plan']['id'], 'open_decisions')\n", "                pass\n",
+              'minor-shapes')
+    decisions('decision-id-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'decision_id')\n", "                pass\n", 'minor-shapes')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

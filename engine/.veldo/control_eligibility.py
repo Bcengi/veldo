@@ -554,6 +554,9 @@ class Gate:
             # (the accepted plan's open_decisions, or one passed in) names, every settlement associated
             # with one of them, and the current accepted digest of each record's subject.
             refs = DD.references(self._data(inputs.get('plan')), unit) + list(references)
+            if inputs.get('plan') is not None and any(not isinstance(r, str) for r in
+                                                      DD.references(self._data(inputs['plan']), unit)):
+                self._invalid_record(inputs['plan']['id'], 'open_decisions')
             inputs['decisions'] = self._decisions(unit, data.get('plan'), refs)
             governing = {m['id'] for m in inputs['decisions']}
             inputs['settlements'] = self._settlements(governing)
@@ -573,6 +576,8 @@ class Gate:
             data = self._data(item)
             if DD.blocks_malformed(data):
                 self._invalid_record(identity, 'blocks')
+            if isinstance(data, dict) and data.get('decision_id') is not None and not isinstance(data['decision_id'], str):
+                self._invalid_record(identity, 'decision_id')
             if DD.governs(data, unit, plan, refs):
                 members.append(item)
         return members

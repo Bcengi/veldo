@@ -149,6 +149,16 @@ def _named(value):
             stack.extend(current)
 
 
+def _named_ids(value):
+    """Every id a malformed value names: each text value anywhere in it, stripped, and each of the
+    ids a text value lists when it separates several by commas or spaces."""
+    ids = set()
+    for text in _named(value):
+        ids.add(text.strip())
+        ids.update(text.replace(',', ' ').split())
+    return ids
+
+
 def blocks_malformed(record):
     """Whether a record's `blocks` is present and not a list of ids."""
     return isinstance(record, dict) and record.get('blocks') is not None and not _str_list(record.get('blocks'))
@@ -162,7 +172,7 @@ def governs(record, unit, plan, refs=()):
     if not isinstance(record, dict):
         return False
     blocks = record.get('blocks') or []
-    named = set(_named(blocks)) if blocks_malformed(record) else set(blocks)
+    named = _named_ids(blocks) if blocks_malformed(record) else set(blocks)
     return unit in named or (bool(plan) and 'plan:' + str(plan) in named) or \
         (record.get('decision_id') is not None and record.get('decision_id') in refs)
 
@@ -238,7 +248,7 @@ def record_problems(rid, record):
     if record.get('schema') != GOVERNING_SCHEMA:
         return [code + 'schema']
     kind = record['subject']['kind']
-    if not isinstance(kind, str) or kind not in SUBJECT_KINDS:
+    if kind not in SUBJECT_KINDS:
         return [code + 'subject_kind:%s' % kind]
     return [code + 'obligation:%s' % o for o in record.get('obligations') or [] if o not in SUPPORTED_OBLIGATIONS]
 

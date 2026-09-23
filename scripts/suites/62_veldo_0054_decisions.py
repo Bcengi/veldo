@@ -760,6 +760,32 @@ def _v54_suite():
                    and verdict(settlement_order[1]['VELDO-9497'], {'invalid_input:settlement:decision:D-9497:1/signature'})
                    and verdict(settlement_order[1]['VELDO-9498'], {'invalid_input:settlement:decision:D-9498:1/settlement'}))
 
+        with region('decisions/minor-shapes'):
+            # A blocks that is one string naming two ids, or one padded id, holds every id it names; a
+            # plan reference that is not an id, and a record whose malformed decision_id that reference
+            # reaches, are both recorded in invalid_records.
+            planned('PLAN-9413', ['VELDO-9501', 'VELDO-9502', 'VELDO-9503', 'VELDO-9504'])
+            decision('decision:D-9501', 'spec', 'VELDO-9501', ['VELDO-9501'])
+            reshape('decision:D-9501', blocks='VELDO-9501, VELDO-9502')
+            decision('decision:D-9503', 'spec', 'VELDO-9503', ['VELDO-9503'])
+            reshape('decision:D-9503', blocks='  VELDO-9503  ')
+            put('plan:PLAN-9413', 'plan', dict(status='ready', revision=1,
+                                               open_decisions=[dict(id=['X'], blocks=['VELDO-9504'])]))
+            decision('decision:D-REFLIST', 'spec', 'VELDO-9504', [])
+            reshape('decision:D-REFLIST', decision_id=['X'])
+            minor = swept(['VELDO-9401', 'VELDO-9501', 'VELDO-9502', 'VELDO-9503', 'VELDO-9504'])
+            invalid_now = set(gate.status()['decisions'].get('invalid_records', []))
+            observed['minor_shapes'] = {'sweep': minor[1] if minor[0] == 'raised' else {
+                sid: o['stations']['build'] for sid, o in minor[1].items()}, 'invalid_records': sorted(invalid_now)}
+            check('decisions/minor-shapes',
+                   minor[0] == 'ok' and verdict(minor[1]['VELDO-9401'], set())
+                   and verdict(minor[1]['VELDO-9501'], {'invalid_input:decision:D-9501/blocks'})
+                   and verdict(minor[1]['VELDO-9502'], {'invalid_input:decision:D-9501/blocks'})
+                   and verdict(minor[1]['VELDO-9503'], {'invalid_input:decision:D-9503/blocks'})
+                   and verdict(minor[1]['VELDO-9504'], {'invalid_input:decision_reference',
+                                                        'invalid_input:decision:D-REFLIST/decision_id'})
+                   and {'plan:PLAN-9413', 'decision:D-REFLIST', 'decision:D-9501', 'decision:D-9503'} <= invalid_now)
+
         with region('decisions/deep-blocks-named'):
             # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it
             # names is held by invalid_input:<id>/blocks and every other unit is decided as before. And
