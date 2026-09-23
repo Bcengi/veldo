@@ -572,7 +572,9 @@ print(json.dumps(result))
         hook.chmod(0o755)
         result = publish('hook-stdout', clone, str(bare))
         hooked = recorded('hook-stdout')
-        backed_up = git('-C', str(backup), 'rev-parse', '--verify', '-q', 'refs/heads/backup') == tip
+        # The backup branch exists only if the hook ran; its absence is an observation, not an error.
+        backed_up = G.run(['git', '-C', str(backup), 'rev-parse', '--verify', '-q', 'refs/heads/backup'],
+                          capture_output=True, text=True, timeout=20).stdout.strip() == tip
         seen_result('hook-stdout', result, destination=hooked, hook_backed_up=backed_up)
         row('publication-destination-from-push-status', backed_up and result.get('completed') is True
             and remote_main(bare) == tip and 'hook-stdout-not-a-destination' not in _v28_json.dumps(result)
