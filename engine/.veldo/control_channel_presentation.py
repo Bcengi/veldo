@@ -282,11 +282,10 @@ def render(record):
             'Request digest: %s' % record['request_digest'],
             'Presentation version: %d' % record['presentation_version']]
     prior = record.get('supersedes')
-    if prior and prior.get('notice_id') and prior.get('message_id') is None:
-        head.append('Supersedes: an earlier notice of this request whose delivery is not confirmed. '
-                    'Only this message can be answered.')
-    elif prior and prior.get('notice_id'):
-        head.append('Supersedes: the notice message %s. Only this message can be answered.' % prior['message_id'])
+    if prior and prior.get('notices'):
+        named = ['the notice message %s' % n['message_id'] if n['message_id'] is not None
+                 else 'an earlier notice of this request whose delivery is not confirmed' for n in prior['notices']]
+        head.append('Supersedes: %s. Only this message can be answered.' % ' and '.join(named))
     elif prior:
         head.append('Supersedes: presentation version %s, message %s. Only this message can be answered.'
                     % (prior['presentation_version'], prior['message_id']))
@@ -532,11 +531,11 @@ def _record_transition(params, before, notice_kind):
             'schema': HEAD_SCHEMA, 'channel': CHANNEL, 'request_id': data['request_id'], 'current': pid,
             'presentation_version': data['presentation_version'],
             'published': list(head.get('published') or []) + [pid], 'superseded': superseded}}
-        notice = (data['supersedes'] or {}).get('notice_id')
-        if notice and data['supersedes'].get('notice_state') == 'pending':
-            notice = None  # still in flight: marked superseded by a later run once its outcome is known
-        if notice:
-            # The inbox projection's earlier notice is superseded by this, its first presentation.
+        for named in (data['supersedes'] or {}).get('notices') or []:
+            # The inbox projection's earlier notices are superseded by this, the first presentation.
+            notice = named['notice_id']
+            if named['notice_state'] == 'pending':
+                continue  # still in flight: marked superseded by a later run once its outcome is known
             held = before.get(notice) or {}
             # Only the inbox projection's own record kind, for this same request, is ever superseded;
             # the kind named in the intent is the caller's and decides nothing.
@@ -553,7 +552,8 @@ def _notice_transition(params, before, notice_kind):
     once its outcome is known: only the projection's own record of the same request."""
     pid, notice = params.get('presentation_id'), params.get('notice_id')
     receipt, held = (before.get(pid) or {}).get('data') or {}, before.get(notice) or {}
-    if (receipt.get('outcome') != 'published' or (receipt.get('supersedes') or {}).get('notice_id') != notice
+    named = [n.get('notice_id') for n in (receipt.get('supersedes') or {}).get('notices') or []]
+    if (receipt.get('outcome') != 'published' or notice not in named
             or held.get('kind') != notice_kind or not isinstance(held.get('data'), dict)
             or held['data'].get('assignment_id') != receipt.get('request_id')
             or held['data'].get('outcome') == 'pending' or held['data'].get('superseded_by')):
@@ -907,11 +907,14 @@ class Presenter:
             return None, None, versions
         record = dict(b, schema=SCHEMA, channel=CHANNEL, presentation_version=(head or {}).get('presentation_version', 0) + 1,
                       supersedes=None, reply_to=None)
-        notice = self._notice(request, b['enrolled_chat']) if prior is None else None
-        if notice:
-            versions[notice['notice_id']] = notice.pop('version')
-            record['supersedes'] = notice
-            record['reply_to'] = notice['message_id']  # None for an unconfirmed notice: named, not replied to
+        notices = self._notices(request, b['enrolled_chat']) if prior is None else []
+        if notices:
+            for n in notices:
+                versions[n['notice_id']] = n.pop('version')
+            first = notices[0]  # the notice of the newest request version, whatever its state
+            record['supersedes'] = {'notice_id': first['notice_id'], 'notice_state': first['notice_state'],
+                                    'chat_id': b['enrolled_chat'], 'message_id': first['message_id'], 'notices': notices}
+            record['reply_to'] = first['message_id']  # None for an unconfirmed notice: named, not replied to
         if prior:
             record['supersedes'] = {'presentation_id': prior['presentation_id'],
                                     'presentation_version': prior['presentation_version'],
@@ -925,10 +928,12 @@ class Presenter:
         record['presentation_id'] = presentation_id(request, b['request_version'], record['brief_digest'])
         return None, record, versions
 
-    def _notice(self, request, chat):
-        """The VELDO-0064 notice the inbox projection sent for this request before presentations were
-        in use, not yet superseded, in the owner's chat: the one the first presentation supersedes."""
-        found = None
+    def _notices(self, request, chat):
+        """The VELDO-0064 notices the inbox projection sent for this request before presentations were
+        in use, not yet superseded, in the owner's chat, newest request version first: every one the
+        first presentation supersedes. An older version's sent notice never outranks the current
+        version's unconfirmed one."""
+        found = []
         for eid, version, text in self.conn.execute('SELECT id, version, data FROM entities WHERE kind=?', (self.P.ENTITY_KIND,)):
             data = json.loads(text)
             if data.get('assignment_id') != request or data.get('superseded_by') or data.get('enrolled_chat') != chat:
@@ -939,38 +944,38 @@ class Presenter:
                 state = data['outcome']  # possibly on the owner's phone: named, never replied to
             else:
                 continue
-            candidate = {'notice_id': eid, 'chat_id': chat, 'message_id': data['message_id'] if state == 'sent' else None,
-                         'notice_state': state, 'request_version': data.get('request_version', 0), 'version': version}
-            if found is None or (candidate['notice_state'] == 'sent', candidate['request_version']) > (
-                    found['notice_state'] == 'sent', found['request_version']):
-                found = candidate
-        return found
+            found.append({'notice_id': eid, 'message_id': data['message_id'] if state == 'sent' else None,
+                          'notice_state': state, 'request_version': data.get('request_version', 0), 'version': version})
+        return sorted(found, key=lambda n: -n['request_version'])
 
-    def _reconcile_notice(self, request):
-        """Mark superseded a notice the current presentation named while its outcome was pending,
-        once that outcome is known."""
-        current = self.current(request)
-        named = (current or {}).get('supersedes') or {}
-        if named.get('notice_state') != 'pending':
-            return
-        held = self._entity(named['notice_id'])
-        if (held is None or held['kind'] != self.P.ENTITY_KIND or held['data'].get('superseded_by')
-                or held['data'].get('outcome') == 'pending'):
-            return
-        try:
-            self._commit(NOTICE_OPERATION, dict(presentation_id=current['presentation_id'], notice_id=named['notice_id']),
-                         {current['presentation_id']: current['entity_version'], named['notice_id']: held['version']})
-        except self.store.StoreRefused:
-            return
+    def _reconcile_notices(self, request):
+        """Mark superseded every notice a presentation of this request named while its outcome was
+        pending, once that outcome is known, whether or not that presentation is still current."""
+        for named_by in self.receipts(request):
+            receipt = self.receipt(named_by.get('presentation_id', ''))
+            if receipt is None or receipt.get('outcome') != 'published':
+                continue
+            for named in (receipt.get('supersedes') or {}).get('notices') or []:
+                if named.get('notice_state') != 'pending':
+                    continue
+                held = self._entity(named['notice_id'])
+                if (held is None or held['kind'] != self.P.ENTITY_KIND or held['data'].get('superseded_by')
+                        or held['data'].get('outcome') == 'pending'):
+                    continue
+                try:
+                    self._commit(NOTICE_OPERATION, dict(presentation_id=receipt['presentation_id'], notice_id=named['notice_id']),
+                                 {receipt['presentation_id']: receipt['entity_version'], named['notice_id']: held['version']})
+                except self.store.StoreRefused:
+                    continue
 
     def present(self, request):
         """Present one request as current authority requires: nothing when its current presentation
         already is that, never again when an earlier attempt's outcome is unknown."""
+        self._reconcile_notices(request)
         refusal, record, versions = self.compose(request)
         if refusal:
             return self._observe('publish', request, versions, 'refused', refusal)
         if record is None:
-            self._reconcile_notice(request)
             return self._observe('publish', request, versions, 'already_presented', None,
                                  presentation_id=self.head(request)['current'])
         pid, hid = record['presentation_id'], head_id(request)
@@ -996,9 +1001,8 @@ class Presenter:
             self._commit(RECORD_OPERATION, dict(phase='complete', presentation_id=pid, head_id=hid,
                                                 attempt=intent['attempt'], **completion),
                          dict({pid: intent['entity_version'], hid: versions[hid]},
-                              **({record['supersedes']['notice_id']: versions[record['supersedes']['notice_id']]}
-                                 if (record['supersedes'] or {}).get('notice_id')
-                                 and record['supersedes'].get('notice_state') != 'pending' else {})))
+                              **{n['notice_id']: versions[n['notice_id']] for n in (record['supersedes'] or {}).get('notices') or []
+                                 if n['notice_state'] != 'pending'}))
         except self.store.StoreRefused as exc:
             return self._observe('publish', request, versions, 'unknown_outcome', exc.code, presentation_id=pid)
         done = self.receipt(pid)

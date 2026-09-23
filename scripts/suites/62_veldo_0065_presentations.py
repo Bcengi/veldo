@@ -107,7 +107,8 @@ def _v65_checks(base):
                                   'answer/after-answered-reply', 'answer/tell-once-per-message',
                                   'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed',
                                   'presentation/retry-after-capped', 'answer/reply-nfkc-before-split',
-                                  'answer/redelivered-answer-silent', 'answer/reply-after-closed')}
+                                  'answer/redelivered-answer-silent', 'answer/reply-after-closed',
+                                  'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1063,7 +1064,10 @@ def _v65_checks(base):
                 _, base_record, _ = presenter.compose(fg)
                 held_before = entity(target) if target else None
                 forged = dict(base_record, supersedes={'notice_id': target, 'notice_kind': kind, 'chat_id': owner_chat,
-                                                       'message_id': 424242 + n}, reply_to=None)
+                                                       'notice_state': 'sent', 'message_id': 424242 + n,
+                                                       'notices': [{'notice_id': target, 'notice_state': 'sent',
+                                                                    'message_id': 424242 + n, 'request_version': 1}]},
+                              reply_to=None)
                 forged['rendered'] = V.render(forged)
                 forged['brief_digest'] = 'sha256:' + _v65_hashlib.sha256(_v65_json.dumps(
                     forged['rendered'], sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')).hexdigest()
@@ -1415,6 +1419,64 @@ def _v65_checks(base):
                   and counts[0][0] == 1 and 'no longer open' in counts[0][1])
             check(closed_row, 'the same message delivered again is not told again', counts[1][0] == 0)
             check(closed_row, 'control: another message is told once', counts[2][0] == 1 and 'no longer open' in counts[2][1])
+
+        # Review 4 item 3: the first presentation of version N supersedes the notices of N and older ones
+        per_version = 'projection/notices-per-version'
+        with section(per_version):
+            def notices_of(rid):
+                return sorted((d['request_version'], d['outcome'], d.get('superseded_by'), d.get('message_id'))
+                              for d in (_v65_json.loads(t) for (t,) in conn.execute(
+                                  "SELECT data FROM entities WHERE kind='channel_projection'")) if d.get('assignment_id') == rid)
+            command('pm', 'open', 'MV-1', assignment=content(owner='stranger'))
+            mv = I.assignment_id(ids['repository_uuid'], 'MV-1')
+            P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()
+            command('pm', 'revise', 'MV-1', request_version=1, changes={'brief': 'Choose how the revised specification proceeds.'})
+            api['mode'] = 'drop'
+            P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()
+            api['mode'] = 'ok'
+            frame('pm', 'MV-1', 2, 'Low: a wrong choice costs one review cycle.')
+            presenter.present(mv)
+            mv_r = presenter.current(mv) or {}
+            lines = (mv_r.get('rendered') or [''])[0].split('\n')
+            v1_message = next((n[3] for n in notices_of(mv) if n[0] == 1), None)
+            check(per_version, 'the current version\'s unconfirmed notice is the one the presentation supersedes first',
+                  (mv_r.get('supersedes') or {}).get('notice_state') == 'unknown_outcome'
+                  and (mv_r.get('supersedes') or {}).get('message_id') is None and mv_r.get('reply_to') is None)
+            check(per_version, 'the presentation names both notices in its text',
+                  any(l.startswith('Supersedes: ') and 'whose delivery is not confirmed' in l
+                      and 'the notice message %s' % v1_message in l for l in lines))
+            check(per_version, 'both notices are marked superseded by it',
+                  [n[2] for n in notices_of(mv)] == [mv_r.get('presentation_id')] * 2 and len(notices_of(mv)) == 2)
+
+        # Review 4 item 4: a notice named while pending is marked even after the naming presentation is replaced
+        orphan = 'projection/pending-notice-reconciled-after-replacement'
+        with section(orphan):
+            command('pm', 'open', 'PR-1', assignment=content(owner='stranger'))
+            pr = I.assignment_id(ids['repository_uuid'], 'PR-1')
+
+            class Flight:
+                fired = False
+
+                def send(self, chat, text):
+                    if not Flight.fired and 'Assignment: %s' % pr in text.split('\n'):
+                        # While the notice is in flight: presented (naming it), then replaced.
+                        Flight.fired = True
+                        frame('pm', 'PR-1', 1, 'Low: one review.')
+                        presenter.present(pr)
+                        Flight.naming = presenter.current(pr) or {}
+                        frame('pm', 'PR-1', 1, 'Medium: a wrong choice costs two review cycles.')
+                        Flight.replaced = presenter.present(pr)
+                    return edge64.send(chat, text)
+            P.Projection(S, inbox, Flight(), conn, 'authority', journal_sign).project()
+            naming, replaced = getattr(Flight, 'naming', {}), getattr(Flight, 'replaced', {})
+            presenter.present(pr)
+            notice_row_now = [n for n in notices_of(pr)]
+            check(orphan, 'the presentation named the notice while it was pending and was then replaced',
+                  (naming.get('supersedes') or {}).get('notice_state') == 'pending' and reason(replaced) == ('published', None)
+                  and (presenter.current(pr) or {}).get('presentation_id') != naming.get('presentation_id'))
+            check(orphan, 'the notice is marked superseded by the presentation that named it, once its outcome is known',
+                  len(notice_row_now) == 1 and notice_row_now[0][1] == 'sent'
+                  and notice_row_now[0][2] == naming.get('presentation_id') is not None)
     finally:
         server.shutdown()
         server.server_close()

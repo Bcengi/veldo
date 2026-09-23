@@ -1038,8 +1038,8 @@ def cases():
     projection('projection-ignores-enrollment-setting', "        in_use = enabled or framed or bool(mine)\n",
                "        in_use = framed or bool(mine)\n", 'projection/silent-from-store')
     presentation('presentation-ignores-notice',
-                 "        notice = self._notice(request, b['enrolled_chat']) if prior is None else None\n",
-                 "        notice = None\n", 'projection/notice-superseded')
+                 "        notices = self._notices(request, b['enrolled_chat']) if prior is None else []\n",
+                 "        notices = []\n", 'projection/notice-superseded')
     presentation('notice-not-marked-superseded',
                  "            changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}\n",
                  "            pass\n", 'projection/notice-superseded')
@@ -1113,7 +1113,7 @@ def cases():
                'projection/in-flight-notice-superseded')
     presentation('unconfirmed-notice-not-named', "            elif data.get('outcome') in NOTICE_UNCONFIRMED:\n",
                  "            elif False:\n", 'projection/in-flight-notice-superseded')
-    presentation('pending-notice-never-marked', "            self._reconcile_notice(request)\n", "",
+    presentation('pending-notice-never-marked', "        self._reconcile_notices(request)\n", "",
                  'projection/in-flight-notice-superseded')
     # VELDO-0065 fourth review item 8: an unreadable revocation ledger fails closed.
     presentation('ledger-unreadable-as-empty',
@@ -1139,6 +1139,19 @@ def cases():
                  'answer/reply-after-closed')
     presentation('closed-reported-as-stale', "            raise Refused('request_closed', 'the request is no longer pending')\n",
                  "            raise Refused('stale_presentation', 'the request is no longer pending')\n", 'answer/reply-after-closed')
+    # VELDO-0065 fourth review item 3: the notices of the presented version and older ones, current first.
+    presentation('older-sent-notice-preferred', "        return sorted(found, key=lambda n: -n['request_version'])\n",
+                 "        return sorted(found, key=lambda n: (n['notice_state'] != 'sent', -n['request_version']))\n",
+                 'projection/notices-per-version')
+    presentation('only-first-notice-marked', "        for named in (data['supersedes'] or {}).get('notices') or []:\n",
+                 "        for named in ((data['supersedes'] or {}).get('notices') or [])[:1]:\n", 'projection/notices-per-version')
+    # VELDO-0065 fourth review item 4: a pending notice is reconciled against every presentation that named it.
+    presentation('reconcile-current-only', "        for named_by in self.receipts(request):\n",
+                 "        for named_by in [self.current(request) or {}]:\n",
+                 'projection/pending-notice-reconciled-after-replacement')
+    presentation('reconcile-skips-replaced', "            if receipt is None or receipt.get('outcome') != 'published':\n",
+                 "            if receipt is None or receipt.get('outcome') != 'published' or receipt['presentation_id'] != (self.head(request) or {}).get('current'):\n",
+                 'projection/pending-notice-reconciled-after-replacement')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
