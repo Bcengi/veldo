@@ -171,18 +171,25 @@ def _authority(root):
         return root
     if root:
         # An explicit filesystem root is the documented compatibility path; no Git runs for it.
-        ledgers = [os.path.dirname(claims_root(root))]
+        # (An empty root is not explicit: like claims_root, it takes the default path below.)
+        ledgers = [claims_root(root)]
     else:
         # BOTH the ledger Git's discovery gives this repository AND the ledger the claim would
         # actually be written to (VELDO_RUNS_ROOT may point anywhere, including at an enrolled
         # ledger): neither may be enrolled.
-        ledgers = [_enrollment_ledger()]
+        discovered = _enrollment_ledger()
+        ledgers = [os.path.join(discovered, 'claims') if discovered else None]
         if os.environ.get("VELDO_RUNS_ROOT"):
-            ledgers.append(os.path.dirname(claims_root(None)))
-    for ledger_root in ledgers:
-        if ledger_root is None:
+            ledgers.append(claims_root(None))
+    for claims_dir in ledgers:
+        if claims_dir is None:
             continue
         try:
+            # The ledger is judged where the record would really land: the claims directory with
+            # every link and '..' resolved as the kernel will resolve them at write time, so a
+            # spelling (a missing directory then '..', a claims/ that is a link) cannot aim the
+            # check at one ledger and the write at another.
+            ledger_root = os.path.dirname(os.path.realpath(claims_dir))
             enrolled = _git_process.entry_exists(os.path.join(ledger_root, 'control', 'enrollment.json'))
         except OSError:
             raise ClaimStopped('enrollment_unanswerable')     # unreadable is not absent

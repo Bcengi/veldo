@@ -455,8 +455,8 @@ def cases():
         '                self._hb_error = exc',
         '                self._hb_error = None', ['claims/review-r3'])
     add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
-        '        ledgers = [os.path.dirname(claims_root(root))]',
-        '        ledgers = [_enrollment_ledger()]', ['claims/review-r4'])
+        '        ledgers = [claims_root(root)]',
+        "        ledgers = [os.path.join(_enrollment_ledger() or os.sep, 'claims')]", ['claims/review-r4'])
     add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
         "        if enrolled:\n            raise ClaimStopped('authority_required')",
         "        if enrolled or root:\n            raise ClaimStopped('authority_required')", ['claims/review-r4'])

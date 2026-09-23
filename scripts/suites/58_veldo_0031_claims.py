@@ -190,6 +190,17 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
             return _v31_sp.run([__import__('sys').executable, '-B', '-c', _v31_default], cwd=cwd,
                                capture_output=True, text=True, timeout=30, env=dict(_v31_env, **extra))
 
+        # A separate enrolled ledger for the spelling shapes, so the shared fixtures stay untouched.
+        _v31_enrolled_repo = _v31_os.path.join(_v31_tmp, 'enrolled')
+        _v31_sp.run(['git', 'init', '-q', _v31_enrolled_repo], check=True, capture_output=True)
+        _v31_enrolled_ledger = _v31_os.path.join(_v31_enrolled_repo, '.git', 'veldo')
+        _v31_os.makedirs(_v31_os.path.join(_v31_enrolled_ledger, 'control'))
+        with open(_v31_os.path.join(_v31_enrolled_ledger, 'control', 'enrollment.json'), 'w') as _v31_cfg:
+            _v31_cfg.write('{}\n')
+        _v31_linked_root = _v31_os.path.join(_v31_tmp, 'linked-runs')
+        _v31_os.makedirs(_v31_linked_root)
+        _v31_os.makedirs(_v31_os.path.join(_v31_enrolled_ledger, 'claims'), exist_ok=True)
+        _v31_os.symlink(_v31_os.path.join(_v31_enrolled_ledger, 'claims'), _v31_os.path.join(_v31_linked_root, 'claims'))
         _v31_os.chmod(_v31_control, 0)
         try:
             _v31_runs = {'broken': _v31_run(_v31_broken), 'broken-sub': _v31_run(_v31_os.path.join(_v31_broken, 'sub')),
@@ -199,6 +210,13 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
                          'override-into-enrolled-from-plain': _v31_run(
                              _v31_plain, VELDO_RUNS_ROOT=_v31_sp.run(['git', '-C', str(_v31_repos[0]), 'rev-parse', '--path-format=absolute', '--git-common-dir'],
                                                                      capture_output=True, text=True, check=True).stdout.strip() + '/veldo'),
+                         'ghost-dotdot-into-enrolled': _v31_run(
+                             _v31_plain, VELDO_RUNS_ROOT=_v31_enrolled_ledger + '/ghost/..'),
+                         'symlinked-claims-into-enrolled': _v31_run(_v31_plain, VELDO_RUNS_ROOT=_v31_linked_root),
+                         'empty-root-with-override': _v31_sp.run([__import__('sys').executable, '-B', '-c',
+                             _v31_default.replace("m.claim('unit', 'worker-a')", "m.claim('unit', 'worker-a', root='')")],
+                             cwd=_v31_repos[0], capture_output=True, text=True, timeout=30,
+                             env=dict(_v31_env, VELDO_RUNS_ROOT=_v31_os.path.join(_v31_tmp, 'elsewhere'))),
                          'vanished-cwd': _v31_sp.run([__import__('sys').executable, '-B', '-c',
                              "import os, tempfile; d = tempfile.mkdtemp(dir=" + repr(_v31_tmp) + "); os.chdir(d); os.rmdir(d); " + _v31_default],
                              cwd=_v31_plain, capture_output=True, text=True, timeout=30,
@@ -220,6 +238,9 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_check(1, 'enrollment-read-never-fails-open',
                    _v31_stopped('env-override', 'authority_required')
                    and _v31_stopped('override-into-enrolled-from-plain', 'authority_required')
+                   and _v31_stopped('ghost-dotdot-into-enrolled', 'authority_required')
+                   and _v31_stopped('symlinked-claims-into-enrolled', 'authority_required')
+                   and _v31_stopped('empty-root-with-override', 'authority_required')
                    and _v31_stopped('vanished-cwd', 'enrollment_unanswerable')
                    and (_v31_os.geteuid() == 0 or _v31_stopped('unreadable-control', 'enrollment_unanswerable')))
         _v31_backlog_data = _v31_S.materialized_state(_v31_conn)['entities']['backlog']['data']
