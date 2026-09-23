@@ -1,0 +1,505 @@
+{
+  "stale": [
+    {
+      "operation": "upsert_entity",
+      "change": "dependency",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "authority",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "edge",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "blocker",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "absence",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "membership",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "delegation",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "key",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "upsert_entity",
+      "change": "status",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "dependency",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "authority",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "edge",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "blocker",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "absence",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "membership",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "delegation",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "key",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "retire_entity",
+      "change": "status",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "dependency",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "authority",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "edge",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "blocker",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "absence",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "membership",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "delegation",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "key",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_receipt",
+      "change": "status",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "dependency",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "authority",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "edge",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "blocker",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "absence",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "membership",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "delegation",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "key",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "reserve",
+      "change": "status",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "dependency",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "authority",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "edge",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "blocker",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "absence",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "membership",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "delegation",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "key",
+      "refusal": "stale_input",
+      "passed": true
+    },
+    {
+      "operation": "record_effect",
+      "change": "status",
+      "refusal": "stale_input",
+      "passed": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "specification.md",
+      "accepted_digest": "sha256:77358ec851ed4a22ec119d2fd52bb25668b8c2d919517e3deba2e4202b8f8bec",
+      "observed_digest": "sha256:77358ec851ed4a22ec119d2fd52bb25668b8c2d919517e3deba2e4202b8f8bec",
+      "passed": true
+    },
+    {
+      "path": "plan.md",
+      "accepted_digest": "sha256:88139b98b51b6d75b922400ca1685d34005a55b5bacf1cc987112528df733f04",
+      "observed_digest": "sha256:88139b98b51b6d75b922400ca1685d34005a55b5bacf1cc987112528df733f04",
+      "passed": true
+    },
+    {
+      "path": "release.md",
+      "accepted_digest": "sha256:d15361e59a4f6beec7ff91b52be2d7b9d38f135d4032f1a5e9d7f325b1b1b738",
+      "observed_digest": "sha256:d15361e59a4f6beec7ff91b52be2d7b9d38f135d4032f1a5e9d7f325b1b1b738",
+      "passed": true
+    },
+    {
+      "path": "decision.md",
+      "accepted_digest": "sha256:0488779cd2495114702c2aba1e615dae014ccc33618061b2b876eef3941c8e57",
+      "observed_digest": "sha256:0488779cd2495114702c2aba1e615dae014ccc33618061b2b876eef3941c8e57",
+      "passed": true
+    },
+    {
+      "path": "floor.md",
+      "accepted_digest": "sha256:173ce55ac1af2f93b66457a9e883f2de44d6cebfe6ad338c0a3d3ce64abde10c",
+      "observed_digest": "sha256:173ce55ac1af2f93b66457a9e883f2de44d6cebfe6ad338c0a3d3ce64abde10c",
+      "passed": true
+    },
+    {
+      "path": "policy.md",
+      "accepted_digest": "sha256:0ac68cbcb5f7fe15be9ee3c31e8f679b5c8318f333c36a006defdabae4a5e26d",
+      "observed_digest": "sha256:0ac68cbcb5f7fe15be9ee3c31e8f679b5c8318f333c36a006defdabae4a5e26d",
+      "passed": true
+    },
+    {
+      "path": "graph.md",
+      "accepted_digest": "sha256:6309e6f253b75bcc5ef19bc85212ab59b86c9281589d4020f2671078c548ec4f",
+      "observed_digest": "sha256:6309e6f253b75bcc5ef19bc85212ab59b86c9281589d4020f2671078c548ec4f",
+      "passed": true
+    },
+    {
+      "path": "roster.md",
+      "accepted_digest": "sha256:b4092a3d4b7525873c1713444d2dcf9d189d76f4ccd15560c9257b2a9a00ff8b",
+      "observed_digest": "sha256:b4092a3d4b7525873c1713444d2dcf9d189d76f4ccd15560c9257b2a9a00ff8b",
+      "passed": true
+    },
+    {
+      "path": "admission.md",
+      "accepted_digest": "sha256:d847e26d62cf713a5ebeca43b7cb248f8adfe62d6b6c4b27bdbed99f4c080b96",
+      "observed_digest": "sha256:d847e26d62cf713a5ebeca43b7cb248f8adfe62d6b6c4b27bdbed99f4c080b96",
+      "passed": true
+    },
+    {
+      "path": "receipt.md",
+      "accepted_digest": "sha256:1bcb370ad50a435740704f61a207e80bc6ee96fc9c1a89cd672b22d9613b59dc",
+      "observed_digest": "sha256:1bcb370ad50a435740704f61a207e80bc6ee96fc9c1a89cd672b22d9613b59dc",
+      "passed": true
+    }
+  ],
+  "projections": [
+    {
+      "path": "admission.md",
+      "expected_digest": "sha256:d847e26d62cf713a5ebeca43b7cb248f8adfe62d6b6c4b27bdbed99f4c080b96",
+      "observed_digest": "sha256:d847e26d62cf713a5ebeca43b7cb248f8adfe62d6b6c4b27bdbed99f4c080b96"
+    },
+    {
+      "path": "decision.md",
+      "expected_digest": "sha256:0488779cd2495114702c2aba1e615dae014ccc33618061b2b876eef3941c8e57",
+      "observed_digest": "sha256:0488779cd2495114702c2aba1e615dae014ccc33618061b2b876eef3941c8e57"
+    },
+    {
+      "path": "floor.md",
+      "expected_digest": "sha256:173ce55ac1af2f93b66457a9e883f2de44d6cebfe6ad338c0a3d3ce64abde10c",
+      "observed_digest": "sha256:173ce55ac1af2f93b66457a9e883f2de44d6cebfe6ad338c0a3d3ce64abde10c"
+    },
+    {
+      "path": "graph.md",
+      "expected_digest": "sha256:6309e6f253b75bcc5ef19bc85212ab59b86c9281589d4020f2671078c548ec4f",
+      "observed_digest": "sha256:6309e6f253b75bcc5ef19bc85212ab59b86c9281589d4020f2671078c548ec4f"
+    },
+    {
+      "path": "plan.md",
+      "expected_digest": "sha256:88139b98b51b6d75b922400ca1685d34005a55b5bacf1cc987112528df733f04",
+      "observed_digest": "sha256:88139b98b51b6d75b922400ca1685d34005a55b5bacf1cc987112528df733f04"
+    },
+    {
+      "path": "policy.md",
+      "expected_digest": "sha256:0ac68cbcb5f7fe15be9ee3c31e8f679b5c8318f333c36a006defdabae4a5e26d",
+      "observed_digest": "sha256:0ac68cbcb5f7fe15be9ee3c31e8f679b5c8318f333c36a006defdabae4a5e26d"
+    },
+    {
+      "path": "receipt.md",
+      "expected_digest": "sha256:1bcb370ad50a435740704f61a207e80bc6ee96fc9c1a89cd672b22d9613b59dc",
+      "observed_digest": "sha256:1bcb370ad50a435740704f61a207e80bc6ee96fc9c1a89cd672b22d9613b59dc"
+    },
+    {
+      "path": "release.md",
+      "expected_digest": "sha256:d15361e59a4f6beec7ff91b52be2d7b9d38f135d4032f1a5e9d7f325b1b1b738",
+      "observed_digest": "sha256:d15361e59a4f6beec7ff91b52be2d7b9d38f135d4032f1a5e9d7f325b1b1b738"
+    },
+    {
+      "path": "roster.md",
+      "expected_digest": "sha256:b4092a3d4b7525873c1713444d2dcf9d189d76f4ccd15560c9257b2a9a00ff8b",
+      "observed_digest": "sha256:b4092a3d4b7525873c1713444d2dcf9d189d76f4ccd15560c9257b2a9a00ff8b"
+    },
+    {
+      "path": "specification.md",
+      "expected_digest": "sha256:77358ec851ed4a22ec119d2fd52bb25668b8c2d919517e3deba2e4202b8f8bec",
+      "observed_digest": "sha256:77358ec851ed4a22ec119d2fd52bb25668b8c2d919517e3deba2e4202b8f8bec"
+    },
+    {
+      "path": "status.json",
+      "expected_digest": "sha256:7b5b790a9fefe7383e48dcce3e09198e00f59c0e42bb09b57d28b17982513c76",
+      "observed_digest": "sha256:7b5b790a9fefe7383e48dcce3e09198e00f59c0e42bb09b57d28b17982513c76"
+    }
+  ],
+  "elapsed_seconds": 6.437505890149623,
+  "rows": [
+    [
+      "snapshots/registration-inventory",
+      true
+    ],
+    [
+      "snapshots/installed-assets",
+      true
+    ],
+    [
+      "snapshots/control/upsert_entity",
+      true
+    ],
+    [
+      "snapshots/control/retire_entity",
+      true
+    ],
+    [
+      "snapshots/control/record_receipt",
+      true
+    ],
+    [
+      "snapshots/control/reserve",
+      true
+    ],
+    [
+      "snapshots/control/record_effect",
+      true
+    ],
+    [
+      "snapshots/stale-input",
+      true
+    ],
+    [
+      "snapshots/refusal/unregistered",
+      true
+    ],
+    [
+      "snapshots/refusal/missing-snapshot",
+      true
+    ],
+    [
+      "snapshots/refusal-observations",
+      true
+    ],
+    [
+      "snapshots/signed-watermark",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/specification.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/plan.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/release.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/decision.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/floor.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/policy.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/graph.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/roster.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/admission.md",
+      true
+    ],
+    [
+      "snapshots/missing-artifact/receipt.md",
+      true
+    ],
+    [
+      "snapshots/accepted-bytes",
+      true
+    ],
+    [
+      "snapshots/coordinates",
+      true
+    ],
+    [
+      "snapshots/materialized-revision",
+      true
+    ],
+    [
+      "snapshots/tampered-projection",
+      true
+    ],
+    [
+      "snapshots/incomplete-projection",
+      true
+    ]
+  ],
+  "verification": "Diagnostic observations; only bash scripts/verify.sh verifies the change."
+}

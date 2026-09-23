@@ -1,0 +1,180 @@
+{
+  "status": "passed",
+  "registered": 6,
+  "executed": 6,
+  "rejected": 6,
+  "worker_invocations": 10,
+  "surviving_workers": 0,
+  "records": [
+    {
+      "mutation": "snapshot-project-only",
+      "rows": [
+        "snapshots/stale-input"
+      ],
+      "baseline": {
+        "snapshots/stale-input": [
+          true
+        ]
+      },
+      "noop": {
+        "snapshots/stale-input": [
+          true
+        ]
+      },
+      "mutant": {
+        "snapshots/stale-input": [
+          false
+        ]
+      },
+      "red_rows": [
+        "snapshots/stale-input"
+      ],
+      "replacement_count": 1,
+      "old_digest": "532e73c7fbcd5aaf6db060a4c4705ac9778e5ac49753965225ca8ba81055ccd7",
+      "new_digest": "80ea62a65ec161971bb6a30f3668ebed264333b84c154951fd780dc2191c8098",
+      "elapsed_seconds": 11.050824044039473
+    },
+    {
+      "mutation": "snapshot-ignore-collections",
+      "rows": [
+        "snapshots/stale-input"
+      ],
+      "baseline": {
+        "snapshots/stale-input": [
+          true
+        ]
+      },
+      "noop": {
+        "snapshots/stale-input": [
+          true
+        ]
+      },
+      "mutant": {
+        "snapshots/stale-input": [
+          false
+        ]
+      },
+      "red_rows": [
+        "snapshots/stale-input"
+      ],
+      "replacement_count": 1,
+      "old_digest": "532e73c7fbcd5aaf6db060a4c4705ac9778e5ac49753965225ca8ba81055ccd7",
+      "new_digest": "5bec2f00c903b21c9a46131cebfcfa4f2e5db406ded1f11cbac124df02edfa75",
+      "elapsed_seconds": 10.809424060862511
+    },
+    {
+      "mutation": "snapshot-checkout-bytes",
+      "rows": [
+        "snapshots/accepted-bytes"
+      ],
+      "baseline": {
+        "snapshots/accepted-bytes": [
+          true
+        ]
+      },
+      "noop": {
+        "snapshots/accepted-bytes": [
+          true
+        ]
+      },
+      "mutant": {
+        "snapshots/accepted-bytes": [
+          false
+        ]
+      },
+      "red_rows": [
+        "snapshots/accepted-bytes",
+        "snapshots/materialized-revision"
+      ],
+      "replacement_count": 1,
+      "old_digest": "8fb8834b8cef2ed616473863afa19857c88e1413defcd46cab9ea23db70112ec",
+      "new_digest": "2d02039787d611bf1ae394e6c76ee6e9eb9ab04309dd8956eff827dc2b74bea8",
+      "elapsed_seconds": 10.6884533718694
+    },
+    {
+      "mutation": "snapshot-head-bytes",
+      "rows": [
+        "snapshots/accepted-bytes"
+      ],
+      "baseline": {
+        "snapshots/accepted-bytes": [
+          true
+        ]
+      },
+      "noop": {
+        "snapshots/accepted-bytes": [
+          true
+        ]
+      },
+      "mutant": {
+        "snapshots/accepted-bytes": [
+          false
+        ]
+      },
+      "red_rows": [
+        "snapshots/accepted-bytes",
+        "snapshots/materialized-revision"
+      ],
+      "replacement_count": 1,
+      "old_digest": "8fb8834b8cef2ed616473863afa19857c88e1413defcd46cab9ea23db70112ec",
+      "new_digest": "244b4b3118c5a96485ff708b90619f67c16206d9768d57089ede0d144bdbce7c",
+      "elapsed_seconds": 11.452320758020505
+    },
+    {
+      "mutation": "snapshot-working-status",
+      "rows": [
+        "snapshots/materialized-revision"
+      ],
+      "baseline": {
+        "snapshots/materialized-revision": [
+          true
+        ]
+      },
+      "noop": {
+        "snapshots/materialized-revision": [
+          true
+        ]
+      },
+      "mutant": {
+        "snapshots/materialized-revision": [
+          false
+        ]
+      },
+      "red_rows": [
+        "snapshots/materialized-revision"
+      ],
+      "replacement_count": 1,
+      "old_digest": "8fb8834b8cef2ed616473863afa19857c88e1413defcd46cab9ea23db70112ec",
+      "new_digest": "c67cdee591a0a01c5ea0080e6a5289d595b538af855b49700b71e7077b4729ce",
+      "elapsed_seconds": 10.728308748919517
+    },
+    {
+      "mutation": "snapshot-wrong-watermark",
+      "rows": [
+        "snapshots/materialized-revision"
+      ],
+      "baseline": {
+        "snapshots/materialized-revision": [
+          true
+        ]
+      },
+      "noop": {
+        "snapshots/materialized-revision": [
+          true
+        ]
+      },
+      "mutant": {
+        "snapshots/materialized-revision": [
+          false
+        ]
+      },
+      "red_rows": [
+        "snapshots/materialized-revision"
+      ],
+      "replacement_count": 1,
+      "old_digest": "8fb8834b8cef2ed616473863afa19857c88e1413defcd46cab9ea23db70112ec",
+      "new_digest": "e46f36017709941e7b7a51ef8686349a72087c3fd88553ad98f636d63320d2fd",
+      "elapsed_seconds": 10.728154234122485
+    }
+  ]
+}

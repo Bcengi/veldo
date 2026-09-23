@@ -1,0 +1,10 @@
+{
+  "method": "Registered suite execution plus only the added mutation cases using the unchanged gate scheduler, including frozen-copy setup, baseline and no-op controls. Diagnostic workload measurement, not a reduced gate verification.",
+  "suite_seconds": 6.437505890149623,
+  "added_mutation_wall_seconds": 22.913224708056077,
+  "combined_added_workload_seconds": 29.3507305982057,
+  "limit_seconds": 60,
+  "mutations_registered": 6,
+  "worker_invocations": 10,
+  "parallel_slots": 8
+}
