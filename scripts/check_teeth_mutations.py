@@ -441,7 +441,7 @@ def cases():
     graph('graph-runner-tuple-as-plain', 'control_graph_langgraph.py',
           '    if kind is list:\n', '    if isinstance(value, (list, tuple)):\n', 'runtime/plain-data')
     graph('graph-child-inherits-working-directory', 'control_graph.py',
-          'cwd=empty,', 'cwd=None,', 'authority/no-direct-write')
+          'cwd=str(empty),', 'cwd=None,', 'authority/no-direct-write')
     graph('graph-child-inherits-store-descriptor', 'control_graph.py',
           'close_fds=True,', 'close_fds=False,', 'authority/no-direct-write')
     graph('graph-runner-accepts-untyped-assertion', 'control_graph_langgraph.py',
@@ -491,6 +491,18 @@ def cases():
     graph('graph-node-notes-ignored', 'control_graph_langgraph.py',
           "            update = dict(base, notes=dict(state['notes'], **(out.get('notes') or {})),",
           "            update = dict(base, notes=dict(state['notes']),", 'authority/proc-limit')
+    # Second review (2026-09-23): links the adapter did not make, answer encodings, request
+    # paths and sizes, process groups, the runtime's pyvenv.cfg.
+    graph('graph-stage-links-unchecked', 'control_graph.py',
+          "    runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')\n",
+          "    runners, work = root / 'runners', root / 'work'\n", 'authority/stage-links')
+    graph('graph-stage-link-checks-off', 'control_graph.py',
+          "    if path.is_symlink():\n"
+          "        raise Refused('runtime_unavailable', 'the stage ' + name + ' is a link the adapter did not make')\n"
+          "    path.mkdir(mode=0o700, exist_ok=True)\n"
+          "    if path.is_symlink() or not path.is_dir() or path.resolve() != path:\n",
+          "    path.mkdir(mode=0o700, exist_ok=True)\n"
+          "    if False:\n", 'authority/stage-links')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])

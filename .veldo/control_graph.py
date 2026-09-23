@@ -14,11 +14,13 @@ The runtime is {'python': interpreter, 'runner': runner source file, 'stage': di
 Adapter.installed() resolves the locked LangGraph runtime: the virtual environment at
 <account home>/.local/share/veldo/langgraph/<lock digest>/ (control_graph_lock.py; the home comes
 from the password database, never $HOME), the sibling runner source control_graph_langgraph.py,
-and that runtime directory as the stage. Before each launch the runner is copied, content-addressed,
-to <stage>/veldo/runners/<sha256>.py and run from there in a fresh working directory under
-<stage>/veldo/work/, so the child's argv[0], __file__, script directory, working directory and any
-Git discovery from them lead to no repository and no store. A stage inside a Git repository is
-refused. What the adapter hands the child leads nowhere; a hostile node reading its parent
+and the per-account stage <account home>/.local/state/veldo/graph-stage/, separate from the
+runtime. Before each launch the runner is copied, content-addressed, to <stage>/runners/<sha256>.py
+and run from there in a fresh working directory under <stage>/work/, so the child's argv[0],
+__file__, script directory, working directory and any Git discovery from them lead to no
+repository and no store. The adapter follows no link it did not make: a link at runners/, work/
+or the staged runner, a stage inside a Git repository, or a working directory that does not
+resolve outside every repository immediately before launch, is refused as runtime_unavailable. What the adapter hands the child leads nowhere; a hostile node reading its parent
 through /proc as the same account is a stated limit, confined in Release 2. None,
 or an interpreter that is not present, is the named refusal runtime_unavailable, whose detail
 names the install command. Release 1 is nonpersistent, so a suspended cycle's resume data is
@@ -34,6 +36,7 @@ import os
 import math
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import tempfile
 
@@ -84,6 +87,9 @@ MAX_ANSWER_BYTES = 1 << 20
 HERE = Path(__file__).resolve().parent
 INSTALL_COMMAND = 'python3 .veldo/control_graph_install.py'
 RUNNER = 'control_graph_langgraph.py'
+# Staged runner copies and child working directories: per account, separate from the runtime,
+# which holds only what the lock installed.
+STAGE_RELATIVE = Path('.local/state/veldo/graph-stage')
 
 
 NO_RUNTIME = {'name': 'none', 'version': ''}
@@ -113,7 +119,8 @@ def resolve_runtime(home=None):
     """The locked runtime for this account, or None when it is not installed."""
     lock = _lock()
     directory = lock.runtime_directory(home)
-    runtime = {'python': str(directory / 'bin' / 'python'), 'runner': str(HERE / RUNNER), 'stage': str(directory)}
+    runtime = {'python': str(directory / 'bin' / 'python'), 'runner': str(HERE / RUNNER),
+               'stage': str(lock.account_home() / STAGE_RELATIVE if home is None else Path(home) / STAGE_RELATIVE)}
     return runtime if available(runtime) else None
 
 
@@ -351,21 +358,58 @@ def inside_repository(path):
                and (parent / 'objects').is_dir() for parent in (path, *path.parents))
 
 
+def _unlinked(root, name):
+    """<root>/<name> as a real directory the adapter made or accepted: never a link, and resolving
+    exactly under the resolved stage root."""
+    path = root / name
+    if path.is_symlink():
+        raise Refused('runtime_unavailable', 'the stage ' + name + ' is a link the adapter did not make')
+    path.mkdir(mode=0o700, exist_ok=True)
+    if path.is_symlink() or not path.is_dir() or path.resolve() != path:
+        raise Refused('runtime_unavailable', 'the stage ' + name + ' does not resolve under the stage root')
+    return path
+
+
 def stage(runtime):
-    """The runner, copied content-addressed into the stage, outside every repository."""
-    base = Path(runtime['stage']) / 'veldo'
-    if inside_repository(runtime['stage']):
+    """The runner, copied content-addressed into the stage, outside every repository. The stage is a
+    per-account directory separate from the runtime; the adapter follows no link it did not make."""
+    root = Path(runtime['stage']).resolve()
+    if inside_repository(root):
         raise Refused('runtime_unavailable', 'the runtime stage lies inside a repository')
+    root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')
     source = Path(runtime['runner']).read_bytes()
-    target = base / 'runners' / (hashlib.sha256(source).hexdigest() + '.py')
+    target = runners / (hashlib.sha256(source).hexdigest() + '.py')
+    if target.is_symlink():
+        raise Refused('runtime_unavailable', 'the staged runner is a link the adapter did not make')
     if not target.is_file() or target.read_bytes() != source:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        descriptor, temporary = tempfile.mkstemp(prefix='.staging-', dir=target.parent)
+        temporary = runners / ('.staging-' + os.urandom(8).hex())
+        descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
         with os.fdopen(descriptor, 'wb') as out:
             out.write(source)
         os.replace(temporary, target)
-    (base / 'work').mkdir(parents=True, exist_ok=True)
-    return target, base / 'work'
+    if target.is_symlink() or target.resolve().parent != runners:
+        raise Refused('runtime_unavailable', 'the staged runner does not resolve under the stage root')
+    return target, work
+
+
+def _working_directory(work):
+    """A fresh working directory for one child, resolved and checked immediately before launch."""
+    path = Path(tempfile.mkdtemp(prefix='veldo-graph-', dir=work))
+    resolved = path.resolve()
+    if resolved.parent != work.resolve() or inside_repository(resolved):
+        raise Refused('runtime_unavailable', 'the child working directory does not resolve outside every repository')
+    return resolved
+
+
+def _remove(path):
+    try:
+        if path.is_symlink():
+            path.unlink()
+        else:
+            shutil.rmtree(path)
+    except OSError:
+        pass
 
 
 def exchange(runtime, sent, timeout=120):
@@ -374,15 +418,18 @@ def exchange(runtime, sent, timeout=120):
         raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
                       + INSTALL_COMMAND)
     staged, work = stage(runtime)
-    with tempfile.TemporaryDirectory(prefix='veldo-graph-', dir=work) as empty:
+    empty = _working_directory(work)
+    try:
         try:
             proc = subprocess.run([runtime['python'], '-I', '-B', str(staged)],
-                                  input=canonical(sent), capture_output=True, cwd=empty,
+                                  input=canonical(sent), capture_output=True, cwd=str(empty),
                                   env=dict(ENVIRONMENT), close_fds=True, timeout=timeout)
         except subprocess.TimeoutExpired as error:
             raise Refused('unknown_outcome', 'graph runtime did not answer within its deadline') from error
         except OSError as error:
             raise Refused('runtime_unavailable', 'graph runtime could not be launched') from error
+    finally:
+        _remove(empty)
     if proc.returncode:
         raise Refused('unknown_outcome', 'graph runtime exited ' + str(proc.returncode) + ' without an answer')
     return response(sent, proc.stdout)
@@ -392,10 +439,14 @@ class Adapter:
     """Lifecycle operations over one domain and repository, with counts and observations."""
 
     @classmethod
-    def installed(cls, domain_uuid, repository_uuid, home=None, timeout=120):
+    def installed(cls, domain_uuid, repository_uuid, home=None, timeout=120, stage=None):
         """An adapter over the locked runtime this account has installed (None if absent), whose
-        answers must be runtime evidence from that locked LangGraph."""
-        return cls(resolve_runtime(home), domain_uuid, repository_uuid, timeout, evidence=runtime_evidence())
+        answers must be runtime evidence from that locked LangGraph. `stage` replaces the account
+        stage directory (the suite stages into a temporary one)."""
+        runtime = resolve_runtime(home)
+        if runtime is not None and stage is not None:
+            runtime = dict(runtime, stage=str(stage))
+        return cls(runtime, domain_uuid, repository_uuid, timeout, evidence=runtime_evidence())
 
     def __init__(self, runtime, domain_uuid, repository_uuid, timeout=120, evidence=None):
         self.runtime, self.timeout, self.evidence = runtime, timeout, evidence
