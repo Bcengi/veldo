@@ -1,0 +1,5 @@
+--- a/.veldo/control_document.py
++++ b/.veldo/control_document.py
+@@ -75 +75 @@
+-        problems = EN.verify_binding(root, binding, verify, host_identity, domain_uuid=domain_uuid)
++        problems = EN.verify_binding(root, binding, lambda message, signature: True, host_identity, domain_uuid=domain_uuid)

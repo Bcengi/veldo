@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -425 +425 @@
+-                hit = value in kinds if selector == "kind" else eid.startswith(value)
++                hit = selector == "kind" and value == new["kind"]

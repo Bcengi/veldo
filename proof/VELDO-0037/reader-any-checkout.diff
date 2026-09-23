@@ -1,5 +1,5 @@
 --- a/.veldo/control_document.py
 +++ b/.veldo/control_document.py
-@@ -250 +250 @@
--    if not recorded or AL.checkout_identity(os.path.realpath(root)) != recorded:
+@@ -286 +286 @@
+-    if enrolled_repository(root, store_file(conn), domain_uuid, verify, host_identity) != repository:
 +    if False:

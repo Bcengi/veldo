@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -619 +619 @@
+-        commits = accepted_commits(conn, self.domain_uuid, repository)
++        commits = [accepted['commit']]

@@ -1,0 +1,489 @@
+diff -ru -x __pycache__ orig/review/h.py work/review/h.py
+--- orig/review/h.py
++++ work/review/h.py
+@@ -1,11 +1,37 @@
+ import importlib.util, subprocess, tempfile, os, sys, json
+ from pathlib import Path
+-M = Path('/tmp/rv0037/.veldo')
++M = Path('/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo')
+ def load(name, path):
+     s = importlib.util.spec_from_file_location(name, path); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
+ st = load('rv_store', M / 'control_store.py')
+ al = load('rv_alias', M / 'control_alias.py')
+ doc = load('rv_doc', M / 'control_document.py')
++
++# ADAPTED (2nd review): a checkout is the repository its VELDO-0029 enrollment binding names, so a
++# publisher or reader needs an enrolled checkout and the enrollment verifier; enrollment is signed
++# with the harness's own key under the veldo-enrollment namespace.
++en = load('rv_enrollment', M / 'control_enrollment.py')
++rs = load('rv_readset_h', M / 'control_readset.py')
++def bindings(root):
++    allowed = Path(root) / 'allowed-enrollers'
++    allowed.write_text('enroller ' + (Path(root) / 'key.pub').read_text())
++    def verify(message, signature):
++        (Path(root) / 'binding.sig').write_text(signature)
++        return subprocess.run(['ssh-keygen', '-Y', 'verify', '-f', str(allowed), '-I', 'enroller', '-n', 'veldo-enrollment',
++                               '-s', str(Path(root) / 'binding.sig')], input=message, capture_output=True).returncode == 0
++    return dict(verify=verify, host_identity='host')
++def enroll(root, checkout, repository, db):
++    def sign(body):
++        return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(Path(root) / 'key'), '-n', 'veldo-enrollment'], input=body,
++                              capture_output=True, check=True).stdout.decode()
++    return en.enroll(checkout, 'domain', 'store', str(db), 'host', 1, sign, 'op', 'now', repository_uuid=repository)
++_accepting = {}
++def accept_sanctioned(conn, signing, repository, origin, rid=None, commit=None):
++    # ADAPTED (2nd review): accepted revisions are written only by accept_revision now.
++    service = _accepting.get(id(conn)) or _accepting.setdefault(id(conn), rs.attach_revisions(st, conn, 'domain', {repository: str(origin)}))
++    service.paths[repository] = str(origin)   # one accepting service per connection; repositories added as seen
++    head = commit or subprocess.run(['git', '-C', str(origin), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout.strip()
++    return service.accept(rid or 'revision/' + repository, repository, head, 'op', **signing)
+ def digest(b):
+     return al.SN.digest(b)
+ def setup(tmp=None):
+@@ -16,16 +42,36 @@
+         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', 'veldo-alias'], input=body,
+                               capture_output=True, check=True).stdout.decode()
+     signing = dict(signer='allocation-service', sign=sign, authority_generation=1)
++    # ADAPTED: attach maps the repository to an accepted Git repository, enabling names an accepted
++    # revision, and the publisher root is a clone of that repository.
++    origin = make_repository(root / 'accepted-origin', b'repository\n')
++    (root / 'repos.json').write_text(json.dumps({'repository': str(origin)}))
+     conn = st.open_store(root / 'control.sqlite3')
+-    svc = al.attach(st, conn, 'domain', ['repository'])
+-    pub_root = root / 'checkout'; pub_root.mkdir()
+-    return root, conn, svc, doc.Publisher(svc, pub_root), pub_root, signing
++    svc = al.attach(st, conn, 'domain', {'repository': str(origin)})
++    accept_sanctioned(conn, signing, 'repository', origin)  # ADAPTED (2nd review)
++    pub_root = root / 'checkout'
++    subprocess.run(['git', 'clone', '-q', str(origin), str(pub_root)], check=True, capture_output=True)
++    enroll(root, pub_root, 'repository', root / 'control.sqlite3')  # ADAPTED (2nd review)
++    return root, conn, svc, doc.Publisher(svc, pub_root, **bindings(root)), pub_root, signing
++def make_repository(path, readme):
++    path.mkdir(); (path / 'README.md').write_bytes(readme)
++    g = lambda *a: subprocess.run(['git', '-C', str(path), *a], check=True, capture_output=True)
++    g('init', '-q'); g('add', '.'); g('-c', 'user.name=x', '-c', 'user.email=x@x', 'commit', '-qm', 'accepted')
++    return path
++def accept_generic(conn, signing, repository, origin):  # ADAPTED (2nd review): the old generic write, now refused
++    head = subprocess.run(['git', '-C', str(origin), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout.strip()
++    st.execute(conn, {'command_id': 'accept-' + repository, 'principal': 'op', 'operation': 'upsert_entity',
++        'nonce': 'accept-%s/n' % repository, 'artifact_digests': [], 'expected_versions': {'revision/' + repository: 0},
++        'parameters': {'entity_id': 'revision/' + repository, 'kind': 'accepted_revision', 'data': {
++            'domain_uuid': 'domain', 'repository_uuid': repository, 'commit': head, 'documents': {}, 'statuses': {}}}}, **signing)
+ def enable(svc, signing, kind, prefix, template, first=1, rid=None):
+     return svc.enable_kind({'request_id': rid or 'enable-' + kind, 'principal': 'op', 'repository_uuid': 'repository',
+-        'kind': kind, 'prefix': prefix, 'width': 4, 'path_template': template, 'first': first}, **signing)
++        'kind': kind, 'prefix': prefix, 'width': 4, 'path_template': template, 'first': first,
++        'revision_id': 'revision/repository'}, **signing)
+ def req(rid, sid, role, slug, body, rev='r1'):
+     return {'request_id': rid, 'principal': 'owner', 'repository_uuid': 'repository', 'workspace': '/w',
+             'source': {'system': 'telegram', 'id': sid, 'revision': rev}, 'role': role, 'slug': slug, 'content': body}
+ def attempt(f):
+     try: return f(), None
+-    except (st.StoreRefused, al.SN.Refused) as e: return None, e
++    except (st.StoreRefused, al.SN.Refused, doc.SN.Refused) as e: return None, e  # ADAPTED: control_document loads its own snapshot module
++accept = accept_sanctioned  # ADAPTED (2nd review)
+diff -ru -x __pycache__ orig/review/r1_symlink_parent.py work/review/r1_symlink_parent.py
+--- orig/review/r1_symlink_parent.py
++++ work/review/r1_symlink_parent.py
+@@ -1,5 +1,5 @@
+ # Publication follows a symlinked parent directory and writes outside the checkout root.
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ outside = root / 'outside'; outside.mkdir()
+ (co / 'specs').symlink_to(outside)          # checkout's specs/ is a symlink out of the tree
+@@ -8,7 +8,7 @@
+ res, err = attempt(lambda: pub.publish('repository', r['alias'], 1, 'p', **sg))
+ written = outside / 'VELDO-0001-x.md'
+ print('publish:', 'ok' if res else err.code, '| file outside root exists:', written.exists())
+-rd, rerr = attempt(lambda: doc.read_published(st, conn, 'repository', 'VELDO-0001', co))
++rd, rerr = attempt(lambda: doc.read_published(st, conn, 'repository', 'VELDO-0001', co, domain_uuid='domain', **bindings(root)))  # ADAPTED (2nd review)
+ print('reader:', rd and rd['version'], rerr and rerr.code)
+ if res and written.exists():
+     print('BUG: publication recorded for %s and bytes written to %s, outside checkout root %s' % (r['alias'], written, co))
+diff -ru -x __pycache__ orig/review/r2_path_collision.py work/review/r2_path_collision.py
+--- orig/review/r2_path_collision.py
++++ work/review/r2_path_collision.py
+@@ -1,14 +1,14 @@
+ # Two kinds whose templates produce the same declared path: two aliases, one file.
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ _, e1 = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'docs/{number}.md'))
+ _, e2 = attempt(lambda: enable(svc, sg, 'plan', 'PLAN', 'docs/{number}.md'))
+ print('enable refusals:', e1 and e1.code, e2 and e2.code)
+ a = svc.allocate(req('a', 'm1', 'specification', None, b'spec bytes\n'), **sg)
+-b = svc.allocate(req('b', 'm2', 'plan', None, b'plan bytes\n'), **sg)
++b, eb0 = attempt(lambda: svc.allocate(req('b', 'm2', 'plan', None, b'plan bytes\n'), **sg)); b = b or {'alias': None, 'path': None}  # ADAPTED
+ print('allocated', a['alias'], a['path'], '|', b['alias'], b['path'])
+ pa, ea = attempt(lambda: pub.publish('repository', a['alias'], 1, 'p', **sg))
+-pb, eb = attempt(lambda: pub.publish('repository', b['alias'], 1, 'p', **sg))
++pb, eb = attempt(lambda: pub.publish('repository', b['alias'], 1, 'p', **sg)) if b['alias'] else (None, eb0)  # ADAPTED
+ print('publish A:', 'ok' if pa else ea.code, '| publish B:', 'ok' if pb else eb.code, '| pending:', svc.pending())
+ if a['path'] == b['path'] and a['alias'] != b['alias']:
+     print('BUG: accepted aliases %s and %s share declared path %s; %s can never be published (%s)'
+diff -ru -x __pycache__ orig/review/r3_first_below_history.py work/review/r3_first_below_history.py
+--- orig/review/r3_first_below_history.py
++++ work/review/r3_first_below_history.py
+@@ -1,6 +1,6 @@
+ # enable_kind takes the caller's `first` on trust: nothing ties it to the accepted tree, so an
+ # alias that already exists in the accepted commit is issued again.
+-import sys, subprocess; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, subprocess; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ repo = root / 'origin'; repo.mkdir()
+ g = lambda *a: subprocess.run(['git', '-C', str(repo), *a], check=True, capture_output=True, text=True).stdout.strip()
+@@ -9,6 +9,12 @@
+ commit = g('rev-parse', 'HEAD')
+ floor = al.accepted_maximum(repo, commit, {'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md'})
+ _, err = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=1))
++# ADAPTED: the accepted revision must name the reviewer's history commit, and a refused first=1 is
++# followed by an enable that lets the transition derive the first number.
++conn.close(); conn = st.open_store(root / 'r3.sqlite3'); svc = al.attach(st, conn, 'domain', {'repository': str(repo)})
++accept(conn, sg, 'repository', repo)
++_, err = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=1))
++if err: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None, rid='enable-derived')
+ r = svc.allocate(req('a', 'm1', 'specification', 'second', b'new document\n'), **sg)
+ print('accepted maximum:', floor, '| enable refusal:', err and err.code, '| allocated:', r['alias'])
+ if r['alias'] == 'VELDO-%04d' % floor:
+diff -ru -x __pycache__ orig/review/r4_record_without_bytes.py work/review/r4_record_without_bytes.py
+--- orig/review/r4_record_without_bytes.py
++++ work/review/r4_record_without_bytes.py
+@@ -1,6 +1,6 @@
+ # The store records "published" on the caller's word: record_publication checks only that the
+ # supplied digest equals the accepted digest, which every caller can read from the store.
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+ r = svc.allocate(req('a', 'm1', 'specification', 'x', b'accepted\n'), **sg)
+diff -ru -x __pycache__ orig/review/r5_exact_bytes.py work/review/r5_exact_bytes.py
+--- orig/review/r5_exact_bytes.py
++++ work/review/r5_exact_bytes.py
+@@ -1,5 +1,5 @@
+ # Exactness over awkward bytes, including permissions under a restrictive umask.
+-import sys, os, stat; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, os, stat; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+ cases = [b'\xef\xbb\xbfbom\r\n', b'cr only\rline\r', b'nul\x00inside\n', ' ls ps'.encode(), '\U0001F600 astral'.encode(),
+@@ -11,7 +11,7 @@
+     p, pe = attempt(lambda: pub.publish('repository', r['alias'], 1, 'p', **sg))
+     if pe: print(i, 'publish refused', pe.code); continue
+     f = co / r['path']; got = f.read_bytes(); mode = oct(stat.S_IMODE(f.stat().st_mode))
+-    rd = doc.read_published(st, conn, 'repository', r['alias'], co)['body']
++    rd = doc.read_published(st, conn, 'repository', r['alias'], co, domain_uuid='domain', **bindings(root))['body']  # ADAPTED (2nd review)
+     ok = got == body and rd == body
+     print(i, repr(body[:14]), 'exact' if ok else 'DIFFERS', mode)
+     if not ok: print('BUG: published bytes differ for case', i)
+diff -ru -x __pycache__ orig/review/r6_generic_upsert.py work/review/r6_generic_upsert.py
+--- orig/review/r6_generic_upsert.py
++++ work/review/r6_generic_upsert.py
+@@ -1,6 +1,6 @@
+ # The store's built-in upsert_entity/retire_entity stay registered on the allocation connection and
+ # write alias entities with no allocation rule: the counter moves backwards and accepted bytes change.
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+ for i in range(3):
+diff -ru -x __pycache__ orig/review/r7_cross_repository.py work/review/r7_cross_repository.py
+--- orig/review/r7_cross_repository.py
++++ work/review/r7_cross_repository.py
+@@ -1,14 +1,18 @@
+ # A Publisher is bound to one checkout root but not to one repository: it publishes any enrolled
+ # repository's accepted document into that root.
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, subprocess; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, _, _, co, sg = setup()
+ conn2 = st.open_store(root / 'two.sqlite3')
+-svc = al.attach(st, conn2, 'domain', ['repository', 'other'])
+-checkout_of_repository = root / 'repository-checkout'; checkout_of_repository.mkdir()
+-pub = doc.Publisher(svc, checkout_of_repository)
++origins = {r: make_repository(root / (r + '-origin'), r.encode()) for r in ('repository', 'other')}  # ADAPTED
++svc = al.attach(st, conn2, 'domain', {r: str(p) for r, p in origins.items()})
++for r, p in origins.items(): accept(conn2, sg, r, p)
++checkout_of_repository = root / 'repository-checkout'
++subprocess.run(['git', 'clone', '-q', str(origins['repository']), str(checkout_of_repository)], check=True, capture_output=True)
++enroll(root, checkout_of_repository, 'repository', root / 'two.sqlite3')  # ADAPTED (2nd review)
++pub = doc.Publisher(svc, checkout_of_repository, **bindings(root))
+ for repo in ('repository', 'other'):
+     svc.enable_kind({'request_id': 'en-' + repo, 'principal': 'op', 'repository_uuid': repo, 'kind': 'specification',
+-                     'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md', 'first': 1}, **sg)
++                     'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md', 'first': 1, 'revision_id': 'revision/' + repo}, **sg)
+ o = svc.allocate(dict(req('o', 'm1', 'specification', 'x', b'OTHER repository bytes\n'), repository_uuid='other'), **sg)
+ m = svc.allocate(req('m', 'm2', 'specification', 'x', b'this repository bytes\n'), **sg)
+ po, eo = attempt(lambda: pub.publish('other', o['alias'], 1, 'p', **sg))
+diff -ru -x __pycache__ orig/review/s1_parallel.py work/review/s1_parallel.py
+--- orig/review/s1_parallel.py
++++ work/review/s1_parallel.py
+@@ -1,15 +1,15 @@
+ # Parallel independent processes, distinct and identical sources, then reopen and allocate again.
+-import sys, subprocess, json; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, subprocess, json; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+ conn.close()
+ child = r'''
+-import sys, json; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, json; sys.path.insert(0, '<rerun>/review'); from h import *
+ from pathlib import Path
+ root = Path(sys.argv[1]); key = root / 'key'
+ def sign(b): return subprocess.run(['ssh-keygen','-Y','sign','-f',str(key),'-n','veldo-alias'],input=b,capture_output=True,check=True).stdout.decode()
+ import subprocess
+-conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', ['repository'])
++conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', json.loads((root / 'repos.json').read_text()))  # ADAPTED
+ sid = sys.argv[2]
+ r, e = attempt(lambda: svc.allocate(req('rq-' + sys.argv[3], sid, 'specification', 's' + sid, ('body ' + sid).encode()), signer='allocation-service', sign=sign, authority_generation=1))
+ print(json.dumps({'sid': sid, 'alias': r and r['alias'], 'reused': bool(r and r.get('reused')), 'err': e and e.code}))
+@@ -23,7 +23,7 @@
+ print('aliases:', len(by_alias), 'errors:', errs)
+ for a, s in by_alias.items():
+     if len(s) > 1: print('BUG: alias', a, 'given to sources', s)
+-conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', ['repository'])
++conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', json.loads((root / 'repos.json').read_text()))  # ADAPTED
+ r = svc.allocate(req('after', 'after', 'specification', 'after', b'after\n'), **sg)
+ print('after reopen:', r['alias'], '| max before:', max(by_alias))
+ if r['alias'] in by_alias: print('BUG: reused alias after restart')
+diff -ru -x __pycache__ orig/review/s2_case_prefix.py work/review/s2_case_prefix.py
+--- orig/review/s2_case_prefix.py
++++ work/review/s2_case_prefix.py
+@@ -1,13 +1,13 @@
+ # Prefixes that differ only in case are both accepted; on a case-insensitive filesystem (macOS
+ # default) their declared paths are one file. Linux cannot show the file collision itself.
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<rerun>/review'); from h import *
+ root, conn, svc, pub, co, sg = setup()
+ _, e1 = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md'))
+ _, e2 = attempt(lambda: enable(svc, sg, 'plan', 'veldo', 'specs/{alias}-{slug}.md'))
+ a = svc.allocate(req('a', 'm1', 'specification', 'x', b'A\n'), **sg)
+-b = svc.allocate(req('b', 'm2', 'plan', 'x', b'B\n'), **sg)
++b, eb = attempt(lambda: svc.allocate(req('b', 'm2', 'plan', 'x', b'B\n'), **sg)); b = b or {'path': None}  # ADAPTED
+ print(e1, e2, a['path'], b['path'])
+-if a['path'].lower() == b['path'].lower() and a['path'] != b['path']:
++if b['path'] and a['path'].lower() == b['path'].lower() and a['path'] != b['path']:  # ADAPTED: None when refused
+     print('SUSPECT: case-only-different declared paths accepted:', a['path'], b['path'])
+ _, e3 = attempt(lambda: enable(svc, sg, 'gitkind', 'GIT', '.git/{alias}-{slug}'))
+ print('template into .git accepted:', e3 is None)
+diff -ru -x __pycache__ orig/rv0037c/h2.py work/rv0037c/h2.py
+--- orig/rv0037c/h2.py
++++ work/rv0037c/h2.py
+@@ -1,11 +1,36 @@
+ import importlib.util, subprocess, tempfile, os, sys, json
+ from pathlib import Path
+-M = Path('/tmp/rv0037b/.veldo')
++M = Path('/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo')  # ADAPTED: this worktree's final modules
+ def load(name, path):
+     s = importlib.util.spec_from_file_location(name, path); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
+ st = load('rv_store', M / 'control_store.py')
+ al = load('rv_alias', M / 'control_alias.py')
+ doc = load('rv_doc', M / 'control_document.py')
++# ADAPTED (2nd review): a checkout is the repository its VELDO-0029 enrollment binding names, so a
++# publisher or reader needs an enrolled checkout and the enrollment verifier; enrollment is signed
++# with the harness's own key under the veldo-enrollment namespace.
++en = load('rv_enrollment', M / 'control_enrollment.py')
++rs = load('rv_readset_h2', M / 'control_readset.py')
++def bindings(root):
++    allowed = Path(root) / 'allowed-enrollers'
++    allowed.write_text('enroller ' + (Path(root) / 'key.pub').read_text())
++    def verify(message, signature):
++        (Path(root) / 'binding.sig').write_text(signature)
++        return subprocess.run(['ssh-keygen', '-Y', 'verify', '-f', str(allowed), '-I', 'enroller', '-n', 'veldo-enrollment',
++                               '-s', str(Path(root) / 'binding.sig')], input=message, capture_output=True).returncode == 0
++    return dict(verify=verify, host_identity='host')
++def enroll(root, checkout, repository, db):
++    def sign(body):
++        return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(Path(root) / 'key'), '-n', 'veldo-enrollment'], input=body,
++                              capture_output=True, check=True).stdout.decode()
++    return en.enroll(checkout, 'domain', 'store', str(db), 'host', 1, sign, 'op', 'now', repository_uuid=repository)
++_accepting = {}
++def accept_sanctioned(conn, signing, repository, origin, rid=None, commit=None):
++    # ADAPTED (2nd review): accepted revisions are written only by accept_revision now.
++    service = _accepting.get(id(conn)) or _accepting.setdefault(id(conn), rs.attach_revisions(st, conn, 'domain', {repository: str(origin)}))
++    service.paths[repository] = str(origin)   # one accepting service per connection; repositories added as seen
++    head = commit or subprocess.run(['git', '-C', str(origin), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout.strip()
++    return service.accept(rid or 'revision/' + repository, repository, head, 'op', **signing)
+ def git(path, *a):
+     return subprocess.run(['git', '-C', str(path), '-c', 'user.name=x', '-c', 'user.email=x@x', *a], check=True, capture_output=True, text=True).stdout.strip()
+ def make_repository(path, files=None):
+@@ -21,7 +46,7 @@
+     def sign(body):
+         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', 'veldo-alias'], input=body, capture_output=True, check=True).stdout.decode()
+     return dict(signer='allocation-service', sign=sign, authority_generation=1)
+-def accept(conn, sg, repository, origin, rid=None, commit=None):
++def accept_generic(conn, sg, repository, origin, rid=None, commit=None):  # ADAPTED (2nd review): the old generic write, now refused
+     head = commit or git(origin, 'rev-parse', 'HEAD')
+     rid = rid or 'revision/' + repository
+     ver = st.execute  # noqa
+@@ -37,7 +62,8 @@
+ def req(rid, sid, role, slug, body, repo='repository'):
+     return {'request_id': rid, 'principal': 'owner', 'repository_uuid': repo, 'workspace': '/w',
+             'source': {'system': 'telegram', 'id': sid, 'revision': 'r1'}, 'role': role, 'slug': slug, 'content': body}
++accept = accept_sanctioned  # ADAPTED (2nd review)
+ def attempt(f):
+     try: return f(), None
+-    except (st.StoreRefused, al.SN.Refused, doc.SN.Refused) as e: return None, e
++    except (st.StoreRefused, al.SN.Refused, doc.SN.Refused, rs.SN.Refused) as e: return None, e  # ADAPTED: the readset's own snapshot module
+ def code(e): return e and e.code
+diff -ru -x __pycache__ orig/rv0037c/t1b_ours.py work/rv0037c/t1b_ours.py
+--- orig/rv0037c/t1b_ours.py
++++ work/rv0037c/t1b_ours.py
+@@ -1,4 +1,4 @@
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ K = {'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md'}
+ r = Path(tempfile.mkdtemp(prefix='fl-')) / 'repo'; make_repository(r, {'specs/VELDO-0001-a.md': b'a\n'})
+ git(r, 'checkout', '-qb', 'side'); (r / 'specs/VELDO-0009-s.md').write_bytes(b's\n'); git(r, 'add', '-A'); git(r, 'commit', '-qm', 'add')
+diff -ru -x __pycache__ orig/rv0037c/t1_floor.py work/rv0037c/t1_floor.py
+--- orig/rv0037c/t1_floor.py
++++ work/rv0037c/t1_floor.py
+@@ -1,5 +1,5 @@
+ # Historical floor: case-only directory, side-branch history, irregular slug, no slug.
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ K = {'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md'}
+ def fresh(files):
+     r = Path(tempfile.mkdtemp(prefix='fl-')) / 'repo'; make_repository(r, files); return r
+diff -ru -x __pycache__ orig/rv0037c/t2_corpus.py work/rv0037c/t2_corpus.py
+--- orig/rv0037c/t2_corpus.py
++++ work/rv0037c/t2_corpus.py
+@@ -1,5 +1,5 @@
+ # The floor over the real Veldo repository, against every VELDO-<n> named anywhere in its history.
+-import sys, re; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, re; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ R = Path('/home/dmitry/projects/veldo-worktrees/build-veldo-0037')
+ head = git(R, 'rev-parse', 'HEAD')
+ K = {'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md'}
+diff -ru -x __pycache__ orig/rv0037c/t3_old_revision.py work/rv0037c/t3_old_revision.py
+--- orig/rv0037c/t3_old_revision.py
++++ work/rv0037c/t3_old_revision.py
+@@ -1,7 +1,7 @@
+ # enable_kind derives its floor from WHATEVER accepted_revision entity the caller names. Any principal
+ # can write one with the generic upsert_entity on the allocation connection (the guard does not own
+ # accepted_revision), naming an earlier commit of the enrolled repository: historical ids are reissued.
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ root = Path(tempfile.mkdtemp(prefix='t3-')); sg = keysign(root)
+ origin = make_repository(root / 'origin', {'README.md': b'r\n'})
+ first_commit = git(origin, 'rev-parse', 'HEAD')
+@@ -11,7 +11,10 @@
+ _, e = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=1))
+ print('first=1 against real revision:', code(e))
+ # anyone: a second accepted_revision naming the pre-spec commit, through generic upsert_entity
+-_, eu = attempt(lambda: accept(conn, sg, 'repository', origin, rid='revision/repository/stale', commit=first_commit))
++_, eu = attempt(lambda: accept_generic(conn, sg, 'repository', origin, rid='revision/repository/stale', commit=first_commit))
++# ADAPTED (2nd review): the generic write above is refused, so the earlier revision is written the
++# sanctioned way (a new revision id may name an earlier commit) and the enable below names it.
++accept(conn, sg, 'repository', origin, rid='revision/repository/stale', commit=first_commit)
+ print('generic upsert of accepted_revision on allocation connection refused:', code(eu))
+ _, e2 = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None, rid='e2', revision='revision/repository/stale'))
+ r = svc.allocate(req('a', 'm1', 'specification', 'new', b'new\n'), **sg)
+diff -ru -x __pycache__ orig/rv0037c/t4_shared_root.py work/rv0037c/t4_shared_root.py
+--- orig/rv0037c/t4_shared_root.py
++++ work/rv0037c/t4_shared_root.py
+@@ -1,7 +1,7 @@
+ # Two enrolled repositories that share a root commit but not their whole root set: A roots {a},
+ # B roots {a, x} (B merged an unrelated history). A checkout of B at a pre-merge commit carries
+ # roots {a} and binds as A; A's documents are published into B's checkout.
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ root = Path(tempfile.mkdtemp(prefix='t4-')); sg = keysign(root)
+ A = make_repository(root / 'A', {'README.md': b'shared start\n'})
+ B = root / 'B'; subprocess.run(['git', 'clone', '-q', str(A), str(B)], check=True)
+@@ -15,10 +15,18 @@
+ a = svc.allocate(req('a', 'm1', 'specification', 'x', b'A document\n', repo='A'), **sg)
+ co = root / 'b-checkout'; subprocess.run(['git', 'clone', '-q', str(B), str(co)], check=True)
+ git(co, 'checkout', '-q', 'HEAD^1')        # B's own history, before the merge
+-pub, pe = attempt(lambda: doc.Publisher(svc, co))
++pub, pe = attempt(lambda: doc.Publisher(svc, co, **bindings(root)))  # ADAPTED (2nd review): enrollment verifier
+ print('checkout of B at HEAD^1 binds as:', pub and pub.repository, code(pe))
+ if pub:
+     res, e2 = attempt(lambda: pub.publish('A', a['alias'], 1, 'p', **sg))
+     print('publish A into B checkout:', 'ok' if res else code(e2), '| file:', (co / a['path']).exists() and (co / a['path']).read_bytes())
+     if res and pub.repository == 'A':
+         print("BUG: a clone of B (%s) was bound as repository A and A's %s is recorded published there" % (git(co, 'remote', 'get-url', 'origin'), a['alias']))
++# ADAPTED (2nd review): the same pre-merge clone, now enrolled as B, binds as B and refuses A's document.
++enroll(root, co, 'B', root / 'c.sqlite3')
++pub2, pe2 = attempt(lambda: doc.Publisher(svc, co, **bindings(root)))
++res2, e3 = attempt(lambda: pub2.publish('A', a['alias'], 1, 'p', **sg)) if pub2 else (None, None)
++print('same clone enrolled as B binds as:', pub2 and pub2.repository, code(pe2), '| publish A into it:', 'ok' if res2 else code(e3),
++      '| file:', (co / a['path']).exists())
++if res2 and pub2.repository == 'A':
++    print("BUG: a clone of B (%s) was bound as repository A and A's %s is recorded published there" % (git(co, 'remote', 'get-url', 'origin'), a['alias']))
+diff -ru -x __pycache__ orig/rv0037c/t5_other_connection.py work/rv0037c/t5_other_connection.py
+--- orig/rv0037c/t5_other_connection.py
++++ work/rv0037c/t5_other_connection.py
+@@ -1,13 +1,14 @@
+ # The allocation_owned guard lives in conn.command_registry of the connection attach ran on. Any
+ # other connection to the same store file (another process, control_signer.issue's open_store, a
+ # replica tool) runs the store's generic upsert_entity unguarded: accepted bytes and the counter move.
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ root = Path(tempfile.mkdtemp(prefix='t5-')); sg = keysign(root)
+ origin = make_repository(root / 'origin')
+ conn = st.open_store(root / 'c.sqlite3'); svc = al.attach(st, conn, 'domain', {'repository': str(origin)})
+ accept(conn, sg, 'repository', origin); enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+ co = root / 'co'; subprocess.run(['git', 'clone', '-q', str(origin), str(co)], check=True)
+-pub = doc.Publisher(svc, co)
++enroll(root, co, 'repository', root / 'c.sqlite3')  # ADAPTED (2nd review)
++pub = doc.Publisher(svc, co, **bindings(root))
+ for i in range(3):
+     r = svc.allocate(req('a%d' % i, 'm%d' % i, 'specification', 's%d' % i, b'doc %d\n' % i), **sg); pub.publish('repository', r['alias'], 1, 'p', **sg)
+ kid = al.kind_id('repository', 'specification'); vid = al.version_id('repository', 'VELDO-0001', 1)
+diff -ru -x __pycache__ orig/rv0037c/t6b_order.py work/rv0037c/t6b_order.py
+--- orig/rv0037c/t6b_order.py
++++ work/rv0037c/t6b_order.py
+@@ -1,4 +1,4 @@
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ rs = load('rv_readset', M / 'control_readset.py')
+ root = Path(tempfile.mkdtemp(prefix='t6b-')); sg = keysign(root)
+ origin = make_repository(root / 'origin')
+diff -ru -x __pycache__ orig/rv0037c/t6_readset_after.py work/rv0037c/t6_readset_after.py
+--- orig/rv0037c/t6_readset_after.py
++++ work/rv0037c/t6_readset_after.py
+@@ -1,6 +1,6 @@
+ # ReadSets.enable('upsert_entity') after allocation attach re-registers from store.COMMAND_REGISTRY
+ # and drops the allocation_owned guard; a snapshot-bound upsert then rewinds the alias counter.
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ rs = load('rv_readset', M / 'control_readset.py')
+ root = Path(tempfile.mkdtemp(prefix='t6-')); sg = keysign(root)
+ origin = make_repository(root / 'origin')
+diff -ru -x __pycache__ orig/rv0037c/t7_toctou.py work/rv0037c/t7_toctou.py
+--- orig/rv0037c/t7_toctou.py
++++ work/rv0037c/t7_toctou.py
+@@ -1,13 +1,14 @@
+ # Swaps between the walk and the write: specs/ moved out and replaced by a symlink right before the
+ # link; a hard link pre-placed at the declared path; the declared file itself swapped to a symlink.
+-import sys, tempfile, os as _os; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile, os as _os; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ def world():
+     root = Path(tempfile.mkdtemp(prefix='t7-')); sg = keysign(root); origin = make_repository(root / 'origin')
+     conn = st.open_store(root / 'c.sqlite3'); svc = al.attach(st, conn, 'domain', {'repository': str(origin)})
+     accept(conn, sg, 'repository', origin); enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+     co = root / 'co'; subprocess.run(['git', 'clone', '-q', str(origin), str(co)], check=True)
+     (co / 'specs').mkdir(); outside = root / 'outside'; outside.mkdir()
+-    return root, sg, conn, svc, co, outside, doc.Publisher(svc, co)
++    enroll(root, co, 'repository', root / 'c.sqlite3')  # ADAPTED (2nd review)
++    return root, sg, conn, svc, co, outside, doc.Publisher(svc, co, **bindings(root))
+ # 1. swap directory after the walk, before os.link
+ root, sg, conn, svc, co, outside, pub = world()
+ r = svc.allocate(req('a', 'm1', 'specification', 'x', b'accepted\n'), **sg)
+@@ -40,5 +41,5 @@
+ print('3 hard link v1:', 'ok' if res else code(e), '| v2:', 'ok' if res2 else code(e2), '| victim now', victim.read_bytes(), '| declared', (co / r['path']).read_bytes())
+ # 4. declared file swapped to a symlink before the reader reads
+ _os.unlink(co / r['path']); (co / r['path']).symlink_to(victim)
+-rd, e4 = attempt(lambda: doc.read_published(st, conn, 'repository', r['alias'], co))
++rd, e4 = attempt(lambda: doc.read_published(st, conn, 'repository', r['alias'], co, domain_uuid='domain', **bindings(root)))  # ADAPTED (2nd review)
+ print('4 reader through symlinked file:', rd and rd['version'], code(e4))
+diff -ru -x __pycache__ orig/rv0037c/t8_case.py work/rv0037c/t8_case.py
+--- orig/rv0037c/t8_case.py
++++ work/rv0037c/t8_case.py
+@@ -1,5 +1,5 @@
+ # Case and Unicode tricks against the overlap, prefix and reserved-path rules.
+-import sys, tempfile; sys.path.insert(0, '/tmp/rv0037c'); from h2 import *
++import sys, tempfile; sys.path.insert(0, '<rerun>/rv0037c'); from h2 import *
+ def fresh():
+     root = Path(tempfile.mkdtemp(prefix='t8-')); sg = keysign(root); origin = make_repository(root / 'origin')
+     conn = st.open_store(root / 'c.sqlite3'); svc = al.attach(st, conn, 'domain', {'repository': str(origin)})

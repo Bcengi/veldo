@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -421 +421 @@
+-        owners = entity_owners(conn)
++        owners = [] if "transaction_transition" in reg else entity_owners(conn)

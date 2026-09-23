@@ -32,6 +32,13 @@
     "reused": 1
   },
   "defects": {
+    "carriers": {
+      "case-directory": 5,
+      "irregular-slug": 7,
+      "missing-slug": 8,
+      "not-carriers": 1,
+      "number-template": 9
+    },
     "case": {
       "counter": 3,
       "lower-directory": "invalid_registration",
@@ -39,6 +46,17 @@
       "prefix-case": "invalid_registration",
       "specification": null,
       "upper-directory": null
+    },
+    "connections": {
+      "counter": 3,
+      "next": "VELDO-0003",
+      "opened-before-attach": "entity_owned",
+      "relabel-version": "entity_owned",
+      "retire-reservation": "entity_owned",
+      "rewind-counter": "entity_owned",
+      "rewrite-version": "entity_owned",
+      "unrelated": null,
+      "version-content": "connection 1\n"
     },
     "cross-repository": {
       "files_after": [
@@ -49,12 +67,25 @@
       "read_other_here": "wrong_repository",
       "stray_publisher": "wrong_repository"
     },
+    "enrollment": {
+      "A-checkout": "A",
+      "A-file-in-B": false,
+      "enrolled-pre-merge": "B",
+      "enrolled-then-moved": "wrong_repository",
+      "forged-binding": "wrong_repository",
+      "other-store": "wrong_repository",
+      "pre-merge-unenrolled": "wrong_repository",
+      "publish-A": true,
+      "publish-A-into-B": "wrong_repository",
+      "read-A": "A document\n",
+      "read-A-from-B": "wrong_repository"
+    },
     "generic": {
       "next": "VELDO-0003",
-      "owned-kind-elsewhere": "allocation_owned",
-      "receipt-over-version": "allocation_owned",
-      "retire-reservation": "allocation_owned",
-      "rewind-counter": "allocation_owned",
+      "owned-kind-elsewhere": "entity_owned",
+      "receipt-over-version": "entity_owned",
+      "retire-reservation": "entity_owned",
+      "rewind-counter": "entity_owned",
       "unrelated": null
     },
     "history": {
@@ -81,6 +112,40 @@
       "other-bytes": "publication_mismatch",
       "published-then": true
     },
+    "registration-order": {
+      "readset-after-attach": {
+        "counter": [
+          null,
+          "entity_owned"
+        ],
+        "counter-after": 4,
+        "forged-snapshot": "entity_owned",
+        "registered": [
+          null,
+          null
+        ],
+        "unowned": [
+          null,
+          null
+        ]
+      },
+      "readset-before-attach": {
+        "counter": [
+          null,
+          "entity_owned"
+        ],
+        "counter-after": 4,
+        "forged-snapshot": "entity_owned",
+        "registered": [
+          null,
+          null
+        ],
+        "unowned": [
+          null,
+          null
+        ]
+      }
+    },
     "reserved": {
       "git": "reserved_path",
       "github-allowed": null,
@@ -89,6 +154,15 @@
       "slug-makes-git": "reserved_path",
       "veldo-ledger": "reserved_path"
     },
+    "revisions": {
+      "allocated": "VELDO-0002",
+      "derived": null,
+      "first-1": "below_accepted_history",
+      "generic-new": "entity_owned",
+      "generic-rewrite": "entity_owned",
+      "older-revision": null,
+      "regression": "revision_regression"
+    },
     "symlink": {
       "outside": [],
       "publish": "unsafe_path",
@@ -96,7 +170,7 @@
       "reader_parent_link": "unsafe_path"
     }
   },
-  "elapsed_seconds": 2.7622457209508866,
+  "elapsed_seconds": 4.511481567053124,
   "pending": [
     [
       "other",
@@ -342,6 +416,26 @@
     ],
     [
       "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      true
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
       true
     ]
   ],

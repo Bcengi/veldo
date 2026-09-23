@@ -1,14 +1,14 @@
 {
   "records": [
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/stale-checkouts": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 8.549,
+      "elapsed_seconds": 18.461,
       "module": "control_alias.py",
       "mutant": {
         "aliases/stale-checkouts": [
@@ -82,15 +82,15 @@
         }
       },
       "mutation": "alias-checkout-maximum",
-      "new_digest": "2133455134b2e683a4226bbb1edb103d244291cb80306113b9d227de0edb7f5f",
+      "new_digest": "fd8808814c023114ae1bdcebce1ec428877de8c48cbc6837c4daeb12aaac371a",
       "noop": {
         "aliases/stale-checkouts": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/stale-checkouts",
         "aliases/same-source-reuse",
@@ -102,7 +102,10 @@
         "publication/replace-declared-version",
         "aliases/observations",
         "aliases/historical-floor",
-        "aliases/generic-writes-refused"
+        "aliases/generic-writes-refused",
+        "aliases/owned-on-every-connection",
+        "aliases/owned-whatever-registration-order",
+        "aliases/floor-from-every-accepted-revision"
       ],
       "replacement_count": 1,
       "rows": [
@@ -110,14 +113,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/stale-checkouts": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 8.751,
+      "elapsed_seconds": 20.843,
       "module": "control_alias.py",
       "mutant": {
         "aliases/stale-checkouts": [
@@ -191,15 +194,15 @@
         }
       },
       "mutation": "alias-counter-not-advanced",
-      "new_digest": "3f20f083ca8f23f852592309be44943661b2a652571bd7abe191aaf926443c4d",
+      "new_digest": "72ccc37d2b8132cd8ca004c24739c39ec3f94360e92b50254f73189008eec99f",
       "noop": {
         "aliases/stale-checkouts": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/stale-checkouts",
         "aliases/same-source-reuse",
@@ -211,7 +214,9 @@
         "publication/exclusive-create",
         "publication/replace-declared-version",
         "aliases/observations",
-        "aliases/generic-writes-refused"
+        "aliases/generic-writes-refused",
+        "aliases/owned-on-every-connection",
+        "aliases/owned-whatever-registration-order"
       ],
       "replacement_count": 1,
       "rows": [
@@ -219,14 +224,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "documents/stale-overwrite": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.64,
+      "elapsed_seconds": 15.452,
       "module": "control_alias.py",
       "mutant": {
         "documents/stale-overwrite": [
@@ -304,15 +309,15 @@
         }
       },
       "mutation": "document-ignore-digest",
-      "new_digest": "ceb1b7c202569b89482087bf64f3771ea9ba2238db64bfe7a2cfaa68224808bd",
+      "new_digest": "5a744a21bfe8fb70f1622cba9a897ec1970704859bf32dd269f5d1f5bb22bd9f",
       "noop": {
         "documents/stale-overwrite": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "documents/stale-overwrite",
         "publication/replace-guard"
@@ -323,14 +328,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "documents/stale-overwrite": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.452,
+      "elapsed_seconds": 14.442,
       "module": "control_alias.py",
       "mutant": {
         "documents/stale-overwrite": [
@@ -408,15 +413,15 @@
         }
       },
       "mutation": "document-current-version",
-      "new_digest": "94d71d169f382b2f8be86df8428e61315a1135ddc7e4a0a2c1dffc5e84a99c9c",
+      "new_digest": "da9a5433c7c9b6b4e693565379fab130942355f721511ff26d572584dedf112b",
       "noop": {
         "documents/stale-overwrite": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "documents/stale-overwrite",
         "publication/replace-guard"
@@ -427,14 +432,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/accepted-documents": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.236,
+      "elapsed_seconds": 14.074,
       "module": "control_document.py",
       "mutant": {
         "publication/accepted-documents": [
@@ -488,15 +493,15 @@
         }
       },
       "mutation": "publication-altered-bytes",
-      "new_digest": "b579864ba2b5a8a75e776374c7db0a66a6ee5811c31245999b8b92d4c74334fb",
+      "new_digest": "8c919d92aa9bc85062ab010e53bf0b43240f02f55d7b5fc6b5c5d819adabc6d3",
       "noop": {
         "publication/accepted-documents": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
         "aliases/no-recycling",
         "publication/accepted-documents",
@@ -507,7 +512,8 @@
         "aliases/observations",
         "publication/no-symlink-escape",
         "publication/bound-to-repository",
-        "publication/recorded-only-by-publisher"
+        "publication/recorded-only-by-publisher",
+        "publication/bound-by-enrollment"
       ],
       "replacement_count": 1,
       "rows": [
@@ -515,14 +521,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/accepted-documents": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.213,
+      "elapsed_seconds": 17.674,
       "module": "control_document.py",
       "mutant": {
         "publication/accepted-documents": [
@@ -592,15 +598,15 @@
         }
       },
       "mutation": "publication-normalized-newlines",
-      "new_digest": "00a56ce2811818df95576e5c8fae73143cb0c833e5025fd53f0b79b46c26af10",
+      "new_digest": "c430cd7c61d9407e2f4af462a8a9096e5aa0c04cb7b842126f442b78141667b2",
       "noop": {
         "publication/accepted-documents": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
         "publication/accepted-documents",
         "documents/edit-current",
@@ -615,14 +621,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/tampered-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.264,
+      "elapsed_seconds": 13.8,
       "module": "control_document.py",
       "mutant": {
         "publication/tampered-refused": [
@@ -708,15 +714,15 @@
         }
       },
       "mutation": "reader-trusts-record",
-      "new_digest": "409d0a4d11e6e562d249571c0b469c12e203ea487296c4beb41640c2bd840596",
+      "new_digest": "b79a8b119095cf2bf3255b62b3c7fe301a969b649aa0d63183e9eb578fef01b1",
       "noop": {
         "publication/tampered-refused": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
         "publication/tampered-refused"
       ],
@@ -726,14 +732,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/no-symlink-escape": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.357,
+      "elapsed_seconds": 14.598,
       "module": "control_document.py",
       "mutant": {
         "publication/no-symlink-escape": [
@@ -811,15 +817,15 @@
         }
       },
       "mutation": "publication-follow-parent-symlink",
-      "new_digest": "7ef96ddc4295454d43de14c7aeb04955c6871c2e51d41a99af2e4b35ef74373f",
+      "new_digest": "bbd2931d1883729822333f86760c7f4c04ce5791926c6730ddceae839ab71d2b",
       "noop": {
         "publication/no-symlink-escape": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
         "publication/no-symlink-escape"
       ],
@@ -829,14 +835,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/no-symlink-escape": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.356,
+      "elapsed_seconds": 15.225,
       "module": "control_document.py",
       "mutant": {
         "publication/no-symlink-escape": [
@@ -914,15 +920,15 @@
         }
       },
       "mutation": "reader-follows-links",
-      "new_digest": "c28295519c0f5733b55dc7475219e888ee9dbbb22627badd408eb1ae07349659",
+      "new_digest": "5aa47739c43dd41669c8ea5ec783d0585c2b6ccf8595a0555ea226309ecc90c3",
       "noop": {
         "publication/no-symlink-escape": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
         "publication/no-symlink-escape"
       ],
@@ -932,14 +938,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.474,
+      "elapsed_seconds": 14.352,
       "module": "control_alias.py",
       "mutant": {
         "aliases/one-path-per-kind": [
@@ -1017,15 +1023,15 @@
         }
       },
       "mutation": "alias-overlap-unchecked",
-      "new_digest": "a8c973e1aa93384060ff5822e33c9ea98460ba413495eaca67e232feef02ac31",
+      "new_digest": "64b7c77bf6c70f09131eebc485f50c760d358aa99b7318cdd08c600006dc6fa4",
       "noop": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/one-path-per-kind",
         "aliases/case-insensitive-names"
@@ -1036,14 +1042,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.441,
+      "elapsed_seconds": 14.739,
       "module": "control_alias.py",
       "mutant": {
         "aliases/one-path-per-kind": [
@@ -1121,15 +1127,15 @@
         }
       },
       "mutation": "alias-overlap-ignores-directories",
-      "new_digest": "44b52537c9d382a8d6882aa338eaa3e2b5a8277400f6f3ae5d348b9cc3c8ceb0",
+      "new_digest": "93c21d4f5276c53e54459154d784b64bfd20ddcb48c1852ca04cbefcb86b26be",
       "noop": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/one-path-per-kind"
       ],
@@ -1139,14 +1145,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/historical-floor": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.534,
+      "elapsed_seconds": 14.312,
       "module": "control_alias.py",
       "mutant": {
         "aliases/historical-floor": [
@@ -1224,17 +1230,18 @@
         }
       },
       "mutation": "alias-trusts-first-number",
-      "new_digest": "8c5dd58fa2a7b6846a31a52900aaef8f436d770c376b6c9b459d76a8266d947a",
+      "new_digest": "3d70f04f3d7c1753304e5c8d5456ffe051a86c013c0caa1e54d63c11bb01fbae",
       "noop": {
         "aliases/historical-floor": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
-        "aliases/historical-floor"
+        "aliases/historical-floor",
+        "aliases/floor-from-every-accepted-revision"
       ],
       "replacement_count": 1,
       "rows": [
@@ -1242,14 +1249,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/historical-floor": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.297,
+      "elapsed_seconds": 14.755,
       "module": "control_alias.py",
       "mutant": {
         "aliases/historical-floor": [
@@ -1327,15 +1334,15 @@
         }
       },
       "mutation": "alias-floor-ignores-history",
-      "new_digest": "41978ed7227453385c38ba6c6657869b1d22d83952366544b1bcb78cf9aca81d",
+      "new_digest": "46a7de2151a7f5a7cbb21d7023f76bf24b735ff2e25d3ba9c35e46bade30544b",
       "noop": {
         "aliases/historical-floor": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/historical-floor"
       ],
@@ -1345,14 +1352,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.283,
+      "elapsed_seconds": 14.159,
       "module": "control_alias.py",
       "mutant": {
         "aliases/generic-writes-refused": [
@@ -1429,18 +1436,20 @@
           "wrong-digest": "stale_document"
         }
       },
-      "mutation": "alias-generic-commands-unguarded",
-      "new_digest": "d92a5f8acfea2c058eaf0eeb6d88b2f68b1c7ecb6f19c63936d62b30098b74f2",
+      "mutation": "alias-owners-undeclared",
+      "new_digest": "18165b15f22f4b03156b8733bb5db74216d8b25b94c9801ae1114d6d87f499c5",
       "noop": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
-        "aliases/generic-writes-refused"
+        "aliases/generic-writes-refused",
+        "aliases/owned-on-every-connection",
+        "aliases/owned-whatever-registration-order"
       ],
       "replacement_count": 1,
       "rows": [
@@ -1448,15 +1457,15 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.67,
-      "module": "control_alias.py",
+      "elapsed_seconds": 14.159,
+      "module": "control_store.py",
       "mutant": {
         "aliases/generic-writes-refused": [
           false
@@ -1532,18 +1541,19 @@
           "wrong-digest": "stale_document"
         }
       },
-      "mutation": "alias-guard-by-new-kind-only",
-      "new_digest": "2a237f627c3f41f77fc99a20d86d629dfa80fda300db3592bb004d4a78ddbfaf",
+      "mutation": "store-owner-by-new-kind-only",
+      "new_digest": "ad7d03d19e8794a12af6df350e6970e235f336b8ab7bb524a016b28e95eddeb7",
       "noop": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
       "red_rows": [
-        "aliases/generic-writes-refused"
+        "aliases/generic-writes-refused",
+        "aliases/owned-on-every-connection"
       ],
       "replacement_count": 1,
       "rows": [
@@ -1551,14 +1561,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/bound-to-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.237,
+      "elapsed_seconds": 14.743,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-to-repository": [
@@ -1636,17 +1646,18 @@
         }
       },
       "mutation": "publisher-any-repository",
-      "new_digest": "4dfb2dc09b3ae29bc60896d097d5fbf2f1ed06174a682c3e5f493824d41ee880",
+      "new_digest": "b5355910d063d01d42b77405329aaedd265bf67ba64d06e46c782fe9328088e0",
       "noop": {
         "publication/bound-to-repository": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
-        "publication/bound-to-repository"
+        "publication/bound-to-repository",
+        "publication/bound-by-enrollment"
       ],
       "replacement_count": 1,
       "rows": [
@@ -1654,14 +1665,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/bound-to-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.374,
+      "elapsed_seconds": 16.647,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-to-repository": [
@@ -1739,17 +1750,18 @@
         }
       },
       "mutation": "reader-any-checkout",
-      "new_digest": "ebfc39bf173aedcfd493e1b3e01afe172c79850c27abb5834fa130b6c4084cb6",
+      "new_digest": "d0023563ceb74b60999e5167ededa1fc5974eb350d39364706b9dcdb89d80412",
       "noop": {
         "publication/bound-to-repository": [
           true
         ]
       },
-      "noop_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "noop_failed_rows": [],
-      "old_digest": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
       "red_rows": [
-        "publication/bound-to-repository"
+        "publication/bound-to-repository",
+        "publication/bound-by-enrollment"
       ],
       "replacement_count": 1,
       "rows": [
@@ -1757,14 +1769,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.44,
+      "elapsed_seconds": 15.804,
       "module": "control_alias.py",
       "mutant": {
         "publication/recorded-only-by-publisher": [
@@ -1842,15 +1854,15 @@
         }
       },
       "mutation": "record-trusts-supplied-digest",
-      "new_digest": "b6a7ace83bc22a55d1517ca7f54b9dcea4a0e76e9d81100aaf02c9db05983369",
+      "new_digest": "63a3dd62d19b606267a7a78767332afa0f942189d6ce35202421b9052b2ececc",
       "noop": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "publication/recorded-only-by-publisher"
       ],
@@ -1860,14 +1872,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.385,
+      "elapsed_seconds": 14.391,
       "module": "control_alias.py",
       "mutant": {
         "publication/recorded-only-by-publisher": [
@@ -1945,15 +1957,15 @@
         }
       },
       "mutation": "record-missing-file-accepted",
-      "new_digest": "f7562038e8d8f0bb7b07bed72642525ca331735904d0dbe4359a80440bb59e7e",
+      "new_digest": "ac2712497b6f402a39cc4eeef80fec9e9d3b5f5450a0a73caced319a0c85272f",
       "noop": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "publication/recorded-only-by-publisher"
       ],
@@ -1963,14 +1975,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.592,
+      "elapsed_seconds": 14.454,
       "module": "control_alias.py",
       "mutant": {
         "aliases/case-insensitive-names": [
@@ -2048,15 +2060,15 @@
         }
       },
       "mutation": "alias-prefix-case-sensitive",
-      "new_digest": "03b516e915257cb6a79cad59826bf224344ed5ca215b147b6a452f848d66623b",
+      "new_digest": "fa713b11add1165f01771c27aeab20b26ad8e38e623480fd67bf9bd92b573646",
       "noop": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/case-insensitive-names"
       ],
@@ -2066,14 +2078,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.946,
+      "elapsed_seconds": 13.967,
       "module": "control_alias.py",
       "mutant": {
         "aliases/case-insensitive-names": [
@@ -2151,15 +2163,15 @@
         }
       },
       "mutation": "alias-paths-case-sensitive",
-      "new_digest": "672e2f7b27fd4ba145b85773bc1a3301bde8555934bcee4f8ca9b836220f8653",
+      "new_digest": "810cc3d718ec5644f38f23e095f4348dcf14f13995726e56f04c7ade77d3b100",
       "noop": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/case-insensitive-names",
         "aliases/reserved-directories"
@@ -2170,14 +2182,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/reserved-directories": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.472,
+      "elapsed_seconds": 14.565,
       "module": "control_alias.py",
       "mutant": {
         "aliases/reserved-directories": [
@@ -2255,15 +2267,15 @@
         }
       },
       "mutation": "alias-reserved-unchecked",
-      "new_digest": "0a98cdf4fd037f4b13fdd7db98ba2db74211cb0aa6f48f33352640db99da2643",
+      "new_digest": "c7fe06feddd2e18bbae31e3b1c47173b271f804aa93f27b0f4199bc1171d7193",
       "noop": {
         "aliases/reserved-directories": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/reserved-directories"
       ],
@@ -2273,14 +2285,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/reserved-directories": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.316,
+      "elapsed_seconds": 15.395,
       "module": "control_alias.py",
       "mutant": {
         "aliases/reserved-directories": [
@@ -2358,15 +2370,15 @@
         }
       },
       "mutation": "alias-reserved-literal-only",
-      "new_digest": "721782471aa63b5a2e05c8d54e6b8dcacb3a22cca17e33d884f1219fe2053819",
+      "new_digest": "0fcc3add45640fdcd82456712da07476d18e664cb6771da98062f913dce74b2a",
       "noop": {
         "aliases/reserved-directories": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/reserved-directories"
       ],
@@ -2376,14 +2388,14 @@
       ]
     },
     {
-      "assertions": 53,
+      "assertions": 58,
       "baseline": {
         "aliases/invalid-unit-id": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 6.277,
+      "elapsed_seconds": 18.324,
       "module": "control_alias.py",
       "mutant": {
         "aliases/invalid-unit-id": [
@@ -2461,15 +2473,15 @@
         }
       },
       "mutation": "alias-skip-unit-id",
-      "new_digest": "e1a1091fe94426a13e72dfa1678d0cae256c8369556e7b4c0570fcc03500fd33",
+      "new_digest": "a0adb450c18432a6416fc32d0e565bfa5cd58ddd66903e6063fbe6d8172e1615",
       "noop": {
         "aliases/invalid-unit-id": [
           true
         ]
       },
-      "noop_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "noop_failed_rows": [],
-      "old_digest": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
       "red_rows": [
         "aliases/invalid-unit-id"
       ],
@@ -2477,9 +2489,1043 @@
       "rows": [
         "aliases/invalid-unit-id"
       ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/floor-counts-every-carrier": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 14.828,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/floor-counts-every-carrier": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-floor-pathspec-case-sensitive",
+      "new_digest": "fbbf74cb4fba3c7f476c81369440fb16d55508919f01645b8168a07e26745960",
+      "noop": {
+        "aliases/floor-counts-every-carrier": [
+          true
+        ]
+      },
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+      "noop_failed_rows": [],
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+      "red_rows": [
+        "aliases/floor-counts-every-carrier"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-counts-every-carrier"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/floor-counts-every-carrier": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 15.023,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/floor-counts-every-carrier": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-floor-slug-grammar",
+      "new_digest": "3122a57f00fe44499b5e32e50650ab6dc957be971fcb7e9e3a40f3229ddafe71",
+      "noop": {
+        "aliases/floor-counts-every-carrier": [
+          true
+        ]
+      },
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+      "noop_failed_rows": [],
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+      "red_rows": [
+        "aliases/floor-counts-every-carrier"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-counts-every-carrier"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/owned-on-every-connection": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 14.243,
+      "module": "control_store.py",
+      "mutant": {
+        "aliases/owned-on-every-connection": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "store-owners-only-where-registered",
+      "new_digest": "120472945affbc025d7c7a1bdea2c30edb082e2400dd2acb9210741b02a2003e",
+      "noop": {
+        "aliases/owned-on-every-connection": [
+          true
+        ]
+      },
+      "noop_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
+      "noop_failed_rows": [],
+      "old_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
+      "red_rows": [
+        "aliases/owned-on-every-connection",
+        "aliases/owned-whatever-registration-order"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/owned-on-every-connection"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/owned-on-every-connection": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 14.476,
+      "module": "control_store.py",
+      "mutant": {
+        "aliases/owned-on-every-connection": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "store-owners-unchecked",
+      "new_digest": "2d6e8047ef9001916e85fba2e0b6e8e5cac8126fbacf7053d06de4f1ec2a2ba9",
+      "noop": {
+        "aliases/owned-on-every-connection": [
+          true
+        ]
+      },
+      "noop_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
+      "noop_failed_rows": [],
+      "old_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
+      "red_rows": [
+        "aliases/generic-writes-refused",
+        "aliases/owned-on-every-connection",
+        "aliases/owned-whatever-registration-order",
+        "aliases/floor-from-every-accepted-revision"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/owned-on-every-connection"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/owned-whatever-registration-order": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 12.52,
+      "module": "control_store.py",
+      "mutant": {
+        "aliases/owned-whatever-registration-order": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "store-owners-skip-registered-transitions",
+      "new_digest": "eaca77ffcb80b9b26c7a1c6a6579cd018d730bf16cdbbfd8b5418717fffb0978",
+      "noop": {
+        "aliases/owned-whatever-registration-order": [
+          true
+        ]
+      },
+      "noop_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
+      "noop_failed_rows": [],
+      "old_digest": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee",
+      "red_rows": [
+        "aliases/owned-whatever-registration-order"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/owned-whatever-registration-order"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/floor-from-every-accepted-revision": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 10.449,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/floor-from-every-accepted-revision": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-floor-named-revision-only",
+      "new_digest": "ab42249206f04aac346fd99d1dbd7af3fef91b1c925d45dcce6cb8fc119c9ff3",
+      "noop": {
+        "aliases/floor-from-every-accepted-revision": [
+          true
+        ]
+      },
+      "noop_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+      "noop_failed_rows": [],
+      "old_digest": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+      "red_rows": [
+        "aliases/floor-from-every-accepted-revision"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-from-every-accepted-revision"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/floor-from-every-accepted-revision": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 10.45,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/floor-from-every-accepted-revision": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "revision-regression-allowed",
+      "new_digest": "b619d04f3fb9b072674d429e3edf7f2476fb2e94257326b4f8632f08e3a996cb",
+      "noop": {
+        "aliases/floor-from-every-accepted-revision": [
+          true
+        ]
+      },
+      "noop_digest": "64bfc6f70703ccb474a79b5dd9f3995ee079aae6a6a323a07f94cd02264fd625",
+      "noop_failed_rows": [],
+      "old_digest": "64bfc6f70703ccb474a79b5dd9f3995ee079aae6a6a323a07f94cd02264fd625",
+      "red_rows": [
+        "aliases/floor-from-every-accepted-revision"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-from-every-accepted-revision"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "publication/bound-by-enrollment": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 10.439,
+      "module": "control_document.py",
+      "mutant": {
+        "publication/bound-by-enrollment": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "publisher-infers-root-commits",
+      "new_digest": "b5e45876f038f5e4601a7e93432c5267d0fe02506cac6f54f527ea77b07b5245",
+      "noop": {
+        "publication/bound-by-enrollment": [
+          true
+        ]
+      },
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
+      "noop_failed_rows": [],
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
+      "red_rows": [
+        "publication/bound-by-enrollment"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "publication/bound-by-enrollment"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "publication/bound-by-enrollment": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 10.448,
+      "module": "control_document.py",
+      "mutant": {
+        "publication/bound-by-enrollment": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "binding-signature-unchecked",
+      "new_digest": "767a3131d67880d3f975b7994bac4a522bd2d9727c6fd542b498407b79281f1c",
+      "noop": {
+        "publication/bound-by-enrollment": [
+          true
+        ]
+      },
+      "noop_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
+      "noop_failed_rows": [],
+      "old_digest": "6bb189af0a2a9cd8ec7f87585639ffeb49f948fd60b41a8938209ff9630b5cbe",
+      "red_rows": [
+        "publication/bound-by-enrollment"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "publication/bound-by-enrollment"
+      ]
+    },
+    {
+      "assertions": 58,
+      "baseline": {
+        "aliases/owned-whatever-registration-order": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 10.465,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/owned-whatever-registration-order": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "readset-snapshots-undeclared",
+      "new_digest": "1a4238b1eb6bb313ba7f7808a015b24bfc9908f50033874e946dac76ab943378",
+      "noop": {
+        "aliases/owned-whatever-registration-order": [
+          true
+        ]
+      },
+      "noop_digest": "64bfc6f70703ccb474a79b5dd9f3995ee079aae6a6a323a07f94cd02264fd625",
+      "noop_failed_rows": [],
+      "old_digest": "64bfc6f70703ccb474a79b5dd9f3995ee079aae6a6a323a07f94cd02264fd625",
+      "red_rows": [
+        "aliases/owned-whatever-registration-order"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/owned-whatever-registration-order"
+      ]
     }
   ],
-  "registered": 24,
+  "registered": 34,
   "source": "proof/VELDO-0037/drive.py over scripts/check_teeth_mutations.py finding 37",
   "status": "rejected"
 }
