@@ -280,6 +280,50 @@ def _v36_suite():
                     partial_final_ok &= refusal(lambda: call(service, 'retry', 'retry', 4)) == 'usage_cap:account:wall_seconds'
             expect('VELDO-0036 reservations/partial-final-retained', partial_final_ok)
 
+            # R2: reporting failure cannot leave a real worker alive, even before deadline.
+            report_failure_ok = True
+            for tick in (4, 8):
+                service, _ = fixture()
+                worker(service)
+                processes, stops, report_liveness = [], [], []
+                def launch_child(invocation, configuration):
+                    child = subprocess.Popen([sys.executable, '-c',
+                        'import time; print("ready", flush=True); time.sleep(60)'],
+                        stdout=subprocess.PIPE, text=True)
+                    processes.append(child)
+                    assert child.stdout.readline().strip() == 'ready'
+                def stop_child(dispatch):
+                    stops.append(dispatch)
+                    for child in processes:
+                        if child.poll() is None:
+                            child.terminate()
+                            child.wait(timeout=5)
+                guard = runtime.InvocationGuard(service, 'codex', launch_child, stop_child)
+                try:
+                    guard.invoke('call', 'worker', 'call', 'initial', 5, {}, now=3)
+                    service.store.execute(service.conn, dict(command_id='revoke', operation='upsert_entity',
+                        parameters=dict(entity_id='runner', kind='membership',
+                                        data=dict(roles=['reservation_service'], revoked_at=4)),
+                        principal='owner', nonce='revoke', expected_versions={'runner': 1}, artifact_digests=[]),
+                        'authority', sign, 1)
+                    original_report = service.report
+                    def reporting(*args, **kwargs):
+                        report_liveness.append(processes[0].poll() is None)
+                        return original_report(*args, **kwargs)
+                    service.report = reporting
+                    error = refusal(lambda: guard.observe('tick', 'call', 1, {}, now=tick))
+                    report_failure_ok &= error == 'missing_authority'
+                    report_failure_ok &= stops == ['worker'] and processes[0].poll() is not None
+                    if tick == 8:
+                        report_failure_ok &= report_liveness == [False]
+                finally:
+                    for child in processes:
+                        if child.poll() is None:
+                            child.kill()
+                        child.wait(timeout=5)
+                        child.stdout.close()
+            expect('VELDO-0036 reservations/report-failure-stops', report_failure_ok)
+
             # AC4: a REAL exited parent and its still-live descendant. Become the temporary
             # subreaper so we can reap that orphan ourselves; no process or zombie is leaked.
             libc = ctypes.CDLL(None, use_errno=True)

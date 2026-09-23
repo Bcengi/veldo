@@ -1,0 +1,7 @@
+--- a/.veldo/control_reservation_runtime.py
++++ b/.veldo/control_reservation_runtime.py
+@@ -72,2 +72,2 @@
+-            # Reporting, authorization and policy reads must fail closed for the worker.
+-            self._stop(active)
++            # Defect: report failure leaves the worker running.
++            pass

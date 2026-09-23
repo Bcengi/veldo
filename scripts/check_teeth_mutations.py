@@ -291,6 +291,13 @@ def cases():
                 "            elif p['final']:",
                 "            elif p['final']:\n                value['charge']['wall_seconds'] = p['usage'].get('wall_seconds', 0)",
                 'partial-final-retained')
+    reservation('reservation-report-before-enforcement', 'control_reservation_runtime.py',
+                "        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n            receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                               now=now, final=final, outcome=outcome)\n",
+                "        receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                           now=now, final=final, outcome=outcome)\n        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n", 'report-failure-stops')
+    reservation('reservation-report-error-keeps-worker', 'control_reservation_runtime.py',
+                "            # Reporting, authorization and policy reads must fail closed for the worker.\n            self._stop(active)",
+                "            # Defect: report failure leaves the worker running.\n            pass",
+                'report-failure-stops')
     reservation('reservation-extra-slot', 'control_reservations.py',
                 "if balance[unit] + wanted.get(unit, 0) > cap:",
                 "if balance[unit] + wanted.get(unit, 0) > cap + 1:", 'ceilings')
@@ -319,8 +326,8 @@ def cases():
                 "            receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
                 'pre-call-order')
     reservation('reservation-ignore-wall-time', 'control_reservation_runtime.py',
-                "        reached = now - active['start'] >= active['wall_seconds']",
-                "        reached = False", 'usage-controls')
+                "            reached = now - active['start'] >= active['wall_seconds']",
+                "            reached = False", 'usage-controls')
     reservation('reservation-ignore-window', 'control_reservations.py',
                 "            for window in policy.get('windows', {}).values():",
                 "            for window in ():", 'usage-controls')

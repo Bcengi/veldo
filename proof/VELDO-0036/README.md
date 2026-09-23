@@ -141,3 +141,14 @@ report; missing totals retain the conservative charge and unknown state.
 Both produce the named false row. `review-20260923/R1-green.log` and
 `R1-mutations.jsonl` record the green control and all 16 rejected mutations;
 `review-20260923/mutations/` holds exact applied diffs.
+
+R2: `reservations/report-failure-stops` launches a real child, revokes its
+reporting membership in SQLite, and submits the deadline tick. It checks that
+the child has already stopped when reporting begins, the authority refusal is
+preserved, and stop is called once. A separate pre-deadline failure also must stop
+the child. Cleanup kills and reaps any child left by a defective implementation.
+The guard now enforces the deadline before reporting and stops on exceptions
+throughout the tick. `reservation-report-before-enforcement` restores the unsafe
+report-first path; `reservation-report-error-keeps-worker` drops exception-time
+stopping. Both fail the named row. `review-20260923/R2-green.log` and
+`R2-mutations.jsonl` retain the green control and all 18 rejected mutations.

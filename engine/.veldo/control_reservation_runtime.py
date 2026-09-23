@@ -35,34 +35,45 @@ class InvocationGuard:
         return receipt
 
     def observe(self, command_id, invocation, sequence, usage, *, now, final=False, outcome=None):
-        receipt = self.reservations.report(command_id, invocation, sequence, usage,
-                                           now=now, final=final, outcome=outcome)
         active = self.active[invocation]
-        records = self.reservations._records()
-        call = next(r for r in records.values() if r['type'] == 'invocation' and r['invocation'] == invocation
-                    and r['context']['domain'] == self.reservations.domain)
-        reached = now - active['start'] >= active['wall_seconds']
-        reached = reached or call['observed'].get('wall_seconds', 0) >= active['wall_seconds']
-        for policy in self.reservations._policies(call['context'], records):
-            balance = self.reservations.balances(policy['scope'], policy['subject'], records)
-            for unit in ('tokens', 'messages'):
-                if unit in policy['caps'] and balance[unit] >= policy['caps'][unit]:
-                    reached = True
-            if final and balance['invocations'] >= policy['caps']['invocations']:
-                reached = True
-            for window in policy.get('windows', {}).values():
-                if window['remaining'] is None:
-                    reached = True
-                elif now < window['reset_at']:
-                    unit = window['unit']
-                    exposed = [r for key, r in records.items() if r['type'] == 'invocation'
-                               and self.reservations._matches(r, policy['scope'], policy['subject'])
-                               and (r['accepted_seq'] > window['store_watermark'] or key in window['outstanding'])]
-                    used = sum((r['observed'] if unit == 'wall_seconds' else r['charge']).get(unit, 0)
-                               for r in exposed)
-                    if window['remaining'] == 0 or (used >= window['remaining'] and (unit != 'invocations' or final)):
+        try:
+            reached = now - active['start'] >= active['wall_seconds']
+            if reached:
+                self._stop(active)
+            receipt = self.reservations.report(command_id, invocation, sequence, usage,
+                                               now=now, final=final, outcome=outcome)
+            records = self.reservations._records()
+            call = next(r for r in records.values() if r['type'] == 'invocation' and r['invocation'] == invocation
+                        and r['context']['domain'] == self.reservations.domain)
+            reached = reached or call['observed'].get('wall_seconds', 0) >= active['wall_seconds']
+            for policy in self.reservations._policies(call['context'], records):
+                balance = self.reservations.balances(policy['scope'], policy['subject'], records)
+                for unit in ('tokens', 'messages'):
+                    if unit in policy['caps'] and balance[unit] >= policy['caps'][unit]:
                         reached = True
-        if reached and not active['stopped']:
+                if final and balance['invocations'] >= policy['caps']['invocations']:
+                    reached = True
+                for window in policy.get('windows', {}).values():
+                    if window['remaining'] is None:
+                        reached = True
+                    elif now < window['reset_at']:
+                        unit = window['unit']
+                        exposed = [r for key, r in records.items() if r['type'] == 'invocation'
+                                   and self.reservations._matches(r, policy['scope'], policy['subject'])
+                                   and (r['accepted_seq'] > window['store_watermark'] or key in window['outstanding'])]
+                        used = sum((r['observed'] if unit == 'wall_seconds' else r['charge']).get(unit, 0)
+                                   for r in exposed)
+                        if window['remaining'] == 0 or (used >= window['remaining'] and (unit != 'invocations' or final)):
+                            reached = True
+            if reached:
+                self._stop(active)
+            return dict(receipt, stop_required=reached)
+        except Exception:
+            # Reporting, authorization and policy reads must fail closed for the worker.
+            self._stop(active)
+            raise
+
+    def _stop(self, active):
+        if not active['stopped']:
             self.stop(active['dispatch'])
             active['stopped'] = True
-        return dict(receipt, stop_required=reached)
