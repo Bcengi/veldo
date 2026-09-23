@@ -127,6 +127,18 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: Claude Code and Codex run through the logged-in subscriptions; each invocation checks its
+  usage cap before launch, usage is settled once from the CLI's own report, and totals are shown per
+  account, project and unit.
+- Threat model: a worker or tool child reading the provider model credential, and a worker's own report
+  claiming less usage than the CLI recorded. MCP servers keep the credentials their configuration gives
+  them (VELDO-0127). The owner's account and the installed engine are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a child
+  deliberately hunting credentials through kernel interfaces; CLI report formats the installed CLIs do
+  not produce; lost reports after a crash (Release 2).
+
 ## Notes
 
 Qualify one logged-in subscription account for each of Claude Code and Codex on the two MVP
