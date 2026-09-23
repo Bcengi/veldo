@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -164 +164 @@
+@@ -210 +210 @@
 -        raise Stopped('eligibility_required')
 +        return None

@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -170 +170 @@
+-        return self._calls.open_dispatch(unit["spec"], context=context)
++        return unit.get("dispatch")  # defect: the work loop's unit carries no identity

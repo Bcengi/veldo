@@ -1,0 +1,163 @@
+{
+ "production_at": "0ea33e3",
+ "substituted_modules": [
+  ".veldo/control_eligibility.py",
+  ".veldo/dispatch.py",
+  ".veldo/executor.py",
+  ".veldo/frontier.py",
+  ".veldo/plan.py",
+  ".veldo/runstatus.py",
+  ".veldo/work.py",
+  ".veldo/work_state.py",
+  "bin/veldo"
+ ],
+ "fixture_substitution": [
+  "calls = EL.StationCalls(gate, guards, account='acct-floor', clock=tick)",
+  "calls = EL.StationCalls(gate, guards)"
+ ],
+ "failed": [
+  "VELDO-0052 eligibility/entry-executor",
+  "VELDO-0052 eligibility/entry-dispatch-build",
+  "VELDO-0052 eligibility/executor-station-decisions",
+  "VELDO-0052 eligibility/executor-rechecks-every-launch",
+  "VELDO-0052 eligibility/enrollment-git-error-stops",
+  "VELDO-0052 completion/status-reader-agrees",
+  "VELDO-0052 reservations/work-loop-dispatch-identity",
+  "VELDO-0052 completion/landed-units-not-reoffered",
+  "VELDO-0052 eligibility/production-entries-build-the-gate"
+ ],
+ "passed": 37,
+ "observed": {
+  "executor": {
+   "unwired": "ready",
+   "unwired_builds": [
+    [
+     "VELDO-9106",
+     false
+    ]
+   ],
+   "unwired_reviews": [
+    false
+   ],
+   "wired_launches": [],
+   "producer_as_reviewer": [
+    "raised",
+    "TypeError:Executor.__init__() got an unexpected keyword argument 'context'"
+   ],
+   "rechecks": {
+    "withdrawn": {
+     "builds": 0,
+     "outcome": [
+      "raised",
+      "TypeError:Executor.__init__() got an unexpected keyword argument 'context'"
+     ]
+    },
+    "reaccepted": {
+     "builds": 0,
+     "outcome": [
+      "raised",
+      "TypeError:Executor.__init__() got an unexpected keyword argument 'context'"
+     ]
+    }
+   }
+  },
+  "enrollment_git_error": {
+   "root": [
+    "ok",
+    null
+   ],
+   "subdirectory": [
+    "ok",
+    null
+   ],
+   "frontier": [
+    "ok",
+    [
+     "VELDO-9101",
+     "VELDO-9102",
+     "VELDO-9103",
+     "VELDO-9104",
+     "VELDO-9105",
+     "VELDO-9106",
+     "VELDO-9107",
+     "VELDO-9108",
+     "VELDO-9130",
+     "VELDO-9131",
+     "VELDO-9132",
+     "VELDO-9133",
+     "VELDO-9134",
+     "VELDO-9135"
+    ]
+   ]
+  },
+  "status_reader": {
+   "items": null,
+   "plan_items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "ready (frontier)",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "plan_enrolled": [
+    "raised",
+    "Stopped:eligibility_required"
+   ],
+   "status_enrolled": null
+  },
+  "work_loop": {
+   "handed_keys": [
+    [
+     "eligibility",
+     "generation",
+     "holder",
+     "kind",
+     "plan",
+     "requires",
+     "spec"
+    ]
+   ],
+   "launched": [],
+   "slot_context": null
+  },
+  "landed_offers": {
+   "VELDO-9161": "build",
+   "VELDO-9163": "build",
+   "VELDO-9162": "review"
+  },
+  "production_entries": {
+   "executor": {
+    "exit": 1,
+    "said": [
+     "veldo_eligibility_exec.Stopped: eligibility stopped: eligibility_required"
+    ]
+   },
+   "plan": {
+    "exit": 1,
+    "said": [
+     "veldo_eligibility_plan.Stopped: eligibility stopped: eligibility_required"
+    ]
+   },
+   "work": {
+    "exit": 1,
+    "said": [
+     "veldo_eligibility_plan.Stopped: eligibility stopped: eligibility_required"
+    ]
+   },
+   "status": {
+    "exit": 0,
+    "said": [
+     "}"
+    ]
+   },
+   "untrusted": {
+    "exit": 1,
+    "said": [
+     "veldo_eligibility_exec.Stopped: eligibility stopped: eligibility_required"
+    ]
+   }
+  },
+  "raised": []
+ }
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -527 +527 @@
+-            current = self._decide(gate, sid, launch, decision)
++            current = decision if launch == "build" else self._decide(gate, sid, launch, decision)  # defect

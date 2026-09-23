@@ -1,5 +1,5 @@
 --- a/.veldo/frontier.py
 +++ b/.veldo/frontier.py
-@@ -183 +183 @@
+@@ -192 +192 @@
 -    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))
 +    status = _status_map(idx)

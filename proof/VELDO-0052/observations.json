@@ -23,7 +23,7 @@
      "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
      "unit": 1
     },
-    "decision_id": "a0f0d9b2-0afc-4399-b4d5-8da84e5cd38a",
+    "decision_id": "34f026ed-8ff3-4c80-9d0e-49bb9b0b2089",
     "domain_uuid": "domain-52",
     "follows": null,
     "operation": "selection",
@@ -37,7 +37,7 @@
      "stale_subject"
     ],
     "unit": "VELDO-9105",
-    "watermark": 36
+    "watermark": 38
    },
    {
     "accepted_inputs": {
@@ -54,7 +54,7 @@
      "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
      "unit": 1
     },
-    "decision_id": "e9ca79d7-bac9-4a82-9965-e8930e11c32f",
+    "decision_id": "bc90c02e-c872-4619-87df-d43738da7ba6",
     "domain_uuid": "domain-52",
     "follows": null,
     "operation": "claim",
@@ -68,9 +68,56 @@
      "stale_subject"
     ],
     "unit": "VELDO-9105",
-    "watermark": 36
+    "watermark": 38
    }
   ],
+  "enrollment_git_error": {
+   "frontier": [
+    "raised",
+    "Stopped:enrollment_unanswerable"
+   ],
+   "root": [
+    "raised",
+    "Stopped:enrollment_unanswerable"
+   ],
+   "subdirectory": [
+    "raised",
+    "Stopped:enrollment_unanswerable"
+   ]
+  },
+  "executor": {
+   "producer_as_reviewer": "eligibility refused before review: reviewer_not_independent",
+   "rechecks": {
+    "reaccepted": {
+     "builds": 1,
+     "outcome": "eligibility refused before build: stale_input:admission"
+    },
+    "withdrawn": {
+     "builds": 1,
+     "outcome": "eligibility refused before build: stale_input:admission; missing_authority:admission"
+    }
+   },
+   "unwired": [
+    "raised",
+    "Stopped:reservation_required"
+   ],
+   "unwired_builds": [],
+   "unwired_reviews": [],
+   "wired_launches": [
+    [
+     "claude_code",
+     true
+    ],
+    [
+     "codex",
+     true
+    ],
+    [
+     "codex",
+     true
+    ]
+   ]
+  },
   "fresh_reader": {
    "eligibility": {
     "VELDO-9120": false,
@@ -198,7 +245,7 @@
    }
   },
   "gate_status": {
-   "accepted": 204,
+   "accepted": 241,
    "pending": [
     "VELDO-9101",
     "VELDO-9102",
@@ -210,7 +257,10 @@
     "VELDO-9111",
     "VELDO-9160"
    ],
-   "refused": 124
+   "refused": 149
+  },
+  "landed_offers": {
+   "VELDO-9163": "build"
   },
   "launches": {
    "dispatch_builds": [
@@ -235,8 +285,48 @@
     "VELDO-9106"
    ]
   },
+  "production_entries": {
+   "executor": {
+    "exit": 2,
+    "said": [
+     "executor stopped: reservation_required"
+    ]
+   },
+   "plan": {
+    "exit": 1,
+    "said": [
+     "  - eligibility refused: missing_authority:admission"
+    ]
+   },
+   "status": {
+    "exit": 0,
+    "said": [
+     "}"
+    ]
+   },
+   "untrusted": {
+    "exit": 2,
+    "said": [
+     "executor stopped: host_trust_required"
+    ]
+   },
+   "work": {
+    "exit": 2,
+    "said": [
+     "veldo work stopped: authority_required"
+    ]
+   }
+  },
   "raised": [],
   "receiver": [
+   [
+    "claude_code",
+    "exec-build-VELDO-9106",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
    [
     "claude_code",
     "build-VELDO-9106",
@@ -564,6 +654,62 @@
     [
      "configured-tool"
     ]
+   ],
+   [
+    "claude_code",
+    "xb-build-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "xb-review-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "xb-review-more-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "xc-build-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "xr-withdrawn-build-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "xr-reaccepted-build-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "loop-build-VELDO-9106",
+    true,
+    [
+     "configured-tool"
+    ]
    ]
   ],
   "stale_refusals": {
@@ -719,9 +865,68 @@
     ],
     "VELDO-9106": []
    }
+  },
+  "status_reader": {
+   "items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "ready (frontier)",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "plan_enrolled": [
+    "raised",
+    "Stopped:eligibility_required"
+   ],
+   "plan_items": {
+    "VELDO-9101": "ready (frontier)",
+    "VELDO-9102": "ready (frontier)",
+    "VELDO-9103": "ready (frontier)",
+    "VELDO-9104": "ready (frontier)",
+    "VELDO-9105": "ready (frontier)",
+    "VELDO-9106": "shipped_without_landing_receipt (frontier)"
+   },
+   "status_enrolled": "eligibility_required"
+  },
+  "work_loop": {
+   "handed_keys": [
+    [
+     "eligibility",
+     "generation",
+     "holder",
+     "kind",
+     "plan",
+     "requires",
+     "spec"
+    ],
+    [
+     "eligibility",
+     "generation",
+     "holder",
+     "kind",
+     "plan",
+     "requires",
+     "spec"
+    ]
+   ],
+   "launched": [
+    [
+     "claude_code",
+     "loop-build-VELDO-9106",
+     true
+    ]
+   ],
+   "slot_context": {
+    "account": "acct-floor",
+    "domain": "domain-52",
+    "project": "p1",
+    "repository": "repository-52",
+    "unit": "VELDO-9106"
+   }
   }
  },
- "passed": 32,
+ "passed": 46,
  "rows": [
   [
    "VELDO-0052 eligibility/registrations-from-call-sites",
@@ -788,6 +993,34 @@
    true
   ],
   [
+   "VELDO-0052 eligibility/executor-station-decisions",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/executor-rechecks-every-launch",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/enrollment-git-error-stops",
+   true
+  ],
+  [
+   "VELDO-0052 completion/status-reader-agrees",
+   true
+  ],
+  [
+   "VELDO-0052 reservations/work-loop-dispatch-identity",
+   true
+  ],
+  [
+   "VELDO-0052 completion/landed-units-not-reoffered",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/production-entries-build-the-gate",
+   true
+  ],
+  [
    "VELDO-0052 eligibility/observations",
    true
   ],
@@ -848,10 +1081,38 @@
    true
   ],
   [
+   "VELDO-0052 ran/eligibility/executor-station-decisions",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/executor-rechecks-every-launch",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/enrollment-git-error-stops",
+   true
+  ],
+  [
+   "VELDO-0052 ran/completion/status-reader-agrees",
+   true
+  ],
+  [
+   "VELDO-0052 ran/reservations/work-loop-dispatch-identity",
+   true
+  ],
+  [
+   "VELDO-0052 ran/completion/landed-units-not-reoffered",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/production-entries-build-the-gate",
+   true
+  ],
+  [
    "VELDO-0052 ran/eligibility/observations",
    true
   ]
  ],
  "suite": "60_veldo_0052_eligibility.py",
- "suite_seconds": 0.65
+ "suite_seconds": 1.16
 }

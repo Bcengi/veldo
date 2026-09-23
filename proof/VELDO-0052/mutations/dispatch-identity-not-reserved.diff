@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -677,2 +677 @@
+-                self._reservations().reserve_worker('worker/' + dispatch, dispatch, self.account, project, unit,
+-                                                    now=self.clock())
++                pass  # defect: an identity no worker slot was reserved for

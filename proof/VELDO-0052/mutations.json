@@ -1,9 +1,9 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 52 --diff-dir proof/VELDO-0052/mutations",
  "summary": {
-  "mutations_rejected": 22,
+  "mutations_rejected": 36,
   "green_suites": {
-   "60_veldo_0052_eligibility.py": 58
+   "60_veldo_0052_eligibility.py": 72
   }
  },
  "mutations": [
@@ -30,7 +30,6 @@
    "target_rows": [
     "eligibility/entry-dispatch-review"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/registrations-from-call-sites",
@@ -50,7 +49,8 @@
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-work-rechecks",
-    "eligibility/stale-input"
+    "eligibility/stale-input",
+    "eligibility/executor-rechecks-every-launch"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -62,7 +62,6 @@
    "target_rows": [
     "eligibility/stale-input"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/stale-input"
@@ -77,7 +76,6 @@
    "target_rows": [
     "eligibility/entry-frontier"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-frontier",
@@ -94,10 +92,10 @@
    "target_rows": [
     "eligibility/entry-executor"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
-    "eligibility/entry-executor"
+    "eligibility/entry-executor",
+    "eligibility/executor-rechecks-every-launch"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -109,10 +107,10 @@
    "target_rows": [
     "eligibility/entry-plan"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
-    "eligibility/entry-plan"
+    "eligibility/entry-plan",
+    "eligibility/production-entries-build-the-gate"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -124,7 +122,6 @@
    "target_rows": [
     "eligibility/entry-dispatch-build"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-dispatch-build",
@@ -140,7 +137,6 @@
    "target_rows": [
     "eligibility/entry-publication"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-publication",
@@ -156,7 +152,6 @@
    "target_rows": [
     "eligibility/entry-work-rechecks"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-work-rechecks"
@@ -171,7 +166,6 @@
    "target_rows": [
     "eligibility/entry-work-rechecks"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-work-rechecks"
@@ -186,10 +180,10 @@
    "target_rows": [
     "eligibility/enrolled-entry-stops"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
-    "eligibility/enrolled-entry-stops"
+    "eligibility/enrolled-entry-stops",
+    "completion/status-reader-agrees"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -201,7 +195,6 @@
    "target_rows": [
     "eligibility/registrations-from-call-sites"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/registrations-from-call-sites"
@@ -216,7 +209,6 @@
    "target_rows": [
     "eligibility/named-refusals"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/entry-frontier",
@@ -227,7 +219,8 @@
     "eligibility/named-refusals",
     "eligibility/entry-dispatch-build",
     "eligibility/entry-dispatch-review",
-    "eligibility/entry-publication"
+    "eligibility/entry-publication",
+    "reservations/work-loop-dispatch-identity"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -239,7 +232,6 @@
    "target_rows": [
     "eligibility/observations"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "eligibility/observations"
@@ -269,7 +261,6 @@
    "target_rows": [
     "completion/readers-agree"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "completion/readers-agree",
@@ -285,7 +276,6 @@
    "target_rows": [
     "completion/readers-agree"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "completion/readers-agree"
@@ -300,7 +290,6 @@
    "target_rows": [
     "completion/consumers-from-call-sites"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "completion/consumers-from-call-sites"
@@ -320,7 +309,8 @@
    "red_rows": [
     "eligibility/entry-dispatch-review",
     "reservations/forbidden-call-observation",
-    "reservations/unknown-usage-retained"
+    "reservations/unknown-usage-retained",
+    "eligibility/executor-station-decisions"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -332,7 +322,6 @@
    "target_rows": [
     "reservations/forbidden-call-observation"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "reservations/forbidden-call-observation",
@@ -349,7 +338,6 @@
    "target_rows": [
     "reservations/unknown-usage-retained"
    ],
-   "declared_falsifier_of": null,
    "baseline": "green",
    "red_rows": [
     "reservations/forbidden-call-observation",
@@ -358,6 +346,241 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/reservation-retry-bypass.diff"
+  },
+  {
+   "mutation": "enrolled-git-error-reads-unenrolled",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/enrollment-git-error-stops"
+   ],
+   "review_2026_09_23": "defect c",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/enrollment-git-error-stops"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/enrolled-git-error-reads-unenrolled.diff"
+  },
+  {
+   "mutation": "enrolled-discovery-ignores-ancestors",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/enrollment-git-error-stops"
+   ],
+   "review_2026_09_23": "defect c",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/enrollment-git-error-stops"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/enrolled-discovery-ignores-ancestors.diff"
+  },
+  {
+   "mutation": "standalone-lane-reads-front-matter",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "completion/landed-units-not-reoffered"
+   ],
+   "review_2026_09_23": "defect f",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "completion/landed-units-not-reoffered"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/standalone-lane-reads-front-matter.diff"
+  },
+  {
+   "mutation": "review-lane-reads-front-matter",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "completion/landed-units-not-reoffered"
+   ],
+   "review_2026_09_23": "defect f",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "completion/landed-units-not-reoffered"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/review-lane-reads-front-matter.diff"
+  },
+  {
+   "mutation": "status-reader-reads-status-text",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "completion/status-reader-agrees"
+   ],
+   "review_2026_09_23": "defect d",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "completion/status-reader-agrees",
+    "eligibility/production-entries-build-the-gate"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/status-reader-reads-status-text.diff"
+  },
+  {
+   "mutation": "status-reader-drops-the-stop",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "completion/status-reader-agrees"
+   ],
+   "review_2026_09_23": "defect d",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "completion/status-reader-agrees"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/status-reader-drops-the-stop.diff"
+  },
+  {
+   "mutation": "dispatch-without-identity",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "reservations/work-loop-dispatch-identity"
+   ],
+   "review_2026_09_23": "defect e",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-dispatch-build",
+    "reservations/work-loop-dispatch-identity"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-without-identity.diff"
+  },
+  {
+   "mutation": "dispatch-identity-not-reserved",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "reservations/work-loop-dispatch-identity"
+   ],
+   "review_2026_09_23": "defect e",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-executor",
+    "eligibility/entry-dispatch-build",
+    "eligibility/entry-dispatch-review",
+    "eligibility/executor-station-decisions",
+    "eligibility/executor-rechecks-every-launch",
+    "reservations/work-loop-dispatch-identity",
+    "ran/eligibility/entry-dispatch-build",
+    "ran/eligibility/entry-dispatch-review"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-identity-not-reserved.diff"
+  },
+  {
+   "mutation": "executor-launches-unreserved",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/executor-station-decisions"
+   ],
+   "review_2026_09_23": "defect a",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/executor-station-decisions",
+    "eligibility/production-entries-build-the-gate"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/executor-launches-unreserved.diff"
+  },
+  {
+   "mutation": "executor-review-skips-review-station",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/executor-station-decisions"
+   ],
+   "review_2026_09_23": "defect a",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/registrations-from-call-sites",
+    "eligibility/executor-station-decisions"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/executor-review-skips-review-station.diff"
+  },
+  {
+   "mutation": "executor-decides-once",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/executor-rechecks-every-launch"
+   ],
+   "review_2026_09_23": "defect b",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/executor-rechecks-every-launch"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/executor-decides-once.diff"
+  },
+  {
+   "mutation": "executor-recheck-without-ticket",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/executor-rechecks-every-launch"
+   ],
+   "review_2026_09_23": "defect b",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/executor-rechecks-every-launch"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/executor-recheck-without-ticket.diff"
+  },
+  {
+   "mutation": "entry-gate-not-built",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/production-entries-build-the-gate"
+   ],
+   "review_2026_09_23": "production entries",
+   "role": "reintroduces the defect",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/production-entries-build-the-gate"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/entry-gate-not-built.diff"
+  },
+  {
+   "mutation": "entry-gate-unverified-binding",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/production-entries-build-the-gate"
+   ],
+   "review_2026_09_23": "production entries",
+   "role": "second, different mutation",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/production-entries-build-the-gate"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/entry-gate-unverified-binding.diff"
   }
  ]
 }

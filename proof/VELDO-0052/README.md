@@ -16,15 +16,17 @@ build, plus reviewer independence. Predicates this release cannot evaluate refus
 
 **The registered entries** (`REGISTRATIONS`, checked against the actual call sites by AST):
 frontier `claimable._add` (selection), work loop `WorkLoop._claim_next` (claim, before and after the
-claim), plan `cmd_run_check` (direct execution), `Executor.run` (direct execution),
-`Dispatcher._dispatch_build` (build), `Dispatcher._dispatch_review` (review), `Dispatcher._land`
+claim), plan `cmd_run_check` (direct execution), `Executor._decide` (direct execution, and build
+and review for every launch the executor makes; see the 2026-09-23 section), `Dispatcher._dispatch_build` (build), `Dispatcher._dispatch_review` (review), `Dispatcher._land`
 (publication) and `CallHandle.invoke` (provider request, every subscription CLI call).
 
 **Enablement.** `gate_for()` is the one resolution each entry calls. A wired Gate is used. A
 repository carrying a VELDO-0029 enrollment binding with no Gate wired stops by name
 (`eligibility_required`), the same shape as claim.py's `authority_required`; a Git that cannot run
-is `enrollment_unanswerable`, never "not enrolled". Unenrolled trees keep pre-factory behavior, so
-no existing caller changed.
+is `enrollment_unanswerable`, never "not enrolled" (as first built, a Git that ran and FAILED still
+read as not enrolled; fixed on 2026-09-23, below). Unenrolled trees keep pre-factory behavior, so
+no existing caller changed. The command-line entries resolve through `entry_gate()` instead, which
+builds the Gate from the enrollment binding (2026-09-23, below).
 
 **Tickets.** Each decision carries the version and digest of every input it consumed: unit, backlog
 item, governing plan, admission, project, authority, claim, each dependency and its complete receipt
@@ -49,15 +51,15 @@ reservation before launch. A dispatcher with the floor enabled and no `StationCa
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/60_veldo_0052_eligibility.py`, 32 rows (17 assertions and 15 `ran/` rows, one
-per region, which show a mutation reddened its row by a failed assertion and not by raising). One
+Suite `scripts/suites/60_veldo_0052_eligibility.py`, first built with 32 rows (17 assertions and 15
+`ran/` rows, one per region; 46 rows after the 2026-09-23 fixes, which show a mutation reddened its row by a failed assertion and not by raising). One
 temporary tree is both the repository the entries read and the installed `.veldo` they run from.
 The checkout says every scenario is ready, planned and unblocked, and without a Gate the frontier
 offers all six, so each refusal is attributable to the store-backed decision.
 
 Every mutation below is registered as finding 52 in `scripts/check_teeth_mutations.py`, applied to
 a temporary copy, and required to turn its named row red while the unmutated copy is green. All 22
-reddened their target rows with their regions completing (`mutations.json`, each diff in
+first registered (36 after 2026-09-23) reddened their target rows with their regions completing (`mutations.json`, each diff in
 `mutations/`).
 
 **AC1, every enabled entry.** Rows `eligibility/registrations-from-call-sites`,
@@ -134,13 +136,149 @@ write them are other items.
 
 ## Cost and verification
 
-Suite 60 runs in 0.66 s (`observations.json`, `suite_seconds`). `--finding 52` drives 22 mutations
-in 32.7 s here (44 suite runs of about 0.74 s); in the gate's mutation stage that is about 36 worker
-runs across 8 workers, a few seconds. Well under the 60 s limit. Targeted checks run on this
-branch: `python3 -B scripts/selftest.py --suite 60_veldo_0052_eligibility` (32 passed),
-`python3 -B scripts/check_teeth_mutations.py --finding 52` (22 rejected), `python3 .veldo/validate.py
+As first built: suite 60 ran in 0.66 s and `--finding 52` drove 22 mutations in 32.7 s. After the
+2026-09-23 fixes: suite 60 runs in 1.16 s (`observations.json`, `suite_seconds`; about 0.3 s of it is
+the five real command-line processes of the production-entry row, run concurrently) and
+`--finding 52` drives 36 mutations in 85 s here (72 suite runs of about 1.2 s), which in the gate's
+mutation stage (8 workers, 120 s combined budget) is about 11 s of wall time. Targeted checks run on
+this branch: `python3 -B scripts/selftest.py --suite 60_veldo_0052_eligibility` (46 passed),
+`python3 -B scripts/check_teeth_mutations.py --finding 52` (36 rejected), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs and
 install-and-run, plus the existing suites that load the modules touched here. The full gate is run
 by the lead.
 
 `drive.py` regenerates `observations.json` from one run of the suite.
+
+## 2026-09-23 review: six reproduced defects and the production entries
+
+An independent reviewer reproduced six defects in the branch as built (0ea33e3) and suspected a
+seventh. Each was fixed test first: a suite row that fails its assertion over 0ea33e3's production
+modules, then the fix, then two registered mutations for finding 52, one reintroducing the defect and
+one a different way to break the same row. One commit per defect (2c25c03, 62610e1, 0bad5f1, 428ced5,
+6056b4e, 12526d0, 75066f8).
+
+**Recorded red at 0ea33e3.** `red.py 0ea33e3` runs the current suite over 0ea33e3's copies of every
+module the suite installs by name (the same production-copy anchors the mutation driver substitutes,
+plus bin/veldo). One fixture line constructs an interface 0ea33e3 did not have (StationCalls with the
+runner's account and clock) and is replaced by 0ea33e3's constructor; that is the only substitution,
+and the record names it. Result in `red-0ea33e3.json`: all seven new rows fail by assertion with every
+region completing (no `ran/` row red), and so do two existing rows whose assertions were tightened
+(`entry-executor`, `entry-dispatch-build`). The recorded observations show each defect itself: the
+direct executor built with no handle and launched a reviewer; a broken .git/config read as unenrolled
+and the frontier offered all fourteen specs; `veldo status` could not be asked for a Gate; the loop's
+unit carried no dispatch and nothing launched; the landed standalone unit was offered for build and
+the landed review unit for review; every command-line entry died with `eligibility_required`. Rows
+a and b could not reach their second half at 0ea33e3 because the executor took no claim-holder
+context; the reviewer's own scripts show those two defects there.
+
+**a, the direct executor's station decisions and reservation.** `Executor.run` with a Gate and no
+CallHandle built with no handle and launched its reviewer with no review-station decision, where the
+dispatcher stops with `reservation_required`. The executor now takes the runner's StationCalls and a
+claim-holder context: with the floor enabled and no StationCalls it stops by that same name; every
+build launch asks its own station (direct execution, or build when the dispatcher drives it) and
+every review launch asks the review station, reviewer independence included, before any reviewer
+exists; builder and reviewer each get a CallHandle reserved against their own dispatch. Row
+`eligibility/executor-station-decisions`: without StationCalls, `Stopped(reservation_required)` and
+nothing built or reviewed; with them, the run reaches ready and the three calls (one build, an
+initial and a follow-on review call) launch with their reservations already committed; a reviewer
+who is the producer is refused before review with the build already done. Mutations
+`executor-launches-unreserved` (reintroduced) and `executor-review-skips-review-station`.
+
+**b, a recheck before every launch.** The executor decided once before its loop, so cycle 2 built
+after admission was withdrawn during review. Every launch now re-decides its station over the
+complete current read set against the last accepted decision as its ticket. Row
+`eligibility/executor-rechecks-every-launch`: admission withdrawn during review halts cycle 2 before
+its build (`stale_input:admission; missing_authority:admission`), and admission re-accepted with its
+predicate still true halts it too (`stale_input:admission`), one build each. Mutations
+`executor-decides-once` (reintroduced) and `executor-recheck-without-ticket`.
+
+**c, a Git error is a stop.** `enrolled()` read any git error as "not enrolled", so a malformed
+.git/config removed the eligibility stop. Only a directory where Git's own discovery finds no
+repository at all (no `.git` or bare git directory at it or any ancestor on the same filesystem) is
+now unenrolled; a failing Git anywhere else is `enrollment_unanswerable`. Nothing is parsed from Git's
+messages. Row `eligibility/enrollment-git-error-stops`: the root, a subdirectory and the frontier
+stop by that name with the config broken; a plain directory is unenrolled; the restored config is
+healthy. Mutations `enrolled-git-error-reads-unenrolled` (reintroduced) and
+`enrolled-discovery-ignores-ancestors`.
+
+**d, one completion reader for `veldo status`.** `runstatus._burndown` read status text and answered
+in an enrolled repository where plan.py stops. It now reads plan.py's own `_status`, and the read
+model reports the stop by name (`burndown_stopped`) with the rest of the model intact. runstatus.py
+joined the footprint with a history line. Row `completion/status-reader-agrees`: with the Gate, every
+burn-down item equals plan status's own item state and a shipped file without a landing receipt is
+not shipped; enrolled with no Gate, plan status and `veldo status` both stop with
+`eligibility_required`. Mutations `status-reader-reads-status-text` (reintroduced) and
+`status-reader-drops-the-stop`.
+
+**e, the real path's dispatch identity.** The unit WorkLoop hands the Dispatcher never carries a
+dispatch identity, so every subscription call reserved against `dispatch=None` and was refused: the
+work loop could make no model call. The runner's StationCalls now opens each dispatch
+(`open_dispatch`), reserving its VELDO-0036 worker slot under the runner's account and the unit's
+accepted project, and the dispatcher opens one for build and one for review; a handle with no
+dispatch refuses by name. A slot is retired only by the supervisor's actual lifecycle observation
+(`Reservations.retire`), so until then it counts against capacity, the conservative direction.
+Row `reservations/work-loop-dispatch-identity` drives WorkLoop to Dispatcher to executor to builder
+with nothing hand-built: the units the loop handed over carry no dispatch key, the build call
+launches with its reservation committed, and its worker slot names this domain, repository, the
+runner's account, project p1 and the unit. Mutations `dispatch-without-identity` (reintroduced) and
+`dispatch-identity-not-reserved`.
+
+**f, every lane through the completion map.** `_is_standalone_build`, and the review lane beside it,
+read front matter directly, so a landed standalone unit whose file still said ready was offered for
+rebuild. Both lanes now ask the status map, which with the floor enabled is the completion reader.
+Row `completion/landed-units-not-reoffered`: a landed unit saying ready and a landed unit saying
+review are offered for nothing, while an unlanded ready one is still offered. Mutations
+`standalone-lane-reads-front-matter` (reintroduced) and `review-lane-reads-front-matter`.
+
+**The production entries build the Gate.** Suspected by the reviewer and confirmed: nothing in
+production built a Gate from the enrollment binding, so every command-line entry in an enrolled
+repository stopped with `eligibility_required`. `control_eligibility.entry_gate` is now the one
+production construction, called by `veldo work` and `veldo fleet`, `veldo_run`, the executor, frontier
+and plan commands and `veldo status` (command and served view). In an enrolled repository it reads the
+binding once and verifies that same record with VELDO-0029's `verify_binding` (signature over the
+binding's own fields, repository identity, clone and host), then opens a read-only Gate over the
+store, domain, repository and authority generation the binding names. The verifier is what the HOST
+trusts, never the workspace: `HostTrust`, installed at `$XDG_CONFIG_HOME/veldo/host_trust.json`
+(else `~/.config/veldo/host_trust.json`), names the host identity and an OpenSSH allowed-signers file
+for the `veldo-enrollment` signature namespace, checked with `ssh-keygen -Y verify`. No host trust
+is `host_trust_required`; a binding that does not verify is `enrollment_refused:<reason>`; an
+unreadable store is `unavailable_service:store`. bin/veldo and status_server.py joined the footprint
+with a history line. Row `eligibility/production-entries-build-the-gate` enrolls the fixture with a
+real ed25519 key and signature and runs the real commands as processes: the executor reaches
+`reservation_required` (its station decided eligible), `plan.py run-check` refuses VELDO-9101 by
+`missing_authority:admission`, `veldo work` reaches VELDO-0031's `authority_required` (the claim),
+`veldo status` shows a burn-down from landing receipts (a shipped file without one counts zero), a
+host with no trust installed stops with `host_trust_required`, and no process says
+`eligibility_required`. In process, the built Gate decides from the store, a binding re-addressed to
+another domain is `enrollment_refused:signature_invalid`, and a host with another identity is
+`enrollment_refused:host_binding_stale`. Mutations `entry-gate-not-built` (reintroduced) and
+`entry-gate-unverified-binding`.
+
+**Existing rows and mutations adjusted.** `entry-executor` now drives the executor with StationCalls
+and ceilings for every scenario, so only the station decision can hold a unit back; the falsifier
+`eligibility-executor-bypass` now bypasses the executor's station decision itself, because the
+per-launch recheck (b) catches a bypass of only the first decision. `entry-dispatch-build` also
+asserts that a refused unit is given no worker slot, which is the observable part of the
+dispatcher's own build decision now that the executor rechecks the build station. The anchor of
+`reservation-refusal-fails-open` moved with the one refusal-naming helper both reservation paths use.
+
+**The reviewer's scripts against the final code.** None of the six prints BUG. c and f run to their
+end with the fixed behavior (`Stopped(enrollment_unanswerable)`, both landed units offered nothing).
+a and b end at `Stopped(reservation_required)` from `Executor.run` before any build, the dispatcher's
+own stop; d prints its first comparison and then stops with `eligibility_required` where its script
+calls `_burndown` in an enrolled repository with no Gate; e's harness constructs StationCalls with no
+account, so the dispatcher refuses `reservation_required:account` before any build. Because a, b, d
+and e therefore end before the comparison they were written to make, the same four scenarios were
+also driven through the new interface (StationCalls with an account, the claim-holder context,
+`_burndown` with the Gate): a reaches ready with both launches reserved first, b halts cycle 2 at
+eligibility after one build, d's burn-down says `shipped_without_landing_receipt` exactly as plan
+status does and the enrolled reader reports `burndown_stopped: eligibility_required` with no
+burn-down, and e's builder call launches with its reservation committed. No BUG line in any run.
+
+**Not done here, stated.** Retirement of a dispatch's worker slot needs the supervisor's lifecycle
+observation, which no production path supplies yet; slots stay counted until then. A direct run
+makes subscription calls only for a claim holder, because `provider_request` requires
+`claim_current`. `veldo work` in an enrolled repository now stops at VELDO-0031's
+`authority_required` until an authority claim client is wired. claim.py's own `_authority` still reads
+a failing `git rev-parse` as "no ledger enrollment"; it is VELDO-0031's module and outside this
+footprint.

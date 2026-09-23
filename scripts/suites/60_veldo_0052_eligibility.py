@@ -522,7 +522,7 @@ def _v52_suite():
             check('eligibility/named-refusals', named_ok)
 
         with region('eligibility/entry-dispatch-build'):
-            hooks, before = Hooks(), len(receiver)
+            hooks, before, opened_before = Hooks(), len(receiver), len(calls.observations)
             disp = DSP.Dispatcher(repo_root=str(base), hooks=hooks, eligibility=gate, calls=calls, worker_id='worker-a')
             built = {sid: disp.dispatch(dict(kind='build', spec=sid, holder='worker-a', dispatch='d-' + sid))
                      for sid in SCENARIOS}
@@ -533,11 +533,13 @@ def _v52_suite():
                                                            dispatch='d-VELDO-9106')))
             restore()
             build_calls = receiver[before:]
+            # The dispatcher's own decision comes first: a refused unit is not even given a worker slot.
+            opened = [o['unit'] for o in list(calls.observations)[opened_before:] if o.get('operation') == 'open_dispatch']
             observed['launches']['dispatch_builds'] = list(hooks.builds)
             check('eligibility/entry-dispatch-build',
                    hooks.builds == ['VELDO-9106'] and built['VELDO-9106']['ok']
                    and all(built[s]['halted_at'] == 'eligibility' for s in SCENARIOS if s != 'VELDO-9106')
-                   and unclaimed['refusals'] == ['missing_authority:claim']
+                   and unclaimed.get('refusals') == ['missing_authority:claim'] and opened == ['VELDO-9106']
                    and [(a, i, c) for a, i, c, _ in build_calls] == [('claude_code', 'build-VELDO-9106', True)])
 
         with region('eligibility/entry-dispatch-review'):
