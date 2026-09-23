@@ -135,7 +135,8 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'grouped', 'stranger', 'telegram-edge',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'grouped', 'stranger',
+                'telegram-edge',
                 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
@@ -178,6 +179,8 @@ def _v65_checks(base):
                'pm5': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm6': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm7': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm8': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm9': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1137,6 +1140,33 @@ def _v65_checks(base):
                 presenter.store = S
             check(agree, 'a ledger revocation between frame()\'s read and its commit refuses the framing, as the presenter would',
                   raced_frame.get('outcome') == 'refused' and reason(presenter.present(z6)) == ('refused', 'missing_framing'))
+            # A revocation inside frame() itself, after its checks and before its pins are read.
+            for who, alias, what in (('pm8', 'Z-8', 'ledger'), ('pm9', 'Z-9', 'key')):
+                command(who, 'open', alias, assignment=content())
+                zid = I.assignment_id(ids['repository_uuid'], alias)
+                real_brief = presenter.inbox.brief
+                fired = [False]
+
+                def revoking_brief(rid, *a, who=who, what=what, **k):
+                    if not fired[0]:
+                        fired[0] = True
+                        if what == 'ledger':
+                            held = (entity('authority:revocations') or {}).get('data') or {'revocation_version': 0, 'revoked': {}}
+                            fixture('authority:revocations', 'revocation_ledger',
+                                    dict(held, revoked=dict(held.get('revoked') or {}, **{who: {'at': later, 'reason': 'test',
+                                                                                              'by': 'authority'}})))
+                        else:
+                            fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0,
+                                                                           revoked_at=later))
+                    return real_brief(rid, *a, **k)
+                presenter.inbox.brief = revoking_brief
+                try:
+                    gap_frame = frame(who, alias, 1, 'Low: a wrong choice costs one review cycle.')
+                finally:
+                    presenter.inbox.brief = real_brief
+                check(agree, 'a %s revocation after frame()\'s checks and before its commit refuses the framing' % what,
+                      fired[0] and gap_frame.get('outcome') == 'refused'
+                      and reason(presenter.present(zid)) == ('refused', 'missing_framing'))
 
         # Review 3 item 5: retry_after counts only as a bounded non-negative integer
         bounded = 'presentation/retry-after-bounded'

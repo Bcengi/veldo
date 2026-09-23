@@ -833,11 +833,14 @@ class Presenter:
                     or principal != c['requested_by']):
                 raise Refused('not_authorized', 'only the requester frames a request')
             fid = framing_id(request)
+            # Every authority input is pinned at the version in the one snapshot the checks above read,
+            # so a revocation landing anywhere between those checks and the commit refuses it.
+            seen = state['entities']
             versions = {request: brief['version'], fid: (self._entity(fid) or {}).get('version', 0),
-                        principal: entry['entity_version'], key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0),
-                        self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0),
-                        # The ledger as read: a revocation that lands before the commit refuses it.
-                        REVOCATION_LEDGER: (self._entity(REVOCATION_LEDGER) or {}).get('version', 0)}
+                        principal: entry['entity_version'],
+                        key['key_id']: seen.get(key['key_id'], {}).get('version', 0),
+                        self.membership.VERSIONS_ENTITY: seen.get(self.membership.VERSIONS_ENTITY, {}).get('version', 0),
+                        REVOCATION_LEDGER: seen.get(REVOCATION_LEDGER, {}).get('version', 0)}
             framing = {'schema': FRAMING_SCHEMA, 'request_id': request, 'request_version': c['request_version'],
                        'risk_statement': _words(command['risk_statement']), 'framed_by': principal,
                        'command_id': command['command_id'], 'key_id': key['key_id'], 'expected_versions': versions,
