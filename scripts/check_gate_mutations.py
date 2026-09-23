@@ -148,10 +148,10 @@ def read_inputs(root):
         # a warning means files are missing from the listing. Any OTHER output (a deprecation
         # notice, a hint) is refused too, since nobody has shown the listing is whole, but under
         # its own name so the cause is not misread.
-        text = warned.decode(errors='replace').strip()
-        kind = ('incomplete input listing' if 'could not open directory' in text
-                else 'unexpected git output while listing inputs')
-        raise Refused('driver_error', kind + ': ' + text.splitlines()[0])
+        lines = warned.decode(errors='replace').strip().splitlines()
+        missing = [line for line in lines if 'could not open directory' in line]
+        kind = 'incomplete input listing' if missing else 'unexpected git output while listing inputs'
+        raise Refused('driver_error', kind + ': ' + (missing or lines)[0])
     files = {}
     top = os.path.realpath(root)
     for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
