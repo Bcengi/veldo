@@ -1,0 +1,16 @@
+{
+  "command": "bash scripts/verify.sh",
+  "source_commit": "dbb335d2164c4904bb3da1408d03547592c5b337",
+  "tree_at_start": "clean",
+  "exit_code": -15,
+  "elapsed_seconds": 187.52997648203745,
+  "log": "/tmp/veldo-0120-compact-gate.log",
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "status": "interrupted_after_failure",
+  "full_log_sha256": "f2f9813cf5279e305ddb0e6e3be5ad0d540c6ffce2f33a064357d0f42868ea2a",
+  "failure": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/build-veldo-0120/scripts/selftest.py\", line 190, in <module>\n    exec(compile(_p.read_text(), str(_p), \"exec\"), shared.__dict__)\n  File \"/home/dmitry/projects/veldo-worktrees/build-veldo-0120/scripts/suites/12_warp_1210_hardening_four.py\", line 5976, in <module>\n    for _m10_r12_k, _m10_r12_v in _m10_r12_ex.map(_m10_r12_one, _M10_R12_JOBS):\n  File \"/usr/lib/python3.12/concurrent/futures/_base.py\", line 619, in result_iterator\n    yield _result_or_cancel(fs.pop())\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/concurrent/futures/_base.py\", line 317, in _result_or_cancel\n    return fut.result(timeout)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/concurrent/futures/_base.py\", line 449, in result\n    return self.__get_result()\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/concurrent/futures/_base.py\", line 401, in __get_result\n    raise self._exception\n  File \"/usr/lib/python3.12/concurrent/futures/thread.py\", line 58, in run\n    result = self.fn(*self.args, **self.kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/build-veldo-0120/scripts/suites/12_warp_1210_hardening_four.py\", line 5960, in _m10_r12_one\n    _p = _m10_r12_fifo_at(_root, _where)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/build-veldo-0120/scripts/suites/12_warp_1210_hardening_four.py\", line 5946, in _m10_r12_fifo_at\n    os.mkfifo(str(_p))\nFileNotFoundError: [Errno 2] No such file or directory\n   unit: FAIL\n",
+  "cause": "Global PYTHONDONTWRITEBYTECODE suppressed a cache deliberately warmed by the existing FIFO hardening test; os.mkfifo then failed because the cache directory did not exist.",
+  "resolution": "Remove the global bytecode override for the canonical gate; proof scripts independently disable their own bytecode writes. No test or production code changed."
+}

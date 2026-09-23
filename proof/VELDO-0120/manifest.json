@@ -130,6 +130,7 @@
   "artifacts": [
     "proof/VELDO-0120/README.md",
     "proof/VELDO-0120/absence.json",
+    "proof/VELDO-0120/compaction-initial-verification.json",
     "proof/VELDO-0120/digests.json",
     "proof/VELDO-0120/gate-mutations.json",
     "proof/VELDO-0120/gate.log",

@@ -176,3 +176,12 @@ First-use integration passed over the sanctioned writer mutation. See
 The two checkout-local gate byproducts are restored before the final proof
 commit; the reviewer records the stamp for the merged tree. Final proof-only
 changes follow this verified commit and do not claim to be its gate stamp.
+
+## Compaction verification
+
+The first compaction gate attempt was interrupted after an environment-induced
+unit failure: globally setting `PYTHONDONTWRITEBYTECODE=1` prevented the existing
+FIFO hardening test from warming the bytecode cache it deliberately probes.
+`compaction-initial-verification.json` preserves the full traceback, command,
+exit code and log digest. The retry uses the normal gate environment; bytecode
+suppression remains local to the proof scripts. No test was weakened.
