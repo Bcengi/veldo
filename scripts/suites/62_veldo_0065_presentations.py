@@ -73,7 +73,8 @@ def _v65_checks(base):
     rows = {name: [] for name in ('install/assets', 'presentation/receipt-binds-shown-content',
                                   'presentation/revision-identity', 'answer/current-presentation-only',
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
-                                  'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only')}
+                                  'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
+                                  'framing/stored-framing-reverified')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -101,7 +102,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'stranger', 'telegram-edge', 'telegram-edge-other'):
+    for who in ('authority', 'owner', 'pm', 'pm2', 'stranger', 'telegram-edge', 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -123,10 +124,12 @@ def _v65_checks(base):
     conn = S.open_store(str(base / 'authority' / 'control.sqlite3'))
     serial = [0]
 
-    def fixture(eid, kind, data):
+    def fixture(eid, kind, data, command_id=None, principal='authority'):
+        # A generic store write; a forger may choose its command id and principal.
         serial[0] += 1
         current = S.materialized_state(conn)['entities']
-        return S.execute(conn, dict(command_id='fixture-%d' % serial[0], principal='authority', operation='upsert_entity',
+        return S.execute(conn, dict(command_id=command_id or 'fixture-%d' % serial[0], principal=principal,
+                                    operation='upsert_entity',
                                     parameters=dict(entity_id=eid, kind=kind, data=data),
                                     expected_versions={eid: current.get(eid, {}).get('version', 0)}, artifact_digests=[],
                                     nonce='fixture-n-%d' % serial[0]), 'authority', journal_sign, 1)
@@ -134,6 +137,7 @@ def _v65_checks(base):
     members = {'owner': dict(principal_type='person', roles=['project_owner'], scope=['project-a']),
                'pm': dict(principal_type='service', roles=[], scope=['project-a']),
                'stranger': dict(principal_type='person', roles=[], scope=['project-a']),
+               'pm2': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -237,15 +241,16 @@ def _v65_checks(base):
         fid = 'presentation-framing:' + rid
         body = dict(ids, operation='frame', alias=alias, principal=who, request_version=version, risk_statement=risk,
                     command_id='direct-%d' % counter[0], nonce='direct-n-%d' % counter[0])
-        framing = {'schema': V.FRAMING_SCHEMA, 'request_id': rid, 'request_version': version, 'risk_statement': risk,
-                   'framed_by': who, 'command_id': body['command_id'], 'key_id': key or 'key-' + who, 'framed_at': _v65_time.time(),
-                   'signed': {'command': body, 'signature': sign_as(signer or who, S.canonical_bytes(body))}}
         current = S.materialized_state(conn)['entities']
+        pinned = {fid: current.get(fid, {}).get('version', 0), rid: current[rid]['version']}
+        framing = {'schema': V.FRAMING_SCHEMA, 'request_id': rid, 'request_version': version, 'risk_statement': risk,
+                   'framed_by': who, 'command_id': body['command_id'], 'key_id': key or 'key-' + who,
+                   'expected_versions': pinned,
+                   'signed': {'command': body, 'signature': sign_as(signer or who, S.canonical_bytes(body))}}
         return S.execute(conn, dict(command_id=body['command_id'], principal=who, operation=V.FRAME_OPERATION,
                                     parameters=dict(framing_id=fid, request_id=rid, framing=framing),
-                                    expected_versions={fid: current.get(fid, {}).get('version', 0),
-                                                       rid: current[rid]['version']},
-                                    artifact_digests=[], nonce=body['nonce']), 'authority', journal_sign, 1)
+                                    expected_versions=pinned, artifact_digests=[], nonce=body['nonce']),
+                         'authority', journal_sign, 1)
 
     def answered(rid, version):
         """The answer record of one request version, read from the store itself."""
@@ -651,6 +656,39 @@ def _v65_checks(base):
             direct_frame('pm', 'Q-1', 1, 'High: approving deploys to production.')
             check(own, 'control: the requester\'s own framing is current again',
                   reason(presenter.present(q1)) == ('already_presented', None))
+
+        # Review r2, r2b: a stored framing counts only when the frame operation accepted it
+        stored = 'framing/stored-framing-reverified'
+        with section(stored):
+            for alias in ('P2-1', 'P2-2'):
+                command('pm2', 'open', alias, assignment=content())
+            p21, p22 = (I.assignment_id(ids['repository_uuid'], a) for a in ('P2-1', 'P2-2'))
+            check(stored, 'control: the requester\'s framing through frame() is presented',
+                  reason(frame('pm2', 'P2-1', 1, 'Low: a wrong choice costs one review cycle.')) == ('accepted', None)
+                  and reason(presenter.present(p21)) == ('published', None))
+            unsent = dict(ids, operation='frame', alias='P2-2', principal='pm2', request_version=1,
+                          risk_statement='None: nothing can go wrong.', command_id='never-sent-1', nonce='never-sent-1')
+            asked = len(api['requests'])
+            for label, who, body in (('the requester signed but never submitted', 'pm2', unsent),
+                                     ('a stranger signed', 'stranger', dict(unsent, principal='stranger', command_id='s-1', nonce='s-1'))):
+                fixture('presentation-framing:' + p22, 'presentation_framing',
+                        {'schema': V.FRAMING_SCHEMA, 'request_id': p22, 'request_version': 1,
+                         'risk_statement': body['risk_statement'], 'framed_by': who, 'command_id': body['command_id'],
+                         'key_id': 'key-' + who, 'framed_at': _v65_time.time() - 100,
+                         'expected_versions': {'presentation-framing:' + p22: 0, p22: 1},
+                         'signed': {'command': body, 'signature': sign_as(who, S.canonical_bytes(body))}},
+                        command_id=body['command_id'], principal=who)
+                check(stored, 'a framing %s, written by a generic store write, is not presented' % label,
+                      reason(presenter.present(p22)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+            fixture('key-pm2', 'verification_key', dict(principal='pm2', public_key=public['pm2'], effective_at=0,
+                                                        revoked_at=_v65_time.time()))
+            check(stored, 'control: a revocation after the framing was accepted strands nothing',
+                  reason(presenter.present(p21)) == ('already_presented', None))
+            check(stored, 'frame() refuses the revoked key',
+                  reason(frame('pm2', 'P2-2', 1, 'None: nothing can go wrong.')) == ('refused', 'not_authorized'))
+            direct_frame('pm2', 'P2-2', 1, 'None: nothing can go wrong.')
+            check(stored, 'a framing the store accepted after the key was revoked is not presented',
+                  reason(presenter.present(p22)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
     finally:
         server.shutdown()
         server.server_close()

@@ -480,7 +480,7 @@ class Presenter:
         fdata = framing['data'] if framing and framing['kind'] == FRAMING_KIND else {}
         state = self.membership.authority_state(self.store, self.conn)
         if (fdata.get('request_version') != c['request_version'] or not _is_str(fdata.get('risk_statement'))
-                or not self._framing_signed(request, fdata, state, c['requested_by'])):
+                or not self._framing_signed(request, framing, state, c)):
             return 'missing_framing', None, versions
         entry = self.AC.membership_entry(state['membership'], c['owner'])
         active, _ = self.AC.active_member(entry, self.clock())
@@ -520,29 +520,59 @@ class Presenter:
             raise ValueError('the framing names another request version')
         return {fid: {'kind': FRAMING_KIND, 'data': framing}}
 
-    def _framing_signed(self, request, fdata, state, requester):
-        """Whether a stored framing is the requester's own signed command for exactly this request,
-        version and risk statement, verified against the key that accepted it (a later rotation
-        strands nothing; a revocation dated at or before the framing refuses it). A framing written
-        any other way, such as a generic store write, frames nothing."""
-        signed = fdata.get('signed') if isinstance(fdata.get('signed'), dict) else {}
+    def _framing_signed(self, request, framing, state, content):
+        """Whether a stored framing counts. It re-verifies, from the store's own records, everything
+        frame() checked: the entity's current version was written by the registered frame operation
+        with exactly this framing (the journal record's command digest is recomputed from the framing
+        and the versions it pinned, so a framing written by any other store command frames nothing);
+        the signed command is the frame command for this request and version, with this statement,
+        by the requester; the requester is still an active member entitled to propose in the
+        request's scope; and the signature verifies with the requester's key as it stood when the
+        STORE accepted the command (the publication record's committed time, never a field the
+        writer supplies). A revocation dated at or before that acceptance refuses; a later one
+        strands nothing."""
+        fid, data, version = framing_id(request), framing['data'], framing['version']
+        signed = data.get('signed') if isinstance(data.get('signed'), dict) else {}
         command, signature = signed.get('command'), signed.get('signature')
-        if not isinstance(command, dict) or not isinstance(signature, str) or not signature.isascii():
+        principal = data.get('framed_by')
+        if (not isinstance(command, dict) or not isinstance(signature, str) or not signature.isascii()
+                or principal != content['requested_by'] or command.get('principal') != principal
+                or command.get('operation') != 'frame' or not _is_str(command.get('alias'))
+                or self.inbox_request(command['alias']) != request
+                or command.get('request_version') != data.get('request_version')
+                or _words(command.get('risk_statement', '')) != data.get('risk_statement')
+                or command.get('command_id') != data.get('command_id')
+                or any(command.get(k) != v for k, v in self.ids.items())
+                or not isinstance(data.get('expected_versions'), dict)):
             return False
-        principal, at = fdata.get('framed_by'), fdata.get('framed_at')
-        if principal != requester:
+        written = None
+        for seq, command_id, digest, transition in self.conn.execute(
+                'SELECT seq, command_id, command_digest, transition FROM journal WHERE instr(transition, ?) > 0 '
+                'ORDER BY seq DESC', (json.dumps(fid),)):
+            entry = json.loads(transition).get(fid)
+            if entry is not None:
+                written = (seq, command_id, digest, entry)
+                break
+        if (written is None or written[3].get('version') != version
+                or written[3].get('digest') != self.store.digest_of({'kind': FRAMING_KIND, 'data': data, 'version': version})):
             return False
-        if (command.get('operation') != 'frame' or not _is_str(command.get('alias'))
-                or self.inbox_request(command['alias']) != request or command.get('principal') != principal
-                or command.get('request_version') != fdata.get('request_version')
-                or _words(command.get('risk_statement', '')) != fdata.get('risk_statement')
-                or command.get('command_id') != fdata.get('command_id')
-                or any(command.get(k) != v for k, v in self.ids.items()) or type(at) not in (int, float)):
+        accepted_by = dict(command_id=written[1], principal=principal, operation=FRAME_OPERATION,
+                           parameters=dict(framing_id=fid, request_id=request, framing=data),
+                           expected_versions=data['expected_versions'], artifact_digests=[], nonce=command.get('nonce'))
+        if written[1] != command['command_id'] or self.store.command_digest(accepted_by) != written[2]:
             return False
-        key = next((k for k in state['keyring'] if k.get('key_id') == fdata.get('key_id')
+        publication = self.store.publication_row_for_command(self.conn, written[1]) or {}
+        at = publication.get('committed_at')
+        if type(at) not in (int, float):
+            return False
+        key = next((k for k in state['keyring'] if k.get('key_id') == data.get('key_id')
                     and k.get('principal') == principal and _is_str(k.get('public_key'))), None)
-        if key is None or (key.get('effective_at') is not None and key['effective_at'] > at) \
-                or (key.get('revoked_at') is not None and key['revoked_at'] <= at):
+        if key is None or self.AC.active_key([key], principal, at) is None:
+            return False
+        entry = self.AC.membership_entry(state['membership'], principal)
+        if (not self.AC.active_member(entry, self.clock())[0]
+                or entry['principal_type'] not in self.AC.BOUNDARIES['proposal_commit']
+                or not self.membership.scope_covers(entry.get('scope'), content['scope'])):
             return False
         return self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), signature,
                                          self.AC.allowed_signers_line(principal, key['public_key']), principal)[0]
@@ -587,7 +617,7 @@ class Presenter:
                         self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0)}
             framing = {'schema': FRAMING_SCHEMA, 'request_id': request, 'request_version': c['request_version'],
                        'risk_statement': _words(command['risk_statement']), 'framed_by': principal,
-                       'command_id': command['command_id'], 'key_id': key['key_id'], 'framed_at': now,
+                       'command_id': command['command_id'], 'key_id': key['key_id'], 'expected_versions': versions,
                        'signed': {'command': command, 'signature': packet['signature']}}
             self.store.execute(self.conn, dict(command_id=command['command_id'], principal=principal,
                                                operation=FRAME_OPERATION,

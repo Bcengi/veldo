@@ -713,7 +713,7 @@ def cases():
                  "              'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
                  'presentation/receipt-binds-shown-content')
     presentation('framing-signature-unchecked',
-                 "                or not self._framing_signed(request, fdata, state, c['requested_by'])):\n",
+                 "                or not self._framing_signed(request, framing, state, c)):\n",
                  "                or False):\n", 'presentation/receipt-binds-shown-content')
     presentation('published-at-from-clock', "published_at=platform['date'], platform_text=platform['text'],",
                  "published_at=int(time.time()), platform_text=platform['text'],",
@@ -759,8 +759,16 @@ def cases():
     presentation('project-owner-frames-again', "                    or principal != c['requested_by']):\n",
                  "                    or (principal != c['requested_by'] and 'project_owner' not in (entry.get('roles') or []))):\n",
                  'framing/requester-only')
-    presentation('stored-framing-any-framer', "        if principal != requester:\n            return False\n", "",
+    presentation('stored-framing-any-framer', "                or principal != content['requested_by'] or command.get('principal') != principal\n",
+                 "                or command.get('principal') != principal\n",
                  'framing/requester-only')
+    # VELDO-0065 review r2, r2b: a stored framing counts only as the frame operation accepted it.
+    presentation('stored-framing-any-writer',
+                 "        if written[1] != command['command_id'] or self.store.command_digest(accepted_by) != written[2]:\n",
+                 "        if written[1] != command['command_id']:\n", 'framing/stored-framing-reverified')
+    presentation('stored-framing-key-at-any-time',
+                 "        if key is None or self.AC.active_key([key], principal, at) is None:\n",
+                 "        if key is None:\n", 'framing/stored-framing-reverified')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
