@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -426 +426 @@
+@@ -480 +480 @@
 -    if inside_repository(runtime['stage']):
 +    if inside_repository(root):

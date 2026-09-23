@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -457 +457 @@
+-        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):
++        if _shaped_like_repository(place):

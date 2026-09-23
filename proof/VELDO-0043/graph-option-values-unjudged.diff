@@ -1,0 +1,4 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -578 +577,0 @@
+-        words += [word.partition('=')[2] for word in words if word.startswith('-') and '=' in word]

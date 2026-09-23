@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -641 +641 @@
+-        raise Refused('runtime_unavailable', '; '.join(problems) + '; rebuild it with: ' + REBUILD_COMMAND)
++        raise Refused('runtime_unavailable', '; '.join(problems))

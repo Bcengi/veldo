@@ -1,12 +1,12 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -577,3 +577,2 @@
+@@ -667,3 +667,2 @@
 -        try:
 -            finished = _wait_unreaped(proc.pid, timeout)
 -        finally:
 +        finished = _wait_unreaped(proc.pid, timeout)
 +        if not finished:
-@@ -580,0 +580,3 @@
+@@ -670,0 +670,3 @@
 +        else:
 +            proc.wait()
 +        if True:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -473 +473 @@
+@@ -526 +526 @@
 -                if inside_repository(path):
 +                if key.strip() != 'command' and inside_repository(path):

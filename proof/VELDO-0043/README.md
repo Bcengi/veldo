@@ -71,19 +71,32 @@ over `start`, `advance`, `suspend` and `cancel` and the proposal and failure out
   these is refused by name as `runtime_unavailable`, counted and observed:
   - a link at `runners/`, `work/` or the staged runner;
   - any of them not resolving under the resolved stage root;
-  - `runners/` or `work/` inside a repository (a planted `.git` gitfile);
-  - a working directory that fails `inside_repository()` immediately before launch (it is then
-    removed);
+  - `runners/` inside a repository;
+  - a working directory, under `work/`, that fails `inside_repository()` immediately before
+    launch (it is then removed);
   - any non-link bad shape (a file where a stage directory belongs, a directory where the staged
-    runner belongs, a file at the root) and any other stage OSError, each with its reason;
-  - a runtime whose interpreter, at any hop of its link chain, or any `pyvenv.cfg` value lies
-    inside a repository. Values are parsed as `key = value` lines and judged whole; the command
-    line is split with shlex and over every run of words starting with `/`. This refusal names
-    the recovery command, `python3 .veldo/control_graph_install.py --rebuild`.
+    runner belongs, a file at the root), any other stage OSError, and a symlink loop or a NUL
+    byte, each with its reason;
+  - a runtime whose interpreter, or any `pyvenv.cfg` value, lies inside a repository, or cannot
+    be judged. The interpreter is resolved component by component the way the kernel does: a link
+    at any component, a relative target from the link's own directory, and a later `..` taken
+    after the link. Every run end on the way is judged. `pyvenv.cfg` values are parsed as
+    `key = value` lines and judged whole, with surrounding quotes removed. The command line is
+    split with shlex, each option's `=value` is judged too, and so is every run of
+    space-separated words starting with `/`. Judging runs is quadratic in candidates and cubic in
+    characters for a command of n words; the installer writes one short command line, so this
+    stays small. Each problem is reported once, and the refusal names the recovery command,
+    `python3 .veldo/control_graph_install.py --rebuild`.
 
-  `inside_repository()` judges a path both as written and as resolved, because a repository
-  virtual environment's python links out to the system one. The fixed environment sets all four
-  LangSmith tracing switches to `false`.
+  **`inside_repository()` asks Git.** It runs `git rev-parse --absolute-git-dir` through the
+  shared Git boundary (`.veldo/git_process.py`), under a fixed environment. It asks from the path
+  as written and as resolved, and from the first directory on every other filesystem above it,
+  because Git's discovery stops at a filesystem boundary and a child's Git can be told not to.
+  Git's own discovery covers every ancestor between. The earlier shape checks stay as a second
+  opinion: a `.git` entry (even one Git cannot read), a directory named `.git`, or `HEAD` with
+  `objects/`. A Git directory planted as `HEAD` + `refs/` + `commondir`, a shape only Git
+  recognizes, is refused in `runners/`, `work/` and at the stage root. The fixed environment
+  sets all four LangSmith tracing switches to `false`.
 - **Process group.** The child runs in its own session, reading its request from and writing its
   answer to anonymous files, not pipes. It is waited on without reaping, and its whole process
   **process group** is killed on the deadline and on every exit path: a normal answer, a
@@ -198,9 +211,41 @@ The review's p1 to p8 were rerun against the fixed tree:
 - p7 shows only its NOTE cases: encodings a reader must decode first.
 - p8: the process group dies on every exit path (normal, deadline, exception, KeyboardInterrupt, nonzero exit, refused answer). The only survivor is the new-session grandchild, which is the stated limit.
 
+## Round 5 findings addressed (review of cef2552..f770b91)
+
+origin/main was merged twice (`eb36415`, and `193076b`, which brings the parallel mutation
+driver). Red commit first, then the fix, as before.
+
+| Item | Red commit | Fix commit | Row |
+|---|---|---|---|
+| 1 (d2, d6b): the adapter re-implemented Git's repository rules; `HEAD` + `refs/` + `commondir` planted in `runners/`, `work/` or the stage root was not recognized | `d52c1ac` (all three launched and wrote priority) | `2c758ad` (ask Git; the shape checks stay as a second opinion; `work/` is judged through the child's working directory) | `graph/authority/stage-links` |
+| 2 (d3): the interpreter was judged link by link, not component by component | `5f4fcce` (the relative-`..` case; the directory-link case was already caught by asking Git) | `af02d40` | `graph/runtime/pyvenv-clean` |
+| 3 (d4, d6a): symlink loops and NUL bytes escaped | `0779089` (RuntimeError and ValueError escaped, and a loop in a pyvenv.cfg path launched) | `31b344b` | `graph/authority/stage-shapes` |
+| d5: venv `--prompt="<path>"` not judged; repeated problems | `ea439f6` | `5001f9b` | `graph/runtime/pyvenv-clean` |
+| Undriven behaviors: quote stripping, the stage-in-runtime check as written and against the resolved prefix, removal of a refused working directory, relative-link joining | cases added in `5001f9b`, `d52c1ac` and `af02d40` | the reviewer's ten mutants registered, nine as they were (the relative-join one is re-targeted to the new walker) | pyvenv-clean, stage-shapes, stage-links |
+| Minor: rebuild swap and restore on a failed second rename; request file OSError; each problem once | `798bfbf` | `c422738`, `5001f9b` | new `graph/runtime/rebuild-swap` |
+
+The review's d2, d3, d4, d6, p1, p3 and p5 were rerun against the fixed tree. The only adaptations
+were the probe harness now copying `git_process.py`, which the adapter needs beside it, and d3
+calling the new walker. Results:
+- d2, d3 (A and B), d6a, d6b, p1 and p3 are refused by name.
+- d4's loop is refused by name. d4's NUL NOTE remains: `runtime_problems()` itself raises there, and the adapter names it.
+- d5 keeps only NOTE cases that Python does not read as paths, such as an unquoted `--opt=` path containing a space.
+- p5 keeps only its NOTE cases for a trusted stage root that is a link.
+
+**The installer's `--rebuild` in a row.** Row `graph/runtime/rebuild-swap` runs the rebuild's own
+swap step, `swap_in()`, on temporary directories. It checks that the new runtime goes in and the
+old one leaves, and that a failed second rename puts the old runtime back. A full `--rebuild`
+downloads the locked wheels from PyPI and installs them. That is what the earlier ruling keeps out
+of the gate and the suite, so it was run by hand on this machine instead.
+
+**Not given a row.** An OSError while writing the request file now refuses `runtime_unavailable`
+and removes the working directory, but no row forces it. It needs the stage's `work/` to fail
+after the working directory inside it was created, which only a full disk or a race produces.
+
 ## Criteria and rows
 
-Suite `scripts/suites/59_veldo_0043_graph.py` has 20 rows (46 assertions with the shared preamble).
+Suite `scripts/suites/59_veldo_0043_graph.py` has 21 rows (47 assertions with the shared preamble).
 The runtime rows run the suite's workflows, spliced into a copy of the production runner, on the
 actual installed LangGraph through the production adapter. Because the runner is installed in
 the domain's linked worktree, what the adapter stages and launches is exactly what production
@@ -213,15 +258,16 @@ checks that the account's runtime and stage are left untouched, entry by entry.
 | Criterion | Rows | What they observe |
 |---|---|---|
 | AC1 | `graph/runtime/installed` | The runtime resolves at the passwd home path for this lock digest, and its stage at `<passwd home>/.local/state/veldo/graph-stage`. The runtime directory holds only `bin`, `include`, `lib`, `lib64`, `pyvenv.cfg` and `veldo-lock.txt`. Its distributions are exactly the 38 locked `(name, version)` pairs, with no `bin/pip`. |
-| AC1 | `graph/runtime/pyvenv-clean` | The installed runtime's `pyvenv.cfg` paths lie outside every repository. A runtime whose `pyvenv.cfg` `command` names a repository's `.venv/bin/python3` (itself a link to the system python) is refused `runtime_unavailable`, and nothing launches. Each `pyvenv.cfg` value is judged whole: a command whose repository path has a space (unquoted and quoted), `home`, `executable` and `base-prefix` naming a repository `.venv`. The interpreter is judged at every hop of its link chain: a runtime python linking through a repository `.venv` to the system python is caught. The refusal names `python3 .veldo/control_graph_install.py --rebuild`. |
+| AC1 | `graph/runtime/pyvenv-clean` | The installed runtime's `pyvenv.cfg` paths lie outside every repository. A runtime whose `pyvenv.cfg` `command` names a repository's `.venv/bin/python3` (itself a link to the system python) is refused `runtime_unavailable`, and nothing launches. Each `pyvenv.cfg` value is judged whole: a command whose repository path has a space (unquoted and quoted), `home`, `executable` and `base-prefix` naming a repository `.venv`. The interpreter is judged at every hop of its link chain: a runtime python linking through a repository `.venv` to the system python is caught. The refusal names `python3 .veldo/control_graph_install.py --rebuild`. The interpreter is resolved the way the kernel does: runtimes reaching the system python through a repository `.venv` by a directory link on a hop, or by a relative `inner/../python3` whose `..` follows a link first, are refused. A quoted `home`, and a venv `--prompt="<path>"` option naming a repository, are judged. Each problem is reported once. |
+| AC1 | `graph/runtime/rebuild-swap` | The installer's rebuild swap puts the new runtime in and removes the old one. When the second rename fails, the old runtime is back in place, and no retired copy is left. |
 | AC1 | `graph/runtime/lifecycle` | Start runs groom then size and suspends at rank. Suspend returns the same resume, advance with a versioned result returns the typed priority proposal, and cancel answers canceled. A failing node answers `missing_evidence`. Every one of these six answers is labelled langgraph 1.2.12, and **each of their six runner processes executed exactly one `CompiledStateGraph`** (counted at `Pregel.invoke`). The production runner (no workflows) answers `unsupported_workflow` labelled `none`. A stub answer through an adapter requiring runtime evidence is refused `missing_evidence`. |
-| AC1 | `graph/runtime/plain-data` | A LangGraph `Command` or `StateSnapshot` in a proposal, and a `Command` in graph notes, each answer `node_failed` naming the class. No accepted non-failure answer carries `langgraph.` or `__class__`. All 20 accepted answers are exact plain JSON. |
-| AC1 | `graph/runtime/tracing-off` | In each of the 20 launched runner processes the switches read `false`, langsmith reports tracing off, and no egress event occurs. The runner source has no SDK client use. |
+| AC1 | `graph/runtime/plain-data` | A LangGraph `Command` or `StateSnapshot` in a proposal, and a `Command` in graph notes, each answer `node_failed` naming the class. No accepted non-failure answer carries `langgraph.` or `__class__`. All 23 accepted answers are exact plain JSON. |
+| AC1 | `graph/runtime/tracing-off` | In each of the 23 launched runner processes the switches read `false`, langsmith reports tracing off, and no egress event occurs. The runner source has no SDK client use. |
 | AC1 | `graph/shape/closed-response`, `graph/shape/deep-answer` (stub runner) | Notes that are an object (an encoded Command), an open resume, a resume without notes, and a position containing `/` are all refused `invalid_response`. A 20,000-deep UTF-8 answer is refused by the bounded scan itself (`answer nests deeper than 32`). A 5,000-deep UTF-16-LE answer, built to desynchronize a byte scanner, is refused `invalid_response`. Both are counted and observed. |
-| AC2 | `graph/shape/closed-request` | Five malformed digests (a path after `sha256:`, a relative path, uppercase, short, malformed evidence) are refused. Unversioned or badly digested results, an open resume and object notes are refused `invalid_input`. Paths are refused `path_in_request` in every form tried: absolute, in notes, `~/`, `../`, `http://` or `https://x` followed by a path, a path inside JSON notes, `xhttp://`, `file://`, U+2215, U+FF0F, `%2F`, and a declared URL field with a `file:` scheme or no host. Identifiers with NUL and newline, or `..`, a 2 MB value and a self-referential list are refused `invalid_input`. A declared `source_url` with an https URL is accepted. An integer past the conversion limit (as a value or a version) is refused `invalid_input`. An author-named `source_url` or nested `x_url` carrying an https URL with a path, and a path used as a dict key, are refused `path_in_request`. There is no URL exemption. |
+| AC2 | `graph/shape/closed-request` | Five malformed digests (a path after `sha256:`, a relative path, uppercase, short, malformed evidence) are refused. Unversioned or badly digested results, an open resume and object notes are refused `invalid_input`. Paths are refused `path_in_request` in every case tried: absolute, in notes, `~/`, `../`, `http://` or `https://x` followed by a path, a path inside JSON notes, `xhttp://`, `file://`, U+2215, U+FF0F, `%2F`, a path used as a dict key, and https URLs under author-named `source_url` or nested `x_url` keys. The closed request schema declares no URL field, so no value is exempt. Identifiers with NUL and newline, or `..`, a 2 MB value, a self-referential list, and an integer past the conversion limit (as a value or a version) are refused `invalid_input`. |
 | AC2 | `graph/authority/no-direct-write` | The store lives in the Git common directory of a main repository; the runner source sits in the domain's linked worktree. A node searches from `argv[0]`, `__file__`, its working directory (ancestry, `.git` files followed to the common directory, and `git rev-parse --git-common-dir`), its own descriptors, its environment and its request, and writes to anything it finds. It finds nothing, and the store's tables are unchanged. Every runner ran from outside the suite's tree, and a stage inside the checkout is refused `runtime_unavailable`. With the domain process's TMPDIR inside the checkout, the child's own stdin and stdout still resolve under `<stage>/work/`. |
-| AC2 | `graph/authority/stage-links` | Knowing only its own `argv[0]`, a node swaps `<stage>/work`, and later `<stage>/runners`, for a link to `/proc/self/cwd`. The next exchange is refused `runtime_unavailable` each time. Nothing is written into the checkout, the store is unchanged, and the account's runtime and stage are untouched. A gitfile a node plants at `<stage>/runners/.git`, pointing at the authority repository, gets the next exchange refused before the child's script directory can reach it. |
-| AC2 | `graph/authority/stage-shapes` (stub) | Each non-link bad shape at the stage is refused `runtime_unavailable` with its own reason, counted and observed: `runners` a file, `work` a file, the staged runner a directory, the stage root a file, and `runners` unwritable with a tampered runner. So are a stage root written inside a repository that resolves outside one, and a stage root linked into the runtime. |
+| AC2 | `graph/authority/stage-links` | Knowing only its own `argv[0]`, a node swaps `<stage>/work`, and later `<stage>/runners`, for a link to `/proc/self/cwd`. The next exchange is refused `runtime_unavailable` each time. Nothing is written into the checkout, the store is unchanged, and the account's runtime and stage are untouched. A gitfile a node plants at `<stage>/runners/.git`, pointing at the authority repository, gets the next exchange refused before the child's script directory can reach it. `HEAD` + `refs/` + `commondir` planted in `runners/`, in `work/` and at the stage root is refused each time, because the adapter asks Git. The `work/` case is refused through the child working directory, and nothing is left behind in `work/`. A `.git` entry Git itself cannot read is caught by the shape check. |
+| AC2 | `graph/authority/stage-shapes` (stub) | Each non-link bad shape at the stage is refused `runtime_unavailable` with its own reason, counted and observed: `runners` a file, `work` a file, the staged runner a directory, the stage root a file, and `runners` unwritable with a tampered runner. So are a stage root written inside a repository that resolves outside one, and a stage root linked into the runtime. Each of these is refused by name, counted and observed: a stage root that is a self-link, a `pyvenv.cfg` path that is a symlink loop, a NUL byte in a `pyvenv.cfg` value, a stage written inside the runtime that resolves outside it, and a stage placed inside the real runtime when the runtime is named through a link. |
 | AC2 | `graph/authority/typed-proposals-only` | Admission, priority and completion assertions answer `node_failed` naming the key. An untyped proposal is refused. The one typed priority proposal is committed by the store's `upsert_entity` command as `owner`: version 2, priority 1, journal `seed-unit-1` then `commit-p-store`. |
 | AC2 (stated limit) | `graph/authority/proc-limit` | A node reads `/proc/<parent>/cwd` (the domain checkout) and `/proc/<parent>/fd` (the parent's own store connection). It records both and writes nothing. The row asserts they are still reachable. |
 | AC2 | `graph/boundary/process-group` (stub) | A node's own background subprocess, left behind at a 0.5 s deadline (`unknown_outcome`) or after a normal answer, never writes its marker: the whole group died with the exchange. |
@@ -239,38 +285,46 @@ audit record. Before that refusal existed, two earlier drives let the tracing mu
 `socket.getaddrinfo` and `socket.connect` toward LangSmith. No key was set, and the payload was
 synthetic.
 
-## Driven negative controls (finding 43, 42 mutations)
+## Driven negative controls (finding 43, 61 mutations)
 
 Each mutation edits a temporary production copy, and each named row goes red by a failed
 assertion. `mutations.json` (reproduced by `drive.py`) records every red row and the observation
-that explains it. The `.diff` files are the exact edits. The driver runs an unmutated baseline
-per case, and the gate's mutation stage adds an unchanged baseline and a byte-identical no-op per
-control group.
+that explains it; the `.diff` files are the exact edits. The driver runs one unmutated baseline per
+suite, and the gate's mutation stage adds a baseline and a byte-identical no-op per control group.
 
-| Target row | Mutation | Rows red |
+The three declared falsifiers are marked:
+- **AC1**: the runner writes LangGraph objects into the domain response through a class-tagging
+  encoder. The notes-path object reaches the adapter as a structure and is refused.
+- **AC2**: the graph child runs in the caller's checkout and writes priority directly.
+- **AC3**: authorization imports LangGraph.
+
+The proc-limit row's one mutation, `graph-proc-closed-by-nondumpable`, makes the adapter
+non-dumpable, which closes `/proc/<parent>` to a same-account child. It is the only production
+change short of confinement that alters that limit. The installed row has no mutation, because it
+checks this machine's installed state, which the suite never changes. The mutations named
+`graph-command-runs-removed` through `graph-root-file-check-dropped` are the round 5 reviewer's own.
+
+| Target row | Mutations | Rows red |
 |---|---|---|
-| `graph/isolated-enforcement` | `graph-authorization-imports-langgraph` (**AC3 declared**), `graph-authorization-dynamic-runtime-import`, `graph-authorization-unexercised-runtime-import` | `isolated-enforcement` |
-| `graph/start-unavailable` | `graph-start-without-runtime-launches`, `graph-start-unavailable-mislabelled` | `start-unavailable`, `isolated-enforcement` |
-| `graph/runtime/plain-data` | `graph-runner-emits-langgraph-object` (**AC1 declared**: a class-tagging encoder at the emit gate; the notes-path object reaches the adapter as a structure and is refused), `graph-runner-tuple-as-plain` | plain-data, and every row that reads suspended notes for the first |
-| `graph/runtime/lifecycle` | `graph-suspend-without-graph` (forged label, no graph; seen by the invocation count), `graph-runtime-evidence-unchecked` | lifecycle |
-| `graph/runtime/tracing-off` | `graph-child-inherits-caller-environment`, `graph-tracing-switch-on` | tracing-off |
-| `graph/runtime/pyvenv-clean` | `graph-pyvenv-unchecked`, `graph-pyvenv-command-ignored`, `graph-repository-judged-resolved-only`, `graph-pyvenv-values-split`, `graph-interpreter-final-hop-only` | pyvenv-clean |
-| `graph/authority/no-direct-write` | `graph-child-inherits-working-directory` (**AC2 declared**: the node writes priority directly), `graph-child-inherits-store-descriptor`, `graph-runner-launched-in-place`, `graph-descriptors-in-parent-tmpdir` | no-direct-write and downstream rows |
-| `graph/authority/typed-proposals-only` | `graph-runner-accepts-untyped-assertion`, `graph-untyped-proposal-read-as-priority` | typed-proposals-only |
-| `graph/authority/proc-limit` | `graph-proc-closed-by-nondumpable` (the adapter calls `prctl(PR_SET_DUMPABLE, 0)`, which closes `/proc/<parent>` to a same-account child; the review's real falsifier. The earlier notes-path mutants were retired because they broke the row's observation channel, not the limit) | proc-limit |
-| `graph/authority/stage-links` | `graph-stage-links-unchecked` (the stage directories used as found), `graph-stage-link-checks-off`, `graph-runners-repository-unchecked` | stage-links |
-| `graph/authority/stage-shapes` | `graph-stage-oserror-unnamed`, `graph-staged-runner-shape-unchecked`, `graph-stage-root-judged-resolved-only`, `graph-stage-inside-runtime-allowed` | stage-shapes |
-| `graph/boundary/process-group` | `graph-child-shares-session`, `graph-group-kept-on-exit` (the group killed only on the deadline) | process-group |
-| `graph/shape/deep-answer` | `graph-deep-answer-unbounded`, `graph-deep-answer-unnamed`, `graph-answer-utf16-unguarded` (bytes parsed, RecursionError not caught) | deep-answer |
-| `graph/shape/closed-request` | `graph-digest-prefix-only`, `graph-request-path-unchecked`, `graph-path-check-skips-keys`, `graph-unserializable-escapes`, `graph-request-size-unbounded` | closed-request |
-| `graph/shape/closed-response` | `graph-answer-resume-open`, `graph-answer-notes-any-plain` | closed-response |
+| `graph/isolated-enforcement` | `graph-authorization-imports-langgraph` (**AC3 declared**), `graph-authorization-dynamic-runtime-import`, `graph-authorization-unexercised-runtime-import` | the target row |
+| `graph/start-unavailable` | `graph-start-without-runtime-launches`, `graph-start-unavailable-mislabelled` | the target row; also `isolated-enforcement` |
+| `graph/runtime/plain-data` | `graph-runner-emits-langgraph-object` (**AC1 declared**), `graph-runner-tuple-as-plain` | the target row; also `authority/no-direct-write`, `authority/proc-limit`, `authority/typed-proposals-only`, `runtime/lifecycle`, `runtime/tracing-off` |
+| `graph/authority/no-direct-write` | `graph-child-inherits-working-directory` (**AC2 declared**), `graph-child-inherits-store-descriptor`, `graph-runner-launched-in-place`, `graph-descriptors-in-parent-tmpdir` | the target row; also `authority/stage-links`, `authority/typed-proposals-only`, `boundary/no-store-handle`, `runtime/plain-data`, `runtime/pyvenv-clean`, `runtime/tracing-off` |
+| `graph/authority/typed-proposals-only` | `graph-runner-accepts-untyped-assertion`, `graph-untyped-proposal-read-as-priority` | the target row; also `runtime/plain-data`, `shape/plain-data` |
+| `graph/runtime/tracing-off` | `graph-child-inherits-caller-environment`, `graph-tracing-switch-on` | the target row; also `boundary/no-store-handle` |
+| `graph/shape/deep-answer` | `graph-deep-answer-unbounded`, `graph-deep-answer-unnamed`, `graph-answer-utf16-unguarded` | the target row |
+| `graph/shape/closed-request` | `graph-digest-prefix-only`, `graph-request-path-unchecked`, `graph-unserializable-escapes`, `graph-path-check-skips-keys`, `graph-request-size-unbounded` | the target row |
+| `graph/shape/closed-response` | `graph-answer-resume-open`, `graph-answer-notes-any-plain` | the target row; also `shape/closed-request` |
+| `graph/runtime/lifecycle` | `graph-suspend-without-graph`, `graph-runtime-evidence-unchecked` | the target row |
+| `graph/authority/proc-limit` | `graph-proc-closed-by-nondumpable` | the target row |
+| `graph/authority/stage-links` | `graph-stage-links-unchecked`, `graph-stage-link-checks-off`, `graph-runners-repository-unchecked`, `graph-git-not-asked`, `graph-refused-workdir-kept`, `graph-shape-opinion-dropped` | the target row; also `authority/no-direct-write`, `authority/stage-shapes`, `runtime/tracing-off` |
+| `graph/authority/stage-shapes` | `graph-runtime-loop-escapes`, `graph-stage-loop-escapes`, `graph-nul-path-judged`, `graph-stage-written-place-dropped`, `graph-stage-resolved-place-dropped`, `graph-prefix-resolve-dropped`, `graph-root-file-check-dropped`, `graph-stage-oserror-unnamed`, `graph-staged-runner-shape-unchecked`, `graph-stage-root-judged-resolved-only`, `graph-stage-inside-runtime-allowed` | the target row |
+| `graph/runtime/pyvenv-clean` | `graph-command-runs-removed`, `graph-command-shlex-removed`, `graph-quote-strip-removed`, `graph-rebuild-message-dropped`, `graph-option-values-unjudged`, `graph-problems-repeated`, `graph-pyvenv-unchecked`, `graph-pyvenv-command-ignored`, `graph-pyvenv-values-split`, `graph-interpreter-final-hop-only`, `graph-relative-link-misjoined`, `graph-repository-judged-resolved-only` | the target row; also `authority/stage-shapes` |
+| `graph/runtime/rebuild-swap` | `graph-rebuild-no-restore`, `graph-rebuild-old-left` | the target row |
+| `graph/boundary/process-group` | `graph-child-shares-session`, `graph-group-kept-on-exit` | the target row |
 
-Result of `python3 -B scripts/check_teeth_mutations.py --finding 43`: 42 of 42 rejected, each
-baseline green with 46 assertions (`{"mutations_rejected": 42, "green_suites": {"59_veldo_0043_graph.py": 46}}`).
-
-The installed row has no registered mutation, because it checks this machine's installed state,
-which the suite never changes. The proc-limit row has one: no other production edit short of
-confinement changes what `/proc` exposes.
+Result of `python3 -B scripts/check_teeth_mutations.py --finding 43 --jobs 6`: 61 of 61 rejected,
+baseline green with 47 assertions (`{"mutations_rejected": 61, "green_suites": {"59_veldo_0043_graph.py": 47}}`).
 
 ## The dependency closure
 

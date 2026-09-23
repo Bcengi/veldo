@@ -1,5 +1,4 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -640 +640 @@
--    if problems:
-+    if False:
+@@ -594 +593,0 @@
+-        _remove(path)

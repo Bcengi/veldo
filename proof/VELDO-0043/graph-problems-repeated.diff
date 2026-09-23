@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -528 +528 @@
+-    return list(dict.fromkeys(problems))
++    return problems

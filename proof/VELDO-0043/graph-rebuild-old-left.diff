@@ -1,0 +1,7 @@
+--- a/.veldo/control_graph_install.py
++++ b/.veldo/control_graph_install.py
+@@ -83,4 +82,0 @@
+-    if retired.is_symlink() or not retired.is_dir():
+-        retired.unlink()
+-    else:
+-        shutil.rmtree(retired)

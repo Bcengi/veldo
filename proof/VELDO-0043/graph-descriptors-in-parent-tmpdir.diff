@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -567 +567 @@
--    with tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:
-+    with tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:
+@@ -652 +652 @@
+-        given, answer = tempfile.TemporaryFile(dir=work), tempfile.TemporaryFile(dir=work)
++        given, answer = tempfile.TemporaryFile(), tempfile.TemporaryFile()

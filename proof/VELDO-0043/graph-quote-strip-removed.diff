@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -582 +582 @@
+-    elif len(value) >= 2 and value[0] == value[-1] and value[0] in '"\'':
++    elif False:

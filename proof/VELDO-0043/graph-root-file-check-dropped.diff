@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -486,2 +485,0 @@
+-    if root.exists() and not root.is_dir():
+-        raise Refused('runtime_unavailable', 'the stage root is not a directory')

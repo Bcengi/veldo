@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -462 +462 @@
--    for hop in link_chain(python):
-+    for hop in link_chain(python)[-1:]:
+@@ -515 +515 @@
+-    for hop in visited_paths(python):
++    for hop in visited_paths(python)[-1:]:

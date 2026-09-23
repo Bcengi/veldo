@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -572 +572 @@
+@@ -662 +662 @@
 -                                    stdin=given, stdout=answer, stderr=subprocess.DEVNULL, cwd=str(empty),
 +                                    stdin=given, stdout=answer, stderr=subprocess.DEVNULL, cwd=None,

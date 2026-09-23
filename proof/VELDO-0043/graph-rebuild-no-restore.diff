@@ -1,0 +1,4 @@
+--- a/.veldo/control_graph_install.py
++++ b/.veldo/control_graph_install.py
+@@ -81 +80,0 @@
+-        os.rename(retired, target)
