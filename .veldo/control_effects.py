@@ -201,15 +201,16 @@ def finish(conn, accepted, observation, journal):
     result = dict(accepted, status=status, completed=completed,
                   stop=None if completed else ('effect-pending' if status == 'accepted' else 'effect-outcome-unknown'),
                   evidence=SIG.digest(observation) if matches else None)
-    # A publication records where its push went: the authorized URL, the URL its remote state was
-    # read from and each repository the push reached, without credentials. Nothing else a
-    # receiver returns is copied into the record.
+    # A publication records where its push went: the authorized URL and each destination git
+    # resolved for the push, with that destination's outcome, all without credentials. Nothing
+    # else a receiver returns is copied into the record.
     destination = observation.get('destination') if matches else None
     if (accepted['kind'] == 'publication' and isinstance(destination, dict)
-            and set(destination) == {'authorized_url', 'listed_url', 'pushed_urls'}
-            and isinstance(destination['authorized_url'], str) and isinstance(destination['listed_url'], str)
-            and isinstance(destination['pushed_urls'], list)
-            and all(isinstance(url, str) for url in destination['pushed_urls'])):
+            and set(destination) == {'authorized_url', 'destinations'}
+            and isinstance(destination['authorized_url'], str) and isinstance(destination['destinations'], list)
+            and all(isinstance(entry, dict) and set(entry) == {'url', 'outcome'} and isinstance(entry['url'], str)
+                    and entry['outcome'] in ('at-tip', 'not-at-tip', 'unreachable')
+                    for entry in destination['destinations'])):
         result['destination'] = destination
     eid = 'effect:' + accepted['dispatch_id']
     state = S.materialized_state(conn)['entities']

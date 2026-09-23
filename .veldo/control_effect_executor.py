@@ -9,6 +9,7 @@ Publication uses the configured trusted clone and the exact accepted commit/ref/
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import select
 import subprocess
@@ -21,32 +22,40 @@ _spec.loader.exec_module(E)
 _git_process = E.organ('git_process')
 
 
-def displayed_url(url):
-    """The URL exactly as git displays it in push output (transport_anonymize_url): a local path
-    is unchanged; otherwise everything up to the first `@` is dropped, from a scheme URL when that
-    `@` comes before the path, and from an scp-style address when a `:` follows it. A porcelain
-    `To` line carries this form, so the listing's resolution is compared in it."""
-    at, colon, slash = url.find('@'), url.find(':'), url.find('/')
-    if at < 0 or colon < 0 or 0 <= slash < colon:
-        return url
-    rest, end = url[at + 1:], url.find('://')
-    if end < 0:
-        return rest if ':' in rest else url
-    if not all(c in '+.-' or (c.isascii() and c.isalnum()) for c in url[:end]):
-        return url
-    if 0 <= url.find('/', end + 3) < at:
-        return url
-    return url[:end + 3] + rest
+_SCHEME = re.compile(r'[A-Za-z][A-Za-z0-9+.-]*')
 
 
-def anonymous_url(url):
-    """A displayed URL as it is recorded: a scheme URL also loses any user information git's
-    display leaves (a password holding an unencoded `@`). Recorded URLs never carry credentials."""
-    scheme, separator, rest = url.partition('://')
-    if not separator or not scheme or not all(c in '+.-' or (c.isascii() and c.isalnum()) for c in scheme):
-        return url
-    authority, slash, path = rest.partition('/')
-    return scheme + separator + authority.rpartition('@')[2] + slash + path
+def scrubbed_url(url):
+    """A URL as it is recorded: parsed, never taken from git's display, and holding no user
+    information, query or fragment. `<transport>::<address>` is scrubbed in its address, again
+    recursively. A scheme URL loses everything up to the last `@` of its authority (which ends
+    at the first `/`, `?` or `#`, as git and RFC 3986 read it) and, except a file URL, whose path
+    git takes literally, its query and fragment. An scp-style address ([user@]host:path, a `:`
+    outside brackets before any `/`) loses everything before the last `@` ahead of the host's
+    `:`. A local path is unchanged. Text git produced in no encoding is kept as escapes."""
+    url = url.encode('utf-8', 'surrogateescape').decode('utf-8', 'backslashreplace')
+    scheme = _SCHEME.match(url)
+    if scheme and url.startswith('::', scheme.end()):
+        return url[:scheme.end() + 2] + scrubbed_url(url[scheme.end() + 2:])
+    if scheme and url.startswith('://', scheme.end()):
+        rest = url[scheme.end() + 3:]
+        end = min([rest.find(c) for c in '/?#' if c in rest] or [len(rest)])
+        authority, tail = rest[:end], rest[end:]
+        if scheme.group().lower() != 'file':
+            tail = tail.partition('#')[0]
+            tail = tail.partition('?')[0]
+        return url[:scheme.end() + 3] + authority.rpartition('@')[2] + tail
+    depth = 0
+    for i, c in enumerate(url):
+        if c == '[':
+            depth += 1
+        elif c == ']':
+            depth = max(depth - 1, 0)
+        elif c == '/' and not depth:
+            return url
+        elif c == ':' and not depth:
+            return url[:i].rpartition('@')[2] + url[i:]
+    return url
 
 
 def receive(config, contract, accepted):
@@ -57,17 +66,19 @@ def receive(config, contract, accepted):
     if contract['kind'] == 'publication' and 'argv' not in receiver:
         payload = contract['payload']
         repo, remote, ref = receiver['repository'], receiver['remote'], receiver['ref']
-        def git(*args, profile='isolated'):
-            return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20,
-                                    profile=profile)
-        def transport(*args):
+        def git(*args, profile='isolated', env=None):
+            # Output is decoded losslessly: a hook, a server or a ref name may emit any bytes.
+            return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True,
+                                    errors='surrogateescape', timeout=20, profile=profile, env=env)
+        def transport(*args, env=None):
             # What reaches the remote, and every query deciding where it goes, sees what a plain
             # git push from this clone and this operator environment sees: global and system
             # configuration, credential helpers, rewrites, proxies and SSH/askpass variables.
-            return git(*args, profile='network')
-        def remote_refs():
-            # Every advertised ref, HEAD and peeled tags included, plus each symbolic ref's target.
-            listed = transport('ls-remote', '--symref', remote)
+            return git(*args, profile='network', env=env)
+        def remote_refs(url):
+            # Every advertised ref of one destination, HEAD and peeled tags included, plus each
+            # symbolic ref's target; None when it cannot be listed.
+            listed = transport('ls-remote', '--symref', url)
             if listed.returncode:
                 return None
             refs = {}
@@ -83,51 +94,68 @@ def receive(config, contract, accepted):
             raise E.Refused('missing-evidence')
         # The push is addressed to the receiver's URL and routed as the operator configured it:
         # url.*.insteadOf and pushInsteadOf rewrites, a remote section or a legacy remotes/ or
-        # branches/ file of that name, in any scope the push reads. Routing is the operator's and
-        # is kept; the effect record stores where it went instead. `listed` is where the remote's
-        # state is read before and after the push, the listing's own resolution of the URL.
-        resolved = transport('ls-remote', '--get-url', remote)
-        if resolved.returncode:
+        # branches/ file of that name, pushurl fan-out, in any scope the push reads. Routing is
+        # the operator's and is kept. WHERE it goes is git's own resolution of this push from
+        # configuration, read before pushing and never from anything the push prints: `git
+        # remote show -n` names every push URL of the remote git push would use, for a configured
+        # remote and for a plain URL alike (`git remote get-url` answers only for remotes in the
+        # clone's own file), without contacting any remote or running any hook. It reports one URL
+        # per line, so a line break in the receiver's URL or in any configured URL would make two
+        # URLs of one; such a configuration is refused before anything is pushed.
+        if '\n' in remote:
             raise E.Refused('invalid-input')
-        listed = resolved.stdout.strip()
-        before = remote_refs()
-        if before is None or before.get(ref) != payload['old_tip']:
-            raise E.Refused('stale-subject')
+        urls = transport('config', '-z', '--get-regexp',
+                         r'^(remote\..*\.(url|pushurl)|url\..*\.(insteadof|pushinsteadof))$')
+        if urls.returncode not in (0, 1) or any('\n' in entry.partition('\n')[2]
+                                                for entry in urls.stdout.split('\0')):
+            raise E.Refused('invalid-input')
+        shown = transport('remote', 'show', '-n', '--', remote, env=dict(
+            {k: v for k, v in os.environ.items() if k != 'LANGUAGE'}, LC_ALL='C'))
+        head = '* remote ' + remote + '\n'
+        lines = shown.stdout[len(head):].split('\n') if shown.stdout.startswith(head) else []
+        pushed = []
+        for line in lines[1:]:
+            if not line.startswith('  Push  URL: '):
+                break
+            pushed.append(line[len('  Push  URL: '):])
+        if (shown.returncode or not lines or not lines[0].startswith('  Fetch URL: ') or not pushed
+                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
+            raise E.Refused('invalid-input')
+        # Each destination's state before the push, so its change can be judged after it.
+        before = [remote_refs(url) for url in pushed]
         # An ordinary git push, so the clone's hooks, url.*.insteadOf rewrites, transports
         # (HTTP(S) included) and credential helpers behave exactly as configured. Only what
         # WIDENS a push is neutralized: an explicit URL and single refspec, no tag following
         # from the command line or config, no push options from any configuration scope (an
         # empty push.pushOption resets the list; on GitLab-style servers an option can open a
-        # merge request or skip CI), no submodule recursion, and a lease on the old tip.
+        # merge request or skip CI), no submodule recursion, and a lease on the old tip. What it
+        # prints is diagnostic text only: a pre-push hook shares its standard output and a server
+        # can shape its report, so nothing in it is evidence of where it went or whether it worked.
         push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',
                          '--no-follow-tags', '--recurse-submodules=no',
                          '--force-with-lease=' + ref + ':' + payload['old_tip'],
                          remote, payload['commit'] + ':' + ref)
-        # Where the push went is git's own account: for each repository it pushed to, a porcelain
-        # `To <url>` line followed by git's status line for this one refspec. A pre-push hook
-        # writes to the same stream (git runs it with standard output inherited), so a `To` line
-        # counts only when that status line follows it; a hook's own text or its own push of
-        # another refspec is never taken for a destination.
-        refspec = payload['commit'] + ':' + ref
-        lines = push.stdout.splitlines()
-        pushed = [line[len('To '):] for line, status in zip(lines, lines[1:])
-                  if line.startswith('To ') and len(status.split('\t')) == 3
-                  and len(status.split('\t')[0]) == 1 and status.split('\t')[1] == refspec]
-        # Compared as git displays them, recorded without credentials.
-        reached = pushed == [displayed_url(listed)]
-        destination = {'authorized_url': anonymous_url(displayed_url(remote)),
-                       'listed_url': anonymous_url(displayed_url(listed)),
-                       'pushed_urls': [anonymous_url(url) for url in pushed]}
-        # Completion is exactly one remote change, observed where the push went: the push reached
-        # one repository, the one the listing reads, and there the authorized ref (and any symbolic
-        # ref that targets it, HEAD included) moved to the commit; every other entry is unchanged.
-        # A route that sends the push somewhere the listing does not read cannot be confirmed.
-        after = remote_refs()
-        expected = dict(before, **{ref: payload['commit']})
-        expected.update({name[len('symref:'):]: payload['commit'] for name, target in before.items()
-                         if name.startswith('symref:') and target == ref})
-        complete = (push.returncode == 0 and reached
-                    and after is not None and after == expected)
+        # Completion is read from each destination's actual state after the push. A destination
+        # is `at-tip` when it held the old tip at the authorized ref before, and after the push its
+        # advertised state is exactly the state before with that ref (and any symbolic ref that
+        # targets it, HEAD included) moved to the commit; `unreachable` when either listing
+        # failed; otherwise `not-at-tip` (rejected, reported under another ref, or anything else
+        # changed). The effect is completed only when the push exited cleanly and every resolved
+        # destination is at the tip.
+        outcomes = []
+        for url, state in zip(pushed, before):
+            after = remote_refs(url)
+            if state is None or after is None:
+                outcomes.append('unreachable')
+                continue
+            expected = dict(state, **{ref: payload['commit']})
+            expected.update({name[len('symref:'):]: payload['commit'] for name, target in state.items()
+                             if name.startswith('symref:') and target == ref})
+            outcomes.append('at-tip' if state.get(ref) == payload['old_tip'] and after == expected else 'not-at-tip')
+        destination = {'authorized_url': scrubbed_url(remote),
+                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}
+                                        for url, outcome in zip(pushed, outcomes)]}
+        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)
         return dict(binding, status='completed' if complete else 'unknown', destination=destination,
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)
     # Only a service-selected adapter sees reusable authentication, on stdin. Its stdout

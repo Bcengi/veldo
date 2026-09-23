@@ -349,11 +349,11 @@ def cases():
                 "        push = transport('push', '--porcelain',\n                         '--recurse-submodules=no',", 'publication-exact-ref')
     publication('effects-push-follows-tags', push,
                 push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
-    confirm = "after is not None and after == expected"
+    confirm = "after == expected else 'not-at-tip'"
     publication('effects-confirm-authorized-ref-only', confirm,
-                "after is not None and after.get(ref) == payload['commit']", 'publication-confirms-one-change')
+                "after.get(ref) == payload['commit'] else 'not-at-tip'", 'publication-confirms-one-change')
     publication('effects-confirm-ignores-new-refs', confirm,
-                "after is not None and all(after.get(k) == v for k, v in expected.items())",
+                "all(after.get(k) == v for k, v in expected.items()) else 'not-at-tip'",
                 'publication-confirms-one-change')
     # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
     # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
@@ -362,19 +362,18 @@ def cases():
         ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
     publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
                 'publication-pre-push-hook')
-    get_url = "        resolved = transport('ls-remote', '--get-url', remote)\n        if resolved.returncode:"
-    publication('effects-remote-must-exist-verbatim', get_url,
-                get_url.replace("if resolved.returncode:", "if resolved.returncode or not (Path(remote).exists() or '://' in remote):"),
-                'publication-url-rewrite')
+    newline_remote = "        if '\\n' in remote:\n"
+    publication('effects-remote-must-exist-verbatim', newline_remote,
+                "        if '\\n' in remote or not (Path(remote).exists() or '://' in remote):\n", 'publication-url-rewrite')
     publication('effects-push-transports-restricted', push,
                 push.replace("transport('-c', 'push.followTags=false',", "transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
                 'publication-smart-http')
     # R4 P2: confirmation reads HEAD and its symbolic target, not only the refs namespace.
-    listing = "            listed = transport('ls-remote', '--symref', remote)"
+    listing = "            listed = transport('ls-remote', '--symref', url)"
     publication('effects-confirm-without-head', listing,
-                "            listed = transport('ls-remote', '--refs', remote)", 'publication-head-change')
+                "            listed = transport('ls-remote', '--refs', url)", 'publication-head-change')
     publication('effects-confirm-without-symref-targets', listing,
-                "            listed = transport('ls-remote', remote)", 'publication-head-change')
+                "            listed = transport('ls-remote', url)", 'publication-head-change')
     # R5 1: push options from any configuration scope never reach the receiver. `--no-push-option`
     # looks like the fix and clears only options given on the command line.
     publication('effects-push-options-from-config', push, push.replace("'-c', 'push.pushOption=', ", ''),
@@ -382,48 +381,76 @@ def cases():
     publication('effects-push-options-flag-only', push,
                 push.replace("'-c', 'push.pushOption=', 'push',", "'push', '--no-push-option',"),
                 'publication-push-options')
-    # R6 1: the push is routed as the operator configured it, and the effect record stores where
-    # it went. Each mutant loses one part of that account or claims completion it cannot see.
+    # R6 1 and R7: the push is routed as the operator configured it; where it goes is git's own
+    # resolution from configuration, and completion is each destination's state after the push.
+    # Each mutant loses one part of that account or reads it from text the push prints.
     routed = 'publication-records-resolved-destination'
     add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
         "        result['destination'] = destination", "        pass",
         ['effects/' + routed, 'effects/publication-destination-without-credentials'])
-    publication('effects-destination-from-listing', "                       'pushed_urls': [anonymous_url(url) for url in pushed]}",
-                "                       'pushed_urls': [anonymous_url(displayed_url(listed))]}", routed)
-    publication('effects-completion-ignores-destination', "        complete = (push.returncode == 0 and reached\n",
-                "        complete = (push.returncode == 0\n", routed)
-    # The listing's resolution and the push read configuration through the same profile, or the
-    # record names a URL the push did not use.
-    add(28, 'effects-listed-url-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        resolved = transport('ls-remote', '--get-url', remote)",
-        "        resolved = git('ls-remote', '--get-url', remote)",
+    parsed = ("        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n"
+              "                break\n            pushed.append(line[len('  Push  URL: '):])\n")
+    shape = "                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):"
+    # The fetch-side resolution (`ls-remote --get-url`) in place of git's push resolution: it
+    # misses pushInsteadOf and pushurl routing, so the record names the authorized repository.
+    add(28, 'effects-destinations-from-fetch-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
+        "        pushed = [transport('ls-remote', '--get-url', remote).stdout.strip()]\n",
+        ['effects/' + routed, 'effects/publication-destination-despite-hook-text',
+         'effects/publication-rejected-destination-recorded'], also=[(shape, "                or False):")])
+    # The destinations read from the To lines a dry-run push prints: hook text reaches them.
+    add(28, 'effects-destinations-from-dry-run-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
+        "        pushed = [line[len('To '):] for line in transport('push', '--dry-run', '--porcelain', remote,\n"
+        "                  payload['commit'] + ':' + ref).stdout.splitlines() if line.startswith('To ')]\n",
+        ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded',
+         'effects/publication-hook-text-without-newline'], also=[(shape, "                or False):")])
+    # Git's resolution read in the isolated profile, so global routing is missed.
+    add(28, 'effects-resolution-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "        shown = transport('remote', 'show', '-n', '--', remote, env=dict(",
+        "        shown = git('remote', 'show', '-n', '--', remote, env=dict(",
         ['effects/' + routed, 'effects/publication-config-selection-parity'])
-    record = ("        destination = {'authorized_url': anonymous_url(displayed_url(remote)),\n"
-              "                       'listed_url': anonymous_url(displayed_url(listed)),\n")
-    publication('effects-destination-with-credentials', record,
-                "        destination = {'authorized_url': remote,\n                       'listed_url': listed,\n",
-                'publication-destination-without-credentials')
-    # R6 1, destinations as git names them: the listing's resolution is compared in git's own
-    # display of a URL (the porcelain `To` form), which drops an scp-style address's user too,
-    # and each recorded URL also loses any user information git's display leaves.
-    displays = 'publication-destination-as-git-displays'
-    publication('effects-scp-url-as-given', "        return rest if ':' in rest else url", "        return url", displays)
-    add(28, 'effects-completion-compares-raw-listing', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        reached = pushed == [displayed_url(listed)]", "        reached = pushed == [listed]",
-        ['effects/' + displays, 'effects/publication-destination-without-credentials'])
-    publication('effects-destination-git-display-only', "    scheme, separator, rest = url.partition('://')",
-                "    return url\n    scheme, separator, rest = url.partition('://')", displays)
-    # R6 1, only git's own account of the push is read: a pre-push hook writes to the same stream,
-    # so a `To` line counts only when git's status line for the authorized refspec follows it.
-    status = ("        pushed = [line[len('To '):] for line, status in zip(lines, lines[1:])\n"
-              "                  if line.startswith('To ') and len(status.split('\\t')) == 3\n"
-              "                  and len(status.split('\\t')[0]) == 1 and status.split('\\t')[1] == refspec]")
-    publication('effects-pushed-from-every-to-line', status,
-                "        pushed = [line[len('To '):] for line in lines if line.startswith('To ')]",
-                'publication-destination-from-push-status')
-    publication('effects-pushed-ignores-refspec', status,
-                status.replace(" and status.split('\\t')[1] == refspec]", "]"),
-                'publication-destination-from-push-status')
+    # The guard against a configured URL holding a line break removed.
+    add(28, 'effects-newline-config-accepted', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "        if urls.returncode not in (0, 1) or any(", "        if False and any(", ['effects/' + routed])
+    complete = "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)"
+    # Completion from the push's exit status alone, from the first destination only, or from the
+    # To lines the push prints.
+    add(28, 'effects-completion-from-exit-status', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
+        "        complete = push.returncode == 0",
+        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'])
+    add(28, 'effects-completion-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
+        "        complete = push.returncode == 0 and outcomes[:1] == ['at-tip']",
+        ['effects/publication-fan-out-agit-report'])
+    publication('effects-completion-from-push-output', complete,
+                complete + "\n        complete = complete and all('To ' + url in push.stdout.splitlines() for url in pushed)",
+                'publication-hook-text-without-newline')
+    # Each destination's state read at the authorized URL instead of at the destination.
+    add(28, 'effects-state-read-at-authorized-url', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "            after = remote_refs(url)\n", "            after = remote_refs(remote)\n",
+        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'],
+        also=[("        before = [remote_refs(url) for url in pushed]", "        before = [remote_refs(remote) for url in pushed]")])
+    # Output read strictly as UTF-8: the push's (a hook's Latin-1 byte) or a listing's (a ref name).
+    publication('effects-push-output-read-strictly', "                         remote, payload['commit'] + ':' + ref)\n",
+                "                         remote, payload['commit'] + ':' + ref)\n        push.stdout.encode('utf-8')\n",
+                'publication-non-utf8-output')
+    publication('effects-listing-read-strictly', "            if listed.returncode:\n                return None\n",
+                "            listed.stdout.encode('utf-8')\n            if listed.returncode:\n                return None\n",
+                'publication-non-utf8-output')
+    # Credentials: the authorized URL, or the resolved destinations, recorded as given.
+    publication('effects-destination-with-credentials', "        destination = {'authorized_url': scrubbed_url(remote),",
+                "        destination = {'authorized_url': remote,", 'publication-destination-without-credentials')
+    add(28, 'effects-destinations-not-scrubbed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}",
+        "                       'destinations': [{'url': url, 'outcome': outcome}",
+        ['effects/publication-destination-without-credentials', 'effects/publication-scrub-transport-prefix'])
+    # Scrubbing by parsing: an scp-style address's user information ends at its LAST `@`, a
+    # transport-prefixed URL is scrubbed in its address, and a query or fragment is dropped.
+    scp = "            return url[:i].rpartition('@')[2] + url[i:]"
+    publication('effects-scrub-scp-first-at', scp, scp.replace('rpartition', 'partition'), 'publication-scrub-scp-user-information')
+    publication('effects-scrub-scp-unchanged', scp, "            return url", 'publication-scrub-scp-user-information')
+    publication('effects-scrub-transport-not-recursed', "    if scheme and url.startswith('::', scheme.end()):",
+                "    if False:", 'publication-scrub-transport-prefix')
+    publication('effects-scrub-keeps-query', "            tail = tail.partition('?')[0]\n", "", 'publication-scrub-query-fragment')
+    publication('effects-scrub-keeps-fragment', "            tail = tail.partition('#')[0]\n", "", 'publication-scrub-query-fragment')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.
@@ -431,7 +458,7 @@ def cases():
                   ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
                    'config-selection-parity')]
     add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "            return git(*args, profile='network')", "            return git(*args)", capability)
+        "            return git(*args, profile='network', env=env)", "            return git(*args, env=env)", capability)
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
