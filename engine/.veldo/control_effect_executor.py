@@ -40,29 +40,49 @@ _announce = _announce_nothing
 
 
 _SCHEME = re.compile(r'[A-Za-z][A-Za-z0-9+.-]*')
+# A well-formed host as RFC 3986 writes one: an IP literal in brackets, or a registered name of
+# unreserved characters, percent escapes and sub-delimiters. A scheme URL's authority may add a
+# numeric port.
+_HOST = r"(\[[0-9A-Fa-f:.]+\]|(?:[A-Za-z0-9._~!$&'()*+,;=-]|%[0-9A-Fa-f]{2})*)"
+_AUTHORITY = re.compile(_HOST + r'(:[0-9]*)?')
+_SCP_HOST = re.compile(_HOST)
+UNPARSED = '<unparsed>'
 
 
 def scrubbed_url(url):
     """A URL as it is recorded: parsed, never taken from git's display, and holding no user
-    information, query or fragment. `<transport>::<address>` is scrubbed in its address, again
-    recursively. A scheme URL loses everything up to the last `@` of its authority (which ends
-    at the first `/`, `?` or `#`, as git and RFC 3986 read it) and, except a file URL, whose path
-    git takes literally, its query and fragment. An scp-style address ([user@]host:path, a `:`
-    outside brackets before any `/`) loses everything before the last `@` ahead of the host's
-    `:`. A local path is unchanged. Text git produced in no encoding is kept as escapes."""
+    information, query, fragment or command text. Anything that does not parse into a
+    well-formed host is over-scrubbed: what follows the scheme, or the whole address, becomes
+    `<unparsed>`.
+
+    `<transport>::<address>` is scrubbed in its address, recursively, and `ext::` (a command
+    line, which can carry anything) keeps no command text. A scheme URL loses everything up to
+    the last `@` of its authority (which ends at the first `/`, `?` or `#`, as git and RFC 3986
+    read it) and, except a file URL, whose path git takes literally, its query and fragment; an
+    authority that is not a well-formed host and port, or a path holding an `@`, is unparsed.
+    An scp-style address ([user@]host:path, a `:` outside brackets before any `/`) loses
+    everything up to the last `@` before its first `/`, and must then start with a well-formed
+    host and its `:`. A local path is unchanged. Text git produced in no encoding is kept as
+    escapes."""
     url = url.encode('utf-8', 'surrogateescape').decode('utf-8', 'backslashreplace')
     scheme = _SCHEME.match(url)
     if scheme and url.startswith('::', scheme.end()):
+        if scheme.group().lower() == 'ext':
+            return url[:scheme.end() + 2] + '<command>'
         return url[:scheme.end() + 2] + scrubbed_url(url[scheme.end() + 2:])
     if scheme and url.startswith('://', scheme.end()):
-        rest = url[scheme.end() + 3:]
+        prefix, rest = url[:scheme.end() + 3], url[scheme.end() + 3:]
         end = min([rest.find(c) for c in '/?#' if c in rest] or [len(rest)])
-        authority, tail = rest[:end], rest[end:]
+        host, tail = rest[:end].rpartition('@')[2], rest[end:]
         if scheme.group().lower() != 'file':
             tail = tail.partition('#')[0]
             tail = tail.partition('?')[0]
-        return url[:scheme.end() + 3] + authority.rpartition('@')[2] + tail
-    depth = 0
+            if '@' in tail:
+                return prefix + UNPARSED
+        if not _AUTHORITY.fullmatch(host):
+            return prefix + UNPARSED
+        return prefix + host + tail
+    depth, colon = 0, -1
     for i, c in enumerate(url):
         if c == '[':
             depth += 1
@@ -71,8 +91,21 @@ def scrubbed_url(url):
         elif c == '/' and not depth:
             return url
         elif c == ':' and not depth:
-            return url[:i].rpartition('@')[2] + url[i:]
-    return url
+            colon = i
+            break
+    if colon < 0:
+        return url
+    slash = url.find('/')
+    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]
+    depth = 0
+    for i, c in enumerate(rest):
+        if c == '[':
+            depth += 1
+        elif c == ']':
+            depth = max(depth - 1, 0)
+        elif c == ':' and not depth:
+            return rest if _SCP_HOST.fullmatch(rest[:i]) else UNPARSED
+    return UNPARSED
 
 
 def receive(config, contract, accepted):

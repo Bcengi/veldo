@@ -858,6 +858,43 @@ print(json.dumps(result))
             and slow_seconds > 5 and all(remote_main(bare) == tip for bare in slow)
             and recorded('slow-fan-out') == {'authorized_url': slow_url, 'destinations': reached(
                 *[(slow_url if index == 0 else str(bare), 'at-tip') for index, bare in enumerate(slow)])})
+        # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed. An
+        # scp-style address loses everything up to the last `@` before its path (user:password
+        # included, and a scheme-looking `ssh:` user), an `ext::` command keeps no command text,
+        # a URL with no path loses its query and fragment, and an authority or path that could
+        # only have come from a mangled credential is recorded `<unparsed>`. The ext:: shape is
+        # published end to end; the rest are scrubbed directly (git itself reads user:password@host
+        # as the host `user`, so it reaches nothing), with well-formed controls kept.
+        clone, bare = fresh('scrub-ext')
+        git('-C', str(clone), 'config', 'protocol.ext.allow', 'always')
+        _, ext_answer = publish_as('scrub-ext', clone, 'ext::env V28_TOKEN=SECRETPW git %s ' + str(bare))
+        ext_ok = (ext_answer.get('result', {}).get('completed') is True and 'SECRET' not in _v28_json.dumps(ext_answer)
+                  and recorded('scrub-ext') == {'authorized_url': 'ext::<command>',
+                                                'destinations': reached(('ext::<command>', 'at-tip'))})
+        seen_result('scrub-ext', ext_answer.get('result', {}), destination=recorded('scrub-ext'))
+        scrub_table = [
+            ('SECRETUSER:SECRETPW@deploy-host:repo.git', 'deploy-host:repo.git'),
+            ('ssh:SECRETUSER@deploy-host:repo.git', 'deploy-host:repo.git'),
+            ('a@SECRETUSER@deploy-host:repo.git', 'deploy-host:repo.git'),
+            ("ext::sh -c 'curl -u SECRETUSER:SECRETPW h' %S", 'ext::<command>'),
+            ('veldotest::ext::sh SECRETPW', 'veldotest::ext::<command>'),
+            ('https://h?private_token=SECRETTOKEN', 'https://h'),
+            ('https://h#SECRETTOKEN', 'https://h'),
+            ('https://SECRETUSER:SECRET/PW@h/r.git', 'https://<unparsed>'),
+            ('https://SECRETUSER:SECRET?PW@h/r.git', 'https://<unparsed>'),
+            ('https://SECRETUSER/SECRETPW@h/r.git', 'https://<unparsed>'),
+            ('ssh://[SECRETUSER@h:22]/r.git', 'ssh://<unparsed>'),
+            ('deploy-host:repo@SECRETPW.git', '<unparsed>'),
+            # Well-formed controls are kept as they are.
+            ('https://example.com:8443/r.git', 'https://example.com:8443/r.git'),
+            ('ssh://[::1]:22/r.git', 'ssh://[::1]:22/r.git'),
+            ('deploy-host:path/r.git', 'deploy-host:path/r.git'),
+            ('/local/a@b/r.git', '/local/a@b/r.git'),
+            ('file:///srv/r.git', 'file:///srv/r.git')]
+        scrub_seen = {url: _v28_executor.scrubbed_url(url) for url, _ in scrub_table}
+        seen_result('scrub-table', {}, mismatches={url: got for (url, want), got in zip(scrub_table, scrub_seen.values()) if got != want})
+        row('publication-scrub-malformed-address', ext_ok
+            and all(scrub_seen[url] == want for url, want in scrub_table))
         # R6 2 and 3: the variables that select or inject operator configuration are the
         # operator's, not repository coordinates, so publication honors them as a plain git
         # command from the same environment does. Each case names the authorized remote only
@@ -949,6 +986,7 @@ print(json.dumps(result))
                      'scrub-scp-user-information', 'scrub-transport-prefix', 'scrub-query-fragment',
                      'refused-when-not-at-old-tip', 'refusal-reaches-caller', 'ref-creation',
                      'destination-listed-as-resolved', 'call-covers-every-destination',
+                     'scrub-malformed-address',
                      'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)

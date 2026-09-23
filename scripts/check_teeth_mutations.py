@@ -444,9 +444,10 @@ def cases():
         ['effects/publication-destination-without-credentials', 'effects/publication-scrub-transport-prefix'])
     # Scrubbing by parsing: an scp-style address's user information ends at its LAST `@`, a
     # transport-prefixed URL is scrubbed in its address, and a query or fragment is dropped.
-    scp = "            return url[:i].rpartition('@')[2] + url[i:]"
-    publication('effects-scrub-scp-first-at', scp, scp.replace('rpartition', 'partition'), 'publication-scrub-scp-user-information')
-    publication('effects-scrub-scp-unchanged', scp, "            return url", 'publication-scrub-scp-user-information')
+    scp = "    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]"
+    publication('effects-scrub-scp-first-at', scp, scp.replace('url.rfind(', 'url.find('), 'publication-scrub-scp-user-information')
+    publication('effects-scrub-scp-unchanged', "    if colon < 0:\n        return url\n", "    if True:\n        return url\n",
+                'publication-scrub-scp-user-information')
     publication('effects-scrub-transport-not-recursed', "    if scheme and url.startswith('::', scheme.end()):",
                 "    if False:", 'publication-scrub-transport-prefix')
     publication('effects-scrub-keeps-query', "            tail = tail.partition('?')[0]\n", "", 'publication-scrub-query-fragment')
@@ -494,6 +495,13 @@ def cases():
                 "remote, payload['commit'] + ':' + ref)", 'publication-call-covers-every-destination')
     publication('effects-call-window-not-extended', "                deadline = time.monotonic() + answer['window_seconds']",
                 "                pass", 'publication-call-covers-every-destination')
+    # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed.
+    malformed = 'publication-scrub-malformed-address'
+    publication('effects-scrub-scp-user-at-first-colon', scp,
+                "    rest = url[url.rfind('@', 0, colon) + 1:]", malformed)
+    publication('effects-scrub-ext-command-kept', "        if scheme.group().lower() == 'ext':", "        if False:", malformed)
+    publication('effects-scrub-malformed-host-kept', "        if not _AUTHORITY.fullmatch(host):", "        if False:", malformed)
+    publication('effects-scrub-at-in-path-kept', "            if '@' in tail:", "            if False:", malformed)
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.

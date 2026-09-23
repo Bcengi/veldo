@@ -162,12 +162,14 @@ fixed total: acceptance is bounded by `accept_seconds` (default 30), and after i
 announces each stage's window (resolution, then four steps for each destination) before starting
 it, so a slow push to many destinations is never killed after acceptance.
 
-**Recorded URLs.** Every recorded URL is scrubbed by parsing it, never taken from git's display:
-`<transport>::<address>` is scrubbed in its address, recursively; a scheme URL loses everything up
-to the last `@` of its authority (which ends at the first `/`, `?` or `#`, as git and RFC 3986 read
-it) and, except a file URL, its query and fragment; an scp-style address loses everything before
-the last `@` ahead of its host. A password must be percent-encoded as RFC 3986 requires: an
-unencoded `/`, `?` or `#` in it ends the authority for git as well.
+**Recorded URLs.** Every recorded URL is scrubbed by parsing it, never taken from git's display,
+and anything that does not parse into a well-formed host is over-scrubbed to `<unparsed>`:
+`<transport>::<address>` is scrubbed in its address, recursively, and an `ext::` command keeps no
+command text; a scheme URL loses everything up to the last `@` of its authority (which ends at the
+first `/`, `?` or `#`, as git and RFC 3986 read it) and, except a file URL, its query and fragment,
+and an authority that is not a well-formed host and port, or a path holding an `@`, is unparsed;
+an scp-style address loses everything up to the last `@` before its first `/` (a `user:password@`
+and a scheme-looking `ssh:user@` included) and must then start with a well-formed host.
 
 **Stated limits, not passing claims.** A ref the remote hides from advertisement (for example
 `transfer.hideRefs`), and a ref the remote changes and restores while the push runs, cannot be
