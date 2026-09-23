@@ -92,39 +92,35 @@ sys.stdout.write(json.dumps(reply))
 '''
 
 
-# The suite's workflows, registered through the PRODUCTION runner's serve() and run by the actual
-# LangGraph in the locked runtime. The audit hook records every network egress event (name
-# resolution, connect, send; urllib3's import-time loopback IPv6 probe is a bind, not egress),
-# refuses it so nothing is ever sent even under a tracing mutant, and,
-# after the answer, the tracing switches and langsmith's own tracing verdict, one line per runner
-# process.
+# The suite's workflows, spliced into a copy of the PRODUCTION runner after its definitions (as
+# VELDO-0132 registrations would be) and installed in the domain's own checkout, where the
+# production runner lives. The block refuses every network egress event after recording it
+# (urllib3's import-time loopback IPv6 probe is a bind, not egress), counts the compiled graphs
+# this process executes, and writes one audit record per exchange under
+# /tmp/veldo-graph-43-audit/<domain uuid>/<command id>.json. It ends without interpreter
+# shutdown, so a tracing mutant's exporter cannot stall on its refused retries.
 _S43_RUNNER = r'''
-import importlib.util, json, os, sqlite3, sys
-from pathlib import Path
+# ---- VELDO-0043 suite workflows ----
+import os as _t_os
+import sqlite3 as _t_sqlite3
+import subprocess as _t_sp
+from pathlib import Path as _t_Path
 SOCKETS = []
 EGRESS = ('socket.connect', 'socket.getaddrinfo', 'socket.gethostbyname', 'socket.gethostbyname_ex',
           'socket.gethostbyaddr', 'socket.sendto', 'socket.sendmsg')
 
 
-
 def egress(event, args):
-    # Recorded, then refused: no packet leaves this machine even when a mutant turns tracing on.
     if event in EGRESS:
         SOCKETS.append(event)
         raise ConnectionRefusedError('network egress refused by the VELDO-0043 suite: ' + event)
 
 
 sys.addaudithook(egress)
-spec = importlib.util.spec_from_file_location('veldo_graph_runner', PRODUCTION)
-runner = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(runner)
 from langgraph.types import Command, StateSnapshot
-SWITCHES = ('LANGSMITH_TRACING', 'LANGSMITH_TRACING_V2', 'LANGCHAIN_TRACING', 'LANGCHAIN_TRACING_V2')
-
-
-# Which compiled LangGraph graphs this process actually executed (counted at Pregel.invoke).
-INVOKED = []
 import langgraph.pregel
+SWITCHES = ('LANGSMITH_TRACING', 'LANGSMITH_TRACING_V2', 'LANGCHAIN_TRACING', 'LANGCHAIN_TRACING_V2')
+INVOKED = []
 _invoke = langgraph.pregel.Pregel.invoke
 
 
@@ -136,13 +132,13 @@ def _counting(self, *args, **kwargs):
 langgraph.pregel.Pregel.invoke = _counting
 
 
-def audit():
+def audit(request):
     import langsmith.utils
-    with open(AUDIT, 'a') as log:
-        log.write(json.dumps({'switches': {k: os.environ.get(k) for k in SWITCHES},
-                              'tracing': langsmith.utils.tracing_is_enabled(),
-                              'sockets': sorted(set(SOCKETS)), 'invoked': INVOKED}) + '\n')
-
+    directory = _t_Path('/tmp/veldo-graph-43-audit') / request['domain_uuid']
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / (request['command_id'] + '.json')).write_text(json.dumps({
+        'switches': {k: _t_os.environ.get(k) for k in SWITCHES}, 'tracing': langsmith.utils.tracing_is_enabled(),
+        'sockets': sorted(set(SOCKETS)), 'invoked': INVOKED, 'argv0': sys.argv[0]}))
 
 
 def groom(view):
@@ -192,29 +188,51 @@ def assert_completion(view):
     return {'next': None, 'shipped': True}
 
 
+def _stores_from(start):
+    # Veldo stores reachable from a directory: a .git directory or gitdir file in its ancestry
+    # (followed to the common directory), and Git's own common-directory discovery from it.
+    found, start = [], _t_Path(start).resolve()
+    for parent in (start, *start.parents):
+        dotgit = parent / '.git'
+        if dotgit.is_dir():
+            found.append(dotgit / 'veldo/control/control.sqlite3')
+        elif dotgit.is_file() and dotgit.read_text().startswith('gitdir:'):
+            gitdir = (parent / dotgit.read_text()[7:].strip()).resolve()
+            common = gitdir / 'commondir'
+            base = (gitdir / common.read_text().strip()).resolve() if common.is_file() else gitdir
+            found.append(base / 'veldo/control/control.sqlite3')
+    try:
+        out = _t_sp.run(['git', '-C', str(start), 'rev-parse', '--path-format=absolute', '--git-common-dir'],
+                        capture_output=True, text=True, timeout=10)
+        if out.returncode == 0 and out.stdout.strip():
+            found.append(_t_Path(out.stdout.strip()) / 'veldo/control/control.sqlite3')
+    except (OSError, _t_sp.SubprocessError):
+        pass
+    return [str(path) for path in found if path.is_file()]
+
+
 def probe_store(view):
-    # Every way a node could reach the authority: the working directory's repository, an
-    # inherited descriptor, the environment, or the request. Whatever is found is written to.
+    # Every route the adapter could have handed the node toward the authority: the runner's own
+    # location (argv[0], __file__), its working directory, its descriptors, its environment and
+    # its request. Whatever is found is written to.
     found = []
-    here = Path(os.getcwd())
-    for parent in (here, *here.parents):
-        candidate = parent / '.git' / 'veldo' / 'control' / 'control.sqlite3'
-        if candidate.is_file():
-            found.append(str(candidate))
-    for fd in os.listdir('/proc/self/fd'):
+    for origin in (sys.argv[0], __file__):
+        found += _stores_from(_t_Path(origin).parent)
+    found += _stores_from(_t_os.getcwd())
+    for fd in _t_os.listdir('/proc/self/fd'):
         try:
-            target = os.readlink('/proc/self/fd/' + fd)
+            target = _t_os.readlink('/proc/self/fd/' + fd)
         except OSError:
             continue
         if target.endswith('control.sqlite3'):
             found.append(target)
-    found += [value for value in os.environ.values() if 'sqlite3' in value]
+    found += [value for value in _t_os.environ.values() if 'sqlite3' in value]
     if 'sqlite3' in json.dumps(view):
         found.append('request')
     wrote = []
     for path in sorted(set(found)):
         try:
-            connection = sqlite3.connect(path)
+            connection = _t_sqlite3.connect(path)
             connection.execute("UPDATE entities SET data = ? WHERE id = 'unit-1'", ('{"priority": 99}',))
             connection.commit()
             connection.close()
@@ -229,6 +247,28 @@ def propose(view):
                                          'priority': view['supplied_results'][0]['value']['rank']}]}
 
 
+def proc_reach(view):
+    # The STATED LIMIT: the same account can read its parent through /proc. Recorded, not used.
+    parent = '/proc/%d' % _t_os.getppid()
+    try:
+        cwd = _t_os.readlink(parent + '/cwd')
+    except OSError as error:
+        cwd = type(error).__name__
+    descriptors = []
+    try:
+        for fd in _t_os.listdir(parent + '/fd'):
+            try:
+                target = _t_os.readlink(parent + '/fd/' + fd)
+            except OSError:
+                continue
+            if target.endswith('control.sqlite3'):
+                descriptors.append(target)
+    except OSError as error:
+        descriptors.append(type(error).__name__)
+    return {'next': 'only', 'suspend': True,
+            'notes': {'parent_cwd': cwd, 'parent_store_descriptors': sorted(set(descriptors))}}
+
+
 def one(function):
     return {'version': 1, 'entry': 'only', 'nodes': {'only': function}}
 
@@ -241,13 +281,13 @@ WORKFLOWS = {
     'assert-admission': one(assert_admission), 'assert-priority': one(assert_priority),
     'assert-completion': one(assert_completion),
     'store-access': {'version': 1, 'entry': 'probe', 'nodes': {'probe': probe_store, 'propose': propose}},
+    'proc-reach': one(proc_reach),
 }
-code = runner.serve(WORKFLOWS)
-audit()
+_t_request = json.loads(sys.stdin.buffer.read())
+emit(_t_request, answer(_t_request, WORKFLOWS), sys.stdout)
+audit(_t_request)
 sys.stdout.flush()
-# No interpreter shutdown: a tracing mutant's exporter would otherwise retry its refused egress
-# at exit for many seconds. The answer and the audit line are already written.
-os._exit(code)
+_t_os._exit(0)
 '''
 _S43_SWITCHES = ('LANGSMITH_TRACING', 'LANGSMITH_TRACING_V2', 'LANGCHAIN_TRACING', 'LANGCHAIN_TRACING_V2')
 
@@ -296,16 +336,40 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and sorted(census) == sorted((_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES)
            and not (directory / 'bin/pip').exists())
     rows = ('graph/runtime/lifecycle', 'graph/runtime/plain-data', 'graph/runtime/tracing-off',
-            'graph/authority/no-direct-write', 'graph/authority/typed-proposals-only')
+            'graph/authority/no-direct-write', 'graph/authority/typed-proposals-only', 'graph/authority/proc-limit')
     if runtime is None:
         for name in rows:
             expect(name + absent, False)
         return observations
-    audit = root / 'runtime-audit.jsonl'
-    wrapper = root / 'runtime_runner.py'
-    wrapper.write_text('PRODUCTION = %r\nAUDIT = %r\n' % (str(repo / '.veldo/control_graph_langgraph.py'),
-                                                          str(audit)) + _S43_RUNNER)
-    adapter = graph.Adapter(dict(runtime, runner=str(wrapper)), 'domain', 'repository',
+    # The authority: a main repository whose Git common directory holds the store, and the
+    # domain's linked worktree, where the runner is installed and the domain process works.
+    git = _s43_load('s43_git', ROOT / '.veldo/git_process.py')
+    authority, checkout = root / 'authority-repository', root / 'domain-checkout'
+    quiet = dict(check=True, stdout=_s43_sp.DEVNULL, stderr=_s43_sp.DEVNULL)
+    git.run(['git', 'init', '-q', str(authority)], **quiet)
+    git.run(['git', '-C', str(authority), 'commit', '-q', '--allow-empty', '-m', 'authority'],
+            identity=('Veldo Suite', 'suite@example.invalid'), **quiet)
+    git.run(['git', '-C', str(authority), 'worktree', 'add', '-q', '--detach', str(checkout), 'HEAD'], **quiet)
+    store_path = authority / '.git/veldo/control/control.sqlite3'
+    connection = store.open_store(str(store_path))
+
+    def command(command_id, principal, priority, version):
+        return {'command_id': command_id, 'principal': principal, 'operation': 'upsert_entity',
+                'parameters': {'entity_id': 'unit-1', 'kind': 'unit', 'data': {'priority': priority}},
+                'expected_versions': {'unit-1': version}, 'artifact_digests': [], 'nonce': command_id}
+
+    def sign(message):
+        return 'stub:' + store.digest_of(message.decode('utf-8'))
+
+    store.execute(connection, command('seed-unit-1', 'owner', 5, 0), 'dmitry', sign, 1)
+    before = store.table_snapshot(connection)
+    production_runner = (repo / '.veldo/control_graph_langgraph.py').read_text()
+    installed_runner = checkout / '.veldo/control_graph_langgraph.py'
+    installed_runner.parent.mkdir()
+    installed_runner.write_text(production_runner.split("\nif __name__ == '__main__':\n")[0] + '\n' + _S43_RUNNER)
+    domain = 'domain-' + _s43_os.urandom(6).hex()
+    audit_directory = _s43_Path('/tmp/veldo-graph-43-audit') / domain
+    adapter = graph.Adapter(dict(runtime, runner=str(installed_runner)), domain, 'repository',
                             evidence=graph.runtime_evidence())
     responses = []
 
@@ -321,8 +385,14 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         return result
 
     # The caller's own environment asks for LangSmith tracing; the graph child must not see it.
+    # The domain process works inside its checkout and holds an open, inheritable descriptor on
+    # the store (besides its own connection) for every exchange.
     saved = {name: _s43_os.environ.get(name) for name in _S43_SWITCHES}
     _s43_os.environ.update({name: 'true' for name in _S43_SWITCHES})
+    handle = _s43_os.open(store_path, _s43_os.O_RDONLY)
+    _s43_os.set_inheritable(handle, True)
+    previous = _s43_os.getcwd()
+    _s43_os.chdir(checkout)
     try:
         # AC1: every lifecycle operation and outcome through the actual runtime.
         started = call('start', 'cycle-r1', 'command-r1', snapshot, workflow('lifecycle'))
@@ -347,60 +417,41 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         foreign = [call('start', 'cycle-f-' + name, 'command-f-' + name, snapshot, workflow(name))
                    for name in ('foreign-command', 'foreign-snapshot', 'foreign-in-notes')]
         untyped = call('start', 'cycle-u', 'command-u', snapshot, workflow('untyped-proposal'))
-
-        # AC2: a real store in a real repository; the domain process runs inside it and holds an
-        # open, inheritable descriptor on the store while every graph node tries to reach it.
-        git = _s43_load('s43_git', ROOT / '.veldo/git_process.py')
-        authority = root / 'authority-repository'
-        git.run(['git', 'init', '-q', str(authority)], check=True, stdout=_s43_sp.DEVNULL)
-        store_path = authority / '.git/veldo/control/control.sqlite3'
-        connection = store.open_store(str(store_path))
-
-        def command(command_id, principal, priority, version):
-            return {'command_id': command_id, 'principal': principal, 'operation': 'upsert_entity',
-                    'parameters': {'entity_id': 'unit-1', 'kind': 'unit', 'data': {'priority': priority}},
-                    'expected_versions': {'unit-1': version}, 'artifact_digests': [], 'nonce': command_id}
-
-        def sign(message):
-            return 'stub:' + store.digest_of(message.decode('utf-8'))
-
-        store.execute(connection, command('seed-unit-1', 'owner', 5, 0), 'dmitry', sign, 1)
-        before = store.table_snapshot(connection)
-        handle = _s43_os.open(store_path, _s43_os.O_RDONLY)
-        _s43_os.set_inheritable(handle, True)
-        previous = _s43_os.getcwd()
-        _s43_os.chdir(authority)
-        try:
-            assertions = {name: call('start', 'cycle-' + name, 'command-' + name, snapshot, workflow(name))
-                          for name in ('assert-admission', 'assert-priority', 'assert-completion')}
-            probe = call('start', 'cycle-store', 'command-store-1', snapshot, workflow('store-access'))
-            proposed = call('advance', 'cycle-store', 'command-store-2', snapshot, workflow('store-access'),
-                            probe.get('resume'), [_s43_result(1)])
-        finally:
-            _s43_os.chdir(previous)
-            _s43_os.close(handle)
-        after = store.table_snapshot(connection)
-        # Only the typed proposal reaches the separately authorized command, by the owner.
-        committed = None
-        for item in proposed.get('proposals', []):
-            if item['type'] == 'priority' and item['subject'] == 'unit-1':
-                committed = store.execute(connection, command('commit-' + item['proposal_id'], 'owner',
-                                                              item['priority'], 1), 'dmitry', sign, 1)
-        unit = connection.execute("SELECT version, data FROM entities WHERE id = 'unit-1'").fetchone()
-        journal = connection.execute('SELECT principal, command_id FROM journal ORDER BY seq').fetchall()
-        connection.close()
+        # AC2: nodes assert authority, search for the store, and read the parent through /proc.
+        assertions = {name: call('start', 'cycle-' + name, 'command-' + name, snapshot, workflow(name))
+                      for name in ('assert-admission', 'assert-priority', 'assert-completion')}
+        probe = call('start', 'cycle-store', 'command-store-1', snapshot, workflow('store-access'))
+        proposed = call('advance', 'cycle-store', 'command-store-2', snapshot, workflow('store-access'),
+                        probe.get('resume'), [_s43_result(1)])
+        reach = call('start', 'cycle-proc', 'command-proc', snapshot, workflow('proc-reach'))
     finally:
+        _s43_os.chdir(previous)
+        _s43_os.close(handle)
         for name, value in saved.items():
             if value is None:
                 _s43_os.environ.pop(name, None)
             else:
                 _s43_os.environ[name] = value
-    audits = [_s43_json.loads(line) for line in audit.read_text().splitlines()] if audit.is_file() else []
+    after = store.table_snapshot(connection)
+    # Only the typed proposal reaches the separately authorized command, by the owner.
+    committed = None
+    for item in proposed.get('proposals', []):
+        if item['type'] == 'priority' and item['subject'] == 'unit-1':
+            committed = store.execute(connection, command('commit-' + item['proposal_id'], 'owner',
+                                                          item['priority'], 1), 'dmitry', sign, 1)
+    unit = connection.execute("SELECT version, data FROM entities WHERE id = 'unit-1'").fetchone()
+    journal = connection.execute('SELECT principal, command_id FROM journal ORDER BY seq').fetchall()
+    connection.close()
+    audits = []
+    for observed in adapter.observations:
+        record = audit_directory / (observed['command_id'] + '.json')
+        audits.append(_s43_json.loads(record.read_text()) if record.is_file() else None)
+    _s43_shutil.rmtree(audit_directory, ignore_errors=True)
     pinned = dict((name, version) for name, version, _, _ in lock.PACKAGES)['langgraph']
     identity = {'name': 'langgraph', 'version': pinned}
     observations.update(started=started, held=held, advanced=advanced, canceled=canceled, failed=failed,
                         production=production, foreign=foreign, untyped=untyped, assertions=assertions,
-                        probe=probe.get('resume'), proposed=proposed, unit=list(unit), journal=journal,
+                        probe=probe.get('resume'), proposed=proposed, unit=list(unit), journal=journal, reach=reach,
                         store_unchanged_by_graph=before == after, audits=audits, stub_evidence=stub_evidence,
                         runner_processes=sum(adapter.counts.values()))
 
@@ -416,7 +467,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and lifecycle_counts == {'accepted': 6, 'refused': 0}
            and all(r.get('runtime') == identity for r in (started, held, advanced, canceled, failed))
            and production.get('runtime') == {'name': 'none', 'version': ''}
-           and len(audits) >= 6 and all(a['invoked'] == ['langgraph.graph.state.CompiledStateGraph']
+           and len(audits) >= 6 and all(a and a['invoked'] == ['langgraph.graph.state.CompiledStateGraph']
                                         for a in audits[:6])
            and stub_evidence == 'missing_evidence'
            and [o['operation'] for o in adapter.observations[:6]] ==
@@ -429,16 +480,23 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and 'langgraph.types.Command' in foreign[0]['failure']['detail']
            and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
            and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
-           and len(responses) == 15 and all(_s43_exact_plain(r) for r in responses))
+           and len(responses) == 16 and all(_s43_exact_plain(r) for r in responses))
     source = (repo / '.veldo/control_graph_langgraph.py').read_text()
-    expect('graph/runtime/tracing-off', len(audits) == sum(adapter.counts.values()) == 15 and all(
-               a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
+    expect('graph/runtime/tracing-off', len(audits) == sum(adapter.counts.values()) == 16 and all(
+               a and a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
                and a['sockets'] == [] for a in audits)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
            and not any(word in source for word in ('langgraph_sdk', 'RemoteGraph', 'get_client')))
     notes = _s43_notes(probe)
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended')
+    # The stated limit (Release 2: real confinement): as the same account, a node can still read
+    # the domain process through /proc. This row keeps that limit visible; it is not a pass.
+    limit = _s43_notes(reach)
+    observations['proc_limit'] = limit
+    expect('graph/authority/proc-limit', reach.get('outcome') == 'suspended'
+           and limit.get('parent_cwd') == str(checkout.resolve())
+           and str(store_path.resolve()) in limit.get('parent_store_descriptors', []))
     expect('graph/authority/typed-proposals-only',
            [a.get('failure', {}).get('code') for a in assertions.values()] == ['node_failed'] * 3
            and all(key in assertions[name]['failure']['detail'] for name, key in (
