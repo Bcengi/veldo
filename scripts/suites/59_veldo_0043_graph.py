@@ -899,6 +899,50 @@ def _s43_run():
             'url-field-no-host': 'path_in_request', 'identifier-control': 'invalid_input',
             'identifier-dots': 'invalid_input', 'two-megabytes': 'invalid_input', 'self-referential': 'invalid_input'})
 
+        # Every bad shape at the stage that is not a link is a named, counted, observed refusal.
+        import hashlib as _s43_hashlib
+        staged_name = _s43_hashlib.sha256(stub.read_bytes()).hexdigest() + '.py'
+
+        def plant(stage, shape):
+            if shape == 'runners-file':
+                _s43_shutil.rmtree(stage / 'runners')
+                (stage / 'runners').write_text('x')
+            elif shape == 'work-file':
+                _s43_shutil.rmtree(stage / 'work')
+                (stage / 'work').write_text('x')
+            elif shape == 'runner-directory':
+                (stage / 'runners' / staged_name).unlink()
+                (stage / 'runners' / staged_name).mkdir()
+            elif shape == 'root-file':
+                _s43_shutil.rmtree(stage)
+                stage.write_text('x')
+            elif shape == 'runners-unwritable':
+                (stage / 'runners' / staged_name).write_text('tampered')
+                (stage / 'runners').chmod(0o500)
+        shapes = {}
+        for shape in ('runners-file', 'work-file', 'runner-directory', 'root-file', 'runners-unwritable'):
+            stage = root / ('stage-shape-' + shape)
+            shaped_adapter = graph.Adapter({'python': _s43_sys.executable, 'runner': str(stub), 'stage': str(stage)},
+                                           'domain', 'repository')
+            shaped_adapter.start('cycle-shape-0', 'command-shape-0', snapshot, version)
+            plant(stage, shape)
+            try:
+                shaped_adapter.start('cycle-shape-1', 'command-shape-1', snapshot, version)
+                shapes[shape] = ['launched']
+            except Exception as error:
+                shapes[shape] = [getattr(error, 'code', type(error).__name__), getattr(error, 'detail', str(error))[:80]]
+            shapes[shape] += [shaped_adapter.counts == {'accepted': 1, 'refused': 1},
+                              shaped_adapter.observations[-1]['refusal']]
+            if (stage / 'runners').is_dir():
+                (stage / 'runners').chmod(0o700)
+        observations['stage_shapes'] = shapes
+        reasons = {'runners-file': 'the stage runners is not a directory', 'work-file': 'the stage work is not a directory',
+                   'runner-directory': 'the staged runner is not a file', 'root-file': 'the stage root is not a directory',
+                   'runners-unwritable': 'the stage cannot be used'}
+        expect('graph/authority/stage-shapes', all(
+            shapes[name][0] == 'runtime_unavailable' and shapes[name][1].startswith(reason)
+            and shapes[name][2] is True and shapes[name][3] == 'runtime_unavailable' for name, reason in reasons.items()))
+
         # The child runs in its own session and its whole process group is killed on the deadline
         # and on every exit path: nothing a node started outlives the exchange.
         orphans = {}
