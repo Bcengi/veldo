@@ -1,5 +1,0 @@
---- a/.veldo/control_graph.py
-+++ b/.veldo/control_graph.py
-@@ -322 +322 @@
--        if declared and is_url(text):
-+        if declared:

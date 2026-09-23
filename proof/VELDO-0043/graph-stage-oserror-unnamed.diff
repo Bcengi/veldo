@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -562 +562 @@
+-    except OSError as error:
++    except FileNotFoundError as error:

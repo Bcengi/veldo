@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -331 +331 @@
--    if text_depth(raw) > MAX_DEPTH:
+@@ -443 +443 @@
+-    if target.exists() and not target.is_file():
 +    if False:

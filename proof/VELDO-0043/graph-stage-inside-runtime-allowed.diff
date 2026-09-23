@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -430 +430 @@
+-        if any(place == base or base in place.parents for base in (prefix, prefix.resolve())):
++        if False:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -343 +343 @@
+@@ -332 +332 @@
 -        raise Refused('invalid_response', 'answer nests deeper than ' + str(MAX_DEPTH))
 +        raise ValueError('answer nests deeper than ' + str(MAX_DEPTH))

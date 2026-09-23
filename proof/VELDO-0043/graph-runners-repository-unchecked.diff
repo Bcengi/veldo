@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -436 +436 @@
+-    for name, path in (('runners', runners), ('work', work)):
++    for name, path in (('work', work),):

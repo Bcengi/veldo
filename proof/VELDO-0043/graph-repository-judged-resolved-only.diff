@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -416 +416 @@
+@@ -405 +405 @@
 -    return within(Path(os.path.abspath(path))) or within(Path(path).resolve())
 +    return within(Path(path).resolve())

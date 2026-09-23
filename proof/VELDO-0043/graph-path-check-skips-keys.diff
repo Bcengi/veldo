@@ -1,5 +1,4 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -557 +557 @@
--    if problems:
-+    if False:
+@@ -273 +272,0 @@
+-            stack.extend(item.keys())

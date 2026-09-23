@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -529 +529 @@
+@@ -571 +571 @@
 -            proc = subprocess.Popen([runtime['python'], '-I', '-B', str(staged)],
 +            proc = subprocess.Popen([runtime['python'], '-I', '-B', runtime['runner']],

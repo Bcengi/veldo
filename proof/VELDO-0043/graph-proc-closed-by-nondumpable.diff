@@ -1,4 +1,6 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -520,0 +521 @@
-+    __import__('ctypes').CDLL(None).prctl(4, 0, 0, 0, 0)
+@@ -560 +560,2 @@
+-        staged, work = stage(runtime)
++        __import__('ctypes').CDLL(None).prctl(4, 0, 0, 0, 0)
++    staged, work = stage(runtime)

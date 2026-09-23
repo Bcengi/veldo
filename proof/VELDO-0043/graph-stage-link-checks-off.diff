@@ -1,8 +1,8 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -423,2 +422,0 @@
+@@ -412,2 +411,0 @@
 -    if path.is_symlink():
 -        raise Refused('runtime_unavailable', 'the stage ' + name + ' is a link the adapter did not make')
-@@ -426 +424 @@
+@@ -417 +415 @@
 -    if path.is_symlink() or not path.is_dir() or path.resolve() != path:
 +    if False:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -223 +223 @@
+@@ -224 +224 @@
 -    if type(value['notes']) is not str or len(value['notes']) > MAX_NOTES:
 +    if len(value['notes']) > MAX_NOTES:
