@@ -28,6 +28,7 @@ def _snapshots():
 
 
 SN = _snapshots()
+_git_process = SN._git_process
 OWNER = 'VELDO-0035 accepted snapshots'
 SNAPSHOT_KINDS = {'control_snapshot': ('accept_snapshot',)}
 REVISION_OWNER = 'VELDO-0035 accepted revisions'
@@ -39,7 +40,7 @@ REVISION_PREFIXES = {CARRIERS_PREFIX: ('accept_revision',)}
 
 def _descends(repo, older, newer):
     """Whether `newer` has `older` in its history (or is it)."""
-    result = SN._git_process.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', older, newer],
+    result = _git_process.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', older, newer],
                                  capture_output=True, timeout=15)
     if result.returncode not in (0, 1):
         raise SN.Refused('missing_authority', 'the accepted history is unreadable')
@@ -79,7 +80,7 @@ HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-rel
 def _require_complete_history(repo):
     """Refuse a shallow repository by name: its boundary commits hide the history before them, so
     what the history names there is not what the history holds."""
-    result = SN._git_process.run(['git', '-C', str(repo), 'rev-parse', '--is-shallow-repository'],
+    result = _git_process.run(['git', '-C', str(repo), 'rev-parse', '--is-shallow-repository'],
                                  capture_output=True, timeout=15)
     if result.returncode or result.stdout.decode().strip() != 'false':
         raise SN.Refused('shallow_repository', '%s is shallow or unreadable: its history is incomplete' % repo)
@@ -99,7 +100,7 @@ def carrier_paths(repo, commit, base=()):
     _require_complete_history(repo)
     # The excluded commits go through stdin, so their number is bounded by nothing on a command line.
     exclusions = ''.join('^%s\n' % excluded for excluded in base)
-    result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',
+    result = _git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',
                                   '--ignore-missing', '--stdin', commit, '--'],
                                  input=exclusions.encode(), capture_output=True, timeout=60)
     if result.returncode:
@@ -111,7 +112,7 @@ def carrier_paths(repo, commit, base=()):
 def root_commits(repo, revision='HEAD'):
     """Every root commit reachable from a revision, sorted, or None: what an accepted commit is checked
     to share with its enrolled repository. It is not a checkout's identity; the enrollment binding is."""
-    result = SN._git_process.run(['git', '-C', str(repo), 'rev-list', '--max-parents=0', revision, '--'],
+    result = _git_process.run(['git', '-C', str(repo), 'rev-list', '--max-parents=0', revision, '--'],
                                  capture_output=True, timeout=15)
     if result.returncode:
         return None

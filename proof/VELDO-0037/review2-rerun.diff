@@ -166,7 +166,7 @@ diff -ru -x __pycache__ orig/review/r5_exact_bytes.py work/review/r5_exact_bytes
 +import sys, os, stat; sys.path.insert(0, '<rerun>/review'); from h import *
  root, conn, svc, pub, co, sg = setup()
  enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
- cases = [b'\xef\xbb\xbfbom\r\n', b'cr only\rline\r', b'nul\x00inside\n', ' ls ps'.encode(), '\U0001F600 astral'.encode(),
+ cases = [b'\xef\xbb\xbfbom\r\n', b'cr only\rline\r', b'nul\x00inside\n', '\u2028ls\u2029ps'.encode(), '\U0001F600 astral'.encode(),
 @@ -11,7 +11,7 @@
      p, pe = attempt(lambda: pub.publish('repository', r['alias'], 1, 'p', **sg))
      if pe: print(i, 'publish refused', pe.code); continue

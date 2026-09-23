@@ -49,12 +49,12 @@ x/{alias}.md                 vs X/AAA-{number}.md/{alias}.md     -> invalid_inpu
 reserved/unicode .{slug}/{alias}.md       prefix AAA   -> reserved_path
 reserved/unicode x/.Veldo/{alias}.md      prefix AAA   -> reserved_path
 reserved/unicode .gi{slug}/{alias}.md     prefix AAA   -> reserved_path
-reserved/unicode spécs/{alias}.md         prefix AAA   -> invalid_input
+reserved/unicode sp\u00e9cs/{alias}.md         prefix AAA   -> invalid_input
 reserved/unicode {slug}/{alias}.md        prefix AAA   -> None
 reserved/unicode {alias}/x.md             prefix .GIT  -> None
 reserved/unicode a/.GiT/{number}          prefix AAA   -> reserved_path
-prefix 'VELDÖ' -> invalid_unit_id
-prefix 'VELKDO' -> invalid_unit_id
+prefix 'VELD\u00d6' -> invalid_unit_id
+prefix 'VEL\u212aDO' -> invalid_unit_id
 prefix 'VE LDO' -> invalid_unit_id
 exit 0
 == review/r1_symlink_parent.py
