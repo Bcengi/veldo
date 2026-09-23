@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -304,0 +305 @@
++            completion = self._send(enrollment['chat'], text)
+@@ -306 +306,0 @@
+-            completion = self._send(enrollment['chat'], text)

@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -463,0 +464,2 @@
+@@ -540,0 +541,2 @@
 +        if item['raw'].get('display_status') == 'assigned':
-+            return 'admitted'
++            return 'admitted', inputs

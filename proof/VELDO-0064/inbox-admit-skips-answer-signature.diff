@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -573,2 +572,0 @@
+-        if not verified:
+-            return 'missing_authority', inputs

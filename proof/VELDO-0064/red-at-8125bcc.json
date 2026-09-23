@@ -36,6 +36,7 @@
   "VELDO-0064 projection/owner-enrolled-chat detail: no chat ever received another owner's assignment",
   "VELDO-0064 projection/owner-enrolled-chat detail: the refused owners stay refused and nothing is sent",
   "VELDO-0064 projection/owner-enrolled-chat detail: the refused owners stay visible as unprojected work",
+  "VELDO-0064 projection/owner-enrolled-chat detail: an edge given one configured chat is refused",
   "VELDO-0064 projection/returned-chat-checked detail: a message placed in another chat is the named anomaly, not a sent projection",
   "VELDO-0064 projection/returned-chat-checked detail: the record keeps the chat the platform returned beside the enrolled chat",
   "VELDO-0064 projection/returned-chat-checked detail: the misplaced message is never sent again"
@@ -126,7 +127,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.844,
+ "seconds": 1.805,
  "spec_id": "VELDO-0064",
  "suite": "scripts/suites/60_veldo_0064_inbox.py"
 }

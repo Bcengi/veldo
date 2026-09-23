@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -383,2 +382,0 @@
+-        if reason != 'admitted':
+-            raise Refused(reason, 'the assignment does not admit the blocked work')

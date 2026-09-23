@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_projection.py
 +++ b/.veldo/control_channel_projection.py
-@@ -187 +187 @@
--                record.update(outcome='sent', chat_id=sent['chat_id'], message_id=sent['message_id'],
-+                record.update(outcome='sent', chat_id=sent['chat_id'], message_id=None,
+@@ -207 +207 @@
+-                    message_id=platform['message_id'], platform_date=platform['date'],
++                    message_id=None, platform_date=platform['date'],

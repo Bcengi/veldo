@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -206 +206 @@
+-        data.update(outcome='anomaly' if found else 'sent', chat_id=platform['chat_id'],
++        data.update(outcome='anomaly' if found else 'sent', chat_id=data['enrolled_chat'],

@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -564,2 +563,0 @@
+-        if not binds:
+-            return 'missing_authority', inputs

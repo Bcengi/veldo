@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -364 +364 @@
+-            raise Refused('invalid_input', 'releasing a claim names its generation')
++            return None

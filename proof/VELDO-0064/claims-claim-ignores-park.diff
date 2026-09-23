@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -91 +91 @@
+-        if op == 'claim' and parked:
++        if False and parked:
