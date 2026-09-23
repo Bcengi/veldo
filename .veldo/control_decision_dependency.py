@@ -284,12 +284,12 @@ def _record_blockers(rid, record, settlements, subjects, verify, domain_uuid):
     mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]
     if not mine:
         return ['unresolved_decision:' + rid]
-    problems = record_problems(rid, record)
-    if problems:
-        return problems
     malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]
     if malformed:
         return malformed
+    problems = record_problems(rid, record)
+    if problems:
+        return problems
     verified = []
     for _, s in mine:
         body, signature, signer = s.get('settlement'), s.get('signature'), s.get('signer')

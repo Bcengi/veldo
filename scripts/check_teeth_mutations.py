@@ -1052,6 +1052,18 @@ def cases():
     decisions('blockers-store-refusal-renamed', 'control_eligibility.py',
               "            codes = [self.refusal_code(error)]\n", "            codes = ['invalid_input:' + error.code]\n",
               'status-names-store-refusal')
+    # Item 3: a malformed settlement is invalid_input before its record is judged unsupported.
+    decisions('unsupported-before-settlement-invalid', 'control_decision_dependency.py',
+              "    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]\n"
+              "    if malformed:\n        return malformed\n"
+              "    problems = record_problems(rid, record)\n    if problems:\n        return problems\n",
+              "    problems = record_problems(rid, record)\n    if problems:\n        return problems\n"
+              "    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]\n"
+              "    if malformed:\n        return malformed\n",
+              'settlement-invalid-before-unsupported')
+    decisions('settlement-signature-type-unchecked', 'control_decision_dependency.py',
+              "    for name in ('signature', 'signer'):\n", "    for name in ('signer',):\n",
+              'settlement-invalid-before-unsupported')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

@@ -743,6 +743,23 @@ def _v54_suite():
                    and status['decisions']['accepted'] > 0 and status['decisions']['refused'] > 0
                    and {s for s in SCEN if SCEN[s][1] == 'all' and SCEN[s][2]} <= set(status['decisions']['blocked']))
 
+        with region('decisions/settlement-invalid-before-unsupported'):
+            # A malformed settlement is invalid_input before its record is judged unsupported: invalid
+            # input is decided before anything else, for settlements as for governing records.
+            planned('PLAN-9412', ['VELDO-9497', 'VELDO-9498'])
+            decision('decision:D-9497', 'spec', 'VELDO-9497', ['VELDO-9497'], obligations=['tripwire'])
+            settle('decision:D-9497', after=lambda d: d.update(signature=42))
+            decision('decision:D-9498', 'contract', 'CONTRACT-3', ['VELDO-9498'],
+                     scope=dict(operation='proceed', target='CONTRACT-3', parameters={}))
+            settle('decision:D-9498', after=lambda d: d.update(settlement=['a list, not a body']))
+            settlement_order = swept(['VELDO-9497', 'VELDO-9498'])
+            observed['settlement_order'] = settlement_order[1] if settlement_order[0] == 'raised' else {
+                sid: o['stations']['build'] for sid, o in settlement_order[1].items()}
+            check('decisions/settlement-invalid-before-unsupported',
+                   settlement_order[0] == 'ok'
+                   and verdict(settlement_order[1]['VELDO-9497'], {'invalid_input:settlement:decision:D-9497:1/signature'})
+                   and verdict(settlement_order[1]['VELDO-9498'], {'invalid_input:settlement:decision:D-9498:1/settlement'}))
+
         with region('decisions/deep-blocks-named'):
             # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it
             # names is held by invalid_input:<id>/blocks and every other unit is decided as before. And
