@@ -13,6 +13,7 @@ import hashlib as _v65_hashlib
 import http.server as _v65_http
 import importlib.util as _v65_import
 import json as _v65_json
+import os as _v65_os
 from pathlib import Path as _v65_Path
 import shutil as _v65_shutil
 import subprocess as _v65_sp
@@ -1291,7 +1292,10 @@ def _v65_checks(base):
 
 
 _v65_started = _v65_time.monotonic()
-with _v65_temp.TemporaryDirectory(prefix='v65-') as _v65_dir:
+# The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
+# other store suites do; elsewhere (the Mac) the platform's temporary directory is used.
+_v65_fast = '/dev/shm' if _v65_os.path.isdir('/dev/shm') and _v65_os.access('/dev/shm', _v65_os.W_OK) else None
+with _v65_temp.TemporaryDirectory(prefix='v65-', dir=_v65_fast) as _v65_dir:
     _v65_rows = _v65_checks(_v65_Path(_v65_dir))
 for _v65_name, _v65_observed in _v65_rows.items():
     _v65_ok = bool(_v65_observed) and all(ok for _, ok in _v65_observed)
