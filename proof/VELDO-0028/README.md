@@ -510,23 +510,23 @@ git's display leaves) for the first row; `effects-pushed-from-every-to-line` (th
 with its rows, its fix, its mutations and the `engine/.veldo` copies, then `57764e1` (destinations
 read from git's status lines and display), `d2453d6` (spec Notes and History) and `3dedb09` (the
 push-status row reads the backup branch unchecked: the first mutation run showed that a mutant
-skipping hooks made the suite raise instead of redding the row). `525c69c` added `--porcelain` to the push, which moved
-the anchor of seven push mutations; they were re-anchored with the same meaning in `8fce1ea`, so
-finding 28's mutation check is not runnable at `525c69c` alone.
+skipping hooks made the suite raise instead of redding the row). `525c69c` added `--porcelain` to
+the push, which moved the anchor of seven push mutations; they were re-anchored with the same
+meaning in `8fce1ea`, so finding 28's mutation check is not runnable at `525c69c` alone.
 
-**Red before, green now.** `r6-red-at-0a5a593.json` records suite 58 at `8fce1ea` run over a copy
-of the tree with `control_effect_executor.py`, `git_process.py` and `control_effects.py` from
+**Red before, green now.** `r6-red-at-0a5a593.json` records suite 58 at `8fce1ea` run over a copy of
+the tree with `control_effect_executor.py`, `git_process.py` and `control_effects.py` from
 `0a5a593`: the three new rows and the rewritten coordinates row fail by assertion, none by an
 exception (the suite ran all 30 rows: 26 passed, 4 failed), and every other row passes. This was
 re-derived for this proof with the same result. `r6-red-at-8fce1ea.json` records the same for the
 two destination rows (suite at `3dedb09`, executor from `8fce1ea`: 30 passed, 2 failed). On this
-branch all 32 named rows are green (58 assertions); the suite takes 14.8 to 18.3 seconds on its
-own over three runs at the final code (host load uncontrolled), against 14.4 at `8fce1ea`. `python3 -B scripts/check_teeth_mutations.py --finding 28`
-rejects all 42 finding-28 mutations with a green baseline (58 assertions, about 24 minutes on this
-host). All 42 exact diffs are in this directory: the twelve added this round, the 18 whose line
-offsets moved regenerated, and the five R5 redirect-refusal diffs removed. `mutations.json`,
-`gate-mutations.json`, `gate-summary.json` and the `manifest.json` hashes still describe `65294a7`
-until the lead's gate run is stamped.
+branch all 32 named rows are green (58 assertions); the suite takes 14.8 to 18.3 seconds on its own
+over three runs at the final code (host load uncontrolled), against 14.4 at `8fce1ea`. `python3 -B
+scripts/check_teeth_mutations.py --finding 28` rejects all 42 finding-28 mutations with a green
+baseline (58 assertions, about 24 minutes on this host). All 42 exact diffs are in this directory:
+the twelve added this round, the 18 whose line offsets moved regenerated, and the five R5
+redirect-refusal diffs removed. `mutations.json`, `gate-mutations.json`, `gate-summary.json` and the
+`manifest.json` hashes still describe `65294a7` until the lead's gate run is stamped.
 
 **The checker's scripts against this branch.** `r6-scripts-at-57764e1.txt` is the re-run, with one
 print line added to the harness copy so each case shows the destination the record stores; the
