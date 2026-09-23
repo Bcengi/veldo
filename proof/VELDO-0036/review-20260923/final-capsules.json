@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "finding": "R1",
+      "returncode": 0,
+      "reproduces": false,
+      "stdout": "{\"charge_after_timeout\": 5, \"retry_admitted\": false}\n",
+      "script_sha256": "9d06787eba9e63a97fca924c14e8ffe205f781f5532d8d8fdd53fb774ff8da21"
+    },
+    {
+      "finding": "R2",
+      "returncode": 0,
+      "reproduces": false,
+      "stdout": "{\"report_error\": \"missing_authority\", \"stops\": [\"worker\"], \"worker_alive_at_deadline\": false}\n",
+      "script_sha256": "0a0125b9dd67babc2d5171650da11f3e6e409452045c87c170ebe42f21860969"
+    },
+    {
+      "finding": "R3",
+      "returncode": 0,
+      "reproduces": false,
+      "stdout": "{\"scope\": \"account\", \"cap\": 1, \"observed_wall_seconds\": 2, \"stop_required\": true, \"stops\": [\"worker\"]}\n{\"scope\": \"project\", \"cap\": 1, \"observed_wall_seconds\": 2, \"stop_required\": true, \"stops\": [\"worker\"]}\n{\"scope\": \"unit\", \"cap\": 1, \"observed_wall_seconds\": 2, \"stop_required\": true, \"stops\": [\"worker\"]}\n",
+      "script_sha256": "6f30bb7168096289838203ffba82121196ccb84a8d0fe372ff9d9b7e51b7ab94"
+    }
+  ]
+}

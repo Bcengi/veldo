@@ -298,6 +298,14 @@ def cases():
                 "            # Reporting, authorization and policy reads must fail closed for the worker.\n            self._stop(active)",
                 "            # Defect: report failure leaves the worker running.\n            pass",
                 'report-failure-stops')
+    reservation('reservation-active-ignores-wall-cap', 'control_reservation_runtime.py',
+                "                for unit, cap in policy['caps'].items():",
+                "                for unit, cap in policy['caps'].items():\n                    if unit == 'wall_seconds':\n                        continue",
+                'current-caps')
+    reservation('reservation-active-skips-project-cap', 'control_reservation_runtime.py',
+                "            for policy in self.reservations._policies(call['context'], records):",
+                "            for policy in self.reservations._policies(call['context'], records):\n                if policy['scope'] == 'project':\n                    continue",
+                'current-caps')
     reservation('reservation-extra-slot', 'control_reservations.py',
                 "if balance[unit] + wanted.get(unit, 0) > cap:",
                 "if balance[unit] + wanted.get(unit, 0) > cap + 1:", 'ceilings')

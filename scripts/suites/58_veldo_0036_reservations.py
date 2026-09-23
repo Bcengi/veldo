@@ -324,6 +324,25 @@ def _v36_suite():
                         child.stdout.close()
             expect('VELDO-0036 reservations/report-failure-stops', report_failure_ok)
 
+            # R3: running workers obey every current scope's ceilings after reconfiguration.
+            current_caps_ok = True
+            for scope in reservations.SCOPES:
+                for unit in ('wall_seconds', 'tokens', 'messages', 'capacity', 'invocations'):
+                    service, _ = fixture()
+                    worker(service)
+                    stops = []
+                    guard = runtime.InvocationGuard(service, 'codex', lambda *args: None, stops.append)
+                    guard.invoke('call', 'worker', 'call', 'initial', 5, {}, now=3)
+                    before = guard.observe('before', 'call', 1, {}, now=3)
+                    current_caps_ok &= not before['stop_required'] and not stops
+                    caps = dict(capacity=10, invocations=10, wall_seconds=100)
+                    caps[unit] = 0 if unit in ('capacity', 'invocations') else 1
+                    service.configure('lower', scope, scope, caps, now=4)
+                    usage = {unit: 2} if unit in ('wall_seconds', 'tokens', 'messages') else {}
+                    result = guard.observe('after', 'call', 2, usage, now=5)
+                    current_caps_ok &= result['stop_required'] and stops == ['worker']
+            expect('VELDO-0036 reservations/current-caps', current_caps_ok)
+
             # AC4: a REAL exited parent and its still-live descendant. Become the temporary
             # subreaper so we can reap that orphan ourselves; no process or zombie is leaked.
             libc = ctypes.CDLL(None, use_errno=True)

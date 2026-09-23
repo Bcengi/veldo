@@ -152,3 +152,20 @@ throughout the tick. `reservation-report-before-enforcement` restores the unsafe
 report-first path; `reservation-report-error-keeps-worker` drops exception-time
 stopping. Both fail the named row. `review-20260923/R2-green.log` and
 `R2-mutations.jsonl` retain the green control and all 18 rejected mutations.
+
+R3: `reservations/current-caps` first verifies an unstopped worker under ample
+ceilings, lowers one current cap, and observes again before the invocation's
+original deadline. It repeats for account, project and unit, with wall seconds,
+tokens, messages, capacity and invocations. The guard reads all current caps;
+usage reaching a ceiling stops the worker, while allocated capacity/invocation
+counts may finish at equality and must stop if a lowered cap is exceeded.
+`reservation-active-ignores-wall-cap` reintroduces the missing wall check;
+`reservation-active-skips-project-cap` omits a different scope's enforcement.
+Both fail the named row. `review-20260923/R3-green.log` and
+`R3-mutations.jsonl` retain the green control and all 20 rejected mutations.
+
+Final replay of the three original, unchanged capsules: **none reproduces**.
+`review-20260923/final-capsules.json` records script digests, successful exits and
+outputs: R1 retains five seconds and refuses the retry; R2 reports
+`missing_authority` after stopping and reaping the child; R3 requests and performs
+stop in all three scopes.

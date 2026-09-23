@@ -48,11 +48,13 @@ class InvocationGuard:
             reached = reached or call['observed'].get('wall_seconds', 0) >= active['wall_seconds']
             for policy in self.reservations._policies(call['context'], records):
                 balance = self.reservations.balances(policy['scope'], policy['subject'], records)
-                for unit in ('tokens', 'messages'):
-                    if unit in policy['caps'] and balance[unit] >= policy['caps'][unit]:
+                for unit, cap in policy['caps'].items():
+                    # An admitted slot/call may finish at its count ceiling; a lowered
+                    # ceiling below current allocation must stop it immediately.
+                    if unit in ('capacity', 'invocations') and not (unit == 'invocations' and final):
+                        reached = reached or balance[unit] > cap
+                    elif balance[unit] >= cap:
                         reached = True
-                if final and balance['invocations'] >= policy['caps']['invocations']:
-                    reached = True
                 for window in policy.get('windows', {}).values():
                     if window['remaining'] is None:
                         reached = True

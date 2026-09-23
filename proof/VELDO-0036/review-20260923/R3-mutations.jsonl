@@ -1,0 +1,21 @@
+{"finding": 36, "mutation": "reservation-final-reuses-partial", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/partial-final-retained"]}
+{"finding": 36, "mutation": "reservation-final-forgets-reservation", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/unknown-retained", "VELDO-0036 reservations/partial-final-retained", "VELDO-0036 reservations/retirement"]}
+{"finding": 36, "mutation": "reservation-report-before-enforcement", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/report-failure-stops"]}
+{"finding": 36, "mutation": "reservation-report-error-keeps-worker", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/report-failure-stops"]}
+{"finding": 36, "mutation": "reservation-active-ignores-wall-cap", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/current-caps"]}
+{"finding": 36, "mutation": "reservation-active-skips-project-cap", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/current-caps"]}
+{"finding": 36, "mutation": "reservation-extra-slot", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/ceilings", "VELDO-0036 reservations/atomic-last-slot", "VELDO-0036 reservations/pre-call-order", "VELDO-0036 reservations/retirement"]}
+{"finding": 36, "mutation": "reservation-ignore-ceiling", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/ceilings", "VELDO-0036 reservations/atomic-last-slot", "VELDO-0036 reservations/pre-call-order", "VELDO-0036 reservations/unknown-retained", "VELDO-0036 reservations/partial-final-retained", "VELDO-0036 reservations/retirement"]}
+{"finding": 36, "mutation": "reservation-check-outside-transaction", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/atomic-last-slot"]}
+{"finding": 36, "mutation": "reservation-ignore-capacity-and-count", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/ceilings", "VELDO-0036 reservations/atomic-last-slot", "VELDO-0036 reservations/pre-call-order", "VELDO-0036 reservations/retirement"]}
+{"finding": 36, "mutation": "reservation-follow-on-after-launch", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/pre-call-order"]}
+{"finding": 36, "mutation": "reservation-retry-after-launch", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/pre-call-order"]}
+{"finding": 36, "mutation": "reservation-ignore-wall-time", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/usage-controls", "VELDO-0036 reservations/report-failure-stops"]}
+{"finding": 36, "mutation": "reservation-ignore-window", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/usage-controls"]}
+{"finding": 36, "mutation": "reservation-duplicate-settlement", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/settles-once"]}
+{"finding": 36, "mutation": "reservation-double-reported-usage", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/ceilings", "VELDO-0036 reservations/settles-once", "VELDO-0036 reservations/partial-final-retained"]}
+{"finding": 36, "mutation": "reservation-timeout-frees-exposure", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/unknown-retained", "VELDO-0036 reservations/partial-final-retained", "VELDO-0036 reservations/retirement"]}
+{"finding": 36, "mutation": "reservation-cancel-frees-exposure", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/unknown-retained", "VELDO-0036 reservations/partial-final-retained"]}
+{"finding": 36, "mutation": "reservation-parent-exit-releases-slot", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/retirement"]}
+{"finding": 36, "mutation": "reservation-ignore-cleanup", "baseline": "green", "assertions": 36, "red_rows": ["VELDO-0036 reservations/retirement"]}
+{"mutations_rejected": 20, "green_suites": {"58_veldo_0036_reservations.py": 36}}

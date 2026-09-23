@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_runtime.py
++++ b/.veldo/control_reservation_runtime.py
+@@ -49,0 +50,2 @@
++                if policy['scope'] == 'project':
++                    continue
