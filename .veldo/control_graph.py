@@ -42,8 +42,8 @@ OPERATIONS = ('start', 'advance', 'suspend', 'cancel')
 OUTCOMES = {
     'start': ('suspended', 'proposal', 'failure'),
     'advance': ('suspended', 'proposal', 'failure'),
-    'suspend': ('suspended',),
-    'cancel': ('canceled',),
+    'suspend': ('suspended', 'failure'),
+    'cancel': ('canceled', 'failure'),
 }
 # Every proposal is typed; a graph asserts nothing, it proposes to an authorized command.
 PROPOSALS = {

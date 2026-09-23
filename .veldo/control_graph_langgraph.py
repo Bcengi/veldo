@@ -187,7 +187,10 @@ def _build(workflow):
 def run_cycle(request, workflow, resume):
     """Every operation executes the compiled graph: start and advance enter it at the cycle's
     position, suspend and cancel enter its control nodes."""
-    from langgraph.errors import GraphRecursionError
+    try:
+        from langgraph.errors import GraphRecursionError
+    except ImportError:
+        return _failure(request, 'node_failed', 'the LangGraph runtime cannot be imported')
     state = {'identity': {key: request[key] for key in IDENTITY}, 'operation': request['operation'],
              'snapshot': request.get('snapshot'), 'supplied_results': request.get('supplied_results', []),
              'proposals': [], 'halt': '', 'position': resume['position'], 'step': resume['step'],
