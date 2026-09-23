@@ -194,7 +194,8 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
                    'attribution': {f: True if f.endswith('_verified') else 'source-1'
                                    for f in _v27_ac.CHANNELS[channel]['attribution']}}
         if channel == 'signed_cli':
-            cmd = _v27_command('answer', {'ruling': 'approve'})
+            payload['ruling'] = 'approve'
+            cmd = _v27_command('answer', {'ruling': 'approve', 'presentation_id': 'p1'})
             env = _v27_envelope(cmd)
             payload['personal_command'] = {'command': cmd, 'envelope': env,
                                            'signature': _v27_sign('owner', _v27_ac.canonical_envelope_bytes(env))}
@@ -212,6 +213,22 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
             _v27_controls[_v27_channel, _v27_kind] = (_v27_req, _v27_result)
             _v27_expect('signing/kind/' + _v27_channel + '/' + _v27_kind,
                          _v27_result['accepted'] and _v27_keys.verify(_v27_state(), _v27_result))
+    # F-01: preserve the person's exact reject/p1 signature in conflicting records.
+    _v27_personal = _v27_copy.deepcopy(_v27_controls['signed_cli', 'decision_answer'][0]['payload']['personal_command'])
+    _v27_personal['command']['parameters'] = dict(ruling='reject', presentation_id='p1')
+    _v27_personal['envelope'] = _v27_envelope(_v27_personal['command'])
+    _v27_personal['signature'] = _v27_sign('owner', _v27_ac.canonical_envelope_bytes(_v27_personal['envelope']))
+    _v27_signed_control = _v27_call(_v27_source('signed_cli', 'decision_answer',
+        dict(personal_command=_v27_personal, ruling='reject')), 'signed_cli')
+    _v27_conflicts = []
+    for _v27_claim in (dict(ruling='approve', presentation_id='p2', presentation_digest=_v27_signer.digest({'presentation': 2})),
+                       dict(ruling='approve'), dict(presentation_id='p2')):
+        _v27_conflicts.append(_v27_call(_v27_source('signed_cli', 'decision_answer',
+            dict({'personal_command': _v27_personal, 'ruling': 'reject'}, **_v27_claim)), 'signed_cli'))
+    _v27_expect('signing/personal-content-binding', _v27_signed_control['accepted']
+                 and _v27_keys.verify(_v27_state(), _v27_signed_control)
+                 and all(not r['accepted'] and r.get('refusal') == 'provenance-mismatch' for r in _v27_conflicts))
+
     _v27_tg = _v27_controls['telegram_chat', 'acknowledgement'][0]
     _v27_jira = _v27_controls['jira', 'acknowledgement'][0]
     _v27_cross = _v27_call(_v27_jira)

@@ -212,6 +212,11 @@ def cases():
             "    if Path(projection_path).read_text() != projection(state):\n"
             "        return {'committed': True}\n"
             "    keyring = administrative_keyring(state, projection_path)", 'branch-key')
+    content = "               for field in ('ruling', 'presentation_id')):"
+    signing('signing-ignore-personal-content', 'control_signer.py', content,
+            "               for field in ()):", 'personal-content-binding')
+    signing('signing-ignore-personal-ruling', 'control_signer.py', content,
+            "               for field in ('presentation_id',)):", 'personal-content-binding')
     return result
 
 

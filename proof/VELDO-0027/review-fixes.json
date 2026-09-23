@@ -1,0 +1,15 @@
+{
+  "baseline_commit": "68ea1f33e965be80a489ece57ac5ca38a804db21",
+  "findings": {
+    "F-01": {
+      "row": "signing/personal-content-binding",
+      "red": "SELFTEST FAIL: VELDO-0027 signing/personal-content-binding",
+      "baseline_command": "python3 -B scripts/selftest.py --suite 56_veldo_0027_signing",
+      "green": "72 suite rows passed; targeted development check only",
+      "mutations": [
+        "signing-ignore-personal-content",
+        "signing-ignore-personal-ruling"
+      ]
+    }
+  }
+}

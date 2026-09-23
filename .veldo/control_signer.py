@@ -155,6 +155,10 @@ def _payload(state, request, channel, now):
         command, envelope = source.get('command', {}), source.get('envelope', {})
         if envelope.get('principal') != payload['principal'] or envelope.get('command_digest') != AC.canonical_command_digest(command):
             raise K.Refused('provenance-mismatch')
+        parameters = command.get('parameters', {})
+        if any(field not in parameters or parameters[field] != payload.get(field)
+               for field in ('ruling', 'presentation_id')):
+            raise K.Refused('provenance-mismatch')
         ok, _ = AC.ssh_keygen_verify(AC.canonical_envelope_bytes(envelope), source['signature'],
                                    AC.allowed_signers_line(payload['principal'], key['public_key']), payload['principal'])
         if not ok:
