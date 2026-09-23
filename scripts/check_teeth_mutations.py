@@ -288,14 +288,27 @@ def cases():
                  "                return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
                  'subscriber-isolation')
     notification('notify-retry-successful-subscribers',
-                 "self._queue.append((hint, None if remaining is None else tuple(remaining)))",
-                 "self._queue.append((hint, None))", 'subscriber-isolation')
+                 "self._queue.append((hint, None if remaining is None else tuple(remaining),",
+                 "self._queue.append((hint, None,", 'subscriber-isolation')
     notification('notify-drop-unavailable-first-attempt',
                  "if remaining is not None or exc.reason == 'service_unavailable':",
                  "if remaining is not None:", 'first-attempt-retained')
     notification('notify-drop-undelivered-on-interrupt',
-                 "                    self._retry(hint, failed + owed[index + 1:])\n",
+                 "                    self._retry(hint, failed + owed[index + 1:], failures)\n",
                  "", 'first-attempt-retained')
+    notification('notify-retry-without-backoff',
+                 "delay = min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "delay = 0.0", 'retry-backoff')
+    notification('notify-uncapped-backoff',
+                 "delay = min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "delay = self.retry_initial * 2.0 ** min(failures - 1, 64)", 'retry-backoff')
+    notification('notify-retry-not-woken-when-due',
+                 "bounds = self._retry_waits(now) + ",
+                 "bounds = [] + ", 'retry-backoff')
+    notification('notify-unbounded-observations',
+                 "            while len(self._observations) > self.observation_limit:\n"
+                 "                self._observations.popleft()\n",
+                 "", 'retry-backoff')
     notification('notify-unbounded-watermark',
                  "or not 1 <= hint['watermark'] <= 2**63 - 1",
                  "or hint['watermark'] < 1", 'watermark-range')
@@ -314,14 +327,16 @@ def cases():
                  "                pass  # defective: committed event never signals",
                  'committed-event')
     notification('notify-check-outside-idle-lock',
-                 "        with self._condition:\n            self._condition.wait_for(lambda: self._queue or self._closed, timeout)",
-                 "        ready = bool(self._queue) or self._closed\n"
-                 "        with self._condition:\n"
-                 "            if not ready:\n                self._condition.wait(timeout)",
+                 "        with self._condition:\n            while True:\n"
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 "        ready = bool(self._queue)\n"
+                 "        with self._condition:\n            while True:\n"
+                 "                now = self.clock()\n                work = self._ready(now) if ready else None\n",
                  'event-in-the-gap')
     notification('notify-wait-without-queue-predicate',
-                 "            self._condition.wait_for(lambda: self._queue or self._closed, timeout)",
-                 "            self._condition.wait(timeout)",
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 "                self._condition.wait(None if deadline is None else max(0.0, deadline - self.clock()))\n"
+                 "                now = self.clock()\n                work = self._ready(now)\n",
                  'event-in-the-gap')
     notification('notify-trust-invented-event-identity',
                  "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",

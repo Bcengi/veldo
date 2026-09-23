@@ -276,6 +276,18 @@ def _n46_checks(directory):
         ac4 = ac4 and [event['command_id'] for event in seen] == [committed['command_id']]
         ac4 = ac4 and loop.metrics()['pending'] == 0
         loop.close()
+    now = [0.0]
+
+    def drain(loop, steps=40):
+        # Move an injected clock past any retry delay; never a real sleep.
+        outcomes = []
+        for _ in range(steps):
+            if not loop.metrics()['pending']:
+                break
+            now[0] += 60.0
+            outcomes.append(loop.run_once(timeout=0))
+        return outcomes
+
     # F02 capsule and reversed order: failed callbacks remain pending only for
     # those subscribers; every healthy subscriber receives the same committed event.
     ac5 = True
@@ -297,13 +309,18 @@ def _n46_checks(directory):
 
         loop = delivery.Delivery(store, str(path), coords, enabled,
                                  {name: subscriber(name) for name in enabled})
+        loop.clock = lambda: now[0]
         committed = loop.execute(writer, command('settlement'), 'journal', sign, 1)
         first = loop.run_once(timeout=0)
         ac5 = ac5 and first is not None and first['outcome'] == 'unknown_outcome' and not first['accepted']
         ac5 = ac5 and all(len(attempts[name]) == 1 for name in enabled)
         ac5 = ac5 and {name for name in enabled if received[name]} == set(enabled) - failures
         ac5 = ac5 and loop.metrics()['pending'] > 0
-        # A second failed attempt must neither forget work nor redeliver healthy callbacks.
+        # A retry waits for its delay; a second failed attempt must neither forget work
+        # nor redeliver healthy callbacks.
+        ac5 = ac5 and loop.run_once(timeout=0) is None
+        ac5 = ac5 and all(len(attempts[name]) == 1 for name in enabled)
+        now[0] += 60.0
         second = loop.run_once(timeout=0)
         ac5 = ac5 and second is not None and second['outcome'] == 'unknown_outcome'
         ac5 = ac5 and loop.metrics()['pending'] > 0
@@ -312,6 +329,7 @@ def _n46_checks(directory):
                       if row['outcome'] == 'unknown_outcome']
         ac5 = ac5 and all(attributed.count(name) == 2 for name in failures)
         blocked.clear()
+        now[0] += 60.0
         recovered = loop.run_once(timeout=0)
         ac5 = ac5 and recovered is not None and recovered['outcome'] == 'delivered'
         ac5 = ac5 and all(len(attempts[name]) == (3 if name in failures else 1) for name in enabled)
@@ -326,6 +344,7 @@ def _n46_checks(directory):
         queued = loop.execute(writer, command('settlement'), 'journal', sign, 1)
         loop.run_once(timeout=0)
         loop.path = str(directory / 'temporarily-unavailable.sqlite3')
+        now[0] += 60.0
         unavailable_retry = loop.run_once(timeout=0)
         ac5 = ac5 and unavailable_retry is not None and unavailable_retry['outcome'] == 'service_unavailable'
         ac5 = ac5 and loop.metrics()['pending'] > 0
@@ -336,8 +355,7 @@ def _n46_checks(directory):
         loop.run_once(timeout=0)
         ac5 = ac5 and all(later['command_id'] in attempts[name] for name in enabled)
         blocked.clear()
-        for _ in range(2):
-            loop.run_once(timeout=0)
+        drain(loop)
         ac5 = ac5 and loop.metrics()['pending'] == 0
         ac5 = ac5 and all([event['command_id'] for event in received[name]] ==
                           [committed['command_id'], queued['command_id'], later['command_id']]
@@ -347,17 +365,6 @@ def _n46_checks(directory):
     # retained exactly like a retry, and an interrupt raised by one subscriber's callback
     # propagates without discarding that event for it or for subscribers not yet called.
     ac6 = True
-    now = [0.0]
-
-    def drain(loop, steps=40):
-        # Move an injected clock past any retry delay; never a real sleep.
-        outcomes = []
-        for _ in range(steps):
-            if not loop.metrics()['pending']:
-                break
-            now[0] += 60.0
-            outcomes.append(loop.run_once(timeout=0))
-        return outcomes
 
     class Flaky:
         sqlite3, StoreRefused = store.sqlite3, store.StoreRefused
@@ -411,15 +418,99 @@ def _n46_checks(directory):
     ac6 = ac6 and seen == {'settlement': [committed['command_id']], 'pm': [committed['command_id']]}
     ac6 = ac6 and loop.metrics()['pending'] == 0
     loop.close()
+    # R2 capsule: a permanently failing subscriber under the documented blocking loop.
+    # Expected with the default 0.1 s initial delay: the first attempt, the reader of a
+    # later commit, and retries at 0.1 s and 0.3 s, so at most four journal reads in the
+    # window. A retry that does not back off re-reads the journal thousands of times.
+    ac7 = True
+    opens, served, stop, errors = [], [], _n46_threading.Event(), []
+
+    class Counting:
+        sqlite3, StoreRefused = store.sqlite3, store.StoreRefused
+        execute = staticmethod(store.execute)
+
+        def open_store(self, *args, **kwargs):
+            opens.append(True)
+            return store.open_store(*args, **kwargs)
+
+    def down(event):
+        raise RuntimeError('subscriber down')
+
+    loop = delivery.Delivery(Counting(), str(path), coords, ['settlement', 'completion'],
+                             {'settlement': down, 'completion': served.append})
+    loop.execute(writer, command('settlement'), 'journal', sign, 1)
+
+    def blocking():
+        try:
+            while not stop.is_set():
+                loop.run_once()
+        except Exception as exc:
+            errors.append(type(exc).__name__)
+
+    thread = _n46_threading.Thread(target=blocking, name='notification-loop')
+    thread.start()
+    _n46_time.sleep(0.15)
+    later = loop.execute(writer, command('completion'), 'journal', sign, 1)
+    _n46_time.sleep(0.15)
+    stop.set()
+    loop.close()
+    thread.join(3)
+    ac7 = ac7 and not thread.is_alive() and not errors and 2 <= len(opens) <= 4
+    ac7 = ac7 and [event['command_id'] for event in served] == [later['command_id']]
+    ac7 = ac7 and loop.metrics()['pending'] == 1 and len(loop.observations) <= 2 * len(opens) + 2
+    # Exact schedule on an injected clock. The simulated wait advances that clock by the
+    # timeout the loop asked for, so a retry is reached only by waiting on the condition.
+    now[0] = 0.0
+    reads, waits = [], []
+
+    class Timed(Counting):
+        def open_store(self, *args, **kwargs):
+            reads.append(now[0])
+            return store.open_store(*args, **kwargs)
+
+    loop = delivery.Delivery(Timed(), str(path), coords, ['settlement'], {'settlement': down})
+    loop.clock = lambda: now[0]
+    loop.retry_initial, loop.retry_cap, loop.observation_limit = 0.125, 0.5, 8
+
+    class Simulated(_n46_threading.Condition):
+        def wait(self, timeout=None):
+            waits.append(timeout)
+            if timeout is None or len(waits) > 20:
+                loop._closed = True  # a wait nothing will end; stop instead of hanging
+                return False
+            now[0] += timeout
+            return False
+
+    loop._condition = Simulated()
+    loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    results = [loop.run_once() for _ in range(6)]
+    ac7 = ac7 and reads == [0.0, 0.125, 0.375, 0.875, 1.375, 1.875]
+    ac7 = ac7 and waits == [0.125, 0.25, 0.5, 0.5, 0.5]
+    ac7 = ac7 and all(row is not None and row['outcome'] == 'unknown_outcome' for row in results)
+    ac7 = ac7 and len(loop.observations) == 8 and loop.observations[-1] == results[-1]
+    ac7 = ac7 and loop.metrics()['refused'] == 12 and loop.metrics()['pending'] == 1
+    # The constructor carries the same settings, and refuses a delay that is not bounded.
+    configured = ac7 and delivery.Delivery(store, str(path), coords, ['settlement'], {'settlement': down},
+                                           retry_initial=0.125, retry_cap=0.5, observation_limit=8,
+                                           clock=loop.clock)
+    ac7 = ac7 and (configured.retry_initial, configured.retry_cap, configured.observation_limit,
+                   configured.clock) == (0.125, 0.5, 8, loop.clock)
+    for bad in (dict(retry_initial=0), dict(retry_initial=1, retry_cap=0.5), dict(retry_cap=float('inf')),
+                dict(observation_limit=0), dict(retry_initial=True)):
+        try:
+            ac7 = ac7 and not delivery.Delivery(store, str(path), coords, ['settlement'],
+                                                {'settlement': down}, **bad)
+        except delivery.Refused as exc:
+            ac7 = ac7 and exc.reason == 'invalid_registration'
     service.close()
     writer.close()
-    return ac1, ac2, ac3, ac4, ac5, ac6
+    return ac1, ac2, ac3, ac4, ac5, ac6, ac7
 
 
 _n46_started = _n46_time.monotonic()
 with _n46_tempfile.TemporaryDirectory(prefix='v46-') as _n46_dir:
     _n46_results = _n46_checks(_n46_Path(_n46_dir))
 for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range', 'subscriber-isolation',
-                                       'first-attempt-retained'), _n46_results):
+                                       'first-attempt-retained', 'retry-backoff'), _n46_results):
     expect('VELDO-0046 notify/' + _n46_name, _n46_result)
 print('VELDO-0046 suite seconds: %.3f' % (_n46_time.monotonic() - _n46_started))
