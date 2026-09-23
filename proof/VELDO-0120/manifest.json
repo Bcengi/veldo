@@ -125,12 +125,21 @@
       "exit_code": 0,
       "ref": "proof/VELDO-0120/regeneration-verification.json",
       "detail": "Readable summary losslessly expands to the full historical receipt and matches its original SHA-256, including timing fields; wrong-digest control exits 1. Fresh mutation execution is covered by the canonical gate."
+    },
+    {
+      "name": "compact-proof-gate",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0120/compaction-verification.json",
+      "detail": "GATE: GREEN (3c5e5f7ea0022157a79936c58fc68aec1e779c5e); selftest: 5678 passed, 0 failed; first-use integration passed; all 84 mutations rejected. Started from a clean tree with the normal environment."
     }
   ],
   "artifacts": [
     "proof/VELDO-0120/README.md",
     "proof/VELDO-0120/absence.json",
     "proof/VELDO-0120/compaction-initial-verification.json",
+    "proof/VELDO-0120/compaction-verification.json",
     "proof/VELDO-0120/digests.json",
     "proof/VELDO-0120/gate-mutations.json",
     "proof/VELDO-0120/gate.log",

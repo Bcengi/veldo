@@ -185,3 +185,18 @@ FIFO hardening test from warming the bytecode cache it deliberately probes.
 `compaction-initial-verification.json` preserves the full traceback, command,
 exit code and log digest. The retry uses the normal gate environment; bytecode
 suppression remains local to the proof scripts. No test was weakened.
+
+The normal-environment retry started from clean commit
+`3c5e5f7ea0022157a79936c58fc68aec1e779c5e` and exited 0:
+
+```text
+GATE: GREEN (3c5e5f7ea0022157a79936c58fc68aec1e779c5e)
+selftest: 5678 passed, 0 failed
+mutations: passed registered=84 executed=84 rejected=84 workers=112 elapsed=57.352s
+```
+
+First-use integration also passed (5,678 passed, 0 failed).
+`compaction-verification.json` records the stage summaries and full-log digest.
+Both checkout-local gate byproducts are restored before the final evidence
+commit. No bytecode directory exists under `proof/`. This final documentation
+commit follows the verified commit; the reviewer supplies the merged-tree stamp.
