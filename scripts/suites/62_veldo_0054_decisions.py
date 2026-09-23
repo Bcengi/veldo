@@ -798,6 +798,36 @@ def _v54_suite():
             check('decisions/status-names-its-stop',
                    model[0] == 'ok' and model[1].get('burndown') == [] and str(stop).startswith('burndown_unanswerable:'))
 
+        with region('decisions/status-names-store-refusal'):
+            # A store integrity refusal (one accepted row whose bytes no longer match its digest) is named
+            # by its code in veldo status (refused:<code>) exactly as decide names it, never hidden behind
+            # a generic stop; decision_blockers names it the same way. The row is restored at once.
+            victim = 'VELDO-9401'
+            genuine = writer.execute('SELECT data FROM entities WHERE id=?', (victim,)).fetchone()[0]
+            forged = dict(json.loads(genuine), producer='tampered')
+            quiet = dict(runs_root=str(Path(directory) / 'runs'), events_path=str(Path(directory) / 'no-events.jsonl'),
+                         control_db=str(Path(directory) / 'no-store.sqlite3'))
+            try:
+                writer.execute('UPDATE entities SET data=? WHERE id=?', (json.dumps(forged), victim))
+                writer.commit()
+                named_by = {}
+                for name, call in (('decide', lambda: gate.decide('selection', victim)['refusals']),
+                                   ('decision_blockers', lambda: gate.decision_blockers(victim)),
+                                   ('veldo status', lambda: RS.status(root=base, eligibility=gate, **quiet).get('burndown_stopped'))):
+                    try:
+                        named_by[name] = ('ok', call())
+                    except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                        named_by[name] = ('raised', '%s: %s' % (type(error).__name__, error))
+            finally:
+                writer.execute('UPDATE entities SET data=? WHERE id=?', (genuine, victim))
+                writer.commit()
+            observed['store_refusal'] = named_by
+            check('decisions/status-names-store-refusal',
+                   named_by == {'decide': ('ok', ['missing_authority:input_digest_mismatch']),
+                                'decision_blockers': ('ok', ['missing_authority:input_digest_mismatch']),
+                                'veldo status': ('ok', 'refused:missing_authority:input_digest_mismatch')}
+                   and gate.decide('selection', victim)['refusals'] == [])
+
         for first in regions:
             check('ran/' + first, first not in {label for label, _ in raised})
         observed['raised'] = raised

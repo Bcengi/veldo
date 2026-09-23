@@ -1042,6 +1042,16 @@ def cases():
     decisions('blockers-raise-unexpected', 'control_eligibility.py',
               "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
               "            codes = [unexpected(error)]\n", "", 'deep-blocks-named')
+    # Item 2: veldo status names a store refusal by its code, as decide does.
+    decisions('status-store-refusal-generic', 'runstatus.py',
+              '    except store_refusals as error:\n        return [], "refused:" + eligibility.refusal_code(error)\n',
+              '', 'status-names-store-refusal')
+    decisions('status-store-refusal-code-dropped', 'runstatus.py',
+              '        return [], "refused:" + eligibility.refusal_code(error)\n',
+              '        return [], "refused:" + type(error).__name__\n', 'status-names-store-refusal')
+    decisions('blockers-store-refusal-renamed', 'control_eligibility.py',
+              "            codes = [self.refusal_code(error)]\n", "            codes = ['invalid_input:' + error.code]\n",
+              'status-names-store-refusal')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

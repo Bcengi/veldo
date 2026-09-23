@@ -441,6 +441,19 @@ class Gate:
         """Close the read connection (a Gate the production construction opened owns it)."""
         self.conn.close()
 
+    @property
+    def refusal_types(self):
+        """The store's own refusals this Gate's reads raise: an accepted row whose digest does not match
+        (control_snapshot.Refused) and a store refusal (control_store.StoreRefused). A reader that
+        builds on the Gate (veldo status) catches exactly these and names them with refusal_code."""
+        return (SN.Refused, self.store.StoreRefused)
+
+    @staticmethod
+    def refusal_code(error):
+        """The one naming of a store refusal: a digest mismatch is missing authority, anything else
+        invalid input, each followed by the store's own code."""
+        return ('missing_authority:' if 'digest' in error.code else 'invalid_input:') + error.code
+
     # -- reads -----------------------------------------------------------------------------------
 
     def _entity(self, identity):
@@ -635,7 +648,7 @@ class Gate:
             event.update(watermark=watermark, accepted_inputs={
                 label: identity.get('version', identity['digest']) for label, identity in identities.items()})
         except (SN.Refused, self.store.StoreRefused) as error:
-            codes = ['invalid_input:' + error.code]
+            codes = [self.refusal_code(error)]
         except sqlite3.Error:
             codes = ['unavailable_service:store']
         except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
@@ -777,7 +790,7 @@ class Gate:
         except Refused as error:
             decision['refusals'] = [error.code]
         except (SN.Refused, self.store.StoreRefused) as error:
-            decision['refusals'] = [('missing_authority:' if 'digest' in error.code else 'invalid_input:') + error.code]
+            decision['refusals'] = [self.refusal_code(error)]
         except sqlite3.Error:
             decision['refusals'] = ['unavailable_service:store']
         except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
