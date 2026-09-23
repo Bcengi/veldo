@@ -78,6 +78,8 @@ RETRYABLE = ('refused', 'partial')
 REVOCATION_LEDGER = 'authority:revocations'
 # Telegram's sendMessage text limit, counted as the platform counts it: UTF-16 code units.
 MESSAGE_LIMIT = 4096
+# The longest retry_after (seconds) a platform refusal may impose before the next run tries again.
+MAX_RETRY_AFTER = 3600
 # Room kept in each part of a split presentation for its `Part k of n` line.
 PART_LINE_ROOM = 64
 # The accepted content of a request, in the request digest beside its identity and version.
@@ -385,7 +387,9 @@ class TelegramPresentationEdge:
             refused = EdgeRefused('channel_refused', 'HTTP %d' % exc.code)
             # Flood control names how long to wait before the next send (Bot API ResponseParameters).
             wait = (error.get('parameters') or {}).get('retry_after') if isinstance(error.get('parameters'), dict) else None
-            refused.retry_after = wait if type(wait) in (int, float) and wait >= 0 else None
+            # Only a whole number of seconds from 0 to MAX_RETRY_AFTER is honored; anything else (a
+            # string, a fraction, a negative, a huge or non-finite number, a boolean) means the next run.
+            refused.retry_after = wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None
             raise refused from None
         except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as exc:
             raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None

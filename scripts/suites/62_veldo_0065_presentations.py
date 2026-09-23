@@ -45,8 +45,19 @@ class _V65BotApi(_v65_http.BaseHTTPRequestHandler):
         if st.get('flood_after') is not None:  # flood control: this many sends pass, then one 429
             if st['flood_after'] == 0:
                 st['flood_after'] = None
-                return self._answer(429, {'ok': False, 'error_code': 429, 'description': 'Too Many Requests: retry after 3',
-                                          'parameters': {'retry_after': 3}})
+                params = st.get('flood_params', {'retry_after': 3})
+                if params == 'INF':  # a JSON number Python reads as infinity
+                    raw = b'{"ok": false, "error_code": 429, "description": "Too Many Requests", "parameters": {"retry_after": Infinity}}'
+                    self.send_response(429)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Content-Length', str(len(raw)))
+                    self.end_headers()
+                    self.wfile.write(raw)
+                    return
+                body = {'ok': False, 'error_code': 429, 'description': 'Too Many Requests'}
+                if params is not None:
+                    body['parameters'] = params
+                return self._answer(429, body)
             st['flood_after'] -= 1
         if len(body.get('text', '').encode('utf-16-le')) // 2 > 4096:  # the documented Bot API text limit
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: message is too long'})
@@ -90,7 +101,8 @@ def _v65_checks(base):
                                   'projection/one-message-per-version', 'framing/key-by-store-order',
                                   'projection/notice-superseded', 'projection/silent-from-store',
                                   'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
-                                  'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree')}
+                                  'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
+                                  'presentation/retry-after-bounded')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1094,6 +1106,21 @@ def _v65_checks(base):
                     dict(ledger_now, revoked=dict(ledger_now.get('revoked') or {}, pm5={'at': later, 'reason': 'test', 'by': 'authority'})))
             check(agree, 'frame() refuses a principal the revocation ledger names, as the presenter does',
                   reason(frame('pm5', 'Z-5', 1, 'Low: a wrong choice costs one review cycle.')) == ('refused', 'not_authorized'))
+
+        # Review 3 item 5: retry_after counts only as a bounded non-negative integer
+        bounded = 'presentation/retry-after-bounded'
+        with section(bounded):
+            for n, (label, params) in enumerate((('a string', {'retry_after': '3'}), ('a fraction', {'retry_after': 1.5}),
+                                                 ('a negative number', {'retry_after': -1}), ('a huge number', {'retry_after': 10 ** 12}),
+                                                 ('a boolean', {'retry_after': True}), ('an omitted value', None),
+                                                 ('infinity', 'INF'))):
+                rb = opened('RB-%d' % n, brief=' '.join(['The rollout needs a decision on the parser (%d).' % k for k in range(90)]))
+                api['flood_after'], api['flood_params'] = 1, params
+                first_run = presenter.present(rb)
+                api['flood_params'] = {'retry_after': 3}
+                next_run = presenter.present(rb)
+                check(bounded, 'retry_after as %s means the next run sends the rest' % label,
+                      reason(first_run) == ('partial', 'channel_refused') and reason(next_run) == ('published', None))
     finally:
         server.shutdown()
         server.server_close()
