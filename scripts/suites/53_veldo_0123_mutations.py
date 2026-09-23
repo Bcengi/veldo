@@ -360,7 +360,8 @@ if 'expect' in globals():
     _m123_git('init', '-q')
     for _m123_rel, _m123_text in (('bin/veldo', 'front door\n'), ('specs/S.md', 'spec\n'),
                                   ('.veldo/kept.py', 'kept\n'), ('.veldo/last_verify', '{}\n'),
-                                  ('gone.txt', 'deleted later\n'), ('.gitignore', 'ignored.txt\n')):
+                                  ('gone.txt', 'deleted later\n'), ('.gitignore', 'ignored.txt\n'),
+                                  ('lib/x.py', 'inside the checkout\n')):
         (_m123_repo / _m123_rel).parent.mkdir(parents=True, exist_ok=True)
         (_m123_repo / _m123_rel).write_text(_m123_text)
     _m123_git('add', '-A')
@@ -385,7 +386,8 @@ if 'expect' in globals():
            'bytecode caches or gate outputs, so a row reading bin/veldo, a spec or a plan sees in the '
            'snapshot exactly what it sees in the checkout',
            _m123_closure == sorted(['\tleading-tab.txt', '.gitignore', '.veldo/kept.py', 'bin/veldo',
-                                    'plans/new.md', _m123_os.fsdecode(b'raw-\xff.txt'), 'specs/S.md'])
+                                    'lib/x.py', 'plans/new.md', _m123_os.fsdecode(b'raw-\xff.txt'),
+                                    'specs/S.md'])
            and _m123_read['bin/veldo'][0] == 0o755 and _m123_read['specs/S.md'][0] & 0o111 == 0)
     (_m123_repo / 'plans/link').symlink_to('new.md')
     try:
@@ -395,7 +397,67 @@ if 'expect' in globals():
         _m123_link = _m123_error.code
     except Exception as _m123_error:
         _m123_link = type(_m123_error).__name__
-    expect('VELDO-0123 gate/input-closure-refuses-symlinks: a symbolic link anywhere in the closure is '
-           'refused by name, because the snapshot would copy its target and the worker would read a file '
-           'the checkout only points at',
-           _m123_link == 'driver_error')
+    (_m123_repo / 'plans/link').unlink()
+
+    def _m123_refusal():
+        try:
+            _m123_gate.read_inputs(_m123_repo)
+            return 'accepted'
+        except _m123_gate.Refused as _m123_error:
+            return _m123_error.code + ': ' + _m123_error.detail.split(':')[0]
+        except Exception as _m123_error:
+            return type(_m123_error).__name__
+
+    # A link as a DIRECTORY above a tracked file, hidden from the listing by an ignore rule.
+    _m123_outside = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-outside-'))
+    (_m123_outside / 'x.py').write_text('OUTSIDE THE CHECKOUT\n')
+    (_m123_repo / 'lib/x.py').rename(_m123_repo / 'lib.x.py.saved')
+    (_m123_repo / 'lib').rmdir()
+    (_m123_repo / 'lib').symlink_to(_m123_outside)
+    (_m123_repo / '.gitignore').write_text('ignored.txt\nlib\n')
+    _m123_parent_link = _m123_refusal()
+    (_m123_repo / 'lib').unlink()
+    (_m123_repo / 'lib').mkdir()
+    (_m123_repo / 'lib.x.py.saved').rename(_m123_repo / 'lib/x.py')
+    (_m123_repo / '.gitignore').write_text('ignored.txt\n')
+    # An untracked nested repository, whose files Git never lists.
+    (_m123_repo / 'packs/tool').mkdir(parents=True)
+    _m123_sp.run(['git', 'init', '-q', str(_m123_repo / 'packs/tool')], check=True, capture_output=True,
+                 env=_m123_genv)
+    (_m123_repo / 'packs/tool/inner.py').write_text('inner\n')
+    _m123_nested = _m123_refusal()
+    _m123_sp.run(['rm', '-rf', str(_m123_repo / 'packs')], check=True)
+    # A file this account cannot read.
+    (_m123_repo / 'plans/locked.md').write_text('locked\n')
+    (_m123_repo / 'plans/locked.md').chmod(0)
+    _m123_unreadable = _m123_refusal() if _m123_os.geteuid() != 0 else 'driver_error: unreadable input'
+    (_m123_repo / 'plans/locked.md').unlink()
+    expect('VELDO-0123 gate/input-closure-refuses-symlinks: a symbolic link as the file OR as any '
+           'directory above it (even one an ignore rule hides from the listing) is refused by name, '
+           'because the snapshot would copy a file the checkout only points at; so are an untracked '
+           'nested repository, whose files Git never lists, and a file this account cannot read',
+           _m123_link == 'driver_error'
+           and _m123_parent_link == 'driver_error: symlink input'
+           and _m123_nested == 'driver_error: nested repository in the input closure'
+           and _m123_unreadable == 'driver_error: unreadable input')
+
+    # THE SNAPSHOT ITSELF: the tree the workers run in holds every closure file, same name bytes,
+    # same mode, same content, and nothing else outside .git.
+    _m123_files = _m123_gate.read_inputs(_m123_repo)
+    _m123_head = _m123_sp.run(['git', '-C', str(_m123_repo), 'rev-parse', 'HEAD'], check=True,
+                              capture_output=True, text=True, env=_m123_genv).stdout.strip()
+    _m123_dest = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-snapshot-')) / 'frozen'
+    try:
+        _m123_gate.snapshot(_m123_repo, _m123_dest, _m123_files, _m123_head)
+        _m123_walked = {p.relative_to(_m123_dest).as_posix(): (p.stat().st_mode & 0o777, p.read_bytes())
+                        for p in _m123_dest.rglob('*')
+                        if p.is_file() and '.git' not in p.relative_to(_m123_dest).parts}
+    except Exception as _m123_error:
+        _m123_walked = {'raised': repr(_m123_error)}
+    expect('VELDO-0123 gate/snapshot-holds-exactly-the-closure: snapshot() writes every closure file '
+           'into the worker tree under the same name bytes, with the same mode and content, and '
+           'nothing else outside .git, so file_identity of the snapshot equals the checkout\'s',
+           _m123_walked == _m123_files
+           and _m123_gate.file_identity(_m123_walked) == _m123_gate.file_identity(_m123_files))
+    for _m123_dir in (_m123_repo, _m123_outside, _m123_dest.parent):
+        _m123_sp.run(['rm', '-rf', str(_m123_dir)], check=True)

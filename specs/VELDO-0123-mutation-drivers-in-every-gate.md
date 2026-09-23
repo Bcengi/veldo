@@ -118,3 +118,10 @@ name that is not UTF-8 no longer stops the stage; and the closure is stated hone
 repository's own ignore rules with no global configuration, so ignored machine-local files (such as
 .veldo/trackers.json) are not inputs. Rows now also drive modes, bytecode caches and the refusal of
 a symbolic link (gate/input-closure-refuses-symlinks).
+Its second review found, fixed the same day: a symbolic link as a DIRECTORY above a tracked file,
+hidden by an ignore rule, let the snapshot copy a file from outside the checkout (now refused by
+comparing each file's resolved path with its place in the tree); an untracked nested repository's
+files silently dropped out (now refused by name); an unreadable file stopped the stage with a
+generic error (now refused by name); the docstring now names every ignore source Git applies; and
+the closure row no longer leaks its temporary repository. Row gate/snapshot-holds-exactly-the-closure
+drives snapshot() itself: names, modes and contents in the worker tree equal the closure.
