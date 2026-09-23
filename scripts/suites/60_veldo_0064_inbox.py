@@ -89,7 +89,7 @@ def _v64_checks(base):
     rows = {name: [] for name in ('install/assets', 'inbox/states-and-authority', 'inbox/waiting-resources',
                                   'projection/correlation', 'projection/send-outcomes', 'inbox/visible-invalid',
                                   'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
-                                  'inbox/release-derived-from-claim')}
+                                  'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -137,10 +137,10 @@ def _v64_checks(base):
     conn = S.open_store(str(db))
     serial = [0]
 
-    def fixture(eid, kind, data):
+    def fixture(eid, kind, data, principal='authority'):
         serial[0] += 1
         entity = S.materialized_state(conn)['entities'].get(eid, {})
-        return S.execute(conn, dict(command_id='fixture-%d' % serial[0], principal='authority', operation='upsert_entity',
+        return S.execute(conn, dict(command_id='fixture-%d' % serial[0], principal=principal, operation='upsert_entity',
                                     parameters=dict(entity_id=eid, kind=kind, data=data),
                                     expected_versions={eid: entity.get('version', 0)}, artifact_digests=[],
                                     nonce='fixture-n-%d' % serial[0]), 'authority', journal_sign, 1)
@@ -513,16 +513,20 @@ def _v64_checks(base):
     labelled = I.assignment_id(ids['repository_uuid'], 'X-label')
     fixture(labelled, 'assignment', dict(held, alias='X-label', unit_id=None, display_status='assigned', assignee='worker-a'))
     forged = I.assignment_id(ids['repository_uuid'], 'X-forged')
-    fixture(forged, 'assignment', dict(held, alias='X-forged', unit_id=None, state='SUBMITTED',
-                                       answer=dict(principal='owner', ruling='accept', request_version=1,
-                                                   command_id=answered['receipt']['command_id'])))
+    t_answer = I.assignment_id(ids['repository_uuid'], 'T-answer')
+    genuine_answer = entity(t_answer)['data']['answer']
+    fixture(forged, 'assignment', dict(held, alias='X-forged', unit_id=None, state='SUBMITTED', answer=genuine_answer))
+    command('pm', 'open', 'X-rewritten', assignment=content('decision'))
+    command('owner', 'answer', 'X-rewritten', request_version=1, ruling='accept')
+    rewritten = I.assignment_id(ids['repository_uuid'], 'X-rewritten')
+    fixture(rewritten, 'assignment', dict(entity(rewritten)['data'], brief='A different question.'))
     command('pm', 'open', 'X-revoked', assignment=content('decision'))
     revoked_answer = command('owner', 'answer', 'X-revoked', request_version=1, ruling='reject')
-    t_answer = I.assignment_id(ids['repository_uuid'], 'T-answer')
     admissions = {
         'displayed assigned status on a pending record': inbox.admit(labelled),
         'displayed assigned status on an invalid record': inbox.admit(I.assignment_id(ids['repository_uuid'], 'X-state')),
         'answer copied onto another record by a service write': inbox.admit(forged),
+        'answered record rewritten by a service write after the answer': inbox.admit(rewritten),
         'declined': inbox.admit(I.assignment_id(ids['repository_uuid'], 'T-decline')),
         'canceled': inbox.admit(I.assignment_id(ids['repository_uuid'], 'T-cancel')),
         'pending': inbox.admit(aliases['acknowledgement']),
@@ -530,6 +534,43 @@ def _v64_checks(base):
     }
     genuine = inbox.admit(t_answer)
     before_revocation = inbox.admit(I.assignment_id(ids['repository_uuid'], 'X-revoked'))
+    # --- admission verifies the owner's own signature over the exact answer ------------------------
+    signed_row = 'inbox/admit-verifies-owner-signature'
+    stored_answer = entity(t_answer)['data']['answer']
+    owner_signers = base / 'owner_signers'
+    owner_signers.write_text('owner namespaces="%s" %s\n' % (AC.SIGNATURE_NAMESPACE, public['owner']))
+    answer_sig = base / 'answer.sig'
+    answer_sig.write_text(stored_answer.get('signature') or '')
+    answer_verified = _v64_sp.run(['ssh-keygen', '-Y', 'verify', '-f', str(owner_signers), '-I', 'owner', '-n',
+                                   AC.SIGNATURE_NAMESPACE, '-s', str(answer_sig)],
+                                  input=S.canonical_bytes(stored_answer.get('command') or {}), capture_output=True, timeout=10)
+    signed_command = stored_answer.get('command') or {}
+    check(signed_row, 'the record keeps the owner\'s signed answer, verifiable with ssh-keygen alone',
+          answer_verified.returncode == 0 and signed_command.get('alias') == 'T-answer'
+          and signed_command.get('ruling') == stored_answer.get('ruling') == 'accept')
+    # A generic upsert naming the owner as principal, carrying an answer the owner never signed.
+    command('pm', 'open', 'F-1', assignment=content('decision'))
+    f1 = I.assignment_id(ids['repository_uuid'], 'F-1')
+    upsert_id = 'fixture-%d' % (serial[0] + 1)
+    unsigned = dict(ids, operation='answer', alias='F-1', principal='owner', command_id=upsert_id, nonce='n-f1',
+                    request_version=1, ruling='accept')
+    wrote = fixture(f1, 'assignment', dict(entity(f1)['data'], state='SUBMITTED', answer=dict(
+        principal='owner', ruling='accept', request_version=1, command_id=upsert_id, command=unsigned,
+        signature=sign_as('stranger', S.canonical_bytes(unsigned)))), principal='owner')
+    forged_admit = inbox.admit(f1)
+    check(signed_row, 'an upsert naming the owner, with an answer the owner never signed, is not admitted',
+          wrote['command_id'] == upsert_id and forged_admit == {'admitted': False, 'reason': 'missing_authority',
+                                                                'assignment_id': f1, 'version': 2})
+    # The owner's genuine signature over another assignment's answer, carried by a forged record.
+    command('pm', 'open', 'F-2', assignment=content('decision'))
+    f2 = I.assignment_id(ids['repository_uuid'], 'F-2')
+    upsert_id = 'fixture-%d' % (serial[0] + 1)
+    fixture(f2, 'assignment', dict(entity(f2)['data'], state='SUBMITTED', answer=dict(
+        stored_answer, command_id=upsert_id)), principal='owner')
+    check(signed_row, 'a genuine owner signature over another answer is not admitted',
+          inbox.admit(f2)['reason'] == 'missing_authority')
+    check(signed_row, 'control: the owner\'s own signed answer admits', genuine['admitted'] is True)
+
     fixture('owner', 'membership', dict(members['owner'], revoked_at=_v64_time.time() - 1, expires_at=None))
     admissions['answer whose owner is no longer a member'] = inbox.admit(I.assignment_id(ids['repository_uuid'], 'X-revoked'))
     for label, result in admissions.items():
@@ -538,6 +579,7 @@ def _v64_checks(base):
           admissions['displayed assigned status on a pending record']['reason'] == 'not_answered'
           and admissions['displayed assigned status on an invalid record']['reason'] == 'invalid_record'
           and admissions['answer copied onto another record by a service write']['reason'] == 'missing_authority'
+          and admissions['answered record rewritten by a service write after the answer']['reason'] == 'missing_authority'
           and admissions['answer whose owner is no longer a member']['reason'] == 'missing_authority')
     check('inbox/unauthorized-admission', 'control: the owner answer admits while the owner is current',
           genuine['admitted'] is True and revoked_answer.get('ok') is True and before_revocation['admitted'] is True)

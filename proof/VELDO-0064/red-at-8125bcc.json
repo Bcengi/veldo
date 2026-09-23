@@ -14,11 +14,15 @@
   "VELDO-0064 inbox/release-derived-from-claim detail: naming a unit other than the requester's claim is refused",
   "VELDO-0064 inbox/release-derived-from-claim detail: a requester holding several claims is refused",
   "VELDO-0064 inbox/release-derived-from-claim detail: the next open parks the requester's remaining claim",
-  "VELDO-0064 inbox/release-derived-from-claim detail: a claim taken while the open is in flight refuses the open"
+  "VELDO-0064 inbox/release-derived-from-claim detail: a claim taken while the open is in flight refuses the open",
+  "VELDO-0064 inbox/admit-verifies-owner-signature detail: the record keeps the owner's signed answer, verifiable with ssh-keygen alone",
+  "VELDO-0064 inbox/admit-verifies-owner-signature detail: an upsert naming the owner, with an answer the owner never signed, is not admitted",
+  "VELDO-0064 inbox/admit-verifies-owner-signature detail: a genuine owner signature over another answer is not admitted"
  ],
  "failed_rows": [
   "VELDO-0064 inbox/parked-unit-unclaimable",
-  "VELDO-0064 inbox/release-derived-from-claim"
+  "VELDO-0064 inbox/release-derived-from-claim",
+  "VELDO-0064 inbox/admit-verifies-owner-signature"
  ],
  "modules": {
   "control_assignment.py": {
@@ -73,10 +77,14 @@
   [
    "VELDO-0064 inbox/release-derived-from-claim",
    false
+  ],
+  [
+   "VELDO-0064 inbox/admit-verifies-owner-signature",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.517,
+ "seconds": 1.589,
  "spec_id": "VELDO-0064",
  "suite": "scripts/suites/60_veldo_0064_inbox.py"
 }

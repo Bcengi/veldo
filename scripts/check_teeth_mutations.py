@@ -618,6 +618,13 @@ def cases():
     inbox('inbox-open-skips-claim-recheck', 'control_assignment.py',
           "        if params['action'] == 'open':\n            rows = conn.execute(",
           "        if False:\n            rows = conn.execute(", 'inbox/release-derived-from-claim')
+    # VELDO-0064 review r5: admission verifies the owner's signature over the exact answer.
+    inbox('inbox-admit-skips-answer-signature', 'control_assignment.py',
+          "        if not verified:\n            return 'missing_authority', inputs\n", "",
+          'inbox/admit-verifies-owner-signature')
+    inbox('inbox-admit-unbound-answer-signature', 'control_assignment.py',
+          "        if not binds:\n            return 'missing_authority', inputs\n", "",
+          'inbox/admit-verifies-owner-signature')
     return result
 
 

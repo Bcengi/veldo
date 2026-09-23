@@ -26,7 +26,11 @@ VIEWS ARE NOT AUTHORITY. `index` and `brief` describe the current stored version
 invalid record as visibly invalid, never skipped and never presented as content. `admit` is the
 only answer to "may the blocked work proceed": it requires a valid record in an answered state
 whose current version was written by the owner's own answer command in the journal, and an owner
-who is still an active person member covering the assignment's scope. A displayed status, an
+who is still an active person member covering the assignment's scope. The record keeps the
+owner's signed answer command and its signature; admission checks that the command answers
+exactly this assignment, request version and ruling, and verifies the signature against the
+owner's active key in the committed keyring. The journal's principal column is copied from
+whatever command the store was given, so it identifies no one on its own. A displayed status, an
 assignee field or any other text on the record grants nothing.
 
 INJECTED ORGANS. The store, membership, claim and entity-contract modules are passed in, so the
@@ -158,8 +162,9 @@ def record_problems(data, states, repository_uuid):
         if (not isinstance(answer, dict) or answer.get('principal') != data.get('owner')
                 or answer.get('ruling') not in (data.get('choices') or [])
                 or answer.get('request_version') != data.get('request_version')
-                or not _is_str(answer.get('command_id'))):
-            problems.append('an answered record carries the owner ruling, request version and command')
+                or not _is_str(answer.get('command_id')) or not isinstance(answer.get('command'), dict)
+                or not _is_str(answer.get('signature'))):
+            problems.append('an answered record carries the owner ruling, request version, and the signed command')
     elif answer is not None:
         problems.append('only an answered record carries an answer')
     disposition = data.get('disposition')
@@ -300,6 +305,8 @@ class Inbox:
             if op in ('answer', 'decline'):
                 self._active(state, principal, now, ('person',), data['scope'])
                 params['ruling'] = command.get('ruling')
+                if op == 'answer':
+                    params['signed'] = {'command': command, 'signature': packet['signature']}
             elif op == 'resume':
                 touched.update(self._resume(state, entities, current, principal, now, command, params))
             else:
@@ -422,7 +429,9 @@ class Inbox:
                     raise refused('transition_refused', why)
             data.update(state='SUBMITTED', answer=dict(principal=principal, ruling=params['ruling'],
                                                        request_version=data['request_version'],
-                                                       command_id=params['command_id']))
+                                                       command_id=params['command_id'],
+                                                       command=params['signed']['command'],
+                                                       signature=params['signed']['signature']))
         elif op == 'decline':
             if principal != data['owner']:
                 raise refused('not_authorized', 'only the owner declines')
@@ -537,11 +546,31 @@ class Inbox:
         if data['state'] != 'SUBMITTED':
             return 'missing_evidence', inputs
         state = self.membership.authority_state(self.store, self.conn)
+        now = self.clock()
         inputs.add(data['owner'])
         owner = self.AC.membership_entry(state['membership'], data['owner'])
-        active, _ = self.AC.active_member(owner, self.clock())
+        active, _ = self.AC.active_member(owner, now)
         if not active or owner['principal_type'] != 'person' \
                 or not self.membership.scope_covers(owner.get('scope'), data['scope']):
+            return 'missing_authority', inputs
+        # The owner's own signed answer: it answers this assignment at this request version with
+        # this ruling, and its signature verifies against the owner's active committed key.
+        answer, signed = data['answer'], data['answer']['command']
+        binds = (signed.get('operation') == 'answer' and signed.get('alias') == data['alias']
+                 and signed.get('principal') == data['owner'] and signed.get('ruling') == answer['ruling']
+                 and signed.get('request_version') == data['request_version']
+                 and signed.get('command_id') == answer['command_id']
+                 and all(signed.get(k) == v for k, v in self.ids.items()))
+        if not binds:
+            return 'missing_authority', inputs
+        key = self.AC.active_key(state['keyring'], data['owner'], now)
+        verified = False
+        if key:
+            inputs.add(key['key_id'])
+            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(signed), answer['signature'],
+                                                    self.AC.allowed_signers_line(data['owner'], key['public_key']),
+                                                    data['owner'])
+        if not verified:
             return 'missing_authority', inputs
         row = self.conn.execute('SELECT principal, transition FROM journal WHERE command_id=?',
                                 (data['answer']['command_id'],)).fetchone()
