@@ -9,15 +9,18 @@ commits the change together with the versions of every authority input it read. 
 writes. Telegram and the later authenticated UI/API are projections of this inbox; they read it,
 they never become a second record.
 
-WAITING HOLDS NOTHING. Opening a person assignment stops its requester. When the requester holds
-the claim on the execution unit the assignment blocks, the SAME transaction parks that claim
+WAITING HOLDS NOTHING. Opening a person assignment stops its requester. The unit the assignment
+blocks is derived from the requester's own claim in this repository, never from a field the
+requester writes: a requester holding one claim names its generation and the SAME transaction
+parks that claim
 through the claim organ's own `park` transition (a release that records the assignment the unit
 waits for), and the reply tells the requester to exit. The answer arrives later on its own, from
 the owner, with no model process or claim lease waiting for it. A parked unit is not claimable:
 the blocked work resumes only through `resume`, which takes the claim again through the claim
 organ's `resume` transition in the same store transaction that binds the versions of every input
-`admit` read, and only while `admit` admits. `waiting_resources` reports any claim still held
-by a pending assignment's unit.
+`admit` read, and only while `admit` admits. A requester holding several claims is refused, and
+the transaction re-reads the requester's claims so none is taken between the read and the
+commit. `waiting_resources` reports any claim still held on a pending assignment's unit.
 
 VIEWS ARE NOT AUTHORITY. `index` and `brief` describe the current stored version and show an
 invalid record as visibly invalid, never skipped and never presented as content. `admit` is the
@@ -201,7 +204,7 @@ class Inbox:
         self.states = states
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
-        conn.command_registry[OPERATION] = {'transition': self._transition,
+        conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 
     # -- commands --------------------------------------------------------------------------
@@ -274,7 +277,14 @@ class Inbox:
             params['content'] = {k: content.get(k) for k in
                                  ('kind', 'owner', 'scope', 'deadline', 'budget', 'brief', 'choices', 'subject', 'unit_id')}
             params['alias'] = command['alias']
-            unit = content.get('unit_id')
+            held = self._held_claims(entities, principal)
+            if len(held) > 1:
+                raise Refused('invalid_input', 'a requester that stops for a person holds at most one claim here')
+            unit = held[0][1].get('unit_id') if held else None
+            if content.get('unit_id') is not None and content['unit_id'] != unit:
+                raise Refused('not_owner', 'the blocked unit is the requester\'s own claim')
+            params['content']['unit_id'] = unit
+            params['held_claims'] = [cid for cid, _ in held]
             if unit is not None:
                 released = self._claim_to_park(entities, unit, principal, command.get('claim_generation'), params, aid)
                 touched.update(params.pop('claim_inputs'))
@@ -312,6 +322,24 @@ class Inbox:
         record = self.store.materialized_state(self.conn)['entities'][aid]['data']
         return {'ok': True, 'reason': op, 'assignment_id': aid, 'assignment': record, 'receipt': receipt,
                 'released_claim': released, 'stop_requester': op == 'open'}
+
+    def _held_claims(self, entities, principal):
+        """The (claim id, data) of every claim `principal` holds in this repository."""
+        prefix = self.claims.claim_id(self.ids['repository_uuid'], '')
+        return [(eid, e['data']) for eid, e in sorted(entities.items())
+                if e.get('kind') == 'claim' and eid.startswith(prefix) and isinstance(e.get('data'), dict)
+                and e['data'].get('state') != 'released' and e['data'].get('holder') == principal
+                and e['data'].get('repository_uuid') == self.ids['repository_uuid']]
+
+    def _in_transaction(self, conn, params, before):
+        """Inside the store's write transaction: an opener's claims are re-read, so the derived
+        unit is the requester's claim at commit, then the registered transition runs."""
+        if params['action'] == 'open':
+            rows = conn.execute('SELECT id, kind, version, data FROM entities WHERE kind=?', ('claim',)).fetchall()
+            entities = {r[0]: {'kind': r[1], 'version': r[2], 'data': json.loads(r[3])} for r in rows}
+            if [cid for cid, _ in self._held_claims(entities, params['principal'])] != params['held_claims']:
+                raise self.store.StoreRefused('stale_subject', 'the requester\'s claims changed while the request was opened')
+        return self._transition(params, before)
 
     def _claim_to_park(self, entities, unit, principal, generation, params, aid):
         cid = self.claims.claim_id(self.ids['repository_uuid'], unit)
@@ -539,7 +567,9 @@ class Inbox:
         return {'admitted': admitted, 'reason': reason, 'assignment_id': assignment, 'version': item['version']}
 
     def waiting_resources(self):
-        """Claims still held on units that pending person assignments block. Empty is correct."""
+        """Claims still held on units that pending person assignments block. Empty is correct.
+        The blocked unit is the requester's claim at open, so this is every claim a stopped
+        requester gave up for a pending assignment and still holds."""
         held = []
         entities = self.store.materialized_state(self.conn)['entities']
         for entry in self.index()['entries']:

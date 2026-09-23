@@ -7,10 +7,18 @@
   "VELDO-0064 inbox/parked-unit-unclaimable detail: resume before the owner answers is refused as not answered",
   "VELDO-0064 inbox/parked-unit-unclaimable detail: the claim is unchanged by every refusal",
   "VELDO-0064 inbox/parked-unit-unclaimable detail: admission does not reopen a plain claim",
-  "VELDO-0064 inbox/parked-unit-unclaimable detail: resume after admission takes the claim again at the next generation"
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: resume after admission takes the claim again at the next generation",
+  "VELDO-0064 inbox/release-derived-from-claim detail: an open that names no unit parks the requester's own claim",
+  "VELDO-0064 inbox/release-derived-from-claim detail: the stored assignment blocks the unit of that claim",
+  "VELDO-0064 inbox/release-derived-from-claim detail: a holder naming no claim generation is refused and opens nothing",
+  "VELDO-0064 inbox/release-derived-from-claim detail: naming a unit other than the requester's claim is refused",
+  "VELDO-0064 inbox/release-derived-from-claim detail: a requester holding several claims is refused",
+  "VELDO-0064 inbox/release-derived-from-claim detail: the next open parks the requester's remaining claim",
+  "VELDO-0064 inbox/release-derived-from-claim detail: a claim taken while the open is in flight refuses the open"
  ],
  "failed_rows": [
-  "VELDO-0064 inbox/parked-unit-unclaimable"
+  "VELDO-0064 inbox/parked-unit-unclaimable",
+  "VELDO-0064 inbox/release-derived-from-claim"
  ],
  "modules": {
   "control_assignment.py": {
@@ -61,10 +69,14 @@
   [
    "VELDO-0064 inbox/parked-unit-unclaimable",
    false
+  ],
+  [
+   "VELDO-0064 inbox/release-derived-from-claim",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.299,
+ "seconds": 1.517,
  "spec_id": "VELDO-0064",
  "suite": "scripts/suites/60_veldo_0064_inbox.py"
 }

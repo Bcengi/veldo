@@ -88,7 +88,8 @@ class _V64BotApi(_v64_http.BaseHTTPRequestHandler):
 def _v64_checks(base):
     rows = {name: [] for name in ('install/assets', 'inbox/states-and-authority', 'inbox/waiting-resources',
                                   'projection/correlation', 'projection/send-outcomes', 'inbox/visible-invalid',
-                                  'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable')}
+                                  'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
+                                  'inbox/release-derived-from-claim')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -115,7 +116,7 @@ def _v64_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'worker-a', 'stranger', 'pm'):
+    for who in ('authority', 'owner', 'worker-a', 'worker-b', 'stranger', 'pm'):
         _v64_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v64-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -146,6 +147,7 @@ def _v64_checks(base):
 
     members = {'owner': dict(principal_type='person', roles=['project_owner'], scope=['project-a']),
                'worker-a': dict(principal_type='agent_run', roles=[], scope='*'),
+               'worker-b': dict(principal_type='agent_run', roles=[], scope='*'),
                'stranger': dict(principal_type='person', roles=[], scope=['project-b']),
                'pm': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
@@ -155,6 +157,9 @@ def _v64_checks(base):
     for unit in ('unit-1', 'unit-2'):
         fixture(unit, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
                                              backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a']))
+    for unit in ('unit-3', 'unit-4', 'unit-5'):
+        fixture(unit, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
+                                             backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-b']))
 
     receiver = claims.Receiver(conn, ids, 'authority', journal_sign)
     try:
@@ -278,6 +283,52 @@ def _v64_checks(base):
     cancel_w3 = command('pm', 'cancel', 'W-3', request_version=1)
     check('inbox/waiting-resources', 'control: the fixture assignment is canceled again', cancel_w3.get('ok') is True
           and inbox.waiting_resources() == [])
+
+    # --- the unit an assignment parks is the requester's own claim, never a field it writes -------
+    derived = 'inbox/release-derived-from-claim'
+    r1_id, r2_id, r3_id = (I.assignment_id(ids['repository_uuid'], a) for a in ('R-1', 'R-2', 'R-3'))
+    cid3, cid4 = (claims.claim_id(ids['repository_uuid'], u) for u in ('unit-3', 'unit-4'))
+    gen3 = receiver.apply(claim_packet('worker-b', 'unit-3', 'c-claim-3')).get('claim', {}).get('generation')
+    opened_r1 = command('worker-b', 'open', 'R-1', claim_generation=gen3, assignment=content('decision'))
+    claim3 = (entity(cid3) or {}).get('data', {})
+    check(derived, 'an open that names no unit parks the requester\'s own claim',
+          opened_r1.get('ok') is True and opened_r1.get('released_claim') == cid3
+          and claim3.get('state') == 'released' and claim3.get('holder') is None and claim3.get('parked_on') == r1_id)
+    check(derived, 'the stored assignment blocks the unit of that claim',
+          (entity(r1_id) or {}).get('data', {}).get('unit_id') == 'unit-3')
+    check(derived, 'nothing waits after the derived release', inbox.waiting_resources() == [])
+    gen4 = receiver.apply(claim_packet('worker-b', 'unit-4', 'c-claim-4')).get('claim', {}).get('generation')
+    no_generation = command('worker-b', 'open', 'R-2', assignment=content('decision'))
+    check(derived, 'a holder naming no claim generation is refused and opens nothing',
+          no_generation == {'ok': False, 'reason': 'invalid_input'} and entity(r2_id) is None
+          and (entity(cid4) or {}).get('data', {}).get('state') == 'owned')
+    foreign = command('worker-b', 'open', 'R-2', claim_generation=gen4, assignment=content('decision', unit='unit-1'))
+    check(derived, 'naming a unit other than the requester\'s claim is refused',
+          foreign == {'ok': False, 'reason': 'not_owner'} and entity(r2_id) is None)
+    several = command('worker-a', 'open', 'R-2', claim_generation=1, assignment=content('decision', unit='unit-1'))
+    check(derived, 'a requester holding several claims is refused', several == {'ok': False, 'reason': 'invalid_input'}
+          and entity(r2_id) is None)
+    opened_r3 = command('worker-b', 'open', 'R-3', claim_generation=gen4, assignment=content('decision'))
+    check(derived, 'the next open parks the requester\'s remaining claim', opened_r3.get('released_claim') == cid4
+          and (entity(r3_id) or {}).get('data', {}).get('unit_id') == 'unit-4' and inbox.waiting_resources() == [])
+    # A claim taken between the inbox's read and its commit: the injected clock is read after the
+    # authority state, so the claim below lands inside that window through the real receiver.
+    raced = []
+
+    def racing_clock():
+        if not raced:
+            raced.append(receiver.apply(claim_packet('worker-b', 'unit-5', 'c-claim-5')))
+        return _v64_time.time()
+    registered = conn.command_registry[I.OPERATION]
+    racing = I.Inbox(S, CM, claims, contract, conn, ids, 'authority', journal_sign, clock=racing_clock)
+    counter[0] += 1
+    body = dict(ids, operation='open', alias='R-race', principal='worker-b', command_id='c-%d' % counter[0],
+                nonce='n-%d' % counter[0], assignment=content('decision'))
+    race = racing.apply({'command': body, 'signature': sign_as('worker-b', S.canonical_bytes(body))})
+    conn.command_registry[I.OPERATION] = registered
+    check(derived, 'a claim taken while the open is in flight refuses the open',
+          raced and raced[0].get('ok') is True and race == {'ok': False, 'reason': 'stale_subject'}
+          and entity(I.assignment_id(ids['repository_uuid'], 'R-race')) is None)
 
     # Every enabled kind is opened by the PM service or the owner; three more reach each terminal category.
     aliases = {}

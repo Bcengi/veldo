@@ -607,6 +607,17 @@ def cases():
     inbox('inbox-resume-without-admission', 'control_assignment.py',
           "        if reason != 'admitted':\n            raise Refused(reason, 'the assignment does not admit the blocked work')\n",
           "", 'inbox/parked-unit-unclaimable')
+    # VELDO-0064 review r2: the parked unit is derived from the requester's own claim.
+    inbox('inbox-release-only-named-unit', 'control_assignment.py',
+          "            held = self._held_claims(entities, principal)\n",
+          "            held = [c for c in self._held_claims(entities, principal)"
+          " if c[1].get('unit_id') == content.get('unit_id')]\n", 'inbox/release-derived-from-claim')
+    inbox('inbox-open-without-generation-keeps-claim', 'control_assignment.py',
+          "        if type(generation) is not int:\n            raise Refused('invalid_input', 'releasing a claim names its generation')\n",
+          "        if type(generation) is not int:\n            return None\n", 'inbox/release-derived-from-claim')
+    inbox('inbox-open-skips-claim-recheck', 'control_assignment.py',
+          "        if params['action'] == 'open':\n            rows = conn.execute(",
+          "        if False:\n            rows = conn.execute(", 'inbox/release-derived-from-claim')
     return result
 
 
