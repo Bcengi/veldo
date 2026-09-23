@@ -437,6 +437,9 @@ before this rule, whose commit the bound repository no longer holds, is refused 
 enabling, never skipped. Refusing at acceptance a commit the bound repository does not hold stays
 as it was.
 
+(The record's contents and the enabling described in this section were then made incremental;
+see the last section. Paragraphs here describe the code at 7bd70d2.)
+
 **What is recorded, and why it is paths, not numbers.** A kind's numbers depend on its template and
 prefix, and the first revision of a repository is always accepted before any kind can be enabled,
 because enabling names an accepted revision. So acceptance records the Git half of today's
@@ -465,7 +468,8 @@ read as before; no record and no commit means `accepted_revision_unavailable` (t
 `missing_authority`), naming the commit and the bound repository, and nothing is written. The
 `floor_commits` of a kind now list every accepted commit again. One Git read is left in enabling:
 the NAMED revision's root commits are still checked against the enrolled repository, so naming a
-revision whose own commit is gone refuses `wrong_repository` (closed, not open).
+revision whose own commit is gone refuses `wrong_repository` (closed, not open). (Fixed in the last
+section: the named revision's root commits now come from its record.)
 
 **What clears an `accepted_revision_unavailable`: none needed, because none exists outside test
 stores.** `accept_revision` and its record were both introduced on this branch, and every revision
@@ -501,7 +505,7 @@ line. Removed because their code no longer exists: `floor-counts-unheld-revision
 no FINDING line. Every other line of `review3-rerun.txt` is as before, apart from two traceback
 line numbers and random commit ids, except `p1`'s one noted in the table above; `p6`'s `BUG(limit)` is still the only BUG line.
 
-**Cost of the record, measured.** On this repository's own HEAD (580 commits) `carrier_paths` takes
+**Cost of the record, measured** (and rejected by the lead as quadratic; see the last section). On this repository's own HEAD (580 commits) `carrier_paths` takes
 29 ms and records 1588 paths, 69 KB of JSON, once per newly accepted commit, in the entity and in
 its journal record. Each record lists the whole history, so a store that accepts every commit of a
 growing repository grows roughly with the square of the history. If that matters, a record could
@@ -527,3 +531,71 @@ serial baseline, no-op and mutant runs (`timing.json`). The suite runs in 4.2 to
 registered, 235 executed and rejected, 303 workers, 196.8 s against its scaled budget of 470 s
 (`budget_for(235)`, 2 s per case).
 
+
+## Incremental records (2026-09-23)
+
+**The lead's decision.** A record holding the whole history of every accepted commit grows with the
+square of the history, so it was rejected. Each record now holds only what its commit ADDS: when
+`accept_revision` first accepts a commit, `carrier_paths(bound, commit, base)` runs
+`git log -m --root --no-renames --name-only --ignore-missing --stdin <commit>` with every commit
+already recorded for that domain's repository given on stdin as `^<commit>`, and keeps the names
+holding a digit. `--root` lists a root commit as the creation of its whole tree, so the first
+record of a repository holds its whole history; `--ignore-missing` means a recorded commit the
+repository has lost excludes nothing, so its history is listed again rather than dropped; stdin
+means the number of excluded commits is not bounded by a command line. The tree listing is gone:
+every path of a commit's tree is named by some commit of its history. By induction the union of a
+repository's records is every digit-bearing path of every recorded commit's history, each path
+named once per recorded increment whose commits changed it, so storage grows with the history.
+The record also holds the commit's root commits. Its id is now
+`accepted-carriers/<domain>/<repository>/<commit>`, so two domains never share one.
+
+**Enabling.** The floor is the kind's carrier pattern over the UNION of every record of the
+repository (`RS.carrier_records`), plus, for an accepted commit with no record, its whole history
+read from Git while the bound repository holds it (`accepted_revision_unavailable` once it does
+not, unchanged). The NAMED revision's root commits come from its record when it has one, so naming
+a revision whose own commit is gone now enables (the case left open in the last section); an
+unrecorded named revision whose commit is gone refuses `accepted_revision_unavailable` instead of
+`wrong_repository`.
+
+**The row, test first.** `aliases/records-hold-only-what-a-commit-adds` (row 17):
+
+| Part | Asserted | At 7bd70d2 (recorded RED, `red-at-7bd70d2.json`) |
+|---|---|---|
+| (b) a descendant records only what it adds | the first record is `['specs/VELDO-0002-base.md']`; after `revision/repository` moves to a descendant adding `specs/VELDO-0004-descendant.md`, that commit's record is exactly that one path (and under 512 bytes); two side commits record `['specs/VELDO-0009-first-side.md']` and `['specs/VELDO-0005-second-side.md']` | each record held the whole history: the descendant's record held both paths, the second side commit's three |
+| (c) lost ancestors change nothing | both side commits deleted and pruned; enabling NAMING the lost `revision/side` commits with `next = 10`, from VELDO-0009 in the first side commit's record | refused `wrong_repository` (the named commit's roots were read from Git) |
+| (a) the union equals the whole history on Veldo | this repository cloned, `revision/veldo` accepted at four points of its first-parent line (a quarter, half, three quarters, HEAD), then each of the seven templates enabled on its own copy of that store: every `next` equals `accepted_maximum(HEAD) + 1` from the whole history | equal too (whole-history records), so this part was not what failed |
+
+`red_at_7bd70d2.py` runs the final suite with the three modules from 7bd70d2 and no shims: the
+suite completes and only this row fails. `red_at_f84f2d2.py` and `red_at_9930b32.py` now stand as
+history, since the suite has grown since each was recorded.
+
+**Record sizes, measured on this repository's own first-parent line** (at 3129031, 580 commits):
+accepted at a quarter, half, three quarters and HEAD, the four records hold 932, 137, 229 and 496
+paths (39.2, 5.4, 10.4 and 24.9 KB of JSON, 80.0 KB in all), where the rejected design wrote 69.5 KB
+for the HEAD acceptance alone and again for every later one. Accepting HEAD after HEAD~1 is
+recorded adds 3 paths. The first acceptance of a repository still records its whole history once.
+The row observes the path counts as `veldo-history-record-paths` (932, 138, 229, 496 at 0e3d0ca in
+`observations.json`; they move as the history grows, so the row asserts the floors, not them).
+
+**Mutations.** 47 finding-37 cases, all rejected. New, each reddening the new row by a failed
+assertion with the baseline and a no-op copy green: `floor-reads-current-records-only` (the union
+is read only for the commits revisions stand on now, so the first side commit's VELDO-0009 is
+lost), `increment-against-head` (the increment is taken against the bound repository's `HEAD`
+instead of the recorded commits, so a descendant on the main line records nothing), and
+`named-revision-reads-git` (the named revision's roots are read from Git again). Re-anchored because
+the code they mutate changed, each still reddening its own row: `alias-floor-ignores-history` (the
+history walk becomes a tree listing), `alias-floor-named-revision-only` (the union becomes the
+named revision's record alone), `floor-rederives-ignoring-record` and `acceptance-records-no-paths`.
+None of the 44 before was dropped.
+
+**Probes.** `review3-rerun.txt` is unchanged except for random commit ids: `q7_lost_commit` still
+enables with `next = 10`, and `p6`'s `BUG(limit)` is still the only BUG line.
+
+**Gate cost.** `check_teeth_mutations.py --finding 37` took 633.6 s wall, serial, for 47 cases (load
+average 3 to 9 on 20 cores); `drive.py` took 1099.6 s and records 826.4 s of serial baseline, no-op
+and mutant runs (`timing.json`). The suite runs in 5.1 to 5.8 s under `selftest.py --suite` (4.9 s in
+process), up from 4.2 s: row 17 clones this repository and accepts four points of its history.
+`check_gate_mutations.py`, run once as a measurement at load average 3 to 13, passed: 238 registered,
+executed and rejected, 306 workers, 180.9 s against its scaled budget of 476 s (`budget_for(238)`).
+Every control-store suite is green on the final code, `check_teeth_mutations.py --finding 35` still
+rejects all 12, `validate.py all` exits 0 and `check_generated.sh` passes.
