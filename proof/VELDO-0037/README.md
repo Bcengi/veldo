@@ -610,8 +610,11 @@ A fresh review of f84f2d2..2ffffda, with its own probes and an independent oracl
 digit-bearing paths of `git ls-tree -r` of every commit reachable from every accepted commit),
 found one blocking regression and three gaps. Each was fixed test first, one commit per item.
 
-**RED record.** `red-at-2ffffda.json` (from `red_at_2ffffda.py`) runs the final suite with the three
-modules from 2ffffda, no shims: the suite completes and exactly rows 18 and 20 fail by assertion.
+**RED record.** `red-at-2ffffda.json` (from `red_at_2ffffda.py`) ran the suite as committed at
+f332f3a (its `suite_sha256`, b31e6d08..., is that suite's, and also 44ddf21's), not the final one: the
+oracle change at 40d7dad and the fifth check's rows came after it, so it stands as history like the
+earlier records. It ran with the three modules from 2ffffda, no shims: the suite completed and
+exactly rows 18 and 20 failed by assertion.
 Row 19 covers behavior 2ffffda already had and passes there; it is recorded as a control, and its
 mutations are what show it has teeth.
 
@@ -626,7 +629,8 @@ mutations are what show it has teeth.
 `carrier_paths` itself: a writer and a reader built together. Since 40d7dad its reference is every
 tree of every commit reachable from the accepted commits, listed with `git ls-tree -r`, which the
 code under test never runs. Rows 18 and 20 use the same reference. The kind's carrier pattern
-(`maximum`) is still applied to both sides; it is judged separately, against literal expected
+(`maximum`) is still applied to both sides, so this oracle cannot catch a defect in the pattern
+itself (the fifth check found one); the pattern is judged separately, against literal expected
 numbers, by `aliases/floor-counts-every-carrier`.
 
 **The claim corrected.** The earlier sentence that every path of a commit's tree is named by some
@@ -666,3 +670,65 @@ recorded adds 1 path. `observations.json` shows the same counts for the suite's 
 registered, executed and rejected, 312 workers, 283.7 s against its scaled budget of 488 s
 (`budget_for(244)`). That run also shows the gate's frozen copy is a complete clone, since row 17
 clones it and would refuse `shallow_repository` otherwise.
+
+## Fifth check fixes (2026-09-23)
+
+A round 5 review of 2ffffda..87f05d9 reproduced one blocking defect and two untested options, and
+found the 2ffffda RED record claimed a suite it was not run with. Each was fixed test first, one
+commit per item.
+
+**RED record.** `red-at-87f05d9.json` (from `red_at_87f05d9.py`) runs the suite as committed at
+545d6c6, which is also the final suite, with the three modules from 87f05d9 and no shims. The
+suite completes and exactly `aliases/floor-counts-every-carrier` fails by assertion. Rows 21 and 22
+cover options 87f05d9 already passes and pass there; they are recorded as controls, and their
+mutations show their teeth.
+
+| Item | Row | At 87f05d9 (recorded) | Fix | Mutations (each reds the row) |
+|---|---|---|---|---|
+| F1, blocking: the carrier pattern's `(?:/.*)?` was compiled without `re.DOTALL`, so a carrier whose path below the number holds a newline (a legal byte in a Git path) was recorded but not counted | `aliases/floor-counts-every-carrier` gains two cases with literal expected numbers: `proof/VELDO-0060/a\nb` under `proof/{alias}/README.md` holds 60, and `specs/VELDO-0061-dir/x\ny.md` under `specs/{alias}-{slug}.md` holds 61 | both 0 | `_carrier` compiles with `re.IGNORECASE \| re.DOTALL` | `alias-floor-carrier-single-line` (DOTALL removed, reintroducing it); the row already had `alias-floor-carrier-case-sensitive` (re-anchored) and `alias-floor-slug-grammar` |
+| F2: `--ignore-submodules=none` was load-bearing and untested | `aliases/gitlink-carrier-whatever-submodule-config` (21): a gitlink at `proof/VELDO-0020` under `diff.ignoreSubmodules=all` and `submodule.held.ignore=all` | passed (control): recorded, `next = 21` | none needed | `history-submodules-by-config` (option deleted), `history-ignores-all-submodules` (`=all` passed) |
+| F3: `--no-show-signature` was load-bearing and untested | `aliases/signed-history-whatever-signature-config` (22): an SSH-signed commit adding `specs/VELDO-0050-signed.md` under `log.showSignature=true` | passed (control): recorded, `next = 51` | none needed | `history-signatures-by-config` (option deleted), `history-shows-signatures` (`--show-signature` passed) |
+| F4: `red-at-2ffffda.json` said it ran the final suite | none | its digest is f332f3a's suite | the fourth check section now names the suite it ran | none |
+
+**Why the independent oracle missed F1.** Row 17(a)'s `ls-tree` reference, and rows 18 and 20,
+apply the production carrier pattern to the paths they list, so a defect in the pattern moves both
+sides together. Only literal expected numbers catch it, which is why F1's cases are in
+`aliases/floor-counts-every-carrier`, not beside the oracle.
+
+**The options comment, corrected.** It said configuration could change every option in
+`HISTORY_OPTIONS`. It now says four are load-bearing on git 2.43, each with a row that reds
+without it (`--diff-merges=separate`, `--root`, `--ignore-submodules=none`, `--no-show-signature`),
+and that the other five (`--no-renames`, `--no-relative`, `--no-ext-diff`, `--no-color`,
+`--no-notes`) change nothing recorded on git 2.43 under the configurations tried and are kept as
+defensive.
+
+
+**The review's repro, re-run on the final code.** `repro_rv37d.py` (from its own scratch copy,
+pointed at this tree) prints OK for F2 and F3: deleting either option now loses the gitlink or the
+signed path and reds its row. Its `q6_odd_names` part prints no BUG line: all six odd names
+(newlines below and inside the carrier component, non-UTF-8 bytes, CR and tab) give the floor the
+independent DOTALL reading gives. Its one remaining BUG line is F4's digest comparison, which
+checks the recorded digest against the final suite; the record is kept as history and the section
+above names the suite that produced it. `review3-rerun.txt` is unchanged apart from commit ids.
+
+**Merge.** The branch merged origin/main (69be720) for its parallel mutation driver, keeping both
+sides of the scaffold's runtime assets (VELDO-0037's beside VELDO-0052's `control_eligibility.py`)
+and of the `--finding` choices (37 beside 52), with `requires.json` regenerated by `run_scope.py
+--emit-requires`. The merge changed `claim.py` and `git_process.py`, which the suite loads, and no
+module a finding-37 mutation edits.
+
+**Mutations and gate cost.** 58 finding-37 cases, all rejected; none of the 53 before was dropped.
+`mutations.json`, `observations.json` and `timing.json` were driven by `drive.py` on 06e9c7b, before
+the merge (2251.6 s, serial, at load average 10 to 17); every mutated module's digest in them still
+matches this tree. On the merged tree `check_teeth_mutations.py --finding 37` took 137.0 s wall with
+the new parallel driver (8 jobs, at load average 26 to 41 on 20 cores, from other builders), where
+the serial driver took 1246.9 s before the merge, and every one of the 58 diffs it wrote is
+byte-identical to the committed ones. The suite runs in 8.4 s under `selftest.py --suite` (21.1 s
+once at load average 41). `check_gate_mutations.py`, run as a measurement, failed once at 76.1 s
+with `driver_error` on VELDO-0027's `signing-remove-channel-restriction` (load average 14 to 22);
+`check_teeth_mutations.py --finding 27` then rejected all 24 of its cases, that one included, and
+the gate run straight after passed: 296 registered, executed and rejected, 382 workers, 324.4 s
+against its scaled budget of 592 s. The first failure's cause was not determined; it is in
+VELDO-0027's cases, not this branch's. Every control-store suite is green after the merge,
+`check_teeth_mutations.py --finding 35` still rejects all 12, `validate.py all` exits 0 and
+`check_generated.sh` passes.
