@@ -64,7 +64,8 @@ def _v54_suite():
                           'parameters': scope.get('parameters')})
 
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
-    with tempfile.TemporaryDirectory(prefix='v54-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v54-', dir=fast) as directory, \
+            __import__('contextlib').ExitStack() as _v54_exit:
         base = Path(directory) / 'repo'
         mods = base / '.veldo'
         mods.mkdir(parents=True)
@@ -108,6 +109,13 @@ def _v54_suite():
         keys['rsa'] = host / 'rsa_key'
         rsa_keygen = subprocess.Popen(['ssh-keygen', '-q', '-t', 'rsa', '-b', '4096', '-N', '', '-C', 'rsa',
                                        '-f', str(keys['rsa'])], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        def _v54_reap(proc):
+            # Stopped before the temporary directory is removed, on every exit path.
+            if proc.poll() is None:
+                proc.kill()
+            proc.wait()
+        _v54_exit.callback(_v54_reap, rsa_keygen)
         for name in ('trusted', 'rogue'):
             keys[name] = host / (name + '_key')
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', name, '-f', str(keys[name])],
