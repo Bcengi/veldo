@@ -501,7 +501,10 @@ def _s43_runtime(root, repo, graph, store, snapshot):
             if (stage_root / (name + '.displaced')).exists():
                 (stage_root / (name + '.displaced')).rename(stage_root / name)
         call('start', 'cycle-poison-r', 'command-poison-r', snapshot, workflow('poison-runners'))
-        installed_runner.write_text(installed_runner.read_text() + '\n# a new registration\n')
+        try:
+            installed_runner.write_text(installed_runner.read_text() + '\n# a new registration\n')
+        except OSError as error:  # a node moved the checkout's runner: recorded, never raised
+            links['registration'] = type(error).__name__
         links['runners'] = call('start', 'cycle-after-r', 'command-after-r', snapshot, workflow('cwd-probe'))
         links['checkout_written'] = sorted(p.name for p in checkout.iterdir()
                                            if p.name.startswith('veldo-graph-') or p.suffix == '.py')
@@ -854,15 +857,18 @@ def _s43_run():
 
         # An over-deep answer is a named refusal, counted and observed, never an escaping error.
         before_counts = dict(adapter.counts)
-        deep = []
+        deep, deep_details = [], []
         for mode in ('deep', 'deep-utf16'):
             try:
                 adapter.start('cycle-' + mode, 'command-' + mode, snapshot, dict(version, id=mode))
                 deep.append('accepted')
             except Exception as error:
                 deep.append(getattr(error, 'code', type(error).__name__))
-        observations['deep_answer'] = deep
+                deep_details.append(getattr(error, 'detail', ''))
+        observations['deep_answer'] = [deep, deep_details]
+        # The UTF-8 answer is stopped by the bounded scan itself, before any parser recursion.
         expect('graph/shape/deep-answer', deep == ['invalid_response', 'invalid_response']
+               and deep_details[0] == 'answer nests deeper than 32'
                and adapter.counts == dict(before_counts, refused=before_counts['refused'] + 2)
                and [o['refusal'] for o in adapter.observations[-2:]] == ['invalid_response'] * 2
                and [o['cycle_id'] for o in adapter.observations[-2:]] == ['cycle-deep', 'cycle-deep-utf16'])

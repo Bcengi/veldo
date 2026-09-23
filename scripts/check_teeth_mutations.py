@@ -496,7 +496,8 @@ def cases():
     # paths and sizes, process groups, the runtime's pyvenv.cfg.
     graph('graph-stage-links-unchecked', 'control_graph.py',
           "    runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')\n",
-          "    runners, work = root / 'runners', root / 'work'\n", 'authority/stage-links')
+          "    runners, work = root / 'runners', root / 'work'\n"
+          "    runners.mkdir(exist_ok=True)\n    work.mkdir(exist_ok=True)\n", 'authority/stage-links')
     graph('graph-stage-link-checks-off', 'control_graph.py',
           "    if path.is_symlink():\n"
           "        raise Refused('runtime_unavailable', 'the stage ' + name + ' is a link the adapter did not make')\n"
