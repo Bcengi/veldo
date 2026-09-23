@@ -533,6 +533,33 @@ def _s43_runtime(root, repo, graph, store, snapshot):
             pyvenv = 'launched: ' + fake_answer.get('outcome', '')
         except Exception as error:
             pyvenv = getattr(error, 'code', type(error).__name__) + ('' if 'pyvenv' in str(error) else ' (other)')
+        # Every pyvenv.cfg value is judged whole, as a path (the command line split like a shell
+        # would), including a repository under a directory whose name has a space and a quoted
+        # value; and the interpreter is judged at every hop of its link chain.
+        spaced = root / 'my projects' / 'repo'
+        spaced.mkdir(parents=True)
+        git.run(['git', 'init', '-q', str(spaced)], **quiet)
+        (spaced / '.venv/bin').mkdir(parents=True)
+        (spaced / '.venv/bin/python3').symlink_to(_s43_os.path.realpath(runtime['python']))
+        venv_python = str(spaced / '.venv/bin/python3')
+        cfg_cases = {
+            'command-with-space': 'command = ' + venv_python + ' -m venv /elsewhere',
+            'command-quoted': 'command = "' + venv_python + '" -m venv /elsewhere',
+            'home': 'home = ' + str(spaced / '.venv/bin'),
+            'executable': 'executable = ' + venv_python,
+            'base-prefix': 'base-prefix = ' + str(spaced / '.venv'),
+        }
+        cfg_judged = {}
+        for name, line in list(cfg_cases.items()) + [('link-chain', 'home = /usr/bin')]:
+            probe_runtime = root / ('cfg-' + name)
+            (probe_runtime / 'bin').mkdir(parents=True)
+            (probe_runtime / 'bin/python').symlink_to(
+                checkout / '.venv/bin/python3' if name == 'link-chain' else _s43_os.path.realpath(runtime['python']))
+            (probe_runtime / 'pyvenv.cfg').write_text(line + '\nversion = 3.12.3\n')
+            try:
+                cfg_judged[name] = bool(graph.runtime_problems({'python': str(probe_runtime / 'bin/python')}))
+            except Exception as error:
+                cfg_judged[name] = type(error).__name__
         # A stage inside a repository is refused before anything launches.
         try:
             graph.Adapter(dict(runtime, runner=str(installed_runner), stage=str(checkout / '.veldo')),
@@ -609,11 +636,13 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     observations['stage_in_repository'] = in_repository
     observations['stage_links'] = links
     observations['pyvenv'] = pyvenv
+    observations['pyvenv_values_judged'] = cfg_judged
     cfg_paths = [token for line in (directory / 'pyvenv.cfg').read_text().splitlines()
                  for token in line.partition('=')[2].split() if token.startswith('/')]
     expect('graph/runtime/pyvenv-clean', pyvenv == 'runtime_unavailable'
            and not (audit_directory / 'command-pyvenv.json').exists() and cfg_paths
-           and not any(graph.inside_repository(token) for token in cfg_paths))
+           and not any(graph.inside_repository(token) for token in cfg_paths)
+           and cfg_judged == {name: True for name in list(cfg_cases) + ['link-chain']})
     expect('graph/authority/stage-links', links['work'].get('refused') == 'runtime_unavailable'
            and links['runners'].get('refused') == 'runtime_unavailable' and links['checkout_written'] == []
            and before == after and account_state() == account_before)
