@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -168 +168 @@
+-    message = ' '.join(text.split()).replace(';', ',')
++    message = ' '.join(text.split())

@@ -1,0 +1,4 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -75 +74,0 @@
+-    ('control_eligibility.py', 'Gate.decision_blockers'),

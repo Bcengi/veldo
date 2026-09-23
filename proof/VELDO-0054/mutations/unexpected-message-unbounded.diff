@@ -1,0 +1,4 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -171 +170,0 @@
+-    message = message[:UNEXPECTED_MESSAGE_LIMIT]

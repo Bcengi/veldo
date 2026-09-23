@@ -608,6 +608,15 @@
    ],
    "regions": "Scope coverage of a plain-string inner scope (repository id)",
    "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
+  },
+  {
+   "name": "62_veldo_0054_decisions",
+   "file": "62_veldo_0054_decisions.py",
+   "requires": [
+    "62_veldo_0054_decisions"
+   ],
+   "regions": "Decision-record dependency evaluation: exact signed bindings, named blockers and scope at every enabled consumer",
+   "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, real OpenSSH Ed25519 settlement signatures and a real enrollment binding."
   }
  ]
 }

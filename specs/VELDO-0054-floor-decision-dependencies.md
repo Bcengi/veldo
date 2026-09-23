@@ -32,6 +32,10 @@ footprint:
   - "scripts/suites/*_veldo_0054_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/60_veldo_0052_eligibility.py"
+  - "engine/.veldo/runstatus.py"
+  - ".veldo/runstatus.py"
   - "specs/VELDO-0054-floor-decision-dependencies.md"
   - "specs/index.md"
   - "proof/VELDO-0054/*"
@@ -120,3 +124,55 @@ expiry/reverse invalidation and AC3 tripwire/adversarial decision-review depth m
 Release 3; crash/restart matrix moved to Release 2. AC1 normal exact binding consumption
 remains. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
+falsifiers and their second mutations are registered with the repository's mutation driver
+(finding 54). No criterion, status or evidence universe changed.
+
+2026-09-23, build: scripts/suites/60_veldo_0052_eligibility.py joined the footprint. The VELDO-0052
+fixture stored an unsettled decision marked `state: settled` and expected it to unblock work; AC2
+makes exactly that inline status edit a named blocker, so the fixture line is removed. No other line
+of that suite, and no criterion, status or evidence universe, changed.
+
+2026-09-23, review fixes: .veldo/runstatus.py and its engine copy joined the footprint. `veldo status`
+built its plan burn-down with plan._decision_blocks and no Gate, so a unit a governing decision held
+back (VELDO-9428 in suite 62, VELDO-9104 in suite 60) showed at the frontier while plan status blocked
+it. The burn-down now reads decisions through the same Gate plan status reads them through. No
+criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: a malformed decision_settlement (a list in `decision`) made every consumer
+raise an unnamed error for every unit. A malformed governing or settlement record is now a named
+invalid_input refusal for the units it concerns, and a settlement nothing can associate is recorded
+and left out of every read. The footprint is unchanged. No criterion, status or evidence universe
+changed.
+
+2026-09-23, second review fixes: an unhashable subject field crashed every consumer, a malformed
+`blocks` governed nothing, and a wrong-typed schema was reported unsupported or unresolved. Each is
+now a named invalid_input for the unit the record concerns, decided before unsupported and
+unresolved, and veldo status names a burn-down it cannot build. The footprint is unchanged. No
+criterion, status or evidence universe changed.
+
+2026-09-23, third review fixes: a blocks nested beyond the recursion limit broke every consumer, and
+veldo status reported a store integrity refusal without its code. The blocks walk no longer
+recurses, an unexpected fault is named for its unit, a store refusal is named by its code in
+decide, decision_blockers and veldo status (plan status and the frontier still raise the store's
+own named refusal, an open item), a malformed settlement is invalid input before unsupported, and a
+blocks string names every id it lists. The footprint is unchanged. No criterion, status or evidence universe changed.
+
+2026-09-23, fourth review fixes: a settlement signer or signature holding NUL or text that does not
+encode is a named invalid input for its unit, a named stop raised under decide propagates as a stop,
+and an unexpected fault is named with its message as well as its type. The third review's entry
+above now says where a store refusal is named by its code. The footprint is unchanged. No criterion,
+status or evidence universe changed.
+
+2026-09-23, fifth review fixes: a settlement signer over 256 characters or holding whitespace or a
+control character, and a signature over 16 KiB, are named invalid input before the verifier is
+asked, and an unexpected fault's message is kept plain (control characters escaped, no separator,
+an unprintable message named). The footprint is unchanged. No criterion, status or evidence universe
+changed.
+
+2026-09-23, sixth review fixes: the signer bound no longer refuses whitespace, which valid OpenSSH
+principals carry (a quoted name); the 256-character and control-character bounds stay, and the
+bounds are now held to a real 256-character principal, an email principal, a principal with a
+space and a real RSA-4096 signature. The footprint is unchanged. No criterion, status or evidence
+universe changed.

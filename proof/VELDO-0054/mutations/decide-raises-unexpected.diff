@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -801,2 +800,0 @@
+-        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
+-            decision['refusals'] = [unexpected(error)]

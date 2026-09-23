@@ -75,13 +75,30 @@ def _shipped_set(fm, status):
     return {w["spec"] for w in _work(fm) if status.get(w.get("spec")) == "shipped"}
 
 
-def _decision_blocks(fm):
+def _decision_blocks(fm, gate=None):
+    """{spec: [why]} for every spec a governing decision holds back.
+
+    Without the floor (no Gate) an inline open_decisions entry blocks what it names, as before.
+    With the floor enabled (VELDO-0054, R71) an inline entry is only a REFERENCE: each work item and
+    each spec an entry names is blocked by exactly the named blockers the Gate's decision evaluation
+    returns, so a missing, ambiguous, unsupported or unsettled decision blocks and only the current
+    exact binding of an accepted signed settlement unblocks. No status, ruling or resolution text an
+    entry carries resolves anything."""
     blocked = {}
     for d in fm.get("open_decisions") or []:
         if isinstance(d, dict):
             for s in d.get("blocks") or []:
                 blocked.setdefault(s, []).append(d.get("id"))
-    return blocked
+    if gate is None:
+        return blocked
+    governed = {}
+    for sid in dict.fromkeys([w.get("spec") for w in _work(fm)] + list(blocked)):
+        if not isinstance(sid, str) or not sid:
+            continue
+        codes = gate.decision_blockers(sid, references=blocked.get(sid, ()))
+        if codes:
+            governed[sid] = codes
+    return governed
 
 
 def item_state(w, status, shipped, blocked):
@@ -101,7 +118,7 @@ def cmd_status(arg, eligibility=None):
     path, fm = load_plan(arg)
     status = _status(eligibility)
     shipped = _shipped_set(fm, status)
-    blocked = _decision_blocks(fm)
+    blocked = _decision_blocks(fm, EL.gate_for(ROOT, eligibility))
     work = sorted(_work(fm), key=lambda w: (w.get("order") or 0))
     print(f"{fm.get('id')} - {fm.get('title', '')}")
     print(f"status {fm.get('status')}, revision {fm.get('revision')}, "
@@ -321,6 +338,11 @@ def cmd_run_check(arg, spec_id, eligibility=None):
         # dependencies, decisions and blockers as the authority records them, not as files say.
         decision = gate.decide("direct_execution", spec_id)
         reasons.extend("eligibility refused: %s" % r for r in decision["refusals"])
+        # VELDO-0054: the plan's inline open_decisions entries for this spec are references the
+        # store-backed decision above cannot see; each must resolve to a current exact binding.
+        refs = _decision_blocks(fm).get(spec_id, ())
+        reasons.extend("decision refused: %s" % r for r in gate.decision_blockers(spec_id, references=refs)
+                       if r not in decision["refusals"])
     for d in item.get("depends_on") or []:
         if status.get(d) != "shipped":
             reasons.append(f"dependency {d} is {status.get(d, 'unshipped')}, not shipped")

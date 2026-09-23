@@ -798,6 +798,11 @@ def cases():
            '    except EL.Stopped as stop:\n        return [], stop.reason',
            '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
            'completion/status-reader-agrees')
+    # VELDO-0054 review A: veldo status reads decisions through the Gate, as plan status does.
+    review('status-reader-decisions-inline', 'runstatus.py',
+           "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'completion/status-reader-agrees')
+    review('status-reader-decisions-dropped', 'runstatus.py',
+           "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'completion/status-reader-agrees')
     review('dispatch-without-identity', 'control_eligibility.py',
            '        dispatch = self.open_dispatch(unit, context=context)\n',
            "        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved\n",
@@ -1129,6 +1134,209 @@ def cases():
     inbox('inbox-parked-refusal-shown-ready', 'control_assignment.py',
           "reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'",
           "reason = 'ready_to_resume'", 'inbox/parked-units-visible')
+    # VELDO-0054: every declared falsifier and a second, different defect for its row, plus a
+    # driven defect for every other row suite 62 asserts.
+    def decisions(name, module, old, new, row):
+        add(54, name, '62_veldo_0054_decisions.py', module, old, new, ['decisions/' + row])
+
+    framing = "    if not _is_str(framing) or framing != record.get('framing_digest'):\n"
+    decisions('framing-receipt-without-digest', 'control_decision_dependency.py', framing,
+              "    if framing is not None and framing != record.get('framing_digest'):\n", 'wrong-framing')
+    decisions('framing-shape-only', 'control_decision_dependency.py', framing,
+              "    if not _is_str(framing):\n", 'wrong-framing')
+    decisions('subject-currency-ignored', 'control_decision_dependency.py',
+              "    if current is None or subject.get('digest') != current:\n", "    if False:\n", 'exact-binding')
+    decisions('floor-stations-skip-decisions', 'control_eligibility.py',
+              "            return self._decision_codes(unit, inputs)\n", "            return []\n", 'exact-binding')
+    decisions('inline-status-as-ruling', 'control_decision_dependency.py',
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n",
+              "    if isinstance(record, dict) and record.get('state') == 'settled':\n        return []\n"
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n",
+              'unsigned-resolution')
+    decisions('unsigned-settlement-accepted', 'control_decision_dependency.py',
+              "        if verify is None or not isinstance(body, dict) or not _is_str(signature) or not _is_str(signer):\n"
+              "            continue\n",
+              "        if isinstance(body, dict) and not _is_str(signature):\n            verified.append(body)\n            continue\n"
+              "        if verify is None or not isinstance(body, dict) or not _is_str(signer):\n            continue\n",
+              'unsigned-resolution')
+    decisions('plan-inline-resolution-honored', 'plan.py',
+              '        if isinstance(d, dict):\n            for s in d.get("blocks") or []:\n',
+              '        if isinstance(d, dict) and d.get("status") != "resolved":\n            for s in d.get("blocks") or []:\n',
+              'unsigned-resolution')
+    decisions('ambiguous-settlement-first', 'control_decision_dependency.py',
+              "    if len(current) > 1:\n        return ['ambiguous_decision:' + rid]\n", "", 'named-blockers')
+    decisions('unsupported-obligation-presumed', 'control_decision_dependency.py',
+              "SUPPORTED_OBLIGATIONS = ()", "SUPPORTED_OBLIGATIONS = ('tripwire', 'adversarial_decision_review')",
+              'named-blockers')
+    decisions('missing-reference-ignored', 'control_decision_dependency.py',
+              "            codes.append('missing_decision:%s' % ref)\n", "            pass\n", 'named-blockers')
+    decisions('frontier-inline-decisions', 'frontier.py',
+              "        blocked = PL._decision_blocks(fm, gate)\n", "        blocked = PL._decision_blocks(fm)\n",
+              'named-blockers')
+    decisions('run-check-ignores-file-references', 'plan.py',
+              '        reasons.extend("decision refused: %s" % r for r in gate.decision_blockers(spec_id, references=refs)\n'
+              '                       if r not in decision["refusals"])\n', '', 'named-blockers')
+    decisions('scope-binding-ignored', 'control_decision_dependency.py',
+              "    problems = []\n    if body.get('subject') != record.get('subject'):\n",
+              "    return []\n    problems = []\n    if body.get('subject') != record.get('subject'):\n", 'scope-binding')
+    decisions('scope-target-may-differ', 'control_decision_dependency.py',
+              "    if body.get('scope_digest') != scope_digest(record.get('scope')) \\\n"
+              "            or (record.get('scope') or {}).get('target') != (record.get('subject') or {}).get('id'):\n",
+              "    if body.get('scope_digest') != scope_digest(record.get('scope')):\n", 'scope-binding')
+    decisions('consumer-unregistered', 'control_decision_dependency.py',
+              "    ('control_eligibility.py', 'Gate.decision_blockers'),\n", "", 'consumers-from-call-sites')
+    decisions('production-trust-not-wired', 'control_eligibility.py',
+              "                settlement_trust=settlements)\n", "                settlement_trust=None)\n",
+              'production-gate-verifies')
+    decisions('taxonomy-unbound-unknown', 'control_eligibility.py',
+              "    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',\n",
+              "    'decision_ruling': 'missing_authority',\n", 'observations')
+    decisions('status-reader-inline-decisions', 'runstatus.py',
+              "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'status-reader-agrees')
+    decisions('status-reader-ignores-decisions', 'runstatus.py',
+              "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'status-reader-agrees')
+    # VELDO-0054 review B: malformed records are named invalid_input for the unit they concern.
+    decisions('invalid-record-not-observed', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'decision')\n", "                pass\n",
+              'malformed-records-named')
+    decisions('record-invalid-ignored', 'control_decision_dependency.py',
+              "    if invalid:\n        return invalid\n", "", 'malformed-records-named')
+    decisions('settlement-invalid-ignored', 'control_decision_dependency.py',
+              "    if malformed:\n        return malformed\n", "", 'malformed-records-named')
+    decisions('reference-invalid-dropped', 'control_decision_dependency.py',
+              "            codes.append('invalid_input:decision_reference')\n", "            continue\n",
+              'malformed-records-named')
+    # VELDO-0054 review 2, item 1: an unhashable subject field is named; veldo status names its stop.
+    decisions('subject-digest-type-unchecked', 'control_decision_dependency.py',
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))",
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id'))", 'malformed-subject-named')
+    decisions('subject-kind-type-unchecked', 'control_decision_dependency.py',
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))",
+              "all(_is_str(subject.get(k)) for k in ('id', 'digest'))", 'malformed-subject-named')
+    decisions('status-stop-crashes', 'runstatus.py',
+              '    except Exception as error:  # noqa: BLE001 - a burn-down it cannot build is named, never a crash\n',
+              '    except ZeroDivisionError as error:  # defect: any other failure escapes\n', 'status-names-its-stop')
+    decisions('status-stop-unnamed', 'runstatus.py',
+              '        return [], "burndown_unanswerable:" + type(error).__name__\n',
+              '        return [], None\n', 'status-names-its-stop')
+    # Item 2: a malformed blocks holds the unit it names and is recorded.
+    decisions('malformed-blocks-govern-nothing', 'control_decision_dependency.py',
+              "    named = _named_ids(blocks) if blocks_malformed(record) else set(blocks)\n",
+              "    named = set(blocks) if _str_list(blocks) else set()\n", 'malformed-blocks-held')
+    decisions('malformed-blocks-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'blocks')\n", "                pass\n",
+              'malformed-blocks-held')
+    # Item 3: a wrong-typed schema is invalid_input, decided before unsupported and unresolved.
+    decisions('schema-type-unchecked', 'control_decision_dependency.py',
+              "    for name, ok in (('schema', record.get('schema') is None or isinstance(record.get('schema'), str)),\n"
+              "                     ('decision_id',",
+              "    for name, ok in (('decision_id',", 'invalid-before-unsupported')
+    decisions('invalid-after-unresolved', 'control_decision_dependency.py',
+              "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n"
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n"
+              "    if not mine:\n        return ['unresolved_decision:' + rid]\n",
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n"
+              "    if not mine:\n        return ['unresolved_decision:' + rid]\n"
+              "    problems = record_problems(rid, record) if not record_invalid(rid, record) else []\n"
+              "    if problems:\n        return problems\n"
+              "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n",
+              'invalid-before-unsupported')
+    # VELDO-0054 review 3, item 1: blocks walked without recursion; unexpected faults named.
+    decisions('blocks-walk-recursive', 'control_decision_dependency.py',
+              "    stack = [value]\n    while stack:\n        current = stack.pop()\n",
+              "    stack = []\n    current = value\n    if isinstance(current, list):\n"
+              "        for item in current:\n            yield from _named(item)\n        return\n"
+              "    stack = [value]\n    while stack:\n        current = stack.pop()\n",
+              'deep-blocks-named')
+    decisions('decide-raises-unexpected', 'control_eligibility.py',
+              "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
+              "            decision['refusals'] = [unexpected(error)]\n", "", 'deep-blocks-named')
+    decisions('blockers-raise-unexpected', 'control_eligibility.py',
+              "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
+              "            codes = [unexpected(error)]\n", "", 'deep-blocks-named')
+    # Item 2: veldo status names a store refusal by its code, as decide does.
+    decisions('status-store-refusal-generic', 'runstatus.py',
+              '    except store_refusals as error:\n        return [], "refused:" + eligibility.refusal_code(error)\n',
+              '', 'status-names-store-refusal')
+    decisions('status-store-refusal-code-dropped', 'runstatus.py',
+              '        return [], "refused:" + eligibility.refusal_code(error)\n',
+              '        return [], "refused:" + type(error).__name__\n', 'status-names-store-refusal')
+    decisions('blockers-store-refusal-renamed', 'control_eligibility.py',
+              "            codes = [self.refusal_code(error)]\n", "            codes = ['invalid_input:' + error.code]\n",
+              'status-names-store-refusal')
+    # Item 3: a malformed settlement is invalid_input before its record is judged unsupported.
+    decisions('unsupported-before-settlement-invalid', 'control_decision_dependency.py',
+              "    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]\n"
+              "    if malformed:\n        return malformed\n"
+              "    problems = record_problems(rid, record)\n    if problems:\n        return problems\n",
+              "    problems = record_problems(rid, record)\n    if problems:\n        return problems\n"
+              "    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]\n"
+              "    if malformed:\n        return malformed\n",
+              'settlement-invalid-before-unsupported')
+    decisions('settlement-signature-type-unchecked', 'control_decision_dependency.py',
+              "    for name in ('signature', 'signer'):\n", "    for name in ('signer',):\n",
+              'settlement-invalid-before-unsupported')
+    # Minor: a blocks string names every id it lists; malformed references are recorded.
+    decisions('blocks-string-not-split', 'control_decision_dependency.py',
+              "        ids.update(text.replace(',', ' ').split())\n", "        pass\n", 'minor-shapes')
+    decisions('plan-reference-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(inputs['plan']['id'], 'open_decisions')\n", "                pass\n",
+              'minor-shapes')
+    decisions('decision-id-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'decision_id')\n", "                pass\n", 'minor-shapes')
+    # VELDO-0054 review 4, item 1: signer and signature text the verifier cannot be handed is named.
+    decisions('settlement-nul-passed', 'control_decision_dependency.py',
+              "    if '\\x00' in text:\n        return False\n", "", 'settlement-text-encodable')
+    decisions('settlement-unencodable-passed', 'control_decision_dependency.py',
+              "    try:\n        text.encode('utf-8')\n    except UnicodeEncodeError:\n        return False\n", "",
+              'settlement-text-encodable')
+    # Item 2: a named stop under decide propagates as the stop it is.
+    decisions('decide-holds-a-stop', 'control_eligibility.py',
+              "            decision['refusals'] = ['unavailable_service:store']\n        except Stopped:\n"
+              "            raise  # a named stop is the caller's, never a unit hold\n",
+              "            decision['refusals'] = ['unavailable_service:store']\n", 'stops-propagate')
+    decisions('blockers-hold-a-stop', 'control_eligibility.py',
+              "            codes = ['unavailable_service:store']\n        except Stopped:\n"
+              "            raise  # a named stop is the caller's, never a unit hold\n",
+              "            codes = ['unavailable_service:store']\n", 'stops-propagate')
+    # Item 3: an unexpected fault is named with its message, bounded and on one line.
+    decisions('unexpected-message-dropped', 'control_eligibility.py',
+              "    return code + '/' + message if message else code\n", "    return code\n", 'unexpected-message')
+    decisions('unexpected-message-unbounded', 'control_eligibility.py',
+              "    message = message[:UNEXPECTED_MESSAGE_LIMIT]\n", "", 'unexpected-message')
+    decisions('unexpected-message-multiline', 'control_eligibility.py',
+              "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = text.replace(';', ',')\n",
+              'unexpected-message')
+    # VELDO-0054 review 5, item 1: what reaches the verifier is bounded.
+    bound = "        return len(text) <= SIGNER_LIMIT and not any(ord(c) < 32 or ord(c) == 127 for c in text)\n"
+    decisions('signer-unbounded', 'control_decision_dependency.py', bound, "        return True\n",
+              'verifier-input-bounded')
+    decisions('signer-controls-allowed', 'control_decision_dependency.py', bound,
+              "        return len(text) <= SIGNER_LIMIT\n", 'verifier-input-bounded')
+    # Review 6: the bounds refuse nothing real (a quoted principal with a space, 256 characters, an
+    # RSA-4096 signature); a tightened limit reds the same row.
+    decisions('signer-whitespace-refused', 'control_decision_dependency.py', bound,
+              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
+              'verifier-input-bounded')
+    decisions('signature-limit-1024', 'control_decision_dependency.py', "SIGNATURE_LIMIT = 16384\n",
+              "SIGNATURE_LIMIT = 1024\n", 'verifier-input-bounded')
+    decisions('signer-limit-exclusive', 'control_decision_dependency.py', bound,
+              bound.replace('len(text) <= SIGNER_LIMIT', 'len(text) < SIGNER_LIMIT'), 'verifier-input-bounded')
+    decisions('signature-unbounded', 'control_decision_dependency.py',
+              "    return len(text) <= SIGNATURE_LIMIT\n", "    return True\n", 'verifier-input-bounded')
+    # Item 2: an unexpected fault's message is plain, separator-free and always obtainable.
+    decisions('unexpected-controls-kept', 'control_eligibility.py',
+              "    message = ''.join('\\\\x%02x' % ord(c) if ord(c) < 32 or ord(c) == 127 else c for c in message)\n",
+              "", 'unexpected-message')
+    decisions('unexpected-separator-kept', 'control_eligibility.py',
+              "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = ' '.join(text.split())\n",
+              'unexpected-message')
+    decisions('unexpected-str-unguarded', 'control_eligibility.py',
+              "    try:\n        text = str(error)\n    except Exception:  # noqa: BLE001 - an exception whose own text raises is still named\n"
+              "        text = '<unprintable>'\n", "    text = str(error)\n", 'unexpected-message')
+    decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
+              "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
+              "            if False:\n", 'observations')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
@@ -1219,7 +1427,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 37, 46, 52, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 37, 46, 52, 54, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

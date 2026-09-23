@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -239 +239 @@
+-        blocked = PL._decision_blocks(fm, gate)
++        blocked = PL._decision_blocks(fm)

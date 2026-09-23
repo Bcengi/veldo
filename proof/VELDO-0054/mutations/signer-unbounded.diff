@@ -1,0 +1,5 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -244 +244 @@
+-        return len(text) <= SIGNER_LIMIT and not any(ord(c) < 32 or ord(c) == 127 for c in text)
++        return True

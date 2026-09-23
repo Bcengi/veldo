@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -237 +237 @@
+-        return [], "burndown_unanswerable:" + type(error).__name__
++        return [], None
