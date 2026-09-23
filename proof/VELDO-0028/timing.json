@@ -1,0 +1,13 @@
+{
+  "baseline_gate_seconds": 704.0404346070718,
+  "baseline_mutation_stage_seconds": 58.68642774480395,
+  "estimated_suite_and_mutation_stage_increment_seconds": 13.637262142129245,
+  "final_gate_seconds": 724.2055228571407,
+  "final_mutation_stage_seconds": 64.62968988693319,
+  "full_suite_executions_in_gate": 2,
+  "limit_seconds": 60,
+  "method": "Measured whole-gate comparison on clean commits; host load is uncontrolled. Diagnostic estimate uses twice the measured unit-stage suite duration (the nested duration is not separately surfaced), plus the measured mutation-stage wall-time difference.",
+  "new_mutant_worker_seconds_sum": 28.845315183047205,
+  "suite_seconds_in_gate": 3.847,
+  "whole_gate_difference_seconds": 20.165088250068948
+}

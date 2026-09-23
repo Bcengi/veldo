@@ -1,6 +1,6 @@
 # VELDO-0028 protected effects
 
-Implementation: `aecf5f3` (subsequent test/proof commits remain on build-veldo-0028).
+Implementation and executable checks verified at `65294a7`; proof commits remain on build-veldo-0028.
 Status stays ready. This is implementation evidence, not independent review or landing approval.
 
 The Effect Executor accepts fresh Ed25519-authenticated pipe requests, opens the explicitly
@@ -87,5 +87,18 @@ remain outside this change.
 
 The clean baseline at `b19e6cb` was green with 5,678 passing unit checks and 84 rejected mutations.
 Its full gate took 704.040 seconds; full logs remain outside the repository.
-Final clean-tree gate results, measured added cost and the digest-bound proof manifest will be
-recorded after verification. No partial selftest run is used as proof of completion.
+Final verification started from a clean tree at `65294a72a31f4df499cc395bce2e176efcba6a43`:
+
+- `selftest: 5684 passed, 0 failed`
+- `mutations: passed registered=90 executed=90 rejected=90 workers=120 elapsed=64.630s`
+- `GATE: GREEN (65294a72a31f4df499cc395bce2e176efcba6a43)`
+
+The new suite took 3.847 seconds in the gate. The measured whole-gate increase was
+20.165 seconds (704.040 to 724.206), below the 60-second limit. A diagnostic estimate
+of the suite and mutation contribution is 13.637 seconds: twice the measured suite duration
+plus the mutation-stage wall-time difference. The nested suite duration is not separately
+surfaced, and host load is uncontrolled. `timing.json` records both calculations;
+`gate-summary.json` carries summary lines and SHA-256 digests of the uncommitted logs.
+The gate ran all six new mutants with fresh unmutated and no-op controls; `gate-mutations.json`
+retains their actual named-row observations. No partial selftest run is cited as completion proof.
+The two checkout-local gate byproducts were restored before the evidence commit.

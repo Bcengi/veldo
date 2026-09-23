@@ -1,0 +1,30 @@
+{
+  "baseline": {
+    "gate_line": "GATE: GREEN (b19e6cba82e5e4b581f45de49918a13b7866e705)",
+    "head": "b19e6cba82e5e4b581f45de49918a13b7866e705",
+    "seconds": 704.0404346070718,
+    "sha256": "3d7ef3c7f3025e50e64618443ef28c2da5c01be80547fe32fb5ea8d6156de65a"
+  },
+  "exit": 0,
+  "head": "65294a72a31f4df499cc395bce2e176efcba6a43",
+  "mutation_stage": {
+    "elapsed": 64.62968988693319,
+    "executed": 90,
+    "registered": 90,
+    "rejected": 90,
+    "status": "passed",
+    "surviving_workers": 0,
+    "worker_invocations": 120
+  },
+  "seconds": 724.2055228571407,
+  "sha256": "88849f8e1b6ae1dcb8c8364bb822c7954e64d69eee517309282c97df899768ff",
+  "started_clean": true,
+  "summary": [
+    "VELDO-0028 observations: {\"checks\": {\"authenticated-ipc\": true, \"completion/provider\": true, \"completion/publication\": true, \"current-authority/provider\": true, \"current-authority/publication\": true, \"nonce/provider\": true, \"nonce/publication\": true, \"real-publication\": true, \"scope/provider\": true, \"scope/publication\": true, \"signed-store\": true, \"worker-credential-read\": true}, \"metrics\": {\"accepted\": 11, \"pending\": 6}, \"out_of_scope_calls\": 0, \"provider_calls\": 5, \"publication_calls\": 5, \"remote_commit_confirmed\": true}",
+    "VELDO-0028 suite seconds: 3.847",
+    "selftest: 5684 passed, 0 failed",
+    "   mutated(spend_recorded) run: 5684 passed, 0 failed (318s)",
+    "mutations: passed registered=90 executed=90 rejected=90 workers=120 elapsed=64.630s",
+    "GATE: GREEN (65294a72a31f4df499cc395bce2e176efcba6a43)"
+  ]
+}
