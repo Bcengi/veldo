@@ -482,8 +482,8 @@ def cases():
           '            if self.evidence is not None and not evidenced(result, self.evidence):\n',
           '            if False:\n', 'runtime/lifecycle')
     graph('graph-runner-launched-in-place', 'control_graph.py',
-          "            proc = subprocess.run([runtime['python'], '-I', '-B', str(staged)],",
-          "            proc = subprocess.run([runtime['python'], '-I', '-B', runtime['runner']],",
+          "            proc = subprocess.Popen([runtime['python'], '-I', '-B', str(staged)],",
+          "            proc = subprocess.Popen([runtime['python'], '-I', '-B', runtime['runner']],",
           'authority/no-direct-write')
     graph('graph-suspended-notes-dropped', 'control_graph_langgraph.py',
           "'step': final['step'], 'notes': final['notes']})", "'step': final['step'], 'notes': {}})",
@@ -520,6 +520,13 @@ def cases():
           '        if declared and is_url(text):\n', '        if declared:\n', 'shape/closed-request')
     graph('graph-request-size-unbounded', 'control_graph.py',
           'MAX_REQUEST_BYTES = 1 << 20\n', 'MAX_REQUEST_BYTES = 1 << 30\n', 'shape/closed-request')
+    graph('graph-child-shares-session', 'control_graph.py',
+          'close_fds=True, start_new_session=True)', 'close_fds=True, start_new_session=False)',
+          'boundary/process-group')
+    graph('graph-group-kept-on-exit', 'control_graph.py',
+          '        try:\n            finished = _wait_unreaped(proc.pid, timeout)\n        finally:\n            _end_group(proc)\n',
+          '        finished = _wait_unreaped(proc.pid, timeout)\n        if not finished:\n            _end_group(proc)\n'
+          '        else:\n            proc.wait()\n        if True:\n', 'boundary/process-group')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])

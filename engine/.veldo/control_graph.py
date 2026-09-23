@@ -37,8 +37,10 @@ import math
 from pathlib import Path
 import re
 import shutil
+import signal
 import subprocess
 import tempfile
+import time
 import unicodedata
 import urllib.parse
 
@@ -483,8 +485,30 @@ def _remove(path):
         pass
 
 
+def _wait_unreaped(pid, timeout):
+    """Wait for the child to exit without reaping it, so its process group id cannot be reused
+    before the group is killed. True if it exited within the deadline."""
+    deadline = time.monotonic() + timeout
+    while os.waitid(os.P_PID, pid, os.WEXITED | os.WNOWAIT | os.WNOHANG) is None:
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.005)
+    return True
+
+
+def _end_group(proc):
+    """Kill the child's whole process group (its own session), then reap the child."""
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    proc.kill()
+    proc.wait()
+
+
 def exchange(runtime, sent, timeout=120):
-    """One request, one response, one child process with nothing inherited."""
+    """One request, one response, one child process with nothing inherited, in its own session;
+    the whole process group is killed on the deadline and on every exit path."""
     if not available(runtime):
         raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
                       + INSTALL_COMMAND)
@@ -493,20 +517,30 @@ def exchange(runtime, sent, timeout=120):
         raise Refused('runtime_unavailable', '; '.join(problems))
     staged, work = stage(runtime)
     empty = _working_directory(work)
-    try:
+    # Request and answer travel through anonymous files, not pipes, so a subprocess a node left
+    # holding the answer stream cannot keep the exchange open.
+    with tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:
+        given.write(canonical(sent))
+        given.seek(0)
         try:
-            proc = subprocess.run([runtime['python'], '-I', '-B', str(staged)],
-                                  input=canonical(sent), capture_output=True, cwd=str(empty),
-                                  env=dict(ENVIRONMENT), close_fds=True, timeout=timeout)
-        except subprocess.TimeoutExpired as error:
-            raise Refused('unknown_outcome', 'graph runtime did not answer within its deadline') from error
+            proc = subprocess.Popen([runtime['python'], '-I', '-B', str(staged)],
+                                    stdin=given, stdout=answer, stderr=subprocess.DEVNULL, cwd=str(empty),
+                                    env=dict(ENVIRONMENT), close_fds=True, start_new_session=True)
         except OSError as error:
+            _remove(empty)
             raise Refused('runtime_unavailable', 'graph runtime could not be launched') from error
-    finally:
-        _remove(empty)
-    if proc.returncode:
-        raise Refused('unknown_outcome', 'graph runtime exited ' + str(proc.returncode) + ' without an answer')
-    return response(sent, proc.stdout)
+        try:
+            finished = _wait_unreaped(proc.pid, timeout)
+        finally:
+            _end_group(proc)
+            _remove(empty)
+        if not finished:
+            raise Refused('unknown_outcome', 'graph runtime did not answer within its deadline')
+        if proc.returncode:
+            raise Refused('unknown_outcome', 'graph runtime exited ' + str(proc.returncode) + ' without an answer')
+        answer.seek(0)
+        raw = answer.read(MAX_ANSWER_BYTES + 1)
+    return response(sent, raw)
 
 
 class Adapter:
