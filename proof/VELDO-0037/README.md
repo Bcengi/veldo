@@ -732,3 +732,21 @@ against its scaled budget of 592 s. The first failure's cause was not determined
 VELDO-0027's cases, not this branch's. Every control-store suite is green after the merge,
 `check_teeth_mutations.py --finding 35` still rejects all 12, `validate.py all` exits 0 and
 `check_generated.sh` passes.
+
+## Sixth check: newline cases at every carrier position (2026-09-23)
+
+A round 6 review of 87f05d9..e48a8fb found nothing blocking and one coverage gap: the fifth check's
+newline cases sat below the number only. `aliases/floor-counts-every-carrier` now also holds, with
+hand-written expected numbers, a newline inside the carrier component after the number
+(`specs/VELDO-0064-a\nb.md`, 64), before the alias (`specs/x\nVELDO-0065-a.md`, 65) and inside a
+slug directory (`area/s\nl/VELDO-0066.md` under `area/{slug}/{alias}.md`, 66). The code already
+counted all three, so there was nothing to fix. The review's three mutants, each excluding a
+newline at one of those positions, are registered and each reds the row:
+`alias-floor-component-single-line`, `alias-floor-prefix-single-line` and
+`alias-floor-slug-directory-single-line`.
+
+At c33ace0 suite 59 passes (41 rows, 67 assertions, 14.3 s at load average 18) and
+`check_teeth_mutations.py --finding 37 --jobs 8` rejects all 61 cases in 148.0 s wall (load
+average 18 to 31). Every one of the 61 diffs it wrote is byte-identical to the committed ones; the
+three new diffs are added here. `mutations.json`, `observations.json` and `timing.json` are still
+the 58-case records driven at 06e9c7b; the three new cases' evidence is that run's output.
