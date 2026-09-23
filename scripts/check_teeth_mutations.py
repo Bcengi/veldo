@@ -283,6 +283,13 @@ def cases():
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
             old, new, ['notify/' + row])
 
+    notification('notify-stop-after-handler-failure',
+                 "                    self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 "                    return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 'subscriber-isolation')
+    notification('notify-retry-successful-subscribers',
+                 "self._queue.append((hint, tuple(remaining)))",
+                 "self._queue.append((hint, None))", 'subscriber-isolation')
     notification('notify-unbounded-watermark',
                  "or not 1 <= hint['watermark'] <= 2**63 - 1",
                  "or hint['watermark'] < 1", 'watermark-range')

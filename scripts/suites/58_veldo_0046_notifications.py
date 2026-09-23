@@ -1,6 +1,6 @@
 """Release 1 signal delivery over an installed module and real signed SQLite journal.
 
-Three criterion rows, driven by registered production mutations. Barriers expose both
+Criterion and regression rows, driven by registered production mutations. Barriers expose both
 sides of idle entry; joins and cleanup signals bound a defective copy's lifetime.
 Handlers observe journal records only: these are consumer seams, not implementations
 of settlement, assignment, eligibility, intake or the PM owned by other specifications.
@@ -276,14 +276,81 @@ def _n46_checks(directory):
         ac4 = ac4 and [event['command_id'] for event in seen] == [committed['command_id']]
         ac4 = ac4 and loop.metrics()['pending'] == 0
         loop.close()
+    # F02 capsule and reversed order: failed callbacks remain pending only for
+    # those subscribers; every healthy subscriber receives the same committed event.
+    ac5 = True
+    for enabled, failures in ((('settlement', 'pm'), {'settlement'}),
+                              (('pm', 'settlement'), {'pm'}),
+                              (('settlement', 'pm'), {'settlement', 'pm'})):
+        blocked = set(failures)
+        attempts = {name: [] for name in enabled}
+        received = {name: [] for name in enabled}
+
+        def subscriber(name):
+            def receive(event):
+                attempts[name].append(event['command_id'])
+                if name in blocked:
+                    event['transition'].clear()
+                    raise RuntimeError('private subscriber failure')
+                received[name].append(event)
+            return receive
+
+        loop = delivery.Delivery(store, str(path), coords, enabled,
+                                 {name: subscriber(name) for name in enabled})
+        committed = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+        first = loop.run_once(timeout=0)
+        ac5 = ac5 and first is not None and first['outcome'] == 'unknown_outcome' and not first['accepted']
+        ac5 = ac5 and all(len(attempts[name]) == 1 for name in enabled)
+        ac5 = ac5 and {name for name in enabled if received[name]} == set(enabled) - failures
+        ac5 = ac5 and loop.metrics()['pending'] > 0
+        # A second failed attempt must neither forget work nor redeliver healthy callbacks.
+        second = loop.run_once(timeout=0)
+        ac5 = ac5 and second is not None and second['outcome'] == 'unknown_outcome'
+        ac5 = ac5 and loop.metrics()['pending'] > 0
+        ac5 = ac5 and all(len(attempts[name]) == (2 if name in failures else 1) for name in enabled)
+        attributed = [row.get('stopped_consumer') for row in loop.observations
+                      if row['outcome'] == 'unknown_outcome']
+        ac5 = ac5 and all(attributed.count(name) == 2 for name in failures)
+        blocked.clear()
+        recovered = loop.run_once(timeout=0)
+        ac5 = ac5 and recovered is not None and recovered['outcome'] == 'delivered'
+        ac5 = ac5 and all(len(attempts[name]) == (3 if name in failures else 1) for name in enabled)
+        ac5 = ac5 and all(len(received[name]) == 1 and
+                          received[name][0]['command_id'] == committed['command_id'] and
+                          received[name][0]['watermark'] == committed['seq'] and
+                          bool(received[name][0]['transition']) for name in enabled)
+        ac5 = ac5 and loop.metrics()['pending'] == 0 and loop.run_once(timeout=0) is None
+        ac5 = ac5 and 'private subscriber failure' not in _n46_json.dumps(loop.observations)
+        # A temporarily unreadable journal cannot discard a pending subscriber retry.
+        blocked.update(failures)
+        queued = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+        loop.run_once(timeout=0)
+        loop.path = str(directory / 'temporarily-unavailable.sqlite3')
+        unavailable_retry = loop.run_once(timeout=0)
+        ac5 = ac5 and unavailable_retry is not None and unavailable_retry['outcome'] == 'service_unavailable'
+        ac5 = ac5 and loop.metrics()['pending'] > 0
+        loop.path = str(path)
+        # Persistent failure rotates behind other committed events instead of starving them.
+        later = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+        loop.run_once(timeout=0)
+        loop.run_once(timeout=0)
+        ac5 = ac5 and all(later['command_id'] in attempts[name] for name in enabled)
+        blocked.clear()
+        for _ in range(2):
+            loop.run_once(timeout=0)
+        ac5 = ac5 and loop.metrics()['pending'] == 0
+        ac5 = ac5 and all([event['command_id'] for event in received[name]] ==
+                          [committed['command_id'], queued['command_id'], later['command_id']]
+                          for name in enabled)
+        loop.close()
     service.close()
     writer.close()
-    return ac1, ac2, ac3, ac4
+    return ac1, ac2, ac3, ac4, ac5
 
 
 _n46_started = _n46_time.monotonic()
 with _n46_tempfile.TemporaryDirectory(prefix='v46-') as _n46_dir:
     _n46_results = _n46_checks(_n46_Path(_n46_dir))
-for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range'), _n46_results):
+for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range', 'subscriber-isolation'), _n46_results):
     expect('VELDO-0046 notify/' + _n46_name, _n46_result)
 print('VELDO-0046 suite seconds: %.3f' % (_n46_time.monotonic() - _n46_started))

@@ -20,7 +20,8 @@ and exact sequence watermark before selecting handlers from stored event kinds. 
 payloads grant no authority. Handlers receive independent copies of the resolved event
 and retain responsibility for their own domain authorization checks. Reservation records
 also wake budget subscribers. Ordinary unavailable-store and handler-failure outcomes
-are named; a failed handler is `unknown_outcome`, never success or automatic retry.
+are named; a failed handler is `unknown_outcome`, retained for a later subscriber-specific
+retry (see the F02 review fix below).
 
 Registrations cover settlement, assignment, dependency, completion and budget. Intake
 and PM are optional explicit subscribers; PM observes the five core kinds and intake.
@@ -113,3 +114,32 @@ boolean and string inputs and confirms the valid maximum reaches journal lookup
 (`missing_evidence`). The registered `notify-unbounded-watermark` mutation restores
 F01; `notify-reject-valid-max-watermark` introduces a different boundary defect.
 Both fail this named assertion, with exact diffs retained beside this README.
+
+## Review fixes: F02 subscriber isolation
+
+The F02 capsule reproduced at `c645167`: settlement raised, PM received nothing, and
+pending work was zero. Before fixing dispatch, `notify/subscriber-isolation` failed its
+assertion. The final regression row was also run against the exact module bytes read
+with `git show c645167:.veldo/control_notify.py`; both F01 and F02 assertions were RED,
+with no worker exception. `F02-tests.json` retains all observations and the source digest.
+
+Each queue entry now retains its remaining subscribers. Dispatch records each failed
+handler by `stopped_consumer`, attempts all other subscribers, then appends only failed
+recipients to the queue for a later `run_once`. The aggregate receipt identifies
+`failed_consumers` and successful `consumers`; any failure remains `unknown_outcome`.
+Retries resolve the journal again, retain pending recipients through read failures,
+and rotate behind queued events. Healthy subscribers are not retried. Retry pacing is
+the caller's responsibility; callbacks must tolerate a retry after acting and raising.
+This is in-process retention, not crash recovery or durable replay.
+
+The row drives the capsule, reversed registration order, two failing subscribers,
+repeated failures followed by recovery, temporary store unavailability, and later
+commits during failure. Each subscriber ultimately receives each committed identity
+once successfully. Exception text stays out of observations, and callbacks still get
+independent journal-derived payloads. The targeted suite passes 31 assertions.
+
+`notify-stop-after-handler-failure` reintroduces the original early return and lost work;
+`notify-retry-successful-subscribers` independently retries healthy callbacks. Both
+registered mutations fail `notify/subscriber-isolation`. All ten VELDO-0046 mutations
+complete their assertions and are rejected. The four new diffs and per-finding test
+records are retained here; the original proof records above remain historical.

@@ -1,0 +1,5 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -161 +161 @@
+-                    self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)
++                    return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)

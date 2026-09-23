@@ -5,6 +5,9 @@ consumer names and real handlers. Use execute instead of calling the store direc
 other existing commit paths may notify with the returned journal identity AFTER commit.
 Each handler receives a freshly resolved journal event, not the supplied payload.
 The caller owns the event-loop thread and calls run_once (blocking while quiet).
+Failed handlers remain pending and retry on a later run_once; successful handlers
+are not retried. A handler can act before raising, so handlers must tolerate retries.
+The caller owns retry pacing. Pending work is in-memory, not crash recovery.
 
 Only the store writes domain state. Handlers still own their normal authorization
 checks. This module grants none. No replay, reconnect, crash recovery, durable cursor,
@@ -87,7 +90,7 @@ class Delivery:
         with self._condition:
             if self._closed:
                 return self._observe('notify', event, 'service_unavailable')
-            self._queue.append(event)
+            self._queue.append((event, None))
             self._condition.notify()
         return self._observe('notify', event, 'queued')
 
@@ -135,29 +138,43 @@ class Delivery:
         One loop owns dispatch. The queue predicate and signal use the same condition:
         an event before waiting stays queued; an event after waiting signals that wait.
         """
-        hint = self._take(timeout)
-        if hint is None:
+        work = self._take(timeout)
+        if work is None:
             return None
+        hint, remaining = work
         try:
             event = self.resolve(hint)
         except Refused as exc:
+            if remaining is not None:
+                self._retry(hint, remaining)
             return self._observe('consume', hint, exc.reason)
         kinds = {value['kind'] for value in event['transition'].values()}
         if event['reservations']:
             kinds.add('budget')
-        delivered = []
+        delivered, failed = [], []
         for consumer, subscriptions in self.registrations.items():
-            if kinds.intersection(subscriptions):
+            if kinds.intersection(subscriptions) and (remaining is None or consumer in remaining):
                 try:
                     # A handler may mutate its argument; the next handler still sees the journal.
                     self.handlers[consumer](json.loads(json.dumps(event)))
                 except Exception:
-                    return self._observe('consume', event, 'unknown_outcome',
-                                         delivered, consumer)
+                    self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)
+                    failed.append(consumer)
+                    continue
                 delivered.append(consumer)
-        return self._observe('consume', event, 'delivered', delivered)
+        if failed:
+            self._retry(hint, failed)
+        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',
+                             delivered, failed=failed)
 
-    def _observe(self, operation, event, outcome, delivered=(), stopped_consumer=None):
+    def _retry(self, hint, remaining):
+        # Only internal dispatch state chooses retry recipients; transport cannot skip one.
+        # Append behind other events so a failing subscriber cannot starve queued work.
+        with self._condition:
+            self._queue.append((hint, tuple(remaining)))
+            self._condition.notify()
+
+    def _observe(self, operation, event, outcome, delivered=(), stopped_consumer=None, failed=()):
         # Never log transport text, journal payload, principal or exception messages.
         # Coordinates/identities are included only when supplied by the trusted resolver.
         accepted = outcome in ('queued', 'delivered')
@@ -166,6 +183,8 @@ class Delivery:
         if outcome == 'delivered' or outcome == 'unknown_outcome':
             row.update({key: event[key] for key in IDENTITY})
             row['accepted_input_versions'] = event['after_versions']
+        if failed:
+            row['failed_consumers'] = list(failed)
         if stopped_consumer is not None:
             row['stopped_consumer'] = stopped_consumer
         with self._condition:
