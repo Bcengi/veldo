@@ -1,0 +1,8 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -314 +314,4 @@
+-                    rv = self._reviewer.review(spec, unit, calls=handle) or {}
++                    try:
++                        rv = self._reviewer.review(spec, unit, calls=handle) or {}
++                    except EL.Refused as inner:
++                        raise RuntimeError(inner.code)  # defect: the refusal escapes as an error

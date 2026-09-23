@@ -1,0 +1,7 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -209,3 +209 @@
+-        if _claims_a_repository(repo_root):
+-            raise Stopped('enrollment_unanswerable') from error
+-        return False
++        return False  # defect: any git error reads as not enrolled

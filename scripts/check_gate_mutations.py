@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Repository-only mutation gate. Every registered case executes fresh on every invocation.
 
-Workers see a frozen copy of scripts, .veldo and the proof corpus, never gate receipts.
+Workers see a frozen copy of the working tree Git does not ignore, never gate receipts.
 The source tree is read twice to reject races. Git history is cloned at the measured HEAD.
 All children inherit a fixed environment, no user Python site, and disabled bytecode.
 """
@@ -120,24 +120,47 @@ sys.exit(result.returncode)
 """
 
 
-def git(root, *args):
+def git_bytes(root, *args):
     return command([sys.executable, '-B', '-s', '-c', GIT_BRIDGE,
                     str(ROOT / '.veldo/git_process.py'), '-C', str(root), *args],
-                   fixed_env('/nonexistent')).decode().strip()
+                   fixed_env('/nonexistent'))
+
+
+def git(root, *args):
+    return git_bytes(root, *args).decode().strip()
 
 
 def read_inputs(root):
-    """Coarse input closure, including scripts/fixtures and untracked additions/deletions."""
+    """THE INPUT CLOSURE: every file of the working tree Git does not ignore, tracked or untracked,
+    minus deleted files, bytecode caches and the gate's own outputs. Ignore rules are what Git applies
+    to this repository with no global configuration: .gitignore, info/exclude and a core.excludesFile
+    set in the repository's own config (the last two are local to this clone); a user's global ignore
+    file does not apply. An ignored file (local configuration such as
+    .veldo/trackers.json, caches) is machine-local and is NOT an input: the gate judges the
+    repository, not the host. The snapshot the workers run in holds exactly this closure: a hand
+    list of directories left out the front door bin/veldo, and a row that runs it passed in the
+    checkout and failed in every baseline in the snapshot. Names are read as raw bytes (NUL
+    separated, decoded with the file system encoding), so no name is trimmed or undecodable."""
+    listed = git_bytes(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard')
     files = {}
-    for directory in ('.veldo', 'engine/.veldo', 'scripts', 'proof'):
-        for path in sorted((root / directory).rglob('*')):
-            rel = path.relative_to(root).as_posix()
-            if rel in OUTPUTS or '__pycache__' in path.parts:
-                continue
-            if path.is_symlink():
-                raise Refused('driver_error', 'symlink input: ' + rel)
-            if path.is_file():
+    top = os.path.realpath(root)
+    for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
+        path = root / rel
+        if rel.endswith('/'):
+            # Git lists an untracked nested repository as a directory and never its files.
+            raise Refused('driver_error', 'nested repository in the input closure: ' + rel)
+        if rel in OUTPUTS or '__pycache__' in Path(rel).parts:
+            continue
+        if path.is_symlink() or (os.path.lexists(path)
+                                 and os.path.realpath(path) != os.path.join(top, rel)):
+            # A link as the file, or as ANY directory above it, would copy a file the checkout
+            # only points at.
+            raise Refused('driver_error', 'symlink input: ' + rel)
+        if path.is_file():
+            try:
                 files[rel] = (path.stat().st_mode & 0o777, path.read_bytes())
+            except OSError as error:
+                raise Refused('driver_error', 'unreadable input: ' + rel) from error
     return files
 
 

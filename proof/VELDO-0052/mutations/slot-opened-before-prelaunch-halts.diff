@@ -1,0 +1,4 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -273,0 +274 @@
++            self._calls.open_dispatch(sid, context=context)  # defect: reserved before the halts, never retired

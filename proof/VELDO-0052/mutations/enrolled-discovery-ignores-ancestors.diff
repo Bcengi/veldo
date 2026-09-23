@@ -1,0 +1,7 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -187,3 +187 @@
+-        parent = os.path.dirname(current)
+-        if parent == current:
+-            return False
++        return False  # defect: discovery looks only at the directory it was given

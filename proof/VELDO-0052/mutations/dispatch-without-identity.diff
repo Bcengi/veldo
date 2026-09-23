@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -744 +744 @@
+-        dispatch = self.open_dispatch(unit, context=context)
++        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved

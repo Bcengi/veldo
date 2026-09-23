@@ -86,6 +86,9 @@ _FILES = [
     # Runtime assets; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_snapshot.py",
     ".veldo/control_readset.py",
+    # VELDO-0052: the shared floor eligibility service executor.py, plan.py and work_state.py load
+    # (with frontier, work and dispatch); a runtime asset, no validator import, not substrate.
+    ".veldo/control_eligibility.py",
     # VELDO-0031: authority claim receiver and caller, not loaded by validators.
     ".veldo/control_claim.py",
     ".veldo/control_claim_client.py",

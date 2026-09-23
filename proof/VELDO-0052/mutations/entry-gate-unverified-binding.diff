@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -336 +336 @@
+-    if problems:
++    if False:  # defect: a binding that does not verify still builds a Gate
