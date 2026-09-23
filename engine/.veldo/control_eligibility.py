@@ -157,10 +157,18 @@ UNEXPECTED_MESSAGE_LIMIT = 160
 def unexpected(error):
     """The named refusal for a fault nothing anticipated while deciding one unit (VELDO-0054): its
     outcome is unknown, so it refuses that unit by name and never raises into the caller's loop. It
-    carries the fault's type and its message, on one line, ASCII only and bounded in length."""
+    carries the fault's type and its message: on one line, ASCII only, every control character shown
+    as an escape, no ';' (the separator refusal lists are joined with), bounded in length, and
+    '<unprintable>' when the exception's own text raises."""
     code = 'unknown_outcome:evaluation_error/' + type(error).__name__
-    message = ' '.join(str(error).split())
-    message = message.encode('ascii', 'backslashreplace').decode('ascii')[:UNEXPECTED_MESSAGE_LIMIT]
+    try:
+        text = str(error)
+    except Exception:  # noqa: BLE001 - an exception whose own text raises is still named
+        text = '<unprintable>'
+    message = ' '.join(text.split()).replace(';', ',')
+    message = message.encode('ascii', 'backslashreplace').decode('ascii')
+    message = ''.join('\\x%02x' % ord(c) if ord(c) < 32 or ord(c) == 127 else c for c in message)
+    message = message[:UNEXPECTED_MESSAGE_LIMIT]
     return code + '/' + message if message else code
 
 

@@ -914,11 +914,23 @@ def _v54_suite():
             observed['unexpected_messages'] = {k: (v[0], [c[:100] for c in v[1]] if v[0] == 'ok' else v[1])
                                                for k, v in messages.items()}
             long_codes = messages['long'][1] if messages['long'][0] == 'ok' else []
+            class Unprintable(Exception):
+                def __str__(self):
+                    raise ZeroDivisionError('no text')
+            harsh = {'control': faulting(RuntimeError('\x1b[2J\x07 fault\x00tail\x7f')),
+                     'separator': faulting(RuntimeError('a; unsigned_decision:decision:D-9401')),
+                     'unprintable': faulting(Unprintable())}
+            for name, g in harsh.items():
+                messages[name] = outcome(lambda g=g: g.decide('selection', 'VELDO-9401')['refusals'])
+            observed['unexpected_messages'].update({k: messages[k] for k in harsh})
+            prefix = 'unknown_outcome:evaluation_error/RuntimeError/'
             check('decisions/unexpected-message',
-                   messages['short'] == ('ok', ['unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named'])
+                   messages['short'] == ('ok', [prefix + 'a verifier fault nobody named'])
                    and messages['short_blockers'] == messages['short']
-                   and len(long_codes) == 1 and long_codes[0].startswith('unknown_outcome:evaluation_error/RuntimeError/xxx')
-                   and len(long_codes[0]) <= 256)
+                   and long_codes == [prefix + 'x' * 160]
+                   and messages['control'] == ('ok', [prefix + '\\x1b[2J\\x07 fault\\x00tail\\x7f'])
+                   and messages['separator'] == ('ok', [prefix + 'a, unsigned_decision:decision:D-9401'])
+                   and messages['unprintable'] == ('ok', ['unknown_outcome:evaluation_error/Unprintable/<unprintable>']))
 
         with region('decisions/status-names-its-stop'):
             # veldo status names a burn-down it cannot build instead of crashing the whole read model. The

@@ -1093,10 +1093,10 @@ def cases():
     decisions('unexpected-message-dropped', 'control_eligibility.py',
               "    return code + '/' + message if message else code\n", "    return code\n", 'unexpected-message')
     decisions('unexpected-message-unbounded', 'control_eligibility.py',
-              "    message = message.encode('ascii', 'backslashreplace').decode('ascii')[:UNEXPECTED_MESSAGE_LIMIT]\n",
-              "    message = message.encode('ascii', 'backslashreplace').decode('ascii')\n", 'unexpected-message')
+              "    message = message[:UNEXPECTED_MESSAGE_LIMIT]\n", "", 'unexpected-message')
     decisions('unexpected-message-multiline', 'control_eligibility.py',
-              "    message = ' '.join(str(error).split())\n", "    message = str(error)\n", 'unexpected-message')
+              "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = text.replace(';', ',')\n",
+              'unexpected-message')
     # VELDO-0054 review 5, item 1: what reaches the verifier is bounded.
     decisions('signer-unbounded', 'control_decision_dependency.py',
               "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
@@ -1106,6 +1106,16 @@ def cases():
               "        return len(text) <= SIGNER_LIMIT\n", 'verifier-input-bounded')
     decisions('signature-unbounded', 'control_decision_dependency.py',
               "    return len(text) <= SIGNATURE_LIMIT\n", "    return True\n", 'verifier-input-bounded')
+    # Item 2: an unexpected fault's message is plain, separator-free and always obtainable.
+    decisions('unexpected-controls-kept', 'control_eligibility.py',
+              "    message = ''.join('\\\\x%02x' % ord(c) if ord(c) < 32 or ord(c) == 127 else c for c in message)\n",
+              "", 'unexpected-message')
+    decisions('unexpected-separator-kept', 'control_eligibility.py',
+              "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = ' '.join(text.split())\n",
+              'unexpected-message')
+    decisions('unexpected-str-unguarded', 'control_eligibility.py',
+              "    try:\n        text = str(error)\n    except Exception:  # noqa: BLE001 - an exception whose own text raises is still named\n"
+              "        text = '<unprintable>'\n", "    text = str(error)\n", 'unexpected-message')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
