@@ -42,7 +42,12 @@
    "suite_executions": 48,
    "wall_seconds": 277.5
   },
-  "note": "serial driver: each case runs one honest and one mutant full suite"
+  "note": "serial driver: each case runs one honest and one mutant full suite",
+  "after_second_review": {
+   "cases": 33,
+   "suite_executions": 66,
+   "wall_seconds": 527.26
+  }
  },
  "limit_seconds_for_suite_rows": 60,
  "gate_mutation_stage": {
@@ -55,5 +60,24 @@
   "finding_43_mutant_workers": 24,
   "finding_43_mutant_worker_seconds": 143.6,
   "note": "load average about 9 to 12 from other agents during the run"
+ },
+ "suite_runs_after_second_review": {
+  "commit": "d8bbe69",
+  "rows": 19,
+  "assertions": 45,
+  "suite_seconds": [
+   7.8,
+   7.76,
+   7.59
+  ]
+ },
+ "gate_mutation_stage_after_second_review": {
+  "registered": 271,
+  "status": "passed",
+  "elapsed_seconds": 218.73,
+  "budget_seconds": 542.0,
+  "finding_43_mutant_workers": 33,
+  "finding_43_mutant_worker_seconds": 310.6,
+  "note": "load average 14 to 23 from other agents during the run"
  }
 }

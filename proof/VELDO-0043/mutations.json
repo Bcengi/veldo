@@ -28,18 +28,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -49,9 +63,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-06wzhoye/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -107,12 +130,27 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-c_7srfak/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-06wzhoye/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-c_7srfak/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-06wzhoye/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -162,18 +200,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -183,9 +235,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-yy0wx1e9/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -224,12 +285,27 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-cscl1mr4/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-yy0wx1e9/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-cscl1mr4/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-yy0wx1e9/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -279,18 +355,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -300,9 +390,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-zfvrt4mk/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -356,12 +455,27 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-ez8v01vq/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-zfvrt4mk/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-ez8v01vq/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-zfvrt4mk/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -412,18 +526,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -433,9 +561,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-2k_1ogq4/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -472,12 +609,27 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-yondiwzy/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-2k_1ogq4/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-yondiwzy/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-2k_1ogq4/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "TypeError",
     "FileNotFoundError"
@@ -528,18 +680,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -549,9 +715,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-83t_wm8e/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -588,12 +763,27 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-cqlhqqtu/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-83t_wm8e/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-cqlhqqtu/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-83t_wm8e/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "unknown_outcome",
     "unknown_outcome"
@@ -648,18 +838,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -669,9 +873,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/602229854cd293ad3b26277544764a3e7bfa64e4feb5aeefe4a33d1590dec2f9.py",
+    "argv0": "/tmp/graph-43-22v4mmb_/stage-runtime/runners/d26c1c717b5fd8bcf00324b44ad6e18663ae7035bdc05ff510fed46416378342.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -697,7 +910,22 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {},
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -743,18 +971,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -764,9 +1006,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f6107c663e090b2f53e556a6ab645fa3e97c7daafc626046325991d2b3468cd4.py",
+    "argv0": "/tmp/graph-43-4tddhi5v/stage-runtime/runners/25f10b202a186b612a64295d2fd83a26d8d399490fec8a67feae4e5ea9f2153d.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -794,12 +1045,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-tmf1yrh0/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-4tddhi5v/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-tmf1yrh0/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-4tddhi5v/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -827,6 +1093,7 @@
    "graph/boundary/no-store-handle",
    "graph/runtime/plain-data",
    "graph/runtime/tracing-off",
+   "graph/authority/stage-links",
    "graph/authority/no-direct-write",
    "graph/authority/typed-proposals-only"
   ],
@@ -853,18 +1120,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -874,9 +1155,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-d772na29/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -905,17 +1195,32 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-naqnb0pl/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-d772na29/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-naqnb0pl/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-d772na29/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-naqnb0pl/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-naqnb0pl/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-d772na29/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-d772na29/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -938,6 +1243,7 @@
    "graph/boundary/no-store-handle",
    "graph/runtime/plain-data",
    "graph/runtime/tracing-off",
+   "graph/authority/stage-links",
    "graph/authority/no-direct-write",
    "graph/authority/typed-proposals-only"
   ],
@@ -964,18 +1270,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -985,9 +1305,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-2z8i7yyj/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1016,17 +1345,32 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-wfuh6yhf/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-2z8i7yyj/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-wfuh6yhf/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-2z8i7yyj/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-wfuh6yhf/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-wfuh6yhf/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-2z8i7yyj/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-2z8i7yyj/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -1071,18 +1415,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1092,9 +1450,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/8fc5f8e52ffabbe31c6f688cdc21c83dcb4863fe8abdd9430de310374cc0fd0a.py",
+    "argv0": "/tmp/graph-43-v6hvs2wf/stage-runtime/runners/26c364b4e04cbf64930ded7482cf02ffc49af92fe63c6692abe863f70b13b2da.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1123,12 +1490,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-rqn2ng0e/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-v6hvs2wf/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-rqn2ng0e/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-v6hvs2wf/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1180,18 +1562,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1201,9 +1597,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-1oy6xugm/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1232,12 +1637,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-m2l803hq/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-1oy6xugm/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-m2l803hq/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-1oy6xugm/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1256,7 +1676,7 @@
    "untyped_proposal_answer": {
     "command_id": "command-u",
     "cycle_id": "cycle-u",
-    "domain_uuid": "domain-0592ef651a5e",
+    "domain_uuid": "domain-addd821fb8a1",
     "operation": "start",
     "outcome": "proposal",
     "proposals": [
@@ -1305,18 +1725,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1326,9 +1760,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-fvq_umqc/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1359,12 +1802,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-yjdd69ft/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-fvq_umqc/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-yjdd69ft/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-fvq_umqc/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1414,18 +1872,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1435,9 +1907,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-mdxyyqsq/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1468,12 +1949,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-__tb1nak/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-mdxyyqsq/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-__tb1nak/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-mdxyyqsq/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1523,18 +2019,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1544,9 +2054,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "RecursionError",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests too deeply to parse",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-py5x5cxa/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1575,12 +2094,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-3fs_vbda/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-py5x5cxa/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-3fs_vbda/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-py5x5cxa/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1630,18 +2164,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1651,9 +2199,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "ValueError",
+   "deep_answer": [
+    [
+     "ValueError",
+     "invalid_response"
+    ],
+    [
+     "",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-tvv_xv22/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1682,12 +2239,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-benbuy86/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-tvv_xv22/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-benbuy86/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-tvv_xv22/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1737,18 +2309,32 @@
     "accepted": "accepted",
     "digest-short": "accepted",
     "digest-uppercase": "accepted",
+    "division-slash": "path_in_request",
     "evidence-malformed": "accepted",
     "evidence-ok": "accepted",
     "evidence-path": "accepted",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "accepted",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "path_in_request",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "path_in_request"
    },
    "closed_response": {
@@ -1758,9 +2344,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-4euqqwfk/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1789,12 +2384,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-rfefq_yu/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-4euqqwfk/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-rfefq_yu/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-4euqqwfk/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1844,18 +2454,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "accepted",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "accepted",
+    "fullwidth-solidus": "accepted",
     "home-path-in-result": "accepted",
+    "http-path-in-notes": "accepted",
+    "http-then-path": "accepted",
+    "https-host-then-path": "accepted",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "accepted",
     "path-in-result": "accepted",
+    "percent-encoded": "accepted",
     "relative-path-in-result": "accepted",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "accepted",
+    "url-field-file": "accepted",
+    "url-field-no-host": "accepted",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1865,9 +2489,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-_x4o4esc/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1896,12 +2529,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-_1tsg0ih/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-_x4o4esc/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-_1tsg0ih/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-_x4o4esc/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -1951,18 +2599,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -1972,9 +2634,18 @@
     "resume-no-notes": "KeyError",
     "resume-open": "accepted"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-qttrybiq/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2003,12 +2674,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-8783fkcx/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-qttrybiq/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-8783fkcx/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-qttrybiq/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -2059,18 +2745,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "accepted",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -2080,9 +2780,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-rea2_pbj/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2111,12 +2820,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-wyrq0jak/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-rea2_pbj/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-wyrq0jak/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-rea2_pbj/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -2166,18 +2890,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -2187,9 +2925,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/c7a95d85903c78c16b590eacfb722b169418ad99b2000ab5bbe51bb74447fccb.py",
+    "argv0": "/tmp/graph-43-h3a0xnr3/stage-runtime/runners/14495b513f2a03275d8b41b8a942168270788ba41152da12a4e3813b626d1316.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2218,12 +2965,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-dc3hqon8/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-h3a0xnr3/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-dc3hqon8/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-h3a0xnr3/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -2271,18 +3033,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -2292,9 +3068,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-m5z7pxcn/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2323,12 +3108,27 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-vrnfk3ke/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-m5z7pxcn/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-vrnfk3ke/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-m5z7pxcn/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
@@ -2353,8 +3153,8 @@
   "module": "control_graph.py",
   "mutation": "graph-runner-launched-in-place",
   "red_rows": [
-   "graph/runtime/plain-data",
-   "graph/runtime/tracing-off",
+   "graph/runtime/pyvenv-clean",
+   "graph/authority/stage-links",
    "graph/authority/no-direct-write",
    "graph/authority/typed-proposals-only"
   ],
@@ -2381,18 +3181,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -2402,9 +3216,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-9o8f2xqw/domain-checkout/.veldo/control_graph_langgraph.py",
+    "argv0": "/tmp/graph-43-nifkjw54/domain-checkout/.veldo/control_graph_langgraph.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2433,17 +3256,48 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-9o8f2xqw/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-nifkjw54/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-9o8f2xqw/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-nifkjw54/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable (other)",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "registration": "FileNotFoundError",
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "command_id": "command-after-w",
+     "cycle_id": "cycle-after-w",
+     "domain_uuid": "domain-f2f37f33053f",
+     "operation": "start",
+     "outcome": "suspended",
+     "repository_uuid": "repository",
+     "resume": {
+      "notes": "{\"wrote\":0}",
+      "position": "only",
+      "step": 1
+     },
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     },
+     "schema": "veldo.graph/v1"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-9o8f2xqw/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-9o8f2xqw/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-nifkjw54/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-nifkjw54/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -2460,12 +3314,9 @@
   }
  },
  {
-  "module": "control_graph_langgraph.py",
-  "mutation": "graph-suspended-notes-dropped",
+  "module": "control_graph.py",
+  "mutation": "graph-proc-closed-by-nondumpable",
   "red_rows": [
-   "graph/runtime/lifecycle",
-   "graph/runtime/plain-data",
-   "graph/authority/no-direct-write",
    "graph/authority/proc-limit"
   ],
   "target_red": true,
@@ -2491,18 +3342,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -2512,9 +3377,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/0c48c782d5cafe8089d769e8c74fdd493a0c3216d318f26677e1eb632e9f3d6e.py",
+    "argv0": "/tmp/graph-43-8u5y50az/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2537,32 +3411,38 @@
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
     },
     {
-     "command_id": "command-f-foreign-in-notes",
-     "cycle_id": "cycle-f-foreign-in-notes",
-     "domain_uuid": "domain-38441304c2d7",
-     "operation": "start",
-     "outcome": "suspended",
-     "repository_uuid": "repository",
-     "resume": {
-      "notes": "{}",
-      "position": "only",
-      "step": 1
-     },
-     "runtime": {
-      "name": "langgraph",
-      "version": "1.2.12"
-     },
-     "schema": "veldo.graph/v1"
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
-   "proc_limit": {},
+   "proc_limit": {
+    "parent_cwd": "PermissionError",
+    "parent_store_descriptors": [
+     "PermissionError"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{}",
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -2579,18 +3459,14 @@
   }
  },
  {
-  "module": "control_graph_langgraph.py",
-  "mutation": "graph-node-notes-ignored",
+  "module": "control_graph.py",
+  "mutation": "graph-stage-links-unchecked",
   "red_rows": [
-   "graph/runtime/lifecycle",
-   "graph/runtime/plain-data",
-   "graph/runtime/tracing-off",
-   "graph/authority/no-direct-write",
-   "graph/authority/proc-limit"
+   "graph/authority/stage-links"
   ],
   "target_red": true,
   "target_rows": [
-   "graph/authority/proc-limit"
+   "graph/authority/stage-links"
   ],
   "why": {
    "assertion_answers": {
@@ -2611,18 +3487,32 @@
     "accepted": "accepted",
     "digest-short": "invalid_input",
     "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
     "evidence-malformed": "invalid_response",
     "evidence-ok": "accepted",
     "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
     "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
     "path-in-notes": "path_in_request",
     "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
     "relative-path-in-result": "path_in_request",
     "result-bad-digest": "invalid_input",
     "result-unversioned": "invalid_input",
     "resume-notes-object": "invalid_input",
     "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
     "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
     "workflow-digest-relative": "invalid_input"
    },
    "closed_response": {
@@ -2632,9 +3522,18 @@
     "resume-no-notes": "invalid_response",
     "resume-open": "invalid_response"
    },
-   "deep_answer": "invalid_response",
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
    "first_runner_audit": {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/e52601fe5794803d1934dfba3ad60416ba57c02a820084b0dc88e25a773b8050.py",
+    "argv0": "/tmp/graph-43-m88vsl4u/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2657,37 +3556,1363 @@
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
     },
     {
-     "command_id": "command-f-foreign-in-notes",
-     "cycle_id": "cycle-f-foreign-in-notes",
-     "domain_uuid": "domain-51274fc2732f",
-     "operation": "start",
-     "outcome": "suspended",
-     "repository_uuid": "repository",
-     "resume": {
-      "notes": "{}",
-      "position": "only",
-      "step": 1
-     },
-     "runtime": {
-      "name": "langgraph",
-      "version": "1.2.12"
-     },
-     "schema": "veldo.graph/v1"
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
     }
    ],
    "isolation_failed_entries": [],
-   "proc_limit": {},
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-m88vsl4u/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-m88vsl4u/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
    "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [
+     "6d1592fbb1b8a1c278d44aa0267001d40e24f86d8e58beabcb06cefa8ea70ed9.py",
+     "veldo-graph-otm1nloa"
+    ],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{}",
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": true,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
-    null,
-    null
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-stage-link-checks-off",
+  "red_rows": [
+   "graph/authority/stage-links"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-links"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-14w45rnx/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-14w45rnx/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-14w45rnx/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [
+     "6d1592fbb1b8a1c278d44aa0267001d40e24f86d8e58beabcb06cefa8ea70ed9.py",
+     "veldo-graph-qwvpryad"
+    ],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-pyvenv-unchecked",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-kv634ns9/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-kv634ns9/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-kv634ns9/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "launched: suspended",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-pyvenv-command-ignored",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-c0rjm7on/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-c0rjm7on/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-c0rjm7on/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "launched: suspended",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-repository-judged-resolved-only",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-twoea3jc/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-twoea3jc/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-twoea3jc/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "launched: suspended",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-answer-utf16-unguarded",
+  "red_rows": [
+   "graph/shape/deep-answer"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/deep-answer"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "RecursionError"
+    ],
+    [
+     "answer nests deeper than 32",
+     ""
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-t78d7v9u/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-t78d7v9u/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-t78d7v9u/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-url-field-trusted",
+  "red_rows": [
+   "graph/shape/closed-request"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/closed-request"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "accepted",
+    "url-field-no-host": "accepted",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-hee1wqv7/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-hee1wqv7/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-hee1wqv7/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-request-size-unbounded",
+  "red_rows": [
+   "graph/shape/closed-request"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/shape/closed-request"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "accepted",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-qxxa3hqh/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-qxxa3hqh/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-qxxa3hqh/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-child-shares-session",
+  "red_rows": [
+   "graph/boundary/process-group"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/boundary/process-group"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-uzsyk8gz/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-uzsyk8gz/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-uzsyk8gz/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": [
+     "orphan-exit",
+     "orphan-timeout"
+    ]
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-group-kept-on-exit",
+  "red_rows": [
+   "graph/boundary/process-group"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/boundary/process-group"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-jcdc4acb/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-jcdc4acb/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-jcdc4acb/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": [
+     "orphan-exit"
+    ]
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "runners": {
+     "refused": "runtime_unavailable"
+    },
+    "work": {
+     "refused": "runtime_unavailable"
+    }
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
    ],
    "untyped_proposal_answer": {
     "refused": "invalid_response"

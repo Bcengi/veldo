@@ -24,18 +24,32 @@
   "accepted": "accepted",
   "digest-short": "invalid_input",
   "digest-uppercase": "invalid_input",
+  "division-slash": "path_in_request",
   "evidence-malformed": "invalid_response",
   "evidence-ok": "accepted",
   "evidence-path": "invalid_response",
+  "file-url": "path_in_request",
+  "fullwidth-solidus": "path_in_request",
   "home-path-in-result": "path_in_request",
+  "http-path-in-notes": "path_in_request",
+  "http-then-path": "path_in_request",
+  "https-host-then-path": "path_in_request",
+  "identifier-control": "invalid_input",
+  "identifier-dots": "invalid_input",
   "path-in-notes": "path_in_request",
   "path-in-result": "path_in_request",
+  "percent-encoded": "path_in_request",
   "relative-path-in-result": "path_in_request",
   "result-bad-digest": "invalid_input",
   "result-unversioned": "invalid_input",
   "resume-notes-object": "invalid_input",
   "resume-open": "invalid_input",
+  "self-referential": "invalid_input",
   "snapshot-digest-path": "invalid_input",
+  "two-megabytes": "invalid_input",
+  "unbounded-scheme": "path_in_request",
+  "url-field-file": "path_in_request",
+  "url-field-no-host": "path_in_request",
   "workflow-digest-relative": "invalid_input"
  },
  "closed_response": {
@@ -45,8 +59,17 @@
   "resume-no-notes": "invalid_response",
   "resume-open": "invalid_response"
  },
- "deep_answer": "invalid_response",
- "elapsed_seconds": 5.555990026099607,
+ "deep_answer": [
+  [
+   "invalid_response",
+   "invalid_response"
+  ],
+  [
+   "answer nests deeper than 32",
+   "not one JSON document"
+  ]
+ ],
+ "elapsed_seconds": 7.850833402946591,
  "isolated": {
   "returncode": 0,
   "verdict": {
@@ -197,15 +220,20 @@
     }
    ],
    "passed": true,
-   "root": "/tmp/graph-43-ckj3h3_t/installed",
+   "root": "/tmp/graph-43-7c830v0b/installed",
    "schema": "veldo.isolated_enforcement/v1"
   }
+ },
+ "process_group": {
+  "orphan-exit": "suspended",
+  "orphan-timeout": "unknown_outcome",
+  "outlived": []
  },
  "runtime": {
   "advanced": {
    "command_id": "command-r3",
    "cycle_id": "cycle-r1",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "operation": "advance",
    "outcome": "proposal",
    "proposals": [
@@ -227,7 +255,7 @@
    "assert-admission": {
     "command_id": "command-assert-admission",
     "cycle_id": "cycle-assert-admission",
-    "domain_uuid": "domain-1460c9e3f408",
+    "domain_uuid": "domain-9764a64254b7",
     "failure": {
      "code": "node_failed",
      "detail": "only returned an untyped assertion: admitted"
@@ -244,7 +272,7 @@
    "assert-completion": {
     "command_id": "command-assert-completion",
     "cycle_id": "cycle-assert-completion",
-    "domain_uuid": "domain-1460c9e3f408",
+    "domain_uuid": "domain-9764a64254b7",
     "failure": {
      "code": "node_failed",
      "detail": "only returned an untyped assertion: shipped"
@@ -261,7 +289,7 @@
    "assert-priority": {
     "command_id": "command-assert-priority",
     "cycle_id": "cycle-assert-priority",
-    "domain_uuid": "domain-1460c9e3f408",
+    "domain_uuid": "domain-9764a64254b7",
     "failure": {
      "code": "node_failed",
      "detail": "only returned an untyped assertion: priority"
@@ -278,7 +306,7 @@
   },
   "audits": [
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -292,7 +320,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -306,7 +334,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -320,7 +348,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -334,7 +362,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -348,7 +376,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -362,7 +390,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -376,7 +404,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -390,7 +418,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -404,7 +432,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -418,7 +446,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -432,7 +460,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -446,7 +474,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -460,7 +488,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -474,7 +502,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -488,7 +516,7 @@
     "tracing": false
    },
    {
-    "argv0": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/veldo/runners/f5a34db611bd1826b64d450c33bbb368774f19e31672a7ad30c025f051c689a1.py",
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -500,12 +528,42 @@
      "LANGSMITH_TRACING_V2": "false"
     },
     "tracing": false
-   }
+   },
+   {
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   null,
+   {
+    "argv0": "/tmp/graph-43-7c830v0b/stage-runtime/runners/7a2d09f052ce876a6c3542106585520c49d59ae0e3687a78b590aa0645c7b778.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   null
   ],
   "canceled": {
    "command_id": "command-r5",
    "cycle_id": "cycle-r2",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "operation": "cancel",
    "outcome": "canceled",
    "repository_uuid": "repository",
@@ -519,7 +577,7 @@
   "failed": {
    "command_id": "command-r6",
    "cycle_id": "cycle-r3",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "failure": {
     "code": "missing_evidence",
     "detail": "no accepted evidence for unit-1"
@@ -537,7 +595,7 @@
    {
     "command_id": "command-f-foreign-command",
     "cycle_id": "cycle-f-foreign-command",
-    "domain_uuid": "domain-1460c9e3f408",
+    "domain_uuid": "domain-9764a64254b7",
     "failure": {
      "code": "node_failed",
      "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
@@ -554,7 +612,7 @@
    {
     "command_id": "command-f-foreign-snapshot",
     "cycle_id": "cycle-f-foreign-snapshot",
-    "domain_uuid": "domain-1460c9e3f408",
+    "domain_uuid": "domain-9764a64254b7",
     "failure": {
      "code": "node_failed",
      "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
@@ -571,7 +629,7 @@
    {
     "command_id": "command-f-foreign-in-notes",
     "cycle_id": "cycle-f-foreign-in-notes",
-    "domain_uuid": "domain-1460c9e3f408",
+    "domain_uuid": "domain-9764a64254b7",
     "failure": {
      "code": "node_failed",
      "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
@@ -589,7 +647,7 @@
   "held": {
    "command_id": "command-r2",
    "cycle_id": "cycle-r1",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "operation": "suspend",
    "outcome": "suspended",
    "repository_uuid": "repository",
@@ -622,9 +680,9 @@
    "step": 1
   },
   "proc_limit": {
-   "parent_cwd": "/tmp/graph-43-ckj3h3_t/domain-checkout",
+   "parent_cwd": "/tmp/graph-43-7c830v0b/domain-checkout",
    "parent_store_descriptors": [
-    "/tmp/graph-43-ckj3h3_t/authority-repository/.git/veldo/control/control.sqlite3"
+    "/tmp/graph-43-7c830v0b/authority-repository/.git/veldo/control/control.sqlite3"
    ]
   },
   "production": {
@@ -647,7 +705,7 @@
   "proposed": {
    "command_id": "command-store-2",
    "cycle_id": "cycle-store",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "operation": "advance",
    "outcome": "proposal",
    "proposals": [
@@ -666,15 +724,16 @@
    "schema": "veldo.graph/v1"
   },
   "python": "3.12",
+  "pyvenv": "runtime_unavailable",
   "reach": {
    "command_id": "command-proc",
    "cycle_id": "cycle-proc",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "operation": "start",
    "outcome": "suspended",
    "repository_uuid": "repository",
    "resume": {
-    "notes": "{\"parent_cwd\":\"/tmp/graph-43-ckj3h3_t/domain-checkout\",\"parent_store_descriptors\":[\"/tmp/graph-43-ckj3h3_t/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+    "notes": "{\"parent_cwd\":\"/tmp/graph-43-7c830v0b/domain-checkout\",\"parent_store_descriptors\":[\"/tmp/graph-43-7c830v0b/authority-repository/.git/veldo/control/control.sqlite3\"]}",
     "position": "only",
     "step": 1
    },
@@ -684,13 +743,22 @@
    },
    "schema": "veldo.graph/v1"
   },
-  "runner_processes": 16,
+  "runner_processes": 20,
   "runtime_directory": "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37",
   "stage_in_repository": "runtime_unavailable",
+  "stage_links": {
+   "checkout_written": [],
+   "runners": {
+    "refused": "runtime_unavailable"
+   },
+   "work": {
+    "refused": "runtime_unavailable"
+   }
+  },
   "started": {
    "command_id": "command-r1",
    "cycle_id": "cycle-r1",
-   "domain_uuid": "domain-1460c9e3f408",
+   "domain_uuid": "domain-9764a64254b7",
    "operation": "start",
    "outcome": "suspended",
    "repository_uuid": "repository",
