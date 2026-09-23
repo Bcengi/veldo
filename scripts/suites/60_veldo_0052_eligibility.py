@@ -36,6 +36,8 @@ def _v52_suite():
         'executor.py': ROOT / ".veldo" / "executor.py",
         'runstatus.py': ROOT / ".veldo" / "runstatus.py",
     }
+    # The front door the production-entry row runs as a real process in the enrolled fixture.
+    FRONT_DOOR = ROOT / "bin" / "veldo"
     FLOOR = ('frontier.py', 'work.py', 'plan.py', 'executor.py', 'dispatch.py', 'work_state.py',
              'control_eligibility.py')
 
@@ -957,6 +959,94 @@ def _v52_suite():
             observed['landed_offers'] = mine
             check('completion/landed-units-not-reoffered',
                    mine == {'VELDO-9163': 'build'} and gate.landed('VELDO-9161') and gate.landed('VELDO-9162'))
+
+        with region('eligibility/production-entries-build-the-gate'):
+            # Every command-line entry in an enrolled repository builds its Gate from the workspace's own
+            # signed enrollment binding, verified against what the HOST trusts (never a file the workspace
+            # carries), and then reaches the next named boundary instead of eligibility_required.
+            host = Path(directory) / 'host'
+            (host / 'veldo').mkdir(parents=True)
+            key = host / 'enroll_key'
+            subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'dmitry', '-f', str(key)],
+                           check=True, capture_output=True)
+            key_type, key_blob = (host / 'enroll_key.pub').read_text().split()[:2]
+            signers = host / 'enrollment_signers'
+            signers.write_text('dmitry namespaces="veldo-enrollment" %s %s\n' % (key_type, key_blob))
+
+            def enrollment_sign(message):
+                return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', 'veldo-enrollment'],
+                                      input=message, capture_output=True, check=True).stdout.decode()
+
+            trust_file = host / 'veldo' / 'host_trust.json'
+            trust_file.write_text(json.dumps({'schema': 'veldo.host_trust/v1', 'host_identity': 'host-52',
+                                              'enrollment_signers': str(signers)}))
+            (Path(directory) / 'untrusted-host').mkdir()
+            GP.run(['git', '-C', str(base), 'commit', '-q', '--allow-empty', '-m', 'enrolled fixture'], check=True,
+                   capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+            EL.E.enroll(str(base), DOMAIN, 'store-52', str(db), 'host-52', 1, enrollment_sign, 'dmitry',
+                        '2026-09-23T00:00:00Z', repository_uuid=REPOSITORY)
+            binding = Path(EL.E.binding_path(str(base)))
+            (base / 'bin').mkdir(exist_ok=True)
+            shutil.copyfile(FRONT_DOOR, base / 'bin' / 'veldo')
+            text = base / 'specs' / 'VELDO-9102-fixture.md'
+            text.write_text(text.read_text().replace('status: ready', 'status: shipped'))
+            env = {k: v for k, v in os.environ.items() if not k.startswith(('VELDO_', 'GIT_'))}
+            commands = {
+                'executor': [sys.executable, '-B', str(mods / 'executor.py'), 'VELDO-9106'],
+                'plan': [sys.executable, '-B', str(mods / 'plan.py'), 'run-check', plan_path, 'VELDO-9101'],
+                'work': [sys.executable, '-B', str(base / 'bin' / 'veldo'), 'work'],
+                'status': [sys.executable, '-B', str(mods / 'runstatus.py'), 'status', '--json'],
+                'untrusted': [sys.executable, '-B', str(mods / 'executor.py'), 'VELDO-9106'],
+            }
+            homes = dict.fromkeys(commands, str(host), ) | {'untrusted': str(Path(directory) / 'untrusted-host')}
+            try:
+                procs = {name: subprocess.Popen(argv, cwd=str(base), env=dict(env, XDG_CONFIG_HOME=homes[name]),
+                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                         for name, argv in commands.items()}
+                ran = {}
+                for name, proc in procs.items():
+                    out, err = proc.communicate(timeout=120)
+                    ran[name] = (proc.returncode, out, err)
+                trust = observe_effect(lambda: EL.load_host_trust(str(trust_file)))
+                built = observe_effect(lambda: EL.entry_gate(str(base), trust=trust[1]))
+                decided = (observe_effect(lambda: {s: built[1].decide('selection', s)['refusals'] for s in ('VELDO-9101', 'VELDO-9106')})
+                           if built[0] == 'ok' else built)
+                genuine = binding.read_text()
+                forged = json.loads(genuine)
+                forged['domain_uuid'] = 'domain-elsewhere'
+                binding.write_text(json.dumps(forged))
+                tampered = observe_effect(lambda: EL.entry_gate(str(base), trust=trust[1]))
+                binding.write_text(genuine)
+                moved = observe_effect(lambda: EL.entry_gate(str(base), trust=EL.HostTrust('host-other', str(signers))))
+            finally:
+                for path in (binding, Path(EL.E.clone_uuid_path(str(base)))):
+                    if path.exists():
+                        path.unlink()
+                restore()
+
+            def said(name, words):
+                code, out, err = ran[name]
+                return words in out + err
+
+            try:
+                status_model = json.loads(ran['status'][1])
+            except ValueError:
+                status_model = {}
+            observed['production_entries'] = {name: {'exit': code, 'said': (out + err).strip().splitlines()[-1:]}
+                                              for name, (code, out, err) in ran.items()}
+            check('eligibility/production-entries-build-the-gate',
+                   ran['executor'][0] == 2 and said('executor', 'stopped: reservation_required')
+                   and ran['plan'][0] == 1 and said('plan', 'eligibility refused: missing_authority:admission')
+                   and ran['work'][0] == 2 and said('work', 'stopped: authority_required')
+                   and ran['status'][0] == 0 and 'burndown_stopped' not in status_model
+                   and [p_['shipped'] for p_ in status_model.get('burndown', [])] == [0]
+                   and ran['untrusted'][0] == 2 and said('untrusted', 'stopped: host_trust_required')
+                   and not any(said(name, 'eligibility_required') for name in ran)
+                   and decided == ('ok', {'VELDO-9101': ['missing_authority:admission'], 'VELDO-9106': []})
+                   and tampered == ('raised', 'Stopped:enrollment_refused:signature_invalid')
+                   and moved == ('raised', 'Stopped:enrollment_refused:host_binding_stale'))
+            if built[0] == 'ok':
+                built[1].conn.close()
 
         with region('eligibility/observations'):
             # Observability: every decision is recorded with identity, versions, outcome and taxonomy.

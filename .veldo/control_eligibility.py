@@ -23,19 +23,29 @@ landing receipt (completion_contract.landing_receipt_problems). A passing verdic
 or shipped status text never lands anything. completion_status() hands that answer to the status
 maps the frontier and plan readers already consume.
 
-ENABLEMENT. gate_for() is the one resolution every entry calls. An explicit Gate is used. A
+ENABLEMENT. gate_for() is the one resolution every library entry calls. An explicit Gate is used. A
 repository enrolled with the authority (VELDO-0029 binding) and no Gate wired STOPS with
 eligibility_required, exactly as claim.py stops with authority_required: an enabled floor entry
 cannot run without eligibility. An unenrolled tree keeps the pre-factory behavior unchanged.
 
-WHAT IT IS NOT. It writes nothing: only control_store commits, and the Gate reads inside one
-deferred read transaction. It holds no key, launches nothing itself (StationCalls hands launches to
-VELDO-0036's InvocationGuard, which reserves before launch), and implements no recovery, fencing or
+PRODUCTION CONSTRUCTION. entry_gate() is what every command-line entry calls (bin/veldo work and
+fleet, veldo_run, the executor, frontier, plan and status commands): in an enrolled repository it
+BUILDS the Gate from the workspace's own signed binding (domain, repository, store and authority
+generation), after verifying that binding against what this HOST trusts (HostTrust: its identity and
+the allowed signers of enrollment). A binding that does not verify, a host that trusts nothing, or a
+store that cannot be read is a named stop, never a Gate over coordinates nobody vouched for.
+
+WHAT IT IS NOT. The Gate writes nothing: it reads inside one deferred read transaction. The only
+writes on this path are the runner's own reservation commands (StationCalls.open_dispatch reserves a
+dispatch's worker slot, and each launch its call, through VELDO-0036's reservation service, which
+commits through control_store). It holds no key, launches nothing itself (StationCalls hands launches
+to VELDO-0036's InvocationGuard, which reserves before launch), and implements no recovery, fencing or
 clock qualification (Release 2). VELDO-0053's architecture checks and VELDO-0054's exact decision
 consumption attach to the same registrations. Standard library only.
 """
 import collections
 import importlib.util
+import json
 import os
 from pathlib import Path
 import sqlite3
@@ -109,7 +119,8 @@ TAXONOMY = {
     'missing_evidence': 'missing_evidence', 'reviewer_not_independent': 'missing_authority',
     'clock_uncertain': 'unknown_outcome', 'unavailable_service': 'unavailable_service',
     'eligibility_required': 'missing_authority', 'reservation_required': 'missing_authority',
-    'enrollment_unanswerable': 'unavailable_service',
+    'enrollment_unanswerable': 'unavailable_service', 'enrollment_refused': 'missing_authority',
+    'host_trust_required': 'missing_authority', 'host_trust_unreadable': 'invalid_input',
     'usage_cap': 'missing_authority', 'usage_refused': 'missing_authority', 'window_exhausted': 'missing_authority',
     'missing_ceiling': 'missing_authority', 'unknown_allowance': 'unknown_outcome', 'unknown_window': 'unknown_outcome',
     'unknown_window_usage': 'unknown_outcome',
@@ -200,6 +211,116 @@ def gate_for(repo_root, gate):
     return None
 
 
+# ---------------------------------------------------------------------------------------------
+# The production construction: a Gate built from the workspace's signed enrollment binding.
+# ---------------------------------------------------------------------------------------------
+
+# The OpenSSH signature namespace an enrollment binding is signed under (ssh-keygen -Y sign -n).
+ENROLLMENT_NAMESPACE = 'veldo-enrollment'
+HOST_TRUST_SCHEMA = 'veldo.host_trust/v1'
+
+
+class HostTrust:
+    """What THIS HOST trusts when it decides an enrollment binding: its own identity (the binding's
+    host_identity must equal it) and an OpenSSH allowed-signers file naming the principals whose
+    signature, under ENROLLMENT_NAMESPACE, makes a binding. These are VELDO-0029 verify_binding's
+    `host_identity` and `verify`. Installed with the host, outside every repository: a record the
+    checked workspace carries (its binding, its tracked .veldo/keys) cannot vouch for itself."""
+
+    def __init__(self, host_identity, enrollment_signers):
+        if not isinstance(host_identity, str) or not host_identity.strip() \
+                or not isinstance(enrollment_signers, str) or not enrollment_signers.strip():
+            raise Stopped('host_trust_unreadable')
+        self.host_identity, self.enrollment_signers = host_identity, enrollment_signers
+
+    def verifier(self, principal):
+        """verify(message, signature) -> bool for a binding enrolled by `principal`."""
+        try:
+            signers = Path(self.enrollment_signers).read_text()
+        except OSError as error:
+            raise Stopped('host_trust_unreadable') from error
+        AC = _organ('authority_contract')
+
+        def verify(message, signature):
+            if not isinstance(principal, str) or not principal.strip() or not isinstance(signature, str):
+                return False
+            return AC.ssh_keygen_verify(message, signature, signers, principal, ENROLLMENT_NAMESPACE)[0]
+        return verify
+
+
+def host_trust_path():
+    """Where this host's trust is installed: $XDG_CONFIG_HOME/veldo/host_trust.json, or
+    ~/.config/veldo/host_trust.json when XDG_CONFIG_HOME is unset or not absolute."""
+    base = os.environ.get('XDG_CONFIG_HOME') or ''
+    if not os.path.isabs(base):
+        base = os.path.join(os.path.expanduser('~'), '.config')
+    return os.path.join(base, 'veldo', 'host_trust.json')
+
+
+def load_host_trust(path=None):
+    """The installed HostTrust, None when this host has installed none, a named stop when what is
+    installed cannot be read as one."""
+    path = path or host_trust_path()
+    try:
+        with open(path) as handle:
+            text = handle.read()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        raise Stopped('host_trust_unreadable') from error
+    try:
+        record = json.loads(text)
+    except ValueError as error:
+        raise Stopped('host_trust_unreadable') from error
+    if not isinstance(record, dict) or record.get('schema') != HOST_TRUST_SCHEMA:
+        raise Stopped('host_trust_unreadable')
+    return HostTrust(record.get('host_identity'), record.get('enrollment_signers'))
+
+
+def enrolled_gate(repo_root, trust, observe=None):
+    """A Gate over the store the workspace's binding names, with the binding's domain, repository
+    and authority generation. The binding is read ONCE and that same record is verified
+    (control_enrollment.verify_binding: signature, repository identity, clone, host), so every
+    coordinate the Gate uses is one that verified; any problem is a named stop."""
+    workspace = str(repo_root)
+    try:
+        binding = E.read_binding(workspace)
+    except E.EnrollmentRefused as error:
+        raise Stopped('enrollment_refused:' + error.reason) from error
+    if binding is None:
+        raise Stopped('enrollment_refused:not_enrolled')
+    principal = binding.get('enrolled_by') if isinstance(binding, dict) else None
+    try:
+        problems = E.verify_binding(workspace, binding, trust.verifier(principal), trust.host_identity)
+    except E.EnrollmentRefused as error:
+        raise Stopped('enrollment_unanswerable') from error
+    if problems:
+        raise Stopped('enrollment_refused:' + problems[0][0])
+    store = _organ('control_store')
+    try:
+        conn = store.open_store(E.store_path_for(binding), mode='r')
+    except (store.StoreRefused, sqlite3.Error, OSError) as error:
+        raise Stopped('unavailable_service:store') from error
+    return Gate(store, conn, domain_uuid=binding['domain_uuid'], repository_uuid=binding['repository_uuid'],
+                authority_generation=binding['authority_generation'], observe=observe)
+
+
+def entry_gate(repo_root, gate=None, trust=None, observe=None):
+    """THE PRODUCTION CONSTRUCTION every command-line entry calls: the wired Gate when one is given;
+    None in an unenrolled tree (pre-factory behavior); in an enrolled repository, the Gate built from
+    its signed binding under this host's trust (the installed one unless `trust` is given), or the
+    named stop host_trust_required when this host trusts nothing."""
+    if gate is not None:
+        return gate
+    if not enrolled(repo_root):
+        return None
+    if trust is None:
+        trust = load_host_trust()
+    if trust is None:
+        raise Stopped('host_trust_required')
+    return enrolled_gate(repo_root, trust, observe=observe)
+
+
 def completion_status(gate, status):
     """A {spec: status} map in which 'shipped' means exactly revision_landed from the one completion
     reader. Status text says shipped only for a landed revision; everything else keeps its word, and
@@ -234,6 +355,10 @@ class Gate:
         # Diagnostics only, bounded: the durable log is the observe callback's sink.
         self.observations = collections.deque(maxlen=OBSERVATION_LIMIT)
         self.last = {}
+
+    def close(self):
+        """Close the read connection (a Gate the production construction opened owns it)."""
+        self.conn.close()
 
     # -- reads -----------------------------------------------------------------------------------
 

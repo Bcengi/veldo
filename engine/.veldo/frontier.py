@@ -346,7 +346,18 @@ def main(argv=None):
         scope["plan"] = args.plan
     if args.label:
         scope["label"] = args.label
-    units = claimable(worker_caps=caps, scope=scope or None)
+    try:
+        # VELDO-0052: an enrolled repository's frontier is decided by the Gate built from its signed
+        # binding; a named stop (no host trust, an unverified binding, the claim authority) is said.
+        gate = EL.entry_gate(ROOT)
+        units = claimable(worker_caps=caps, scope=scope or None, eligibility=gate)
+        held = withheld(scope=scope or None, eligibility=gate)
+    except EL.Stopped as stop:
+        sys.stderr.write("frontier stopped: %s\n" % stop.reason)
+        return 2
+    except CL.ClaimStopped as stop:
+        sys.stderr.write("frontier stopped: %s\n" % stop.reason)
+        return 2
     if args.json:
         print(json.dumps(units, indent=2))
     else:
@@ -361,7 +372,7 @@ def main(argv=None):
     refusal = contract_refusal()
     if refusal:
         sys.stderr.write("architecture contract REFUSED, nothing is claimable: %s\n" % refusal)
-    for h in withheld(scope=scope or None):
+    for h in held:
         sys.stderr.write("withheld %-12s waiting on %s\n"
                          % (h["spec"], ", ".join("%s (%s)" % (d, s) for d, s in h["unmet"])))
     return 0

@@ -688,7 +688,8 @@ def loop_respected(result):
     return True
 
 
-def veldo_run(spec_id, hooks, root=None, head=None, max_review_cycles=2, runlog=None):
+def veldo_run(spec_id, hooks, root=None, head=None, max_review_cycles=2, runlog=None,
+              eligibility=None, calls=None, context=None, trust=None):
     """veldo run <spec>: allocate an observed run in the WARP-0501 registry, drive
     the ready spec through the executor with the run observer ON, and return the
     receipt plus the run id.
@@ -702,11 +703,18 @@ def veldo_run(spec_id, hooks, root=None, head=None, max_review_cycles=2, runlog=
     wires a RunLogObserver, and drives the executor. If the loop raises before it
     can finish (for example a loop with no agent-backed build), the run is marked
     aborted with the error recorded so a crashed build never lingers as falsely
-    active, and the error is re-raised."""
+    active, and the error is re-raised.
+
+    VELDO-0052: the Gate is resolved BEFORE a run is allocated, through the production
+    construction (control_eligibility.entry_gate): in an enrolled repository it is built from the
+    workspace's signed binding, so a named stop leaves no run behind. calls (the runner's
+    StationCalls) and context (the claim holder) are what the build and review launches reserve
+    against."""
+    gate = _eligibility_organ().entry_gate(getattr(hooks, "root", ROOT), eligibility, trust)
     rl = runlog or _load_module("veldo_runlog_run", ".veldo/runlog.py")
     run_id = rl.start_run(spec_id, head=head, root=root)
     observer = RunLogObserver(run_id, root=root, runlog=rl)
-    ex = Executor(hooks, observer=observer)
+    ex = Executor(hooks, observer=observer, eligibility=gate, calls=calls, context=context)
     try:
         result = ex.run(spec_id, max_review_cycles=max_review_cycles)
     except BaseException as err:
@@ -835,13 +843,20 @@ def run_checkpoint_loop(run_id, steps, root=None, runlog=None):
 
 def _cli():
     import argparse
+    import sys
     ap = argparse.ArgumentParser(
         description="Drive a ready spec through the VELDO loop (LiveLoop reference).")
     ap.add_argument("spec_id", help="the spec id to drive, for example WARP-0401")
     ap.add_argument("--max-review-cycles", type=int, default=2)
     args = ap.parse_args()
-    ex = Executor(LiveLoop())
-    result = ex.run(args.spec_id, max_review_cycles=args.max_review_cycles)
+    EL = _eligibility_organ()
+    try:
+        # VELDO-0052: the Gate an enrolled repository's signed binding builds, or none when unenrolled.
+        ex = Executor(LiveLoop(), eligibility=EL.entry_gate(ROOT))
+        result = ex.run(args.spec_id, max_review_cycles=args.max_review_cycles)
+    except EL.Stopped as stop:
+        sys.stderr.write("executor stopped: %s\n" % stop.reason)
+        return 2
     print(json.dumps(result, indent=2))
     return 0 if result["state"] == "ready" else 1
 

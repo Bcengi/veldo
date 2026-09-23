@@ -202,6 +202,17 @@ def _project_event(ev):
     return out
 
 
+def production_eligibility(root=None):
+    """(gate, stop) for a production reader of this model (the status command and its served view):
+    the Gate control_eligibility.entry_gate builds, from an enrolled repository's signed binding or
+    none when unenrolled, or the named stop that construction ended in."""
+    EL = _load("veldo_runstatus_plan", ".veldo/plan.py").EL
+    try:
+        return EL.entry_gate(Path(root) if root else ROOT), None
+    except EL.Stopped as stop:
+        return None, stop.reason
+
+
 def _burndown_or_stop(root, eligibility, eligibility_stop):
     """(burndown, stop): the burn-down, or the named eligibility stop that prevented it. A stop is
     reported by name in the read model, never replaced by a burn-down read from status text, and
@@ -213,6 +224,17 @@ def _burndown_or_stop(root, eligibility, eligibility_stop):
         return _burndown(root, eligibility), None
     except EL.Stopped as stop:
         return [], stop.reason
+
+
+def production_status(root=None, **kwargs):
+    """The read model as the production readers show it: status() over the Gate
+    production_eligibility() builds, whose store connection is closed when the model is assembled."""
+    gate, stop = production_eligibility(root)
+    try:
+        return status(root=root, eligibility=gate, eligibility_stop=stop, **kwargs)
+    finally:
+        if gate is not None:
+            gate.close()
 
 
 def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
@@ -414,14 +436,14 @@ def _cli(argv=None):
             # the browser view and the CLI never show a second projection.
             srv = _load("veldo_runstatus_server", ".veldo/status_server.py")
             return srv.serve(port=args.port)
-        model = status()
+        model = production_status()
         print(json.dumps(model, indent=2) if args.json else render_text(model))
         return 0
     if args.cmd == "watch":
         if args.interval and args.interval > 0:
             try:
                 while True:
-                    model = status()
+                    model = production_status()
                     # clear screen + home cursor, then render; interruptible.
                     sys.stdout.write("\x1b[2J\x1b[H")
                     print(render_text(model))
@@ -430,7 +452,7 @@ def _cli(argv=None):
             except KeyboardInterrupt:
                 return 0
         else:
-            print(render_text(status()))
+            print(render_text(production_status()))
             return 0
     return 2
 

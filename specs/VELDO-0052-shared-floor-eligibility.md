@@ -40,6 +40,10 @@ footprint:
   - "packs/*/.veldo/control_eligibility*.py"
   - "engine/.veldo/runstatus.py"
   - ".veldo/runstatus.py"
+  - "engine/.veldo/status_server.py"
+  - ".veldo/status_server.py"
+  - "engine/bin/veldo"
+  - "bin/veldo"
   - "scripts/suites/*_veldo_0052_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -157,3 +161,10 @@ computed the plan burn-down from status text, so it counted as shipped what the 
 said had no landing receipt, and in an enrolled repository it answered where plan status stops. Its
 burn-down now reads plan status's own completion reader and reports the same named stop. No
 criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: bin/veldo, .veldo/status_server.py and their engine copies joined the
+footprint. No production entry built a Gate from the enrollment binding, so `veldo work`,
+`veldo fleet`, `veldo run`, the executor, frontier and plan commands and the status reader all
+stopped with eligibility_required in every enrolled repository and the floor could not run. Each now
+builds its Gate from the workspace's signed binding, verified against what the host trusts, and
+reaches its next named boundary. No criterion, status or evidence universe changed.

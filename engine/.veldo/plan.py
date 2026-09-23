@@ -352,36 +352,49 @@ def cmd_run_check(arg, spec_id, eligibility=None):
 
 
 def main():
+    """Every mode reads through the Gate the production construction builds (VELDO-0052): the wired
+    one, none in an unenrolled tree, or the one built from an enrolled repository's signed binding;
+    a named stop is printed and exits 2."""
+    if sys.argv[1:2] == ["hash"]:
+        return _main(None)  # a plan's hash reads no completion
+    try:
+        return _main(EL.entry_gate(ROOT))
+    except EL.Stopped as stop:
+        print(f"plan stopped: {stop.reason}", file=sys.stderr)
+        return 2
+
+
+def _main(gate):
     if len(sys.argv) < 3:
         print(__doc__)
         return 2
     mode, arg = sys.argv[1], sys.argv[2]
     if mode == "status":
-        return cmd_status(arg)
+        return cmd_status(arg, eligibility=gate)
     if mode == "release-check":
-        return cmd_release_check(arg)
+        return cmd_release_check(arg, eligibility=gate)
     if mode == "impact":
         if len(sys.argv) < 4:
             print("impact needs a SPEC id")
             return 2
-        return cmd_impact(arg, sys.argv[3])
+        return cmd_impact(arg, sys.argv[3], eligibility=gate)
     if mode == "regression":
         if len(sys.argv) < 4:
             print("regression needs a context: per_spec:<SPEC> | release")
             return 2
-        return cmd_regression(arg, sys.argv[3])
+        return cmd_regression(arg, sys.argv[3], eligibility=gate)
     if mode == "hash":
         return cmd_hash(arg)
     if mode == "bundle":
         if len(sys.argv) < 4:
             print("bundle needs a SPEC id")
             return 2
-        return cmd_bundle(arg, sys.argv[3])
+        return cmd_bundle(arg, sys.argv[3], eligibility=gate)
     if mode == "run-check":
         if len(sys.argv) < 4:
             print("run-check needs a SPEC id")
             return 2
-        return cmd_run_check(arg, sys.argv[3])
+        return cmd_run_check(arg, sys.argv[3], eligibility=gate)
     print(f"unknown mode: {mode}")
     return 2
 

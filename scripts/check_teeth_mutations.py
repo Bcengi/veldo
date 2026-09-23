@@ -614,6 +614,15 @@ def cases():
     review('executor-recheck-without-ticket', 'executor.py', recheck,
            '            current = self._decide(gate, sid, launch, None)  # defect: the recheck forgets what it consumed\n',
            'eligibility/executor-rechecks-every-launch')
+    review('entry-gate-not-built', 'control_eligibility.py',
+           '    return enrolled_gate(repo_root, trust, observe=observe)\n',
+           "    raise Stopped('eligibility_required')  # defect: the production entries build no Gate\n",
+           'eligibility/production-entries-build-the-gate')
+    review('entry-gate-unverified-binding', 'control_eligibility.py',
+           "    if problems:\n        raise Stopped('enrollment_refused:' + problems[0][0])\n",
+           "    if False:  # defect: a binding that does not verify still builds a Gate\n"
+           "        raise Stopped('enrollment_refused:' + problems[0][0])\n",
+           'eligibility/production-entries-build-the-gate')
     return result
 
 
