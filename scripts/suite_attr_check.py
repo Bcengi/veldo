@@ -29,8 +29,9 @@ spec call or a `del` standing as a plain statement of a fragment's module body (
 order). A spec variable rebound anywhere else (in a function, under an if or a loop, through
 global or nonlocal), rebound by a plain assignment (which this reader does not follow), or read
 from another scope while bound more than once maps no alias. The resolver is judged against
-CPython's symtable over the real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to
-keep the signal clean is right; lowering the BAR by allowlisting the noisy names would not be.
+CPython's symtable over the real corpus by a suite row, not only against a fixture. Narrowing the
+SCOPE to keep the signal clean is right; lowering the BAR by allowlisting the noisy names would not
+be.
 
 NOT MODELED, stated as limits (the corpus has none of them): a star import, a write through
 globals(), locals() or vars(), and exec() without its own namespace rebind names this reader cannot
