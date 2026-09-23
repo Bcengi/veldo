@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -830 +830 @@
+-        notice = self._notice(request, b['enrolled_chat']) if prior is None else None
++        notice = None

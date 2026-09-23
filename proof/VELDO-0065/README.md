@@ -10,8 +10,9 @@ review; it is not a self-approval, and the canonical gate is run by the lead, no
 `init_scaffold._FILES`, not in `REQUIRED_SUBSTRATE` because no validator loads it). Standard library
 only. It takes the store, membership, VELDO-0064 projection and assignment modules and the VELDO-0064
 `Inbox` as arguments, so a copy loads from any path. Since review r3 the VELDO-0064 projection
-(`.veldo/control_channel_projection.py`, added to the footprint with a History line) defers to it
-when presentations are enabled; see the review fixes below.
+(`.veldo/control_channel_projection.py`, added to the footprint with a History line) sends nothing
+for a request whose presentations are in use, which it decides from the store (see the second
+review fixes below).
 
 **The request and its three digests.** The request is the inbox assignment at one request version.
 `request_digest` covers the request id, the request version and every accepted content field (kind,
@@ -29,7 +30,9 @@ units is consecutive numbered messages, the last carrying the choices and how to
 The risk statement comes from a `frame` command that only the requester signs for the current
 request version; the store keeps the signed command and the versions it pinned. A stored framing
 counts only when the journal shows the frame operation wrote exactly it, by the requester, verified
-with the key active when the store accepted the command (reviews r1, r2). The authority statement is
+with the key as the journal held it at the framing's own position; a key revoked or retired, or a
+requester entered in the revocation ledger, earlier in the journal frames nothing (reviews r1, r2,
+second review n6). The authority statement is
 derived from the owner's current membership, never written by anyone.
 
 **Receipts.** One immutable `channel_presentation` receipt per presentation key, committed as a
@@ -98,9 +101,16 @@ the head and answer records join accepted inputs, platform observations and auth
 - **Live edge qualification (VELDO-0073).** The suite runs a loopback Bot API server (real HTTP) that
   answers with the platform's `sendMessage` shape, links a reply as Telegram does and refuses a reply
   to a message it does not hold. No live network or real token was used.
-- **The acceptance time of a framing** is the store's own publication record (`committed_at`),
-  which the store writes in the same transaction. `control_store.execute` lets its caller supply
-  that time, so it is only as trustworthy as the authority process that holds the store connection.
+- **Key validity is decided by the store's journal order.** Revocation of a key (its
+  `verification_key` entity) and of a principal (the revocation organ's ledger,
+  `authority:revocations`) are recorded in the same store, so the framing's journal sequence is
+  compared with theirs; no time a caller supplies (the publication row's `committed_at`, or a
+  record's own `revoked_at`) decides anything. A key version that carries any `revoked_at` or
+  `retired_at` at the framing's position counts as revoked there, even one dated in the future.
+- **Open item for VELDO-0068: review dispositions.** `authority_contract.settle` currently consumes
+  decision answers only. A `review_disposition` assignment is presented, answered and recorded with
+  its ruling exactly like a decision, but `settle` refuses it today as `not_a_decision_answer`; its
+  settlement is VELDO-0068's scope. An acknowledgement is recorded and settles nothing.
 
 Not implemented, by the specification's History: interrupted publication recovery (Release 2),
 extra channels (Release 4) and Jira presentation (dropped). `request.py`, `request_projection.py`,
@@ -248,12 +258,53 @@ refused; r3 built the projection without the presenter, which is the mode that k
 notice. With those adapted, r3 shows one message per request version, r7 and r7b show `settle`
 agreeing (`True []`), and every q1 probe holds.
 
+## Second review fixes, 2026-09-23
+
+A fresh review of `14c0b0d..753586c` reproduced five more items with scripts over the suite's own
+setup (n1 to n7). Each was fixed test first in its own commit, with a new row red at `753586c` by its
+own assertions, then green, and two registered mutations. Before the fixes the branch merged
+`origin/main` (`c7379d9`); the one conflict was the `--finding` choices of the mutation driver, kept
+from both sides (52 and 65), and `requires.json` was regenerated.
+
+| Review | Defect at 753586c | Fix | Row | Mutations | Commits |
+| --- | --- | --- | --- | --- | --- |
+| n6 | `control_store.execute` takes `committed_at` from its caller, so a framing signed with a revoked key and executed with a back-dated time was accepted and shown | Key validity by the store's own order: the key and the revocation ledger as the journal held them at the framing's position; a later revocation strands nothing, an earlier one (in the key record or the ledger) refuses, whatever times the records carry | `framing/key-by-store-order` | `framing-key-read-now`, `framing-ledger-unchecked` | `5f42b88` |
+| n1 | Whether the inbox projection sent its own notice was a constructor argument: a projection built the VELDO-0064 way (a restart) sent a second decision message, and a notice sent before presentations were in use was never superseded | Decided from the store: the projection sends nothing when the owner's enrollment says `presentations: enabled`, or the request is framed or has a presentation; it reports `presented` or `awaiting_presentation`. A notice sent before presentations were in use is superseded by the first presentation, which replies to it and names it, and the notice's record is marked `superseded_by` | `projection/silent-from-store`, `projection/notice-superseded` | `projection-ignores-presentations`, `projection-ignores-enrollment-setting`; `presentation-ignores-notice`, `notice-not-marked-superseded` | `82576d5`, `21e6f6e` |
+| n2 | A later part Telegram definitely refused (a routine 429) left an anomaly that was never sent again: the owner had a part without choices and the version could never be presented | A definitely refused later part leaves the receipt `partial` with the parts already published; it is sent again on a later run, never before the platform's `retry_after`, and the presentation completes once every part is published | `presentation/refused-part-sent-again` | `partial-never-sent-again`, `retry-after-ignored` | `cf425fc` |
+| n5 | "Accept: ..." (a phone's capitalization) was refused, and a reply that matched no choice was met with silence | Choices match whatever the phone did to case and spacing; a reply that names no offered choice (`unmatched_choice`) or gives no reason (`missing_rationale`) gets one short reply to the owner's message listing the valid choices | `answer/choice-matching-and-feedback` | `choice-match-case-sensitive`, `owner-not-told` | `98ffabe` |
+| n5 | The docstring said every answer record is what `settle` consumes | Corrected: `settle` consumes decision answers today; review dispositions are recorded for VELDO-0068 to settle (the open item above) | none (documentation) | none | `842ec49` |
+
+The one-message row's mutations were re-pointed at the store-decided code
+(`projection-notice-beside-presentation`, `projection-never-reports-presented`). A framed request
+counts as presentation-bound because its framing is the requester's own signed request to present
+it: without that, a projection that ran between the framing and the first presentation still sent a
+second message (n1 case A).
+
+**Red at 753586c.** `python3 -B proof/VELDO-0065/drive.py --red 753586c` runs the current suite once
+against the presentation and projection modules of `753586c`, unchanged (their constructors already
+take the current arguments), and writes `red-at-753586c.json`. All five new rows fail by their own
+assertions, with no section raising. One existing row is also red there because its expected refusal
+changed: `answer/ruling-and-rationale` (an unoffered choice is now `unmatched_choice`).
+
+**The second reviewer's scripts, re-run unchanged.** `review-r2-rerun.log` holds the output of n1 to
+n7 run against the final tree with only the harness root pointed at it; nothing was adapted. n1 now
+shows one message per request version in both of its cases, n2 shows the refused part waiting for
+its `retry_after` (the script does not advance time; the new row does), n6 refuses the back-dated
+forgery, and n3, n4 and n7 hold. The only `BUG` lines are n5's two review-disposition lines, the
+open item for VELDO-0068 above; its capitalized "Accept" is accepted and its unmatched reply gets a
+message back. The first review's r3 re-run adaptation passed `presenter=` to the projection, which
+set the very thing under test; the store-decided behavior no longer depends on that argument.
+
+**Contract changes a consumer will see.** A channel enrollment may carry `presentations: enabled`.
+A projection record may carry `superseded_by`. A receipt may be `partial`, with `platform_parts` and
+`retry_not_before`; `unmatched_choice` and `retry_after` are new named refusals.
+`control_channel_projection.telegram_error_answer(reply, status)` returns Telegram's error answer
+(`telegram_refusal` is built on it).
+
 ## Measurements
 
-The suite runs in about 3.0 s (`VELDO-0065 suite seconds` 2.97, 3.00 and 3.04 on three runs), 16
-rows. Finding 65 has 31 mutations, 18 of them added by the review fixes. The gate's mutation stage
-runs one baseline and one no-op per mutated module (presentation and projection) and one run per
-mutant: 35 runs of about 3 s, 8 in parallel, so about 13 s of wall time, and its budget grows by 2 s
-per case (62 s). The unit stage gains the suite's 3 s. `python3 -B scripts/check_teeth_mutations.py
---finding 65` took 3 min 9 s serially (`{"mutations_rejected": 31, ...}`); `drive.py` took 2 min 0 s
-serially on a shared host.
+The suite runs in about 4.2 s (`VELDO-0065 suite seconds` 4.16, 4.16 and 4.17 on three runs), 21
+rows. Finding 65 has 39 mutations. The gate's mutation stage runs one baseline and one no-op per
+mutated module (presentation and projection) and one run per mutant: 43 runs of about 4 to 5 s, 8 in
+parallel, so about 25 s of wall time, and its budget grows by 2 s per case (78 s). The unit stage
+gains the suite's 4 s. `python3 -B scripts/check_teeth_mutations.py --finding 65` took 6 min 26 s serially (`{"mutations_rejected": 39, ...}`); `drive.py` took 3 min 2 s serially on a shared host.

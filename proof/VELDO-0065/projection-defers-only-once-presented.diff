@@ -1,5 +1,0 @@
---- a/.veldo/control_channel_projection.py
-+++ b/.veldo/control_channel_projection.py
-@@ -375 +375 @@
--        return [self._presented(e) if self.presenter is not None else self._project(e)
-+        return [self._presented(e) if self.presenter is not None and self.presenter.current(e['id']) else self._project(e)

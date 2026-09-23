@@ -1,0 +1,139 @@
+{
+ "commit": "753586c83007ce42d8c77f841155d23e2d46d7fd",
+ "details": [
+  "VELDO-0065 answer/ruling-and-rationale detail: an unoffered ruling is refused",
+  "VELDO-0065 framing/key-by-store-order detail: control: a framing the store took before the revocation counts, whatever times the records carry",
+  "VELDO-0065 framing/key-by-store-order detail: a framing the store took after the revocation, with a back-dated time, is not presented",
+  "VELDO-0065 framing/key-by-store-order detail: the same framing at the store's own time is not presented either",
+  "VELDO-0065 framing/key-by-store-order detail: a framing by a principal the revocation ledger revoked earlier in the journal is not presented",
+  "VELDO-0065 framing/key-by-store-order detail: the ledger this reads is the revocation organ's",
+  "VELDO-0065 projection/notice-superseded detail: the first presentation is a reply to that notice and names it",
+  "VELDO-0065 projection/notice-superseded detail: the notice's record is marked superseded by the presentation",
+  "VELDO-0065 projection/notice-superseded detail: the presentation's receipt verifies with its reply link to the notice",
+  "VELDO-0065 projection/silent-from-store detail: a projection built without the presenter sends nothing for a request that has a presentation",
+  "VELDO-0065 projection/silent-from-store detail: a framed request is presentation-bound: nothing is sent before its presentation exists",
+  "VELDO-0065 projection/silent-from-store detail: with presentations enabled on the enrollment, nothing is sent even before a presentation exists",
+  "VELDO-0065 projection/silent-from-store detail: the receipt and framing kinds the projection reads are the presentation organ's",
+  "VELDO-0065 presentation/refused-part-sent-again detail: a part the platform refused leaves the earlier parts and a named refusal",
+  "VELDO-0065 presentation/refused-part-sent-again detail: a run inside the platform's retry_after sends nothing",
+  "VELDO-0065 presentation/refused-part-sent-again detail: after retry_after only the missing parts are sent and the presentation completes",
+  "VELDO-0065 presentation/refused-part-sent-again detail: the completed receipt verifies against every part the platform holds",
+  "VELDO-0065 presentation/refused-part-sent-again detail: the owner's reply to the first part then settles",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: 'Accept: looks right' is the offered choice accept",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: 'ACCEPT: looks right' is the offered choice accept",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: '  Accept   :  looks right' is the offered choice accept",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: 'accept - looks right' is refused as unmatched_choice and the owner is told the valid choices",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: 'maybe: not sure' is refused as unmatched_choice and the owner is told the valid choices",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: 'accept' is refused as missing_rationale and the owner is told the valid choices",
+  "VELDO-0065 answer/choice-matching-and-feedback detail: control: the refused replies answered nothing, and a matching one then does"
+ ],
+ "failed_rows": [
+  "VELDO-0065 answer/ruling-and-rationale",
+  "VELDO-0065 framing/key-by-store-order",
+  "VELDO-0065 projection/notice-superseded",
+  "VELDO-0065 projection/silent-from-store",
+  "VELDO-0065 presentation/refused-part-sent-again",
+  "VELDO-0065 answer/choice-matching-and-feedback"
+ ],
+ "modules": {
+  "control_channel_presentation.py": {
+   "changed": [],
+   "sha256": "2a3b895d3fd2c5c2937b1f92864296dadd89d1e148c163e1f594b82451e7143c"
+  },
+  "control_channel_projection.py": {
+   "changed": [],
+   "sha256": "50877abfd706f475a7e3bac124a4caf3f5f0983f706416b757f5e00c0182a047"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0065 install/assets",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/receipt-binds-shown-content",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/revision-identity",
+   true
+  ],
+  [
+   "VELDO-0065 answer/current-presentation-only",
+   true
+  ],
+  [
+   "VELDO-0065 answer/ruling-and-rationale",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/visible-supersession",
+   true
+  ],
+  [
+   "VELDO-0065 answer/unseen-refused",
+   true
+  ],
+  [
+   "VELDO-0065 answer/settle-consumes-answer",
+   true
+  ],
+  [
+   "VELDO-0065 framing/requester-only",
+   true
+  ],
+  [
+   "VELDO-0065 framing/stored-framing-reverified",
+   true
+  ],
+  [
+   "VELDO-0065 answer/not-before-publication",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/private-chat-only",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/replacement-without-reply-target",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/reply-link-verified",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/long-brief-split",
+   true
+  ],
+  [
+   "VELDO-0065 projection/one-message-per-version",
+   true
+  ],
+  [
+   "VELDO-0065 framing/key-by-store-order",
+   false
+  ],
+  [
+   "VELDO-0065 projection/notice-superseded",
+   false
+  ],
+  [
+   "VELDO-0065 projection/silent-from-store",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/refused-part-sent-again",
+   false
+  ],
+  [
+   "VELDO-0065 answer/choice-matching-and-feedback",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 5.093,
+ "spec_id": "VELDO-0065",
+ "suite": "scripts/suites/62_veldo_0065_presentations.py"
+}

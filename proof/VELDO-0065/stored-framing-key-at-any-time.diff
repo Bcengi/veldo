@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -652 +652 @@
--        if key is None or self.AC.active_key([key], principal, at) is None:
-+        if key is None:
+@@ -699 +699 @@
+-                or key.get('revoked_at') is not None or key.get('retired_at') is not None):
++                or key.get('retired_at') is not None):

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -899 +899 @@
+@@ -1004 +1004 @@
 -                or ev['chat_id'] != receipt['chat_id'] or ev['reply_to_message_id'] not in receipt['message_ids']):
 +                or ev['chat_id'] != receipt['chat_id'] or ev['reply_to_message_id'] != receipt['message_id']):

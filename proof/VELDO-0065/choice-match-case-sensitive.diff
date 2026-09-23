@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -183 +183 @@
+-    return ' '.join(str(text).split()).casefold()
++    return ' '.join(str(text).split())

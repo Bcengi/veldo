@@ -152,3 +152,13 @@ cannot predate its presentation; a replacement publishes without its deleted rep
 verification binds the reply link; decisions go only to a private chat; and the answer is recorded
 in the authority contract's vocabulary for its one settlement, with no second settlement record. The
 criteria, status and risk are unchanged.
+
+2026-09-23, review r2: a fresh review of the fixes reproduced five more items, each fixed test first
+with its own row and two registered mutations, recorded in the proof README: a framing key is judged
+by the store's journal order, never by a caller-supplied time; whether the inbox projection sends is
+decided from the store (presentations enabled on the enrollment, or the request framed or presented),
+and a notice sent before presentations were in use is visibly superseded by the first presentation;
+a definitely refused part is sent again after its retry_after; choices match regardless of case and
+spacing and an unmatched reply gets a message back. This supersedes the review r3 line above where
+it said a projection given the presenter decides. Review disposition settlement is recorded as an
+open item for VELDO-0068. The criteria, status and risk are unchanged.

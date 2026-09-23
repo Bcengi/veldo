@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -402 +402 @@
+-            outcome = 'presented' if refusal is None and record is None else 'awaiting_presentation'
++            outcome = 'awaiting_presentation'

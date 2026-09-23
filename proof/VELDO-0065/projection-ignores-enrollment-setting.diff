@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -395 +395 @@
+-        in_use = enabled or framed or bool(mine)
++        in_use = framed or bool(mine)

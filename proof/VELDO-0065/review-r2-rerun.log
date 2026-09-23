@@ -1,0 +1,44 @@
+=== n1_projection_without_presenter.py
+A: messages to the owner for request A-1 version 1: 1 [('Veldo needs your decision', None)]
+A: presentation receipts: 1 | extra non-presentation messages: 0
+B: messages about B-1 version 1: 1 | reply_to of each: [None] | the presentation names the earlier notice: False
+=== n2_part_refused_stuck.py
+publish runs: [('partial', 'channel_refused'), ('refused', 'retry_after'), ('refused', 'retry_after')]
+receipt outcome: partial [] | parts rendered: 2 | parts on the phone: 1 | the part on the phone has the choices: False
+current presentation: None | metrics: {'accepted': 1, 'refused': 3, 'pending': 1, 'unpresented_by_reason': {}, 'unknown': 0, 'anomalies': 0}
+owner replies to the part on the phone: {'outcome': 'refused', 'reason': 'unknown_presentation'}
+=== n3_utf16_split.py
+emoji-no-space     outcome=published parts=3 utf16=[694, 4068, 2090] chars=[694, 2052, 1106] choices_in=[2] rejoins=True
+emoji-words        outcome=published parts=3 utf16=[4067, 4067, 1717] chars=[2943, 2723, 1185] choices_in=[2] rejoins=True
+zwj-family         outcome=published parts=3 utf16=[694, 4068, 3790] chars=[694, 2602, 2456] choices_in=[2] rejoins=True
+cjk-no-space       outcome=published parts=3 utf16=[694, 4068, 1090] chars=[694, 4068, 1090] choices_in=[2] rejoins=True
+math-bold-non-bmp  outcome=published parts=3 utf16=[694, 4068, 295] chars=[694, 2052, 211] choices_in=[2] rejoins=True
+boundary: whole message would be 4096 units -> 1 part(s) [4096]
+boundary: whole message would be 4097 units -> 2 part(s) [4047, 120]
+cases with a problem: 0
+=== n4_split_answers.py
+v1 parts [9001, 9002] | v2 parts [9003, 9004] | v2 part 1 replies to 9002
+reply to part 1 of superseded v1: refused superseded_presentation
+reply to v2 part 1 dated at part 1, before the last part: refused answer_before_publication
+reply to v2 part 1 after publication: accepted None reject
+second answer, to the last part: refused already_answered
+no finding
+=== n5_settle_by_kind.py
+decision           accept                 0065=accepted ruling=approve | settle settled=True ruling=approve []
+decision           reject                 0065=accepted ruling=reject | settle settled=True ruling=reject []
+decision           return_for_elaboration 0065=accepted ruling=return_for_elaboration | settle settled=True ruling=return_for_elaboration []
+review_disposition approve                0065=accepted ruling=approve | settle settled=False ruling=None ['not_a_decision_answer:owner:review_disposition']
+BUG: review_disposition answered 'approve' is accepted and recorded by 0065 as the assertion settle consumes, but settle refuses it (not_a_decision_answer:owner:review_disposition)
+review_disposition reject                 0065=accepted ruling=reject | settle settled=False ruling=None ['not_a_decision_answer:owner:review_disposition']
+BUG: review_disposition answered 'reject' is accepted and recorded by 0065 as the assertion settle consumes, but settle refuses it (not_a_decision_answer:owner:review_disposition)
+acknowledgement    acknowledged           0065=accepted ruling=acknowledged | settle settled=False ruling=None ['not_a_decision_answer:owner:acknowledgement']
+'Accept: looks right'  -> accepted None | messages back to the owner: 0
+'accept : looks right' -> refused already_answered | messages back to the owner: 0
+'ACCEPT: looks right'  -> refused already_answered | messages back to the owner: 0
+'accept - looks right' -> refused unmatched_choice | messages back to the owner: 1
+=== n6_framing_backdated_committed_at.py
+frame() with the revoked key: refused
+C-1 committed_at-revoked_at=-100s -> present refused missing_framing | shown risk: None
+C-2 committed_at-revoked_at=+5s -> present refused missing_framing | shown risk: None
+=== n7_framing_rollback_replay.py
+replays: [('f-2', 'command_content_conflict'), ('f-2-again', 'written')] | present: refused missing_framing | shown risk: None
