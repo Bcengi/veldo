@@ -121,7 +121,9 @@ GIT_CONFIG_GLOBAL, GIT_CONFIG_SYSTEM, GIT_CONFIG_NOSYSTEM), configuration inject
 environment (GIT_CONFIG_COUNT with its numbered keys and values, GIT_CONFIG_PARAMETERS) and the
 operator's transport variables: `git_process.py`'s network profile, used by the push and by every
 query that decides where it goes, strips only the variables that change which repository or objects
-git acts on. Only what widens a push is neutralized (one explicit refspec, no tag following, no
+git acts on. The selection and injection variables name operator configuration, not a repository,
+and a plain `git push` from the same environment honors them, so stripping them would reduce what
+the operator's configured tools can do. Only what widens a push is neutralized (one explicit refspec, no tag following, no
 push options, no submodule recursion, a lease on the old tip). The push is addressed to the
 authorized URL and routed by the operator's configured routing: `url.*.insteadOf` and `pushInsteadOf` rewrites, a remote
 section named by the URL (its `url` and `pushurl` values) and a legacy `remotes/` or `branches/` file
@@ -129,7 +131,11 @@ of that name, in every scope the push reads. None of them is refused. Routing is
 the owner's rule is that what configured tools can do is never reduced, so there is no claim that
 the push reaches exactly the authorized URL. Instead the effect record stores, without credentials,
 the authorized URL, the URL the remote's state is read from (`git ls-remote --get-url`) and every
-repository the push reached (the push's porcelain `To` lines), so the evidence shows where it went.
+repository the push reached, so the evidence shows where it went. Where the push went is read only
+from git's own account: a porcelain `To` line counts when git's status line for the authorized
+refspec follows it, because a pre-push hook writes to the same stream. URLs are compared as git
+itself displays them (the user information of a scheme URL and the user of an scp-style address
+dropped), and each recorded URL also loses any user information that display leaves.
 Completion is claimed only when the push reached exactly one repository, the one whose state is
 read, and that remote's advertised state (every advertised ref, HEAD, peeled tags and symbolic-ref
 targets) equals the state before the push with the authorized ref moved. A route that moves only
@@ -169,3 +175,14 @@ overrides an explicit coordinate and keeps global and system configuration and t
 and credential variables. The default profile, and every other caller, is unchanged. The same
 round clears push options from every configuration scope and refuses every configured route that
 could send the push away from the authorized URL. No status or Release 2 obligation changes.
+
+2026-09-23 review round R6: the R5 claim that the push reaches exactly the authorized URL is
+withdrawn, because it contradicted "URL rewrites behave as configured" and operator-configured
+routing is the operator's to keep. Publication no longer refuses any configured route; the effect
+record stores the authorized URL, the URL the remote's state is read from and every repository the
+push reached, without credentials, and completion requires the push to have reached exactly the
+one repository whose state is read. Where the push went is read only from git's own status lines
+(a pre-push hook shares the stream) and compared in git's own display of a URL. The network profile
+now passes the variables that select or inject operator configuration, as a plain git command
+honors them, and still strips every variable that changes which repository or objects git acts on.
+No status or Release 2 obligation changes.
