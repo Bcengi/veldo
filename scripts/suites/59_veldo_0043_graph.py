@@ -84,6 +84,12 @@ elif mode == 'resume-bad-position':
     reply.update(outcome='suspended', resume={'position': 'a/b', 'step': 1, 'notes': '{}'})
 elif mode == 'crash':
     sys.exit(3)
+elif mode == 'deep-utf16':
+    # U+4122 is the bytes 22 41 in UTF-16-LE: a byte scanner reads a quote there and loses sync.
+    reply.update(outcome='suspended', resume={'position': 'p', 'step': 0, 'notes': '\u4122'}, pad='HOLE')
+    body = json.dumps(reply, ensure_ascii=False).replace('"HOLE"', '[' * 5000 + ']' * 5000)
+    sys.stdout.buffer.write(body.encode('utf-16-le'))
+    sys.exit(0)
 elif mode == 'deep':
     reply.update(outcome='suspended', resume='HOLE')
     sys.stdout.write(json.dumps(reply).replace('"HOLE"', '{"n":' * 20000 + '0' + '}' * 20000))
@@ -792,16 +798,18 @@ def _s43_run():
 
         # An over-deep answer is a named refusal, counted and observed, never an escaping error.
         before_counts = dict(adapter.counts)
-        try:
-            adapter.start('cycle-deep', 'command-deep', snapshot, dict(version, id='deep'))
-            deep = 'accepted'
-        except Exception as error:
-            deep = getattr(error, 'code', type(error).__name__)
+        deep = []
+        for mode in ('deep', 'deep-utf16'):
+            try:
+                adapter.start('cycle-' + mode, 'command-' + mode, snapshot, dict(version, id=mode))
+                deep.append('accepted')
+            except Exception as error:
+                deep.append(getattr(error, 'code', type(error).__name__))
         observations['deep_answer'] = deep
-        expect('graph/shape/deep-answer', deep == 'invalid_response'
-               and adapter.counts == dict(before_counts, refused=before_counts['refused'] + 1)
-               and adapter.observations[-1]['refusal'] == 'invalid_response'
-               and adapter.observations[-1]['cycle_id'] == 'cycle-deep')
+        expect('graph/shape/deep-answer', deep == ['invalid_response', 'invalid_response']
+               and adapter.counts == dict(before_counts, refused=before_counts['refused'] + 2)
+               and [o['refusal'] for o in adapter.observations[-2:]] == ['invalid_response'] * 2
+               and [o['cycle_id'] for o in adapter.observations[-2:]] == ['cycle-deep', 'cycle-deep-utf16'])
 
         class _Mapping(dict):
             pass
