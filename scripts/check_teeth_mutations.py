@@ -1091,6 +1091,14 @@ def cases():
                  'answer/tell-once-per-message')
     presentation('tell-keyed-by-text', "        tid = tell_id(ev['chat_id'], ev['platform_message_id'])\n",
                  "        tid = tell_id(ev['chat_id'], len(text))\n", 'answer/tell-once-per-message')
+    # VELDO-0065 third review item 1: a notice in flight or of unknown outcome at the first presentation.
+    projection('notice-intent-without-framing-pin',
+               "        versions[framing_entity_id(aid)] = 0  # decided with the request not framed: pinned as absent\n", "",
+               'projection/in-flight-notice-superseded')
+    presentation('unconfirmed-notice-not-named', "            elif data.get('outcome') in NOTICE_UNCONFIRMED:\n",
+                 "            elif False:\n", 'projection/in-flight-notice-superseded')
+    presentation('pending-notice-never-marked', "            self._reconcile_notice(request)\n", "",
+                 'projection/in-flight-notice-superseded')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

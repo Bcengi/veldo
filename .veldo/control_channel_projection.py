@@ -87,6 +87,13 @@ PRESENTATION_KIND = 'channel_presentation'
 # VELDO-0065's framing kind (control_channel_presentation.FRAMING_KIND): a framed request is one its
 # requester asked to be presented, so the presentation, not a notice, is its decision message.
 FRAMING_KIND = 'presentation_framing'
+
+
+def framing_entity_id(assignment):
+    """The id of a request's VELDO-0065 framing (control_channel_presentation.framing_id; the suite
+    binds the two). A notice intent pins its absence, so a framing that lands after this projection
+    decided to send refuses the intent and nothing is sent beside the presentation."""
+    return 'presentation-framing:%s' % assignment
 ENROLLMENT_SCHEMA = 'veldo.channel_enrollment/v1'
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text')
 # What a record that is not attempted again reports on a later run.
@@ -354,6 +361,7 @@ class Projection:
         if refusal:
             return self._result(aid, versions, 'refused', refusal)
         versions[enrollment['id']] = enrollment['version']
+        versions[framing_entity_id(aid)] = 0  # decided with the request not framed: pinned as absent
         text = render(brief)
         record = dict(schema=SCHEMA, channel=CHANNEL, assignment_id=aid, assignment_version=entry['version'],
                       request_version=entry['request_version'], presentation_digest=presentation_digest(text.encode('utf-8')),

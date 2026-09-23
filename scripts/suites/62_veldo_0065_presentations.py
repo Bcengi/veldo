@@ -103,7 +103,8 @@ def _v65_checks(base):
                                   'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
                                   'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
                                   'presentation/retry-after-bounded', 'answer/choice-normalization',
-                                  'answer/after-answered-reply', 'answer/tell-once-per-message')}
+                                  'answer/after-answered-reply', 'answer/tell-once-per-message',
+                                  'projection/in-flight-notice-superseded')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1176,6 +1177,78 @@ def _v65_checks(base):
             check(once, 'the message told is recorded by its platform identity',
                   conn.execute("SELECT COUNT(*) FROM entities WHERE id=?",
                                ('presentation-tell:telegram_chat:%d:%d' % (owner_chat, first_msg['message_id']),)).fetchone()[0] == 1)
+
+        # Review 3 item 1: a notice still in flight, or of unknown outcome, when the first presentation goes out
+        flight = 'projection/in-flight-notice-superseded'
+        with section(flight):
+            def notice_of(rid):
+                row = conn.execute("SELECT id, data FROM entities WHERE kind='channel_projection' AND data LIKE ?",
+                                   ('%"' + rid + '"%',)).fetchone()
+                return (row[0], _v65_json.loads(row[1])) if row else (None, {})
+
+            class Racing:
+                """The store, with one foreign command landing just before a chosen projection intent."""
+                def __init__(self, before_intent_of, act):
+                    self.target, self.act, self.fired = before_intent_of, act, False
+
+                def __getattr__(self, name):
+                    return getattr(S, name)
+
+                def execute(self, conn_, cmd, *a, **k):
+                    params = cmd.get('parameters') or {}
+                    if (not self.fired and cmd.get('operation') == P.OPERATION and params.get('phase') == 'intent'
+                            and (params.get('record') or {}).get('assignment_id') == self.target):
+                        self.fired = True
+                        self.act()
+                    return S.execute(conn_, cmd, *a, **k)
+            command('pm', 'open', 'IF-1', assignment=content(owner='stranger'))  # an owner without the presentations setting
+            if1 = I.assignment_id(ids['repository_uuid'], 'IF-1')
+            start = len(api['requests'])
+            raced = {r['assignment_id']: r for r in P.Projection(Racing(if1, lambda: frame('pm', 'IF-1', 1, 'Low: one review.')),
+                                                                 inbox, edge64, conn, 'authority', journal_sign).project()}
+            presenter.present(if1)
+            check(flight, 'a framing that lands after the projection decided refuses its notice intent: one message only',
+                  (raced.get(if1) or {}).get('outcome') == 'refused' and len(about(if1, start)) == 1
+                  and notice_of(if1)[0] is None)
+
+            command('pm', 'open', 'IF-2', assignment=content(owner='stranger'))  # an owner without the presentations setting
+            if2 = I.assignment_id(ids['repository_uuid'], 'IF-2')
+
+            class InFlight:
+                """The platform edge; while the notice for IF-2 is in flight, the framing and presentation land."""
+                fired = False
+
+                def send(self, chat, text):
+                    if not self.fired and 'Assignment: %s' % if2 in text.split('\n'):
+                        InFlight.fired = True
+                        frame('pm', 'IF-2', 1, 'Low: one review.')
+                        presenter.present(if2)
+                    return edge64.send(chat, text)
+            P.Projection(S, inbox, InFlight(), conn, 'authority', journal_sign).project()
+            if2_r = presenter.current(if2) or {}
+            nid2, n2 = notice_of(if2)
+            check(flight, 'a presentation composed while the notice is in flight names that notice in its text',
+                  any(line.startswith('Supersedes: an earlier notice of this request') for line in (if2_r.get('rendered') or [''])[0].split('\n'))
+                  and (if2_r.get('supersedes') or {}).get('notice_id') == nid2 is not None)
+            check(flight, 'once the notice\'s outcome is known, the next run marks it superseded',
+                  n2.get('outcome') == 'sent' and not n2.get('superseded_by')
+                  and reason(presenter.present(if2)) == ('already_presented', None)
+                  and notice_of(if2)[1].get('superseded_by') == if2_r.get('presentation_id'))
+
+            command('pm', 'open', 'IF-3', assignment=content(owner='stranger'))  # an owner without the presentations setting
+            if3 = I.assignment_id(ids['repository_uuid'], 'IF-3')
+            api['mode'] = 'drop'
+            P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()
+            api['mode'] = 'ok'
+            frame('pm', 'IF-3', 1, 'Low: one review.')
+            presenter.present(if3)
+            if3_r = presenter.current(if3) or {}
+            nid3, n3 = notice_of(if3)
+            check(flight, 'a notice of unknown outcome is named by the first presentation and marked superseded',
+                  n3.get('outcome') == 'unknown_outcome' and n3.get('superseded_by') == if3_r.get('presentation_id') is not None
+                  and any(line.startswith('Supersedes: an earlier notice of this request') for line in (if3_r.get('rendered') or [''])[0].split('\n')))
+            check(flight, 'the ids the projection pins are the presentation organ\'s',
+                  getattr(P, 'framing_entity_id', lambda r: None)(if1) == V.framing_id(if1))
     finally:
         server.shutdown()
         server.server_close()
