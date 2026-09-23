@@ -1,5 +1,5 @@
 --- a/.veldo/control_readset.py
 +++ b/.veldo/control_readset.py
-@@ -75 +75 @@
+@@ -74 +74 @@
 -                    if current.get(name) != accepted.get(name):
 +                    if not name.startswith('collection/') and current.get(name) != accepted.get(name):

@@ -5,7 +5,7 @@ entity inputs, collections (including empty blocker sets), and reference fields 
 members. A reference beginning '$' resolves from command arguments. Every command additionally
 consumes its accepted revision, that revision's document inventory, and status entities.
 Only control_store.execute writes. Its BEGIN IMMEDIATE encloses both validation and transition.
-The registration replaces the original transition so direct store calls cannot bypass the guard.
+Registrations are connection-local; direct store calls on that connection use the same guard.
 Authentication and business authorization remain the registering service's responsibility.
 """
 import copy
@@ -57,10 +57,9 @@ class ReadSets:
         original = self.store.COMMAND_REGISTRY[operation]
         self.registrations[operation] = declaration
 
-        def transition(parameters, before):
+        def transition(conn, parameters, before):
             try:
-                if not self.conn.in_transaction:
-                    raise SN.Refused('missing_transaction', operation)
+                self.require_transaction(conn)
                 snapshot_id = parameters.get('snapshot_id')
                 if not isinstance(snapshot_id, str):
                     raise SN.Refused('missing_snapshot', operation)
@@ -84,8 +83,14 @@ class ReadSets:
             except (KeyError, TypeError, ValueError) as error:
                 raise self.store.StoreRefused('invalid_input', 'malformed registered inputs') from error
 
-        self.store.COMMAND_REGISTRY[operation] = dict(original, transition=transition,
+        self.conn.command_registry[operation] = dict(original, transaction_transition=transition,
                                                      read_set=declaration)
+
+    def require_transaction(self, conn):
+        if conn is not self.conn:
+            raise SN.Refused('wrong_connection', 'validation and write must use the same connection')
+        if not conn.in_transaction or not conn.command_transaction:
+            raise SN.Refused('missing_transaction', 'store BEGIN IMMEDIATE is required')
 
     def entities_from(self, inputs):
         result = {}
@@ -132,8 +137,9 @@ class ReadSets:
             result['status/' + path] = value
         return result
 
-    def accept(self, parameters, before):
+    def accept(self, conn, parameters, before):
         try:
+            self.require_transaction(conn)
             identity = parameters['snapshot_id']
             if SN.entity(self.store, self.conn, identity)['value'] is not None:
                 raise SN.Refused('snapshot_exists', identity)
@@ -190,8 +196,10 @@ class ReadSets:
 
 
 def attach(store, conn, repo, domain_uuid, repository_uuid):
+    if 'accept_snapshot' in conn.command_registry:
+        raise SN.Refused('invalid_registration', 'connection already has a snapshot authority')
     reader = ReadSets(store, conn, repo, domain_uuid, repository_uuid)
-    store.COMMAND_REGISTRY['accept_snapshot'] = {
-        'transition': reader.accept, 'writes': ('entities', 'journal', 'commands', 'nonces'),
+    conn.command_registry['accept_snapshot'] = {
+        'transaction_transition': reader.accept, 'writes': ('entities', 'journal', 'commands', 'nonces'),
         'read_set': 'enabled operation declaration plus accepted revision projections'}
     return reader

@@ -303,6 +303,12 @@ def cases():
               "'accepted_commit': snapshot['accepted_commit'], 'watermark': snapshot['watermark'],",
               "'accepted_commit': snapshot['accepted_commit'], 'watermark': snapshot['watermark'] + 1,",
               'materialized-revision')
+    snapshots('snapshot-unguarded-connection', 'control_store.py',
+              '        if "snapshot_id" in command["parameters"] and "transaction_transition" not in reg:',
+              '        if False:', 'connection-bound')
+    snapshots('snapshot-deferred-transaction', 'control_readset.py',
+              '        if not conn.in_transaction or not conn.command_transaction:',
+              '        if not conn.in_transaction:', 'transaction-bound')
     return result
 
 

@@ -32,7 +32,7 @@ def _s35_run():
         for name, source in {
             'control_snapshot.py': ROOT / ".veldo" / "control_snapshot.py",
             'control_readset.py': ROOT / ".veldo" / "control_readset.py",
-            'control_store.py': ROOT / '.veldo/control_store.py',
+            'control_store.py': ROOT / ".veldo" / "control_store.py",
             'git_process.py': ROOT / '.veldo/git_process.py',
         }.items():
             _s35_shutil.copyfile(source, modules / name)
@@ -266,6 +266,83 @@ c.close()
         (destination / 'manifest.json').unlink()
         expect('snapshots/incomplete-projection', child_read().get('refusal') == 'missing_projection')
         conn.close()
+        # R1 capsule: the captured reader holds an old WAL view while another writer
+        # commits a blocker and attempts the reservation through the SAME store module.
+        store, conn, reader, snapshot, consume, accepted = fixture('reserve')
+        conn.execute('BEGIN')
+        conn.execute('SELECT COUNT(*) FROM entities').fetchone()
+        writer = store.open_store(root / ('case-' + str(case_number) + '.sqlite3'))
+        put(store, writer, 'stop', 'blocker', {'project': 'project'})
+        before = store.materialized_state(writer)
+        before_seq = writer.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+        refusal = None
+        try:
+            store.execute(writer, consume, **signing)
+        except store.StoreRefused as error:
+            refusal = error.code
+        expect('snapshots/connection-bound', refusal in ('unregistered_inputs', 'wrong_connection')
+               and store.materialized_state(writer) == before
+               and writer.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == before_seq
+               and writer.execute('SELECT COUNT(*) FROM reservations').fetchone()[0] == 0)
+        conn.execute('ROLLBACK')
+        refusal = None
+        try:
+            reader.execute(consume, **signing)
+        except store.StoreRefused as error:
+            refusal = error.code
+        expect('snapshots/connection-bound-control', refusal == 'stale_input')
+        writer.close()
+        conn.close()
+
+        store, conn, reader, snapshot, consume, accepted = fixture('reserve')
+        # An ordinary BEGIN is not the store's BEGIN IMMEDIATE, even on the right handle.
+        conn.execute('BEGIN')
+        refusals = []
+        guard = getattr(conn, 'command_registry', {}).get('reserve', {}).get('transaction_transition')
+        if guard:
+            for executing in (conn, writer):
+                try:
+                    guard(executing, consume['parameters'], {'snapshot': {'version': 1}})
+                except store.StoreRefused as error:
+                    refusals.append(error.code)
+                else:
+                    refusals.append(None)
+        expect('snapshots/transaction-bound', refusals == ['missing_transaction', 'wrong_connection'])
+        conn.execute('ROLLBACK')
+        conn.close()
+
+        # R4: one module, two domains, independent declarations, no wrapper stacking.
+        store = _s35_load('s35_multi_domain', modules / 'control_store.py')
+        registry = dict(store.COMMAND_REGISTRY)
+        connections, readers, outcomes = [], [], []
+        for index in range(2):
+            connection = store.open_store(root / ('domain-' + str(index) + '.sqlite3'))
+            seed.backup(connection)
+            domain = 'domain-' + str(index)
+            put(store, connection, 'revision', 'accepted_revision', dict(
+                snapshot['inputs']['revision']['value']['data'], domain_uuid=domain))
+            reader = rs.attach(store, connection, repo, domain, 'repository')
+            reader.enable('reserve', dict(declaration, entities={'project': 'project'}))
+            connections.append(connection)
+            readers.append(reader)
+        for connection, reader in zip(connections, readers):
+            try:
+                reader.execute(command('accept_snapshot', dict(snapshot_id='isolated', operation='reserve',
+                    arguments={'project_id': 'project'}), {'isolated': 0}), **signing)
+                result = store.execute(connection, command('reserve', dict(operations['reserve'],
+                    project_id='project', snapshot_id='isolated'), {'isolated': 1}), **signing)
+                outcomes.append(result['committed'])
+            except (store.StoreRefused, rs.SN.Refused):
+                outcomes.append(False)
+        duplicate = None
+        try:
+            readers[0].enable('reserve', declaration)
+        except rs.SN.Refused as error:
+            duplicate = error.code
+        expect('snapshots/scoped-registration', outcomes == [True, True]
+               and store.COMMAND_REGISTRY == registry and duplicate == 'invalid_registration')
+        for connection in connections:
+            connection.close()
         seed.close()
     observations['elapsed_seconds'] = _s35_time.monotonic() - started
     return observations

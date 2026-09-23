@@ -1,5 +1,5 @@
 --- a/.veldo/control_readset.py
 +++ b/.veldo/control_readset.py
-@@ -74 +74 @@
+@@ -73 +73 @@
 -                for name in sorted(set(current) | set(accepted)):
 +                for name in ['entity/project']:

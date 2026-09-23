@@ -105,3 +105,21 @@ differential and does not replace full verification.
 
 Proof is readable JSON, Markdown, Python and six small unified diffs. It contains no private keys,
 credential-shaped fixture output, binary/encoded blobs, bytecode, or full gate logs.
+
+## Review corrections at 296be42 (R1-R4)
+
+R1 and R4: `review-r1-red.json` records completed failing suite assertions against production
+files extracted from `296be42` (no other branch or worktree used). The capsule scenario holds an
+old read transaction, commits a blocker on another connection, and tries a reservation through
+that writer using the same store module. `review-r1-green.json` records the corrected behavior.
+The store now dispatches connection-local registrations and passes the executing connection
+inside its own BEGIN IMMEDIATE transaction. Snapshot commands on unregistered connections
+refuse `unregistered_inputs`; guards refuse wrong connections and transactions not opened by
+store execution. Validation and all writes therefore use the same transaction and connection.
+
+The module-level command catalog remains unchanged by ReadSets. Two authorities in different
+domains can enable the same operation independently; duplicate enable and duplicate attachment
+refuse. Closing a store connection clears its registrations. The added control-store footprint
+is the minimal dispatch seam required for this correction, mirrored from the canonical engine.
+The registered mutations remove the unguarded-connection refusal and separately allow a deferred
+read transaction; the named rows must fail assertions, rather than terminate with exceptions.

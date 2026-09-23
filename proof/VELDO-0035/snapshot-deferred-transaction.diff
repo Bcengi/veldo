@@ -1,0 +1,5 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -92 +92 @@
+-        if not conn.in_transaction or not conn.command_transaction:
++        if not conn.in_transaction:
