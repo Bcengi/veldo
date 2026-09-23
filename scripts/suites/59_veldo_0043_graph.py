@@ -269,6 +269,33 @@ def proc_reach(view):
             'notes': {'parent_cwd': cwd, 'parent_store_descriptors': sorted(set(descriptors))}}
 
 
+def poison_work(view):
+    # Knows only its own argv[0] (<stage>/.../runners/<digest>.py): swaps the sibling work
+    # directory for a link to whatever directory the NEXT follower is in.
+    work = _t_Path(sys.argv[0]).parent.parent / 'work'
+    _t_os.rename(work, work.with_name('work.displaced'))
+    _t_os.symlink('/proc/self/cwd', work)
+    return {'next': 'only', 'suspend': True, 'notes': {}}
+
+
+def poison_runners(view):
+    runners = _t_Path(sys.argv[0]).parent
+    _t_os.rename(runners, runners.with_name('runners.displaced'))
+    _t_os.symlink('/proc/self/cwd', runners)
+    return {'next': 'only', 'suspend': True, 'notes': {}}
+
+
+def cwd_probe(view):
+    # Git discovery from the working directory the adapter gave this child; writes what it finds.
+    found = _stores_from(_t_os.getcwd())
+    for path in found:
+        connection = _t_sqlite3.connect(path)
+        connection.execute("UPDATE entities SET data = ? WHERE id = 'unit-1'", ('{"priority": 97}',))
+        connection.commit()
+        connection.close()
+    return {'next': 'only', 'suspend': True, 'notes': {'wrote': len(found)}}
+
+
 def one(function):
     return {'version': 1, 'entry': 'only', 'nodes': {'only': function}}
 
@@ -281,7 +308,8 @@ WORKFLOWS = {
     'assert-admission': one(assert_admission), 'assert-priority': one(assert_priority),
     'assert-completion': one(assert_completion),
     'store-access': {'version': 1, 'entry': 'probe', 'nodes': {'probe': probe_store, 'propose': propose}},
-    'proc-reach': one(proc_reach),
+    'proc-reach': one(proc_reach), 'poison-work': one(poison_work),
+    'poison-runners': one(poison_runners), 'cwd-probe': one(cwd_probe),
 }
 _t_request = json.loads(sys.stdin.buffer.read())
 emit(_t_request, answer(_t_request, WORKFLOWS), sys.stdout)
@@ -333,11 +361,26 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     expect('graph/runtime/installed' + absent, runtime is not None
            and runtime['python'] == str(_s43_Path(home) / '.local/share/veldo/langgraph' / lock.digest() / 'bin/python')
            and runtime['runner'] == str(repo / '.veldo/control_graph_langgraph.py')
-           and runtime['stage'] == str(directory)
+           and runtime['stage'] == str(_s43_Path(home) / '.local/state/veldo/graph-stage')
+           and sorted(p.name for p in directory.iterdir()) == ['bin', 'include', 'lib', 'lib64', 'pyvenv.cfg',
+                                                                'veldo-lock.txt']
            and sorted(census) == sorted((_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES)
            and not (directory / 'bin/pip').exists())
+    account_stage = _s43_Path(home) / '.local/state/veldo/graph-stage'
+
+    def account_state():
+        # The account's runtime and stage, entry by entry: the suite must leave both untouched.
+        listing = {}
+        for base in (directory, account_stage):
+            for entry in (sorted(base.rglob('*')) if base.is_dir() else []):
+                if 'site-packages' not in entry.parts:
+                    listing[str(entry)] = entry.lstat().st_mtime_ns
+        return listing
+
+    account_before = account_state()
     rows = ('graph/runtime/lifecycle', 'graph/runtime/plain-data', 'graph/runtime/tracing-off',
-            'graph/authority/no-direct-write', 'graph/authority/typed-proposals-only', 'graph/authority/proc-limit')
+            'graph/authority/no-direct-write', 'graph/authority/typed-proposals-only', 'graph/authority/proc-limit',
+            'graph/authority/stage-links')
     if runtime is None:
         for name in rows:
             expect(name + absent, False)
@@ -370,8 +413,9 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     installed_runner.write_text(production_runner.split("\nif __name__ == '__main__':\n")[0] + '\n' + _S43_RUNNER)
     domain = 'domain-' + _s43_os.urandom(6).hex()
     audit_directory = _s43_Path('/tmp/veldo-graph-43-audit') / domain
-    adapter = graph.Adapter(dict(runtime, runner=str(installed_runner)), domain, 'repository',
-                            evidence=graph.runtime_evidence())
+    stage_root = root / 'stage-runtime'
+    adapter = graph.Adapter(dict(runtime, runner=str(installed_runner), stage=str(stage_root)), domain,
+                            'repository', evidence=graph.runtime_evidence())
     responses = []
 
     def workflow(name):
@@ -414,8 +458,12 @@ def _s43_runtime(root, repo, graph, store, snapshot):
             stub_evidence = 'accepted: ' + stub_answer['runtime']['name']
         except Exception as error:
             stub_evidence = getattr(error, 'code', type(error).__name__)
-        production = call('start', 'cycle-r4', 'command-r7', snapshot, workflow('lifecycle'),
-                          target=graph.Adapter.installed('domain', 'repository'))
+        try:
+            installed_adapter = graph.Adapter.installed('domain', 'repository', stage=str(root / 'stage-production'))
+            production = call('start', 'cycle-r4', 'command-r7', snapshot, workflow('lifecycle'),
+                              target=installed_adapter)
+        except Exception as error:  # recorded as a wrong answer, never raised
+            production = {'refused': type(error).__name__}
         foreign = [call('start', 'cycle-f-' + name, 'command-f-' + name, snapshot, workflow(name))
                    for name in ('foreign-command', 'foreign-snapshot', 'foreign-in-notes')]
         untyped = call('start', 'cycle-u', 'command-u', snapshot, workflow('untyped-proposal'))
@@ -426,6 +474,23 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         proposed = call('advance', 'cycle-store', 'command-store-2', snapshot, workflow('store-access'),
                         probe.get('resume'), [_s43_result(1)])
         reach = call('start', 'cycle-proc', 'command-proc', snapshot, workflow('proc-reach'))
+        # Links the adapter did not make: a node swaps <stage>/work, then <stage>/runners, for a
+        # link to the next follower's working directory (the domain checkout). Each is refused by
+        # name before anything is written or launched there.
+        links = {}
+        call('start', 'cycle-poison-w', 'command-poison-w', snapshot, workflow('poison-work'))
+        links['work'] = call('start', 'cycle-after-w', 'command-after-w', snapshot, workflow('cwd-probe'))
+        for name in ('work', 'runners'):
+            if (stage_root / name).is_symlink():
+                (stage_root / name).unlink()
+            _s43_shutil.rmtree(stage_root / name, ignore_errors=True)
+            if (stage_root / (name + '.displaced')).exists():
+                (stage_root / (name + '.displaced')).rename(stage_root / name)
+        call('start', 'cycle-poison-r', 'command-poison-r', snapshot, workflow('poison-runners'))
+        installed_runner.write_text(installed_runner.read_text() + '\n# a new registration\n')
+        links['runners'] = call('start', 'cycle-after-r', 'command-after-r', snapshot, workflow('cwd-probe'))
+        links['checkout_written'] = sorted(p.name for p in checkout.iterdir()
+                                           if p.name.startswith('veldo-graph-') or p.suffix == '.py')
         # A stage inside a repository is refused before anything launches.
         try:
             graph.Adapter(dict(runtime, runner=str(installed_runner), stage=str(checkout / '.veldo')),
@@ -490,19 +555,24 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and 'langgraph.types.Command' in foreign[0]['failure']['detail']
            and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
            and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
-           and len(responses) == 16 and all(_s43_exact_plain(r) for r in responses))
+           and len(responses) == 18 and all(_s43_exact_plain(r) for r in responses))
     source = (repo / '.veldo/control_graph_langgraph.py').read_text()
-    expect('graph/runtime/tracing-off', len(audits) == sum(adapter.counts.values()) == 16 and all(
-               a and a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
-               and a['sockets'] == [] for a in audits)
+    present = [a for a in audits if a]
+    expect('graph/runtime/tracing-off', len(present) == 18 and all(
+               a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
+               and a['sockets'] == [] for a in present)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
            and not any(word in source for word in ('langgraph_sdk', 'RemoteGraph', 'get_client')))
     notes = _s43_notes(probe)
     observations['stage_in_repository'] = in_repository
+    observations['stage_links'] = links
+    expect('graph/authority/stage-links', links['work'].get('refused') == 'runtime_unavailable'
+           and links['runners'].get('refused') == 'runtime_unavailable' and links['checkout_written'] == []
+           and before == after and account_state() == account_before)
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended'
            and in_repository == 'runtime_unavailable' and not (checkout / '.veldo/veldo').exists()
-           and all(a and not a['argv0'].startswith(str(root)) for a in audits))
+           and all(a['argv0'].startswith(str(stage_root.resolve() / 'runners')) for a in audits if a))
     # The stated limit (Release 2: real confinement): as the same account, a node can still read
     # the domain process through /proc. This row keeps that limit visible; it is not a pass.
     limit = _s43_notes(reach)
