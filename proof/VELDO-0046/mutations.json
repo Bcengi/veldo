@@ -1,0 +1,2986 @@
+[
+  {
+    "baseline": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 46,
+      "identity": "check_teeth_mutations.py:notify-before-commit",
+      "module": "control_notify.py",
+      "name": "notify-before-commit",
+      "new": "        if 'event' in hint and 'transition' in hint['event']:\n            for handler in self.handlers.values():\n                handler(hint['event'])\n        # Only identity crosses the queue. Extra transport payload is not domain data.",
+      "old": "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+      "rows": [
+        "notify/committed-event"
+      ],
+      "suite": "58_veldo_0046_notifications.py"
+    },
+    "elapsed": 0.46321785310283303,
+    "fixture_version": 1,
+    "mutant": {
+      "count": 29,
+      "failed_rows": [
+        "VELDO-0046 notify/committed-event"
+      ],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          false
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          false
+        ]
+      }
+    },
+    "new_digest": "bb0454acf698c1d7ae32a3e317b66b6c04c6d1aab7eef8999e7d32598c1c66a1",
+    "noop": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+    "replacement_count": 1,
+    "schema": "veldo.mutation-result/v1"
+  },
+  {
+    "baseline": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 46,
+      "identity": "check_teeth_mutations.py:notify-omit-committed-wakeup",
+      "module": "control_notify.py",
+      "name": "notify-omit-committed-wakeup",
+      "new": "                pass  # defective: committed event never signals",
+      "old": "                self.notify(self.hint(result))",
+      "rows": [
+        "notify/committed-event"
+      ],
+      "suite": "58_veldo_0046_notifications.py"
+    },
+    "elapsed": 2.4345905780792236,
+    "fixture_version": 1,
+    "mutant": {
+      "count": 29,
+      "failed_rows": [
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          false
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          false
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          false
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          false
+        ]
+      }
+    },
+    "new_digest": "25a824d4c6015f325e83938a00ffd9ad97ff95824893fdcde403a6ffad2a1353",
+    "noop": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+    "replacement_count": 1,
+    "schema": "veldo.mutation-result/v1"
+  },
+  {
+    "baseline": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 46,
+      "identity": "check_teeth_mutations.py:notify-check-outside-idle-lock",
+      "module": "control_notify.py",
+      "name": "notify-check-outside-idle-lock",
+      "new": "        ready = bool(self._queue) or self._closed\n        with self._condition:\n            if not ready:\n                self._condition.wait(timeout)",
+      "old": "        with self._condition:\n            self._condition.wait_for(lambda: self._queue or self._closed, timeout)",
+      "rows": [
+        "notify/event-in-the-gap"
+      ],
+      "suite": "58_veldo_0046_notifications.py"
+    },
+    "elapsed": 1.4476691170129925,
+    "fixture_version": 1,
+    "mutant": {
+      "count": 29,
+      "failed_rows": [
+        "VELDO-0046 notify/event-in-the-gap"
+      ],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          false
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/event-in-the-gap": [
+          false
+        ]
+      }
+    },
+    "new_digest": "8494a24aedc93fd8ca0acd21bdc3c05d459a6d49f9eb6bae7685f76f231d4100",
+    "noop": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+    "replacement_count": 1,
+    "schema": "veldo.mutation-result/v1"
+  },
+  {
+    "baseline": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 46,
+      "identity": "check_teeth_mutations.py:notify-wait-without-queue-predicate",
+      "module": "control_notify.py",
+      "name": "notify-wait-without-queue-predicate",
+      "new": "            self._condition.wait(timeout)",
+      "old": "            self._condition.wait_for(lambda: self._queue or self._closed, timeout)",
+      "rows": [
+        "notify/event-in-the-gap"
+      ],
+      "suite": "58_veldo_0046_notifications.py"
+    },
+    "elapsed": 1.449309668969363,
+    "fixture_version": 1,
+    "mutant": {
+      "count": 29,
+      "failed_rows": [
+        "VELDO-0046 notify/event-in-the-gap"
+      ],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          false
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/event-in-the-gap": [
+          false
+        ]
+      }
+    },
+    "new_digest": "162630219b8d25988f9c8b28b362fe73ec7f41b71a1ab2c49391ba448e524bb8",
+    "noop": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+    "replacement_count": 1,
+    "schema": "veldo.mutation-result/v1"
+  },
+  {
+    "baseline": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 46,
+      "identity": "check_teeth_mutations.py:notify-trust-invented-event-identity",
+      "module": "control_notify.py",
+      "name": "notify-trust-invented-event-identity",
+      "new": "        if row[1] != hint['record_digest']:",
+      "old": "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+      "rows": [
+        "notify/fabricated-event"
+      ],
+      "suite": "58_veldo_0046_notifications.py"
+    },
+    "elapsed": 0.44246156397275627,
+    "fixture_version": 1,
+    "mutant": {
+      "count": 29,
+      "failed_rows": [
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          false
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/fabricated-event": [
+          false
+        ]
+      }
+    },
+    "new_digest": "7c07aa0fe339f2d6cea21d53239346e5e3061f9b28f3782279a69d962e49d722",
+    "noop": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+    "replacement_count": 1,
+    "schema": "veldo.mutation-result/v1"
+  },
+  {
+    "baseline": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 46,
+      "identity": "check_teeth_mutations.py:notify-trust-invented-event-digest",
+      "module": "control_notify.py",
+      "name": "notify-trust-invented-event-digest",
+      "new": "        if row[0] != hint['command_id']:",
+      "old": "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+      "rows": [
+        "notify/fabricated-event"
+      ],
+      "suite": "58_veldo_0046_notifications.py"
+    },
+    "elapsed": 0.44308551913127303,
+    "fixture_version": 1,
+    "mutant": {
+      "count": 29,
+      "failed_rows": [
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          false
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/fabricated-event": [
+          false
+        ]
+      }
+    },
+    "new_digest": "4e4d1b910121cb25f8aaf994841be14ed540d90c88d4fb0b16b371fc0c96ed04",
+    "noop": {
+      "count": 29,
+      "failed_rows": [],
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0046 notify/committed-event",
+        "VELDO-0046 notify/event-in-the-gap",
+        "VELDO-0046 notify/fabricated-event"
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+    "replacement_count": 1,
+    "schema": "veldo.mutation-result/v1"
+  }
+]

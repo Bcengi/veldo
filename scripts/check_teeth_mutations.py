@@ -466,6 +466,101 @@ def cases():
     add(31, 'review-r5-release-ignores-holder', '59_veldo_0031_review.py', 'control_claim.py',
         "    if current.get('holder') != holder:",
         "    if op != 'release' and current.get('holder') != holder:", ['claims/review-r5'])
+    # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
+    def notification(name, old, new, row):
+        add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
+            old, new, ['notify/' + row])
+
+    notification('notify-stop-after-handler-failure',
+                 "                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 "                return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 'subscriber-isolation')
+    notification('notify-retry-successful-subscribers',
+                 "        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',",
+                 "        if failed:\n            entry.owed = None  # defective: forget who accepted\n"
+                 "        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',", 'subscriber-isolation')
+    notification('notify-drop-unavailable-first-attempt',
+                 "if entry.owed is None and exc.reason != 'service_unavailable':",
+                 "if entry.owed is None:", 'first-attempt-retained')
+    # At-most-once: the subscriber is marked accepted before its callback returns.
+    _dispatch = (
+                 '        for consumer in ready:\n'
+                 '            try:\n'
+                 '                # A handler may mutate its argument; the next handler still sees the journal.\n'
+                 '                self.handlers[consumer](json.loads(json.dumps(event)))\n'
+                 '            except BaseException as exc:\n'
+                 '                # The event stays owed to this subscriber, and to any not yet called, even\n'
+                 '                # when an interrupt propagates. Only this subscriber waits out a delay.\n'
+                 "                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)\n"
+                 '                failed.append(consumer)\n'
+                 '                self._defer(consumer)\n'
+                 '                if not isinstance(exc, Exception):\n'
+                 '                    raise\n'
+                 '                continue\n'
+                 '            self._accept(entry, consumer)\n'
+                 '            delivered.append(consumer)\n')
+    notification('notify-accept-before-callback', _dispatch,
+                 _dispatch.replace('        for consumer in ready:\n',
+                                   '        for consumer in ready:\n            self._accept(entry, consumer)\n')
+                 .replace('            self._accept(entry, consumer)\n            delivered.append(consumer)\n',
+                          '            delivered.append(consumer)\n'),
+                 'first-attempt-retained')
+    notification('notify-requeue-failed-at-tail',
+                 "                self._defer(consumer)\n",
+                 "                self._defer(consumer)\n"
+                 "                with self._condition:\n"
+                 "                    self._queue.remove(entry)\n"
+                 "                    self._queue.append(entry)\n", 'subscriber-order')
+    notification('notify-skip-head-of-line',
+                 "            blocked |= owed\n", "", 'subscriber-order')
+    notification('notify-retry-without-backoff',
+                 "return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "return 0.0", 'retry-backoff')
+    notification('notify-uncapped-backoff',
+                 "return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "return self.retry_initial * 2.0 ** min(failures - 1, 64)", 'retry-backoff')
+    notification('notify-retry-not-woken-when-due',
+                 "bounds = self._retry_waits(now) + ",
+                 "bounds = [] + ", 'retry-backoff')
+    notification('notify-unbounded-observations',
+                 "            while len(self._observations) > self.observation_limit:\n"
+                 "                self._observations.popleft()\n",
+                 "", 'retry-backoff')
+    notification('notify-unbounded-watermark',
+                 "or not 1 <= hint['watermark'] <= 2**63 - 1",
+                 "or hint['watermark'] < 1", 'watermark-range')
+    notification('notify-reject-valid-max-watermark',
+                 "or not 1 <= hint['watermark'] <= 2**63 - 1",
+                 "or not 1 <= hint['watermark'] < 2**63 - 1", 'watermark-range')
+    notification('notify-before-commit',
+                 "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+                 "        if 'event' in hint and 'transition' in hint['event']:\n"
+                 "            for handler in self.handlers.values():\n"
+                 "                handler(hint['event'])\n"
+                 "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+                 'committed-event')
+    notification('notify-omit-committed-wakeup',
+                 "                self.notify(self.hint(result))",
+                 "                pass  # defective: committed event never signals",
+                 'committed-event')
+    notification('notify-check-outside-idle-lock',
+                 "        with self._condition:\n            while True:\n"
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 "        ready = bool(self._queue)\n"
+                 "        with self._condition:\n            while True:\n"
+                 "                now = self.clock()\n                work = self._ready(now) if ready else None\n",
+                 'event-in-the-gap')
+    notification('notify-wait-without-queue-predicate',
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 "                self._condition.wait(None if deadline is None else max(0.0, deadline - self.clock()))\n"
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 'event-in-the-gap')
+    notification('notify-trust-invented-event-identity',
+                 "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+                 "        if row[1] != hint['record_digest']:", 'fabricated-event')
+    notification('notify-trust-invented-event-digest',
+                 "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+                 "        if row[0] != hint['command_id']:", 'fabricated-event')
     return result
 
 
@@ -536,7 +631,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 46, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

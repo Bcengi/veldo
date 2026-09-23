@@ -563,6 +563,15 @@
     "59_veldo_0031_review"
    ],
    "regions": "Six independent review regression scenarios for authority claims"
+  },
+  {
+   "name": "58_veldo_0046_notifications",
+   "file": "58_veldo_0046_notifications.py",
+   "requires": [
+    "58_veldo_0046_notifications"
+   ],
+   "regions": "Release 1 committed notifications, idle signals and journal authority",
+   "requires_note": "Uses shared ROOT and expect only; real installer, SQLite, Ed25519 signatures and joined event-loop threads."
   }
  ]
 }

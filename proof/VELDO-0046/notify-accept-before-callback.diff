@@ -1,0 +1,6 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -243,0 +244 @@
++            self._accept(entry, consumer)
+@@ -256 +256,0 @@
+-            self._accept(entry, consumer)
