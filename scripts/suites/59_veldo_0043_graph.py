@@ -646,12 +646,25 @@ def _s43_runtime(root, repo, graph, store, snapshot):
             'executable': 'executable = ' + venv_python,
             'base-prefix': 'base-prefix = ' + str(spaced / '.venv'),
         }
+        # The interpreter resolved component by component, the way the kernel does: (A) through a
+        # directory link on a hop, (B) through a relative target whose '..' follows a link first.
+        (checkout / '.venv/bin/inner').mkdir()
+        (root / 'via-A').symlink_to(checkout / '.venv/bin')
+        (root / 'cfg-dotdot-hop/bin').mkdir(parents=True)
+        (root / 'cfg-dotdot-hop/bin/inner').symlink_to(checkout / '.venv/bin/inner')
+        (root / 'cfg-dotdot-hop/bin/python').symlink_to('inner/../python3')
+        (root / 'cfg-dotdot-hop/pyvenv.cfg').write_text('home = /usr/bin\nversion = 3.12.3\n')
         cfg_judged = {}
-        for name, line in list(cfg_cases.items()) + [('link-chain', 'home = /usr/bin')]:
+        try:
+            cfg_judged['dotdot-hop'] = bool(graph.runtime_problems({'python': str(root / 'cfg-dotdot-hop/bin/python')}))
+        except Exception as error:
+            cfg_judged['dotdot-hop'] = type(error).__name__
+        for name, line in list(cfg_cases.items()) + [('link-chain', 'home = /usr/bin'), ('directory-hop', 'home = /usr/bin')]:
             probe_runtime = root / ('cfg-' + name)
             (probe_runtime / 'bin').mkdir(parents=True)
             (probe_runtime / 'bin/python').symlink_to(
-                checkout / '.venv/bin/python3' if name == 'link-chain' else _s43_os.path.realpath(runtime['python']))
+                checkout / '.venv/bin/python3' if name == 'link-chain' else root / 'via-A/python3'
+                if name == 'directory-hop' else _s43_os.path.realpath(runtime['python']))
             (probe_runtime / 'pyvenv.cfg').write_text(line + '\nversion = 3.12.3\n')
             try:
                 cfg_judged[name] = bool(graph.runtime_problems({'python': str(probe_runtime / 'bin/python')}))
@@ -740,7 +753,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     expect('graph/runtime/pyvenv-clean', pyvenv == 'runtime_unavailable'
            and not (audit_directory / 'command-pyvenv.json').exists() and cfg_paths
            and not any(graph.inside_repository(token) for token in cfg_paths)
-           and cfg_judged == {name: True for name in list(cfg_cases) + ['link-chain']})
+           and cfg_judged == {name: True for name in list(cfg_cases) + ['link-chain', 'directory-hop', 'dotdot-hop']})
     expect('graph/authority/stage-links',
            links['work'] == 'runtime_unavailable: the stage work is a link the adapter did not make'
            and links['runners'] == 'runtime_unavailable: the stage runners is a link the adapter did not make'
