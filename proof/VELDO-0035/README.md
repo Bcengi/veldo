@@ -130,3 +130,18 @@ unchanged. Validation covers document/status and status/status ancestry, deep de
 the reserved `manifest.json` completion path before acceptance writes anything. The materializer
 uses the same inventory validation before creating a destination. The two mutations respectively
 remove ancestor checking and check only the immediate parent; both fail the inventory row.
+
+R3: `review-r3-red.json` records the status-only commit assertion failing against `296be42`,
+including the capsule's HEAD movement and publication after acceptance. Commit validation now
+runs outside the document loop: every accepted revision must supply a full object id, and Git
+must resolve that id to that exact existing commit. Symbolic refs are refused rather than
+silently selecting whichever HEAD is current. The snapshot pins the validated id. Empty document
+inventories receive the same check. Missing object ids and blob ids also refuse, while a valid
+status-only snapshot publishes its original commit and captured status after HEAD has moved.
+`review-r3-green.json` records all rows green; two distinct mutations skip empty-inventory
+validation or accept nonexistent/noncommit ids, and both fail the status-only row.
+
+`review-capsules.json` retains final runs of the three original, unmodified capsules, copied
+one at a time to `.capsule/` and invoked from this repository root. All exit zero, explicitly
+refuse the unsafe operation, and emit no `BUG:` observation. R1's attached-connection stale-input
+control also passes. Capsule copies are removed and no other worktree is modified.

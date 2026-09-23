@@ -45,6 +45,17 @@ def safe_path(value):
     return value
 
 
+def commit_id(repo, commit):
+    """Require a full commit object id even when the revision contains no documents."""
+    if not isinstance(commit, str) or not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', commit):
+        raise Refused('invalid_input', 'accepted commit must be an exact object id')
+    result = _git_process.run(['git', '-C', str(repo), 'rev-parse', '--verify', commit + '^{commit}'],
+                              capture_output=True, timeout=15)
+    if result.returncode or result.stdout.decode().strip() != commit:
+        raise Refused('invalid_input', 'accepted commit must identify an existing commit')
+    return commit
+
+
 def artifact(repo, commit, path, expected):
     safe_path(path)
     if not isinstance(commit, str) or not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', commit):

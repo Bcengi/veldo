@@ -1,0 +1,6 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -129 +129,2 @@
+-        SN.commit_id(self.repo, data['commit'])
++        if data['documents']:
++            SN.commit_id(self.repo, data['commit'])

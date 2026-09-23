@@ -370,6 +370,49 @@ c.close()
             prefix_outcomes.append(refusal == 'invalid_input' and store.table_snapshot(connection) == before)
             connection.close()
         expect('snapshots/path-prefix-inventory', all(prefix_outcomes) and len(prefix_outcomes) == 4)
+        # R3 capsule: empty document inventory must still require a real pinned commit.
+        commit_outcomes = []
+        for index, proposed in enumerate(('HEAD', 'f' * len(commit), g('rev-parse', commit + ':policy.md'), commit)):
+            store = _s35_load('s35_commits_' + str(index), modules / 'control_store.py')
+            connection = store.open_store(root / ('commits-' + str(index) + '.sqlite3'))
+            seed.backup(connection)
+            put(store, connection, 'revision', 'accepted_revision', dict(
+                domain_uuid='domain', repository_uuid='repository', commit=proposed,
+                documents={}, statuses={'status.json': 'unit'}))
+            reader = rs.attach(store, connection, repo, 'domain', 'repository')
+            reader.enable('reserve', dict(revision='revision', entities={}, collections={}))
+            before = store.table_snapshot(connection)
+            refusal = None
+            try:
+                reader.execute(command('accept_snapshot', dict(snapshot_id='status-only',
+                    operation='reserve', arguments={}), {'status-only': 0}), **signing)
+            except store.StoreRefused as error:
+                refusal = error.code
+            if proposed == 'HEAD' and refusal is None:
+                unpinned = sn.load(store, connection, 'status-only', 'domain', 'repository')
+                old_head = g('rev-parse', 'HEAD')
+                (repo / 'advance.txt').write_text('advance after status-only acceptance')
+                g('add', '.')
+                g('commit', '-qm', 'Advance after status-only acceptance')
+                unpinned_destination = root / 'unpinned-published'
+                sn.materialize(unpinned, repo, unpinned_destination)
+                unpinned_result = sn.read_materialized(unpinned, repo, unpinned_destination)
+                assert g('rev-parse', 'HEAD') != old_head
+                # Preserve the capsule's publication step before the named assertion fails.
+                assert unpinned_result['manifest']['accepted_commit'] == 'HEAD'
+            if proposed != commit:
+                commit_outcomes.append(refusal == 'invalid_input' and store.table_snapshot(connection) == before)
+            else:
+                accepted_status = sn.load(store, connection, 'status-only', 'domain', 'repository')
+                # HEAD already moved above; accepted exact commit and captured status stay fixed.
+                destination = root / 'status-only-published'
+                sn.materialize(accepted_status, repo, destination)
+                observed_status = sn.read_materialized(accepted_status, repo, destination)
+                commit_outcomes.append(refusal is None and g('rev-parse', 'HEAD') != commit
+                    and observed_status['manifest']['accepted_commit'] == commit
+                    and observed_status['members']['status.json'] == sn.canonical(accepted_status['statuses']['status.json']))
+            connection.close()
+        expect('snapshots/status-only-commit', all(commit_outcomes) and len(commit_outcomes) == 4)
         seed.close()
     observations['elapsed_seconds'] = _s35_time.monotonic() - started
     return observations

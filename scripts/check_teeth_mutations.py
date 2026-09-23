@@ -316,6 +316,12 @@ def cases():
     snapshots('snapshot-check-only-direct-parent', 'control_snapshot.py',
               'for parent in PurePosixPath(path).parents):',
               'for parent in [PurePosixPath(path).parent]):', 'path-prefix-inventory')
+    snapshots('snapshot-skip-empty-commit-validation', 'control_readset.py',
+              "        SN.commit_id(self.repo, data['commit'])",
+              "        if data['documents']:\n            SN.commit_id(self.repo, data['commit'])", 'status-only-commit')
+    snapshots('snapshot-accept-noncommit-id', 'control_snapshot.py',
+              '    if result.returncode or result.stdout.decode().strip() != commit:',
+              '    if False:', 'status-only-commit')
     return result
 
 

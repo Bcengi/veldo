@@ -126,6 +126,7 @@ class ReadSets:
         data = revision['value']['data']
         if data.get('domain_uuid') != self.domain_uuid or data.get('repository_uuid') != self.repository_uuid:
             raise SN.Refused('snapshot_identity_mismatch', 'accepted revision')
+        SN.commit_id(self.repo, data['commit'])
         result['revision'] = revision
         for path, expected in data['documents'].items():
             SN.artifact(self.repo, data['commit'], path, expected)
