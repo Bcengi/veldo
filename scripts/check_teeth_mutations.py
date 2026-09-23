@@ -664,6 +664,18 @@ def cases():
           'projection/only-telegram-refusal-retried')
     inbox('projection-telegram-5xx-refused', 'control_channel_projection.py', range_guard, '',
           'projection/only-telegram-refusal-retried')
+    # VELDO-0064 review r2-s5: a malformed reply is an unknown outcome; nothing the edge raises stops the loop.
+    inbox('projection-edge-protocol-error-escapes', 'control_channel_projection.py',
+          "        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as exc:\n",
+          "        except (urllib.error.URLError, OSError, ValueError) as exc:\n", 'projection/protocol-error-unknown')
+    inbox('projection-edge-error-stops-loop', 'control_channel_projection.py',
+          "        except Exception as exc:\n"
+          "            return {'platform': None, 'refusal': None, 'detail': 'the edge raised %s' % type(exc).__name__}\n",
+          "", 'projection/protocol-error-unknown')
+    inbox('projection-protocol-error-as-refusal', 'control_channel_projection.py',
+          "            raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None\n",
+          "            raise EdgeRefused('channel_refused', 'no readable platform answer (%s)' % type(exc).__name__) from None\n",
+          'projection/protocol-error-unknown')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

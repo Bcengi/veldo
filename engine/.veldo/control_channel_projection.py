@@ -34,9 +34,12 @@ exists, so its returned identity and stored text are kept and the record is the 
 `presentation_mismatch` (outcome `anomaly`), not a valid projection and never sent again. The
 same holds when the platform says it placed the message in a chat other than the owner's
 enrolled chat: the returned chat is recorded as returned and the record is `chat_mismatch`. A transport
-failure after the request may have reached the platform is recorded as `unknown_outcome` with
-no message identity, so nothing is blindly sent again; looking the message up and recovering an
-unknown or pending record is Release 2 work.
+or protocol failure after the request may have reached the platform (a lost connection, a
+malformed status line, an unreadable body), and so does anything else the edge raises once the
+intent is committed: each is recorded as `unknown_outcome` with no message identity and an
+observation naming why, so nothing is blindly sent again and one bad reply never stops the
+projection of the entries after it. Looking the message up and recovering an unknown or pending
+record is Release 2 work.
 
 NOT AUTHORITY. A projection is a proxy of the inbox. Nothing here reads an answer, settles a
 request or changes an assignment. Presentation receipts and supersession are VELDO-0065, answer
@@ -158,8 +161,11 @@ class TelegramEdge:
             if not telegram_refusal(exc, exc.code):
                 raise EdgeRefused('unknown_outcome', 'HTTP %d without the Bot API error answer' % exc.code) from None
             raise EdgeRefused('channel_refused', 'HTTP %d' % exc.code) from None
-        except (urllib.error.URLError, OSError, ValueError):
-            raise EdgeRefused('unknown_outcome', 'no readable platform answer') from None
+        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as exc:
+            # Every transport and protocol failure after the request left: a lost connection, a
+            # malformed status line (http.client.BadStatusLine is not an OSError), a truncated or
+            # unreadable body. The message may have been published.
+            raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None
         result = answer.get('result') if isinstance(answer, dict) and answer.get('ok') is True else None
         chat = result.get('chat') if isinstance(result, dict) else None
         if (not isinstance(chat, dict) or type(chat.get('id')) is not int
@@ -291,12 +297,18 @@ class Projection:
         return None, {'id': enrollment_id(owner), 'version': row[1], 'chat': data['chat_id']}
 
     def _send(self, chat, text):
-        """What the platform said, as the completion parameters of the pending attempt."""
+        """What the platform said, as the completion parameters of the pending attempt, with
+        `detail` naming why an outcome is unknown. The intent is already committed, so whatever the
+        edge raises is an unknown outcome of this attempt: it is completed and observed, never sent
+        again, and never stops the projection of the entries after it."""
         try:
             sent = self.edge.send(chat, text)
         except EdgeRefused as exc:
-            return {'platform': None, 'refusal': None if exc.code == 'unknown_outcome' else exc.code}
-        return {'platform': sent, 'refusal': None}
+            unknown = exc.code == 'unknown_outcome'
+            return {'platform': None, 'refusal': None if unknown else exc.code, 'detail': exc.detail if unknown else None}
+        except Exception as exc:
+            return {'platform': None, 'refusal': None, 'detail': 'the edge raised %s' % type(exc).__name__}
+        return {'platform': sent, 'refusal': None, 'detail': None}
 
     def _project(self, entry):
         aid = entry['id']
@@ -326,6 +338,7 @@ class Projection:
             completion = self._send(enrollment['chat'], text)
         except self.store.StoreRefused as exc:
             return self._result(aid, versions, 'refused', exc.code)  # no intent, so nothing was sent
+        detail = completion.pop('detail')
         try:
             done = self._commit(dict(phase='complete', projection_id=pid, attempt=intent['attempt'], **completion),
                                 {pid: intent['entity_version']})
@@ -335,6 +348,8 @@ class Projection:
             platform = completion['platform'] or {}
             return self._result(aid, versions, 'unknown_outcome', exc.code, projection_id=pid,
                                 platform={k: platform.get(k) for k in ('chat_id', 'message_id', 'date')})
+        if done['outcome'] == 'unknown_outcome':
+            return self._result(aid, versions, 'unknown_outcome', 'unknown_outcome', projection_id=pid, detail=detail)
         reason = ','.join(done['anomalies']) if done['outcome'] == 'anomaly' else done['refusal']
         return self._result(aid, versions, done['outcome'], reason, projection_id=pid)
 

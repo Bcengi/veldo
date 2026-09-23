@@ -115,7 +115,7 @@ def _v64_checks(base):
                                   'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
                                   'projection/intent-before-send', 'projection/echo-mismatch-kept',
                                   'projection/owner-enrolled-chat', 'projection/returned-chat-checked',
-                                  'projection/only-telegram-refusal-retried')}
+                                  'projection/only-telegram-refusal-retried', 'projection/protocol-error-unknown')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -653,6 +653,54 @@ def _v64_checks(base):
         check(retry_row, 'control: Telegram\'s own 4xx refusal publishes nothing and is attempted again',
               limited == ['refused'] and retried == ['sent'] and len(api['requests']) == asked + 1
               and (projection.record(P.projection_id(p_limit, 1)) or {}).get('attempt') == 2)
+        # --- a malformed reply is an unknown outcome with an observation; the loop goes on -----
+        protocol_row = 'projection/protocol-error-unknown'
+
+        def attempt(projector):
+            try:
+                return projector.project()
+            except Exception as exc:  # recorded as a failed check, so the suite finishes its rows
+                return [{'assignment_id': None, 'outcome': 'raised ' + type(exc).__name__}]
+        garbled = []
+        for alias in ('P-garbled-1', 'P-garbled-2'):
+            command('pm', 'open', alias, assignment=content('decision'))
+            garbled.append(I.assignment_id(ids['repository_uuid'], alias))
+        asked, observed = len(api['requests']), len(projection.observations)
+        api['mode'] = 'garbage'
+        garbage_run = attempt(projection)
+        try:
+            probe = projection.edge.send(5550001, 'probe')
+        except P.EdgeRefused as exc:
+            probe = exc.code
+        except Exception as exc:
+            probe = 'raised ' + type(exc).__name__
+        api['mode'] = 'ok'
+        check(protocol_row, 'the edge answers a malformed status line as unknown_outcome, never raising',
+              probe == 'unknown_outcome')
+        check(protocol_row, 'one run over malformed replies returns a result for every entry, each unknown',
+              [r['outcome'] for r in garbage_run if r['assignment_id'] in garbled] == ['unknown_outcome'] * 2
+              and len(api['requests']) == asked + 3)
+        seen = [o for o in projection.observations[observed:] if o['assignment_id'] in garbled]
+        check(protocol_row, 'each malformed reply leaves an observation of the unknown outcome',
+              [o['outcome'] for o in seen] == ['unknown_outcome'] * 2
+              and all((projection.record(P.projection_id(a, 1)) or {}).get('outcome') == 'unknown_outcome' for a in garbled))
+        later = [r for _ in range(2) for r in attempt(projection) if r['assignment_id'] in garbled]
+        check(protocol_row, 'later runs finish and send neither again',
+              len(api['requests']) == asked + 3 and [r['outcome'] for r in later] == ['unknown_outcome'] * 4)
+
+        class _RaisingEdge:
+            def send(self, chat, text):
+                raise RuntimeError('an edge outside the projection module')
+        raised = []
+        for alias in ('P-raising-1', 'P-raising-2'):
+            command('pm', 'open', alias, assignment=content('decision'))
+            raised.append(I.assignment_id(ids['repository_uuid'], alias))
+        raising = P.Projection(S, inbox, _RaisingEdge(), conn, 'authority', journal_sign)
+        raising_run = attempt(raising)
+        check(protocol_row, 'whatever an edge raises after the intent is an unknown outcome and the loop goes on',
+              [r['outcome'] for r in raising_run if r['assignment_id'] in raised] == ['unknown_outcome'] * 2
+              and [o['outcome'] for o in raising.observations if o['assignment_id'] in raised] == ['unknown_outcome'] * 2
+              and all((projection.record(P.projection_id(a, 1)) or {}).get('outcome') == 'unknown_outcome' for a in raised))
         try:
             P.TelegramEdge('http://example.invalid', api['token'])
             check('projection/send-outcomes', 'a plain-HTTP remote origin is refused', False)
