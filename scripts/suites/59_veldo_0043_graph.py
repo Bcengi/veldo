@@ -299,6 +299,25 @@ def poison_runners(view):
     return {'next': 'only', 'suspend': True, 'notes': {}}
 
 
+def plant_gitfile(view):
+    # Plants <stage>/runners/.git as a gitfile to a repository it learned without being handed it.
+    runners = _t_Path(sys.argv[0]).parent
+    target = (runners.parent / 'known-repository').read_text().strip()
+    (runners / '.git').write_text('gitdir: ' + target + '\n')
+    return {'next': 'only', 'suspend': True, 'notes': {}}
+
+
+def script_dir_probe(view):
+    # Git discovery from this child's own script directory; writes what it finds.
+    found = _stores_from(_t_Path(sys.argv[0]).parent)
+    for path in found:
+        connection = _t_sqlite3.connect(path)
+        connection.execute("UPDATE entities SET data = ? WHERE id = 'unit-1'", ('{"priority": 98}',))
+        connection.commit()
+        connection.close()
+    return {'next': 'only', 'suspend': True, 'notes': {'wrote': len(found)}}
+
+
 def cwd_probe(view):
     # Git discovery from the working directory the adapter gave this child; writes what it finds.
     found = _stores_from(_t_os.getcwd())
@@ -324,6 +343,7 @@ WORKFLOWS = {
     'store-access': {'version': 1, 'entry': 'probe', 'nodes': {'probe': probe_store, 'propose': propose}},
     'proc-reach': one(proc_reach), 'poison-work': one(poison_work),
     'poison-runners': one(poison_runners), 'cwd-probe': one(cwd_probe),
+    'plant-gitfile': one(plant_gitfile), 'script-dir-probe': one(script_dir_probe),
 }
 _t_request = json.loads(sys.stdin.buffer.read())
 emit(_t_request, answer(_t_request, WORKFLOWS), sys.stdout)
@@ -513,6 +533,13 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                 (stage_root / name).unlink()
                 if (stage_root / (name + '.displaced')).exists():
                     (stage_root / (name + '.displaced')).rename(stage_root / name)
+        # A repository planted BELOW the stage root: runners/ is judged like work/.
+        (stage_root / 'known-repository').write_text(str(authority / '.git'))
+        call('start', 'cycle-plant-g', 'command-plant-g', snapshot, workflow('plant-gitfile'))
+        links['runners-gitfile'] = call('start', 'cycle-after-g', 'command-after-g', snapshot,
+                                        workflow('script-dir-probe'))
+        if (stage_root / 'runners/.git').exists():
+            (stage_root / 'runners/.git').unlink()
         # A runtime whose pyvenv.cfg names a repository (created by a repository's own virtual
         # environment) is refused before launch; the installed runtime's names none.
         # The repository's own virtual environment: its python is a link out to the system one.
@@ -645,6 +672,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and cfg_judged == {name: True for name in list(cfg_cases) + ['link-chain']})
     expect('graph/authority/stage-links', links['work'].get('refused') == 'runtime_unavailable'
            and links['runners'].get('refused') == 'runtime_unavailable' and links['checkout_written'] == []
+           and links['runners-gitfile'].get('refused') == 'runtime_unavailable'
            and before == after and account_state() == account_before)
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended'
