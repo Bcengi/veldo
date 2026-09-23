@@ -96,3 +96,46 @@ The earlier diagnostic gate was stopped after the missing mutation-registry foot
 entry was identified; `diagnostic-gate.json` retains that failure and its log digest.
 The authorized registry path was then declared. A later diagnostic run passed units but
 stopped for a canonical lifecycle correction. This complete clean-tree run passed.
+
+## Independent review corrections at 5cf94c3
+
+The six supplied reproduction scenarios are registered as separate assertion rows in
+`scripts/suites/59_veldo_0031_review.py`. Before any production edit, all six rows
+failed assertions against `5cf94c3a64d3aa1e6c47bae2cb9a90e9ea0d4357`; the original
+run is retained in `review-baseline-red.txt`. `review-baseline-red.json` reruns the
+final suite against files extracted from that same commit and records six RED
+assertions with the suite digest. No branch or worktree was changed for that run.
+
+| Finding / row | Correction | Registered negative controls |
+| --- | --- | --- |
+| R1 / `claims/review-r1` | Validate packet, command and signature types before reading fields or invoking the verifier; refuse `malformed_request`, record the refusal, and continue serving. ASCII signature validation also prevents invalid Unicode from reaching the verifier's file writer. | `review-r1-command-crash`, `review-r1-signature-crash` |
+| R2 / `claims/review-r2` | One ownership consistency function checks activation for claim, inspect, renew, release and use. Both omitted activation legs and activation without ownership stop consistently. | `review-r2-inspect-skips-consistency`, `review-r2-activation-without-owner` |
+| R3 / `claims/review-r3` | Retain heartbeat ClaimStopped, join the heartbeat, and perform protected use immediately before finalize. Test both a loss without a heartbeat tick and a heartbeat stop followed by recovery; neither can move local or remote refs. | `review-r3-publish-without-use`, `review-r3-swallow-heartbeat-stop` |
+| R4 / `claims/review-r4` | Read enrollment beside the explicitly selected ledger, including the environment override, independently of cwd. | `review-r4-cwd-selects-enrollment`, `review-r4-refuse-unrelated-root` |
+| R5 / `claims/review-r5` | Expiration alone cannot revoke the stored holder's right to renew or release with its current generation. Wrong holders/generations, use and takeover remain refused. | `review-r5-expiry-revokes-owner`, `review-r5-release-ignores-holder` |
+| R6 / `claims/review-r6` | Share ClaimStopped identity across file-location imports so callers catch both authority and routing stops. | `review-r6-private-stop-class`, `review-r6-routing-wrong-exception` |
+
+Each finding has a separate implementation commit; R1 has an additional signature
+encoding correction. `review-rN-green.json` records each target row's transition
+while later findings were still RED, so those intermediate files do not assert a
+green suite. `review-r1-unicode-red.json` and `review-r1-unicode-green.json` retain
+the additional encoding scenario's before/after observations. The legacy AC2 row
+now requires a refusal for terminal inconsistent state on release as well as use;
+it no longer asserts that contradictory operation-specific answer. The spec History
+and footprint explicitly include the landing caller required by AC3.
+
+`review-repros.json` records another run of all six supplied scripts, each unchanged
+and digest identified. Their shared fixture's SRC was pointed at this checkout's
+installed modules instead of its frozen original snapshot. All six exit zero and
+none prints a BUG line. `review-mutations.jsonl` and the `review-r*.diff` files retain
+the driven negative controls. These targeted results are diagnostic evidence; the
+complete clean-tree gate is the acceptance check.
+
+The original proof and gate records above are historical. The correction gate and
+workload measurements are recorded separately below after verification. Independent
+review approval and landing are not asserted; no push was performed.
+
+Measured corrected claim workload: 24.18 seconds including both suite passes and
+all 18 claim mutations with baseline/no-op controls (30 workers), below 60 seconds.
+`review-timing.json` records the measurement; the canonical gate uses the entire
+mutation inventory without filtering.

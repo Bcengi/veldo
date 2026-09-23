@@ -1,0 +1,55 @@
+{
+  "source": "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/v31",
+  "production_commit": "e5ceca9414e37ed570b92e9513594c4b7927e0c5",
+  "method": "Unmodified review scripts; override harness.SRC with this checkout .veldo before runpy.run_path.",
+  "results": [
+    {
+      "script": "r1_malformed_kills_authority.py",
+      "sha256": "0c7b46664a4873e21d0bba3dec737c1f01025c0d3b5ec1d2bd35baaedc6c5db1",
+      "exit_code": 0,
+      "stdout": "ok: refused {'ok': False, 'reason': 'malformed_request'}\nok: refused {'ok': False, 'reason': 'malformed_request'}\nok: refused {'ok': False, 'reason': 'malformed_request'}\nbefore: worker-b claim -> (True, 'granted')\nserver alive after one malformed packet: True\nafter: worker-b holder -> worker-b\n",
+      "stderr": "",
+      "bug_lines": []
+    },
+    {
+      "script": "r2_inconsistent_state_two_answers.py",
+      "sha256": "f256c284e7ff7ab3568dba00d220ea6539797ec3c464e6d73a042924d134aedb",
+      "exit_code": 0,
+      "stdout": "stored: unit READY backlog PRIORITIZED claim owned\nuse by holder  -> False ownership_uncertain\ninspect        -> False ownership_uncertain holder= worker-a\nclaim by other -> False ownership_uncertain\nunit RUNNING, no claim: inspect -> False ownership_uncertain ; claim -> False ownership_uncertain\n",
+      "stderr": "",
+      "bug_lines": []
+    },
+    {
+      "script": "r3_lander_swallows_stop_mid_land.py",
+      "sha256": "c950845fc866f7383e9f7f78011a8926fd2a052b4a44378aef55afad9bfb9299",
+      "exit_code": 0,
+      "stdout": "ownership mid-land per authority: ['unanswerable'] | calls: ['sync'] | land -> raised ClaimStopped(unanswerable) | remote ref moved: False\n",
+      "stderr": "",
+      "bug_lines": []
+    },
+    {
+      "script": "r4_enrollment_judged_from_cwd.py",
+      "sha256": "6c845db47b07e89b28f11686758b782245de43a1aeeac768cdf6a4bd30ffe2ef",
+      "exit_code": 0,
+      "stdout": "(a) cwd outside, root in enrolled clone -> claim.ClaimStopped: claim stopped: authority_required | ledger file exists: False\n(b) cwd in enrolled clone, explicit unrelated root -> (True, 'granted')\n",
+      "stderr": "",
+      "bug_lines": []
+    },
+    {
+      "script": "r5_stale_holder_cannot_release.py",
+      "sha256": "c3ec5489aca3749e66945fc4212f511461dae4112e1826bcadc658fb0113a66b",
+      "exit_code": 0,
+      "stdout": "holder worker-a gen 1 : renew -> renew | release -> release | worker-b claim -> claim\n",
+      "stderr": "",
+      "bug_lines": []
+    },
+    {
+      "script": "r6_stop_class_identity.py",
+      "sha256": "04e32e93b41590a74ba544f66219b524214d01bedd2305c94d1208ea3ff1fe2e",
+      "exit_code": 0,
+      "stdout": "ok: caught as claim.ClaimStopped ownership_uncertain\n",
+      "stderr": "",
+      "bug_lines": []
+    }
+  ]
+}

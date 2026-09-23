@@ -26,8 +26,8 @@ unit_seconds = []
 for _ in range(2):  # unit and first-use integration each run the suite once
     start = time.monotonic()
     result = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/selftest.py'),
-                             '--suite', '58_veldo_0031_claims'], cwd=ROOT, capture_output=True, text=True)
-    if '29 passed, 0 failed' not in result.stdout:
+                             '--suite', '58_veldo_0031_claims', '--suite', '59_veldo_0031_review'], cwd=ROOT, capture_output=True, text=True)
+    if '35 passed, 0 failed' not in result.stdout:
         raise RuntimeError(result.stdout + result.stderr)
     unit_seconds.append(time.monotonic() - start)
 print(json.dumps({'suite_runs_seconds': unit_seconds, 'mutation_stage_seconds': mutation_seconds,

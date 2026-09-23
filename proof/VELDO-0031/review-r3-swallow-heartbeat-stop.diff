@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -116 +116 @@
+-                self._hb_error = exc
++                self._hb_error = None

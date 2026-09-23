@@ -2,4 +2,4 @@
 +++ b/.veldo/control_claim.py
 @@ -97 +97 @@
 -    if current.get('holder') != holder:
-+    if op != 'use' and current.get('holder') != holder:
++    if op != 'release' and current.get('holder') != holder:
