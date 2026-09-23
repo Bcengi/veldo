@@ -1,0 +1,208 @@
+{
+ "boundary": {
+  "cwd_entries": [],
+  "descriptors": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "environment": [
+   "LANG",
+   "LC_ALL",
+   "PATH",
+   "PYTHONDONTWRITEBYTECODE",
+   "PYTHONNOUSERSITE"
+  ],
+  "store_descriptor": 6
+ },
+ "elapsed_seconds": 0.6763536420185119,
+ "isolated": {
+  "returncode": 0,
+  "verdict": {
+   "entries": [
+    {
+     "closure": [
+      "arch.py",
+      "behavior_floor.py",
+      "capsule.py",
+      "contract_loader.py",
+      "decision.py",
+      "decision_review.py",
+      "fix_validation.py",
+      "fix_validation_record.py",
+      "git_process.py",
+      "observability.py",
+      "release_contract.py",
+      "request.py",
+      "security_review.py",
+      "shape_review.py",
+      "tracker.py",
+      "tripwire.py",
+      "validate.py",
+      "validate_checks.py",
+      "verdict_corpus.py",
+      "yamlish.py"
+     ],
+     "entry": "validator",
+     "exception": null,
+     "exit": 0,
+     "module": "validate.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "closure": [
+      "arch.py",
+      "behavior_floor.py",
+      "capsule.py",
+      "contract_loader.py",
+      "decision.py",
+      "decision_review.py",
+      "fix_validation.py",
+      "fix_validation_record.py",
+      "git_process.py",
+      "observability.py",
+      "release_contract.py",
+      "request.py",
+      "security_review.py",
+      "shape_gate.py",
+      "shape_review.py",
+      "tracker.py",
+      "tripwire.py",
+      "validate.py",
+      "validate_checks.py",
+      "verdict_corpus.py",
+      "yamlish.py"
+     ],
+     "entry": "shape_gate",
+     "exception": null,
+     "exit": 0,
+     "module": "shape_gate.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "closure": [
+      "git_process.py",
+      "policy_check.py",
+      "verdict_corpus.py",
+      "yamlish.py"
+     ],
+     "entry": "policy_check",
+     "exception": null,
+     "exit": 0,
+     "module": "policy_check.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "closure": [
+      "authorization.py",
+      "two_key.py",
+      "yamlish.py"
+     ],
+     "entry": "authorization",
+     "exception": null,
+     "exit": 0,
+     "module": "authorization.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "closure": [
+      "git_process.py",
+      "version.py"
+     ],
+     "entry": "version",
+     "exception": null,
+     "exit": 1,
+     "module": "version.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "closure": [
+      "arch.py",
+      "authorization.py",
+      "behavior_floor.py",
+      "capsule.py",
+      "contract_loader.py",
+      "control_graph.py",
+      "control_graph_isolation.py",
+      "decision.py",
+      "decision_review.py",
+      "fix_validation.py",
+      "fix_validation_record.py",
+      "git_process.py",
+      "observability.py",
+      "policy_check.py",
+      "release_contract.py",
+      "request.py",
+      "security_review.py",
+      "shape_gate.py",
+      "shape_review.py",
+      "tracker.py",
+      "tripwire.py",
+      "two_key.py",
+      "validate.py",
+      "validate_checks.py",
+      "verdict_corpus.py",
+      "version.py",
+      "yamlish.py"
+     ],
+     "entry": "graph_start",
+     "exception": null,
+     "exit": 0,
+     "module": "control_graph_isolation.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    }
+   ],
+   "passed": true,
+   "root": "<temporary>/installed",
+   "schema": "veldo.isolated_enforcement/v1"
+  }
+ },
+ "rows": [
+  [
+   "graph/installed-assets",
+   true
+  ],
+  [
+   "graph/isolated-enforcement",
+   true
+  ],
+  [
+   "graph/start-unavailable",
+   true
+  ],
+  [
+   "graph/shape/lifecycle",
+   true
+  ],
+  [
+   "graph/shape/plain-data",
+   true
+  ],
+  [
+   "graph/boundary/no-store-handle",
+   true
+  ]
+ ],
+ "shape_refusals": [
+  "invalid_response",
+  "invalid_response",
+  "unknown_outcome"
+ ],
+ "unavailable": [
+  "runtime_unavailable",
+  "runtime_unavailable"
+ ]
+}

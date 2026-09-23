@@ -1,0 +1,33 @@
+{
+ "suite": "59_veldo_0043_graph",
+ "suite_runs": [
+  {
+   "suite_seconds": 0.79,
+   "suite_rows_passed": 6,
+   "process_wall_seconds": 0.852,
+   "exit": 2
+  },
+  {
+   "suite_seconds": 0.77,
+   "suite_rows_passed": 6,
+   "process_wall_seconds": 0.834,
+   "exit": 2
+  },
+  {
+   "suite_seconds": 0.77,
+   "suite_rows_passed": 6,
+   "process_wall_seconds": 0.838,
+   "exit": 2
+  }
+ ],
+ "teeth_finding_43_wall_seconds": 8.352,
+ "teeth_exit": 0,
+ "teeth_note": "serial: 5 cases, each one honest and one mutant full suite run (10 suite executions)",
+ "gate_estimate": {
+  "unit_and_first_use_suite_runs_seconds": 1.58,
+  "mutation_stage_worker_invocations_added": 9,
+  "mutation_stage_serial_worker_seconds_upper_bound": 7.517,
+  "total_upper_bound_seconds_serial": 9.097
+ },
+ "limit_seconds": 60
+}

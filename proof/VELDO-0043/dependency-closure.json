@@ -1,0 +1,338 @@
+{
+ "closure": [
+  {
+   "license": "MIT",
+   "name": "annotated-types",
+   "requires": [],
+   "version": "0.8.0"
+  },
+  {
+   "license": "MIT",
+   "name": "anyio",
+   "requires": [
+    "exceptiongroup",
+    "idna",
+    "typing_extensions"
+   ],
+   "version": "4.15.1"
+  },
+  {
+   "license": "MPL-2.0",
+   "name": "certifi",
+   "requires": [],
+   "version": "2026.7.22"
+  },
+  {
+   "license": "MIT",
+   "name": "charset-normalizer",
+   "requires": [],
+   "version": "3.5.1"
+  },
+  {
+   "license": "Apache License, Version 2.0",
+   "name": "distro",
+   "requires": [],
+   "version": "1.9.0"
+  },
+  {
+   "license": "MIT",
+   "name": "h11",
+   "requires": [],
+   "version": "0.16.0"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "httpcore",
+   "requires": [
+    "certifi",
+    "h11"
+   ],
+   "version": "1.0.9"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "httpcore2",
+   "requires": [
+    "h11",
+    "truststore"
+   ],
+   "version": "2.13.0"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "httpx",
+   "requires": [
+    "anyio",
+    "certifi",
+    "httpcore",
+    "idna"
+   ],
+   "version": "0.28.1"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "httpx2",
+   "requires": [
+    "idna",
+    "typing-extensions"
+   ],
+   "version": "2.13.0"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "idna",
+   "requires": [],
+   "version": "3.20"
+  },
+  {
+   "license": "Modified BSD License",
+   "name": "jsonpatch",
+   "requires": [
+    "jsonpointer ("
+   ],
+   "version": "1.33"
+  },
+  {
+   "license": "Modified BSD License",
+   "name": "jsonpointer",
+   "requires": [],
+   "version": "3.1.1"
+  },
+  {
+   "license": "MIT",
+   "name": "langchain-core",
+   "requires": [
+    "httpx",
+    "jsonpatch",
+    "langchain-protocol",
+    "langsmith",
+    "packaging",
+    "pydantic",
+    "pyyaml",
+    "tenacity",
+    "typing-extensions",
+    "uuid-utils"
+   ],
+   "version": "1.6.4"
+  },
+  {
+   "license": "MIT",
+   "name": "langchain-protocol",
+   "requires": [
+    "typing-extensions"
+   ],
+   "version": "0.0.19"
+  },
+  {
+   "license": "MIT",
+   "name": "langgraph",
+   "requires": [
+    "langchain-core",
+    "langgraph-checkpoint",
+    "langgraph-prebuilt",
+    "langgraph-sdk",
+    "pydantic",
+    "xxhash"
+   ],
+   "version": "1.2.12"
+  },
+  {
+   "license": "MIT",
+   "name": "langgraph-checkpoint",
+   "requires": [
+    "langchain-core",
+    "ormsgpack"
+   ],
+   "version": "4.2.0"
+  },
+  {
+   "license": "MIT",
+   "name": "langgraph-prebuilt",
+   "requires": [
+    "langchain-core",
+    "langgraph-checkpoint"
+   ],
+   "version": "1.1.0"
+  },
+  {
+   "license": "MIT",
+   "name": "langgraph-sdk",
+   "requires": [
+    "httpx",
+    "langchain-core",
+    "langchain-protocol",
+    "orjson",
+    "websockets"
+   ],
+   "version": "0.4.5"
+  },
+  {
+   "license": "MIT",
+   "name": "langsmith",
+   "requires": [
+    "anyio",
+    "distro",
+    "httpx2",
+    "orjson",
+    "packaging",
+    "pydantic",
+    "requests",
+    "requests-toolbelt",
+    "sniffio",
+    "typing-extensions",
+    "uuid-utils",
+    "websockets",
+    "xxhash",
+    "zstandard"
+   ],
+   "version": "0.14.0"
+  },
+  {
+   "license": "MPL-2.0 AND (Apache-2.0 OR MIT)",
+   "name": "orjson",
+   "requires": [],
+   "version": "3.12.0"
+  },
+  {
+   "license": "Apache-2.0 OR MIT",
+   "name": "ormsgpack",
+   "requires": [],
+   "version": "1.12.2"
+  },
+  {
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "name": "packaging",
+   "requires": [],
+   "version": "26.3"
+  },
+  {
+   "license": "MIT",
+   "name": "pydantic",
+   "requires": [
+    "annotated-types",
+    "pydantic-core",
+    "typing-extensions",
+    "typing-inspection"
+   ],
+   "version": "2.13.5"
+  },
+  {
+   "license": "MIT",
+   "name": "pydantic_core",
+   "requires": [
+    "typing-extensions"
+   ],
+   "version": "2.46.5"
+  },
+  {
+   "license": "MIT",
+   "name": "PyYAML",
+   "requires": [],
+   "version": "6.0.3"
+  },
+  {
+   "license": "Apache-2.0",
+   "name": "requests",
+   "requires": [
+    "certifi",
+    "charset_normalizer",
+    "idna",
+    "urllib3"
+   ],
+   "version": "2.34.2"
+  },
+  {
+   "license": "Apache 2.0",
+   "name": "requests-toolbelt",
+   "requires": [
+    "requests ("
+   ],
+   "version": "1.0.0"
+  },
+  {
+   "license": "MIT OR Apache-2.0",
+   "name": "sniffio",
+   "requires": [],
+   "version": "1.3.1"
+  },
+  {
+   "license": "Apache 2.0",
+   "name": "tenacity",
+   "requires": [],
+   "version": "9.1.4"
+  },
+  {
+   "license": "MIT",
+   "name": "truststore",
+   "requires": [],
+   "version": "0.10.4"
+  },
+  {
+   "license": "MIT",
+   "name": "typing-inspection",
+   "requires": [
+    "typing-extensions"
+   ],
+   "version": "0.4.4"
+  },
+  {
+   "license": "PSF-2.0",
+   "name": "typing_extensions",
+   "requires": [],
+   "version": "4.16.0"
+  },
+  {
+   "license": "MIT",
+   "name": "urllib3",
+   "requires": [],
+   "version": "2.8.0"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "uuid_utils",
+   "requires": [],
+   "version": "0.17.1"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "websockets",
+   "requires": [],
+   "version": "16.1.1"
+  },
+  {
+   "license": "BSD-2-Clause",
+   "name": "xxhash",
+   "requires": [],
+   "version": "4.0.1"
+  },
+  {
+   "license": "BSD-3-Clause",
+   "name": "zstandard",
+   "requires": [],
+   "version": "0.25.0"
+  }
+ ],
+ "conflicts": [
+  {
+   "evidence": "PyPI metadata Author \"Yue Du\", home page github.com/ifduyue/python-xxhash; GitHub API users/ifduyue reports location \"China\". langgraph/types.py and langgraph/pregel/_algo.py import xxhash unconditionally.",
+   "package": "xxhash",
+   "required_by": [
+    "langgraph",
+    "langsmith"
+   ],
+   "rule": "C16: No Chinese-origin dependency anywhere",
+   "version": "4.0.1"
+  },
+  {
+   "evidence": "Client SDK of the LangSmith hosted service (home page smith.langchain.com); langchain-core requires it unconditionally. www.langchain.com/pricing, read 2026-09-23: LangSmith Developer is free, Plus is $39 per seat per month, Enterprise is custom priced. LangGraph itself is MIT; its hosted deployment is LangSmith Deployment, included only in the paid Plus and Enterprise plans.",
+   "package": "langsmith",
+   "required_by": [
+    "langchain-core"
+   ],
+   "rule": "C16: no library with free and paid tiers",
+   "version": "0.14.0"
+  }
+ ],
+ "how": "pip install langgraph into a throwaway venv outside the repository (Python 3.12.3, pip 24.0), 2026-09-23; resolved closure read from installed metadata. Not installed for the repository or the gate.",
+ "schema": "veldo.dependency-probe/v1"
+}
