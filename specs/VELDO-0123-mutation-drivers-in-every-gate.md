@@ -112,3 +112,9 @@ returns the working tree Git does not ignore, tracked and untracked, minus delet
 caches and the gate outputs. Row gate/input-closure-is-the-working-tree drives it over a real
 repository; mutations (directory list restored, untracked additions dropped, ignored files kept)
 each turn it red.
+Its review found three reading defects, fixed the same day: names are read as raw bytes and decoded
+with the file system encoding, so a name with leading whitespace is no longer trimmed away and a
+name that is not UTF-8 no longer stops the stage; and the closure is stated honestly as the
+repository's own ignore rules with no global configuration, so ignored machine-local files (such as
+.veldo/trackers.json) are not inputs. Rows now also drive modes, bytecode caches and the refusal of
+a symbolic link (gate/input-closure-refuses-symlinks).

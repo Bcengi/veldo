@@ -369,9 +369,33 @@ if 'expect' in globals():
     (_m123_repo / 'plans').mkdir()
     (_m123_repo / 'plans/new.md').write_text('untracked addition\n')
     (_m123_repo / 'ignored.txt').write_text('ignored\n')
-    _m123_closure = sorted(_m123_gate.read_inputs(_m123_repo))
+    (_m123_repo / 'bin/veldo').chmod(0o755)
+    (_m123_repo / '\tleading-tab.txt').write_text('a name starting with whitespace\n')
+    (_m123_repo / _m123_os.fsdecode(b'raw-\xff.txt')).write_text('a name that is not UTF-8\n')
+    (_m123_repo / 'plans/__pycache__').mkdir()
+    (_m123_repo / 'plans/__pycache__/new.cpython-312.pyc').write_bytes(b'bytecode')
+    try:
+        _m123_read = _m123_gate.read_inputs(_m123_repo)
+    except Exception as _m123_error:                   # a closure that dies is red, never a crash
+        _m123_read = {'raised': (0, repr(_m123_error).encode())}
+    _m123_closure = sorted(_m123_read)
     expect('VELDO-0123 gate/input-closure-is-the-working-tree: read_inputs returns every tracked and '
-           'untracked file that is not ignored, wherever it lives, without deleted files, ignored files '
-           'or gate outputs, so a row reading bin/veldo, a spec or a plan sees in the snapshot exactly '
-           'what it sees in the checkout',
-           _m123_closure == ['.gitignore', '.veldo/kept.py', 'bin/veldo', 'plans/new.md', 'specs/S.md'])
+           'untracked file that is not ignored, wherever it lives and whatever its name (a leading '
+           'tab, bytes that are not UTF-8), with its mode, without deleted files, ignored files, '
+           'bytecode caches or gate outputs, so a row reading bin/veldo, a spec or a plan sees in the '
+           'snapshot exactly what it sees in the checkout',
+           _m123_closure == sorted(['\tleading-tab.txt', '.gitignore', '.veldo/kept.py', 'bin/veldo',
+                                    'plans/new.md', _m123_os.fsdecode(b'raw-\xff.txt'), 'specs/S.md'])
+           and _m123_read['bin/veldo'][0] == 0o755 and _m123_read['specs/S.md'][0] & 0o111 == 0)
+    (_m123_repo / 'plans/link').symlink_to('new.md')
+    try:
+        _m123_gate.read_inputs(_m123_repo)
+        _m123_link = 'accepted'
+    except _m123_gate.Refused as _m123_error:
+        _m123_link = _m123_error.code
+    except Exception as _m123_error:
+        _m123_link = type(_m123_error).__name__
+    expect('VELDO-0123 gate/input-closure-refuses-symlinks: a symbolic link anywhere in the closure is '
+           'refused by name, because the snapshot would copy its target and the worker would read a file '
+           'the checkout only points at',
+           _m123_link == 'driver_error')
