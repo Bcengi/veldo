@@ -687,6 +687,18 @@ def cases():
     inbox('inbox-answer-key-ignores-revocation', 'control_assignment.py',
           "            if current.get('revoked_at') is not None and current['revoked_at'] <= at:\n                return None\n",
           "", 'inbox/answer-survives-key-rotation')
+    # VELDO-0064 review r2-s6: every parked unit is visible with its assignment and why it is parked.
+    inbox('inbox-parked-only-awaiting', 'control_assignment.py',
+          "            parked.append({'unit_id'",
+          "            if reason != 'awaiting_answer':\n                continue\n            parked.append({'unit_id'",
+          'inbox/parked-units-visible')
+    inbox('inbox-parked-metric-omitted', 'control_assignment.py',
+          "pending=pending, parked=len(parked),",
+          "pending=pending, parked=sum(1 for u in parked if u['reason'] == 'awaiting_answer'),",
+          'inbox/parked-units-visible')
+    inbox('inbox-parked-refusal-shown-ready', 'control_assignment.py',
+          "reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'",
+          "reason = 'ready_to_resume'", 'inbox/parked-units-visible')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

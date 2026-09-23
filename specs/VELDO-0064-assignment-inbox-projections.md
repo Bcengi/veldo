@@ -119,6 +119,15 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Open question for the owner (review r2, 2026-09-23). This item does not say what becomes of the
+blocked unit when its assignment is declined or canceled, or when the owner's answer no longer
+admits (for example, a key revoked from before the answer was accepted). Such a unit stays
+parked: no Release 1 command claims it, resumes it or returns it to the backlog. The inbox lists
+every parked unit with its assignment and why it is parked (`parked_units`, and `parked` and
+`parked_by_reason` in its metrics), so none is invisible, but the implementation decides
+nothing about it. Whether a decline or cancel should release the unit, re-open it for another
+holder, retire it, or wait for a new assignment is the owner's decision.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: the owner narrowed this work under

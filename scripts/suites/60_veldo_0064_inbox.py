@@ -116,7 +116,7 @@ def _v64_checks(base):
                                   'projection/intent-before-send', 'projection/echo-mismatch-kept',
                                   'projection/owner-enrolled-chat', 'projection/returned-chat-checked',
                                   'projection/only-telegram-refusal-retried', 'projection/protocol-error-unknown',
-                                  'inbox/answer-survives-key-rotation')}
+                                  'inbox/answer-survives-key-rotation', 'inbox/parked-units-visible')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -194,7 +194,7 @@ def _v64_checks(base):
     for unit in ('unit-1', 'unit-2'):
         fixture(unit, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
                                              backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a']))
-    for unit in ('unit-3', 'unit-4', 'unit-5'):
+    for unit in ('unit-3', 'unit-4', 'unit-5', 'unit-6', 'unit-7', 'unit-8'):
         fixture(unit, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
                                              backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-b']))
 
@@ -764,6 +764,37 @@ def _v64_checks(base):
           and inbox.admit(rot3)['reason'] == 'missing_authority')
     check(rotated, 'control: that revocation does not reach an answer signed with another key',
           inbox.admit(rot2)['admitted'] is True and inbox.admit(rot1)['admitted'] is True)
+
+    # --- every parked unit is visible, with its assignment and why it is still parked -----------
+    visible = 'inbox/parked-units-visible'
+    cid6, cid7, cid8 = (claims.claim_id(ids['repository_uuid'], u) for u in ('unit-6', 'unit-7', 'unit-8'))
+    v_decline, v_cancel, v_ready = (I.assignment_id(ids['repository_uuid'], a) for a in ('V-decline', 'V-cancel', 'V-ready'))
+    disposed = []
+    for unit, alias, dispose in (('unit-6', 'V-decline', ('owner', 'decline')), ('unit-7', 'V-cancel', ('worker-b', 'cancel')),
+                                 ('unit-8', 'V-ready', ('owner', 'answer'))):
+        generation = receiver.apply(claim_packet('worker-b', unit, 'c-claim-' + unit)).get('claim', {}).get('generation')
+        opened_v = command('worker-b', 'open', alias, claim_generation=generation, assignment=content('decision'))
+        extra = {'ruling': 'accept'} if dispose[1] == 'answer' else {}
+        disposed.append(opened_v.get('released_claim') is not None
+                        and command(dispose[0], dispose[1], alias, request_version=1, **extra).get('ok') is True)
+    lister = getattr(inbox, 'parked_units', None)
+    listed = lister() if callable(lister) else []
+    by_unit = {p.get('unit_id'): (p.get('assignment_id'), p.get('claim_id'), p.get('reason')) for p in listed}
+    expected = {'unit-3': (r1_id, cid3, 'awaiting_answer'), 'unit-4': (r3_id, cid4, 'awaiting_answer'),
+                'unit-5': (rot3, cid5, 'answer_not_admitted'), 'unit-6': (v_decline, cid6, 'declined'),
+                'unit-7': (v_cancel, cid7, 'canceled'), 'unit-8': (v_ready, cid8, 'ready_to_resume')}
+    check(visible, 'the decline, the cancel and the answer were accepted over parked units', disposed == [True] * 3)
+    for unit, why in (('unit-6', 'a declined assignment'), ('unit-7', 'a canceled assignment'), ('unit-5', 'an answer that does not admit'),
+                      ('unit-3', 'a pending assignment'), ('unit-8', 'an admitted answer not yet resumed')):
+        check(visible, 'a unit parked on %s is listed with its claim, assignment and why' % why,
+              by_unit.get(unit) == expected[unit])
+    check(visible, 'the answer that does not admit names its admission refusal',
+          [p.get('admission') for p in listed if p.get('unit_id') == 'unit-5'] == ['missing_authority'])
+    check(visible, 'the listing is exactly the parked units: resumed and owned units are not in it', by_unit == expected)
+    counted = inbox.metrics()
+    check(visible, 'metrics count every parked unit by why it is parked', counted.get('parked') == 6
+          and counted.get('parked_by_reason') == {'awaiting_answer': 2, 'answer_not_admitted': 1, 'declined': 1,
+                                                  'canceled': 1, 'ready_to_resume': 1})
 
     # --- AC3: views describe; only current authority admits --------------------------------------
     k1_brief = inbox.brief(k1)

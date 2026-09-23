@@ -20,7 +20,10 @@ the blocked work resumes only through `resume`, which takes the claim again thro
 organ's `resume` transition in the same store transaction that binds the versions of every input
 `admit` read, and only while `admit` admits. A requester holding several claims is refused, and
 the transaction re-reads the requester's claims so none is taken between the read and the
-commit. `waiting_resources` reports any claim still held on a pending assignment's unit.
+commit. `waiting_resources` reports any claim still held on a pending assignment's unit, and
+`parked_units` every parked unit with the assignment it waits for and why it is still parked:
+a unit whose assignment was declined, canceled or answered without admitting has no Release 1
+way back, and it is listed (and counted in `metrics`) so it is never invisible.
 
 VIEWS ARE NOT AUTHORITY. `index` and `brief` describe the current stored version and show an
 invalid record as visibly invalid, never skipped and never presented as content. `admit` is the
@@ -74,6 +77,10 @@ ANSWERED = tuple(s for s, c in CATEGORIES.items() if c == 'answered')
 ANSWER_PATH = ('OFFERED', 'ACCEPTED', 'IN_PROGRESS', 'SUBMITTED')
 ANSWER_EVIDENCE = {'actor_predicate_satisfied': True, 'work_started': True, 'artifact_submitted': True}
 DEADLINE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+# Why a parked unit is still parked. Only `ready_to_resume` has a Release 1 way back (`resume`);
+# `awaiting_answer` waits for the owner; the others have none yet and stay visible.
+PARKED_REASONS = ('awaiting_answer', 'ready_to_resume', 'answer_not_admitted', 'declined', 'canceled', 'expired',
+                  'invalid_assignment', 'missing_assignment')
 REFUSALS = ('invalid_input', 'not_authorized', 'missing_authority', 'stale_subject', 'not_owner',
             'unavailable_service', 'missing_evidence', 'invalid_record', 'not_answered', 'unknown_outcome')
 _ALIAS = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
@@ -659,6 +666,42 @@ class Inbox:
                 held.append({'assignment_id': entry['id'], 'claim_id': cid, 'holder': claim.get('holder')})
         return held
 
+    def parked_units(self):
+        """Every unit of this repository parked on a person assignment: its unit, claim and the
+        assignment it waits for, and why it is still parked (PARKED_REASONS). A unit whose
+        assignment was declined, canceled or answered without admitting stays parked, because no
+        Release 1 command decides what becomes of it; it is listed here so it is never invisible.
+        `admission` is the admission answer of an answered assignment, otherwise None."""
+        prefix = self.claims.claim_id(self.ids['repository_uuid'], '')
+        parked = []
+        for cid, e in sorted(self.store.materialized_state(self.conn)['entities'].items()):
+            claim = e.get('data')
+            if (e.get('kind') != 'claim' or not cid.startswith(prefix) or not isinstance(claim, dict)
+                    or claim.get('state') != 'released' or not claim.get('parked_on')):
+                continue
+            aid, admission = claim['parked_on'], None
+            item = self.read(aid) if _is_str(aid) else None
+            if item is None:
+                reason = 'missing_assignment'
+            elif item['problems']:
+                reason = 'invalid_assignment'
+            else:
+                category = CATEGORIES[item['data']['state']]
+                if category == 'pending':
+                    reason = 'awaiting_answer'
+                elif category == 'answered':
+                    admission = self._admission(item)[0]
+                    reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'
+                else:
+                    reason = category
+            parked.append({'unit_id': claim.get('unit_id'), 'claim_id': cid, 'assignment_id': aid,
+                           'reason': reason, 'admission': admission})
+        return parked
+
     def metrics(self):
         pending = sum(1 for e in self.index()['entries'] if e['category'] == 'pending')
-        return dict(self.counts, pending=pending)
+        parked = self.parked_units()
+        by_reason = {}
+        for unit in parked:
+            by_reason[unit['reason']] = by_reason.get(unit['reason'], 0) + 1
+        return dict(self.counts, pending=pending, parked=len(parked), parked_by_reason=by_reason)
