@@ -1034,10 +1034,10 @@ def cases():
     def projection(name, old, new, row):
         add(65, name, '62_veldo_0065_presentations.py', 'control_channel_projection.py', old, new, [row])
 
-    projection('projection-ignores-presentations', "        return mine if enabled or mine else None\n",
-               "        return mine if enabled else None\n", 'projection/silent-from-store')
-    projection('projection-ignores-enrollment-setting', "        return mine if enabled or mine else None\n",
-               "        return mine if mine else None\n", 'projection/silent-from-store')
+    projection('projection-ignores-presentations', "        in_use = enabled or framed or bool(mine)\n",
+               "        in_use = enabled\n", 'projection/silent-from-store')
+    projection('projection-ignores-enrollment-setting', "        in_use = enabled or framed or bool(mine)\n",
+               "        in_use = framed or bool(mine)\n", 'projection/silent-from-store')
     presentation('presentation-ignores-notice',
                  "        notice = self._notice(request, b['enrolled_chat']) if prior is None else None\n",
                  "        notice = None\n", 'projection/notice-superseded')

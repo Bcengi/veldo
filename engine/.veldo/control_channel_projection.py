@@ -43,7 +43,8 @@ record is Release 2 work.
 
 ONE DECISION MESSAGE WHEN PRESENTATIONS ARE IN USE (VELDO-0065). Whether this projection sends is
 decided from the store, never from how it was constructed: when the owner's enrollment says
-`presentations: enabled`, or a VELDO-0065 presentation receipt exists for the request, it sends no
+`presentations: enabled`, or the request has a VELDO-0065 framing (its requester's signed request to
+present it) or presentation receipt, it sends no
 notice of its own, because the versioned presentation is the one decision message and the owner's
 reply to it is what settles. Such an entry is reported as `presented` when a presentation of its
 current request version is published, otherwise `awaiting_presentation`. A projection given the
@@ -83,6 +84,9 @@ ENROLLMENT_KIND = 'channel_enrollment'
 # (control_channel_presentation.RECEIPT_KIND; the VELDO-0065 suite binds the two).
 PRESENTATIONS_FIELD = 'presentations'
 PRESENTATION_KIND = 'channel_presentation'
+# VELDO-0065's framing kind (control_channel_presentation.FRAMING_KIND): a framed request is one its
+# requester asked to be presented, so the presentation, not a notice, is its decision message.
+FRAMING_KIND = 'presentation_framing'
 ENROLLMENT_SCHEMA = 'veldo.channel_enrollment/v1'
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text')
 # What a record that is not attempted again reports on a later run.
@@ -376,15 +380,20 @@ class Projection:
         reason = ','.join(done['anomalies']) if done['outcome'] == 'anomaly' else done['refusal']
         return self._result(aid, versions, done['outcome'], reason, projection_id=pid)
 
+    def _of_request(self, kind, request):
+        return [d for d in (json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (kind,)))
+                if d.get('request_id') == request]
+
     def _presentations(self, entry):
         """The presentation receipts of this entry's request, or None when presentations are not in
-        use for it: neither enabled on its owner's enrollment nor ever presented."""
-        receipts = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (PRESENTATION_KIND,))]
-        mine = [r for r in receipts if r.get('request_id') == entry['id']]
+        use for it: not enabled on its owner's enrollment, and the request neither framed nor presented."""
+        mine = self._of_request(PRESENTATION_KIND, entry['id'])
+        framed = bool(self._of_request(FRAMING_KIND, entry['id']))
         row = self.conn.execute('SELECT data FROM entities WHERE id=? AND kind=?',
                                 (enrollment_id(entry['owner']), ENROLLMENT_KIND)).fetchone()
         enabled = row is not None and json.loads(row[0]).get(PRESENTATIONS_FIELD) == 'enabled'
-        return mine if enabled or mine else None
+        in_use = enabled or framed or bool(mine)
+        return mine if in_use else None
 
     def _presented(self, entry, receipts):
         """Presentations are in use for this entry: nothing is sent here, the presentation is the message."""

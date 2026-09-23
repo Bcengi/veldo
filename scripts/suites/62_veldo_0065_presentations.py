@@ -844,7 +844,8 @@ def _v65_checks(base):
                     if 'Request: %s' % request in text.split('\n') or 'Assignment: %s' % request in text.split('\n')]
         notice_row = 'projection/notice-superseded'
         with section(notice_row):
-            b1 = opened('B-1')
+            command('pm', 'open', 'B-1', assignment=content())  # not yet framed: presentations not in use
+            b1 = I.assignment_id(ids['repository_uuid'], 'B-1')
             start = len(api['requests'])
             notice_results = {r['assignment_id']: r for r in
                               P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()}
@@ -853,6 +854,7 @@ def _v65_checks(base):
             notice_data = _v65_json.loads(notice[1]) if notice else {}
             check(notice_row, 'before presentations are enabled the inbox projection sends its notice',
                   notice_results.get(b1, {}).get('outcome') == 'sent' and len(about(b1, start)) == 1)
+            frame('pm', 'B-1', 1, 'Low: a wrong choice costs one review cycle.')
             presenter.present(b1)
             b1_r = presenter.current(b1) or {}
             shown_b1 = (api['messages'].get((owner_chat, b1_r.get('message_id'))) or {})
@@ -875,6 +877,11 @@ def _v65_checks(base):
             restarted = {r['assignment_id']: r for r in P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()}
             check(silent, 'a projection built without the presenter sends nothing for a request that has a presentation',
                   about(a1, start) == [] and about(b1, start) == [] and restarted.get(a1, {}).get('outcome') == 'presented')
+            a2 = opened('A-2')
+            start = len(api['requests'])
+            framed_only = {r['assignment_id']: r for r in P.Projection(S, inbox, edge64, conn, 'authority', journal_sign).project()}
+            check(silent, 'a framed request is presentation-bound: nothing is sent before its presentation exists',
+                  about(a2, start) == [] and framed_only.get(a2, {}).get('outcome') == 'awaiting_presentation')
             fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
                     dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=owner_chat,
                          revoked_at=None, presentations='enabled'))
@@ -886,8 +893,8 @@ def _v65_checks(base):
                   about(s9, start) == [] and quiet.get(s9, {}).get('outcome') == 'awaiting_presentation')
             check(silent, 'control: an owner without the setting and without a presentation still gets the notice',
                   enroll_other_and_project())
-            check(silent, 'the receipt kind the projection reads is the presentation organ\'s',
-                  getattr(P, 'PRESENTATION_KIND', None) == V.RECEIPT_KIND)
+            check(silent, 'the receipt and framing kinds the projection reads are the presentation organ\'s',
+                  getattr(P, 'PRESENTATION_KIND', None) == V.RECEIPT_KIND and getattr(P, 'FRAMING_KIND', None) == V.FRAMING_KIND)
 
         # Review r3: with presentations enabled, one decision message per request version
         one = 'projection/one-message-per-version'
