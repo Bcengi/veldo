@@ -80,6 +80,19 @@ records measured time including snapshot overhead. The new workload is below the
 60-second limit. This is a conservative isolated workload measurement, not a claim
 that concurrent gate wall time is additive.
 
-The final gate summary, input commit and full-log SHA-256 will be recorded in
-`gate-summary.json`; no full gate log is committed. Independent review and landing
+The final clean-tree gate is recorded in `gate-summary.json`, including its input
+commit and full-log SHA-256. No full gate log is committed. Independent review and landing
 approval are not asserted by this implementation proof. No push is performed.
+
+Measured added workload: 10.48 seconds. Final gate results:
+
+```text
+GATE: GREEN (74b8b6c4d3c45287abadaa3bf5a3bec20659c927)
+selftest: 5681 passed, 0 failed
+mutations: passed registered=90 executed=90 rejected=90 workers=122 elapsed=62.083s
+```
+
+The earlier diagnostic gate was stopped after the missing mutation-registry footprint
+entry was identified; `diagnostic-gate.json` retains that failure and its log digest.
+The authorized registry path was then declared. A later diagnostic run passed units but
+stopped for a canonical lifecycle correction. This complete clean-tree run passed.
