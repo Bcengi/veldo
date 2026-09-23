@@ -281,7 +281,9 @@ class TelegramPresentationEdge:
             raise EdgeRefused('invalid_input', 'a send names a numeric chat and an optional numeric message')
         payload = {'chat_id': chat, 'text': text, 'disable_web_page_preview': True}
         if reply_to is not None:
-            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': False}
+            # The link is visible when the superseded message still exists; when it is gone the
+            # replacement is still sent, and its own text names what it supersedes.
+            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': True}
         request = urllib.request.Request('%s/bot%s/sendMessage' % (self.base_url, self._token),
                                          data=json.dumps(payload).encode(), method='POST',
                                          headers={'Content-Type': 'application/json'})
@@ -306,13 +308,20 @@ class TelegramPresentationEdge:
                 'text': result['text'], 'reply_to_message_id': replied if type(replied) is int else None}
 
 
+def record_linked(record, replied):
+    """Whether the visible reply link to the superseded message was made."""
+    return record['reply_to'] is not None and replied == record['reply_to']
+
+
 def _anomalies(record, platform):
     found = []
     if platform['text'] != record['rendered']:
         found.append('presentation_mismatch')
     if platform['chat_id'] != record['enrolled_chat']:
         found.append('chat_mismatch')
-    if platform['reply_to_message_id'] != record['reply_to']:
+    # The platform may send a replacement without its reply target (the superseded message is gone);
+    # a reply to any other message, or a reply nobody asked for, is not the supersession link.
+    if platform['reply_to_message_id'] not in (record['reply_to'], None):
         found.append('supersession_mismatch')
     return found
 
@@ -333,7 +342,7 @@ def _record_transition(params, before):
             raise ValueError('a receipt is immutable; only a definite refusal is attempted again')
         data = dict(record, attempt=current['attempt'] + 1 if current else 1, outcome='pending', chat_id=None,
                     message_id=None, external_id=None, published_at=None, platform_text=None,
-                    reply_to_message_id=None, refusal=None, anomalies=[])
+                    reply_to_message_id=None, reply_linked=None, refusal=None, anomalies=[])
         return {pid: {'kind': RECEIPT_KIND, 'data': data}}
     if current is None or current.get('outcome') != 'pending' or current.get('attempt') != params.get('attempt'):
         raise ValueError('a completion finishes the pending attempt it names')
@@ -356,7 +365,8 @@ def _record_transition(params, before):
         data.update(outcome='anomaly' if found else 'published', chat_id=platform['chat_id'],
                     message_id=platform['message_id'], external_id='%d:%d' % (platform['chat_id'], platform['message_id']),
                     published_at=platform['date'], platform_text=platform['text'],
-                    reply_to_message_id=platform['reply_to_message_id'], anomalies=found)
+                    reply_to_message_id=platform['reply_to_message_id'],
+                    reply_linked=record_linked(data, platform['reply_to_message_id']), anomalies=found)
     if data['outcome'] == 'published':
         head = before.get(hid, {}).get('data') or {}
         prior = (data['supersedes'] or {}).get('presentation_id')

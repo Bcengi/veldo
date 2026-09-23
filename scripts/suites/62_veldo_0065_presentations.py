@@ -45,8 +45,10 @@ class _V65BotApi(_v65_http.BaseHTTPRequestHandler):
         chat = body.get('chat_id')
         reply = (body.get('reply_parameters') or {}).get('message_id')
         if reply is not None and (chat, reply) not in st['messages']:
-            return self._answer(400, {'ok': False, 'error_code': 400,
-                                      'description': 'Bad Request: message to be replied not found'})
+            if not (body.get('reply_parameters') or {}).get('allow_sending_without_reply'):
+                return self._answer(400, {'ok': False, 'error_code': 400,
+                                          'description': 'Bad Request: message to be replied not found'})
+            reply = None  # sent as an ordinary message, as Telegram does
         st['requests'].append((chat, body.get('text'), reply))
         st['next'] += 1
         date = 1790000000 + st['next']
@@ -75,7 +77,7 @@ def _v65_checks(base):
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
                                   'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
                                   'framing/stored-framing-reverified', 'answer/not-before-publication',
-                                  'presentation/private-chat-only')}
+                                  'presentation/private-chat-only', 'presentation/replacement-without-reply-target')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -724,6 +726,29 @@ def _v65_checks(base):
                   and not presenter.receipts(g1))
             check(private, 'the refusal is visible in the presentation metrics',
                   (presenter.metrics().get('unpresented_by_reason') or {}).get('group_chat') == 1)
+
+        # Review r6: a replacement publishes even when the message it supersedes is gone
+        gone = 'presentation/replacement-without-reply-target'
+        with section(gone):
+            x1 = opened('X-1')
+            presenter.present(x1)
+            x1_r1 = presenter.current(x1) or {}
+            del api['messages'][(x1_r1.get('chat_id'), x1_r1.get('message_id'))]  # the owner deleted it
+            command('pm', 'revise', 'X-1', request_version=1, changes={'brief': 'The revised brief the owner must see.'})
+            frame('pm', 'X-1', 2, 'Low: a wrong choice costs one review cycle.')
+            replaced = presenter.present(x1)
+            x1_r2 = presenter.current(x1) or {}
+            shown_text = (api['messages'].get((x1_r2.get('chat_id'), x1_r2.get('message_id'))) or {}).get('text', '')
+            check(gone, 'the replacement is published without the missing reply target',
+                  reason(replaced) == ('published', None) and x1_r2.get('request_version') == 2)
+            check(gone, 'the replacement still names what it supersedes in the shown text',
+                  'Supersedes: presentation version 1, message %s. Only this message can be answered.'
+                  % x1_r1.get('message_id') in shown_text.split('\n'))
+            check(gone, 'the receipt records that no reply link was made',
+                  x1_r2.get('reply_linked') is False and x1_r2.get('reply_to_message_id') is None
+                  and x1_r2.get('reply_to') == x1_r1.get('message_id'))
+            check(gone, 'control: an ordinary replacement records its reply link',
+                  (presenter.receipt(r2.get('presentation_id', '')) or {}).get('reply_linked') is True)
     finally:
         server.shutdown()
         server.server_close()

@@ -723,8 +723,8 @@ def cases():
                  "    return 'presentation:%s:%s:%d' % (CHANNEL, request_id, request_version)\n",
                  'presentation/visible-supersession')
     presentation('replacement-without-reply-link',
-                 "        if reply_to is not None:\n            payload['reply_parameters']",
-                 "        if False:\n            payload['reply_parameters']", 'presentation/visible-supersession')
+                 "            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': True}\n",
+                 "            pass\n", 'presentation/visible-supersession')
     presentation('answer-checks-subject-only',
                  "    return [f for f in BOUND_FIELDS if receipt.get(f) != current.get(f)]\n",
                  "    return [f for f in ('subject_digests',) if receipt.get(f) != current.get(f)]\n",
@@ -782,6 +782,11 @@ def cases():
     presentation('unpresented-reason-not-counted',
                  "                unpresented[refusal] = unpresented.get(refusal, 0) + 1\n", "                pass\n",
                  'presentation/private-chat-only')
+    # VELDO-0065 review r6: a replacement publishes when the superseded message is gone.
+    presentation('replacement-requires-reply-target', "'message_id': reply_to, 'allow_sending_without_reply': True}",
+                 "'message_id': reply_to, 'allow_sending_without_reply': False}", 'presentation/replacement-without-reply-target')
+    presentation('reply-link-always-claimed', "    return record['reply_to'] is not None and replied == record['reply_to']\n",
+                 "    return record['reply_to'] is not None\n", 'presentation/replacement-without-reply-target')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
