@@ -52,7 +52,7 @@ acceptance_criteria:
     text: >
       Claim: Versioned team data defines one PM and required elaboration, implementation and
       independent review roles. Set and completeness: Compare required responsibilities, expertise,
-      proposal permissions, engine eligibility, context/tool restrictions, budget and independence
+      proposal permissions, engine eligibility, budget and independence
       fields to the team schema and project requirements; missing or conflicting staffing produces
       an owner request, not invented workers. Falsifier: Accept a team missing required independent
       review; the incomplete-roster check must fail.
@@ -99,6 +99,9 @@ The deferred obligations in History are not part of this Release 1 criterion or 
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
+
+A role's tools and MCP servers come only from VELDO-0127's versioned capability
+configuration. The team schema has no tool restrictions or second capability filter.
 
 Assignment consumes VELDO-0049 engineering-review policy and its count, independence and
 exact-subject bindings. It does not invoke deferred VELDO-0070/decision_review adversarial
