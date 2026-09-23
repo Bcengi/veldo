@@ -307,6 +307,28 @@ def plant_gitfile(view):
     return {'next': 'only', 'suspend': True, 'notes': {}}
 
 
+def _plant_git_directory(where):
+    # HEAD + refs/ + commondir: a linked-worktree admin directory whose common directory is the
+    # domain repository. Git calls `where` a Git directory; no .git entry and no objects/.
+    target = (_t_Path(sys.argv[0]).parent.parent / 'known-repository').read_text().strip()
+    (where / 'refs').mkdir(exist_ok=True)
+    (where / 'HEAD').write_text('ref: refs/heads/main\n')
+    (where / 'commondir').write_text(target + '\n')
+    return {'next': 'only', 'suspend': True, 'notes': {}}
+
+
+def plant_commondir_runners(view):
+    return _plant_git_directory(_t_Path(sys.argv[0]).parent)
+
+
+def plant_commondir_work(view):
+    return _plant_git_directory(_t_Path(_t_os.getcwd()).parent)
+
+
+def plant_commondir_root(view):
+    return _plant_git_directory(_t_Path(sys.argv[0]).parent.parent)
+
+
 def script_dir_probe(view):
     # Git discovery from this child's own script directory; writes what it finds.
     found = _stores_from(_t_Path(sys.argv[0]).parent)
@@ -350,7 +372,8 @@ WORKFLOWS = {
     'proc-reach': one(proc_reach), 'poison-work': one(poison_work),
     'poison-runners': one(poison_runners), 'cwd-probe': one(cwd_probe),
     'plant-gitfile': one(plant_gitfile), 'script-dir-probe': one(script_dir_probe),
-    'descriptors': one(descriptors),
+    'descriptors': one(descriptors), 'plant-commondir-runners': one(plant_commondir_runners),
+    'plant-commondir-work': one(plant_commondir_work), 'plant-commondir-root': one(plant_commondir_root),
 }
 _t_request = json.loads(sys.stdin.buffer.read())
 emit(_t_request, answer(_t_request, WORKFLOWS), sys.stdout)
@@ -564,6 +587,23 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                                        workflow('script-dir-probe'))
         if (stage_root / 'runners/.git').exists():
             (stage_root / 'runners/.git').unlink()
+        # A Git directory by Git's own rules (HEAD + refs/ + commondir), planted in runners/, in
+        # work/ and at the stage root: the adapter asks Git, so each is refused.
+        for place in ('runners', 'work', 'root'):
+            already = {p.name for p in (stage_root / 'work').iterdir()}
+            call('start', 'cycle-plant-c-' + place, 'command-plant-c-' + place, snapshot,
+                 workflow('plant-commondir-' + place))
+            links['commondir-' + place] = why('start', 'cycle-after-c-' + place, 'command-after-c-' + place,
+                                              snapshot, workflow('script-dir-probe'))
+            planted = stage_root if place == 'root' else stage_root / place
+            links['commondir-' + place + '-leftover'] = sorted(p.name for p in (stage_root / 'work').iterdir()
+                                                               if p.name not in already
+                                                               and p.name not in ('HEAD', 'refs', 'commondir'))
+            for name in ('HEAD', 'commondir'):
+                if (planted / name).exists():
+                    (planted / name).unlink()
+            if (planted / 'refs').is_dir():
+                (planted / 'refs').rmdir()
         # A runtime whose pyvenv.cfg names a repository (created by a repository's own virtual
         # environment) is refused before launch; the installed runtime's names none.
         # The repository's own virtual environment: its python is a link out to the system one.
@@ -676,10 +716,10 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and 'langgraph.types.Command' in foreign[0]['failure']['detail']
            and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
            and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
-           and len(responses) == 20 and all(_s43_exact_plain(r) for r in responses))
+           and len(responses) == 23 and all(_s43_exact_plain(r) for r in responses))
     source = (repo / '.veldo/control_graph_langgraph.py').read_text()
     present = [a for a in audits if a]
-    expect('graph/runtime/tracing-off', len(present) == 20 and all(
+    expect('graph/runtime/tracing-off', len(present) == 23 and all(
                a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
                and a['sockets'] == [] for a in present)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
@@ -701,6 +741,11 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and links['runners'] == 'runtime_unavailable: the stage runners is a link the adapter did not make'
            and links['checkout_written'] == []
            and links['runners-gitfile'] == 'runtime_unavailable: the stage runners lies inside a repository'
+           and links['commondir-runners'] == 'runtime_unavailable: the stage runners lies inside a repository'
+           and links['commondir-work'] == ('runtime_unavailable: the child working directory does not resolve '
+                                           'outside every repository')
+           and links['commondir-root'] == 'runtime_unavailable: the runtime stage lies inside a repository'
+           and all(links['commondir-' + place + '-leftover'] == [] for place in ('runners', 'work', 'root'))
            and before == after and account_state() == account_before)
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended'
