@@ -1,6 +1,6 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -102,2 +102,2 @@
+@@ -134,2 +134,2 @@
 -        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',
 -                         '--no-follow-tags', '--recurse-submodules=no',
 +        push = transport('push', '--porcelain',

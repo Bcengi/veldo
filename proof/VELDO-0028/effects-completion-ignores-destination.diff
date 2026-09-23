@@ -1,5 +1,0 @@
---- a/.veldo/control_effect_executor.py
-+++ b/.veldo/control_effect_executor.py
-@@ -129 +129 @@
--        complete = (push.returncode == 0 and reached
-+        complete = (push.returncode == 0

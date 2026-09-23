@@ -550,3 +550,136 @@ defect:
 `t3` prints no BUG line (publication completes where plain git does), `t4` reports 0 default-profile
 differences, and `t5`'s hook, `core.worktree`/`core.bare` and `GIT_ALLOW_PROTOCOL` cases are
 unchanged.
+
+## Review round R7 (independent review of 525c69c..0a97547)
+
+An independent review reproduced six defects with its own probes (a shared `harness.py` plus
+`p1_destination_read.py`, `p2_scrub.py`, `p3_fanout.py` and `p4_unregistered_mutants.py`). Most had
+one root cause: where the push went, and whether it completed, were decided by parsing the push's
+printed output, and both client pre-push hooks and servers can write or reshape that text. A hook
+could hide the real destination and forge another (1b, 1c), a server's proc-receive report carrying
+a refname with a newline forged a completed read (1g), a hook printing a word without a newline
+turned a correct push unknown (1a), an AGit-style server that accepted the push under
+`refs/changes/1` left a two-repository push reading completed with one recorded (3e), and a hook's
+Latin-1 byte lost the record altogether (1h). Three URL shapes kept credentials in the record: an
+scp-style address with two `@`, a `<transport>::<address>` URL (also when an operator's `insteadOf`
+injects one) and a token in a query string.
+
+**Decision: change the object, do not parse harder.** Operator routing is still followed and never
+refused.
+
+- **Destinations are git's own resolution from configuration**, read before pushing under the same
+  network profile as the push: `git remote show -n` names every push URL git push would use,
+  applying `insteadOf`, `pushInsteadOf`, `pushurl` fan-out and legacy files the way git does. `git
+  remote get-url --push --all`, the first candidate, answers only for remotes in the clone's own
+  file (git requires them to be configured in the repository) and refuses a plain URL and a remote
+  section in the operator's global file, so it cannot serve here. `remote show -n` contacts no
+  remote and runs no hook, so nothing a hook or server writes reaches it. Its report is one URL per
+  line, so a line break in the receiver's URL or in any configured URL or rewrite value (read with
+  `git config -z`) is refused before anything is pushed.
+- **Completion is each destination's state after the push.** Every resolved destination is listed
+  with `git ls-remote --symref` before and after. `at-tip`: it held the old tip at the authorized
+  ref before, and after the push its advertised state is exactly the state before with that ref
+  (and any symbolic ref that targets it) moved to the tested commit. `unreachable`: a listing
+  failed. `not-at-tip`: anything else (rejected, accepted under another ref, another change).
+  Completed only when the push exited cleanly and every destination is at the tip. The push's
+  output is diagnostic text only, decoded losslessly (`surrogateescape`, as is every git output
+  the receiver reads), and is never evidence.
+- **Recorded URLs are scrubbed by parsing**, never taken from git's display (which itself shows a
+  transport-prefixed URL's credentials): a transport prefix is scrubbed in its address,
+  recursively; a scheme URL loses everything up to the last `@` of its authority and, except a file
+  URL, its query and fragment; an scp-style address loses everything before the last `@` ahead of
+  its host. The record is `{authorized_url, destinations: [{url, outcome}]}`.
+
+A consequence of the completion rule, as decided: a `pushInsteadOf` or `pushurl` route, and a
+fan-out whose every destination accepts, now complete, because completion is observed where the
+push went rather than where the fetch URL points.
+
+**Rows.** Nine new rows, each performing the probe's scenario through the real executor:
+`effects/publication-destination-despite-hook-text` (1b: the push is routed by a `pushurl` to X, the
+pre-push hook mirrors the commit to L and prints a forged `To L` block that swallows git's own line;
+completed, recorded X at the tip), `effects/publication-rejected-destination-recorded` (1c: X
+refuses and the hook forges L; unknown, X recorded not at the tip),
+`effects/publication-completion-from-destination-state` (1g: X's proc-receive reports success
+without updating X, mirrors the commit to L and reports an option refname with a newline and a
+forged block; unknown, X not at the tip), `effects/publication-hook-text-without-newline` (1a),
+`effects/publication-non-utf8-output` (1h: the hook prints a Latin-1 byte and the remote holds a ref
+whose name is not UTF-8; completed and recorded), `effects/publication-fan-out-agit-report` (3e: two
+pushurls, the second an AGit-style server; unknown, the first at the tip and the second not),
+`effects/publication-scrub-scp-user-information` (`deploy@user@host:path`, `user@host:path`, and an
+`@` inside an ssh password), `effects/publication-scrub-transport-prefix`
+(`veldotest::https://user:password@host`, `veldotest::ssh://...` and an operator `insteadOf` that
+injects a credentialed transport-prefixed URL) and `effects/publication-scrub-query-fragment`, the
+last three through a test remote helper with the `connect` capability and a fake SSH command, so git
+runs its real transports. `effects/publication-records-resolved-destination` moves to the new record
+and gains a stale second pushurl (3b), an unreachable second pushurl (3c), a configured pushurl
+holding a line break and a receiver path holding one (both refused, nothing pushed);
+`effects/publication-destination-without-credentials` and
+`effects/publication-config-selection-parity` read the new record (the unresolved alias of the
+parity control is now recorded unreachable).
+
+**Retired**, because they only pinned the old output parsing: rows
+`effects/publication-destination-as-git-displays` and
+`effects/publication-destination-from-push-status` (their scp, `@`-in-password and talking-hook
+cases live on in the scrub and hook-text rows), and mutations `effects-destination-from-listing`,
+`effects-completion-ignores-destination`, `effects-listed-url-isolated-profile`,
+`effects-scp-url-as-given`, `effects-completion-compares-raw-listing`,
+`effects-destination-git-display-only`, `effects-pushed-from-every-to-line` and
+`effects-pushed-ignores-refspec`. The review's `p4_unregistered_mutants.py` mutated conjuncts of
+that retired status-line parser; the code they targeted is gone.
+
+**Mutations.** New, each with the rows it must red: `effects-destinations-from-fetch-url` (the fetch
+resolution in place of git's push resolution: routes, hook-text, rejected rows),
+`effects-destinations-from-dry-run-output` (destinations from the `To` lines of a dry-run push:
+hook-text, rejected, no-newline rows), `effects-resolution-isolated-profile` (routes and parity),
+`effects-newline-config-accepted` (the line-break guard removed: routes),
+`effects-completion-from-exit-status` (destination-state and AGit rows),
+`effects-completion-first-destination` (AGit row), `effects-completion-from-push-output` (no-newline
+row), `effects-state-read-at-authorized-url` (destination-state and AGit rows),
+`effects-push-output-read-strictly` and `effects-listing-read-strictly` (non-UTF-8 row),
+`effects-destinations-not-scrubbed` (credentials and transport rows), `effects-scrub-scp-first-at`
+and `effects-scrub-scp-unchanged` (scp row), `effects-scrub-transport-not-recursed` (transport row),
+`effects-scrub-keeps-query` and `effects-scrub-keeps-fragment` (query row). Re-anchored with the
+same meaning: `effects-destination-with-credentials` (the authorized URL recorded as given), the
+four confirmation mutations (now inside the per-destination check),
+`effects-remote-must-exist-verbatim` and `effects-transport-isolated-profile`. Every new row is
+redded by at least two of them.
+
+**Commits.** `3e80d7b` merges `origin/main` (`97b6961`) into the branch; the two suite-registry
+conflicts and the mutation-registry conflict were list insertions and keep both sides.
+`2fc4eac` (rows, implementation, mutations, engine copies) and `43d2d2d` (spec Notes and History).
+
+**Red at `0a97547`, green now.** `r7-red-at-0a97547.json` records suite 58 at `2fc4eac` run over a
+copy of the tree with `control_effect_executor.py`, `control_effects.py` and `git_process.py` from
+`0a97547`: the suite ran every row (27 passed, 12 failed); the nine new rows and the three rewritten
+ones fail by assertion, none by an exception, and every other row passes. Its observations show
+each defect as it was: the hook-text case recorded L and read completed, the refused case recorded
+L and not X, the proc-receive case read completed with X unchanged, the no-newline case recorded no
+destination, the Latin-1 case lost the record, the AGit case read completed, and the three scrub
+cases kept the fixture credential. On this branch all 39 named rows are green (65 assertions). The
+suite takes 19.3 to 21.5 seconds on its own over three runs (host load uncontrolled), against 14.8
+to 18.6 before this round: each destination is now listed before and after the push and git's
+resolution is one more process per publication. `python3 -B scripts/check_teeth_mutations.py
+--finding 28` rejects all 50 finding-28 mutations with a green baseline (65 assertions); wall time
+34 minutes 49 seconds on this host under load from other work. All 50 exact diffs are in this
+directory: 16 new, 17 regenerated because their line offsets or anchors moved, and the 8 retired
+ones removed. `mutations.json`, `gate-mutations.json`, `gate-summary.json` and the `manifest.json`
+hashes still describe `65294a7` until the lead's gate run is stamped.
+
+**The review's probes against this branch.** `r7-probes-at-2fc4eac.txt` is the re-run of
+`p1_destination_read.py`, `p2_scrub.py` and `p3_fanout.py`, from a copy whose harness fills the old
+record key `pushed_urls` with the resolved destinations (the only change). All sixteen scrub cases
+are ok and no fixture credential reaches any record. 1a, 1c, 1d, 1f, 1h, 3b and 3c are ok (1f is
+refused before pushing, which the direct-call harness shows as `raised`; nothing moved). Six BUG
+lines remain, each the decided behavior:
+
+- 1b and 1g: the push was routed by a `pushurl` to X and X holds exactly the authorized change, so
+  the result is completed with X recorded at the tip. The probe's condition, "not completed", was
+  written for the withdrawn rule that completion is read at the fetch URL L. The forged text no
+  longer reaches the record, which names X in both.
+- 1e, 3a and 3d: fan-out where every destination accepted; completed with both recorded at the
+  tip, which is the decided rule (every resolved destination holds the tip). The probe expected
+  a fan-out never to complete.
+- 3e: unknown, with the first destination at the tip and the AGit server not at the tip, as
+  required. The probe prints BUG only because it looks for the bare path while the configured
+  pushurl, and so git's resolution and the record, is the `file://` form of the same repository.

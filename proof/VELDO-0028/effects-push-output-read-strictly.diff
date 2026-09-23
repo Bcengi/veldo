@@ -1,0 +1,4 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -137,0 +138 @@
++        push.stdout.encode('utf-8')

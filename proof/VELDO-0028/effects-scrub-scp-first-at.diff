@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -57 +57 @@
+-            return url[:i].rpartition('@')[2] + url[i:]
++            return url[:i].partition('@')[2] + url[i:]

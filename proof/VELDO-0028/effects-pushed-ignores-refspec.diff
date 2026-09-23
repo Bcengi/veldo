@@ -1,5 +1,0 @@
---- a/.veldo/control_effect_executor.py
-+++ b/.veldo/control_effect_executor.py
-@@ -115 +115 @@
--                  and len(status.split('\t')[0]) == 1 and status.split('\t')[1] == refspec]
-+                  and len(status.split('\t')[0]) == 1]

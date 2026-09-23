@@ -1,4 +1,4 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -44,0 +45 @@
-+    return url
+@@ -81,0 +82 @@
++            listed.stdout.encode('utf-8')

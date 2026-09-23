@@ -1,0 +1,12 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -116,5 +116 @@
+-        pushed = []
+-        for line in lines[1:]:
+-            if not line.startswith('  Push  URL: '):
+-                break
+-            pushed.append(line[len('  Push  URL: '):])
++        pushed = [transport('ls-remote', '--get-url', remote).stdout.strip()]
+@@ -122 +118 @@
+-                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
++                or False):

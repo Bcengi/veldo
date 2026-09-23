@@ -1,5 +1,5 @@
 --- a/.veldo/control_effects.py
 +++ b/.veldo/control_effects.py
-@@ -220 +220 @@
+@@ -221 +221 @@
 -        if completed:
 +        if status in ('accepted', 'completed'):
