@@ -737,7 +737,7 @@ def _s43_run():
         # closed resume, and no filesystem location anywhere.
         good_digest = 'sha256:' + 'd' * 64
         result = {'id': 'result-1', 'version': 1, 'digest': good_digest,
-                  'value': {'rank': 2, 'link': 'https://example.com/a/b'}}
+                  'value': {'rank': 2, 'source_url': 'https://example.com/a/b'}}
         resume_ok = {'position': 'rank', 'step': 2, 'notes': '{"trail": ["groom"]}'}
         identity = dict(cycle_id='cycle-q', command_id='command-q', domain_uuid='domain', repository_uuid='repository')
         store_like = '/home/someone/repo/.git/veldo/control/control.sqlite3'
@@ -768,10 +768,34 @@ def _s43_run():
             'relative-path-in-result': dict(snapshot=snapshot, workflow=version, resume=resume_ok,
                                             supplied_results=[dict(result, value='../../.git/veldo')]),
         }
+
+        def with_value(value, **changes):
+            return dict(snapshot=snapshot, workflow=version, resume=changes.get('resume', resume_ok),
+                        supplied_results=[dict(result, value=value)])
+        cycle = []
+        cycle.append(cycle)
+        request_cases.update({
+            'http-then-path': with_value('http://' + store_like),
+            'https-host-then-path': with_value('https://x' + store_like),
+            'http-path-in-notes': with_value(1, resume=dict(resume_ok, notes=_s43_json.dumps({'u': 'http://' + store_like}))),
+            'unbounded-scheme': with_value('xhttp://' + store_like),
+            'file-url': with_value('file://' + store_like),
+            'division-slash': with_value(store_like.replace('/', '\u2215')),
+            'fullwidth-solidus': with_value(store_like.replace('/', '\uff0f')),
+            'percent-encoded': with_value(store_like.replace('/', '%2F')),
+            'url-field-file': with_value({'source_url': 'file://' + store_like}),
+            'url-field-no-host': with_value({'source_url': 'https:///etc/passwd'}),
+            'identifier-control': dict(request_cases['accepted'], _identity=dict(identity, cycle_id='a\x00\nb')),
+            'identifier-dots': dict(request_cases['accepted'], _identity=dict(identity, cycle_id='..')),
+            'two-megabytes': with_value(['x' * 1000] * 2000),
+            'self-referential': with_value(cycle),
+        })
         answered = {}
         for name, fields in request_cases.items():
+            fields = dict(fields)
+            asked = fields.pop('_identity', identity)
             try:
-                graph.request('advance', identity, **fields)
+                graph.request('advance', asked, **fields)
                 answered[name] = 'accepted'
             except Exception as error:
                 answered[name] = getattr(error, 'code', type(error).__name__)
@@ -794,7 +818,13 @@ def _s43_run():
             'result-bad-digest': 'invalid_input', 'resume-open': 'invalid_input', 'resume-notes-object': 'invalid_input',
             'path-in-result': 'path_in_request', 'path-in-notes': 'path_in_request',
             'home-path-in-result': 'path_in_request', 'relative-path-in-result': 'path_in_request',
-            'evidence-ok': 'accepted', 'evidence-malformed': 'invalid_response', 'evidence-path': 'invalid_response'})
+            'evidence-ok': 'accepted', 'evidence-malformed': 'invalid_response', 'evidence-path': 'invalid_response',
+            'http-then-path': 'path_in_request', 'https-host-then-path': 'path_in_request',
+            'http-path-in-notes': 'path_in_request', 'unbounded-scheme': 'path_in_request', 'file-url': 'path_in_request',
+            'division-slash': 'path_in_request', 'fullwidth-solidus': 'path_in_request',
+            'percent-encoded': 'path_in_request', 'url-field-file': 'path_in_request',
+            'url-field-no-host': 'path_in_request', 'identifier-control': 'invalid_input',
+            'identifier-dots': 'invalid_input', 'two-megabytes': 'invalid_input', 'self-referential': 'invalid_input'})
 
         # An over-deep answer is a named refusal, counted and observed, never an escaping error.
         before_counts = dict(adapter.counts)
