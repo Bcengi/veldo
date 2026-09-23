@@ -103,7 +103,7 @@ def _v65_checks(base):
                                   'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
                                   'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
                                   'presentation/retry-after-bounded', 'answer/choice-normalization',
-                                  'answer/after-answered-reply')}
+                                  'answer/after-answered-reply', 'answer/tell-once-per-message')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1157,6 +1157,25 @@ def _v65_checks(base):
                       reason(result) == ('refused', 'already_answered') and len(told) == 1 and told[0][2] == message['message_id']
                       and 'already answered: approve' in told[0][1] and 'did not match' not in told[0][1])
             check(done_row, 'the recorded answer is unchanged', (answered(aa, 1) or {}).get('ruling') == 'approve')
+
+        # Review 3 item 3: the message back is sent once per inbound message, never again on redelivery
+        once = 'answer/tell-once-per-message'
+        with section(once):
+            to1 = opened('TO-1')
+            presenter.present(to1)
+            to1_r = presenter.current(to1) or {}
+            first_msg = owner_reply(to1_r, 'hello')
+            counts = []
+            for message in (first_msg, first_msg, owner_reply(to1_r, 'hello')):
+                asked = len(api['requests'])
+                answer(message)
+                counts.append(len(api['requests']) - asked)
+            check(once, 'the first delivery of a non-answer is told once', counts[0] == 1)
+            check(once, 'the same message delivered again is not told again', counts[1] == 0)
+            check(once, 'control: another message with the same text is told', counts[2] == 1)
+            check(once, 'the message told is recorded by its platform identity',
+                  conn.execute("SELECT COUNT(*) FROM entities WHERE id=?",
+                               ('presentation-tell:telegram_chat:%d:%d' % (owner_chat, first_msg['message_id']),)).fetchone()[0] == 1)
     finally:
         server.shutdown()
         server.server_close()

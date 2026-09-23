@@ -66,9 +66,11 @@ RECEIPT_KIND = 'channel_presentation'
 HEAD_KIND = 'channel_presentation_head'
 FRAMING_KIND = 'presentation_framing'
 ANSWER_KIND = 'presentation_answer'
+TELL_KIND = 'presentation_tell'
 RECORD_OPERATION = 'channel_presentation_record'
 FRAME_OPERATION = 'presentation_frame'
 ANSWER_OPERATION = 'presentation_answer'
+TELL_OPERATION = 'presentation_tell'
 CHANNEL = 'telegram_chat'
 OUTCOMES = ('pending', 'published', 'anomaly', 'refused', 'partial', 'unknown_outcome')
 ANOMALIES = ('presentation_mismatch', 'chat_mismatch', 'supersession_mismatch', 'incomplete_parts')
@@ -172,6 +174,11 @@ def framing_id(request_id):
 def answer_id(request_id, request_version, principal):
     """One answer per principal per request version: what settlement counts, by distinct principal."""
     return 'presentation-answer:%s:%d:%s' % (request_id, request_version, principal)
+
+
+def tell_id(chat, message):
+    """The one message back to one inbound owner message, by that message's platform identity."""
+    return 'presentation-tell:%s:%d:%d' % (CHANNEL, chat, message)
 
 
 def answer_command_id(chat, message):
@@ -574,6 +581,8 @@ class Presenter:
         conn.command_registry[ANSWER_OPERATION] = {
             'transition': guarded(lambda p, b: _write_new(p, b, (('answer', ANSWER_KIND),))),
             'writes': writes}
+        conn.command_registry[TELL_OPERATION] = {
+            'transition': guarded(lambda p, b: _write_new(p, b, (('tell', TELL_KIND),))), 'writes': writes}
 
     # reading
 
@@ -977,7 +986,17 @@ class Presenter:
 
     def _tell(self, ev, receipt, text):
         """A short plain reply to the owner's own message when it cannot count as an answer, so a
-        reply is never met with silence. It grants nothing."""
+        reply is never met with silence. It grants nothing. It is recorded by the inbound message's
+        platform identity before it is sent, so a redelivered message is never told twice."""
+        tid = tell_id(ev['chat_id'], ev['platform_message_id'])
+        if self._entity(tid) is not None:
+            return
+        told = {'schema': 'veldo.presentation_tell/v1', 'channel': CHANNEL, 'request_id': receipt['request_id'],
+                'chat_id': ev['chat_id'], 'message_id': ev['platform_message_id'], 'text': text}
+        try:
+            self._commit(TELL_OPERATION, dict(tell_id=tid, tell=told), {tid: 0}, command_id=tid)
+        except self.store.StoreRefused:
+            return
         sent = self._send(ev['chat_id'], text, ev['platform_message_id'])
         self.observations.append(dict(self.ids, operation='tell_owner', channel=CHANNEL, request_id=receipt['request_id'],
                                       accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',

@@ -1086,6 +1086,11 @@ def cases():
     presentation('answered-not-told',
                  "            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
                  "", 'answer/after-answered-reply')
+    # VELDO-0065 third review item 3: one message back per inbound message, recorded.
+    presentation('tell-not-deduplicated', "        if self._entity(tid) is not None:\n            return\n", "",
+                 'answer/tell-once-per-message')
+    presentation('tell-keyed-by-text', "        tid = tell_id(ev['chat_id'], ev['platform_message_id'])\n",
+                 "        tid = tell_id(ev['chat_id'], len(text))\n", 'answer/tell-once-per-message')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
