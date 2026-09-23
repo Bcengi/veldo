@@ -117,3 +117,9 @@ crash proof, AC2 takeover fencing and AC3 reclaim/clock/receiver matrix moved to
 Current-holder checks and uncertainty stop remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-22 implementation: registered the Release 1 claim suite and its prerequisite closure
+in scripts/suites/manifest.json and requires.json, with six driven negative controls in the
+existing scripts/check_teeth_mutations.py registry. Runtime changes remain within the declared
+claim and scaffold footprint. The proof README records the accepted-admission and receiver seams
+consumed ahead of the service-runner and exact-publication items on parallel branches.

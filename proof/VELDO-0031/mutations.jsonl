@@ -1,0 +1,7 @@
+{"finding": 31, "mutation": "claims-ownership-without-unit", "baseline": "green", "assertions": 29, "red_rows": ["VELDO-0031 AC1 claims/atomic-activation", "VELDO-0031 AC2 claims/current-generation", "VELDO-0031 AC3 claims/uncertainty-stop"]}
+{"finding": 31, "mutation": "claims-ownership-without-backlog", "baseline": "green", "assertions": 29, "red_rows": ["VELDO-0031 AC1 claims/atomic-activation", "VELDO-0031 AC2 claims/current-generation", "VELDO-0031 AC3 claims/uncertainty-stop"]}
+{"finding": 31, "mutation": "claims-ignore-use-generation", "baseline": "green", "assertions": 29, "red_rows": ["VELDO-0031 AC2 claims/current-generation"]}
+{"finding": 31, "mutation": "claims-ignore-use-holder", "baseline": "green", "assertions": 29, "red_rows": ["VELDO-0031 AC2 claims/current-generation"]}
+{"finding": 31, "mutation": "claims-uncertainty-as-contention", "baseline": "green", "assertions": 29, "red_rows": ["VELDO-0031 AC3 claims/uncertainty-stop"]}
+{"finding": 31, "mutation": "claims-detector-as-owned", "baseline": "green", "assertions": 29, "red_rows": ["VELDO-0031 AC3 claims/uncertainty-stop"]}
+{"mutations_rejected": 6, "green_suites": {"58_veldo_0031_claims.py": 29}}

@@ -278,6 +278,28 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
+    # VELDO-0031: each declared falsifier and an independent defect per criterion.
+    def claims(name, module, old, new, row):
+        add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
+
+    claims('claims-ownership-without-unit', 'control_claim.py',
+           "'data': dict(u, state='active')",
+           "'data': dict(u, state=u['state'] if unit == 'unit' else 'active')", 'atomic-activation')
+    claims('claims-ownership-without-backlog', 'control_claim.py',
+           "'data': dict(b, state='active')",
+           "'data': dict(b, state=b['state'] if unit == 'unit' else 'active')", 'atomic-activation')
+    claims('claims-ignore-use-generation', 'control_claim.py',
+           "    if current.get('generation') != params['generation']:",
+           "    if op != 'use' and current.get('generation') != params['generation']:", 'current-generation')
+    claims('claims-ignore-use-holder', 'control_claim.py',
+           "    if current.get('holder') != holder:",
+           "    if op != 'use' and current.get('holder') != holder:", 'current-generation')
+    claims('claims-uncertainty-as-contention', 'control_claim_client.py',
+           "        if result.get('reason') in ('unanswerable', 'ownership_uncertain', 'missing_authority'):\n            raise CL.ClaimStopped(result['reason'])\n        return result",
+           "        if result.get('reason') in ('unanswerable', 'ownership_uncertain', 'missing_authority'):\n            return {'ok': False, 'reason': 'claimed'}\n        return result", 'uncertainty-stop')
+    claims('claims-detector-as-owned', 'control_claim.py',
+           "        return 'unanswerable'",
+           "        return 'owned'", 'uncertainty-stop')
     return result
 
 
@@ -348,7 +370,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

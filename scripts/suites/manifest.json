@@ -529,6 +529,14 @@
    ],
    "regions": "Policy envelopes over every shared grammar witness and schema partition",
    "requires_note": "Uses shared ROOT, expect and json only. Full inventory in present, absent, broken and omitted-result runs."
+  },
+  {
+   "name": "58_veldo_0031_claims",
+   "file": "58_veldo_0031_claims.py",
+   "requires": [
+    "58_veldo_0031_claims"
+   ],
+   "regions": "Authority claims: real clone race, SQLite activation, receiver generations and uncertainty stops"
   }
  ]
 }

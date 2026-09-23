@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -80 +80 @@
+-    if current.get('holder') != holder:
++    if op != 'use' and current.get('holder') != holder:

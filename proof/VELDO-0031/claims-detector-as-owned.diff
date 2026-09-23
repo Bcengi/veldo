@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -51 +51 @@
+-        return 'unanswerable'
++        return 'owned'
