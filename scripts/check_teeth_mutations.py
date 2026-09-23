@@ -1159,6 +1159,14 @@ def cases():
     presentation('reconcile-skips-replaced', "            if receipt is None or receipt.get('outcome') != 'published':\n",
                  "            if receipt is None or receipt.get('outcome') != 'published' or receipt['presentation_id'] != (self.head(request) or {}).get('current'):\n",
                  'projection/pending-notice-reconciled-after-replacement')
+    # VELDO-0065 fifth review item 2: nothing is sent for an edge whose scope does not cover the request.
+    presentation('edge-scope-unchecked',
+                 "        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):\n",
+                 "        if False:\n", 'answer/closed-tell-after-edge-scope')
+    presentation('edge-scope-against-itself',
+                 "        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):\n",
+                 "        if not self.membership.scope_covers(edge_entry.get('scope'), edge_entry.get('scope')):\n",
+                 'answer/closed-tell-after-edge-scope')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

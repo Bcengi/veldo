@@ -109,7 +109,7 @@ def _v65_checks(base):
                                   'presentation/retry-after-capped', 'answer/reply-nfkc-before-split',
                                   'answer/redelivered-answer-silent', 'answer/reply-after-closed',
                                   'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
-                                  'answer/redelivered-after-closed')}
+                                  'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1502,6 +1502,31 @@ def _v65_checks(base):
                 check(after_close, 'control: after the request is %s, a different message is told it is no longer open' % done,
                       reason(other) == ('refused', 'request_closed') and len(api['requests']) == asked + 1
                       and 'no longer open' in api['requests'][-1][1])
+
+        # Review 5 item 2: no message is sent for an edge whose scope does not cover the request
+        scoped = 'answer/closed-tell-after-edge-scope'
+        with section(scoped):
+            edge_member = entity('telegram-edge') or {}
+            for closed_first in (True, False):
+                alias = 'SC-%d' % closed_first
+                sc = opened(alias)
+                presenter.present(sc)
+                sc_r = presenter.current(sc) or {}
+                if closed_first:
+                    command('owner', 'answer', alias, request_version=1, ruling='accept')
+                fixture('telegram-edge', 'membership', dict(edge_member.get('data') or {}, scope=['project-b']))
+                asked = len(api['requests'])
+                try:
+                    result = answer(owner_reply(sc_r, 'nonsense'))
+                finally:
+                    fixture('telegram-edge', 'membership', dict(edge_member.get('data') or {}, scope=['project-a']))
+                state_word = 'closed' if closed_first else 'pending'
+                check(scoped, 'an edge whose scope does not cover a %s request is refused and nothing is sent' % state_word,
+                      reason(result) == ('refused', 'not_authorized') and len(api['requests']) == asked)
+            asked = len(api['requests'])
+            check(scoped, 'control: with the edge scope restored, the closed request\'s reply is told once',
+                  reason(answer(owner_reply(presenter.current(I.assignment_id(ids['repository_uuid'], 'SC-1')) or {}, 'nonsense')))
+                  == ('refused', 'request_closed') and len(api['requests']) == asked + 1)
     finally:
         server.shutdown()
         server.server_close()

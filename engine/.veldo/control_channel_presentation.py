@@ -1145,6 +1145,9 @@ class Presenter:
             # The recorded answer itself delivered again: it needs no reply, whatever has happened to
             # the request since, so this comes before every message back.
             raise Refused('already_answered', 'this is the recorded answer, delivered again')
+        # Authority first: nothing, not even a message back, for an edge that may not act here.
+        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
+            raise Refused('not_authorized', 'the edge scope does not cover the request')
         refusal, current, versions = self.bindings(request)
         if refusal == 'stale_subject':
             # The request has left pending (answered, declined or canceled in the inbox): say so, once.
@@ -1152,8 +1155,6 @@ class Presenter:
             raise Refused('request_closed', 'the request is no longer pending')
         if refusal or binding_mismatches(receipt, current):
             raise Refused('stale_presentation', 'the named presentation no longer binds the current request')
-        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
-            raise Refused('not_authorized', 'the edge scope does not cover the request')
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.
         if recorded is not None:
