@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -259 +259 @@
+@@ -252 +252 @@
 -    return [(frozenset(character), False) for character in text.casefold()]
 +    return [(frozenset(character), False) for character in text]

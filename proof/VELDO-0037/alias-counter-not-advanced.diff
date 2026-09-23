@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -670 +670 @@
+@@ -675 +675 @@
 -            counter: {'kind': 'artifact_kind', 'data': dict(kind, next=number + 1)},
 +            counter: {'kind': 'artifact_kind', 'data': dict(kind, next=number)},

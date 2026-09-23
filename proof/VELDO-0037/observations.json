@@ -75,9 +75,10 @@
       "clone-attach": "repository_binding_conflict",
       "clone-unpushed": "unenrolled_commit",
       "enable-after": null,
-      "enable-beside-raw": null,
+      "enable-beside-raw": "accepted_revision_unavailable",
       "foreign-attach": "repository_binding_conflict",
       "foreign-direct": "unenrolled_commit",
+      "plan-enabled-beside-raw": false,
       "plan-floor-commits": true
     },
     "enrollment": {
@@ -140,6 +141,19 @@
       "other-bytes": "publication_mismatch",
       "published-then": true
     },
+    "recorded-numbers": {
+      "allocated": "VELDO-0010",
+      "decision-enabled": false,
+      "enable-after-loss": null,
+      "legacy-held-enable": null,
+      "legacy-held-next": 6,
+      "legacy-lost": true,
+      "legacy-lost-enable": "accepted_revision_unavailable",
+      "legacy-lost-names-commit": true,
+      "next-after-loss": 10,
+      "side-accepted": null,
+      "side-lost": true
+    },
     "registration-order": {
       "readset-after-attach": {
         "counter": [
@@ -198,7 +212,7 @@
       "reader_parent_link": "unsafe_path"
     }
   },
-  "elapsed_seconds": 3.757177822990343,
+  "elapsed_seconds": 4.50735759595409,
   "pending": [
     [
       "other",
@@ -472,6 +486,10 @@
     ],
     [
       "aliases/owned-by-code-not-name",
+      true
+    ],
+    [
+      "aliases/floor-from-recorded-numbers",
       true
     ]
   ],

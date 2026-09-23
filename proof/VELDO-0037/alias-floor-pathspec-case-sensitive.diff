@@ -1,7 +1,0 @@
---- a/.veldo/control_alias.py
-+++ b/.veldo/control_alias.py
-@@ -230 +230,3 @@
--    scope = ['--', ':(icase)' + directory] if directory else []
-+    scope = ['--', directory] if directory else []
-+    names = [n for n in _git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit, *scope], capture_output=True).stdout.decode().split('\0') if n]
-+    return maximum(names + [n for n in _git_process.run(['git', '-C', str(repo), 'log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit, *scope], capture_output=True).stdout.decode().split('\0') if n], kind)

@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -637 +637 @@
--        commits = [commit for commit in accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]
+@@ -632 +632 @@
+-        commits = accepted_commits(conn, self.domain_uuid, repository)
 +        commits = [accepted['commit']]

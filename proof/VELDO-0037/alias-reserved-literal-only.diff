@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -311 +311 @@
+@@ -304 +304 @@
 -            if _meet(items, _literal(name), directories=False):
 +            if component == name:

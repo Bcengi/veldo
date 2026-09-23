@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -479 +479 @@
+@@ -472 +472 @@
 -        number = kind['next']
 +        number = 1 + maximum([p.relative_to(request['workspace']).as_posix() for p in Path(request['workspace']).rglob('*')], kind)

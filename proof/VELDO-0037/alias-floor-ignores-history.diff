@@ -1,6 +1,6 @@
---- a/.veldo/control_alias.py
-+++ b/.veldo/control_alias.py
-@@ -232,2 +232 @@
--    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),
--                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):
-+    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),):
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -61,2 +61 @@
+-    for command in (['ls-tree', '-r', '-z', '--name-only', commit],
+-                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):
++    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):

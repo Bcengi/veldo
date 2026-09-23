@@ -1,6 +1,6 @@
 {
-  "suite_seconds_in_process": 3.768,
-  "mutation_seconds_serial_baseline_noop_mutant": 652.896,
-  "mutation_cases": 42,
+  "suite_seconds_in_process": 4.518,
+  "mutation_seconds_serial_baseline_noop_mutant": 722.671,
+  "mutation_cases": 44,
   "note": "Component timings on this host; the lead measures the whole gate."
 }

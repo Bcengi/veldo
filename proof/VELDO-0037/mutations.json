@@ -1,14 +1,14 @@
 {
   "records": [
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/stale-checkouts": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.68,
+      "elapsed_seconds": 13.687,
       "module": "control_alias.py",
       "mutant": {
         "aliases/stale-checkouts": [
@@ -82,15 +82,15 @@
         }
       },
       "mutation": "alias-checkout-maximum",
-      "new_digest": "90e5e9c4df8e84b8aa1972feaf773d587a6a9c2fd45fa926f4b58c5b0bda6f75",
+      "new_digest": "7afbd914227fdc41a0112b53e69cc3b91ac674e36aceb042c03a7ed1e31e96d6",
       "noop": {
         "aliases/stale-checkouts": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/stale-checkouts",
         "aliases/same-source-reuse",
@@ -107,7 +107,8 @@
         "aliases/owned-whatever-registration-order",
         "aliases/floor-from-every-accepted-revision",
         "aliases/revision-in-enrolled-repository",
-        "aliases/owned-by-code-not-name"
+        "aliases/owned-by-code-not-name",
+        "aliases/floor-from-recorded-numbers"
       ],
       "replacement_count": 1,
       "rows": [
@@ -115,14 +116,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/stale-checkouts": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.36,
+      "elapsed_seconds": 13.179,
       "module": "control_alias.py",
       "mutant": {
         "aliases/stale-checkouts": [
@@ -196,15 +197,15 @@
         }
       },
       "mutation": "alias-counter-not-advanced",
-      "new_digest": "fcc439bb88a7b8d288efb80e9c84ad69c7a3a5a892767e82cb393e942c38ef46",
+      "new_digest": "90b0c90dac29d40f84a583f2a734657857b288c715679345a5d7f2344e4f3d55",
       "noop": {
         "aliases/stale-checkouts": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/stale-checkouts",
         "aliases/same-source-reuse",
@@ -227,14 +228,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "documents/stale-overwrite": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 13.156,
+      "elapsed_seconds": 13.307,
       "module": "control_alias.py",
       "mutant": {
         "documents/stale-overwrite": [
@@ -312,15 +313,15 @@
         }
       },
       "mutation": "document-ignore-digest",
-      "new_digest": "3dce8a3cc3dc2857b70bcf14bc29b5c0f91c277c830a46b70a40b02d57ccc49c",
+      "new_digest": "59d47f3aaab54fe075fd3095993076503bb7290ce8a1d6fbd5e297a3b130db5b",
       "noop": {
         "documents/stale-overwrite": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "documents/stale-overwrite",
         "publication/replace-guard"
@@ -331,14 +332,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "documents/stale-overwrite": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.549,
+      "elapsed_seconds": 13.223,
       "module": "control_alias.py",
       "mutant": {
         "documents/stale-overwrite": [
@@ -416,15 +417,15 @@
         }
       },
       "mutation": "document-current-version",
-      "new_digest": "6bc627b6091b16e2d187b7339985c79d63a8e61f9596782a340d417413781902",
+      "new_digest": "29fe24acf4ad24cfaa55d40754d973c2dc122b67f8314f30d5392c710fc6377f",
       "noop": {
         "documents/stale-overwrite": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "documents/stale-overwrite",
         "publication/replace-guard"
@@ -435,14 +436,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/accepted-documents": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.863,
+      "elapsed_seconds": 13.289,
       "module": "control_document.py",
       "mutant": {
         "publication/accepted-documents": [
@@ -524,14 +525,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/accepted-documents": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.88,
+      "elapsed_seconds": 13.259,
       "module": "control_document.py",
       "mutant": {
         "publication/accepted-documents": [
@@ -624,14 +625,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/tampered-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.441,
+      "elapsed_seconds": 13.329,
       "module": "control_document.py",
       "mutant": {
         "publication/tampered-refused": [
@@ -735,14 +736,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/no-symlink-escape": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.371,
+      "elapsed_seconds": 13.288,
       "module": "control_document.py",
       "mutant": {
         "publication/no-symlink-escape": [
@@ -838,14 +839,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/no-symlink-escape": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.752,
+      "elapsed_seconds": 14.539,
       "module": "control_document.py",
       "mutant": {
         "publication/no-symlink-escape": [
@@ -941,14 +942,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.682,
+      "elapsed_seconds": 13.504,
       "module": "control_alias.py",
       "mutant": {
         "aliases/one-path-per-kind": [
@@ -1026,15 +1027,15 @@
         }
       },
       "mutation": "alias-overlap-unchecked",
-      "new_digest": "e438aad59ff495c02fbac595d6e6bb971c18f2a3e78ed106a2acb658b2a87fb4",
+      "new_digest": "c315d260b40668c2a2955f1b644185910d6c7690ead6815fb526105b9ff4d6c0",
       "noop": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/one-path-per-kind",
         "aliases/case-insensitive-names"
@@ -1045,14 +1046,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.688,
+      "elapsed_seconds": 18.148,
       "module": "control_alias.py",
       "mutant": {
         "aliases/one-path-per-kind": [
@@ -1130,15 +1131,15 @@
         }
       },
       "mutation": "alias-overlap-ignores-directories",
-      "new_digest": "3c8fdf6f2bc9161af63397faccfe62a975ff3b2caf359c1b42c6dd542db13839",
+      "new_digest": "eda097d18a4fb0c8a648870ae703973900da575db52f9abbdf015b29907d1940",
       "noop": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/one-path-per-kind"
       ],
@@ -1148,14 +1149,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/historical-floor": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.118,
+      "elapsed_seconds": 20.581,
       "module": "control_alias.py",
       "mutant": {
         "aliases/historical-floor": [
@@ -1233,15 +1234,15 @@
         }
       },
       "mutation": "alias-trusts-first-number",
-      "new_digest": "506dabf6ff2b830286d8a37c65f5bd82f9bd358e676761863805ecc6604803ba",
+      "new_digest": "55ddf30b6cba3f42942284b067e6a5cc9c9f02e54ed6d2ee6e07b7d2adfff889",
       "noop": {
         "aliases/historical-floor": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/historical-floor",
         "aliases/floor-from-every-accepted-revision"
@@ -1252,15 +1253,15 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/historical-floor": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.434,
-      "module": "control_alias.py",
+      "elapsed_seconds": 19.398,
+      "module": "control_readset.py",
       "mutant": {
         "aliases/historical-floor": [
           false
@@ -1337,15 +1338,15 @@
         }
       },
       "mutation": "alias-floor-ignores-history",
-      "new_digest": "14ae4ad739ef0289fcd2a616a38cfe82660a6c30b14744621305408f37095745",
+      "new_digest": "f22c7c070332156d458d5a9bc84fb65d4ffff5c40000e8ac7d173ac426f4ebb7",
       "noop": {
         "aliases/historical-floor": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "red_rows": [
         "aliases/historical-floor"
       ],
@@ -1355,14 +1356,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.86,
+      "elapsed_seconds": 13.409,
       "module": "control_alias.py",
       "mutant": {
         "aliases/generic-writes-refused": [
@@ -1440,15 +1441,15 @@
         }
       },
       "mutation": "alias-owners-undeclared",
-      "new_digest": "1623539fd68287c1ba47eb29e1e38dadc8ed0b085cc732d716bfd7001d7bbd1f",
+      "new_digest": "ee49eabdac1071c54ba981047c58df9bfb339d10983fa4802578928be16498aa",
       "noop": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/generic-writes-refused",
         "aliases/owned-on-every-connection",
@@ -1461,14 +1462,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 13.217,
+      "elapsed_seconds": 15.389,
       "module": "control_store.py",
       "mutant": {
         "aliases/generic-writes-refused": [
@@ -1565,14 +1566,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/bound-to-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.344,
+      "elapsed_seconds": 13.184,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-to-repository": [
@@ -1669,14 +1670,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/bound-to-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 11.807,
+      "elapsed_seconds": 14.037,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-to-repository": [
@@ -1773,14 +1774,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.458,
+      "elapsed_seconds": 16.257,
       "module": "control_alias.py",
       "mutant": {
         "publication/recorded-only-by-publisher": [
@@ -1858,15 +1859,15 @@
         }
       },
       "mutation": "record-trusts-supplied-digest",
-      "new_digest": "cb64f7d85fd6d9710b3a27cfb59fe8acdfa0a89d3283a3f52054956263d18854",
+      "new_digest": "3a5bc7ecbf643977f75e547cb19308764bca07a9b5a6f2ac58852b908bd5550d",
       "noop": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "publication/recorded-only-by-publisher"
       ],
@@ -1876,14 +1877,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.64,
+      "elapsed_seconds": 13.794,
       "module": "control_alias.py",
       "mutant": {
         "publication/recorded-only-by-publisher": [
@@ -1961,15 +1962,15 @@
         }
       },
       "mutation": "record-missing-file-accepted",
-      "new_digest": "22ef09cef2958751e257dcb429fb99ea3ba580ea3ae74a41db7855847313ae6b",
+      "new_digest": "07f6bf293d58cd16c809c7cfd533b04f480661931abde4822249a93ab8842a52",
       "noop": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "publication/recorded-only-by-publisher"
       ],
@@ -1979,14 +1980,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.855,
+      "elapsed_seconds": 17.41,
       "module": "control_alias.py",
       "mutant": {
         "aliases/case-insensitive-names": [
@@ -2064,15 +2065,15 @@
         }
       },
       "mutation": "alias-prefix-case-sensitive",
-      "new_digest": "3a3d0a94a3db23a8b13a8cd7f346678dc6c9e151c1d52c8e4327d21c1c3965b7",
+      "new_digest": "ccf566c83af1792452ed08c0cb264964c48b4376499fdde89c19874b47a5faae",
       "noop": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/case-insensitive-names"
       ],
@@ -2082,14 +2083,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 12.705,
+      "elapsed_seconds": 23.645,
       "module": "control_alias.py",
       "mutant": {
         "aliases/case-insensitive-names": [
@@ -2167,15 +2168,15 @@
         }
       },
       "mutation": "alias-paths-case-sensitive",
-      "new_digest": "207093215a9c7e2d1a63f331b7ba0cc1cc235e20e344fe28150459f913bf93c1",
+      "new_digest": "a599d987c6b6a486c718089636114175ad8c003807ac0e3c2e07b2088183dbfa",
       "noop": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/case-insensitive-names",
         "aliases/reserved-directories"
@@ -2186,14 +2187,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/reserved-directories": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 16.973,
+      "elapsed_seconds": 26.454,
       "module": "control_alias.py",
       "mutant": {
         "aliases/reserved-directories": [
@@ -2271,15 +2272,15 @@
         }
       },
       "mutation": "alias-reserved-unchecked",
-      "new_digest": "428a5385cd8d58dd3b284b9ff2453ac56d6b30923952ad19055d5b1f8e26dd89",
+      "new_digest": "4e2253487d0f7bade227d593c8956ec838250e6de39f022ad7e522276ffd5ccb",
       "noop": {
         "aliases/reserved-directories": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/reserved-directories"
       ],
@@ -2289,14 +2290,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/reserved-directories": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 20.759,
+      "elapsed_seconds": 19.301,
       "module": "control_alias.py",
       "mutant": {
         "aliases/reserved-directories": [
@@ -2374,15 +2375,15 @@
         }
       },
       "mutation": "alias-reserved-literal-only",
-      "new_digest": "feb249f3f5820ed6f680e79bd2a02d67694b235ce288b1d55098536837646db0",
+      "new_digest": "7cec3c56e18d01c49a6ec2359b9e88576b76cbe2625d7327fb1ca4833081420d",
       "noop": {
         "aliases/reserved-directories": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/reserved-directories"
       ],
@@ -2392,14 +2393,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/invalid-unit-id": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 18.779,
+      "elapsed_seconds": 18.864,
       "module": "control_alias.py",
       "mutant": {
         "aliases/invalid-unit-id": [
@@ -2477,15 +2478,15 @@
         }
       },
       "mutation": "alias-skip-unit-id",
-      "new_digest": "16a8337d5c4e3070c207fb945473e70a1e303bac3cbd3910f317eed8b23112b4",
+      "new_digest": "70670b9da645e833b55bd6915f60ee67eb8acc29c5aca3c4b583e2bc06e6199d",
       "noop": {
         "aliases/invalid-unit-id": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/invalid-unit-id"
       ],
@@ -2495,14 +2496,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.874,
+      "elapsed_seconds": 18.303,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-counts-every-carrier": [
@@ -2579,17 +2580,18 @@
           "wrong-digest": "stale_document"
         }
       },
-      "mutation": "alias-floor-pathspec-case-sensitive",
-      "new_digest": "be8dd75da66726a2e66df549e72aa971864265fc358bb74c3b07bafeea7e4607",
+      "mutation": "alias-floor-carrier-case-sensitive",
+      "new_digest": "f97b3ac050626570ccc6b67fe724d7807a378a1dbf58dd5bf0bac591c19d3a47",
       "noop": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
+        "aliases/case-insensitive-names",
         "aliases/floor-counts-every-carrier"
       ],
       "replacement_count": 1,
@@ -2598,14 +2600,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 19.117,
+      "elapsed_seconds": 18.569,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-counts-every-carrier": [
@@ -2683,15 +2685,15 @@
         }
       },
       "mutation": "alias-floor-slug-grammar",
-      "new_digest": "3cbf849bd001a858592ff9003b05d24ee251c9f5216257f41f4ce21df423abd0",
+      "new_digest": "15e382126d5d5399252f5b376a29808e0102775fc1777160ec08ee8bf8f28503",
       "noop": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/floor-counts-every-carrier"
       ],
@@ -2701,14 +2703,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-on-every-connection": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 18.005,
+      "elapsed_seconds": 15.422,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-on-every-connection": [
@@ -2805,14 +2807,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-on-every-connection": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.869,
+      "elapsed_seconds": 13.891,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-on-every-connection": [
@@ -2911,14 +2913,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-whatever-registration-order": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 15.607,
+      "elapsed_seconds": 13.738,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-whatever-registration-order": [
@@ -3015,14 +3017,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 15.452,
+      "elapsed_seconds": 13.637,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-from-every-accepted-revision": [
@@ -3100,18 +3102,19 @@
         }
       },
       "mutation": "alias-floor-named-revision-only",
-      "new_digest": "e0ff5859ed69c9a450fbd262433b0d9f03579856d1c6f8c0aa9ab92a4aa21fbf",
+      "new_digest": "45a49343537b501739dc6558bce8ed7f8a16790c15c6da3ad9eec8579d39806b",
       "noop": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/floor-from-every-accepted-revision",
-        "aliases/revision-in-enrolled-repository"
+        "aliases/revision-in-enrolled-repository",
+        "aliases/floor-from-recorded-numbers"
       ],
       "replacement_count": 1,
       "rows": [
@@ -3119,14 +3122,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.53,
+      "elapsed_seconds": 13.772,
       "module": "control_readset.py",
       "mutant": {
         "aliases/floor-from-every-accepted-revision": [
@@ -3204,15 +3207,15 @@
         }
       },
       "mutation": "revision-regression-allowed",
-      "new_digest": "010ed1803bea02a7f48e7e6dcb975c04dc550be29b48d8a679c2c37c4223f96c",
+      "new_digest": "4ee50e8a026aba7c40149948bd5ae317e96456f2195ddc35d366814e1a38e80e",
       "noop": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
-      "noop_digest": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+      "noop_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "noop_failed_rows": [],
-      "old_digest": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+      "old_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "red_rows": [
         "aliases/floor-from-every-accepted-revision"
       ],
@@ -3222,14 +3225,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/bound-by-enrollment": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 19.034,
+      "elapsed_seconds": 13.77,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-by-enrollment": [
@@ -3325,14 +3328,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "publication/bound-by-enrollment": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.61,
+      "elapsed_seconds": 13.503,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-by-enrollment": [
@@ -3428,14 +3431,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-whatever-registration-order": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 16.852,
+      "elapsed_seconds": 13.915,
       "module": "control_readset.py",
       "mutant": {
         "aliases/owned-whatever-registration-order": [
@@ -3513,15 +3516,15 @@
         }
       },
       "mutation": "readset-snapshots-undeclared",
-      "new_digest": "808692ea0833d067c4127a897ff7b85d27c8ff9f0e3fa7fa5e4fbdc4e9dcda9b",
+      "new_digest": "fff0e3f750abd9658ea4976eeff66ed200f4bb110fec20831da2de0b952314be",
       "noop": {
         "aliases/owned-whatever-registration-order": [
           true
         ]
       },
-      "noop_digest": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+      "noop_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "noop_failed_rows": [],
-      "old_digest": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+      "old_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "red_rows": [
         "aliases/owned-whatever-registration-order",
         "aliases/owned-by-code-not-name"
@@ -3532,14 +3535,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.22,
+      "elapsed_seconds": 13.695,
       "module": "control_readset.py",
       "mutant": {
         "aliases/revision-in-enrolled-repository": [
@@ -3617,15 +3620,15 @@
         }
       },
       "mutation": "revision-any-repository",
-      "new_digest": "2db486fac0ce9b626f0574dae6007ad7ad46327af05a9d1401360783d443072a",
+      "new_digest": "387ca1cca37b8f3041af3583daf35c9c6145d45deadba2c266c42187e5178886",
       "noop": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
-      "noop_digest": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+      "noop_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "noop_failed_rows": [],
-      "old_digest": "ac8c2efada2df977f3ae67036964e6ad49bfe9c484380958b0396c6af7249d8e",
+      "old_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
       "red_rows": [
         "aliases/revision-in-enrolled-repository"
       ],
@@ -3635,117 +3638,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.491,
-      "module": "control_alias.py",
-      "mutant": {
-        "aliases/revision-in-enrolled-repository": [
-          false
-        ]
-      },
-      "mutant_observations": {
-        "independent_allocations": [
-          {
-            "alias": "VELDO-0004",
-            "reused": false,
-            "seq": 6
-          },
-          {
-            "alias": "VELDO-0005",
-            "reused": false,
-            "seq": 7
-          },
-          {
-            "alias": "VELDO-0006",
-            "reused": false,
-            "seq": 8
-          }
-        ],
-        "invalid_unit_id_checks": [
-          true,
-          true,
-          true,
-          true,
-          true
-        ],
-        "reader_tampered": {
-          "refusal": "document_mismatch"
-        },
-        "reader_v1": {
-          "PLAN-0003": {
-            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
-            "path": "plans/PLAN-0003-journey-plan.md",
-            "role": "plan",
-            "source": {
-              "id": "msg-100",
-              "revision": "r1",
-              "system": "telegram"
-            },
-            "version": 1
-          },
-          "VELDO-0004": {
-            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
-            "path": "specs/VELDO-0004-api-contract.md",
-            "role": "specification/api",
-            "source": {
-              "id": "msg-100",
-              "revision": "r1",
-              "system": "telegram"
-            },
-            "version": 1
-          },
-          "VELDO-DEC-0005": {
-            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
-            "path": "decisions/0005-store-choice.yaml",
-            "role": "decision",
-            "source": {
-              "id": "msg-100",
-              "revision": "r1",
-              "system": "telegram"
-            },
-            "version": 1
-          }
-        },
-        "stale_overwrite_refusals": {
-          "aba-stale-version": "stale_version",
-          "old-version": "stale_version",
-          "unknown-digest": "stale_document",
-          "wrong-digest": "stale_document"
-        }
-      },
-      "mutation": "floor-counts-unheld-revisions",
-      "new_digest": "ab1135e63e32f1d5e9e7f0094c25132268a7e07886eafebee57dbf2bebee628c",
-      "noop": {
-        "aliases/revision-in-enrolled-repository": [
-          true
-        ]
-      },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
-      "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
-      "red_rows": [
-        "aliases/revision-in-enrolled-repository"
-      ],
-      "replacement_count": 1,
-      "rows": [
-        "aliases/revision-in-enrolled-repository"
-      ]
-    },
-    {
-      "assertions": 60,
-      "baseline": {
-        "aliases/revision-in-enrolled-repository": [
-          true
-        ]
-      },
-      "baseline_failed_rows": [],
-      "elapsed_seconds": 20.232,
+      "elapsed_seconds": 13.392,
       "module": "control_alias.py",
       "mutant": {
         "aliases/revision-in-enrolled-repository": [
@@ -3823,15 +3723,15 @@
         }
       },
       "mutation": "enable-reads-unbound-repository",
-      "new_digest": "ab5145507f4244d42732a61cbccddd8ff88d94d1e4cad68a1f4e932024cd7782",
+      "new_digest": "10b823f340faca50c9520fbb00523d33b5f4c8fd6ec82f55a5d3015c18883af2",
       "noop": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
-      "noop_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "noop_failed_rows": [],
-      "old_digest": "cbcea89f9f6ca69b3082794c424a87e0d129349148313367e035d31644886eba",
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
       "red_rows": [
         "aliases/revision-in-enrolled-repository"
       ],
@@ -3841,14 +3741,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.094,
+      "elapsed_seconds": 13.825,
       "module": "control_store.py",
       "mutant": {
         "aliases/revision-in-enrolled-repository": [
@@ -3944,14 +3844,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.879,
+      "elapsed_seconds": 13.265,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4047,14 +3947,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 17.982,
+      "elapsed_seconds": 18.836,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4150,14 +4050,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.538,
+      "elapsed_seconds": 18.671,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4253,14 +4153,14 @@
       ]
     },
     {
-      "assertions": 60,
+      "assertions": 61,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 26.139,
+      "elapsed_seconds": 24.865,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4354,9 +4254,323 @@
       "rows": [
         "aliases/owned-by-code-not-name"
       ]
+    },
+    {
+      "assertions": 61,
+      "baseline": {
+        "aliases/floor-from-recorded-numbers": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 21.576,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/floor-from-recorded-numbers": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "floor-rederives-ignoring-record",
+      "new_digest": "5d851b7e7f2f30311990df014051658114fc4cd04efe7919430f7b727043055f",
+      "noop": {
+        "aliases/floor-from-recorded-numbers": [
+          true
+        ]
+      },
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
+      "noop_failed_rows": [],
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
+      "red_rows": [
+        "aliases/floor-from-recorded-numbers"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-from-recorded-numbers"
+      ]
+    },
+    {
+      "assertions": 61,
+      "baseline": {
+        "aliases/floor-from-recorded-numbers": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 24.033,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/floor-from-recorded-numbers": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "legacy-lost-commit-skipped",
+      "new_digest": "c1208620fe7ad84c17e22df83d90e69eb7f1c77a7d1a3554e7a47caa6bb36a8d",
+      "noop": {
+        "aliases/floor-from-recorded-numbers": [
+          true
+        ]
+      },
+      "noop_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
+      "noop_failed_rows": [],
+      "old_digest": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
+      "red_rows": [
+        "aliases/revision-in-enrolled-repository",
+        "aliases/floor-from-recorded-numbers"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-from-recorded-numbers"
+      ]
+    },
+    {
+      "assertions": 61,
+      "baseline": {
+        "aliases/floor-from-recorded-numbers": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 27.518,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/floor-from-recorded-numbers": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "acceptance-records-no-paths",
+      "new_digest": "11e09ff80003a4c7914d183bb776caf09cbfd5b92108324b1b8b2deb715becc4",
+      "noop": {
+        "aliases/floor-from-recorded-numbers": [
+          true
+        ]
+      },
+      "noop_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
+      "noop_failed_rows": [],
+      "old_digest": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
+      "red_rows": [
+        "aliases/historical-floor",
+        "aliases/case-insensitive-names",
+        "aliases/floor-from-every-accepted-revision",
+        "aliases/revision-in-enrolled-repository",
+        "aliases/floor-from-recorded-numbers"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-from-recorded-numbers"
+      ]
     }
   ],
-  "registered": 42,
+  "registered": 44,
   "source": "proof/VELDO-0037/drive.py over scripts/check_teeth_mutations.py finding 37",
   "status": "rejected"
 }
