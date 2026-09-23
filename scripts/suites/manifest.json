@@ -581,6 +581,15 @@
    ],
    "regions": "Assignment inbox, released waiting claims, Telegram correlation and authority-only admission",
    "requires_note": "Uses shared ROOT and expect only; real SQLite, claim receiver, Ed25519 signatures, a child worker process and loopback HTTP."
+  },
+  {
+   "name": "61_scope_covers",
+   "file": "61_scope_covers.py",
+   "requires": [
+    "61_scope_covers"
+   ],
+   "regions": "Scope coverage of a plain-string inner scope (repository id)",
+   "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
   }
  ]
 }
