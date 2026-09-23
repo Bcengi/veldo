@@ -515,6 +515,9 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                     (stage_root / (name + '.displaced')).rename(stage_root / name)
         # A runtime whose pyvenv.cfg names a repository (created by a repository's own virtual
         # environment) is refused before launch; the installed runtime's names none.
+        # The repository's own virtual environment: its python is a link out to the system one.
+        (checkout / '.venv/bin').mkdir(parents=True)
+        (checkout / '.venv/bin/python3').symlink_to(_s43_os.path.realpath(runtime['python']))
         fake = root / 'repository-created-runtime'
         (fake / 'bin').mkdir(parents=True)
         (fake / 'bin/python').symlink_to(_s43_os.path.realpath(runtime['python']))
