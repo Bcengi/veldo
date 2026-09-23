@@ -140,7 +140,7 @@ PLAN-0020 review machinery, not unassigned factory work or new runtime prerequis
 Numbers below refer to **original** criteria. Some numbered slots now express a narrower normal
 function; this is not a claim that the removed criterion passed. Equivalent old Notes, Context,
 observability/test universes and package barriers were removed, and each file has a prose History.
-The four checks preserved throughout are independent review, authentic answers, pre-call spending
+The four checks preserved throughout are independent review, authentic answers, pre-invocation subscription usage
 caps and landing exactly the tested tree. No persistent checkpointer is required by the MVP.
 
 | Specification | Removed obligations and retained boundary |
@@ -170,7 +170,7 @@ caps and landing exactly the tested tree. No persistent checkpointer is required
 | VELDO-0059 | Old AC4 lost-ack/checkpoint recovery and AC3 fencing/contention/resource matrices -> Release 2. AC1 now spans Telegram/API -> PM -> owner admission -> Linux/Mac workers -> proof/gate/review -> exact land -> Telegram/UI; meaningful AC2 refusals remain. |
 | VELDO-0060 | Old AC3 recovery and AC4 exhaustive escape/resource/quarantine qualification -> Release 2; AC1 extra-version/host matrix -> Release 4, except Mac retained by 28852. One real configuration, artifacts, custody, stop and caps remain. |
 | VELDO-0061 | Old AC3 recovery/fencing and AC4 exhaustive resource/escape qualification -> Release 2; AC1 extra-version/host matrix -> Release 4, except Mac retained by 28852. Normal real lifecycle/accounting remains. |
-| VELDO-0062 | Old AC3 restart/reordered reports -> Release 2; AC1 all-authentication/host and AC4 two-account/two-project matrices -> Release 4, except the two MVP hosts. One account per provider, live costs, custody and all pre-call caps remain. |
+| VELDO-0062 | Old AC3 restart/reordered reports -> Release 2; AC1 all-authentication/host and AC4 two-account/two-project matrices -> Release 4, except the two MVP hosts. One logged-in subscription account per provider, live usage, custody and all pre-invocation usage caps remain; no paid model API or price qualification. |
 | VELDO-0064 | Old AC2 lost-create-ack and AC3 concurrent reassignment/channel-removal matrices -> Release 2; extra channels -> Release 4. Jira-specific projection work is dropped. Telegram inbox and release of waiting workers remain. |
 | VELDO-0065 | Old AC3 interrupted publication -> Release 2; extra-channel coverage -> Release 4. Jira-specific work is dropped. Shown bytes, request/presentation identity and version-bound answers remain. |
 | VELDO-0066 | Old AC3 signed-CLI and AC1/AC2 email history breadth -> Release 4; interrupted history qualification -> Release 2. Jira acquisition/normalizer work is dropped. Canonical Telegram identity and answer binding remain. |

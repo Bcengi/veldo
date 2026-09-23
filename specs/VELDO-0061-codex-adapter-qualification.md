@@ -63,7 +63,7 @@ acceptance_criteria:
       Claim: Terminal output yields independently validated artifacts, never automatic completion.
       Set and completeness: Capture live normal/nonzero/signal exits and perturb actual stream bytes
       for absent terminal record, malformed output and missing usage; feed the production decoder,
-      inspect resulting artifacts and retained unknown charge exposure. Falsifier: Accept zero exit
+      inspect resulting artifacts and retained unknown usage reservations. Falsifier: Accept zero exit
       with its terminal record removed; the missing-result check must fail.
     falsified_by: >
       Accept zero exit with its terminal record removed; the missing-result check must fail.
@@ -72,16 +72,19 @@ acceptance_criteria:
       Claim: Ordinary stop terminates the adapter worker and records its original invocation
       outcome. Set and completeness: Use the real chosen configuration to perform cooperative and
       bounded forced stop through the host wrapper; compare OS exit, descendant termination and
-      invocation identity. A stopped call with missing cost retains its exposure. Falsifier: Report
+      invocation identity. A stopped invocation with missing usage retains its reservation. Falsifier: Report
       stopped when a real worker descendant remains alive; the termination check must fail.
     falsified_by: >
       Report stopped when a real worker descendant remains alive; the termination check must fail.
   - id: AC4
     text: >
-      Claim: Tools cannot read reusable provider credentials and every billable path enforces its
-      pre-call maximum. Set and completeness: Run a real tool child attempting credential access,
-      then exercise initial/retry/follow-on request boundaries with fitting and excessive maxima
-      under 0062; unsupported auth separation or an unenforceable maximum refuses qualification.
+      Claim: Tools cannot read reusable provider model credentials and each subscription CLI
+      invocation checks its usage caps before launch. Set and completeness: Run a real tool child
+      attempting model credential access; exercise initial/retry/follow-on invocations with
+      available, exhausted and unknown allowance under 0062. Observe invocation counts, wall time,
+      CLI-reported tokens/messages and rate-limit windows; require worker stop at the cap and
+      zero launches on refusal. Unsupported model credential separation refuses qualification;
+      no price or per-request monetary maximum is required.
       Falsifier: Expose the reusable provider credential to a real tool child; the custody check
       must fail.
     falsified_by: >
@@ -110,9 +113,15 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## Notes
 
+Models run only through logged-in Claude Code and Codex subscriptions, never paid model APIs.
+Use invocation and wall-time caps plus tokens/messages as the CLI reports them and its exposed
+rate-limit windows. Check applicable remaining allowance before every invocation and stop the
+worker at its cap. Missing usage retains conservative reservations under 0036/0062; unknown is
+never zero. Qualification does not require a price, hidden CLI telemetry or a per-call charge.
+
 Qualify one actual Codex version/configuration on Linux in delivery, then that configuration
 on the Mac in the host stage. Record executable digest, flags, terminal protocol,
-pricing/authentication mode and bounded live cost. 0062 supplies provider custody/caps; 0063
+subscription authentication mode, exposed usage units/rate-limit windows and live usage. 0062 supplies provider custody/caps; 0063
 recovery/governor matrices are not prerequisites. Worker configuration is handed through
 exactly, never silently reduced.
 
@@ -121,7 +130,7 @@ every asset this journey actually installs. Derive executable check registration
 criterion's declared set; retain the actual observations and each driven negative-control diff
 and failing row. Real stores, files, processes, Git and signatures are required where named.
 Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
-Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+Current authorization, independent engineering review, pre-invocation subscription usage caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History

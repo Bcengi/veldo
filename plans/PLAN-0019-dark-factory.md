@@ -411,7 +411,7 @@ work:
     stage: 1
   - item: W21
     spec: VELDO-0036
-    title: Durable capacity and spend reservations
+    title: Capacity and subscription usage reservations
     feature_refs: [F2]
     depends_on: [VELDO-0023, VELDO-0025]
     order: 11036
@@ -1072,8 +1072,13 @@ open_decisions: []
 Revision 3 records the owner's 2026-09-22 scope decisions. Release 1 is a functioning dark factory,
 including Claude Code, Codex, LangGraph, this Linux box, the Mac, Telegram, the API and the UI.
 The authority remains in Veldo on Linux. Models reason and propose; authenticated deterministic
-services authorize and commit. Independent review, authentic answers, pre-call spend bounds and
-publication of exactly the tested tree are part of the function.
+services authorize and commit. Independent review, authentic answers, pre-invocation subscription usage caps and
+publication of exactly the tested tree are part of the function. The owner's standing rule is
+logged-in Claude Code and Codex subscriptions only, with no paid model API or per-call price.
+0036/0060/0061/0062 govern invocation, wall-time, CLI-reported token/message caps and exposed
+subscription rate-limit windows; check before each invocation, stop at the cap and retain
+unknown usage conservatively. Historical monetary-maxima language in the design is superseded
+by this subscription usage model.
 
 ## Releases and order
 
@@ -1114,7 +1119,7 @@ stage may integrate an earlier service without making that service depend on the
 Release 2 delivers robustness and recovery: off-host acknowledgement, authority generations and
 fencing, clock follow-ups, recovery commands, checkpoint isolation and restoration, replay and lost
 acknowledgements, governor failure matrices, interrupted decisions and operational recovery.
-Unknown effects remain stopped in Release 1 with original dispatch identity and charge exposure;
+Unknown effects remain stopped in Release 1 with original dispatch identity and unknown usage reservations;
 a process exit is not evidence that a remote operation did not happen. Ordinary unavailable-service
 checks and actual IPC-to-store integration are required now without claiming the broader follow-up
 qualification matrices have been proven.

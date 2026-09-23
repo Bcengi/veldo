@@ -68,7 +68,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0033 | Clock claim-refusal propagation through execution and landing | draft | high | dmitry | required | VELDO-0033-clock-refusal-propagation.md |
 | VELDO-0034 | Clock uncertainty in the status display | draft | high | dmitry | required | VELDO-0034-clock-status-display.md |
 | VELDO-0035 | Complete read-set validation and authoritative snapshots | draft | critical | dmitry | required | VELDO-0035-authoritative-snapshots.md |
-| VELDO-0036 | Durable capacity and spend reservations | draft | critical | dmitry | required | VELDO-0036-capacity-and-spend-reservations.md |
+| VELDO-0036 | Capacity and subscription usage reservations | draft | critical | dmitry | required | VELDO-0036-capacity-and-spend-reservations.md |
 | VELDO-0037 | Atomic specification alias allocation and document publication | draft | high | dmitry | required | VELDO-0037-specification-alias-publication.md |
 | VELDO-0038 | Effect-specific reconciliation and recovery commands | draft | critical | dmitry | required | VELDO-0038-effect-recovery-commands.md |
 | VELDO-0039 | Durable dispatch acceptance and launch records | draft | critical | dmitry | required | VELDO-0039-durable-dispatch-acceptance.md |
@@ -742,7 +742,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W14 | VELDO-0029 | One signed enrollment binding decides which authority a clone writes to, and nothing ambient does | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025 | ready (frontier) |
 | W16 | VELDO-0031 | Authority-backed claims and claim-generation fencing | VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107 | waiting: VELDO-0029, VELDO-0107 |
 | W20 | VELDO-0035 | Complete read-set validation and authoritative snapshots | VELDO-0023, VELDO-0025 | draft (frontier) |
-| W21 | VELDO-0036 | Durable capacity and spend reservations | VELDO-0023, VELDO-0025 | draft (frontier) |
+| W21 | VELDO-0036 | Capacity and subscription usage reservations | VELDO-0023, VELDO-0025 | draft (frontier) |
 | W24 | VELDO-0039 | Durable dispatch acceptance and launch records | VELDO-0028, VELDO-0031, VELDO-0036 | waiting: VELDO-0028, VELDO-0031, VELDO-0036 |
 | W25 | VELDO-0040 | Provider-neutral process supervision and descendant containment | VELDO-0039 | waiting: VELDO-0039 |
 | W26 | VELDO-0041 | Independent heartbeat, bounded stopping, and safe capacity retirement | VELDO-0036, VELDO-0039, VELDO-0040 | waiting: VELDO-0036, VELDO-0039, VELDO-0040 |

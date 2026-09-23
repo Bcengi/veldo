@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0036
-title: Durable capacity and spend reservations
+title: Capacity and subscription usage reservations
 status: draft
 risk: critical
 owner: dmitry
@@ -47,8 +47,8 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Capacity and spend reservations are atomic at applicable account, project and unit
-      ceilings before dispatch. Set and completeness: On the configured journey accounts/project,
+      Claim: Capacity and subscription usage reservations are atomic at applicable account,
+      project and unit ceilings before dispatch. Set and completeness: On the configured journey accounts/project,
       exercise below, equal and above each ceiling and two clients competing for the last slot in
       real SQLite; compare allocation rows and balances. Falsifier: Check the last slot outside its
       reservation transaction; competing admissions must over-allocate and fail the check.
@@ -57,27 +57,30 @@ acceptance_criteria:
       allocate and fail the check.
   - id: AC2
     text: >
-      Claim: Every billable request allocates its enforceable maximum before entering the provider
-      boundary. Set and completeness: Enumerate initial, retry and follow-on call sites from adapter
-      registrations; test fitting, excessive, absent and unenforceable maxima against remaining
-      budgets after charges and exposure, observing zero outbound calls on refusal. Falsifier:
-      Allocate a follow-on maximum after the receiver call; the pre-call ordering check must fail.
+      Claim: Every subscription CLI invocation checks and reserves its applicable usage caps before
+      launch, including initial, retry and follow-on invocations. Set and completeness: Enumerate
+      invocation boundaries from adapter registrations; exercise invocation counts, wall time,
+      CLI-reported tokens/messages where available, and subscription rate-limit windows with
+      remaining, exhausted and unknown allowance. Refusals launch nothing; a worker stops when
+      its cap is reached. No price or per-request monetary maximum is required. Falsifier:
+      Check a follow-on cap after launch; the pre-call ordering check must fail.
     falsified_by: >
-      Allocate a follow-on maximum after the receiver call; the pre-call ordering check must fail.
+      Check a follow-on cap after launch; the pre-call ordering check must fail.
   - id: AC3
     text: >
-      Claim: Usage settles once per invocation/sequence and unknown charge outcomes retain exposure.
+      Claim: Usage settles once per invocation/sequence and unknown usage retains conservative
+      reservations.
       Set and completeness: Ingest normal, duplicate and missing reports for accepted requests;
-      compare exact-unit balances. Timeout or cancellation without conclusive usage/no-charge
-      evidence cannot free the allocation. Falsifier: Release exposure on a timeout after
-      acceptance; a subsequent request must overspend and fail the check.
+      compare balances in the declared usage units. Timeout or cancellation without conclusive
+      usage or non-execution evidence cannot free the allocation. Falsifier: Release exposure on a timeout after
+      acceptance; a subsequent invocation must exceed its usage cap and fail the check.
     falsified_by: >
-      Release exposure on a timeout after acceptance; a subsequent request must overspend and fail
-      the check.
+      Release exposure on a timeout after acceptance; a subsequent invocation must exceed its usage cap
+      and fail the check.
   - id: AC4
     text: >
       Claim: A capacity slot is released only after actual worker termination, cleanup and accounted
-      or retained charge obligations. Set and completeness: Hold a real descendant alive, withhold
+      or retained unknown-usage reservations. Set and completeness: Hold a real descendant alive, withhold
       outcome/accounting and leave clone cleanup incomplete separately; attempt retirement and
       observe refusal until required ordinary observations exist. Falsifier: Release capacity on
       parent exit while its descendant is alive; the slot-reuse check must fail.
@@ -91,7 +94,7 @@ rollback: >
 
 ## Intent
 
-Durable capacity and spend reservations. Deliver the normal function needed by the running factory journey.
+Capacity and subscription usage reservations. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
@@ -107,16 +110,30 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## Notes
 
-Use exact monetary units and declared rounding. Reservations cover the configured account,
-project and unit for each provider. Every initial, retry or follow-on billable path reserves
-its enforceable maximum before calling; missing accounting retains exposure.
+Models run only through logged-in Claude Code and Codex subscriptions; paid model APIs are
+prohibited. A budget is a usage allowance, not a per-call price. Reserve against the configured
+account, project and unit using invocation counts and wall time, tokens/messages as the CLI
+reports them, and the subscription's exposed rate-limit windows. Record units, observation
+watermarks and reset times. Never invent token telemetry, remaining quota or a monetary maximum.
+
+Before every initial, retry or follow-on CLI invocation, atomically check the applicable caps,
+retain outstanding reservations and reserve the next invocation/time allowance. Observe reported
+token/message usage and rate-limit signals during execution; stop the worker when its cap is
+reached, and refuse further invocations until allowance is available. A reported window limit
+blocks dispatch until its reported reset or refreshed allowance. Delayed token/message reports
+are accounted when available, not represented as an enforceable per-request maximum.
+
+Qualification may use supported invocation/time controls without requiring an unavailable token
+limit or any price. Missing usage is never zero: keep its reservation; if an applicable remaining
+allowance cannot be bounded conservatively, stop and refuse further invocation until reconciled.
+A process exit or timeout alone does not establish unused allowance.
 
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
 and failing row. Real stores, files, processes, Git and signatures are required where named.
 Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
-Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+Current authorization, independent engineering review, pre-invocation subscription usage caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
@@ -125,6 +142,6 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
 Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 crash/broad
 intersecting allocation matrix, AC3 restart/reordering and AC4 durable quarantine recovery
-moved to Release 2. Caps, deduplicated accounting and unknown exposure remain. The criteria,
+moved to Release 2. Subscription usage caps, deduplicated accounting and unknown usage reservations remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.

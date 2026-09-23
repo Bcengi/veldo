@@ -75,27 +75,30 @@ acceptance_criteria:
       credential-read check must fail.
   - id: AC2
     text: >
-      Claim: Each billable request allocates its enforceable maximum from all applicable remaining
-      budgets before sending. Set and completeness: Inventory initial, retry and follow-on paths for
-      both providers, enabled price components and hard request limits; bind pricing revision, exact
-      units and rounding. Exercise fitting, excessive and unknown maxima and two requests for one
-      remainder, recording outbound calls and live charges. Falsifier: Allocate a follow-on maximum
-      after sending; the pre-call ordering check must fail.
+      Claim: Each logged-in subscription CLI invocation checks and reserves applicable usage
+      allowance before launch; the worker stops when a cap is reached. Set and completeness:
+      Inventory initial, retry and follow-on invocations for both providers; record supported
+      invocation/time controls, CLI-reported tokens/messages and subscription rate-limit windows.
+      Exercise available, exhausted and unknown allowance, two invocations competing for one
+      remainder, live cap-triggered stop and a reported rate-limit reset. Record launch counts,
+      elapsed time and reported usage; refused checks launch nothing. Qualification requires no
+      price or per-request monetary maximum. Falsifier: Check a follow-on cap after launch;
+      the pre-call ordering check must fail.
     falsified_by: >
-      Allocate a follow-on maximum after sending; the pre-call ordering check must fail.
+      Check a follow-on cap after launch; the pre-call ordering check must fail.
   - id: AC3
     text: >
       Claim: Usage settles once per invocation/sequence and incomplete reports retain conservative
-      exposure. Set and completeness: Capture live receipts from each configured provider, ingest
-      normal/duplicate/missing reports, and compare balances with an independent exact-unit
-      calculation; cancellation or timeout alone cannot release an accepted request allocation.
-      Falsifier: Release exposure on accepted-request timeout; the next-spend refusal check must
+      usage reservations. Set and completeness: Capture live CLI usage receipts from each configured subscription, ingest
+      normal/duplicate/missing reports, and compare balances independently in their declared
+      invocation/time/token/message units; cancellation or timeout alone cannot release an accepted request allocation.
+      Falsifier: Release reserved usage on accepted-invocation timeout; the next-invocation refusal check must
       fail.
     falsified_by: >
-      Release exposure on accepted-request timeout; the next-spend refusal check must fail.
+      Release reserved usage on accepted-invocation timeout; the next-invocation refusal check must fail.
   - id: AC4
     text: >
-      Claim: Costs and remaining budget are attributed to the stored account/project/unit. Set and
+      Claim: Subscription usage and remaining allowance are attributed to the stored account/project/unit. Set and
       completeness: For the one account per provider and journey project, alter ambient account
       labels and report attribution, and remove measurement while retaining allocation; compare
       displayed watermark and totals to actual stored receipts. Falsifier: Use a caller-supplied
@@ -126,17 +129,31 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## Notes
 
-Qualify one account and authentication mode for each of Claude Code and Codex on the two MVP
-host profiles. Record pricing and hard-limit evidence; no price or safe proxy is assumed.
-Protect raw receipts and publish redacted digests sufficient for independent checking. Unknown
-cost is never zero.
+Qualify one logged-in subscription account for each of Claude Code and Codex on the two MVP
+host profiles. Models run only through those subscriptions; paid model APIs are prohibited.
+There is no per-call price. Record actual invocation counts, wall time, tokens or messages as
+reported by the CLI, and the subscription's exposed rate-limit windows, resets and usage
+watermarks. Do not fabricate unreported counters or require pricing to qualify an adapter.
+
+VELDO-0036 supplies atomic account/project/unit usage reservations. Before every initial,
+retry or follow-on CLI invocation, check all applicable caps and outstanding reservations;
+refuse exhausted allowance or an active rate-limit window. Stop the worker when its cap is
+reached. Use supported invocation/time controls when finer usage controls are unavailable;
+reported tokens/messages are accounted at their actual observation granularity, without a
+claim of a hard per-request maximum.
+
+Unknown usage is never zero. Retain its reservation and conservatively bound the remaining
+allowance; if that cannot be done, stop and refuse further invocation until reconciled.
+Timeout, cancellation and missing reports never replenish allowance. A rate-limit window
+reopens only on its reported reset or refreshed allowance, not an invented reset. Protect raw
+receipts and publish redacted digests sufficient for independent checking.
 
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
 and failing row. Real stores, files, processes, Git and signatures are required where named.
 Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
-Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+Current authorization, independent engineering review, pre-invocation subscription usage caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
@@ -146,6 +163,6 @@ Telegram 28848 (function now, robustness/recovery later), with Mac retained by 2
 Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC3
 restart/reordered reports moved to Release 2; AC1 all-authentication/host and AC4 two-
 account/two-project matrices moved to Release 4, except the two MVP hosts. One account per
-provider, live costs, custody and all pre-call caps remain. The criteria, declared evidence
+provider, live subscription usage, custody and all pre-invocation caps remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.

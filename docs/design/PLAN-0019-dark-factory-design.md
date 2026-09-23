@@ -1,5 +1,13 @@
 # PLAN-0019: Dark Factory project coordination inside Veldo
 
+*2026-09-22 budget amendment:* The owner's standing rule permits model execution only through
+logged-in Claude Code and Codex subscriptions, never paid model APIs. Historical per-request
+pricing, maximum-charge and monetary reservation requirements below are superseded by
+VELDO-0036/0060/0061/0062's subscription usage model: invocation and wall-time caps,
+CLI-reported tokens/messages and exposed rate-limit windows. Check caps before each invocation,
+stop the worker at its cap and retain unknown usage conservatively. Qualification requires
+no price or per-request monetary maximum.
+
 **Provenance.** Design draft v2, drafted by Codex against checkout `f3d2e451bd1ead6d6a472496d2405dfe0a105abd` and attacked by the context guardian. Recorded 2026-09-16. Governing authority is Dmitry's rulings dated 2026-09-16. This document is normative for PLAN-0019 in the same way PLAN-0016's Confluence design document is normative for that plan. Recording it does not approve the draft plan or activate its proposed policies.
 
 **Later ruling and precedence.** Dmitry, 2026-09-16 22:38: "jira was old decision. It should be where the input surface is, not just jira. If we are doing it via chat, it should be via chat as long as decision is made." R36, R38, R41, R60, and R72 below apply this ruling and are marked [REVISED]. Every enrolled input surface is a decision surface; the authority settles once, and every channel is a proxy. This supersedes PLAN-0016's prohibition on chat decisions and any tracker-only or ticket-only answer requirement retained elsewhere in this v2 text, including R03, R07, R12, R18, R37, R51, R53, R61, R65, R71, and R74. Tracker-specific delivery and activation requirements continue to govern the tracker adapter; they do not make it a prerequisite for another independently enrolled and qualified channel. Lifecycle spellings use US English, including `CANCELED`.
