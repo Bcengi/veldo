@@ -29,9 +29,14 @@ FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
 def cases():
     result = []
 
-    def add(finding, name, suite, module, old, new, rows):
-        result.append(dict(finding=finding, name=name, suite=suite, module=module,
-                           old=old, new=new, rows=rows))
+    def add(finding, name, suite, module, old, new, rows, also=()):
+        case = dict(finding=finding, name=name, suite=suite, module=module,
+                    old=old, new=new, rows=rows)
+        if also:
+            # Further exact replacements in the same module, for a defect that one edit cannot
+            # reintroduce because the fixed code guards it in several places.
+            case['also'] = [list(pair) for pair in also]
+        result.append(case)
 
     def signature(name, old, new, rows):
         add(1, name, '47_veldo_0107_ipc.py', 'control_client.py', old, new, rows)
@@ -278,9 +283,9 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
-    def effect(name, old, new, criterion):
+    def effect(name, old, new, criterion, also=()):
         add(28, name, '58_veldo_0028_effects.py', 'control_effects.py', old, new,
-            ['effects/' + criterion + '/' + kind for kind in ('provider', 'publication')])
+            ['effects/' + criterion + '/' + kind for kind in ('provider', 'publication')], also)
     scope = "    if any(request.get(f) != contract[f] for f in BINDINGS):\n        raise Refused('scope-mismatch')"
     effect('effects-worker-scope', scope,
            "    contract = dict(contract, **{f: request[f] for f in BINDINGS})\n    entry = dict(entry, data=contract)", 'scope')
@@ -301,11 +306,26 @@ def cases():
            "    completed = status in ('accepted', 'completed') and bool(observation.get('evidence'))", 'completion')
     effect('effects-unbound-result', "    matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)",
            "    matches = isinstance(observation, dict)", 'completion')
-    revocation = "    if R.is_revoked(S, conn, principal, now):"
+    revocation = "    if R.is_revoked(S, conn, principal, now):\n        raise Refused('revoked')"
     effect('effects-ignore-authorization-revocation', revocation,
-           "    if False:", 'revocation-committed')
+           "    if False:\n        raise Refused('revoked')", 'revocation-committed')
+    # Acceptance is ordered against revocation by VELDO-0026's accept_effect inside the store
+    # transaction, with the ledger a declared version. Checking only the preflight means undoing
+    # that ordering too: no revocable effect, no ledger declaration, no reconciliation.
+    v26_accept = ("            changes = dict(S.COMMAND_REGISTRY['accept_effect']['transition'](\n"
+                  "                {'effect_id': rid, 'principal': principal, 'receiver': contract['target'],\n"
+                  "                 'kind': contract['kind'], 'at': time.time()}, before))")
+    v26_reconcile = "        if completed:\n            changes.update("
     effect('effects-revocation-preflight-only', revocation,
-           "    if not consume and R.is_revoked(S, conn, principal, now):", 'revocation-before-transaction')
+           "    if not consume and R.is_revoked(S, conn, principal, now):\n        raise Refused('revoked')", 'revocation-before-transaction',
+           also=[(v26_accept, "            changes = {}"),
+                 ("{'new_ids': [eid, rid, R.LEDGER_ENTITY]}", "{'new_ids': [eid]}"),
+                 (v26_reconcile, "        if False:\n            changes.update(")])
+    # R3 A: an accepted protected effect is in flight for VELDO-0026's revocation accounting.
+    effect('effects-invisible-to-revocation', v26_accept,
+           v26_accept.replace("'principal': principal,", "'principal': 'effect-executor',"), 'revocation-in-flight')
+    effect('effects-pending-reconciled-as-settled', v26_reconcile,
+           "        if status in ('accepted', 'completed'):\n            changes.update(", 'revocation-in-flight')
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])
@@ -320,6 +340,22 @@ def cases():
     return result
 
 
+def edits(case):
+    return [(case['old'], case['new'])] + [tuple(pair) for pair in case.get('also', ())]
+
+
+def mutate(text, case):
+    """Apply every replacement of `case` to `text` (str or bytes); each anchor must occur exactly
+    once in the text it is applied to."""
+    for old, new in edits(case):
+        if isinstance(text, bytes):
+            old, new = old.encode(), new.encode()
+        if text.count(old) != 1:
+            raise RuntimeError((case['name'], 'mutation anchor moved', text.count(old)))
+        text = text.replace(old, new)
+    return text
+
+
 def materialize(case, mode, directory, root=ROOT):
     """Own case paths, exact replacement and file/directory copies for every driver.
 
@@ -332,10 +368,11 @@ def materialize(case, mode, directory, root=ROOT):
     base = root / 'scripts/fixtures' if fixture else root / '.veldo'
     source = base / case['module']
     before = source.read_bytes()
-    old, new = case['old'].encode(), case['new'].encode()
+    old = case['old'].encode()
     count = before.count(old)
     if count != 1:
         raise RuntimeError((case['name'], 'mutation anchor moved', count))
+    mutated = mutate(before, case)
     mutant = None
     after = before
     if mode != 'baseline':
@@ -346,7 +383,7 @@ def materialize(case, mode, directory, root=ROOT):
             shutil.copytree(base, mutant, ignore=shutil.ignore_patterns('__pycache__'))
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(before if mode == 'noop' else before.replace(old, new))
+        target.write_bytes(before if mode == 'noop' else mutated)
         after = target.read_bytes()
     return dict(source=source, mutant=mutant, replacement_count=count,
                 old_digest=hashlib.sha256(before).hexdigest(),
@@ -404,7 +441,7 @@ def main():
             mutant = prepared['mutant']
             if args.diff_dir:
                 source = prepared['source'].read_text()
-                changed = source.replace(case['old'], case['new'])
+                changed = mutate(source, case)
                 relative = str(prepared['source'].relative_to(ROOT))
                 args.diff_dir.mkdir(parents=True, exist_ok=True)
                 (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(

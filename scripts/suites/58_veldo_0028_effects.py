@@ -40,11 +40,12 @@ def _v28_run():
         conn = E.S.open_store(str(db))
         journal = ('owner', lambda data: E.SIG.sign_bytes(private / 'journal', data, 'veldo-journal'))
         count = 0
-        def put(identity, kind, data):
+        def put(identity, kind, data, store=None):
             nonlocal count
             count += 1
-            old = E.S.materialized_state(conn)['entities'].get(identity, {}).get('version', 0)
-            return E.S.execute(conn, {'command_id': 'setup-' + str(count), 'principal': 'owner',
+            store = store or conn
+            old = E.S.materialized_state(store)['entities'].get(identity, {}).get('version', 0)
+            return E.S.execute(store, {'command_id': 'setup-' + str(count), 'principal': 'owner',
                 'operation': 'upsert_entity', 'parameters': {'entity_id': identity, 'kind': kind, 'data': data},
                 'expected_versions': {identity: old}, 'artifact_digests': [], 'nonce': 'setup-' + str(count)},
                 journal[0], journal[1], 1)
@@ -257,9 +258,13 @@ print(json.dumps(result))
                             reason='operator withdrew authorization', revoked_by='owner'),
                         expected_versions={}, artifact_digests=[], nonce='revoke-worker'), journal, now)
                 original = E.transact
+                reissued = {'refusal': 'revoked'}
                 if timing == 'committed':
                     revoke()
                     answer = _v28_executor.call(isolated_path, req, 'worker', private / 'worker')
+                    # A committed revocation also refuses a new handle for the same contract.
+                    reissued = _v28_executor.call(isolated_path, {f: v for f, v in dict(req, operation='issue').items()
+                                                                  if f != 'handle'}, 'worker', private / 'worker')
                 else:
                     def interleave(c, operation, *args):
                         if operation == 'accept_protected_effect':
@@ -276,7 +281,7 @@ print(json.dumps(result))
                 state = E.S.materialized_state(revoked_conn)
                 refused = (issued.get('accepted') is True
                     and R.is_revoked(E.S, revoked_conn, 'worker', _v28_time.time())
-                    and answer.get('accepted') is False
+                    and answer.get('accepted') is False and reissued.get('refusal') == 'revoked'
                     and len(calls(kind + '-good')) == before_calls
                     and 'effect:' + req['dispatch_id'] not in state['entities']
                     and 'handle:' + E.SIG.digest(req['handle']) not in state['nonces']
@@ -284,6 +289,43 @@ print(json.dumps(result))
                 row('revocation-' + timing + '/' + kind, refused)
                 expect('VELDO-0028 effects/revocation-' + timing + '/' + kind, refused)
                 revoked_conn.close()
+        # R3: an accepted protected effect is in flight for VELDO-0026's own ledger. Each
+        # scenario runs on an isolated copy of the store so the revocation stays local to it.
+        def isolate(tag):
+            path = root / (tag + '.sqlite3')
+            copy = E.S.open_store(str(path))
+            conn.backup(copy)
+            isolated_path = private / (tag + '-config.json')
+            isolated_path.write_text(_v28_json.dumps(dict(config, store=str(path))))
+            return copy, isolated_path
+        def revoke_on(store, principal, at, command_id):
+            R.execute(E.S, store, dict(command_id=command_id, principal='owner', operation='revoke_authorization',
+                parameters=dict(principal=principal, at=at, reason='operator withdrew authorization', revoked_by='owner'),
+                expected_versions={}, artifact_digests=[], nonce=command_id), journal, _v28_time.time())
+        def unused(store, request):
+            state = E.S.materialized_state(store)
+            return ('effect:' + request['dispatch_id'] not in state['entities']
+                    and 'handle:' + E.SIG.digest(request['handle']) not in state['nonces'])
+        for kind in E.KINDS:
+            # A: an effect the receiver accepted and has not finished is IN FLIGHT when its worker
+            # is revoked; one that completed with evidence is not.
+            pending, _, _, _ = setup(kind, 'in-flight', 'accepted')
+            settled, _, _, _ = setup(kind, 'settled', 'completed')
+            store, isolated_path = isolate(kind + '-in-flight')
+            ran = [_v28_executor.call(isolated_path, r, 'worker', private / 'worker').get('result', {}) for r in (pending, settled)]
+            revoke_on(store, 'worker', _v28_time.time(), 'revoke-in-flight')
+            closure = R.closure_status(E.S, store, 'worker')
+            stops = R.pending_stop_obligations(E.S, store)
+            recorded = E.S.materialized_state(store)['entities']
+            # The copy also holds this worker's earlier pending effects; judge the two named here.
+            link, done = (recorded.get('effect:' + r['dispatch_id'], {}).get('data', {}).get('revocation_effect') for r in (pending, settled))
+            in_flight = closure.get('in_flight', [])
+            row('revocation-in-flight/' + kind, ran[0].get('stop') == 'effect-pending' and ran[1].get('completed') is True
+                and closure.get('revoked') is True and closure.get('effective') is False
+                and link is not None and link in in_flight and done is not None and done not in in_flight
+                and [data.get('effect') for _, data in stops if data.get('effect') in (link, done)] == [link])
+            expect('VELDO-0028 effects/revocation-in-flight/' + kind, checks['revocation-in-flight/' + kind])
+            store.close()
         # Linux custody witness: this isolated probe can execute but cannot read private
         # service files. Provisioning this boundary for real workers belongs to W26.
         probe = '''import ctypes,sys

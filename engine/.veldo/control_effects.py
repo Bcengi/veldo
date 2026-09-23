@@ -21,6 +21,12 @@ def organ(name):
 SIG = organ('control_signer')
 R = organ('control_revocation')
 S, CM, AC = SIG.S, SIG.CM, SIG.AC
+# VELDO-0026 owns the revocation ledger and its in-flight accounting. Every accepted protected
+# effect is also accepted through its registered accept_effect transition, in the same store
+# transaction, so revocation, stop obligations and closure see it without a second copy of the
+# rules; conclusive completion is reconciled through its reconcile_effect transition.
+R.attach(S)
+REVOCABLE = 'revocable-effect:'
 Refused = SIG.K.Refused
 NAMESPACE = 'veldo-effect-connection'
 BINDINGS = ('domain_uuid', 'repository_uuid', 'unit', 'station', 'sandbox', 'dispatch_id', 'kind', 'target')
@@ -143,24 +149,33 @@ def accept(conn, config, principal, request, journal):
             raise Refused('request-content-conflict')
         return previous['data'], False
     nonce = hid
+    rid = REVOCABLE + entry['data']['dispatch_id']
     def transition(params, before):
         current, permission = authorize(conn, before, config, principal, request)
         saved = entity(before, hid, 'effect_handle')['data']
         if saved['contract_digest'] != current['digest'] or time.time() >= saved['expires_at']:
             raise Refused('stale-handle')
         contract = current['data']
+        try:
+            changes = dict(S.COMMAND_REGISTRY['accept_effect']['transition'](
+                {'effect_id': rid, 'principal': principal, 'receiver': contract['target'],
+                 'kind': contract['kind'], 'at': time.time()}, before))
+        except S.StoreRefused as error:
+            if 'revoked:' in error.detail:
+                raise Refused('revoked')
+            raise
         data = {f: contract[f] for f in BINDINGS}
         data.update(contract_id=request['contract_id'], contract_digest=current['digest'],
                     contract_version=current['version'], worker=principal, permission_version=permission['version'], payload=contract['payload'],
                     request_digest=SIG.digest(request), status='accepted', stop='effect-pending',
-                    completed=False, evidence=None)
-        changes = {eid: {'kind': 'protected_effect', 'data': data}}
+                    completed=False, evidence=None, revocation_effect=rid)
+        changes[eid] = {'kind': 'protected_effect', 'data': data}
         if contract['kind'] == 'provider':
             usage = dict(permission['data'], remaining_calls=permission['data']['remaining_calls'] - 1,
                          outstanding_dispatch=contract['dispatch_id'])
             changes[contract['permission_id']] = {'kind': 'effect_permission', 'data': usage}
         return changes
-    transact(conn, 'accept_protected_effect', {'new_ids': [eid]}, state, nonce, journal, transition)
+    transact(conn, 'accept_protected_effect', {'new_ids': [eid, rid, R.LEDGER_ENTITY]}, state, nonce, journal, transition)
     return S.materialized_state(conn)['entities'][eid]['data'], True
 
 
@@ -178,8 +193,17 @@ def finish(conn, accepted, observation, journal):
                   evidence=SIG.digest(observation) if matches else None)
     eid = 'effect:' + accepted['dispatch_id']
     state = S.materialized_state(conn)['entities']
-    transact(conn, 'observe_protected_effect', {}, state, secrets.token_hex(20), journal,
-             lambda p, b: {eid: {'kind': 'protected_effect', 'data': result}})
+    def transition(params, before):
+        changes = {}
+        # Only conclusive evidence resolves the VELDO-0026 effect; accepted-only and unknown
+        # outcomes stay in flight, so a revocation still owes a stop for them.
+        if completed:
+            changes.update(S.COMMAND_REGISTRY['reconcile_effect']['transition'](
+                {'effect_id': accepted['revocation_effect'], 'outcome': 'completed',
+                 'evidence_digest': result['evidence'], 'at': time.time()}, before))
+        changes[eid] = {'kind': 'protected_effect', 'data': result}
+        return changes
+    transact(conn, 'observe_protected_effect', {}, state, secrets.token_hex(20), journal, transition)
     return result
 
 
