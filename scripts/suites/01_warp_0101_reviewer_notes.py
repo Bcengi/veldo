@@ -2949,8 +2949,11 @@ expect("suite attr check TEETH: a name bound in a FUNCTION is that function's ow
        and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 4
        and any(a == "COMPREHENDED" for _f, _l, a, _at, _r in _sac_refs))
 def _sac_resolves(rel, attr):
-    spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)
-    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    try:
+        spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)
+        mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    except Exception:                    # a mapping to a path that is not a module is itself wrong
+        return False
     return hasattr(mod, attr)
 
 
