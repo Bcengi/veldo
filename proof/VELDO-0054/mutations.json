@@ -1,12 +1,12 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 54 --diff-dir proof/VELDO-0054/mutations",
  "summary": {
-  "mutations_rejected": 43,
+  "mutations_rejected": 50,
   "green_suites": {
-   "62_veldo_0054_decisions.py": 57
+   "62_veldo_0054_decisions.py": 63
   }
  },
- "wall_seconds_here": 319.57,
+ "wall_seconds_here": 50.15,
  "mutations": [
   {
    "mutation": "framing-receipt-without-digest",
@@ -73,7 +73,10 @@
     "decisions/observations",
     "decisions/settlement-invalid-before-unsupported",
     "decisions/minor-shapes",
-    "decisions/deep-blocks-named"
+    "decisions/settlement-text-encodable",
+    "decisions/deep-blocks-named",
+    "decisions/stops-propagate",
+    "decisions/unexpected-message"
    ],
    "diff": "mutations/floor-stations-skip-decisions.diff"
   },
@@ -321,7 +324,8 @@
    "baseline": "green",
    "red_rows": [
     "decisions/malformed-records-named",
-    "decisions/settlement-invalid-before-unsupported"
+    "decisions/settlement-invalid-before-unsupported",
+    "decisions/settlement-text-encodable"
    ],
    "diff": "mutations/settlement-invalid-ignored.diff",
    "review_item": "B"
@@ -474,7 +478,8 @@
    ],
    "baseline": "green",
    "red_rows": [
-    "decisions/deep-blocks-named"
+    "decisions/deep-blocks-named",
+    "decisions/unexpected-message"
    ],
    "diff": "mutations/decide-raises-unexpected.diff",
    "review_item": "3.1"
@@ -487,7 +492,8 @@
    ],
    "baseline": "green",
    "red_rows": [
-    "decisions/deep-blocks-named"
+    "decisions/deep-blocks-named",
+    "decisions/unexpected-message"
    ],
    "diff": "mutations/blockers-raise-unexpected.diff",
    "review_item": "3.1"
@@ -553,7 +559,8 @@
    "baseline": "green",
    "red_rows": [
     "decisions/malformed-records-named",
-    "decisions/settlement-invalid-before-unsupported"
+    "decisions/settlement-invalid-before-unsupported",
+    "decisions/settlement-text-encodable"
    ],
    "diff": "mutations/settlement-signature-type-unchecked.diff",
    "review_item": "3.3"
@@ -596,6 +603,97 @@
    ],
    "diff": "mutations/decision-id-unrecorded.diff",
    "review_item": "3.minor"
+  },
+  {
+   "mutation": "settlement-nul-passed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "diff": "mutations/settlement-nul-passed.diff",
+   "review_item": "4.1"
+  },
+  {
+   "mutation": "settlement-unencodable-passed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "diff": "mutations/settlement-unencodable-passed.diff",
+   "review_item": "4.1"
+  },
+  {
+   "mutation": "decide-holds-a-stop",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/stops-propagate"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/stops-propagate"
+   ],
+   "diff": "mutations/decide-holds-a-stop.diff",
+   "review_item": "4.2"
+  },
+  {
+   "mutation": "blockers-hold-a-stop",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/stops-propagate"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/stops-propagate"
+   ],
+   "diff": "mutations/blockers-hold-a-stop.diff",
+   "review_item": "4.2"
+  },
+  {
+   "mutation": "unexpected-message-dropped",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-message-dropped.diff",
+   "review_item": "4.3"
+  },
+  {
+   "mutation": "unexpected-message-unbounded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-message-unbounded.diff",
+   "review_item": "4.3"
+  },
+  {
+   "mutation": "unexpected-message-multiline",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-message-multiline.diff",
+   "review_item": "4.3"
   },
   {
    "mutation": "verifier-unavailable-as-unsigned",

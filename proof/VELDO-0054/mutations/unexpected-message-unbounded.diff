@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -163 +163 @@
+-    message = message.encode('ascii', 'backslashreplace').decode('ascii')[:UNEXPECTED_MESSAGE_LIMIT]
++    message = message.encode('ascii', 'backslashreplace').decode('ascii')

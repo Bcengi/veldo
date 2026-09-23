@@ -154,6 +154,13 @@ criterion, status or evidence universe changed.
 
 2026-09-23, third review fixes: a blocks nested beyond the recursion limit broke every consumer, and
 veldo status reported a store integrity refusal without its code. The blocks walk no longer
-recurses, an unexpected fault is named for its unit, a store refusal is named by its code
-everywhere, a malformed settlement is invalid input before unsupported, and a blocks string names
-every id it lists. The footprint is unchanged. No criterion, status or evidence universe changed.
+recurses, an unexpected fault is named for its unit, a store refusal is named by its code in
+decide, decision_blockers and veldo status (plan status and the frontier still raise the store's
+own named refusal, an open item), a malformed settlement is invalid input before unsupported, and a
+blocks string names every id it lists. The footprint is unchanged. No criterion, status or evidence universe changed.
+
+2026-09-23, fourth review fixes: a settlement signer or signature holding NUL or text that does not
+encode is a named invalid input for its unit, a named stop raised under decide propagates as a stop,
+and an unexpected fault is named with its message as well as its type. The third review's entry
+above now says where a store refusal is named by its code. The footprint is unchanged. No criterion,
+status or evidence universe changed.

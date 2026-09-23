@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -578 +578 @@
+@@ -566 +566 @@
 -                self._invalid_record(identity, 'blocks')
 +                pass

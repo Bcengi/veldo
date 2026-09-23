@@ -1,0 +1,7 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -224,4 +223,0 @@
+-        return False
+-    try:
+-        text.encode('utf-8')
+-    except UnicodeEncodeError:

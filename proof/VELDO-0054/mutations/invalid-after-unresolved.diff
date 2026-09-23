@@ -1,13 +1,13 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -290,0 +291,6 @@
+@@ -304,0 +305,6 @@
 +    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]
 +    if not mine:
 +        return ['unresolved_decision:' + rid]
 +    problems = record_problems(rid, record) if not record_invalid(rid, record) else []
 +    if problems:
 +        return problems
-@@ -294,3 +299,0 @@
+@@ -308,3 +313,0 @@
 -    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]
 -    if not mine:
 -        return ['unresolved_decision:' + rid]

@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -162 +162 @@
+-    message = ' '.join(str(error).split())
++    message = str(error)

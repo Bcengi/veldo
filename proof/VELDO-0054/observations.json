@@ -513,10 +513,10 @@
    "unexpected": [
     "ok",
     [
-     "unknown_outcome:evaluation_error/RuntimeError"
+     "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
     ],
     [
-     "unknown_outcome:evaluation_error/RuntimeError"
+     "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
     ]
    ]
   },
@@ -834,8 +834,57 @@
     "invalid_input:settlement:decision:D-9498:1/settlement"
    ]
   },
+  "settlement_text": {
+   "VELDO-9511": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9511:1/signer"
+    ],
+    [
+     "invalid_input:settlement:decision:D-9511:1/signer"
+    ]
+   ],
+   "VELDO-9512": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9512:1/signature"
+    ],
+    [
+     "invalid_input:settlement:decision:D-9512:1/signature"
+    ]
+   ],
+   "VELDO-9513": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9513:1/signer"
+    ],
+    [
+     "invalid_input:settlement:decision:D-9513:1/signer"
+    ]
+   ],
+   "VELDO-9514": [
+    "ok",
+    [
+     "missing_authority:admission",
+     "invalid_input:settlement:decision:D-9514:1/signature"
+    ],
+    [
+     "invalid_input:settlement:decision:D-9514:1/signature"
+    ]
+   ]
+  },
   "status_reader": {},
   "status_stop": "burndown_unanswerable:TypeError",
+  "stops": {
+   "decide": [
+    "stopped",
+    "host_trust_unreadable"
+   ],
+   "decision_blockers": [
+    "stopped",
+    "host_trust_unreadable"
+   ]
+  },
   "store_refusal": {
    "decide": [
     "ok",
@@ -910,11 +959,31 @@
    "unsupported_decision:decision:D-9426/obligation:adversarial_decision_review": "missing_authority",
    "unsupported_decision:decision:D-9427/subject_kind:contract": "missing_authority"
   },
+  "unexpected_messages": {
+   "long": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/RuntimeError/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ]
+   ],
+   "short": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
+    ]
+   ],
+   "short_blockers": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
+    ]
+   ]
+  },
   "verifier_unavailable": [
    "unavailable_service:settlement_verifier"
   ]
  },
- "passed": 31,
+ "passed": 37,
  "rows": [
   [
    "VELDO-0054 decisions/consumers-from-call-sites",
@@ -977,7 +1046,19 @@
    true
   ],
   [
+   "VELDO-0054 decisions/settlement-text-encodable",
+   true
+  ],
+  [
    "VELDO-0054 decisions/deep-blocks-named",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/stops-propagate",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/unexpected-message",
    true
   ],
   [
@@ -1029,7 +1110,19 @@
    true
   ],
   [
+   "VELDO-0054 ran/decisions/settlement-text-encodable",
+   true
+  ],
+  [
    "VELDO-0054 ran/decisions/deep-blocks-named",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/stops-propagate",
+   true
+  ],
+  [
+   "VELDO-0054 ran/decisions/unexpected-message",
    true
   ],
   [
@@ -1042,5 +1135,5 @@
   ]
  ],
  "suite": "62_veldo_0054_decisions.py",
- "suite_seconds": 3.616
+ "suite_seconds": 4.43
 }
