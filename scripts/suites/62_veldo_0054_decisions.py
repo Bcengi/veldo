@@ -103,6 +103,11 @@ def _v54_suite():
         host = Path(directory) / 'host'
         host.mkdir()
         keys = {}
+        # A real RSA-4096 key (its armored signature is about 1.6 KB) for the verifier-input edges,
+        # generated beside the rest of the setup and awaited where it is used.
+        keys['rsa'] = host / 'rsa_key'
+        rsa_keygen = subprocess.Popen(['ssh-keygen', '-q', '-t', 'rsa', '-b', '4096', '-N', '', '-C', 'rsa',
+                                       '-f', str(keys['rsa'])], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for name in ('trusted', 'rogue'):
             keys[name] = host / (name + '_key')
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', name, '-f', str(keys[name])],
@@ -819,14 +824,20 @@ def _v54_suite():
         with region('decisions/verifier-input-bounded'):
             # What reaches the verifier is bounded: a signer over 256 characters or holding a control
             # character, and a signature over 16 KiB, are invalid_input for the unit; they never reach
-            # ssh-keygen, never read as a verifier outage, never mask the unit's other refusals. And a
-            # quoted principal with a space, which OpenSSH accepts, verifies and clears its unit.
+            # ssh-keygen, never read as a verifier outage, never mask the unit's other refusals. And the
+            # bounds refuse nothing real: a 256-character principal, an email principal, a quoted principal
+            # with a space and a real armored RSA-4096 signature each verify and clear their unit.
             BOUNDED = {'VELDO-9521': ('signer', lambda d: d.update(signer='s' * 257)),
                        'VELDO-9523': ('signer', lambda d: d.update(signer='veldo-settlement\x1b')),
                        'VELDO-9524': ('signature', lambda d: d.update(signature=d['signature'] + 'A' * 16385)),
                        'VELDO-9525': ('signer', lambda d: d.update(signer='s' * 200000))}
-            rsa_public = None
-            EDGES = {'VELDO-9522': ('Settlement Authority', '"Settlement Authority"', 'trusted')}
+            if rsa_keygen.wait(timeout=120) != 0:
+                raise RuntimeError('the RSA-4096 fixture key was not generated')
+            rsa_public = (host / 'rsa_key.pub').read_text().split()[:2]
+            EDGES = {'VELDO-9522': ('Settlement Authority', '"Settlement Authority"', 'trusted'),
+                     'VELDO-9526': ('p' * 256, 'p' * 256, 'trusted'),
+                     'VELDO-9527': ('settlement@example.invalid', 'settlement@example.invalid', 'trusted'),
+                     'VELDO-9528': ('rsa-settlement', 'rsa-settlement', 'rsa')}
             edge_signers = signers.read_text() + ''.join(
                 '%s namespaces="%s" %s %s\n' % (written, DD.SETTLEMENT_NAMESPACE,
                                                  *(rsa_public if key == 'rsa' else public))
@@ -863,7 +874,8 @@ def _v54_suite():
                    and bounded['VELDO-9525'][0] == 'ok'
                    and set(bounded['VELDO-9525'][1]) == {wanted_bounded['VELDO-9525'], 'missing_authority:admission'}
                    and bounded['VELDO-9525'][2] == [wanted_bounded['VELDO-9525']]
-                   and all(bounded[sid] == ('ok', [], []) for sid in EDGES))
+                   and all(bounded[sid] == ('ok', [], []) for sid in EDGES)
+                   and rsa_signature and 1024 < rsa_signature[0] <= 16384)
 
         with region('decisions/deep-blocks-named'):
             # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it

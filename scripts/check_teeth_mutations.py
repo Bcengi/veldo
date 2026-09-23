@@ -1103,9 +1103,15 @@ def cases():
               'verifier-input-bounded')
     decisions('signer-controls-allowed', 'control_decision_dependency.py', bound,
               "        return len(text) <= SIGNER_LIMIT\n", 'verifier-input-bounded')
+    # Review 6: the bounds refuse nothing real (a quoted principal with a space, 256 characters, an
+    # RSA-4096 signature); a tightened limit reds the same row.
     decisions('signer-whitespace-refused', 'control_decision_dependency.py', bound,
               "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
               'verifier-input-bounded')
+    decisions('signature-limit-1024', 'control_decision_dependency.py', "SIGNATURE_LIMIT = 16384\n",
+              "SIGNATURE_LIMIT = 1024\n", 'verifier-input-bounded')
+    decisions('signer-limit-exclusive', 'control_decision_dependency.py', bound,
+              bound.replace('len(text) <= SIGNER_LIMIT', 'len(text) < SIGNER_LIMIT'), 'verifier-input-bounded')
     decisions('signature-unbounded', 'control_decision_dependency.py',
               "    return len(text) <= SIGNATURE_LIMIT\n", "    return True\n", 'verifier-input-bounded')
     # Item 2: an unexpected fault's message is plain, separator-free and always obtainable.
