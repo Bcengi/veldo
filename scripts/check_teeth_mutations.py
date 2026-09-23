@@ -778,12 +778,12 @@ def cases():
     architecture('architecture-private-seam', 'control_eligibility.py', SEAM,
                  "        return self.validate._VC.entry_contract(workspace, required, arch=self.arch)  # defect: around the public name",
                  ['public-seam'])
-    snapshot_load = ("        spec = self._spec('eligibility_validator_snapshot', str(installed / 'validate.py'))\n"
+    snapshot_load = ("        spec = self._named('eligibility_validator_snapshot', 'validate')\n"
                      "        module = importlib.util.module_from_spec(spec)\n"
                      "        spec.loader.exec_module(module)\n"
                      "        self.validate, self.arch = module, module.entry_validator()\n")
     architecture('architecture-validate-checks-direct', 'control_eligibility.py', snapshot_load,
-                 snapshot_load.replace("str(installed / 'validate.py')", "str(installed / 'validate_checks.py')")
+                 snapshot_load.replace("'validate')", "'validate_checks')")
                  .replace("        self.validate, self.arch = module, module.entry_validator()\n",
                           "        module.parse_yamlish = module._Y.parse  # defect: around validate.py\n"
                           "        self.validate, self.arch = module, module._arch_module()\n"),
@@ -794,8 +794,8 @@ def cases():
                  "        with tempfile.TemporaryDirectory(prefix='veldo-validator-') as private:\n"
                  "            engine = Path(private) / '.veldo'\n"
                  "            engine.mkdir()\n"
-                 "            for name, body in bodies.items():\n"
-                 "                (engine / name).write_bytes(body)\n"
+                 "            for held, body in self._bodies.items():\n"
+                 "                (engine / (held + '.py')).write_bytes(body)\n"
                  "            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))\n"
                  "            module = importlib.util.module_from_spec(spec)\n"
                  "            spec.loader.exec_module(module)\n"
@@ -843,44 +843,59 @@ def cases():
     architecture('architecture-decode-lossy', 'arch.py', 'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8")',
                  'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8", errors="replace")',
                  ['not-text-refused'])
-    # Review fix: an engine file is found by its installed path or the file it resolves to, and a miss
-    # is refused, never loaded from disk after the digest was taken.
-    lookup = ("        found = None\n        if location is not None:\n"
-              "            found = self._origins.get(os.path.abspath(str(location))) or self._origins.get(os.path.realpath(str(location)))\n"
-              "        if found is None:\n"
-              "            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))\n")
-    realpath_only = ("        found = None\n"
-                     "        if location is not None and os.path.realpath(str(location)) in {str(self._installed / n) for n in self._bodies}:\n"
-                     "            found = os.path.basename(os.path.realpath(str(location)))\n"
-                     "        if found is None:\n")
-    architecture('architecture-snapshot-disk-fallback', 'control_eligibility.py', lookup,
-                 realpath_only + "            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)  # defect\n",
-                 ['snapshot-in-memory'])
-    architecture('architecture-snapshot-realpath-only', 'control_eligibility.py', lookup,
-                 realpath_only + "            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))  # defect\n",
-                 ['snapshot-in-memory'])
+    # Review fix (round 4, the lead's design): the snapshot is keyed by module NAME, never by a path; a name
+    # not held is the named stop ImportError, recorded in the durable stop event.
+    by_name = "        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')\n"
+    architecture('architecture-snapshot-disk-fallback', 'control_eligibility.py', by_name,
+                 "        held = file_name[:-3] if file_name.endswith('.py') else ''\n"
+                 "        if held not in self._bodies:\n"
+                 "            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)  # defect: a miss read from disk\n"
+                 "        return self._named(name, held)\n",
+                 ['snapshot-by-name'])
+    architecture('architecture-snapshot-keyed-by-path', 'control_eligibility.py', by_name,
+                 "        by_path = {}\n"
+                 "        for held in self._bodies:\n"
+                 "            by_path[str(self._installed / (held + '.py'))] = held\n"
+                 "            by_path[os.path.realpath(str(self._installed / (held + '.py')))] = held\n"
+                 "        where = str(location) if location is not None else ''\n"
+                 "        return self._named(name, by_path.get(os.path.abspath(where)) or by_path.get(os.path.realpath(where)) or '')"
+                 "  # defect: keyed by path\n",
+                 ['snapshot-by-name'])
+    architecture('architecture-stop-error-unrecorded', 'control_eligibility.py',
+                 "            if found.get('error'):\n                # The durable stop event",
+                 "            if False:  # defect: the stop event does not name its error\n                # The durable stop event",
+                 ['snapshot-by-name'])
     # Review fix: the bytes compiled are the bytes digested (a writer lands between the one read and the compile).
     architecture('architecture-exec-rereads-disk', 'control_eligibility.py',
-                 "exec(compile(self.body, origin, 'exec', dont_inherit=True), module.__dict__)",
-                 "exec(compile(Path(origin).read_bytes(), origin, 'exec', dont_inherit=True),"
+                 "exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)",
+                 "exec(compile(Path(module.__spec__.origin).read_bytes(), key, 'exec', dont_inherit=True),"
                  " module.__dict__)  # defect: compiled from a second read of the disk",
                  ['snapshot-in-memory'])
     architecture('architecture-arch-digest-reread', 'control_eligibility.py',
-                 "'digest': 'sha256:' + hashlib.sha256(bodies[name]).hexdigest()}",
-                 "'digest': 'sha256:' + hashlib.sha256(bodies[name] if name != 'arch.py' else (installed / name).read_bytes())"
+                 "'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}",
+                 "'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]] if name != 'arch.py' else (installed / name).read_bytes())"
                  ".hexdigest()}  # defect: arch.py digested from a second read",
                  ['snapshot-in-memory'])
     # Review fix: tracebacks and inspect show the code that ran.
-    seed = ("        linecache.cache[origin] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True),"
-            " origin)\n")
+    seed = ("        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True),"
+            " key)\n")
     architecture('architecture-linecache-unseeded', 'control_eligibility.py', seed,
                  "        pass  # defect: linecache reads the file on disk by name\n", ['snapshot-source'])
     architecture('architecture-linecache-mtime-checked', 'control_eligibility.py', seed,
-                 seed.replace("(len(self.body), None,", "(len(self.body), os.stat(origin).st_mtime,")
+                 seed.replace("(len(self.body), None,", "(len(self.body), os.stat(module.__spec__.origin).st_mtime,")
                  .rstrip("\n") + "  # defect: checkcache drops it after an edit\n", ['snapshot-source'])
     architecture('architecture-get-source-missing', 'control_eligibility.py',
                  "        return importlib.util.decode_source(self.body)\n",
                  "        return None  # defect: the loader hands back no source\n", ['snapshot-source'])
+    # Round 4: snapshot lines are kept under a key no other loader uses, unique to each snapshot.
+    architecture('architecture-linecache-keyed-by-path', 'control_eligibility.py',
+                 "        key = self.snapshot.source_key(self.held)\n",
+                 "        key = str(self.snapshot._installed / (self.held + '.py'))  # defect: the installed path, shared\n",
+                 ['snapshot-source'])
+    architecture('architecture-linecache-key-shared', 'control_eligibility.py',
+                 "        return '<veldo validator snapshot %s: %s>' % (self._id, self._installed / (held + '.py'))\n",
+                 "        return '<veldo validator snapshot: %s>' % (self._installed / (held + '.py'))  # defect: one key for every snapshot\n",
+                 ['snapshot-source'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

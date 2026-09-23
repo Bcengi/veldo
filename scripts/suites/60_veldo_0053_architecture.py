@@ -789,10 +789,117 @@ def _v53_suite():
                    and all(g_ == sha(farm_arch) for g_ in farm_digests)
                    and outcome(read_raced, CODES['invalid_structure']) and all(r == installed_digests for r in read_recorded))
 
+        with region('architecture/snapshot-by-name'):
+            # The snapshot holds each engine module by NAME, read once by its installed name, and answers every
+            # load request by that name, never by a path: aliases, links and resolved paths cannot make one
+            # name's bytes serve another. Four fixtures, each a separate installed engine judging an accepted,
+            # structurally invalid contract (which only the real structural validator refuses).
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+            by_name, real_read = {}, Path.read_bytes
+            pass_all = b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n'
+
+            def engine_copy(where, links_into=None, leave_out=()):
+                where.mkdir(parents=True)
+                for source in sorted(mods.glob('*.py')):
+                    if source.name in leave_out:
+                        continue
+                    if links_into is not None and source.name != 'control_eligibility.py':
+                        shutil.copyfile(source, links_into / source.name)
+                        (where / source.name).symlink_to(links_into / source.name)
+                    else:
+                        shutil.copyfile(source, where / source.name)
+                return where
+
+            def judge(engine, tag, writer=None, events=None):
+                engine_el = load('v53_%s_eligibility' % tag, engine / 'control_eligibility.py')
+                judging = engine_el.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base),
+                                         observe=(events.append if events is not None else None))
+                if writer is not None:
+                    Path.read_bytes = writer
+                try:
+                    decided = stations(judging)
+                finally:
+                    Path.read_bytes = real_read
+                arch_file = None
+                try:
+                    arch_file = judging._architecture_validator().arch.__file__
+                except Exception:  # noqa: BLE001 - a snapshot that could not load has no module to name
+                    pass
+                recorded = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
+                            for d in decided.values()]
+                return decided, recorded, arch_file
+
+            original = (mods / 'arch.py').read_bytes()
+            # 1. Collision: right after arch.py's one read the writer makes it pass everything, and before a
+            #    later-sorted engine file (budget.py) is read it becomes a link to arch.py.
+            collide = engine_copy(top / 'collide' / '.veldo')
+            steps = []
+
+            def collide_writer(self_):
+                if self_.name == 'budget.py' and os.path.realpath(str(self_.parent)) == str(collide) and steps == ['arch']:
+                    os.unlink(str(self_))
+                    os.symlink(str(collide / 'arch.py'), str(self_))
+                    steps.append('budget')
+                data = real_read(self_)
+                if self_.name == 'arch.py' and os.path.realpath(str(self_.parent)) == str(collide) and not steps:
+                    (collide / 'arch.py').write_bytes(original + pass_all)
+                    steps.append('arch')
+                return data
+
+            decided, recorded, _ = judge(collide, 'collide', collide_writer)
+            by_name['collision'] = (outcome(decided, CODES['invalid_structure']) and steps == ['arch', 'budget']
+                                    and all(r == sha(original) for r in recorded))
+            # 2. The same collision in a per-file link farm whose Gate file is regular: after arch.py's read
+            #    the kept arch.py passes everything and the installed link is moved elsewhere; before
+            #    budget.py's read its link is moved onto the kept arch.py.
+            kept = top / 'farm2' / 'keep' / '.veldo'
+            kept.mkdir(parents=True)
+            farm2 = engine_copy(top / 'farm2' / 'i' / '.veldo', links_into=kept)
+            moved = []
+
+            def farm_writer(self_):
+                if self_.name == 'budget.py' and str(self_.parent) == str(farm2) and moved == ['arch']:
+                    os.unlink(str(self_))
+                    os.symlink(str(kept / 'arch.py'), str(self_))
+                    moved.append('budget')
+                data = real_read(self_)
+                if self_.name == 'arch.py' and str(self_.parent) == str(farm2) and not moved:
+                    (kept / 'arch.py').write_bytes(original + pass_all)
+                    (top / 'farm2' / 'elsewhere.py').write_bytes(original)
+                    os.unlink(str(self_))
+                    os.symlink(str(top / 'farm2' / 'elsewhere.py'), str(self_))
+                    moved.append('arch')
+                return data
+
+            decided, recorded, _ = judge(farm2, 'farm2', farm_writer)
+            by_name['farm_collision'] = (outcome(decided, CODES['invalid_structure']) and moved == ['arch', 'budget']
+                                         and all(r == sha(original) for r in recorded))
+            # 3. An alias link in the engine (zz_alias.py -> arch.py) renames nothing: arch is arch.
+            alias = engine_copy(top / 'alias' / '.veldo')
+            (alias / 'zz_alias.py').symlink_to(alias / 'arch.py')
+            decided, recorded, arch_file = judge(alias, 'alias')
+            by_name['alias'] = (outcome(decided, CODES['invalid_structure']) and all(r == sha(original) for r in recorded)
+                                and arch_file == str(alias / 'arch.py'))
+            # 4. A name the snapshot does not hold is the named stop ImportError, in the decision and in the
+            #    durable stop event: an engine without verdict_corpus.py, which validate_checks loads.
+            missing, events = engine_copy(top / 'missing' / '.veldo', leave_out=('verdict_corpus.py',)), []
+            decided, _, _ = judge(missing, 'missing', events=events)
+            by_name['miss_is_import_error'] = (
+                outcome(decided, 'unavailable_service:architecture_validator')
+                and all((d.get('architecture') or {}).get('error') == 'ImportError' for d in decided.values())
+                and len(events) == len(decided)
+                and all((e.get('architecture') or {}).get('error') == 'ImportError' for e in events))
+            reset('valid')
+            observed['snapshot_by_name'] = by_name
+            check('architecture/snapshot-by-name', all(by_name.values()) and len(by_name) == 4)
+
         with region('architecture/snapshot-source'):
-            # Tracebacks and inspect show the code that ran: after the installed arch.py is edited on disk, a
-            # traceback from the snapshot's structural validator prints the line that raised as it was
-            # loaded, inspect finds the function it names, and the loader hands back the held source.
+            # Tracebacks and inspect show the code that ran, and ONLY the snapshot's code: its lines are kept
+            # under a key no other loader uses. After the installed arch.py is edited on disk: the snapshot's
+            # traceback prints the line that raised as it was loaded, inspect finds the function it names and
+            # the loader hands back the held source; a module loaded ordinarily from the edited file prints the
+            # edited file's line (no snapshot line leaks into it); and a second snapshot, of the edited file,
+            # neither shows the first snapshot's lines nor changes what the first shows.
             import inspect
             import linecache
             import traceback
@@ -803,19 +910,25 @@ def _v53_suite():
             ran_text = (mods / 'arch.py').read_text()
             ran_lines = ran_text.splitlines()
 
-            def raised_line():
+            def raised_line(module):
                 try:
-                    held.read_contract(None, None)  # Path(None) raises inside read_contract
+                    module.read_contract(None, None)  # Path(None) raises inside read_contract
                 except TypeError:
-                    frames = [f for f in traceback.extract_tb(sys.exc_info()[2]) if f.filename == held.__file__]
+                    code_file = module.read_contract.__code__.co_filename
+                    frames = [f for f in traceback.extract_tb(sys.exc_info()[2]) if f.filename == code_file]
                     return (frames[-1].lineno, frames[-1].line) if frames else (None, None)
                 return (None, None)
 
+            def same(line_no_line, lines):
+                line_no, line = line_no_line
+                return bool(line_no) and line_no <= len(lines) and line == lines[line_no - 1].strip()
+
             installed_arch = (mods / 'arch.py').read_bytes()
+            edited = b'# a later edit on disk\n' * 3 + installed_arch
             try:
-                (mods / 'arch.py').write_bytes(b'# a later edit on disk\n' * 3 + installed_arch)
+                (mods / 'arch.py').write_bytes(edited)
                 linecache.checkcache()
-                line_no, line = raised_line()
+                first_seen = raised_line(held)
                 try:
                     first = inspect.getsource(held.read_contract).splitlines()[0]
                 except (OSError, TypeError) as error:
@@ -824,14 +937,26 @@ def _v53_suite():
                     given = held.__loader__.get_source(held.__name__) if hasattr(held.__loader__, 'get_source') else None
                 except (OSError, ImportError) as error:
                     given = repr(error)
+                edited_lines = edited.decode().splitlines()
+                ordinary = load('v53_ordinary_arch', mods / 'arch.py')
+                ordinary_seen = raised_line(ordinary)
+                second_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+                stations(second_gate)
+                second_seen = raised_line(second_gate._architecture_validator().arch)
+                first_again = raised_line(held)
             finally:
                 (mods / 'arch.py').write_bytes(installed_arch)
                 linecache.checkcache()
-            observed['snapshot_source'] = {'traceback_line_is_the_line_that_ran': bool(line_no) and line == ran_lines[line_no - 1].strip(),
-                                           'getsource_first_line': first, 'get_source_is_held': given == ran_text}
+            observed['snapshot_source'] = {
+                'traceback_line_is_the_line_that_ran': same(first_seen, ran_lines),
+                'getsource_first_line': first, 'get_source_is_held': given == ran_text,
+                'ordinary_loader_sees_its_own_file': same(ordinary_seen, edited_lines),
+                'second_snapshot_sees_its_own_bytes': same(second_seen, edited_lines),
+                'first_snapshot_unchanged_by_second': same(first_again, ran_lines),
+                'snapshot_key_is_not_the_installed_path': held.read_contract.__code__.co_filename != held.__file__}
             check('architecture/snapshot-source',
-                   bool(line_no) and line == ran_lines[line_no - 1].strip() and first.startswith('def read_contract')
-                   and given == ran_text)
+                   same(first_seen, ran_lines) and first.startswith('def read_contract') and given == ran_text
+                   and same(ordinary_seen, edited_lines) and same(second_seen, edited_lines) and same(first_again, ran_lines))
 
         with region('architecture/not-text-refused'):
             # A contract that is not valid UTF-8 is a named parse failure with the digest of the bytes read,
@@ -890,7 +1015,7 @@ def _v53_suite():
             # Every decision records the architecture it judged, and its refusals keep their taxonomy.
             judged = [e for e in gate.observations if e.get('architecture')]
             obs_ok = len(judged) == len(gate.observations) > 0
-            obs_ok &= all(set(e['architecture']) == {'basis', 'kind', 'artifact_digest', 'validator'} for e in judged)
+            obs_ok &= all(set(e['architecture']) - {'error'} == {'basis', 'kind', 'artifact_digest', 'validator'} for e in judged)
             refused_arch = [e for e in gate.observations if any('architecture' in r for r in e['refusals'])]
             obs_ok &= len(refused_arch) > 0 and all(
                 set(e['taxonomy']) <= {'invalid_input', 'missing_evidence', 'missing_authority'} for e in refused_arch)

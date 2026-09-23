@@ -192,6 +192,7 @@ class Stopped(RuntimeError):
 # for both exceptions, as claim.py does for ClaimStopped, so any caller can catch them by class.
 import sys as _sys
 import types as _types
+import weakref as _weakref
 _errors = _sys.modules.setdefault('veldo_eligibility_errors', _types.ModuleType('veldo_eligibility_errors'))
 for _name, _cls in (('Refused', Refused), ('Stopped', Stopped)):
     if not hasattr(_errors, _name):
@@ -397,10 +398,11 @@ VALIDATOR_ROLES = (('entry_point', 'validate.py'), ('entry', 'validate_checks.py
 
 
 class _MemoryLoader:
-    """Executes one engine module from source bytes the snapshot holds in memory."""
+    """Executes one held engine module, by name, from the bytes the snapshot read for that name."""
 
-    def __init__(self, snapshot, body):
-        self.snapshot, self.body = snapshot, body
+    def __init__(self, snapshot, held):
+        self.snapshot, self.held = snapshot, held
+        self.body = snapshot._bodies[held]
 
     def create_module(self, spec):
         return None
@@ -411,36 +413,41 @@ class _MemoryLoader:
 
     def exec_module(self, module):
         # The module's own `import importlib.util` resolves to the snapshot's, so every sibling it loads
-        # by path is executed from the same bytes in memory, never read from disk.
+        # is answered by name from the same held bytes, never read from disk.
         module.__dict__['__builtins__'] = self.snapshot.builtins
-        origin = module.__spec__.origin
-        # Tracebacks and inspect read linecache by file name: seed it with the lines that run, with no
-        # modification time, so checkcache never replaces them with a later edit of the file on disk.
-        linecache.cache[origin] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), origin)
-        exec(compile(self.body, origin, 'exec', dont_inherit=True), module.__dict__)
+        # The code is compiled under a key only this snapshot uses, and linecache holds its lines under that
+        # key with no modification time: tracebacks and inspect show the code that ran, no other loader's
+        # traceback ever reads these lines, and a second snapshot never replaces them.
+        key = self.snapshot.source_key(self.held)
+        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)
+        self.snapshot._keys.append(key)
+        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
+
+
+def _forget_lines(keys):
+    for key in keys:
+        linecache.cache.pop(key, None)
 
 
 class ValidatorSnapshot:
     """The installed structural validator, loaded ONCE from ONE read of the installed engine's bytes
-    (VELDO-0053, R50). Every engine module is read once into memory and executed from those bytes:
-    compiled from them into a fresh module object whose __file__ and name are what loading from the
-    installed path gives today, with each sibling a module loads by path (importlib.util's
-    spec_from_file_location, the one way the engine loads its organs) resolved to the in-memory bytes of
-    that sibling, by its installed path or the file it resolves to; any other path is refused, never
-    loaded from disk. Nothing is written to or loaded from disk, so the digests recorded are of exactly the
-    code that runs, and a later change on disk is neither run nor recorded by a decision of this snapshot.
-    The structural validator (arch.py) is loaded once here and reused for every contract."""
+    (VELDO-0053, R50), held by MODULE NAME. Each engine module is read exactly once by its installed name
+    (the open follows links), its bytes digested and held under its name, never under a path. Every load
+    request the validator makes (importlib.util's spec_from_file_location, the one way the engine loads its
+    organs) is answered by the module name it asks for, the file name of its request, from those held
+    bytes, compiled into a fresh module object whose __file__ is the installed path of that name. There is
+    no path lookup, so aliases, links and resolved paths cannot make one name's bytes serve another; a
+    name not held is the named stop ImportError. Nothing is written to or loaded from disk, so the digests
+    recorded are of exactly the code that runs, and a later change on disk is neither run nor recorded by
+    a decision of this snapshot. The structural validator (arch.py) is loaded once here and reused for
+    every contract."""
 
     def __init__(self, installed=None):
         installed = Path(os.path.realpath(str(installed or Path(__file__).resolve().parent)))
-        bodies = {path.name: path.read_bytes() for path in sorted(installed.glob('*.py'))}
-        # Each engine file is found by its installed path AND by the file it resolves to, so a per-file link
-        # farm (a symlinked arch.py) is served from the bytes read, never from its target on disk.
-        self._origins = {}
-        for name in bodies:
-            self._origins[str(installed / name)] = name
-            self._origins[os.path.realpath(str(installed / name))] = name
-        self._bodies, self._installed = bodies, installed
+        self._installed, self._id = installed, uuid.uuid4().hex
+        self._bodies = {path.name[:-3]: path.read_bytes() for path in sorted(installed.glob('*.py'))}
+        self._keys = []
+        _weakref.finalize(self, _forget_lines, self._keys)
         util = _types.ModuleType('importlib.util')
         util.__dict__.update({k: v for k, v in vars(importlib.util).items() if not k.startswith('__')})
         util.spec_from_file_location = self._spec
@@ -450,31 +457,36 @@ class ValidatorSnapshot:
         self._importlib = package
         self.builtins = dict(vars(builtins))
         self.builtins['__import__'] = self._import
-        spec = self._spec('eligibility_validator_snapshot', str(installed / 'validate.py'))
+        spec = self._named('eligibility_validator_snapshot', 'validate')
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         self.validate, self.arch = module, module.entry_validator()
-        self.identity = {role: {'path': str(installed / name), 'digest': 'sha256:' + hashlib.sha256(bodies[name]).hexdigest()}
+        self.identity = {role: {'path': str(installed / name),
+                                'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}
                          for role, name in VALIDATOR_ROLES}
+
+    def source_key(self, held):
+        """The file name this snapshot's code of `held` is compiled and cached under, unique to it."""
+        return '<veldo validator snapshot %s: %s>' % (self._id, self._installed / (held + '.py'))
 
     def _import(self, name, globals=None, locals=None, fromlist=(), level=0):
         if level == 0 and name in ('importlib', 'importlib.util'):
             return self._importlib.util if name == 'importlib.util' and fromlist else self._importlib
         return builtins.__import__(name, globals, locals, fromlist, level)
 
-    def _spec(self, name, location=None, *args, **kwargs):
-        """spec_from_file_location for the snapshot's modules: an installed engine file, by its installed
-        path or the file it resolves to, is executed from its bytes in memory. Anything else is refused:
-        there is no fallback to a loader that would read the disk after the digest was taken."""
-        found = None
-        if location is not None:
-            found = self._origins.get(os.path.abspath(str(location))) or self._origins.get(os.path.realpath(str(location)))
-        if found is None:
-            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))
-        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, self._bodies[found]),
-                                               origin=str(self._installed / found))
+    def _named(self, name, held):
+        """The spec of the held engine module `held`, executed from its held bytes; ImportError if not held."""
+        if held not in self._bodies:
+            raise ImportError('the validator snapshot holds no engine module named %r' % (held,))
+        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, held), origin=str(self._installed / (held + '.py')))
         spec.has_location = True
         return spec
+
+    def _spec(self, name, location=None, *args, **kwargs):
+        """spec_from_file_location for the snapshot's modules: the request names an engine module by its
+        file name, and that NAME is answered from the held bytes. The rest of the path is never looked up."""
+        file_name = os.path.basename(str(location)) if location is not None else ''
+        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')
 
     def contract(self, workspace, required):
         """(ContractLoad, digest of the bytes the loader parsed) through validate.py's public entry_contract."""
@@ -777,6 +789,9 @@ class Gate:
             event['architecture'] = {'basis': found['basis'], 'kind': found['kind'],
                                      'artifact_digest': (found['artifact'] or {}).get('digest'),
                                      'validator': {role: f['digest'] for role, f in found['validator'].items()}}
+            if found.get('error'):
+                # The durable stop event names the error that stopped the validator (ImportError for a miss).
+                event['architecture']['error'] = found['error']
         self.observations.append(event)
         self.last[decision['unit']] = outcome
         self.observe(event)
