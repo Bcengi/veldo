@@ -1404,6 +1404,147 @@ def _s37_run():
                'descendant-bounded': True,
                'side-paths': [['specs/VELDO-0009-first-side.md'], ['specs/VELDO-0005-second-side.md']],
                'side-lost': True, 'enable-naming-lost': None, 'next': 10, 'union-equals-whole-history': True})
+
+        # Shared by rows 18 to 20: an oracle the code under test does not compute, the digit-bearing
+        # paths of `git ls-tree -r` of EVERY commit reachable from a commit, and one record by commit.
+        def reachable_tree_paths(repository, commit):
+            found = set()
+            for each in g(repository, 'rev-list', commit).split():
+                listing = git.run(['git', '-C', str(repository), 'ls-tree', '-r', '-z', '--name-only', each],
+                                  capture_output=True, check=True).stdout.decode('utf-8', 'surrogateescape')
+                found.update(name for name in listing.split('\0') if any(character.isdigit() for character in name))
+            return found
+
+        def record_of(connection, commit):
+            for (raw,) in connection.execute("SELECT data FROM entities WHERE kind='accepted_carriers'"):
+                data = _s37_json.loads(raw)
+                if data.get('commit') == commit:
+                    return data
+            return None
+
+        def specification_next(env):
+            return (env.service.current(al.kind_id('repository', 'specification'))[1] or {}).get('next')
+
+        # 18. What acceptance reads from Git does not depend on the repository's configuration: a
+        # path only a merge adds (a conflict resolution), kept in the tree, is recorded under
+        # log.diffMerges=off, and a path only the root commit names is recorded under
+        # log.showRoot=false, so the floor is above both.
+        configured = root / 'configured-origin'
+        configured.mkdir()
+        g(configured, 'init', '-q')
+        trunk = None
+        for path, body in (('specs/VELDO-0030-root.md', b'# root\n'), ('README.md', b'configured\n')):
+            (configured / path).parent.mkdir(parents=True, exist_ok=True)
+            (configured / path).write_bytes(body)
+        g(configured, 'add', '-A')
+        g(configured, 'commit', '-qm', 'Root')
+        trunk = g(configured, 'rev-parse', '--abbrev-ref', 'HEAD')
+        g(configured, 'checkout', '-q', '-b', 'topic')
+        (configured / 'topic.txt').write_bytes(b'topic\n')
+        g(configured, 'add', '-A')
+        g(configured, 'commit', '-qm', 'Topic')
+        g(configured, 'checkout', '-q', trunk)
+        (configured / 'trunk.txt').write_bytes(b'trunk\n')
+        g(configured, 'add', '-A')
+        g(configured, 'commit', '-qm', 'Trunk')
+        g(configured, 'merge', '-q', '--no-ff', '--no-commit', 'topic')
+        (configured / 'specs/VELDO-0090-resolution.md').write_bytes(b'# only the merge adds this\n')
+        g(configured, 'add', '-A')
+        g(configured, 'commit', '-qm', 'Merge topic')
+        merged = g(configured, 'rev-parse', 'HEAD')
+        g(configured, 'config', 'log.diffMerges', 'off')
+        g(configured, 'config', 'log.showRoot', 'false')
+        env = fresh('configured', origins={'repository': configured})
+        config_read = {'record': (record_of(env.conn, merged) or {}).get('paths')}
+        oracle = reachable_tree_paths(configured, merged)
+        _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None)
+        config_read['enable'] = code(error)
+        config_read['next'] = specification_next(env)
+        config_read['oracle-next'] = al.maximum(oracle, {'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md'}) + 1
+        defects['configuration-independent'] = config_read
+        expect('aliases/history-read-whatever-repository-config', config_read == {
+               'record': ['specs/VELDO-0030-root.md', 'specs/VELDO-0090-resolution.md'], 'enable': None,
+               'next': 91, 'oracle-next': 91})
+        env.conn.close()
+
+        # 19. Accepting again after a recorded commit is lost: the lost commit is still an excluded
+        # commit of the new increment, which must neither fail nor forget what was recorded, and the
+        # new record holds only what the new commit adds.
+        env = fresh('lost-record', {'repository': [{'specs/VELDO-0002-base.md': b'# base\n'}]})
+        origin = env.origins['repository']
+        trunk = g(origin, 'rev-parse', '--abbrev-ref', 'HEAD')
+        g(origin, 'checkout', '-q', '-b', 'side')
+        (origin / 'specs/VELDO-0009-side.md').write_bytes(b'# side\n')
+        g(origin, 'add', '-A')
+        g(origin, 'commit', '-qm', 'Side')
+        side = g(origin, 'rev-parse', 'HEAD')
+        g(origin, 'checkout', '-q', trunk)
+        lost_record = {}
+        _, error = attempt(lambda: env.accepting.accept('revision/side', 'repository', side, 'operator', **signing))
+        lost_record['side'] = code(error)
+        g(origin, 'branch', '-D', 'side')
+        g(origin, 'reflog', 'expire', '--expire=now', '--all')
+        g(origin, 'gc', '-q', '--prune=now')
+        lost_record['side-lost'] = git.run(['git', '-C', str(origin), 'cat-file', '-e', side + '^{commit}'],
+                                           capture_output=True).returncode != 0
+        (origin / 'specs/VELDO-0011-next.md').write_bytes(b'# next\n')
+        g(origin, 'add', '-A')
+        g(origin, 'commit', '-qm', 'Next')
+        following = g(origin, 'rev-parse', 'HEAD')
+        _, error = attempt(lambda: env.accepting.accept('revision/repository', 'repository', following, 'operator', **signing))
+        lost_record['accept-after-loss'] = code(error)
+        lost_record['record'] = (record_of(env.conn, following) or {}).get('paths')
+        _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None)
+        lost_record['enable'] = code(error)
+        lost_record['next'] = specification_next(env)
+        defects['accept-after-lost-record'] = lost_record
+        expect('aliases/increment-after-a-lost-record', lost_record == {
+               'side': None, 'side-lost': True, 'accept-after-loss': None, 'record': ['specs/VELDO-0011-next.md'],
+               'enable': None, 'next': 12})
+        env.conn.close()
+
+        # 20. A shallow bound repository hides history, so acceptance refuses it by name; once it
+        # is deepened, the commit is accepted and the floor matches every reachable tree.
+        upstream = root / 'shallow-upstream'
+        upstream.mkdir()
+        g(upstream, 'init', '-q')
+        for files in ({'specs/VELDO-0001-base.md': b'# base\n'}, {'specs/VELDO-0080-old.md': b'# old\n'},
+                      {'specs/VELDO-0080-old.md': None}, {'specs/VELDO-0002-two.md': b'# two\n'}):
+            for path, body in files.items():
+                if body is None:
+                    (upstream / path).unlink()
+                else:
+                    (upstream / path).parent.mkdir(parents=True, exist_ok=True)
+                    (upstream / path).write_bytes(body)
+            g(upstream, 'add', '-A')
+            g(upstream, 'commit', '-qm', 'Upstream')
+        shallow = root / 'shallow-bound'
+        g(root, 'clone', '-q', '--depth', '1', 'file://' + str(upstream), str(shallow))
+        tip = g(shallow, 'rev-parse', 'HEAD')
+        shallow_db = root / 'shallow.sqlite3'
+        shallow_conn = st.open_store(shallow_db)
+        shallow_revisions = rs.attach_revisions(st, shallow_conn, 'domain', {'repository': str(shallow)})
+        shallow_state = {}
+        _, error = attempt(lambda: shallow_revisions.accept('revision/repository', 'repository', tip, 'operator', **signing))
+        shallow_state['shallow-accept'] = code(error)
+        shallow_state['shallow-record'] = record_of(shallow_conn, tip) is not None
+        g(shallow, 'fetch', '-q', '--unshallow')
+        _, error = attempt(lambda: shallow_revisions.accept('revision/repository', 'repository', tip, 'operator', **signing))
+        shallow_state['deepened-accept'] = code(error)
+        service = al.attach(st, shallow_conn, 'domain', {'repository': str(shallow)})
+        serial[0] += 1
+        _, error = attempt(lambda: service.enable_kind({'request_id': 'enable-%d' % serial[0], 'principal': 'operator',
+            'repository_uuid': 'repository', 'kind': 'specification', 'prefix': 'VELDO', 'width': 4,
+            'path_template': 'specs/{alias}-{slug}.md', 'revision_id': 'revision/repository'}, **signing))
+        shallow_state['enable'] = code(error)
+        shallow_state['next'] = (service.current(al.kind_id('repository', 'specification'))[1] or {}).get('next')
+        shallow_state['oracle-next'] = al.maximum(reachable_tree_paths(shallow, tip),
+                                                  {'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md'}) + 1
+        shallow_conn.close()
+        defects['shallow-repository'] = shallow_state
+        expect('aliases/shallow-repository-refused', shallow_state == {
+               'shallow-accept': 'shallow_repository', 'shallow-record': False, 'deepened-accept': None,
+               'enable': None, 'next': 81, 'oracle-next': 81})
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 
