@@ -706,9 +706,22 @@ def _v53_suite():
             stub = (mods / 'arch.py').read_bytes() + b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n'
             real_spec, loads, swaps, real_tempdir = importlib.util.spec_from_file_location, [], [], tempfile.tempdir
 
+            # A per-file link farm (a package manager that links files, not the directory): an installed engine
+            # whose arch.py is a symlink to a file kept elsewhere.
+            farm, keep = top / 'linkfarm' / '.veldo', top / 'linkstore'
+            farm.mkdir(parents=True)
+            keep.mkdir()
+            for source in sorted(mods.glob('*.py')):
+                shutil.copyfile(source, farm / source.name)
+            farm_arch = (farm / 'arch.py').read_bytes()
+            (keep / 'arch.py').write_bytes(farm_arch)
+            (farm / 'arch.py').unlink()
+            (farm / 'arch.py').symlink_to(keep / 'arch.py')
+            engines = {os.path.realpath(str(d_)) for d_ in (mods, farm, keep)}
+
             def watched_spec(name, location=None, *args, **kwargs):
                 where = os.path.realpath(str(location)) if location is not None else ''
-                if where.startswith(str(scratch) + os.sep) or os.path.dirname(where) == os.path.realpath(str(mods)):
+                if where.startswith(str(scratch) + os.sep) or os.path.dirname(where) in engines:
                     loads.append(where)
                     beside = os.path.join(os.path.dirname(where), 'arch.py')
                     if where.startswith(str(scratch) + os.sep) and os.path.exists(beside):
@@ -725,16 +738,44 @@ def _v53_suite():
             finally:
                 importlib.util.spec_from_file_location, tempfile.tempdir = real_spec, real_tempdir
             left_on_disk = sorted(p_.name for p_ in scratch.iterdir())
+            # The writer acts right after the snapshot's one read of an engine file: it replaces what that
+            # read came from with a validator that passes everything. Only the bytes already read may run.
+            farm_EL = load('v53_farm_eligibility', farm / 'control_eligibility.py')
+            farm_gate = farm_EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+            farm_stub = farm_arch + b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n'
+            real_read, rewritten = Path.read_bytes, []
+
+            def read_then_write(self_):
+                data = real_read(self_)
+                target = os.path.realpath(str(self_))
+                if self_.name == 'arch.py' and target == os.path.realpath(str(keep / 'arch.py')):
+                    Path(target).write_bytes(farm_stub)  # the concurrent writer, after the one read
+                    rewritten.append(target)
+                return data
+
+            Path.read_bytes, importlib.util.spec_from_file_location = read_then_write, watched_spec
+            try:
+                farm_raced = stations(farm_gate)
+            finally:
+                Path.read_bytes, importlib.util.spec_from_file_location = real_read, real_spec
+            (keep / 'arch.py').write_bytes(farm_arch)
+            farm_digests = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
+                            for d in farm_raced.values()]
             reset('valid')
             recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
                         for d in raced.values()]
             observed['snapshot_in_memory'] = {
                 'refusals': sorted({r for d in raced.values() for r in d['refusals']}),
                 'engine_loads_from_disk': len(loads), 'swapped': len(swaps), 'left_on_disk': left_on_disk,
-                'recorded_is_installed': all(r == installed_digests for r in recorded)}
+                'recorded_is_installed': all(r == installed_digests for r in recorded),
+                'link_farm': {'refusals': sorted({r for d in farm_raced.values() for r in d['refusals']}),
+                              'rewritten_after_read': len(rewritten),
+                              'recorded_arch_is_bytes_read': all(g_ == sha(farm_arch) for g_ in farm_digests)}}
             check('architecture/snapshot-in-memory',
                    outcome(raced, CODES['invalid_structure']) and loads == [] and swaps == [] and left_on_disk == []
-                   and all(r == installed_digests for r in recorded))
+                   and all(r == installed_digests for r in recorded)
+                   and outcome(farm_raced, CODES['invalid_structure']) and len(rewritten) == 1
+                   and all(g_ == sha(farm_arch) for g_ in farm_digests))
 
         with region('architecture/not-text-refused'):
             # A contract that is not valid UTF-8 is a named parse failure with the digest of the bytes read,

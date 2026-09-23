@@ -417,14 +417,21 @@ class ValidatorSnapshot:
     compiled from them into a fresh module object whose __file__ and name are what loading from the
     installed path gives today, with each sibling a module loads by path (importlib.util's
     spec_from_file_location, the one way the engine loads its organs) resolved to the in-memory bytes of
-    that sibling. Nothing is written to or loaded from disk, so the digests recorded are of exactly the
+    that sibling, by its installed path or the file it resolves to; any other path is refused, never
+    loaded from disk. Nothing is written to or loaded from disk, so the digests recorded are of exactly the
     code that runs, and a later change on disk is neither run nor recorded by a decision of this snapshot.
     The structural validator (arch.py) is loaded once here and reused for every contract."""
 
     def __init__(self, installed=None):
         installed = Path(os.path.realpath(str(installed or Path(__file__).resolve().parent)))
         bodies = {path.name: path.read_bytes() for path in sorted(installed.glob('*.py'))}
-        self._bodies = {str(installed / name): body for name, body in bodies.items()}
+        # Each engine file is found by its installed path AND by the file it resolves to, so a per-file link
+        # farm (a symlinked arch.py) is served from the bytes read, never from its target on disk.
+        self._origins = {}
+        for name in bodies:
+            self._origins[str(installed / name)] = name
+            self._origins[os.path.realpath(str(installed / name))] = name
+        self._bodies, self._installed = bodies, installed
         util = _types.ModuleType('importlib.util')
         util.__dict__.update({k: v for k, v in vars(importlib.util).items() if not k.startswith('__')})
         util.spec_from_file_location = self._spec
@@ -447,12 +454,16 @@ class ValidatorSnapshot:
         return builtins.__import__(name, globals, locals, fromlist, level)
 
     def _spec(self, name, location=None, *args, **kwargs):
-        """spec_from_file_location for the snapshot's modules: an installed engine file is executed from
-        its bytes in memory; any other path is the ordinary import machinery's."""
-        body = self._bodies.get(os.path.realpath(str(location))) if location is not None else None
-        if body is None:
-            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)
-        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, body), origin=os.path.realpath(str(location)))
+        """spec_from_file_location for the snapshot's modules: an installed engine file, by its installed
+        path or the file it resolves to, is executed from its bytes in memory. Anything else is refused:
+        there is no fallback to a loader that would read the disk after the digest was taken."""
+        found = None
+        if location is not None:
+            found = self._origins.get(os.path.abspath(str(location))) or self._origins.get(os.path.realpath(str(location)))
+        if found is None:
+            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))
+        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, self._bodies[found]),
+                                               origin=str(self._installed / found))
         spec.has_location = True
         return spec
 

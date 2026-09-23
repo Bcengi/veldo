@@ -841,6 +841,22 @@ def cases():
     architecture('architecture-decode-lossy', 'arch.py', 'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8")',
                  'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8", errors="replace")',
                  ['not-text-refused'])
+    # Review fix: an engine file is found by its installed path or the file it resolves to, and a miss
+    # is refused, never loaded from disk after the digest was taken.
+    lookup = ("        found = None\n        if location is not None:\n"
+              "            found = self._origins.get(os.path.abspath(str(location))) or self._origins.get(os.path.realpath(str(location)))\n"
+              "        if found is None:\n"
+              "            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))\n")
+    realpath_only = ("        found = None\n"
+                     "        if location is not None and os.path.realpath(str(location)) in {str(self._installed / n) for n in self._bodies}:\n"
+                     "            found = os.path.basename(os.path.realpath(str(location)))\n"
+                     "        if found is None:\n")
+    architecture('architecture-snapshot-disk-fallback', 'control_eligibility.py', lookup,
+                 realpath_only + "            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)  # defect\n",
+                 ['snapshot-in-memory'])
+    architecture('architecture-snapshot-realpath-only', 'control_eligibility.py', lookup,
+                 realpath_only + "            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))  # defect\n",
+                 ['snapshot-in-memory'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
