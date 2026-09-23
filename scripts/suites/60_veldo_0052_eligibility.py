@@ -290,6 +290,14 @@ def _v52_suite():
                 self.units.append(unit['spec'])
                 return {'ok': False}
 
+        def attempt(fn):
+            # A refusal raised by a later station (a provider call inside a launched builder or
+            # reviewer) is recorded as that outcome; the launch counters still see the launch.
+            try:
+                return fn()
+            except EL.Refused as error:
+                return {'refusals': ['raised:' + error.code] + list((error.decision or {}).get('refusals', []))}
+
         def refusals_of(station, sid, **kw):
             return set(gate.decide(station, sid, **kw)['refusals'])
 
@@ -465,7 +473,8 @@ def _v52_suite():
             restore()
             # The build station's own question: a worker that does not hold the claim builds nothing,
             # although direct execution (which asks no claim question) would let it through.
-            unclaimed = disp.dispatch(dict(kind='build', spec='VELDO-9106', holder='worker-z', dispatch='d-VELDO-9106'))
+            unclaimed = attempt(lambda: disp.dispatch(dict(kind='build', spec='VELDO-9106', holder='worker-z',
+                                                           dispatch='d-VELDO-9106')))
             restore()
             build_calls = receiver[before:]
             check('eligibility/entry-dispatch-build',
@@ -554,9 +563,11 @@ def _v52_suite():
             stale_ok = fresh_ok and version('project:p1') == project_before
             for sid, ticket in selected.items():
                 u = dict(spec=sid, holder='worker-a', dispatch='d-' + sid, eligibility=ticket)
-                outcomes = [disp.dispatch(dict(u, kind='build')), disp.dispatch(dict(u, kind='review')), disp._land(u, ticket)]
+                outcomes = [attempt(lambda: disp.dispatch(dict(u, kind='build'))),
+                            attempt(lambda: disp.dispatch(dict(u, kind='review'))),
+                            attempt(lambda: disp._land(u, ticket))]
                 outcomes.append(gate.decide('claim', sid, ticket=ticket))
-                stale_ok &= all(expected_stale[sid] in o['refusals'] for o in outcomes)
+                stale_ok &= all(expected_stale[sid] in o.get('refusals', []) for o in outcomes)
             stale_ok &= gate.decide('build', 'VELDO-9108', context=ctx)['eligible']
             stale_ok &= hooks.builds == [] and reviewer.reviews == [] and lander.lands == [] and receiver[before:] == []
             restore()

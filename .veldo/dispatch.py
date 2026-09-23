@@ -100,7 +100,9 @@ class Reviewer:
     dispatcher talks only to this interface, so its control logic is testable with
     a fake and its reference cannot fabricate a verdict."""
 
-    def review(self, spec, unit):
+    def review(self, spec, unit, calls=None):
+        """calls, when the floor is enabled, is the station's CallHandle: the reviewer's only path
+        to a subscription CLI, every call decided and reserved before launch (VELDO-0052)."""
         raise NotImplementedError
 
 
@@ -110,7 +112,7 @@ class LiveReviewer(Reviewer):
     returns its verdict. Refusing to fabricate a verdict is the honest default,
     exactly as the executor's LiveLoop refuses to fabricate a build."""
 
-    def review(self, spec, unit):
+    def review(self, spec, unit, calls=None):
         raise EX.ExecutorError(
             "review is a delegated fresh-context step; no reviewer is wired. Inject "
             "a reviewer that dispatches a fresh context over the built commit and "

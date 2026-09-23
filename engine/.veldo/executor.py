@@ -129,14 +129,17 @@ class LoopSteps:
         (an unshipped dependency or a stale plan revision)."""
         raise NotImplementedError
 
-    def build(self, spec):
+    def build(self, spec, calls=None):
         """AGENT step, run in a FRESH sub-context. Return a mapping with ok
         (default True), commit, and an evidence map. The executor pauses here and
         cannot fabricate the result. CLEAN-CONTEXT CONTRACT (WARP-0909): a
         long-running orchestrator dispatches this step to a fresh sub-agent and
         retains only its compact receipt (the bounded projection in work.py,
         dispatch_receipt / RECEIPT_FIELDS), never the build transcript, so a
-        many-spec loop's memory stays flat instead of accumulating every spec."""
+        many-spec loop's memory stays flat instead of accumulating every spec.
+        calls, when the floor is enabled, is the build station's CallHandle: the
+        builder's only path to a subscription CLI, each call decided and reserved
+        before launch (VELDO-0052)."""
         raise NotImplementedError
 
     def gate(self):
@@ -213,7 +216,7 @@ class LiveLoop(LoopSteps):
             capture_output=True, text=True, cwd=str(self.root))
         return (r.returncode == 0, (r.stdout + r.stderr).strip())
 
-    def build(self, spec):
+    def build(self, spec, calls=None):
         raise ExecutorError(
             "build is a delegated agent step; LiveLoop has no agent wired. Inject "
             "a build callable that dispatches the implementer and returns its "

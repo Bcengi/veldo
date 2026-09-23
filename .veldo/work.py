@@ -142,7 +142,10 @@ class WorkLoop:
                 if not after["eligible"]:
                     CL.release(u["spec"], self.worker_id, root=self.claims_root)
                     continue
-                u = dict(u, eligibility=after, holder=self.worker_id)
+                # The authority client (VELDO-0031) retains the generation it was granted; the
+                # file ledger has none, and then ownership alone is decided at later stations.
+                u = dict(u, eligibility=after, holder=self.worker_id,
+                         generation=(getattr(self.claims_root, "generations", None) or {}).get(u["spec"]))
             return u
         return None
 

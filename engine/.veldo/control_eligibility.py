@@ -478,7 +478,8 @@ class CallHandle:
             guard = self.calls.guards.get(adapter)
             if guard is None:
                 raise Refused('unavailable_service:adapter', str(adapter))
-            self.calls.gate.require('provider_request', self.unit, context=self.context, ticket=self.ticket)
+            decision = self.calls.gate.require('provider_request', self.unit, context=self.context, ticket=self.ticket)
+            event['decision_id'] = decision['decision_id']
             try:
                 receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,
                                        wall_seconds, configuration, now=now)
@@ -490,5 +491,6 @@ class CallHandle:
         except Refused as error:
             self.calls.observations.append(dict(event, outcome='refused', refusal=error.code))
             raise
-        self.calls.observations.append(dict(event, outcome='launched' if not receipt.get('replayed') else 'replayed'))
+        self.calls.observations.append(dict(event, outcome='launched' if not receipt.get('replayed') else 'replayed',
+                                            watermark=receipt.get('seq')))
         return receipt
