@@ -78,11 +78,32 @@ INSTALL_COMMAND = 'python3 .veldo/control_graph_install.py'
 RUNNER = 'control_graph_langgraph.py'
 
 
-def resolve_runtime(home=None):
-    """The locked runtime for this account, or None when it is not installed."""
+NO_RUNTIME = {'name': 'none', 'version': ''}
+
+
+def _lock():
     spec = importlib.util.spec_from_file_location('veldo_control_graph_lock', HERE / 'control_graph_lock.py')
     lock = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(lock)
+    return lock
+
+
+def runtime_evidence():
+    """The runtime label an answer must carry to count as evidence from the locked LangGraph."""
+    return {'name': 'langgraph', 'version': dict((name, version) for name, version, _, _ in _lock().PACKAGES)['langgraph']}
+
+
+def evidenced(result, evidence):
+    """An answer is runtime evidence when the locked LangGraph produced it. A failure may instead
+    say that nothing ran (NO_RUNTIME); a failure confers nothing."""
+    if result['outcome'] == 'failure':
+        return result['runtime'] in (evidence, NO_RUNTIME)
+    return result['runtime'] == evidence
+
+
+def resolve_runtime(home=None):
+    """The locked runtime for this account, or None when it is not installed."""
+    lock = _lock()
     runtime = {'python': str(lock.runtime_directory(home) / 'bin' / 'python'), 'runner': str(HERE / RUNNER)}
     return runtime if available(runtime) else None
 
@@ -336,11 +357,12 @@ class Adapter:
 
     @classmethod
     def installed(cls, domain_uuid, repository_uuid, home=None, timeout=120):
-        """An adapter over the locked runtime this account has installed (None if absent)."""
-        return cls(resolve_runtime(home), domain_uuid, repository_uuid, timeout)
+        """An adapter over the locked runtime this account has installed (None if absent), whose
+        answers must be runtime evidence from that locked LangGraph."""
+        return cls(resolve_runtime(home), domain_uuid, repository_uuid, timeout, evidence=runtime_evidence())
 
-    def __init__(self, runtime, domain_uuid, repository_uuid, timeout=120):
-        self.runtime, self.timeout = runtime, timeout
+    def __init__(self, runtime, domain_uuid, repository_uuid, timeout=120, evidence=None):
+        self.runtime, self.timeout, self.evidence = runtime, timeout, evidence
         self.domain_uuid, self.repository_uuid = domain_uuid, repository_uuid
         self.counts = {'accepted': 0, 'refused': 0}
         self.observations = []
@@ -355,6 +377,9 @@ class Adapter:
                                        and {'id', 'version', 'digest'} <= set(fields[name])})
         try:
             result = exchange(self.runtime, request(operation, identity, **fields), self.timeout)
+            if self.evidence is not None and not evidenced(result, self.evidence):
+                raise Refused('missing_evidence', 'answer labelled ' + repr(result['runtime'])
+                              + ' is not runtime evidence from ' + repr(self.evidence))
         except Refused as error:
             self.counts['refused'] += 1
             self.observations.append(dict(record, outcome='refused', refusal=error.code))

@@ -473,6 +473,14 @@ def cases():
     graph('graph-answer-notes-any-plain', 'control_graph.py',
           "    if type(value['notes']) is not str or len(value['notes']) > MAX_NOTES:\n",
           "    if len(value['notes']) > MAX_NOTES:\n", 'shape/closed-response')
+    graph('graph-suspend-without-graph', 'control_graph_langgraph.py',
+          '    return run_cycle(request, workflow, resume)\n',
+          "    if request['operation'] == 'suspend':\n"
+          "        return _reply(request, 'suspended', {'name': 'langgraph', 'version': '1.2.12'}, resume=resume)\n"
+          '    return run_cycle(request, workflow, resume)\n', 'runtime/lifecycle')
+    graph('graph-runtime-evidence-unchecked', 'control_graph.py',
+          '            if self.evidence is not None and not evidenced(result, self.evidence):\n',
+          '            if False:\n', 'runtime/lifecycle')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])

@@ -7,8 +7,11 @@ working directory with a fixed environment, and it is never imported by enforcem
 One exchange per process: read one veldo.graph/v1 request on stdin, write one response on
 stdout. The graph is nonpersistent (Release 1): no checkpointer, no database, no store handle or
 path. A cycle that needs supplied results stops with outcome `suspended` and hands the caller a
-plain resume value {position, step, notes}; `advance` rebuilds the graph and enters it at that
-position with the accepted snapshot and supplied results. Veldo owns every identity.
+closed resume value {position, step, notes as canonical JSON text}; `advance` rebuilds the graph
+and enters it at that position with the accepted snapshot and supplied results. Every operation
+executes the compiled graph: `suspend` and `cancel` enter its control nodes. The answer's runtime
+label is produced by the nodes that ran (executed_by, only callable inside a running graph);
+an answer where nothing ran says NO_RUNTIME. Veldo owns every identity.
 
 A workflow is {'version': int, 'entry': node, 'nodes': {name: function}}. A node receives a
 plain view {identity, snapshot, supplied_results, notes, step} and returns a mapping with only
@@ -21,7 +24,6 @@ Nothing leaves this process that is not exact plain JSON data; LangGraph objects
 Workflow definitions are supplied by VELDO-0132; this module registers none, so production
 `main` answers every workflow with the named failure unsupported_workflow.
 """
-import importlib.metadata
 import json
 import math
 import sys
@@ -51,16 +53,25 @@ def plain_copy(value, where='value'):
     raise NotPlain(where + ': ' + kind.__module__ + '.' + kind.__qualname__ + ' is not plain data')
 
 
-def _reply(request, outcome, **fields):
+def notes_text(notes):
+    """Graph working data crosses the boundary as canonical JSON text, never as a structure."""
+    return json.dumps(plain_copy(notes, 'notes'), sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
+NO_RUNTIME = {'name': 'none', 'version': ''}
+CONTROL = {'suspend': 'veldo_suspend', 'cancel': 'veldo_cancel'}
+
+
+def _reply(request, outcome, runtime, **fields):
+    """`runtime` is what executed: the label a LangGraph node produced, or NO_RUNTIME."""
     reply = {key: request[key] for key in ('schema', 'operation') + IDENTITY}
-    reply.update(outcome=outcome, runtime={'name': 'langgraph',
-                                           'version': importlib.metadata.version('langgraph')})
+    reply.update(outcome=outcome, runtime=runtime)
     reply.update(fields)
     return reply
 
 
-def _failure(request, code, detail):
-    return _reply(request, 'failure', failure={'code': code, 'detail': detail[:500]})
+def _failure(request, code, detail, runtime=NO_RUNTIME):
+    return _reply(request, 'failure', runtime, failure={'code': code, 'detail': detail[:500]})
 
 
 def closed(reply):
@@ -75,13 +86,9 @@ def emit(request, reply, stdout):
     try:
         body = json.dumps(closed(reply), allow_nan=False)
     except NotPlain as error:
-        body = json.dumps(_failure(request, 'node_failed', str(error)), allow_nan=False)
+        body = json.dumps(_failure(request, 'node_failed', str(error), reply.get('runtime', NO_RUNTIME)),
+                          allow_nan=False)
     stdout.write(body)
-
-
-def notes_text(notes):
-    """Graph working data crosses the boundary as canonical JSON text, never as a structure."""
-    return json.dumps(plain_copy(notes, 'notes'), sort_keys=True, separators=(',', ':'), allow_nan=False)
 
 
 def _resume(request, workflow):
@@ -99,6 +106,15 @@ def _resume(request, workflow):
     return dict(resume, notes=notes)
 
 
+def executed_by():
+    """The runtime label, produced only from inside a running LangGraph graph: get_config()
+    raises outside one, and the version is the running langgraph package's own."""
+    from langgraph.config import get_config
+    from langgraph.version import __version__
+    get_config()
+    return {'name': 'langgraph', 'version': __version__}
+
+
 def _build(workflow):
     from typing import TypedDict
     from langgraph.graph import END, START, StateGraph
@@ -106,6 +122,7 @@ def _build(workflow):
 
     class State(TypedDict, total=False):
         identity: dict
+        operation: str
         snapshot: dict
         supplied_results: list
         position: str
@@ -114,6 +131,7 @@ def _build(workflow):
         proposals: list
         halt: str
         failure: dict
+        executed_by: dict
 
     def wrap(name, function):
         def node(state):
@@ -121,7 +139,7 @@ def _build(workflow):
                     'supplied_results': state['supplied_results'], 'notes': dict(state['notes']),
                     'step': state['step']}
             out = function(view)
-            base = {'step': state['step'] + 1, 'position': name}
+            base = {'step': state['step'] + 1, 'position': name, 'executed_by': executed_by()}
             if type(out) is not dict:
                 return Command(goto=END, update=dict(base, halt='failure', failure={
                     'code': 'node_failed', 'detail': name + ' returned no node output mapping'}))
@@ -149,55 +167,69 @@ def _build(workflow):
             return Command(goto=following, update=dict(update, position=following))
         return node
 
+    def hold(state):
+        # suspend: the cycle stays at its position; the graph ran and says so.
+        return Command(goto=END, update={'halt': 'suspend', 'executed_by': executed_by()})
+
+    def cancel(state):
+        return Command(goto=END, update={'halt': 'canceled', 'executed_by': executed_by()})
+
     graph = StateGraph(State)
     for name, function in workflow['nodes'].items():
         graph.add_node(name, wrap(name, function))
-    graph.add_conditional_edges(START, lambda state: state['position'], list(workflow['nodes']))
+    graph.add_node(CONTROL['suspend'], hold)
+    graph.add_node(CONTROL['cancel'], cancel)
+    graph.add_conditional_edges(START, lambda state: CONTROL.get(state['operation'], state['position']),
+                                list(workflow['nodes']) + list(CONTROL.values()))
     return graph.compile()
 
 
 def run_cycle(request, workflow, resume):
+    """Every operation executes the compiled graph: start and advance enter it at the cycle's
+    position, suspend and cancel enter its control nodes."""
     from langgraph.errors import GraphRecursionError
-    state = {'identity': {key: request[key] for key in IDENTITY}, 'snapshot': request['snapshot'],
-             'supplied_results': request.get('supplied_results', []), 'proposals': [], 'halt': '',
-             'position': resume['position'], 'step': resume['step'], 'notes': resume['notes']}
+    state = {'identity': {key: request[key] for key in IDENTITY}, 'operation': request['operation'],
+             'snapshot': request.get('snapshot'), 'supplied_results': request.get('supplied_results', []),
+             'proposals': [], 'halt': '', 'position': resume['position'], 'step': resume['step'],
+             'notes': resume['notes']}
     try:
         final = _build(workflow).invoke(state, {'recursion_limit': MAX_STEPS})
     except GraphRecursionError:
         return _failure(request, 'node_failed', 'the cycle exceeded its step bound')
     except Exception as error:  # a node's own exception is that node's failure, by name
         return _failure(request, 'node_failed', 'node raised ' + type(error).__name__)
+    label = final.get('executed_by')
+    if type(label) is not dict:
+        return _failure(request, 'node_failed', 'no LangGraph node executed')
     if final.get('halt') == 'failure':
         failure = final.get('failure')
         if type(failure) is not dict or failure.get('code') not in (
                 'invalid_input', 'missing_evidence', 'node_failed', 'unsupported_workflow'):
-            return _failure(request, 'node_failed', 'a node failed without a named code')
-        return _reply(request, 'failure', failure={'code': failure['code'],
-                                                   'detail': str(failure.get('detail', ''))[:500]})
+            return _failure(request, 'node_failed', 'a node failed without a named code', label)
+        return _reply(request, 'failure', label, failure={'code': failure['code'],
+                                                          'detail': str(failure.get('detail', ''))[:500]})
+    if final.get('halt') == 'canceled':
+        return _reply(request, 'canceled', label)
     if final.get('halt') == 'suspend':
-        return _reply(request, 'suspended', resume={'position': final['position'],
-                                                    'step': final['step'], 'notes': final['notes']})
+        return _reply(request, 'suspended', label, resume={'position': final['position'],
+                                                           'step': final['step'], 'notes': final['notes']})
     if final.get('halt') == 'end' and final.get('proposals'):
-        return _reply(request, 'proposal', proposals=final['proposals'])
-    return _failure(request, 'missing_evidence', 'the cycle ended without a proposal')
+        return _reply(request, 'proposal', label, proposals=final['proposals'])
+    return _failure(request, 'missing_evidence', 'the cycle ended without a proposal', label)
 
 
 def answer(request, workflows):
     workflow = workflows.get(request['workflow']['id'])
-    if workflow is None or workflow['version'] != request['workflow']['version']:
+    if (workflow is None or workflow['version'] != request['workflow']['version']
+            or set(workflow['nodes']) & set(CONTROL.values())):
         return _failure(request, 'unsupported_workflow', 'no registered workflow ' +
                         request['workflow']['id'] + ' version ' + str(request['workflow']['version']))
-    operation = request['operation']
-    if operation == 'start':
+    if request['operation'] == 'start':
         return run_cycle(request, workflow, {'position': workflow['entry'], 'step': 0, 'notes': {}})
     resume = _resume(request, workflow)
     if resume is None:
         return _failure(request, 'invalid_input', 'resume is not this workflow\'s plain position')
-    if operation == 'advance':
-        return run_cycle(request, workflow, resume)
-    if operation == 'suspend':
-        return _reply(request, 'suspended', resume=resume)
-    return _reply(request, 'canceled')
+    return run_cycle(request, workflow, resume)
 
 
 def serve(workflows, stdin=None, stdout=None):

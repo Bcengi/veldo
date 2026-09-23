@@ -305,7 +305,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     wrapper = root / 'runtime_runner.py'
     wrapper.write_text('PRODUCTION = %r\nAUDIT = %r\n' % (str(repo / '.veldo/control_graph_langgraph.py'),
                                                           str(audit)) + _S43_RUNNER)
-    adapter = graph.Adapter(dict(runtime, runner=str(wrapper)), 'domain', 'repository')
+    adapter = graph.Adapter(dict(runtime, runner=str(wrapper)), 'domain', 'repository',
+                            evidence=graph.runtime_evidence())
     responses = []
 
     def workflow(name):
@@ -342,7 +343,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         except Exception as error:
             stub_evidence = getattr(error, 'code', type(error).__name__)
         production = call('start', 'cycle-r4', 'command-r7', snapshot, workflow('lifecycle'),
-                          target=graph.Adapter(runtime, 'domain', 'repository'))
+                          target=graph.Adapter.installed('domain', 'repository'))
         foreign = [call('start', 'cycle-f-' + name, 'command-f-' + name, snapshot, workflow(name))
                    for name in ('foreign-command', 'foreign-snapshot', 'foreign-in-notes')]
         untyped = call('start', 'cycle-u', 'command-u', snapshot, workflow('untyped-proposal'))
