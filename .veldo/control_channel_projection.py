@@ -41,6 +41,14 @@ observation naming why, so nothing is blindly sent again and one bad reply never
 projection of the entries after it. Looking the message up and recovering an unknown or pending
 record is Release 2 work.
 
+ONE DECISION MESSAGE WHEN PRESENTATIONS ARE ENABLED (VELDO-0065). A projection built with a
+`presenter` (the VELDO-0065 Presenter on the same inbox) sends no notice of its own: the versioned
+presentation is the one decision message for each request version, and the owner's reply to it is
+what settles. Each pending entry is reported as `presented` when its current presentation binds
+current authority, otherwise `awaiting_presentation` with the presenter's reason, and the
+metrics are the presenter's, including why each entry is not presented. Without a presenter the
+projection behaves as below.
+
 NOT AUTHORITY. A projection is a proxy of the inbox. Nothing here reads an answer, settles a
 request or changes an assignment. Presentation receipts and supersession are VELDO-0065, answer
 acquisition and attribution VELDO-0066, edge signing VELDO-0067, activation of the live edge
@@ -238,8 +246,10 @@ def _record_transition(params, before):
 class Projection:
     """Projects one inbox to one Telegram edge and records correlation through the store."""
 
-    def __init__(self, store, inbox, edge, conn, journal_signer, sign, authority_generation=1, clock=time.time):
+    def __init__(self, store, inbox, edge, conn, journal_signer, sign, authority_generation=1, clock=time.time, *,
+                 presenter=None):
         self.store, self.inbox, self.edge, self.conn = store, inbox, edge, conn
+        self.presenter = presenter
         self.journal_signer, self.sign = journal_signer, sign
         self.authority_generation, self.clock = authority_generation, clock
         self.observations = []
@@ -255,7 +265,7 @@ class Projection:
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 
     def _result(self, assignment, versions, outcome, reason, **extra):
-        accepted = outcome in ('sent', 'already_projected')
+        accepted = outcome in ('sent', 'already_projected', 'presented')
         self.counts['accepted' if accepted else 'refused'] += 1
         self.observations.append(dict(self.inbox.ids, operation='project', channel=CHANNEL,
                                       assignment_id=assignment, accepted_versions=versions,
@@ -353,12 +363,23 @@ class Projection:
         reason = ','.join(done['anomalies']) if done['outcome'] == 'anomaly' else done['refusal']
         return self._result(aid, versions, done['outcome'], reason, projection_id=pid)
 
+    def _presented(self, entry):
+        """With presentations enabled nothing is sent here: the presentation is the message."""
+        refusal, record, _ = self.presenter.compose(entry['id'])
+        outcome = 'presented' if refusal is None and record is None else 'awaiting_presentation'
+        return self._result(entry['id'], {entry['id']: entry['version']}, outcome, refusal)
+
     def project(self):
         """Attempt each pending entry that has no settled record at its request version; return
-        one result per pending entry."""
-        return [self._project(entry) for entry in self.inbox.index()['entries'] if entry['category'] == 'pending']
+        one result per pending entry. With a presenter, report each entry's presentation instead."""
+        return [self._presented(e) if self.presenter is not None else self._project(e)
+                for e in self.inbox.index()['entries'] if e['category'] == 'pending']
 
     def metrics(self):
+        if self.presenter is not None:
+            m = self.presenter.metrics()
+            return dict(self.counts, pending=m['pending'], unknown=m['unknown'], anomalies=m['anomalies'],
+                        unpresented_by_reason=m['unpresented_by_reason'])
         records = {e['id']: self.record(projection_id(e['id'], e['request_version']))
                    for e in self.inbox.index()['entries'] if e['category'] == 'pending'}
         return dict(self.counts,

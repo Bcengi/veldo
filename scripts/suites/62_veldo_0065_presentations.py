@@ -80,7 +80,8 @@ def _v65_checks(base):
                                   'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
                                   'framing/stored-framing-reverified', 'answer/not-before-publication',
                                   'presentation/private-chat-only', 'presentation/replacement-without-reply-target',
-                                  'presentation/reply-link-verified', 'presentation/long-brief-split')}
+                                  'presentation/reply-link-verified', 'presentation/long-brief-split',
+                                  'projection/one-message-per-version')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -811,6 +812,47 @@ def _v65_checks(base):
                   and (answered(l1, 1) or {}).get('presentation_id') == l1_r.get('presentation_id'))
             check(long_row, 'control: a short presentation is one message',
                   (presenter.receipt(r1.get('presentation_id', '')) or {}).get('message_ids') == [r1.get('message_id')])
+
+        # Review r3: with presentations enabled, one decision message per request version
+        one = 'projection/one-message-per-version'
+        with section(one):
+            projector = P.Projection(S, inbox, P.TelegramEdge('http://127.0.0.1:%d' % server.server_address[1], api['token']),
+                                     conn, 'authority', journal_sign, presenter=presenter)
+            t1 = opened('T-1')
+
+            def about(request, start):
+                return [(chat, text, reply) for chat, text, reply in api['requests'][start:]
+                        if 'Request: %s' % request in text.split('\n') or 'Assignment: %s' % request in text.split('\n')]
+            start = len(api['requests'])
+            projected = {r['assignment_id']: r for r in projector.project()}
+            presenter.publish()
+            first = about(t1, start)
+            t1_r1 = presenter.current(t1) or {}
+            check(one, 'one request version reaches the owner as exactly one message',
+                  len(first) == 1 and t1_r1.get('message_ids') == [t1_r1.get('message_id')])
+            check(one, 'that one message carries the choices and how to answer',
+                  len(first) == 1 and 'Choices: accept | reject' in first[0][1].split('\n') and 'Answer by replying' in first[0][1])
+            check(one, 'the inbox projection sends no notice of its own and says the presentation carries it',
+                  projected.get(t1, {}).get('outcome') == 'awaiting_presentation'
+                  and not conn.execute("SELECT COUNT(*) FROM entities WHERE kind='channel_projection' AND data LIKE ?",
+                                       ('%' + t1 + '%',)).fetchone()[0])
+            again = {r['assignment_id']: r for r in projector.project()}
+            check(one, 'once presented, the projection reports the entry as presented',
+                  again.get(t1, {}).get('outcome') == 'presented')
+            command('pm', 'revise', 'T-1', request_version=1, changes={'brief': 'A revised brief.'})
+            frame('pm', 'T-1', 2, 'Low: a wrong choice costs one review cycle.')
+            start = len(api['requests'])
+            projector.project()
+            presenter.publish()
+            second = about(t1, start)
+            check(one, 'the revision is again exactly one message, a reply to the first',
+                  len(second) == 1 and second[0][2] == t1_r1.get('message_id'))
+            t1_r2 = presenter.current(t1) or {}
+            check(one, 'the owner\'s reply to the one message settles the request version',
+                  reason(answer(owner_reply(t1_r2, 'accept: the revised brief is right'))) == ('accepted', None)
+                  and (answered(t1, 2) or {}).get('presentation_id') == t1_r2.get('presentation_id'))
+            check(one, 'the projection\'s metrics show what could not be presented, by reason',
+                  (projector.metrics().get('unpresented_by_reason') or {}).get('group_chat') == 1)
     finally:
         server.shutdown()
         server.server_close()

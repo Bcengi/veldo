@@ -799,6 +799,17 @@ def cases():
                  "    return len(text)\n", 'presentation/long-brief-split')
     presentation('answer-only-to-last-part', "ev['reply_to_message_id'] not in receipt['message_ids']):",
                  "ev['reply_to_message_id'] != receipt['message_id']):", 'presentation/long-brief-split')
+    # VELDO-0065 review r3: with presentations enabled, one decision message per request version.
+    def one_message(name, old, new):
+        add(65, name, '62_veldo_0065_presentations.py', 'control_channel_projection.py', old, new,
+            ['projection/one-message-per-version'])
+
+    one_message('projection-notice-beside-presentation',
+                "        return [self._presented(e) if self.presenter is not None else self._project(e)\n",
+                "        return [self._presented(e) if False else self._project(e)\n")
+    one_message('projection-defers-only-once-presented',
+                "        return [self._presented(e) if self.presenter is not None else self._project(e)\n",
+                "        return [self._presented(e) if self.presenter is not None and self.presenter.current(e['id']) else self._project(e)\n")
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

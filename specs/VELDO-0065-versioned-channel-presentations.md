@@ -29,6 +29,9 @@ footprint:
   - "engine/.veldo/control_channel_presentation*.py"
   - ".veldo/control_channel_presentation*.py"
   - "packs/*/.veldo/control_channel_presentation*.py"
+  - "engine/.veldo/control_channel_projection.py"
+  - ".veldo/control_channel_projection.py"
+  - "packs/*/.veldo/control_channel_projection.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -132,3 +135,10 @@ function. No specification status or historical proof was changed.
 2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
 declared falsifiers can be registered as finding 65 of the existing teeth mutation driver. The
 criteria, status and risk are unchanged.
+
+2026-09-23, review r3: `.veldo/control_channel_projection.py` (VELDO-0064, and its engine copy)
+was added to the footprint because the owner must receive one decision message per request
+version. With presentations enabled the presentation is that message: a projection given the
+presenter sends no notice of its own and reports each entry as presented or awaiting
+presentation, and its metrics are the presenter's. A projection built without a presenter is
+unchanged, so no VELDO-0064 row was changed. The criteria, status and risk are unchanged.
