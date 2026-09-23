@@ -265,8 +265,8 @@ control group.
 | `graph/shape/closed-request` | `graph-digest-prefix-only`, `graph-request-path-unchecked`, `graph-path-check-skips-keys`, `graph-unserializable-escapes`, `graph-request-size-unbounded` | closed-request |
 | `graph/shape/closed-response` | `graph-answer-resume-open`, `graph-answer-notes-any-plain` | closed-response |
 
-Result of `python3 -B scripts/check_teeth_mutations.py --finding 43`: 33 of 33 rejected, each
-baseline green with 45 assertions (`{"mutations_rejected": 33, "green_suites": {"59_veldo_0043_graph.py": 45}}`).
+Result of `python3 -B scripts/check_teeth_mutations.py --finding 43`: 42 of 42 rejected, each
+baseline green with 46 assertions (`{"mutations_rejected": 42, "green_suites": {"59_veldo_0043_graph.py": 46}}`).
 
 The installed row has no registered mutation, because it checks this machine's installed state,
 which the suite never changes. The proc-limit row has one: no other production edit short of
@@ -333,10 +333,10 @@ Three pins are below the latest release, each because of a requirement in the cl
 ## Verification (targeted; the full gate was not run, per the brief)
 
 ```text
-python3 -B scripts/selftest.py --suite 59_veldo_0043_graph    19 passed, 7.59-7.81 s (45 assertions)
-python3 -B scripts/check_teeth_mutations.py --finding 43      33 of 33 rejected, baseline green, 527.3 s
-python3 -B proof/VELDO-0043/drive.py                          {"mutations": 33, "all_target_rows_red": true}
-python3 -B scripts/check_gate_mutations.py                    passed: 271 cases, 218.7 s of a 542 s cap
+python3 -B scripts/selftest.py --suite 59_veldo_0043_graph    20 passed, 9.58-10.37 s (46 assertions)
+python3 -B scripts/check_teeth_mutations.py --finding 43      42 of 42 rejected, baseline green, 752.8 s
+python3 -B proof/VELDO-0043/drive.py                          {"mutations": 42, "all_target_rows_red": true}
+python3 -B scripts/check_gate_mutations.py                    passed: 280 cases, 206.8 s of a 560 s cap
 python3 .veldo/validate.py all                                exit 0
 bash scripts/check_generated.sh                               generated: pass
 bash scripts/check_template_sync.sh                           pass
@@ -346,18 +346,18 @@ python3 .veldo/control_graph_isolation.py                     isolated enforceme
 
 ## Gate cost (`timing.json`)
 
-The suite takes 7.6-7.8 s (19 rows; 0.77 s before the runtime rows), under the 60 s limit. The
-process-group row adds about 2 s of deliberate waiting. The serial driver `--finding 43` takes
-527.3 s for 33 cases (66 suite runs). The whole gate mutation stage passed at `d8bbe69` plus the
-diff removal: 271 cases in 218.7 s against its scaled 542 s cap, under a load average of 14 to 23
-from other agents. Finding 43's 33 mutants took 310.6 worker seconds.
+These runs were measured under a load average of 11 to 14 from other agents. The suite takes 9.6
+to 10.4 s for 20 rows, against 0.77 s before the runtime rows, and stays under the 60 s limit.
+About 2 s of that is the process-group row's deliberate wait. The serial driver `--finding 43`
+takes 752.8 s for 42 cases (84 suite runs). The whole gate mutation stage passed in 206.8 s:
+280 cases against its scaled 560 s cap, with finding 43's 42 mutants taking 389.5 worker seconds.
 
 Runner copies accumulate in the account stage, one per distinct runner content (the suite never
 writes there). Collecting them is hardening, left for later. Working directories are removed
-after every exchange, and the suite removes its temporary stages.
+after every exchange, and the suite's temporary stages go with its temporary directory.
 
 ## Evidence size
 
-The proof is about 230 KB: readable JSON, Markdown, Python and 33 small unified diffs. There is no
+The proof is about 290 KB: readable JSON, Markdown, Python and 42 small unified diffs. There is no
 full log, no binary or encoded data, no bytecode and no credential-shaped text. The sha256
 values are public wheel digests.
