@@ -69,10 +69,19 @@ elif mode == 'untyped':
     reply.update(outcome='proposal', proposals=[{'proposal_id': 'p1', 'subject': 'unit-1',
                  'priority': 1}])
 elif mode == 'environment':
-    reply.update(outcome='suspended', resume={
+    reply.update(outcome='suspended', resume={'position': 'environment', 'step': 0, 'notes': json.dumps({
         'environment': sorted(os.environ), 'cwd_entries': sorted(os.listdir('.')),
         'descriptors': sorted(int(fd) for fd in os.listdir('/proc/self/fd')),
-        'argv': sys.argv, 'request_text': json.dumps(request, sort_keys=True)})
+        'argv': sys.argv, 'request_text': json.dumps(request, sort_keys=True)})})
+elif mode == 'notes-object':
+    reply.update(outcome='suspended', resume={'position': 'rank', 'step': 1, 'notes': {'handoff': {
+        '__class__': 'langgraph.types.Command', 'repr': "Command(goto='rank')"}}})
+elif mode == 'resume-open':
+    reply.update(outcome='suspended', resume={'position': 'rank', 'step': 1, 'notes': '{}', 'graph': 'x'})
+elif mode == 'resume-no-notes':
+    reply.update(outcome='suspended', resume={'position': 'rank', 'step': 1})
+elif mode == 'resume-bad-position':
+    reply.update(outcome='suspended', resume={'position': 'a/b', 'step': 1, 'notes': '{}'})
 elif mode == 'crash':
     sys.exit(3)
 elif mode == 'deep':
@@ -149,6 +158,10 @@ def foreign_snapshot(view):
                                          'evidence': StateSnapshot({}, (), {}, None, None, None, (), ())}]}
 
 
+def foreign_notes(view):
+    return {'next': 'only', 'suspend': True, 'notes': {'handoff': Command(goto='rank')}}
+
+
 def untyped_proposal(view):
     return {'next': None, 'proposals': [{'proposal_id': 'p1', 'subject': 'unit-1', 'priority': 1}]}
 
@@ -209,7 +222,8 @@ def one(function):
 WORKFLOWS = {
     'lifecycle': {'version': 1, 'entry': 'groom', 'nodes': {'groom': groom, 'size': size, 'rank': rank}},
     'failing': one(failing), 'foreign-command': one(foreign_command),
-    'foreign-snapshot': one(foreign_snapshot), 'untyped-proposal': one(untyped_proposal),
+    'foreign-snapshot': one(foreign_snapshot), 'foreign-in-notes': one(foreign_notes),
+    'untyped-proposal': one(untyped_proposal),
     'assert-admission': one(assert_admission), 'assert-priority': one(assert_priority),
     'assert-completion': one(assert_completion),
     'store-access': {'version': 1, 'entry': 'probe', 'nodes': {'probe': probe_store, 'propose': propose}},
@@ -308,7 +322,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         production = call('start', 'cycle-r4', 'command-r7', snapshot, workflow('lifecycle'),
                           target=graph.Adapter(runtime, 'domain', 'repository'))
         foreign = [call('start', 'cycle-f-' + name, 'command-f-' + name, snapshot, workflow(name))
-                   for name in ('foreign-command', 'foreign-snapshot')]
+                   for name in ('foreign-command', 'foreign-snapshot', 'foreign-in-notes')]
         untyped = call('start', 'cycle-u', 'command-u', snapshot, workflow('untyped-proposal'))
 
         # AC2: a real store in a real repository; the domain process runs inside it and holds an
@@ -381,12 +395,16 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and [o['operation'] for o in adapter.observations[:6]] ==
            ['start', 'suspend', 'advance', 'start', 'cancel', 'start']
            and adapter.observations[2]['accepted_inputs'] == {'snapshot': snapshot, 'workflow': workflow('lifecycle')})
-    expect('graph/runtime/plain-data', [f.get('failure', {}).get('code') for f in foreign] == ['node_failed'] * 2
+    carried = [r for r in responses if r.get('outcome') != 'failure'
+               and ('langgraph.' in _s43_json.dumps(r) or '__class__' in _s43_json.dumps(r))]
+    observations['langgraph_objects_in_domain_answers'] = carried
+    expect('graph/runtime/plain-data', [f.get('failure', {}).get('code') for f in foreign] == ['node_failed'] * 3
            and 'langgraph.types.Command' in foreign[0]['failure']['detail']
            and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
-           and len(responses) == 14 and all(_s43_exact_plain(r) for r in responses))
+           and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
+           and len(responses) == 15 and all(_s43_exact_plain(r) for r in responses))
     source = (repo / '.veldo/control_graph_langgraph.py').read_text()
-    expect('graph/runtime/tracing-off', len(audits) == sum(adapter.counts.values()) == 14 and all(
+    expect('graph/runtime/tracing-off', len(audits) == sum(adapter.counts.values()) == 15 and all(
                a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
                and a['sockets'] == [] for a in audits)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
@@ -498,6 +516,19 @@ def _s43_run():
                 shaped.append(getattr(error, 'code', type(error).__name__))
         observations['shape_refusals'] = shaped
 
+        # The answer is a closed schema: a resume is exactly {position, step, notes as text}.
+        closed = {}
+        for mode in ('lifecycle', 'notes-object', 'resume-open', 'resume-no-notes', 'resume-bad-position'):
+            try:
+                answer = adapter.start('cycle-c-' + mode, 'command-c-' + mode, snapshot, dict(version, id=mode))
+                closed[mode] = 'accepted' if type(answer['resume']['notes']) is str else 'accepted-structure'
+            except Exception as error:
+                closed[mode] = getattr(error, 'code', type(error).__name__)
+        observations['closed_response'] = closed
+        expect('graph/shape/closed-response', closed == {
+            'lifecycle': 'accepted', 'notes-object': 'invalid_response', 'resume-open': 'invalid_response',
+            'resume-no-notes': 'invalid_response', 'resume-bad-position': 'invalid_response'})
+
         # A request is closed, plain, versioned data: exact digests, versioned supplied results, a
         # closed resume, and no filesystem location anywhere.
         good_digest = 'sha256:' + 'd' * 64
@@ -594,7 +625,8 @@ def _s43_run():
         connection = store.open_store(store_path)
         handle = _s43_os.open(store_path, _s43_os.O_RDONLY)
         _s43_os.set_inheritable(handle, True)
-        environment = adapter.start('cycle-4', 'command-7', snapshot, dict(version, id='environment'))['resume']
+        environment = _s43_json.loads(adapter.start('cycle-4', 'command-7', snapshot,
+                                                    dict(version, id='environment'))['resume']['notes'])
         _s43_os.close(handle)
         connection.close()
         observations['boundary'] = {k: environment[k] for k in ('environment', 'cwd_entries', 'descriptors')}
