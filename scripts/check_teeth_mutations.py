@@ -575,6 +575,14 @@ def cases():
            '        if _lane_status(fm, status) == "review":',
            '        if fm.get("status") == "review":',
            'completion/landed-units-not-reoffered')
+    review('status-reader-reads-status-text', 'runstatus.py',
+           '        status_by_id = PL._status(eligibility)',
+           '        status_by_id = PL.spec_status_by_id()',
+           'completion/status-reader-agrees')
+    review('status-reader-drops-the-stop', 'runstatus.py',
+           '    except EL.Stopped as stop:\n        return [], stop.reason',
+           '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
+           'completion/status-reader-agrees')
     return result
 
 

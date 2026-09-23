@@ -38,6 +38,8 @@ footprint:
   - "engine/.veldo/control_eligibility*.py"
   - ".veldo/control_eligibility*.py"
   - "packs/*/.veldo/control_eligibility*.py"
+  - "engine/.veldo/runstatus.py"
+  - ".veldo/runstatus.py"
   - "scripts/suites/*_veldo_0052_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -149,3 +151,9 @@ specification status or historical proof was changed.
 2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
 falsifiers and their second mutations are registered with the repository's mutation driver
 (finding 52). No criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: .veldo/runstatus.py and its engine copy joined the footprint. `veldo status`
+computed the plan burn-down from status text, so it counted as shipped what the completion reader
+said had no landing receipt, and in an enrolled repository it answered where plan status stops. Its
+burn-down now reads plan status's own completion reader and reports the same named stop. No
+criterion, status or evidence universe changed.

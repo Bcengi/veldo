@@ -34,6 +34,7 @@ def _v52_suite():
         'frontier.py': ROOT / ".veldo" / "frontier.py",
         'plan.py': ROOT / ".veldo" / "plan.py",
         'executor.py': ROOT / ".veldo" / "executor.py",
+        'runstatus.py': ROOT / ".veldo" / "runstatus.py",
     }
     FLOOR = ('frontier.py', 'work.py', 'plan.py', 'executor.py', 'dispatch.py', 'work_state.py',
              'control_eligibility.py')
@@ -752,6 +753,41 @@ def _v52_suite():
             stop = ('raised', 'Stopped:enrollment_unanswerable')
             check('eligibility/enrollment-git-error-stops',
                    all(v == stop for v in broken.values()) and unrepository == ('ok', False) and healthy == ('ok', None))
+
+        with region('completion/status-reader-agrees'):
+            # DEFECT d. `veldo status` reads completion through the one reader plan status uses, and stops
+            # by the same name where plan status stops.
+            RS = load('v52_runstatus', mods / 'runstatus.py')
+            text = base / 'specs' / 'VELDO-9106-fixture.md'
+            text.write_text(text.read_text().replace('status: ready', 'status: shipped'))
+            quiet = dict(runs_root=str(Path(directory) / 'runs'), events_path=str(Path(directory) / 'no-events.jsonl'),
+                         control_db=str(Path(directory) / 'no-store.sqlite3'))
+            binding = Path(EL.E.binding_path(str(base)))
+            try:
+                burn = observe_effect(lambda: RS._burndown(base, eligibility=gate))
+                fm = PL.load_plan(plan_path)[1]
+                plan_view = PL._status(gate)
+                shipped = PL._shipped_set(fm, plan_view)
+                wanted = {w['spec']: PL.item_state(w, plan_view, shipped, PL._decision_blocks(fm)) for w in PL._work(fm)}
+                binding.parent.mkdir(parents=True, exist_ok=True)
+                binding.write_text('{}')
+                try:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        plan_stop = observe_effect(lambda: PL.cmd_status(plan_path))
+                    model = observe_effect(lambda: RS.status(root=base, **quiet))
+                finally:
+                    binding.unlink()
+            finally:
+                restore()
+            items = ({i['spec']: i['state'] for p_ in burn[1] for i in p_['items']} if burn[0] == 'ok' else None)
+            observed['status_reader'] = {'items': items, 'plan_items': wanted, 'plan_enrolled': list(plan_stop),
+                                         'status_enrolled': model[1].get('burndown_stopped') if model[0] == 'ok' else list(model)}
+            check('completion/status-reader-agrees',
+                   burn[0] == 'ok' and items == wanted and items['VELDO-9106'] != 'shipped'
+                   and [p_['shipped'] for p_ in burn[1]] == [len(shipped)]
+                   and plan_stop == ('raised', 'Stopped:eligibility_required')
+                   and model[0] == 'ok' and model[1].get('burndown_stopped') == 'eligibility_required'
+                   and model[1].get('burndown') == [])
 
         with region('completion/landed-units-not-reoffered'):
             # DEFECT f. Every lane asks the one completion reader, never the front matter: a landed unit is
