@@ -812,7 +812,10 @@ def _s37_run():
                                                              'other/VELDO-0080-x.md', 'specs/notes-0070.md']),
                 # A newline is a legal byte in a Git path; below the number it must count too.
                 ('newline-below-directory', 'proof/{alias}/README.md', ['proof/VELDO-0060/a\nb']),
-                ('newline-below-number', 'specs/{alias}-{slug}.md', ['specs/VELDO-0061-dir/x\ny.md'])]:
+                ('newline-below-number', 'specs/{alias}-{slug}.md', ['specs/VELDO-0061-dir/x\ny.md']),
+                ('newline-in-component', 'specs/{alias}-{slug}.md', ['specs/VELDO-0064-a\nb.md']),
+                ('newline-before-alias', 'specs/{alias}-{slug}.md', ['specs/x\nVELDO-0065-a.md']),
+                ('newline-in-slug-directory', 'area/{slug}/{alias}.md', ['area/s\nl/VELDO-0066.md'])]:
             history = root / ('carriers-' + label)
             history.mkdir()
             g(history, 'init', '-q')
@@ -827,7 +830,8 @@ def _s37_run():
         defects['carriers'] = carriers
         expect('aliases/floor-counts-every-carrier', carriers == {'case-directory': 5, 'irregular-slug': 7,
                'missing-slug': 8, 'number-template': 9, 'not-carriers': 1, 'newline-below-directory': 60,
-               'newline-below-number': 61})
+               'newline-below-number': 61, 'newline-in-component': 64, 'newline-before-alias': 65,
+               'newline-in-slug-directory': 66})
 
         # 10. Ownership is the store's, on EVERY connection: a second connection from another copy
         # of the store module with nothing registered, and one opened before the allocation

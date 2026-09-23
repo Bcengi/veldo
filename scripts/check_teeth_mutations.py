@@ -596,6 +596,18 @@ def cases():
     aliases('alias-floor-carrier-single-line', 'control_alias.py',
             '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.IGNORECASE)',
             'aliases/floor-counts-every-carrier')
+    # Sixth check (2026-09-23): a newline at every other carrier position the pattern reads.
+    aliases('alias-floor-component-single-line', 'control_alias.py',
+            "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'", "    regex += '([0-9]+)(?![0-9])[^/\\n]*(?:/.*)?'",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-prefix-single-line', 'control_alias.py',
+            "        regex += '[^/]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'",
+            "        regex += '[^/\\n]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-slug-directory-single-line', 'control_alias.py',
+            "    return ''.join('[^/]*' if part == '{slug}' else re.escape(part)",
+            "    return ''.join('[^/\\n]*' if part == '{slug}' else re.escape(part)",
+            'aliases/floor-counts-every-carrier')
     aliases('history-submodules-by-config', 'control_readset.py',
             "'--no-relative', '--ignore-submodules=none',", "'--no-relative',",
             'aliases/gitlink-carrier-whatever-submodule-config')
