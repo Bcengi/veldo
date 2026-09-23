@@ -184,17 +184,18 @@ def _authority(root):
     for claims_dir in ledgers:
         if claims_dir is None:
             continue
-        try:
-            # The ledger is judged where the record would really land: the claims directory with
-            # every link and '..' resolved as the kernel will resolve them at write time, so a
-            # spelling (a missing directory then '..', a claims/ that is a link) cannot aim the
-            # check at one ledger and the write at another.
-            ledger_root = os.path.dirname(os.path.realpath(claims_dir))
-            enrolled = _git_process.entry_exists(os.path.join(ledger_root, 'control', 'enrollment.json'))
-        except OSError:
-            raise ClaimStopped('enrollment_unanswerable')     # unreadable is not absent
-        if enrolled:
-            raise ClaimStopped('authority_required')
+        # Judged twice: at the ledger that owns this claims/ as spelled (its own enrollment is
+        # the truth even when its claims/ is a link elsewhere), and where the record would really
+        # land, with every link and '..' resolved as the kernel will resolve them at write time,
+        # so a spelling (a missing directory then '..', a claims/ that is a link) cannot aim the
+        # check at one ledger and the write at another.
+        for ledger_root in (os.path.dirname(claims_dir), os.path.dirname(os.path.realpath(claims_dir))):
+            try:
+                enrolled = _git_process.entry_exists(os.path.join(ledger_root, 'control', 'enrollment.json'))
+            except OSError:
+                raise ClaimStopped('enrollment_unanswerable')     # unreadable is not absent
+            if enrolled:
+                raise ClaimStopped('authority_required')
     return None
 
 
