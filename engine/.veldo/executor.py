@@ -518,17 +518,20 @@ class Executor:
                 raise EL.Stopped("reservation_required")
 
         def launch_gate(launch, cycle):
-            """The decision and reserved handle for ONE launch, or the halt that replaces it."""
-            if launch == "review":
-                current = self._decide(gate, sid, launch, decision)
-            else:
-                current = decision
+            """The decision and reserved handle for ONE launch, or the halt that replaces it. Every
+            launch, the second build cycle's included, re-decides its station over the COMPLETE
+            current read set against the last accepted decision as its ticket, so an input that
+            moved since (a withdrawn admission, or one re-accepted with its predicate still true)
+            is refused by name before the effect."""
+            nonlocal decision
+            current = self._decide(gate, sid, launch, decision)
             if not current["eligible"]:
                 reason = "; ".join(current["refusals"])
                 record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=reason)
                 return None, finish("halted", ELIGIBILITY_STEP,
                                     "eligibility refused before %s: %s" % (launch, reason), None,
                                     proof, gate_green, verdict)
+            decision = current
             try:
                 return self._handle(sid, launch, current, dispatches), None
             except EL.Refused as error:

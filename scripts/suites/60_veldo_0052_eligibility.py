@@ -814,6 +814,34 @@ def _v52_suite():
                    and 'reviewer_not_independent' in (same[1]['reason'] or '')
                    and producer.builds == [(sid, True)] and producer.reviews == [])
 
+        with region('eligibility/executor-rechecks-every-launch'):
+            # DEFECT b. Every launch of a direct run first re-decides its station over the complete current
+            # read set, against the last accepted decision as its ticket: an admission withdrawn during
+            # review, or re-accepted with its predicate still true, stops cycle 2 before its build.
+            sid = 'VELDO-9106'
+            accepted = dict(unit=sid, state='accepted', scope_digest='sha256:scope')
+            runs = {}
+            for tag, moved in (('withdrawn', dict(accepted, state='withdrawn')), ('reaccepted', accepted)):
+                class Moves(Direct):
+                    def review(self, spec, proof, calls=None, moved=moved):
+                        self.reviews.append(calls is not None)
+                        put('admission:' + sid, 'admission', moved)
+                        return {'verdict': 'fail'}
+
+                hooks = Moves('xr-' + tag)
+                runs[tag] = (hooks, observe_effect(lambda: EX.Executor(hooks, eligibility=gate, calls=calls, context=ctx_x).run(
+                    sid, max_review_cycles=2)))
+                put('admission:' + sid, 'admission', accepted)
+            restore()
+            recheck_ok = True
+            for tag, code in (('withdrawn', 'missing_authority:admission'), ('reaccepted', 'stale_input:admission')):
+                hooks, (kind, result) = runs[tag]
+                recheck_ok &= (kind == 'ok' and hooks.builds == [(sid, True)] and hooks.reviews == [True]
+                               and result['halted_at'] == EX.ELIGIBILITY_STEP and code in (result['reason'] or ''))
+            observed['executor']['rechecks'] = {tag: {'builds': len(h.builds), 'outcome': r[1]['reason'] if r[0] == 'ok' else list(r)}
+                                                for tag, (h, r) in runs.items()}
+            check('eligibility/executor-rechecks-every-launch', recheck_ok)
+
         with region('eligibility/enrollment-git-error-stops'):
             # DEFECT c. A git error while determining enrollment stops by name; only a directory in which
             # Git's own discovery finds no repository at all is "not enrolled".

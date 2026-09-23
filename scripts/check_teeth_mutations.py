@@ -607,6 +607,13 @@ def cases():
            '            return gate.decide("review", sid, context=context, ticket=ticket)\n',
            '            return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)  # defect\n',
            'eligibility/executor-station-decisions')
+    recheck = '            current = self._decide(gate, sid, launch, decision)\n'
+    review('executor-decides-once', 'executor.py', recheck,
+           '            current = decision if launch == "build" else self._decide(gate, sid, launch, decision)  # defect\n',
+           'eligibility/executor-rechecks-every-launch')
+    review('executor-recheck-without-ticket', 'executor.py', recheck,
+           '            current = self._decide(gate, sid, launch, None)  # defect: the recheck forgets what it consumed\n',
+           'eligibility/executor-rechecks-every-launch')
     return result
 
 
