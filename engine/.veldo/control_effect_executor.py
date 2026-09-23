@@ -269,9 +269,13 @@ def execute(config, request, principal, challenge, signature):
         contract = accepted
         try:
             observation = receive(config, contract, accepted)
+            if isinstance(observation, dict) and observation.get('status') == 'refused':
+                # A receiver that ran may already have acted, so its own "refused" is not
+                # conclusive and its text is not repeated: recorded as unknown, a stop owed.
+                observation = dict(accepted, status='unknown', evidence=None)
         except E.Refused as error:
-            # A receiver refuses only before anything reaches a destination or an adapter, so the
-            # refusal is conclusive: recorded as refused and reported by name, never as unknown.
+            # The executor refuses only before anything reaches a destination or an adapter, so
+            # its refusal is conclusive: recorded as refused and reported by name, never as unknown.
             observation = dict(accepted, status='refused', refusal=error.code, evidence=None)
         except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
             observation = dict(accepted, status='unknown', evidence=None)
