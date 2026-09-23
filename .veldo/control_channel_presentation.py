@@ -90,6 +90,10 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'invalid_enrollment': 'missing_evidence',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
             'stale_subject': 'stale_subject', 'already_settled': 'stale_subject',
+            'stale_version': 'stale_subject',
+            'presentation_mismatch': 'missing_evidence', 'chat_mismatch': 'missing_evidence',
+            'supersession_mismatch': 'missing_evidence',
+            'channel_refused': 'unavailable_service', 'incomplete_transaction': 'unavailable_service',
             'unavailable_service': 'unavailable_service', 'unknown_outcome': 'unknown_outcome'}
 SETTLED_OUTCOMES = {'pending': 'unknown_outcome', 'unknown_outcome': 'unknown_outcome', 'anomaly': 'anomaly'}
 
@@ -173,7 +177,7 @@ def render(record):
              'Presentation version: %d' % record['presentation_version']]
     prior = record.get('supersedes')
     if prior:
-        lines.append('Supersedes: presentation version %d, message %d. Only this message can be answered.'
+        lines.append('Supersedes: presentation version %s, message %s. Only this message can be answered.'
                      % (prior['presentation_version'], prior['message_id']))
     lines += ['Owner: %s' % c['owner'],
               'Scope: %s' % ', '.join(c['scope']),
@@ -431,11 +435,12 @@ class Presenter:
         return self._data(settlement_id(request, version), SETTLEMENT_KIND)
 
     def _observe(self, operation, request, versions, outcome, reason, **extra):
-        accepted = outcome in ('accepted', 'published', 'already_presented')
+        accepted = outcome in ('accepted', 'published', 'already_presented', 'settled')
         self.counts['accepted' if accepted else 'refused'] += 1
         self.observations.append(dict(self.ids, operation=operation, channel=CHANNEL, request_id=request,
                                       accepted_versions=versions, outcome=outcome, reason=reason,
-                                      error_class=REFUSALS.get(reason) if not accepted else None, **extra))
+                                      error_class=None if accepted else 'unknown_outcome' if outcome == 'unknown_outcome'
+                                      else REFUSALS.get(reason, 'unavailable_service'), **extra))
         result = dict({'request_id': request, 'outcome': outcome}, **extra)
         if reason is not None:
             result['reason'] = reason
@@ -498,7 +503,7 @@ class Presenter:
         command = command if isinstance(command, dict) else {}
         request = None
         try:
-            if not isinstance(packet.get('signature'), str) or not packet['signature'].isascii():
+            if not isinstance(packet, dict) or not isinstance(packet.get('signature'), str) or not packet['signature'].isascii():
                 raise Refused('invalid_input', 'a framing is a signed command')
             required = ('alias', 'principal', 'command_id', 'nonce', 'risk_statement')
             if (command.get('operation') != 'frame' or not all(_is_str(command.get(k)) for k in required)
@@ -566,7 +571,8 @@ class Presenter:
         return {'platform': sent, 'refusal': None}
 
     def compose(self, request):
-        """(refusal, record, versions): the presentation current authority requires now."""
+        """(refusal, record, versions): the presentation current authority requires now. The
+        record is None when the current presentation still binds current authority."""
         refusal, b, versions = self.bindings(request)
         if refusal:
             return refusal, None, versions
@@ -574,6 +580,8 @@ class Presenter:
         head = self.head(request)
         versions[hid] = head['entity_version'] if head else 0
         prior = self.receipt(head['current']) if head else None
+        if prior is not None and not binding_mismatches(prior, b):
+            return None, None, versions
         record = dict(b, schema=SCHEMA, channel=CHANNEL, presentation_version=(head or {}).get('presentation_version', 0) + 1,
                       supersedes=None, reply_to=None)
         if prior:
@@ -586,16 +594,18 @@ class Presenter:
         record['presentation_id'] = presentation_id(request, b['request_version'], record['brief_digest'])
         return None, record, versions
 
-    def _publish(self, request):
+    def present(self, request):
+        """Present one request as current authority requires: nothing when its current presentation
+        already is that, never again when an earlier attempt's outcome is unknown."""
         refusal, record, versions = self.compose(request)
         if refusal:
             return self._observe('publish', request, versions, 'refused', refusal)
+        if record is None:
+            return self._observe('publish', request, versions, 'already_presented', None,
+                                 presentation_id=self.head(request)['current'])
         pid, hid = record['presentation_id'], head_id(request)
-        head = self.head(request)
-        if head and head['current'] == pid:
-            return self._observe('publish', request, versions, 'already_presented', None, presentation_id=pid)
         if self.settlement(request, record['request_version']):
-            return self._observe('publish', request, versions, 'refused', 'already_settled', presentation_id=pid)
+            return self._observe('publish', request, versions, 'settled', None, presentation_id=pid)
         existing = self.receipt(pid)
         if existing is not None and existing['outcome'] not in RETRYABLE:
             outcome = SETTLED_OUTCOMES.get(existing['outcome'], 'anomaly')
@@ -622,7 +632,7 @@ class Presenter:
     def publish(self):
         """Present every pending inbox entry whose current presentation is not the one current
         authority requires; return one result per pending entry."""
-        return [self._publish(e['id']) for e in self.inbox.index()['entries'] if e['category'] == 'pending']
+        return [self.present(e['id']) for e in self.inbox.index()['entries'] if e['category'] == 'pending']
 
     # -- answers --------------------------------------------------------------------------------
 
@@ -748,8 +758,7 @@ class Presenter:
             if entry['category'] != 'pending' or self.settlement(entry['id'], entry['request_version']):
                 continue
             refusal, record, _ = self.compose(entry['id'])
-            head = self.head(entry['id'])
-            if refusal or not head or head['current'] != record['presentation_id']:
+            if refusal or record is not None:
                 pending += 1
         rows = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (RECEIPT_KIND,))]
         return dict(self.counts, pending=pending,

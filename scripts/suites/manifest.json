@@ -590,6 +590,15 @@
    ],
    "regions": "Scope coverage of a plain-string inner scope (repository id)",
    "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
+  },
+  {
+   "name": "62_veldo_0065_presentations",
+   "file": "62_veldo_0065_presentations.py",
+   "requires": [
+    "62_veldo_0065_presentations"
+   ],
+   "regions": "Versioned Telegram presentation receipts, visible supersession and presentation-bound answers",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and loopback HTTP."
   }
  ]
 }
