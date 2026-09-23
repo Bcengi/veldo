@@ -155,6 +155,27 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
             "); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
             "m.claim('unit', 'worker-a')"], cwd=_v31_repos[0], capture_output=True, text=True, timeout=10)
         _v31_check(1, 'enrolled-default-stops', _v31_local.returncode != 0 and 'authority_required' in _v31_local.stderr)
+        # A repository whose Git FAILS cannot be concluded unenrolled: the enrollment lives inside it.
+        # A directory in no repository at all keeps the pre-factory behavior.
+        _v31_tmp = __import__('tempfile').mkdtemp(prefix='v31-authority-')
+        _v31_broken = __import__('os').path.join(_v31_tmp, 'broken')
+        _v31_sp.run(['git', 'init', '-q', _v31_broken], check=True, capture_output=True)
+        with open(__import__('os').path.join(_v31_broken, '.git', 'config'), 'w') as _v31_cfg:
+            _v31_cfg.write('[[[ this is not a git config\n')
+        _v31_plain = __import__('os').path.join(_v31_tmp, 'plain')
+        __import__('os').mkdir(_v31_plain)
+        _v31_env = {k: v for k, v in __import__('os').environ.items() if not k.startswith(('GIT_', 'VELDO_'))}
+        _v31_env['GIT_CEILING_DIRECTORIES'] = _v31_tmp
+        _v31_default = ("import importlib.util; s=importlib.util.spec_from_file_location('claim', " + repr(str(_v31_modules / 'claim.py')) +
+                        "); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(m.claim('unit', 'worker-a'))")
+        _v31_broken_run = _v31_sp.run([__import__('sys').executable, '-B', '-c', _v31_default], cwd=_v31_broken,
+                                      capture_output=True, text=True, timeout=10, env=_v31_env)
+        _v31_plain_run = _v31_sp.run([__import__('sys').executable, '-B', '-c', _v31_default], cwd=_v31_plain,
+                                     capture_output=True, text=True, timeout=10, env=_v31_env)
+        __import__('shutil').rmtree(_v31_tmp, ignore_errors=True)
+        _v31_check(1, 'git-failure-in-a-repository-stops',
+                   _v31_broken_run.returncode != 0 and 'enrollment_unanswerable' in _v31_broken_run.stderr
+                   and _v31_plain_run.returncode != 0 and 'enrollment_unanswerable' not in _v31_plain_run.stderr)
         _v31_backlog_data = _v31_S.materialized_state(_v31_conn)['entities']['backlog']['data']
         _v31_write('backlog', 'backlog_item', dict(_v31_backlog_data, state='ADMITTED'))
         _v31_check(1, 'priority-required', _v31_request(_v31_clients[0], 'claim')['reason'] == 'not_admitted')

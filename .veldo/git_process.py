@@ -36,3 +36,28 @@ def run(args, **kwargs):
 
 def check_output(args, **kwargs):
     return subprocess.check_output(args, **_options(args, kwargs))
+
+
+def claims_a_repository(path):
+    """Whether Git's own discovery from `path` would reach a repository: a `.git` entry, or a bare
+    git directory, at `path` or at any ancestor on the same filesystem. git_process strips GIT_DIR and
+    GIT_CEILING_DIRECTORIES, and discovery stops at a filesystem boundary, so this walk is exactly the
+    set of places a failing Git could have been reading. Nothing is parsed from Git's own messages."""
+    current = os.path.realpath(str(path))
+    try:
+        device = os.stat(current).st_dev
+    except OSError:
+        device = None
+    while True:
+        if os.path.lexists(os.path.join(current, '.git')) or all(
+                os.path.exists(os.path.join(current, part)) for part in ('HEAD', 'objects', 'refs')):
+            return True
+        parent = os.path.dirname(current)
+        if parent == current:
+            return False
+        try:
+            if device is not None and os.stat(parent).st_dev != device:
+                return False
+        except OSError:
+            return True  # an ancestor that cannot be read cannot be ruled out
+        current = parent

@@ -170,29 +170,8 @@ for _name, _cls in (('Refused', Refused), ('Stopped', Stopped)):
 Refused, Stopped = _errors.Refused, _errors.Stopped
 
 
-def _claims_a_repository(path):
-    """Whether Git's own discovery from `path` would reach a repository: a `.git` entry, or a bare
-    git directory, at `path` or at any ancestor on the same filesystem. git_process strips GIT_DIR and
-    GIT_CEILING_DIRECTORIES, and discovery stops at a filesystem boundary, so this walk is exactly the
-    set of places a failing Git could have been reading. Nothing is parsed from Git's own messages."""
-    current = os.path.realpath(str(path))
-    try:
-        device = os.stat(current).st_dev
-    except OSError:
-        device = None
-    while True:
-        if os.path.lexists(os.path.join(current, '.git')) or all(
-                os.path.exists(os.path.join(current, part)) for part in ('HEAD', 'objects', 'refs')):
-            return True
-        parent = os.path.dirname(current)
-        if parent == current:
-            return False
-        try:
-            if device is not None and os.stat(parent).st_dev != device:
-                return False
-        except OSError:
-            return True  # an ancestor that cannot be read cannot be ruled out
-        current = parent
+# The discovery walk lives in the shared Git boundary so every organ asks it the same way.
+_claims_a_repository = _organ('git_process').claims_a_repository
 
 
 def enrolled(repo_root):

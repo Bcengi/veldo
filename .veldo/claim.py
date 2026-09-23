@@ -146,7 +146,12 @@ def _authority(root):
         return root
     try:
         ledger_root = os.path.dirname(claims_root(root))
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, OSError):
+        # A Git that fails where a repository IS present (malformed config, a lock, a timeout, no
+        # git executable) cannot show the enrollment is absent, because it lives inside that
+        # repository: a silent "not enrolled" would let a claim bypass the authority.
+        if _git_process.claims_a_repository(os.getcwd() if root is None else root):
+            raise ClaimStopped('enrollment_unanswerable')
         return None
     if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):
         raise ClaimStopped('authority_required')
