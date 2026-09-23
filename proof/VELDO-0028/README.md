@@ -102,3 +102,53 @@ surfaced, and host load is uncontrolled. `timing.json` records both calculations
 The gate ran all six new mutants with fresh unmutated and no-op controls; `gate-mutations.json`
 retains their actual named-row observations. No partial selftest run is cited as completion proof.
 The two checkout-local gate byproducts were restored before the evidence commit.
+
+## Review findings R1 and R2 (unbriefed review of 184b362)
+
+An unbriefed review of `184b362` found two defects, each with a reproduction capsule
+(`review-20260923-011010-capsules/R1` and `R2`). Both were fixed test first on this branch.
+
+**R1, revocation ledger ignored.** After a real `revoke_authorization` transition committed,
+the revoked worker's signed requests still invoked the provider and publication receivers and
+completed. Effect authorization now calls VELDO-0026's own `is_revoked` (ledger revocation and
+committed membership revocation) on the acceptance connection. The check runs in the preflight
+and again inside the issue and accept transitions, so it reads the ledger under the same SQLite
+write lock that accepts the effect. The recheck rules stay in `control_revocation.py`; nothing is
+copied. Four rows, `effects/revocation-committed/{provider,publication}` and
+`effects/revocation-before-transaction/{provider,publication}`, perform the capsule's scenario
+over signed IPC: once with the revocation already committed, and once with the first ledger
+insertion committed between the acceptance preflight and its transaction. Each requires a
+refusal, no receiver call, no effect record, no consumed handle nonce and an untouched
+allowance. With `control_effects.py` restored to `184b362`, all four were red by assertion
+(the receivers ran: 7 calls per kind against 5). Mutations: `effects-ignore-authorization-revocation`
+reds all four; `effects-revocation-preflight-only` (check only outside the transaction) reds the two
+before-transaction rows.
+
+**R2, the push kept the clone's widening configuration.** A `git push` honoured the trusted
+clone's `push.followTags`, so a trunk-only publication also published an unauthorized annotated
+tag, and confirmation, which read only the authorized ref, reported completion. The receiver now
+publishes with `git send-pack` to the configured URL with the one accepted refspec and the lease.
+That plumbing command never consults `push.followTags`, `push.default`, `remote.*.push`,
+`remote.*.mirror`, `remote.*.pushurl`, submodule recursion or pre-push hooks (the hook case was
+checked directly against `git push`, which runs it). A remote name is not a URL to send-pack, so a
+receiver configured with one can never complete. Confirmation lists every remote ref before and
+after the push and claims completion only when the after-listing equals the before-listing with
+the authorized ref moved to the accepted commit. Any other change, including a ref the remote
+itself creates, leaves the outcome unknown. A concurrent unrelated write to the same remote also
+yields unknown, which is the conservative reading. Two rows perform the scenario through the real
+executor: `effects/publication-exact-ref` (a clone with `push.followTags=true`, an annotated tag on
+the tip, `push.default=matching` and an extra branch; the remote must end with exactly the
+authorized ref) and `effects/publication-confirms-one-change` (a remote `post-receive` hook creates a
+second ref; the result must be unknown, not completed). With `control_effect_executor.py` restored
+to `184b362` both were red by assertion: the first reported completed while the remote held
+`refs/tags/release-not-authorized`, which is the capsule's defect. Mutations:
+`effects-push-widened-by-clone-config` (back to `git push`) reds both rows;
+`effects-confirm-authorized-ref-only` and `effects-confirm-ignores-new-refs` red the confirmation row.
+
+**Verification on this branch.** Both capsules, re-run from the repository root with the capsule
+copied to `.capsule/` (file digests matching their manifests), no longer print their DEFECT line:
+R1 answers `refusal: revoked` for both requests with no receiver call, and R2's remote holds only
+`refs/heads/main`. `python3 -B scripts/check_teeth_mutations.py --finding 28` rejects all eleven
+finding-28 mutations with a green baseline. The exact diffs of the five new mutations are beside
+the earlier six, whose line offsets were regenerated. The full gate is run by the lead; the gate
+records and `manifest.json` hashes above still describe `65294a7` until that run is stamped.
