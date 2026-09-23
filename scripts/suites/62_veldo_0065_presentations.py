@@ -1333,7 +1333,7 @@ def _v65_checks(base):
         # Review 4 item 8: an unreadable revocation ledger fails closed
         closed = 'framing/ledger-read-fails-closed'
         with section(closed):
-            for alias in ('LC-1', 'LC-2', 'LC-3', 'LC-4', 'LC-5'):
+            for alias in ('LC-1', 'LC-2', 'LC-3', 'LC-4', 'LC-5', 'LC-6', 'LC-7', 'LC-8', 'LC-9'):
                 command('pm7', 'open', alias, assignment=content())
             lc1, lc2, lc3 = (I.assignment_id(ids['repository_uuid'], a) for a in ('LC-1', 'LC-2', 'LC-3'))
             ledger_entity = entity('authority:revocations') or {}
@@ -1366,6 +1366,22 @@ def _v65_checks(base):
             direct_frame('pm7', 'LC-3', 1, 'Low: a wrong choice costs one review cycle.')
             check(closed, 'control: with the ledger readable again the framing counts',
                   reason(presenter.present(lc3)) == ('published', None))
+
+            def outcome_of(call):
+                """The refusal a call returns, or the exception it raised, as a value a check can compare."""
+                try:
+                    return reason(call())
+                except Exception as exc:  # a raise is a failed check here, never a crashed row
+                    return ('raised', type(exc).__name__)
+            readable = (entity('authority:revocations') or {}).get('data') or {'revocation_version': 0, 'revoked': {}}
+            for (frame_alias, direct_alias), bad in ((('LC-6', 'LC-7'), 5), (('LC-8', 'LC-9'), ['someone-else'])):
+                fixture('authority:revocations', 'revocation_ledger', dict(readable, revoked=bad))
+                framed = outcome_of(lambda: frame('pm7', frame_alias, 1, 'Low: a wrong choice costs one review cycle.'))
+                direct_frame('pm7', direct_alias, 1, 'Low: a wrong choice costs one review cycle.')
+                shown_now = outcome_of(lambda: presenter.present(I.assignment_id(ids['repository_uuid'], direct_alias)))
+                fixture('authority:revocations', 'revocation_ledger', dict(readable))
+                check(closed, 'a ledger whose revoked is %r is a named refusal in frame() and at the presenter' % (bad,),
+                      framed == ('refused', 'not_authorized') and shown_now == ('refused', 'missing_framing'))
 
         # Review 4 item 5: a retry_after above the bound is capped at the bound, not ignored
         capped = 'presentation/retry-after-capped'

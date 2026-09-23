@@ -774,8 +774,9 @@ class Presenter:
         ledger = self._as_of(REVOCATION_LEDGER, 'revocation_ledger', written[0])
         if ledger is UNREADABLE:
             return False  # an unreadable ledger fails closed, as an unreadable key does
-        if principal in ((ledger or {}).get('revoked') or {}):
-            return False
+        revoked = (ledger or {}).get('revoked', {})
+        if not isinstance(revoked, dict) or principal in revoked:
+            return False  # a ledger of the wrong shape fails closed too
         entry = self.AC.membership_entry(state['membership'], principal)
         if (not self.AC.active_member(entry, self.clock())[0]
                 or entry['principal_type'] not in self.AC.BOUNDARIES['proposal_commit']
@@ -824,7 +825,10 @@ class Presenter:
                                            {'kind': ledger['kind'], 'data': ledger['data'], 'version': ledger.get('version')})):
                 # An unreadable ledger fails closed here exactly as in the stored-framing check.
                 raise Refused('not_authorized', 'the revocation ledger is unreadable')
-            revoked = ((ledger or {}).get('data') or {}).get('revoked') or {}
+            revoked = ((ledger or {}).get('data') or {}).get('revoked', {})
+            if not isinstance(revoked, dict):
+                # The ledger names revoked principals as a mapping; any other shape is unreadable.
+                raise Refused('not_authorized', 'the revocation ledger is unreadable')
             if principal in revoked:
                 raise Refused('not_authorized', 'the revocation ledger names the requester')
             if not key or not self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],

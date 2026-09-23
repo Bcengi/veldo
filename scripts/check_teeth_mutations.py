@@ -1081,7 +1081,7 @@ def cases():
     # VELDO-0065 second review n6 (restored: dropped by 82576d5): the framing key by the journal's order.
     presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
                  "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')
-    presentation('framing-ledger-unchecked', "        if principal in ((ledger or {}).get('revoked') or {}):\n",
+    presentation('framing-ledger-unchecked', "        if not isinstance(revoked, dict) or principal in revoked:\n",
                  "        if False:\n", 'framing/key-by-store-order')
     # VELDO-0065 third review item 5: retry_after counts only as a bounded non-negative integer.
     presentation('retry-after-any-number', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
@@ -1223,6 +1223,12 @@ def cases():
                  "            raise Refused('already_answered', 'this is the recorded answer, delivered again')\n"
                  "        # Authority first: an edge that may not act here learns nothing more, not even which message\n",
                  'answer/closed-tell-after-edge-scope')
+    # VELDO-0065 sixth review item 3: a ledger whose revoked has the wrong shape is a named refusal.
+    presentation('frame-ledger-any-shape', "            if not isinstance(revoked, dict):\n",
+                 "            if not isinstance(revoked, (dict, list, int)):\n", 'framing/ledger-read-fails-closed')
+    presentation('presenter-ledger-any-shape', "        if not isinstance(revoked, dict) or principal in revoked:\n",
+                 "        if not isinstance(revoked, (dict, list, int)) or (isinstance(revoked, (dict, list)) and principal in revoked):\n",
+                 'framing/ledger-read-fails-closed')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
