@@ -1,0 +1,13 @@
+{
+  "commit": "6ba0cf4a283de7cbdd5ae729178da52d4ea3ee7f",
+  "clean_start": true,
+  "exit_code": -15,
+  "elapsed_seconds": 205.4820428909734,
+  "status": "aborted_after_diagnosed_failure",
+  "reason": "The authorized mutation registry path was recorded in prose history but omitted from the machine-readable footprint. Corrected without changing acceptance criteria or status.",
+  "failed_rows": [
+    "SELFTEST FAIL: WARP-1102 AC5 dogfood: over the real change set, footprint-versus-diff passes (this spec's footprint covers every path it touches)",
+    "SELFTEST FAIL: WARP-1102 AC6 RJ1: the current change under evaluation yields NO shape-gate problems (green safe, the enforcement did not break our own build)"
+  ],
+  "log_sha256": "43608094432e9e3ba00ac2c481cfff6ccd202122029618d6859b35160c7c9133"
+}

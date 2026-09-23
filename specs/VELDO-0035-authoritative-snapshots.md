@@ -24,6 +24,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0035_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0035-authoritative-snapshots.md"
@@ -119,7 +120,8 @@ evidence universe, Context and Notes above now carry only the retained function.
 specification status or historical proof was changed.
 
 2026-09-23 implementation: register the AC1-AC3 negative controls in the existing
-`scripts/check_teeth_mutations.py` driver (the authorized footprint exception), with two
+`scripts/check_teeth_mutations.py` driver (the authorized footprint exception, also
+listed in the machine-readable footprint), with two
 distinct mutations per named criterion row and fresh unmutated controls. The snapshot
 consumer registration seam uses the existing store; it does not implement future eligibility,
 project-manager, identifier-allocation or lander commands.
