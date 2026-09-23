@@ -2717,10 +2717,10 @@ expect("suite attr check ANTI-VACUITY: it is actually reading a large corpus, no
 expect("suite attr check: a module that cannot be imported standalone is UNVERIFIABLE and reported, never counted as passed",
        isinstance(_sac_unver, dict))
 
-# TEETH, over synthetic source so the real corpus is untouched. Five properties in one fixture:
-# a resolvable reference stays clean, a missing one is CAUGHT, a spec temp name reused for two
-# different modules resolves IN ORDER, an alias rebound elsewhere is excluded as ambiguous, and so
-# is one rebound by tuple unpacking or a nested loop target.
+# TEETH, over synthetic source so the real corpus is untouched. In one fixture: a resolvable
+# reference stays clean, a missing one is CAUGHT, a spec temp name reused for two different modules
+# resolves IN ORDER, an alias rebound in its own scope by any binding form is excluded as ambiguous,
+# and a same-named variable in another scope is a different variable.
 _SAC_SRC = '''
 _sp = importlib.util.spec_from_file_location("a", ROOT / ".veldo/naming.py")
 UNIQ = importlib.util.module_from_spec(_sp)
@@ -2740,6 +2740,63 @@ for (NESTED, [LISTED, *STARRED]) in []:
     pass
 LISTED = importlib.util.module_from_spec(_sp)
 LISTED.bound_elsewhere_by_a_loop_target()
+STARRED = importlib.util.module_from_spec(_sp)
+STARRED.bound_elsewhere_by_a_starred_target()
+WITHED = importlib.util.module_from_spec(_sp)
+WITHED.rebound()
+with open(__file__) as WITHED:
+    pass
+IMPORTED = importlib.util.module_from_spec(_sp)
+IMPORTED.rebound()
+import json as IMPORTED
+EXCEPTED = importlib.util.module_from_spec(_sp)
+EXCEPTED.rebound()
+try:
+    pass
+except Exception as EXCEPTED:
+    pass
+WALRUSED = importlib.util.module_from_spec(_sp)
+WALRUSED.rebound()
+(WALRUSED := 1)
+COMPWALRUSED = importlib.util.module_from_spec(_sp)
+COMPWALRUSED.rebound()
+[(COMPWALRUSED := 1) for _ in []]
+DEFFED = importlib.util.module_from_spec(_sp)
+DEFFED.rebound()
+def DEFFED():
+    pass
+CLASSED = importlib.util.module_from_spec(_sp)
+CLASSED.rebound()
+class CLASSED:
+    pass
+ANNOTATED = importlib.util.module_from_spec(_sp)
+ANNOTATED.rebound()
+ANNOTATED: int = 1
+MATCHED = importlib.util.module_from_spec(_sp)
+MATCHED.rebound()
+match 1:
+    case MATCHED:
+        pass
+GLOBALED = importlib.util.module_from_spec(_sp)
+GLOBALED.rebound()
+def rebinds_through_global():
+    global GLOBALED
+    GLOBALED = 1
+COMPREHENDED = importlib.util.module_from_spec(_sp)
+COMPREHENDED.stays_unique()
+[COMPREHENDED for COMPREHENDED in []]
+_spn = importlib.util.spec_from_file_location("n", ROOT / ".veldo/naming.py")
+SCOPED = importlib.util.module_from_spec(_spn)
+SCOPED.contract(1, 2)
+def binds_its_own():
+    _spl = importlib.util.spec_from_file_location("l", ROOT / ".veldo/secret_scan.py")
+    SCOPED = importlib.util.module_from_spec(_spl)
+    SCOPED.scan_text("x")
+    SCOPED.local_gone()
+def reads_the_global():
+    SCOPED.contract(3, 4)
+def takes_it_as_a_parameter(SCOPED):
+    SCOPED.parameter_not_an_alias()
 '''
 import ast as _sac_ast
 
@@ -2751,8 +2808,16 @@ expect("suite attr check TEETH: a reused spec temp name resolves IN LINE ORDER, 
        and _sac_by_alias.get(("SECOND", "scan_text")) == ".veldo/secret_scan.py")
 expect("suite attr check TEETH: an alias REBOUND elsewhere is excluded as ambiguous, which is what keeps the false-positive rate at zero and the check switched on",
        not any(a == "AMBIG" for _f, _l, a, _at, _r in _sac_refs))
-expect("suite attr check TEETH: an alias rebound by TUPLE UNPACKING or a nested loop target is just as ambiguous and is excluded too. VELDO-0064's suite bound `S, CM, AC = ...` to the authority contract while another suite bound AC to the accounts module; the scope-free reader missed the unpacking, called AC unique, and failed six real references against the wrong module",
-       not any(a in ("TUPLED", "LISTED") for _f, _l, a, _at, _r in _sac_refs))
+_SAC_REBOUND = ("TUPLED", "LISTED", "STARRED", "WITHED", "IMPORTED", "EXCEPTED", "WALRUSED",
+                "COMPWALRUSED", "DEFFED", "CLASSED", "ANNOTATED", "MATCHED", "GLOBALED")
+expect("suite attr check TEETH: an alias rebound in the SAME SCOPE by ANY binding form Python has (tuple, list and starred unpacking, a loop target, with ... as, import ... as, except ... as, the walrus, a walrus inside a comprehension, def, class, an annotated assignment, a match capture, a global declaration in a function) is ambiguous and excluded. A reader that knew only `X = ...` called such an alias unique and checked it against the wrong module",
+       not any(a in _SAC_REBOUND for _f, _l, a, _at, _r in _sac_refs))
+_sac_scoped = sorted({(at, rel) for _f, _l, a, at, rel in _sac_refs if a == "SCOPED"})
+expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter of the same name is not an alias at all, and a comprehension variable does not rebind the module name",
+       _sac_scoped == [("contract", ".veldo/naming.py"), ("local_gone", ".veldo/secret_scan.py"),
+                       ("scan_text", ".veldo/secret_scan.py")]
+       and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 2
+       and any(a == "COMPREHENDED" for _f, _l, a, _at, _r in _sac_refs))
 def _sac_resolves(rel, attr):
     spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)
     mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
@@ -2760,8 +2825,22 @@ def _sac_resolves(rel, attr):
 
 
 _sac_seeded = sorted((a, at) for _f, _l, a, at, rel in _sac_refs if not _sac_resolves(rel, at))
-expect("suite attr check TEETH: the two SEEDED missing attributes are both caught, and the two real ones are not - the check is neither blind nor hysterical",
-       _sac_seeded == [("SECOND", "also_missing"), ("UNIQ", "no_such_function")])
+expect("suite attr check TEETH: the SEEDED missing attributes are all caught, including one read on a function-local alias, and the real ones are not - the check is neither blind nor hysterical",
+       _sac_seeded == [("COMPREHENDED", "stays_unique"), ("SCOPED", "local_gone"),
+                       ("SECOND", "also_missing"), ("UNIQ", "no_such_function")])
+
+# The resolver is judged against CPython's own reading, not only against the fixture above, which
+# was written by the same hand. Over the real corpus (every suite fragment and every script and
+# engine module), every function and class scope both sides can identify must agree on which names
+# are local, free and global.
+_sac_corpus = {f: (ROOT / "scripts/suites" / f).read_text()
+               for f in [x["file"] for x in json.loads((ROOT / "scripts/suites/manifest.json").read_text())["suites"]]}
+for _sac_dir in ("scripts", ".veldo"):
+    for _sac_p in sorted((ROOT / _sac_dir).glob("*.py")):
+        _sac_corpus[_sac_dir + "/" + _sac_p.name] = _sac_p.read_text()
+_sac_disagree, _sac_compared = SAC.symtable_disagreements(_sac_corpus)
+expect("suite attr check: its scope resolution AGREES WITH CPYTHON'S symtable on every function and class scope of the real corpus, and it compared thousands of scopes rather than passing on none",
+       _sac_disagree == [] and _sac_compared > 3000)
 
 # --- init lays every module its own validator loads ---------------------------------------------
 # A REAL DEFECT this caught: wiring the security review dimension into validate_checks left

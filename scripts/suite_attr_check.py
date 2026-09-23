@@ -62,36 +62,186 @@ def _spec_var_of_module_call(node):
     return None
 
 
-def _target_names(target):
-    """Every name a binding target binds, through tuple and list unpacking and starred members.
-    `S, CM, AC = ...` binds AC exactly as `AC = ...` does; reading only a bare Name target called an
-    alias unique while another file rebound it by unpacking, and the check then failed real
-    references against the wrong module."""
-    if isinstance(target, ast.Name):
-        yield target.id
-    elif isinstance(target, (ast.Tuple, ast.List)):
-        for element in target.elts:
-            yield from _target_names(element)
-    elif isinstance(target, ast.Starred):
-        yield from _target_names(target.value)
+MODULE = "<module>"   # the ONE namespace every fragment execs into, in manifest order
+_COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+
+
+class _Scope:
+    """One Python scope. `key` names it; the module scope of every fragment is the same MODULE."""
+
+    def __init__(self, key, kind, parent):
+        self.key, self.kind, self.parent = key, kind, parent
+        self.bound, self.globals, self.nonlocals = set(), set(), set()
+
+    def local(self, name):
+        return name in self.bound and name not in self.globals and name not in self.nonlocals
+
+
+class _Walk:
+    """Collect, per fragment, every scope, every binding and every read, WITH its scope.
+
+    Nothing is resolved while walking: Python decides whether a name is local to a function from
+    the WHOLE body (a binding after a read still makes the read local), so resolution runs after
+    collection. Every binding form Python has is counted: a stored or deleted Name (assignment,
+    augmented and annotated assignment, loop and comprehension targets, with ... as, the walrus),
+    parameters, import aliases, def and class names, except ... as, and match captures."""
+
+    def __init__(self, fname, module):
+        self.fname, self.bindings, self.events, self.scopes = fname, [], [], []
+        self.stack = [module]
+
+    def scope(self, node, kind):
+        s = _Scope((self.fname, node.lineno, node.col_offset, kind), kind, self.stack[-1])
+        self.scopes.append(s)
+        return s
+
+    def bind(self, name, node, scope=None):
+        scope = scope or self.stack[-1]
+        if isinstance(node, ast.NamedExpr):
+            while scope.kind == "comprehension":      # a walrus binds outside its comprehension
+                scope = scope.parent
+        scope.bound.add(name)
+        self.bindings.append((scope, name))
+
+    def visit(self, node):
+        for child in ast.iter_child_nodes(node) if not isinstance(node, list) else node:
+            self.one(child)
+
+    def one(self, n):
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            for d in getattr(n, "decorator_list", []):
+                self.one(d)
+            a = n.args
+            for d in a.defaults + [k for k in a.kw_defaults if k is not None]:
+                self.one(d)
+            params = a.posonlyargs + a.args + a.kwonlyargs + [x for x in (a.vararg, a.kwarg) if x]
+            for p in params:
+                if p.annotation is not None:
+                    self.one(p.annotation)
+            if getattr(n, "returns", None) is not None:
+                self.one(n.returns)
+            inner = self.scope(n, "function")
+            if not isinstance(n, ast.Lambda):
+                self.bind(n.name, n)
+            for p in params:
+                self.bind(p.arg, p, inner)
+            self.stack.append(inner)
+            self.visit(n.body if isinstance(n.body, list) else [n.body])
+            self.stack.pop()
+        elif isinstance(n, ast.ClassDef):
+            for d in n.decorator_list + n.bases + [k.value for k in n.keywords]:
+                self.one(d)
+            inner = self.scope(n, "class")
+            self.bind(n.name, n)
+            self.stack.append(inner)
+            self.visit(n.body)
+            self.stack.pop()
+        elif isinstance(n, _COMPREHENSIONS):
+            first, rest = n.generators[0], n.generators[1:]
+            self.one(first.iter)                       # evaluated in the enclosing scope
+            inner = self.scope(n, "comprehension")
+            self.stack.append(inner)
+            self.one(first.target)
+            for i in first.ifs:
+                self.one(i)
+            for g in rest:
+                self.one(g.iter); self.one(g.target)
+                for i in g.ifs:
+                    self.one(i)
+            for part in ("elt", "key", "value"):
+                if getattr(n, part, None) is not None:
+                    self.one(getattr(n, part))
+            self.stack.pop()
+        elif isinstance(n, ast.NamedExpr):
+            self.bind(n.target.id, n)
+            self.one(n.value)
+        elif isinstance(n, ast.Name):
+            if isinstance(n.ctx, (ast.Store, ast.Del)):
+                self.bind(n.id, n)
+        elif isinstance(n, (ast.Global, ast.Nonlocal)):
+            (self.stack[-1].globals if isinstance(n, ast.Global)
+             else self.stack[-1].nonlocals).update(n.names)
+        elif isinstance(n, (ast.Import, ast.ImportFrom)):
+            for a in n.names:
+                if a.name != "*":
+                    self.bind(a.asname or a.name.split(".")[0], n)
+        elif isinstance(n, ast.ExceptHandler):
+            if n.name:
+                self.bind(n.name, n)
+            self.visit(n)
+        elif isinstance(n, (ast.MatchAs, ast.MatchStar)):
+            if n.name:
+                self.bind(n.name, n)
+            self.visit(n)
+        elif isinstance(n, ast.MatchMapping):
+            if n.rest:
+                self.bind(n.rest, n)
+            self.visit(n)
+        else:
+            if isinstance(n, ast.Assign) and isinstance(n.value, ast.Call) and n.targets \
+                    and isinstance(n.targets[0], ast.Name):
+                rel = _rel_of_spec_call(n.value)
+                if rel:
+                    self.events.append((n.lineno, n.col_offset, "spec", self.stack[-1],
+                                        n.targets[0].id, rel))
+                sv = _spec_var_of_module_call(n.value)
+                if sv:
+                    self.events.append((n.lineno, n.col_offset, "mod", self.stack[-1],
+                                        n.targets[0].id, sv))
+            if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) \
+                    and isinstance(n.value.ctx, ast.Load):
+                self.events.append((n.lineno, n.col_offset, "ref", self.stack[-1],
+                                    n.value.id, n.attr))
+            self.visit(n)
+
+
+def resolve(scope, name):
+    """The key of the scope a name READ in `scope` refers to, by Python's rules: a name bound in a
+    function is local to it unless declared global or nonlocal; a free name is found in the nearest
+    enclosing function scope (class bodies are skipped), else in the module namespace."""
+    if scope.kind == "module" or name in scope.globals:
+        return MODULE
+    if scope.local(name):
+        return scope.key
+    cur = scope.parent
+    while cur is not None and cur.kind != "module":
+        if cur.kind == "class" and name == "__class__":
+            return cur.key                             # the implicit cell super() reads
+        if cur.kind != "class" and cur.local(name):
+            return cur.key
+        if cur.kind != "class" and name in cur.globals:
+            return MODULE
+        cur = cur.parent
+    return MODULE
+
+
+def _binding_key(scope, name):
+    if scope.kind == "module" or name in scope.globals:
+        return MODULE
+    if name in scope.nonlocals:
+        return resolve(scope.parent, name)
+    return scope.key
+
+
+def walk(trees):
+    """fname -> _Walk, every fragment sharing ONE module scope, because that is the runtime."""
+    module = _Scope(MODULE, "module", None)
+    walks = {}
+    for fname, tree in trees.items():
+        w = _Walk(fname, module)
+        w.visit(tree)
+        walks[fname] = w
+    return walks
 
 
 def binding_counts(trees):
-    """How many times each NAME is bound anywhere, in any scope. An alias bound more than once is
-    ambiguous to a scope-free reader and is deliberately not checked."""
+    """How many times each (scope, NAME) is bound. An alias bound more than once in the scope a
+    reference resolves to is ambiguous without flow analysis and is deliberately not checked; a
+    same-named local in another function is a different variable and does not make it ambiguous."""
     counts = collections.Counter()
-    for tree in trees.values():
-        for n in ast.walk(tree):
-            if isinstance(n, ast.Assign):
-                for t in n.targets:
-                    for name in _target_names(t):
-                        counts[name] += 1
-            elif isinstance(n, (ast.For, ast.comprehension)):
-                for name in _target_names(getattr(n, "target", None)):
-                    counts[name] += 1
-            elif isinstance(n, (ast.FunctionDef, ast.Lambda)):
-                for a in getattr(n.args, "args", []):
-                    counts[a.arg] += 1
+    for w in walk(trees).values():
+        for scope, name in w.bindings:
+            counts[(_binding_key(scope, name), name)] += 1
     return counts
 
 
@@ -102,30 +252,89 @@ def references(order, trees, counts):
     runtime does: one namespace, fragments exec'd in manifest order. A temp name like `_icspec`
     genuinely is reused for two different modules in one file, and last-assignment-wins reports the
     wrong module - which was the second false-positive source before this ordered."""
+    walks = walk(trees)
     spec_paths, mod_paths, out = {}, {}, []
     for fname in order:
-        events = []
-        for n in ast.walk(trees[fname]):
-            if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Call) and n.targets
-                    and isinstance(n.targets[0], ast.Name)):
-                rel = _rel_of_spec_call(n.value)
-                if rel:
-                    events.append((n.lineno, "spec", n.targets[0].id, rel))
-                    continue
-                sv = _spec_var_of_module_call(n.value)
-                if sv:
-                    events.append((n.lineno, "mod", n.targets[0].id, sv))
-            elif isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name):
-                events.append((n.lineno, "ref", n.value.id, n.attr))
-        for line, kind, a, b in sorted(events, key=lambda e: e[0]):
+        for line, _col, kind, scope, a, b in sorted(walks[fname].events, key=lambda e: e[:2]):
             if kind == "spec":
-                spec_paths[a] = b
+                spec_paths[(resolve(scope, a), a)] = b
             elif kind == "mod":
-                if b in spec_paths:
-                    mod_paths[a] = spec_paths[b]
-            elif a in mod_paths and counts[a] == 1:
-                out.append((fname, line, a, b, mod_paths[a]))
+                src = (resolve(scope, b), b)
+                if src in spec_paths:
+                    mod_paths[(resolve(scope, a), a)] = spec_paths[src]
+            else:
+                key = (resolve(scope, a), a)
+                if key in mod_paths and counts[key] == 1:
+                    out.append((fname, line, a, b, mod_paths[key]))
     return out
+
+
+def symtable_disagreements(sources):
+    """Where this module's scope resolution differs from CPython's own symtable, over `sources`
+    (fname -> text). Returns (disagreements, scopes_compared). A resolver written to match its own
+    fixture agrees with it forever; this judges it against the compiler's reading instead.
+
+    For every function and class scope that both sides can identify uniquely by (kind, name, line),
+    every name symtable calls local must be one this module binds there, and vice versa, except a
+    comprehension target, which CPython 3.12 inlines into the enclosing function (PEP 709) while it
+    stays invisible outside the comprehension at runtime; and every name symtable calls free or
+    global must resolve here to an enclosing function or to the module, respectively."""
+    import symtable
+    out, compared = [], 0
+    for fname, text in sources.items():
+        tree = ast.parse(text)
+        w = walk({fname: tree})[fname]
+        mine = {}
+        for s in w.scopes:
+            if s.kind in ("function", "class"):
+                node_name = None
+                for n in ast.walk(tree):
+                    if (getattr(n, "lineno", None), getattr(n, "col_offset", None)) == s.key[1:3] \
+                            and isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                               ast.ClassDef, ast.Lambda)):
+                        node_name = getattr(n, "name", "lambda")
+                        break
+                mine.setdefault((s.kind, node_name, s.key[1]), []).append(s)
+        comp_targets = collections.defaultdict(set)
+        for s in w.scopes:
+            if s.kind == "comprehension":
+                outer = s.parent
+                while outer.kind == "comprehension":
+                    outer = outer.parent
+                comp_targets[outer.key] |= s.bound
+        theirs = {}
+        def collect(t):
+            for c in t.get_children():
+                kind = {"function": "function", "class": "class"}.get(c.get_type().value
+                                                                     if hasattr(c.get_type(), "value")
+                                                                     else c.get_type())
+                if kind:
+                    theirs.setdefault((kind, c.get_name(), c.get_lineno()), []).append(c)
+                collect(c)
+        collect(symtable.symtable(text, fname, "exec"))
+        for k, ours in mine.items():
+            if len(ours) != 1 or len(theirs.get(k, [])) != 1:
+                continue
+            s, t = ours[0], theirs[k][0]
+            compared += 1
+            sym_local = {x.get_name() for x in t.get_symbols() if x.is_local()}
+            our_local = {n for n in s.bound if s.local(n)}
+            extra = sym_local - our_local - comp_targets[s.key]
+            if s.kind == "class":
+                extra -= {"__class__", "__classdict__", "__static_attributes__",
+                          "__firstlineno__", "__type_params__"}
+            if extra or (our_local - sym_local):
+                out.append((fname, k, "local", sorted(extra), sorted(our_local - sym_local)))
+            for x in t.get_symbols():
+                n = x.get_name()
+                if n in our_local or n in comp_targets[s.key]:
+                    continue
+                got = resolve(s, n)
+                if x.is_free() and (got == MODULE or got == s.key):
+                    out.append((fname, k, "free", n, got))
+                elif x.is_global() and got != MODULE:
+                    out.append((fname, k, "global", n, got))
+    return out, compared
 
 
 def audit():
