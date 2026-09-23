@@ -37,14 +37,16 @@ def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
     OWN cgroup or any parent up to the mount (a quota set on a host scope or slice sits there, not
     at the mount root), or None when none applies. cgroup v1 is not read (stated limit)."""
     try:
-        with open(membership) as handle:
+        with open(membership, errors='surrogateescape') as handle:
             own = next((line.split('::', 1)[1].strip() for line in handle if line.startswith('0::')), None)
     except OSError:
         own = None
     if own is None:
         return None
-    best, path = None, os.path.normpath(os.path.join(root, own.lstrip('/')))
     top = os.path.normpath(root)
+    best, path = None, os.path.normpath(os.path.join(top, own.lstrip('/')))
+    if path != top and not path.startswith(top.rstrip(os.sep) + os.sep):
+        return None
     while True:
         try:
             with open(os.path.join(path, 'cpu.max')) as handle:
@@ -54,7 +56,7 @@ def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
                 best = cpus if best is None else min(best, cpus)
         except (OSError, ValueError):
             pass
-        if path == top or not path.startswith(top):
+        if path == top:
             return best
         path = os.path.dirname(path)
 

@@ -326,6 +326,8 @@ if 'expect' in globals():
         raise _m123_budget.Refused('driver_error', 'stop after the cap is armed')
 
     _m123_caps = {}
+    _m123_budget_parallel = _m123_budget.PARALLEL
+    _m123_budget.PARALLEL = 2       # below the reference, so a run_stage that ignores its workers is caught
     try:
         _m123_budget.read_inputs = _m123_stop_after_arm
         _m123_budget.Workers = _m123_Workers
@@ -334,7 +336,8 @@ if 'expect' in globals():
             _m123_caps[_m123_count] = _m123_budget.run_stage(ROOT).get('budget_seconds')
     finally:
         _m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers = _m123_saved
-    _m123_want = {n: _m123_budget.budget_for(n, _m123_budget.PARALLEL) for n in (10, 116, 300)}
+        _m123_budget.PARALLEL = _m123_budget_parallel
+    _m123_want = {n: _m123_budget.budget_for(n, 2) for n in (10, 116, 300)}
     _m123_enforced = [abs(left - _m123_want[n]) < 5 and abs(alarm - _m123_want[n]) < 5
                       for n, (left, alarm) in zip((10, 116, 300), _m123_seen)]
     expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: run_stage records, enforces as the '
@@ -644,8 +647,17 @@ if 'expect' in globals():
         (_m123_cgp / 'half.scope').mkdir()
         (_m123_cgp / 'half.scope/cpu.max').write_text('350000 100000\n')
         (_m123_cgp / 'half-cgroup').write_text('0::/half.scope\n')
+        (_m123_cgp / 'wide.slice/tight.scope').mkdir(parents=True)
+        (_m123_cgp / 'wide.slice/cpu.max').write_text('600000 100000\n')
+        (_m123_cgp / 'wide.slice/tight.scope/cpu.max').write_text('150000 100000\n')
+        (_m123_cgp / 'tight-cgroup').write_text('0::/wide.slice/tight.scope\n')
+        (_m123_cgp.parent / (_m123_cgp.name + '-evil')).mkdir()
+        (_m123_cgp.parent / (_m123_cgp.name + '-evil') / 'cpu.max').write_text('100000 100000\n')
+        (_m123_cgp / 'escape-cgroup').write_text('0::/../' + _m123_cgp.name + '-evil\n')
         _m123_quotas = [_m123_gate._quota_cpus(str(_m123_cgp), str(_m123_cgp / n))
-                        for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup', 'half-cgroup')]
+                        for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup', 'half-cgroup', 'tight-cgroup',
+                                  'escape-cgroup')]
+        _m123_sp.run(['rm', '-rf', str(_m123_cgp.parent / (_m123_cgp.name + '-evil'))], check=True)
         # And the worker count really applies it: a 3.5-CPU quota rounds UP to 4 workers.
         _m123_quota_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'half-cgroup'))
         _m123_host_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'none-cgroup'))
@@ -655,5 +667,5 @@ if 'expect' in globals():
            [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
            and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, n)) for n in _m123_affinity))
            and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_driven_parallel == 3
-           and _m123_quotas == [2, None, None, 4]
+           and _m123_quotas == [2, None, None, 4, 2, None]
            and _m123_quota_workers == min(4, _m123_host_workers))
