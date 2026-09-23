@@ -61,6 +61,10 @@ elif mode == 'environment':
         'argv': sys.argv, 'request_text': json.dumps(request, sort_keys=True)})
 elif mode == 'crash':
     sys.exit(3)
+elif mode == 'deep':
+    reply.update(outcome='suspended', resume='HOLE')
+    sys.stdout.write(json.dumps(reply).replace('"HOLE"', '{"n":' * 20000 + '0' + '}' * 20000))
+    sys.exit(0)
 sys.stdout.write(json.dumps(reply))
 '''
 
@@ -479,6 +483,19 @@ def _s43_run():
             except Exception as error:
                 shaped.append(getattr(error, 'code', type(error).__name__))
         observations['shape_refusals'] = shaped
+
+        # An over-deep answer is a named refusal, counted and observed, never an escaping error.
+        before_counts = dict(adapter.counts)
+        try:
+            adapter.start('cycle-deep', 'command-deep', snapshot, dict(version, id='deep'))
+            deep = 'accepted'
+        except Exception as error:
+            deep = getattr(error, 'code', type(error).__name__)
+        observations['deep_answer'] = deep
+        expect('graph/shape/deep-answer', deep == 'invalid_response'
+               and adapter.counts == dict(before_counts, refused=before_counts['refused'] + 1)
+               and adapter.observations[-1]['refusal'] == 'invalid_response'
+               and adapter.observations[-1]['cycle_id'] == 'cycle-deep')
 
         class _Mapping(dict):
             pass
