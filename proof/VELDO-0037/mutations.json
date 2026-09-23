@@ -1,14 +1,14 @@
 {
   "records": [
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/stale-checkouts": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.328,
+      "elapsed_seconds": 42.423,
       "module": "control_alias.py",
       "mutant": {
         "aliases/stale-checkouts": [
@@ -82,15 +82,15 @@
         }
       },
       "mutation": "alias-checkout-maximum",
-      "new_digest": "be05a684800700b01aa855ea1924f3acc9ce55a36edf97810867af3e6aa2df38",
+      "new_digest": "611353dd9f6028c3c76d168100a2e9b1d81b01c9b02e4ef8582e834355b48955",
       "noop": {
         "aliases/stale-checkouts": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/stale-checkouts",
         "aliases/same-source-reuse",
@@ -116,14 +116,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/stale-checkouts": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.574,
+      "elapsed_seconds": 25.339,
       "module": "control_alias.py",
       "mutant": {
         "aliases/stale-checkouts": [
@@ -197,15 +197,15 @@
         }
       },
       "mutation": "alias-counter-not-advanced",
-      "new_digest": "c19b9d76441943497dab08eb70c09287ce8d8a6f69401350987a51b7046a431d",
+      "new_digest": "51eb233cbf99f92487072131e450f0ae92a8afaa4492089152b2aee98346f453",
       "noop": {
         "aliases/stale-checkouts": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/stale-checkouts",
         "aliases/same-source-reuse",
@@ -228,14 +228,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "documents/stale-overwrite": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.601,
+      "elapsed_seconds": 33.774,
       "module": "control_alias.py",
       "mutant": {
         "documents/stale-overwrite": [
@@ -313,15 +313,15 @@
         }
       },
       "mutation": "document-ignore-digest",
-      "new_digest": "d52e486d095eca2d46436610950e94ed66195333651cd2ceffb43d665494da7f",
+      "new_digest": "36107e5a733999f1f879938356b99dd04eaccd30888a49b7eb721243f3aaf1d0",
       "noop": {
         "documents/stale-overwrite": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "documents/stale-overwrite",
         "publication/replace-guard"
@@ -332,14 +332,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "documents/stale-overwrite": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.549,
+      "elapsed_seconds": 29.284,
       "module": "control_alias.py",
       "mutant": {
         "documents/stale-overwrite": [
@@ -417,15 +417,15 @@
         }
       },
       "mutation": "document-current-version",
-      "new_digest": "ce3a7df624c6a1580424097de2d92bc664255180e27713fdc693629be61f631d",
+      "new_digest": "59bf98337062811ba744987a6b57889d3a05562494197da4b522f19a3d284283",
       "noop": {
         "documents/stale-overwrite": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "documents/stale-overwrite",
         "publication/replace-guard"
@@ -436,14 +436,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/accepted-documents": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.455,
+      "elapsed_seconds": 42.122,
       "module": "control_document.py",
       "mutant": {
         "publication/accepted-documents": [
@@ -525,14 +525,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/accepted-documents": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.408,
+      "elapsed_seconds": 41.021,
       "module": "control_document.py",
       "mutant": {
         "publication/accepted-documents": [
@@ -625,14 +625,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/tampered-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.353,
+      "elapsed_seconds": 29.919,
       "module": "control_document.py",
       "mutant": {
         "publication/tampered-refused": [
@@ -736,14 +736,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/no-symlink-escape": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 24.916,
+      "elapsed_seconds": 29.545,
       "module": "control_document.py",
       "mutant": {
         "publication/no-symlink-escape": [
@@ -839,14 +839,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/no-symlink-escape": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 25.122,
+      "elapsed_seconds": 33.778,
       "module": "control_document.py",
       "mutant": {
         "publication/no-symlink-escape": [
@@ -942,14 +942,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.883,
+      "elapsed_seconds": 30.478,
       "module": "control_alias.py",
       "mutant": {
         "aliases/one-path-per-kind": [
@@ -1027,15 +1027,15 @@
         }
       },
       "mutation": "alias-overlap-unchecked",
-      "new_digest": "d0036ae721dee3d78cca1d0e7188c93cdbc3800be4cdee2861319c94948f0f88",
+      "new_digest": "2fe4b71ddfbe675a22a8e87689c72e431e8515bfd7d832675d782892bd5e2dc3",
       "noop": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/one-path-per-kind",
         "aliases/case-insensitive-names"
@@ -1046,14 +1046,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 25.497,
+      "elapsed_seconds": 28.504,
       "module": "control_alias.py",
       "mutant": {
         "aliases/one-path-per-kind": [
@@ -1131,15 +1131,15 @@
         }
       },
       "mutation": "alias-overlap-ignores-directories",
-      "new_digest": "ff062fb707473eedf3f08583f4c71e5d15af569d90d6e32be9565a5516f1a0af",
+      "new_digest": "40223554c9297fe3902b7149332cffef9c55330e9efed8b3346825f1dcdc4411",
       "noop": {
         "aliases/one-path-per-kind": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/one-path-per-kind"
       ],
@@ -1149,14 +1149,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/historical-floor": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.695,
+      "elapsed_seconds": 26.996,
       "module": "control_alias.py",
       "mutant": {
         "aliases/historical-floor": [
@@ -1234,15 +1234,15 @@
         }
       },
       "mutation": "alias-trusts-first-number",
-      "new_digest": "2cd02b8ece8c68e491cca9b1b247e8e3f73fc96c0b78efa32a30ca6dfbcd4ef1",
+      "new_digest": "70b1a018ecc80f9c0102420e8099da5f0cdb2590c7b95f69d2946652e07b3e54",
       "noop": {
         "aliases/historical-floor": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/historical-floor",
         "aliases/floor-from-every-accepted-revision"
@@ -1253,14 +1253,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/historical-floor": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.895,
+      "elapsed_seconds": 25.695,
       "module": "control_readset.py",
       "mutant": {
         "aliases/historical-floor": [
@@ -1338,15 +1338,15 @@
         }
       },
       "mutation": "alias-floor-ignores-history",
-      "new_digest": "83ac0a1f37329ec865e4d2c7850179b828cd20f4842e5e469b8e273159a169f4",
+      "new_digest": "d97826cfcb0e9ba29d4ebc423753d447072711f8847f19a91a90e2bf867db11b",
       "noop": {
         "aliases/historical-floor": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/historical-floor",
         "aliases/records-hold-only-what-a-commit-adds",
@@ -1359,14 +1359,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.99,
+      "elapsed_seconds": 28.513,
       "module": "control_alias.py",
       "mutant": {
         "aliases/generic-writes-refused": [
@@ -1444,15 +1444,15 @@
         }
       },
       "mutation": "alias-owners-undeclared",
-      "new_digest": "0c3e3ad6c4fea06005351e1be0acee7c8dfb4e4096db082edc3373688abdeee7",
+      "new_digest": "b9442be6301524397c342d8f908b9517a74687b2917a20c920cf8c0c6444dbeb",
       "noop": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/generic-writes-refused",
         "aliases/owned-on-every-connection",
@@ -1465,14 +1465,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/generic-writes-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 30.121,
+      "elapsed_seconds": 29.856,
       "module": "control_store.py",
       "mutant": {
         "aliases/generic-writes-refused": [
@@ -1569,14 +1569,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/bound-to-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 34.305,
+      "elapsed_seconds": 27.429,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-to-repository": [
@@ -1673,14 +1673,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/bound-to-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 45.639,
+      "elapsed_seconds": 29.469,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-to-repository": [
@@ -1777,14 +1777,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 51.856,
+      "elapsed_seconds": 34.885,
       "module": "control_alias.py",
       "mutant": {
         "publication/recorded-only-by-publisher": [
@@ -1862,15 +1862,15 @@
         }
       },
       "mutation": "record-trusts-supplied-digest",
-      "new_digest": "7689733f97e9ec09cd9d0c6d5adfd0b742cfb8355de505fcaaaab209be22f490",
+      "new_digest": "b743d9b30be972b9ad7322c2898190d12c5f9e1070fa11355543031f20093339",
       "noop": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "publication/recorded-only-by-publisher"
       ],
@@ -1880,14 +1880,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 40.76,
+      "elapsed_seconds": 52.466,
       "module": "control_alias.py",
       "mutant": {
         "publication/recorded-only-by-publisher": [
@@ -1965,15 +1965,15 @@
         }
       },
       "mutation": "record-missing-file-accepted",
-      "new_digest": "7d70c0a4ec1ea6294f8d68f43a8d320d88a36fd019fc98a0d79ef295d3803679",
+      "new_digest": "97b78ff33841dc3d1353b5c1f2c47bf6eb3107906557685d34e51409f7c0a9d2",
       "noop": {
         "publication/recorded-only-by-publisher": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "publication/recorded-only-by-publisher"
       ],
@@ -1983,14 +1983,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.778,
+      "elapsed_seconds": 34.007,
       "module": "control_alias.py",
       "mutant": {
         "aliases/case-insensitive-names": [
@@ -2068,15 +2068,15 @@
         }
       },
       "mutation": "alias-prefix-case-sensitive",
-      "new_digest": "46d2c2b0c3b7f52f91da46a1ec061c15bd26acc6c21e66f7a2446c4b3a012e99",
+      "new_digest": "68ceaf5dac9b3a8898f73b6e3d0e699c4386ae22415a46fb0854c569588fb00f",
       "noop": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/case-insensitive-names"
       ],
@@ -2086,14 +2086,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 25.411,
+      "elapsed_seconds": 32.945,
       "module": "control_alias.py",
       "mutant": {
         "aliases/case-insensitive-names": [
@@ -2171,15 +2171,15 @@
         }
       },
       "mutation": "alias-paths-case-sensitive",
-      "new_digest": "4c7b7fbcb0c651d57ad98fb0cc38207510bd4f024e05677f9ceae1bd45787f50",
+      "new_digest": "a02cfa19216ec53f7cf0cf9f82c8a0a2bbf682378ce8f86232cb30afb445bc8c",
       "noop": {
         "aliases/case-insensitive-names": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/case-insensitive-names",
         "aliases/reserved-directories"
@@ -2190,14 +2190,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/reserved-directories": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 26.251,
+      "elapsed_seconds": 36.491,
       "module": "control_alias.py",
       "mutant": {
         "aliases/reserved-directories": [
@@ -2275,15 +2275,15 @@
         }
       },
       "mutation": "alias-reserved-unchecked",
-      "new_digest": "ee9eb0a0fe9767b71f1f65fc77de98f463505897a2fa08d342b10d96d90eb05a",
+      "new_digest": "723df53510c5a4dcb56ed2b2ee4c109fb80371e52f69f4f322726606898e692c",
       "noop": {
         "aliases/reserved-directories": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/reserved-directories"
       ],
@@ -2293,14 +2293,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/reserved-directories": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 51.144,
+      "elapsed_seconds": 33.625,
       "module": "control_alias.py",
       "mutant": {
         "aliases/reserved-directories": [
@@ -2378,15 +2378,15 @@
         }
       },
       "mutation": "alias-reserved-literal-only",
-      "new_digest": "fa4a299cf921da109f73c27710823d4fa9af7d473f760851e814273b0bd44937",
+      "new_digest": "761befa61101154cfc74b6694a10a227ccbcda0e5869c92f3ad568de59d7e1ff",
       "noop": {
         "aliases/reserved-directories": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/reserved-directories"
       ],
@@ -2396,14 +2396,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/invalid-unit-id": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 52.418,
+      "elapsed_seconds": 23.984,
       "module": "control_alias.py",
       "mutant": {
         "aliases/invalid-unit-id": [
@@ -2481,15 +2481,15 @@
         }
       },
       "mutation": "alias-skip-unit-id",
-      "new_digest": "b22367ed173af26b20451e0346f78db151d43434b599223a604ead21588afa2f",
+      "new_digest": "904801645abab56029e75e3b010409f990825247dc1d4185b7718abfa4627eb5",
       "noop": {
         "aliases/invalid-unit-id": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/invalid-unit-id"
       ],
@@ -2499,14 +2499,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 43.937,
+      "elapsed_seconds": 50.729,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-counts-every-carrier": [
@@ -2584,15 +2584,15 @@
         }
       },
       "mutation": "alias-floor-carrier-case-sensitive",
-      "new_digest": "e3ddf77b516b6c9aa24fc937b6d2267d8fb041830d711886e9861f0b97c76f2f",
+      "new_digest": "fbeaf1ec70650364d1d4b674dfb910f8f39b0ae1317eaedd08be4c2fd6d7caf2",
       "noop": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/case-insensitive-names",
         "aliases/floor-counts-every-carrier"
@@ -2603,14 +2603,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 30.177,
+      "elapsed_seconds": 38.315,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-counts-every-carrier": [
@@ -2688,17 +2688,18 @@
         }
       },
       "mutation": "alias-floor-slug-grammar",
-      "new_digest": "142bacad7aef65428f2f112a06bdd96a4d99a0184fc662ee031136afc72d791a",
+      "new_digest": "6d1b27cb8d2256c01270d2b2d9ee94d16787fced21dbb699f5d9e3588275d11a",
       "noop": {
         "aliases/floor-counts-every-carrier": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
-        "aliases/floor-counts-every-carrier"
+        "aliases/floor-counts-every-carrier",
+        "aliases/gitlink-carrier-whatever-submodule-config"
       ],
       "replacement_count": 1,
       "rows": [
@@ -2706,14 +2707,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-on-every-connection": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 33.271,
+      "elapsed_seconds": 27.825,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-on-every-connection": [
@@ -2810,14 +2811,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-on-every-connection": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 26.491,
+      "elapsed_seconds": 25.811,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-on-every-connection": [
@@ -2916,14 +2917,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-whatever-registration-order": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.773,
+      "elapsed_seconds": 27.496,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-whatever-registration-order": [
@@ -3020,14 +3021,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 24.765,
+      "elapsed_seconds": 25.443,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-from-every-accepted-revision": [
@@ -3105,15 +3106,15 @@
         }
       },
       "mutation": "alias-floor-named-revision-only",
-      "new_digest": "2fdb59c925f4702442c61bceb0d5418581fd1b600081d477e8200abadf25e5dd",
+      "new_digest": "be3ef550ecd60abb1d24f081a12ad51f176e2409023b3236ac12680da2ec33ae",
       "noop": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/floor-from-every-accepted-revision",
         "aliases/revision-in-enrolled-repository",
@@ -3126,14 +3127,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 24.876,
+      "elapsed_seconds": 24.436,
       "module": "control_readset.py",
       "mutant": {
         "aliases/floor-from-every-accepted-revision": [
@@ -3211,15 +3212,15 @@
         }
       },
       "mutation": "revision-regression-allowed",
-      "new_digest": "1cfe7bc642c3b6a54c15886a920085ffccbebcd31b8ea114249d08b8715ffa40",
+      "new_digest": "ef3b28943c657b0b447a1414626a157dd542a8703314d8210270eb9152a81132",
       "noop": {
         "aliases/floor-from-every-accepted-revision": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/floor-from-every-accepted-revision"
       ],
@@ -3229,14 +3230,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/bound-by-enrollment": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.118,
+      "elapsed_seconds": 23.524,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-by-enrollment": [
@@ -3332,14 +3333,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "publication/bound-by-enrollment": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.985,
+      "elapsed_seconds": 23.565,
       "module": "control_document.py",
       "mutant": {
         "publication/bound-by-enrollment": [
@@ -3435,14 +3436,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-whatever-registration-order": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.363,
+      "elapsed_seconds": 23.394,
       "module": "control_readset.py",
       "mutant": {
         "aliases/owned-whatever-registration-order": [
@@ -3520,15 +3521,15 @@
         }
       },
       "mutation": "readset-snapshots-undeclared",
-      "new_digest": "248fb4c253cea1d2877380583ebc8f062517685e507a1cb45f994bed6e789c35",
+      "new_digest": "f1d9a1e9c4f5a86dc2d06328b52b7a383d17c3bf89349061ec03fb8ff3296980",
       "noop": {
         "aliases/owned-whatever-registration-order": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/owned-whatever-registration-order",
         "aliases/owned-by-code-not-name"
@@ -3539,14 +3540,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 27.116,
+      "elapsed_seconds": 23.415,
       "module": "control_readset.py",
       "mutant": {
         "aliases/revision-in-enrolled-repository": [
@@ -3624,15 +3625,15 @@
         }
       },
       "mutation": "revision-any-repository",
-      "new_digest": "9947cade5fe3a2b8117727d3299208f6ca30fed13b4cf59f1cee3b4d0669be8b",
+      "new_digest": "be2a8560ace645bb6e98bb0da2c2b84189126221451005cbb6e912cc2f247dab",
       "noop": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/revision-in-enrolled-repository"
       ],
@@ -3642,14 +3643,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 24.789,
+      "elapsed_seconds": 24.76,
       "module": "control_alias.py",
       "mutant": {
         "aliases/revision-in-enrolled-repository": [
@@ -3727,15 +3728,15 @@
         }
       },
       "mutation": "enable-reads-unbound-repository",
-      "new_digest": "be44540bed048a5abb818c3b7f6b650d320182ed19e800891b1f6f594ffa7a3d",
+      "new_digest": "aa2cd805f68ebce726390adbca2738288d3a32a1a6d7a4ea6c2e1476e84a1a85",
       "noop": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/revision-in-enrolled-repository"
       ],
@@ -3745,14 +3746,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/revision-in-enrolled-repository": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 26.286,
+      "elapsed_seconds": 23.621,
       "module": "control_store.py",
       "mutant": {
         "aliases/revision-in-enrolled-repository": [
@@ -3848,14 +3849,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.319,
+      "elapsed_seconds": 23.368,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -3951,14 +3952,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.239,
+      "elapsed_seconds": 23.655,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4054,14 +4055,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.009,
+      "elapsed_seconds": 25.439,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4157,14 +4158,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/owned-by-code-not-name": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.971,
+      "elapsed_seconds": 23.328,
       "module": "control_store.py",
       "mutant": {
         "aliases/owned-by-code-not-name": [
@@ -4260,14 +4261,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-from-recorded-numbers": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 24.996,
+      "elapsed_seconds": 27.194,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-from-recorded-numbers": [
@@ -4345,15 +4346,15 @@
         }
       },
       "mutation": "floor-rederives-ignoring-record",
-      "new_digest": "e3c7b7ec68c991a6196c2cc350a762a610dcf05b6c024c98bda87ad13c089084",
+      "new_digest": "d22495d6cfc956894dffd55e1741022c7bea3959f84cb9cb8d67b153e128772a",
       "noop": {
         "aliases/floor-from-recorded-numbers": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/floor-from-recorded-numbers",
         "aliases/records-hold-only-what-a-commit-adds",
@@ -4365,14 +4366,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-from-recorded-numbers": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.047,
+      "elapsed_seconds": 39.384,
       "module": "control_alias.py",
       "mutant": {
         "aliases/floor-from-recorded-numbers": [
@@ -4450,15 +4451,15 @@
         }
       },
       "mutation": "legacy-lost-commit-skipped",
-      "new_digest": "a4a407de283088475f7e681b1c7ac4e5b97cb4b5c0843d964ea951af6e20dede",
+      "new_digest": "9c8e2fb6f7c9e53095623faf9751e04e643732a44b5382880c15aa06c768351a",
       "noop": {
         "aliases/floor-from-recorded-numbers": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/revision-in-enrolled-repository",
         "aliases/floor-from-recorded-numbers"
@@ -4469,14 +4470,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/floor-from-recorded-numbers": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.474,
+      "elapsed_seconds": 41.931,
       "module": "control_readset.py",
       "mutant": {
         "aliases/floor-from-recorded-numbers": [
@@ -4554,15 +4555,15 @@
         }
       },
       "mutation": "acceptance-records-no-paths",
-      "new_digest": "99dd3724e2d6a5c17920f604711733bcef920401537d2d0f5b9e9742e794468a",
+      "new_digest": "d190ff77f29c62271ae1a6f356a97c049c994995ba0a1e7b191fc19d3d662c3d",
       "noop": {
         "aliases/floor-from-recorded-numbers": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/historical-floor",
         "aliases/case-insensitive-names",
@@ -4572,7 +4573,9 @@
         "aliases/records-hold-only-what-a-commit-adds",
         "aliases/history-read-whatever-repository-config",
         "aliases/increment-after-a-lost-record",
-        "aliases/shallow-repository-refused"
+        "aliases/shallow-repository-refused",
+        "aliases/gitlink-carrier-whatever-submodule-config",
+        "aliases/signed-history-whatever-signature-config"
       ],
       "replacement_count": 1,
       "rows": [
@@ -4580,14 +4583,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/records-hold-only-what-a-commit-adds": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 22.437,
+      "elapsed_seconds": 29.229,
       "module": "control_alias.py",
       "mutant": {
         "aliases/records-hold-only-what-a-commit-adds": [
@@ -4665,15 +4668,15 @@
         }
       },
       "mutation": "floor-reads-current-records-only",
-      "new_digest": "d675bf980ff80e5986a4da8443def5e1f52972ea56258e70d28502a02f8c65e0",
+      "new_digest": "d97b5f5eb8b6050ae8bfd01b8289201320ee8d39b248e03e27574f9f5cdc24a1",
       "noop": {
         "aliases/records-hold-only-what-a-commit-adds": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/records-hold-only-what-a-commit-adds"
       ],
@@ -4683,14 +4686,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/records-hold-only-what-a-commit-adds": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 24.704,
+      "elapsed_seconds": 29.114,
       "module": "control_readset.py",
       "mutant": {
         "aliases/records-hold-only-what-a-commit-adds": [
@@ -4768,15 +4771,15 @@
         }
       },
       "mutation": "increment-against-head",
-      "new_digest": "bbb75ce4badca8bd954603edc4533690c492f16b4488243eff5f9478550d3a83",
+      "new_digest": "b5084bf11d78fa053c345e802222d47c474f5f23f201eda83204b6afbb1cea57",
       "noop": {
         "aliases/records-hold-only-what-a-commit-adds": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/historical-floor",
         "aliases/case-insensitive-names",
@@ -4784,7 +4787,9 @@
         "aliases/records-hold-only-what-a-commit-adds",
         "aliases/history-read-whatever-repository-config",
         "aliases/increment-after-a-lost-record",
-        "aliases/shallow-repository-refused"
+        "aliases/shallow-repository-refused",
+        "aliases/gitlink-carrier-whatever-submodule-config",
+        "aliases/signed-history-whatever-signature-config"
       ],
       "replacement_count": 1,
       "rows": [
@@ -4792,14 +4797,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/records-hold-only-what-a-commit-adds": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 23.631,
+      "elapsed_seconds": 22.681,
       "module": "control_alias.py",
       "mutant": {
         "aliases/records-hold-only-what-a-commit-adds": [
@@ -4877,15 +4882,15 @@
         }
       },
       "mutation": "named-revision-reads-git",
-      "new_digest": "0ce67fd9eacede05d01b2db6c8f7ef94ab25d945b04fc80402e5e2371162d827",
+      "new_digest": "324366f9ff8795362b13788833bfa8959f7af40388da06bb5bd8eaa2925923ad",
       "noop": {
         "aliases/records-hold-only-what-a-commit-adds": [
           true
         ]
       },
-      "noop_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "noop_failed_rows": [],
-      "old_digest": "436653ca72e472b374e8f983ba30c2f303c38d3526089b5ef4a1eb2247d000a3",
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
       "red_rows": [
         "aliases/records-hold-only-what-a-commit-adds"
       ],
@@ -4895,14 +4900,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/history-read-whatever-repository-config": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 26.115,
+      "elapsed_seconds": 22.694,
       "module": "control_readset.py",
       "mutant": {
         "aliases/history-read-whatever-repository-config": [
@@ -4980,15 +4985,15 @@
         }
       },
       "mutation": "history-merges-by-config",
-      "new_digest": "f071ec9c7d9aa3dc74750ade603e0c8fff7547440d073e826b3bf14be7bd6db5",
+      "new_digest": "7378884ad534c913893e1262eac9fdacf288ac288cdcf573eec407a9c91e4f77",
       "noop": {
         "aliases/history-read-whatever-repository-config": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/history-read-whatever-repository-config"
       ],
@@ -4998,14 +5003,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/history-read-whatever-repository-config": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 31.164,
+      "elapsed_seconds": 22.583,
       "module": "control_readset.py",
       "mutant": {
         "aliases/history-read-whatever-repository-config": [
@@ -5083,15 +5088,15 @@
         }
       },
       "mutation": "history-root-by-config",
-      "new_digest": "a4bf221625f093c1314f5e88e734e2e64ecedac9e07603bdc80ca79b6e7cdb86",
+      "new_digest": "b9e9f0ecfe852f18290cc9e891eef772bb4060370331b7b705195e4802f07607",
       "noop": {
         "aliases/history-read-whatever-repository-config": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/history-read-whatever-repository-config"
       ],
@@ -5101,14 +5106,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/increment-after-a-lost-record": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 29.236,
+      "elapsed_seconds": 22.808,
       "module": "control_readset.py",
       "mutant": {
         "aliases/increment-after-a-lost-record": [
@@ -5186,15 +5191,15 @@
         }
       },
       "mutation": "increment-without-ignore-missing",
-      "new_digest": "fdd69ac58b9b4c14ff35e76046ab924dcd3b21280f5e1a0e06cec8172e940f53",
+      "new_digest": "906bbf3fd415fe37b9fc34873ca6f3cd57d8f61a6324a35ea1fafa87cf84178a",
       "noop": {
         "aliases/increment-after-a-lost-record": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/increment-after-a-lost-record"
       ],
@@ -5204,14 +5209,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/increment-after-a-lost-record": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 31.648,
+      "elapsed_seconds": 22.858,
       "module": "control_readset.py",
       "mutant": {
         "aliases/increment-after-a-lost-record": [
@@ -5289,15 +5294,15 @@
         }
       },
       "mutation": "increment-ignores-recorded-base",
-      "new_digest": "856bc330d2a72b73f1d72c3286484858de4fe4ca90be505a98c828d6f79b97e6",
+      "new_digest": "61e6ab71cd86dcc6fdeb68b9e3c3f606b2c34c6a645bb88557fdde7c9f50a769",
       "noop": {
         "aliases/increment-after-a-lost-record": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/records-hold-only-what-a-commit-adds",
         "aliases/increment-after-a-lost-record"
@@ -5308,14 +5313,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/shallow-repository-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 30.219,
+      "elapsed_seconds": 22.755,
       "module": "control_readset.py",
       "mutant": {
         "aliases/shallow-repository-refused": [
@@ -5393,15 +5398,15 @@
         }
       },
       "mutation": "shallow-accepted",
-      "new_digest": "d3ad1a53f81261f276f2bcf08a1f1accdee0c7376874cf8463528b0ca836666a",
+      "new_digest": "640584efe9cd8846cb317e0ec1ff261ea4b2280234b2ce00dd049ac5e7ed194c",
       "noop": {
         "aliases/shallow-repository-refused": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/shallow-repository-refused"
       ],
@@ -5411,14 +5416,14 @@
       ]
     },
     {
-      "assertions": 65,
+      "assertions": 67,
       "baseline": {
         "aliases/shallow-repository-refused": [
           true
         ]
       },
       "baseline_failed_rows": [],
-      "elapsed_seconds": 25.221,
+      "elapsed_seconds": 22.608,
       "module": "control_readset.py",
       "mutant": {
         "aliases/shallow-repository-refused": [
@@ -5496,15 +5501,15 @@
         }
       },
       "mutation": "shallow-check-reads-bare",
-      "new_digest": "ab073c3325ebe7f25733e54cbe98638fff15df4965d4d4cac5a4f3292bfeb110",
+      "new_digest": "e44ca6b57fc38d9f7a7a79b4e4ead1fa1df8f07f09d21b3577286434d0244bc4",
       "noop": {
         "aliases/shallow-repository-refused": [
           true
         ]
       },
-      "noop_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "noop_failed_rows": [],
-      "old_digest": "65e424331648a1c6cd82bae428f33df2baf195ee7059cc6e9046cb99e9dc0cf3",
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
       "red_rows": [
         "aliases/shallow-repository-refused"
       ],
@@ -5512,9 +5517,524 @@
       "rows": [
         "aliases/shallow-repository-refused"
       ]
+    },
+    {
+      "assertions": 67,
+      "baseline": {
+        "aliases/floor-counts-every-carrier": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 22.758,
+      "module": "control_alias.py",
+      "mutant": {
+        "aliases/floor-counts-every-carrier": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "alias-floor-carrier-single-line",
+      "new_digest": "9b22cc7a9ca7a6f0cdb5efedf742a0563d1bab2cd2ff6a27e0c5c74fcd9076a2",
+      "noop": {
+        "aliases/floor-counts-every-carrier": [
+          true
+        ]
+      },
+      "noop_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
+      "noop_failed_rows": [],
+      "old_digest": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
+      "red_rows": [
+        "aliases/floor-counts-every-carrier"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/floor-counts-every-carrier"
+      ]
+    },
+    {
+      "assertions": 67,
+      "baseline": {
+        "aliases/gitlink-carrier-whatever-submodule-config": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 22.624,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/gitlink-carrier-whatever-submodule-config": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "history-submodules-by-config",
+      "new_digest": "3d9e537b6e5fc052b308f22dcc397556d51c60a5cea824af0fa212430d90e41f",
+      "noop": {
+        "aliases/gitlink-carrier-whatever-submodule-config": [
+          true
+        ]
+      },
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "noop_failed_rows": [],
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "red_rows": [
+        "aliases/gitlink-carrier-whatever-submodule-config"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/gitlink-carrier-whatever-submodule-config"
+      ]
+    },
+    {
+      "assertions": 67,
+      "baseline": {
+        "aliases/gitlink-carrier-whatever-submodule-config": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 22.524,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/gitlink-carrier-whatever-submodule-config": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "history-ignores-all-submodules",
+      "new_digest": "4679c8b6b99dd5cc63e061872657bfd42368367ec684259d2df298959e09e418",
+      "noop": {
+        "aliases/gitlink-carrier-whatever-submodule-config": [
+          true
+        ]
+      },
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "noop_failed_rows": [],
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "red_rows": [
+        "aliases/gitlink-carrier-whatever-submodule-config"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/gitlink-carrier-whatever-submodule-config"
+      ]
+    },
+    {
+      "assertions": 67,
+      "baseline": {
+        "aliases/signed-history-whatever-signature-config": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 22.673,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/signed-history-whatever-signature-config": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "history-signatures-by-config",
+      "new_digest": "3426b47794a71f5f4e0756779ca015b7e9cb6485e7068ec919b611e3e8097991",
+      "noop": {
+        "aliases/signed-history-whatever-signature-config": [
+          true
+        ]
+      },
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "noop_failed_rows": [],
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "red_rows": [
+        "aliases/signed-history-whatever-signature-config"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/signed-history-whatever-signature-config"
+      ]
+    },
+    {
+      "assertions": 67,
+      "baseline": {
+        "aliases/signed-history-whatever-signature-config": [
+          true
+        ]
+      },
+      "baseline_failed_rows": [],
+      "elapsed_seconds": 22.744,
+      "module": "control_readset.py",
+      "mutant": {
+        "aliases/signed-history-whatever-signature-config": [
+          false
+        ]
+      },
+      "mutant_observations": {
+        "independent_allocations": [
+          {
+            "alias": "VELDO-0004",
+            "reused": false,
+            "seq": 6
+          },
+          {
+            "alias": "VELDO-0005",
+            "reused": false,
+            "seq": 7
+          },
+          {
+            "alias": "VELDO-0006",
+            "reused": false,
+            "seq": 8
+          }
+        ],
+        "invalid_unit_id_checks": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "reader_tampered": {
+          "refusal": "document_mismatch"
+        },
+        "reader_v1": {
+          "PLAN-0003": {
+            "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+            "path": "plans/PLAN-0003-journey-plan.md",
+            "role": "plan",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-0004": {
+            "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+            "path": "specs/VELDO-0004-api-contract.md",
+            "role": "specification/api",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          },
+          "VELDO-DEC-0005": {
+            "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+            "path": "decisions/0005-store-choice.yaml",
+            "role": "decision",
+            "source": {
+              "id": "msg-100",
+              "revision": "r1",
+              "system": "telegram"
+            },
+            "version": 1
+          }
+        },
+        "stale_overwrite_refusals": {
+          "aba-stale-version": "stale_version",
+          "old-version": "stale_version",
+          "unknown-digest": "stale_document",
+          "wrong-digest": "stale_document"
+        }
+      },
+      "mutation": "history-shows-signatures",
+      "new_digest": "796a90d25df616053181dc890386965319e9bb03a5f01405c2defc0c26dd0526",
+      "noop": {
+        "aliases/signed-history-whatever-signature-config": [
+          true
+        ]
+      },
+      "noop_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "noop_failed_rows": [],
+      "old_digest": "7c6a15fe676e7b6dfb52f104f10b19fbf02065c1e68196983d367d9dec963269",
+      "red_rows": [
+        "aliases/signed-history-whatever-signature-config"
+      ],
+      "replacement_count": 1,
+      "rows": [
+        "aliases/signed-history-whatever-signature-config"
+      ]
     }
   ],
-  "registered": 53,
+  "registered": 58,
   "source": "proof/VELDO-0037/drive.py over scripts/check_teeth_mutations.py finding 37",
   "status": "rejected"
 }

@@ -2,4 +2,4 @@
 +++ b/.veldo/control_alias.py
 @@ -198 +198 @@
 -    return re.compile(regex, re.IGNORECASE | re.DOTALL)
-+    return re.compile(regex, re.DOTALL)
++    return re.compile(regex, re.IGNORECASE)

@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -729 +729 @@
+@@ -730 +730 @@
 -            self._refuse('missing_publication', '%s is not in the bound checkout' % data['path'])
 +            visible = data['digest']

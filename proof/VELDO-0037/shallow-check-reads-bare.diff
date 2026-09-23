@@ -1,5 +1,5 @@
 --- a/.veldo/control_readset.py
 +++ b/.veldo/control_readset.py
-@@ -78 +78 @@
+@@ -82 +82 @@
 -    result = SN._git_process.run(['git', '-C', str(repo), 'rev-parse', '--is-shallow-repository'],
 +    result = SN._git_process.run(['git', '-C', str(repo), 'rev-parse', '--is-bare-repository'],

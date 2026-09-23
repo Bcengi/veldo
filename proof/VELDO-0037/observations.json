@@ -46,6 +46,8 @@
       "case-directory": 5,
       "irregular-slug": 7,
       "missing-slug": 8,
+      "newline-below-directory": 60,
+      "newline-below-number": 61,
       "not-carriers": 1,
       "number-template": 9
     },
@@ -120,6 +122,14 @@
       "retire-reservation": "entity_owned",
       "rewind-counter": "entity_owned",
       "unrelated": null
+    },
+    "gitlink-carrier": {
+      "enable": null,
+      "next": 21,
+      "record": [
+        "proof/VELDO-0020",
+        "specs/VELDO-0001-base.md"
+      ]
     },
     "history": {
       "allocated": "VELDO-0003",
@@ -253,6 +263,14 @@
       "shallow-accept": "shallow_repository",
       "shallow-record": false
     },
+    "signed-history": {
+      "enable": null,
+      "next": 51,
+      "record": [
+        "specs/VELDO-0001-base.md",
+        "specs/VELDO-0050-signed.md"
+      ]
+    },
     "symlink": {
       "outside": [],
       "publish": "unsafe_path",
@@ -260,7 +278,7 @@
       "reader_parent_link": "unsafe_path"
     }
   },
-  "elapsed_seconds": 8.232801747042686,
+  "elapsed_seconds": 17.29344977508299,
   "pending": [
     [
       "other",
@@ -555,6 +573,14 @@
     [
       "aliases/shallow-repository-refused",
       true
+    ],
+    [
+      "aliases/gitlink-carrier-whatever-submodule-config",
+      true
+    ],
+    [
+      "aliases/signed-history-whatever-signature-config",
+      true
     ]
   ],
   "veldo-history-floors": {
@@ -589,9 +615,9 @@
   },
   "veldo-history-record-paths": [
     939,
-    144,
-    245,
-    481
+    143,
+    256,
+    488
   ],
   "verification": "Diagnostic observations; only bash scripts/verify.sh verifies the change."
 }

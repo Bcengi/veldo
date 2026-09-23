@@ -2,4 +2,4 @@
 +++ b/.veldo/control_readset.py
 @@ -75 +75 @@
 -HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',
-+HISTORY_OPTIONS = ('-m', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',
++HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-relative',
