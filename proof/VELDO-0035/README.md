@@ -145,3 +145,32 @@ validation or accept nonexistent/noncommit ids, and both fail the status-only ro
 one at a time to `.capsule/` and invoked from this repository root. All exit zero, explicitly
 refuse the unsafe operation, and emit no `BUG:` observation. R1's attached-connection stale-input
 control also passes. Capsule copies are removed and no other worktree is modified.
+
+### Final review verification and cost
+
+The clean-tree gate at `072eb215b8395eedad79524ea5ab27b8ff74183f` passed:
+
+```text
+selftest: 5711 passed, 0 failed
+FIRST USE: pass. Every family's sanctioned first use leaves the suite exactly as green as it was, so no assertion in scripts/suites/ requires this repository's current emptiness. What that does and does not cover is in this file's docstring.
+template sync: pass (157 pair(s) compared, 6 declared per-repo, 131 engine-only)
+mutations: passed registered=96 executed=96 rejected=96 workers=130 elapsed=90.404s
+GATE: GREEN (072eb215b8395eedad79524ea5ab27b8ff74183f)
+```
+
+`review-gate-summary.json` retains the elapsed time and full-log digest. This run
+supersedes the initial build gate above; `manifest.json` binds the corrected implementation
+and updated criterion evidence to this verified commit. The final commit changes proof only.
+
+`review-timing.json` measures the original suite at 6.81 s and the corrected suite at
+7.81 s (1.00 s added per run; the gate executes it twice). All twelve VELDO-0035 mutation
+cases, including the six new review controls and fresh baseline/no-op copies, take 39.49 s
+through the unchanged scheduler. The conservative whole-feature added workload is **55.12 s**
+(two corrected suite runs plus all twelve mutations), against the 60 s budget. This is a
+component measurement, not a whole-gate before/after differential.
+
+The first timing sample overlapped the gate's nested integration suite and measured 60.24 s;
+`review-timing-concurrent.json` retains it. The reported 55.12 s sample was taken after the full
+gate finished. These are observed timings, not a guarantee under arbitrary host contention.
+The gate itself took 762.22 s and rejected all 96 registered repository mutations, including
+all twelve snapshot cases. Proof remains readable text below 1 MB, with no full gate log.

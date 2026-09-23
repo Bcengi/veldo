@@ -1,0 +1,16 @@
+{
+  "commit": "072eb215b8395eedad79524ea5ab27b8ff74183f",
+  "exit_code": 0,
+  "elapsed_seconds": 762.2215620328207,
+  "started_clean": true,
+  "log_sha256": "b0e589ee9931dc7504479cb566b05a160f864c37fdbf7da3cc62023e82e3b009",
+  "log_bytes": 1892879,
+  "summary_lines": [
+    "selftest: 5711 passed, 0 failed",
+    "FIRST USE: pass. Every family's sanctioned first use leaves the suite exactly as green as it was, so no assertion in scripts/suites/ requires this repository's current emptiness. What that does and does not cover is in this file's docstring.",
+    "template sync: pass (157 pair(s) compared, 6 declared per-repo, 131 engine-only)",
+    "mutations: passed registered=96 executed=96 rejected=96 workers=130 elapsed=90.404s",
+    "GATE: GREEN (072eb215b8395eedad79524ea5ab27b8ff74183f)"
+  ],
+  "note": "Full canonical gate from a clean tree. Log stays outside the repository; gate byproducts are restored before the final evidence commit."
+}
