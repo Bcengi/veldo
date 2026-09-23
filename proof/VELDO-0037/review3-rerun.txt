@@ -13,7 +13,7 @@
  "receipt-over-revision": "entity_owned",
  "accept_snapshot-at-owned-prefix": "unregistered_inputs",
  "accept_revision-at-counter": "invalid_input",
- "accept_revision-new-at-alias-prefix": "entity_owned",
+ "accept_revision-new-at-alias-prefix": "stale_version",
  "unowned": "committed"
 }
 counter next after: 1
@@ -29,11 +29,11 @@ Traceback (most recent call last):
   File "<probe>/p3_foreign_revision.py", line 9, in <module>
     acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(other_repo)})
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 307, in attach_revisions
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 353, in attach_revisions
     store.bind_repositories(conn, domain_uuid, service.paths)
   File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 714, in bind_repositories
     raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
-p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpm_we6u5i/origin in this store, not <probe>/tmpm_we6u5i/unrelated/origin
+p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpmk9vvx_i/origin in this store, not <probe>/tmpmk9vvx_i/unrelated/origin
 exit 1
 === p3a_foreign_revision_direct.py
 enable before: True
@@ -46,11 +46,11 @@ Traceback (most recent call last):
   File "<probe>/p3b_clone_revision.py", line 8, in <module>
     c3 = st.open_store(db); acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(clone)})
                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 307, in attach_revisions
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 353, in attach_revisions
     store.bind_repositories(conn, domain_uuid, service.paths)
   File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 714, in bind_repositories
     raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
-p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmp5pn4sguf/origin in this store, not <probe>/tmp5pn4sguf/clone
+p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmps8368yot/origin in this store, not <probe>/tmps8368yot/clone
 exit 1
 === p3ba_clone_revision_direct.py
 attach to the clone: refused repository_binding_conflict
@@ -108,8 +108,7 @@ raw SQL rewinds counter -> next 1
 entity_owners in journal/replay state parts: False
 exit 0
 === q7_lost_commit.py (builder probe, not the reviewer's)
-side revision accepted at 42231ba8aa62
+side revision accepted at 67fe176becf4
 bound repository still holds it: False
-enable: committed, next = 1 floor_commits = ['d7809556a250']
-FINDING: VELDO-0009 is held by an accepted revision but the floor dropped it; next is 1
+enable: committed, next = 10 floor_commits = ['67fe176becf4', '71066e86747a']
 exit 0
