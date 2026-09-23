@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -852 +852 @@
+@@ -859 +859 @@
 -                        self.membership.VERSIONS_ENTITY: seen.get(self.membership.VERSIONS_ENTITY, {}).get('version', 0),
 +                        self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0),

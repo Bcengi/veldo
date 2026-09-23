@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -776 +776 @@
--        if principal in ((ledger or {}).get('revoked') or {}):
+@@ -780 +780 @@
+-        if not isinstance(revoked, dict) or principal in revoked:
 +        if False:

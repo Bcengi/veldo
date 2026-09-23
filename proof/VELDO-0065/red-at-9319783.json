@@ -1,0 +1,200 @@
+{
+ "commit": "9319783b12da93340cec6a3b02f3e54c53e6b220",
+ "details": [
+  "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger whose revoked is 5 is a named refusal in frame() and at the presenter",
+  "VELDO-0065 framing/ledger-read-fails-closed detail: a ledger whose revoked is ['someone-else'] is a named refusal in frame() and at the presenter",
+  "VELDO-0065 answer/redelivered-after-closed detail: control: after the request is answered in the inbox, a different message is told it is already answered",
+  "VELDO-0065 answer/redelivered-after-closed detail: control: after the request is canceled, a different message is told it is already answered",
+  "VELDO-0065 answer/closed-tell-after-edge-scope detail: an out-of-scope edge redelivering the recorded answer learns only not_authorized",
+  "VELDO-0065 answer/stale-current-told detail: a revision not yet framed is told the presentation is no longer current, with no promise",
+  "VELDO-0065 answer/stale-current-told detail: a reply while the framing no longer counts (its requester revoked) is told no longer current, no promise",
+  "VELDO-0065 answer/owner-not-current-silent detail: a reply to a pending request after the owner's enrollment was revoked is refused and nothing is sent",
+  "VELDO-0065 answer/owner-not-current-silent detail: a reply to a closed request after the owner's enrollment was revoked is refused and nothing is sent",
+  "VELDO-0065 answer/owner-not-current-silent detail: a reply to a pending request after the owner's membership was revoked is refused and nothing is sent",
+  "VELDO-0065 answer/owner-not-current-silent detail: a reply to a closed request after the owner's membership was revoked is refused and nothing is sent"
+ ],
+ "failed_rows": [
+  "VELDO-0065 framing/ledger-read-fails-closed",
+  "VELDO-0065 answer/redelivered-after-closed",
+  "VELDO-0065 answer/closed-tell-after-edge-scope",
+  "VELDO-0065 answer/stale-current-told",
+  "VELDO-0065 answer/owner-not-current-silent"
+ ],
+ "modules": {
+  "control_channel_presentation.py": {
+   "changed": [],
+   "sha256": "6772c9c1283495a8cc0297da4b2d967d60cf05623cadafa5439d0b5070bb6c7d"
+  },
+  "control_channel_projection.py": {
+   "changed": [],
+   "sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0065 install/assets",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/receipt-binds-shown-content",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/revision-identity",
+   true
+  ],
+  [
+   "VELDO-0065 answer/current-presentation-only",
+   true
+  ],
+  [
+   "VELDO-0065 answer/ruling-and-rationale",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/visible-supersession",
+   true
+  ],
+  [
+   "VELDO-0065 answer/unseen-refused",
+   true
+  ],
+  [
+   "VELDO-0065 answer/settle-consumes-answer",
+   true
+  ],
+  [
+   "VELDO-0065 framing/requester-only",
+   true
+  ],
+  [
+   "VELDO-0065 framing/stored-framing-reverified",
+   true
+  ],
+  [
+   "VELDO-0065 answer/not-before-publication",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/private-chat-only",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/replacement-without-reply-target",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/reply-link-verified",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/long-brief-split",
+   true
+  ],
+  [
+   "VELDO-0065 projection/one-message-per-version",
+   true
+  ],
+  [
+   "VELDO-0065 framing/key-by-store-order",
+   true
+  ],
+  [
+   "VELDO-0065 projection/notice-superseded",
+   true
+  ],
+  [
+   "VELDO-0065 projection/silent-from-store",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/refused-part-sent-again",
+   true
+  ],
+  [
+   "VELDO-0065 answer/choice-matching-and-feedback",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/notice-kind-fixed",
+   true
+  ],
+  [
+   "VELDO-0065 framing/frame-and-presenter-agree",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/retry-after-bounded",
+   true
+  ],
+  [
+   "VELDO-0065 answer/choice-normalization",
+   true
+  ],
+  [
+   "VELDO-0065 answer/after-answered-reply",
+   true
+  ],
+  [
+   "VELDO-0065 answer/tell-once-per-message",
+   true
+  ],
+  [
+   "VELDO-0065 projection/in-flight-notice-superseded",
+   true
+  ],
+  [
+   "VELDO-0065 framing/ledger-read-fails-closed",
+   false
+  ],
+  [
+   "VELDO-0065 presentation/retry-after-capped",
+   true
+  ],
+  [
+   "VELDO-0065 answer/reply-nfkc-before-split",
+   true
+  ],
+  [
+   "VELDO-0065 answer/redelivered-answer-silent",
+   true
+  ],
+  [
+   "VELDO-0065 answer/reply-after-closed",
+   true
+  ],
+  [
+   "VELDO-0065 projection/notices-per-version",
+   true
+  ],
+  [
+   "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+   true
+  ],
+  [
+   "VELDO-0065 answer/redelivered-after-closed",
+   false
+  ],
+  [
+   "VELDO-0065 answer/closed-tell-after-edge-scope",
+   false
+  ],
+  [
+   "VELDO-0065 answer/rationale-original-text",
+   true
+  ],
+  [
+   "VELDO-0065 answer/stale-current-told",
+   false
+  ],
+  [
+   "VELDO-0065 answer/owner-not-current-silent",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.8,
+ "spec_id": "VELDO-0065",
+ "suite": "scripts/suites/62_veldo_0065_presentations.py"
+}

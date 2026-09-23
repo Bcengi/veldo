@@ -1,4 +1,4 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -301 +300,0 @@
+@@ -304 +303,0 @@
 -             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),

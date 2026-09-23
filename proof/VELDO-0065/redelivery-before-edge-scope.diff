@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1172,0 +1173,2 @@
++        if self._is_recorded_answer(self._entity(answer_id(request, receipt['request_version'], receipt['owner'])), ev):
++            raise Refused('already_answered', 'this is the recorded answer, delivered again')

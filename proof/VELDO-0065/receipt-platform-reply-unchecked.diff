@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -378 +378 @@
+@@ -381 +381 @@
 -        if h.get('reply_to') != (receipt.get('reply_to_message_id') if i == 0 else None):
 +        if False:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -503 +503 @@
+@@ -506 +506 @@
 -        data.update(outcome='refused', refusal=refusal)
 +        data.update(outcome='published', refusal=refusal)

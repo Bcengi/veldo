@@ -188,3 +188,11 @@ message back; frame() refuses an unreadable ledger as the presenter does; the re
 the owner's own text; a reply to a presentation that no longer binds is told a new one is coming.
 The reviewer's uncaught mutants now fail rows and are registered. The criteria, status and risk are
 unchanged.
+
+2026-09-23, review r6: a sixth review left one blocker and four items, each fixed test first,
+recorded in the proof README: messages back follow one order (nothing to an owner no longer current,
+"already answered" first, a new presentation promised only when one will come); the edge scope check
+precedes the redelivery check; a ledger of the wrong shape is a named refusal; the split docstring
+names its characters. To reduce the gate cost, 14 strictly redundant finding-65 mutations were
+removed (each one's failing checks strictly contain another kept mutation's), keeping at least two
+per row; the list and reason are in the proof README. The criteria, status and risk are unchanged.

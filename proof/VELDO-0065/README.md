@@ -445,15 +445,71 @@ describe a gap.
 **Temporary directories.** The suite has no probe-style fixtures: its store, keys and loopback state
 live in one `TemporaryDirectory` it removes itself; `drive.py` and the mutation driver likewise.
 
+## Sixth review fixes, 2026-09-23
+
+A sixth review found everything holding except one blocker, and asked for four more fixes and a
+smaller gate cost, probed by q1 to q7. Each item was fixed test first in its own commit, with its row
+or row cases red at `9319783` by their own assertions, then green.
+
+| Item | Gap at 9319783 | Fix | Row | Mutations | Commit |
+| --- | --- | --- | --- | --- | --- |
+| 1 (q1, q2, q3, q6, blocking) | "A new presentation is coming" was sent where none would come (an unframed revision, a framing that no longer counts), and messages went to an owner whose membership or chat enrollment no longer held | One order for every message back: nothing at all for an owner no longer current (`owner_not_current`); a recorded answer is told "already answered: <ruling>" first; a new presentation is promised only when nothing refuses and only a bound field changed, otherwise the neutral "no longer current" | `answer/stale-current-told` (rewritten: it had asserted the promise for the framer-revoked case), `answer/owner-not-current-silent`, `answer/redelivered-after-closed` (its control now expects "already answered") | `stale-neutral-not-told`, `owner-enrollment-unchecked`, `owner-membership-unchecked`, `answered-told-only-while-pending` (plus the ones removed below) | `b570c09` |
+| 2 (q7) | An out-of-scope edge re-sending the recorded answer learned `already_answered` | The edge scope check runs before the redelivery check | `answer/closed-tell-after-edge-scope` | `redelivery-before-edge-scope` | `20e0f15` |
+| 3 (q4, q5) | A ledger whose `revoked` was a number raised a TypeError that took `publish()` down; a list or string was read as a set | frame() and the presenter refuse any `revoked` that is not a mapping | `framing/ledger-read-fails-closed` | `frame-ledger-any-shape` | `7cc42f5` |
+| 4 | The docstring named four colons | It names the five characters it splits at, U+2A74 DOUBLE COLON EQUAL included | none (documentation) | none | `4ac1e92` |
+| 5 | The mutation stage cost too much | 14 strictly redundant mutations removed (below) | none | none | `47b1a11` |
+
+**The removed mutations.** Every finding-65 mutation was run once on the current code
+(`redundant-mutations.json` records the result). A mutation is strictly redundant when another kept
+mutation's set of failing checks is a subset of its own: every check that catches the other also
+catches it, so it adds no teeth. They were removed greedily, most failing checks first, and never
+when that would leave a row with fewer than two mutations naming it; `notice-not-marked-superseded`
+is kept by the lead's instruction. 84 of 98 remain, every one of the 39 criterion rows named by at
+least two.
+
+| Removed | Subsumed by | Its checks the other fails |
+| --- | --- | --- |
+| `published-at-from-clock` | `answer-drops-rationale` | 14 of 75 |
+| `unconfirmed-notice-not-named` | `older-sent-notice-preferred` | 1 of 8 |
+| `owner-currency-unchecked` | `owner-enrollment-unchecked` | 2 of 4 |
+| `ascii-hyphen-only` | `x-drop-2043` | 1 of 3 |
+| `edge-scope-against-itself` | `redelivery-before-edge-scope` | 1 of 3 |
+| `redelivery-after-closed-told` | `redelivered-answer-told` | 3 of 3 |
+| `frame-ledger-unpinned` | `frame-ledger-pin-read-later` | 1 of 2 |
+| `ledger-unreadable-as-empty` | `journal-reader-ignores-kind` | 1 of 2 |
+| `presenter-ledger-any-shape` | `frame-ledger-any-shape` | 2 of 2 |
+| `stale-promise-on-any-refusal` | `stale-neutral-not-told` | 2 of 2 |
+| `stale-told-only-on-mismatch` | `stale-neutral-not-told` | 2 of 2 |
+| `x-closed-any-refusal` | `stale-neutral-not-told` | 2 of 2 |
+| `reconcile-skips-replaced` | `reconcile-current-only` | 1 of 1 |
+| `x-reconcile-only-in-already-presented` | `reconcile-current-only` | 1 of 1 |
+
+Their `.diff` files remain in this directory from earlier rounds: the standing rule allows deleting
+only files in the author's own scratch directory, so their removal is left to the lead;
+`mutations.json` lists only the 84 registered mutations.
+
+**Red at 9319783.** `python3 -B proof/VELDO-0065/drive.py --red 9319783` runs the current suite once
+against the modules of `9319783`, unchanged, and writes `red-at-9319783.json`: the new and rewritten
+cases of the five rows above fail by their own assertions, with no section raising, and no other row
+is red there.
+
+**The sixth reviewer's probes, re-run unchanged.** `review-r6-rerun.log`: q1 promises a new
+presentation only where one then comes, answers "already answered" first and sends nothing to a
+revoked owner; q2 sends nothing to an unenrolled chat and one message per inbound message; q3 sends
+nothing for a closed request whose owner or enrollment was revoked; q4 and q5 refuse every ledger
+shape by name; q7 refuses the out-of-scope edge as `not_authorized`. q6 prints its `BUG` line
+whenever anything is sent after an unframed revision; what is sent there is now the neutral "no
+longer current", not a promise, so that line no longer describes a defect.
+
 ## Measurements
 
-The suite runs in about 6 to 7 s on this host when it is quiet (7.16 s measured) and 13 to 18 s
-under a load average of 38 on 20 cores (13.44, 14.18 and 18.06 s measured while other agents ran),
-39 rows. Finding 65 has 89 mutations. With the merged driver, `python3 -B
-scripts/check_teeth_mutations.py --finding 65 --jobs 8` took 3 min 31 s under that load
-(`{"mutations_rejected": 89, ...}`); `drive.py`, which runs every case serially with a baseline and
-no-op per module, took 11 min 28 s. The gate's mutation stage runs 93 runs of the suite (89 mutants,
-one baseline and one no-op per mutated module) 8 in parallel, about 70 to 80 s of wall time at 6 to
-7 s a run, and its budget grows by 2 s per case (178 s); the unit stage gains the suite's 6 to 7 s.
-That is over the 60 s limit, as the previous two rounds already were, and is reported, not assumed
-to fit.
+The suite runs in about 7.5 to 9 s at the host's current load (7.60, 8.04 and 9.17 s measured at a
+load average of 12 to 17 on 20 cores), 40 rows; on a quiet host it ran in about 6 s last round.
+Finding 65 now has 84 mutations (98 before the redundancy cut). With the merged driver,
+`python3 -B scripts/check_teeth_mutations.py --finding 65 --jobs 8` took 1 min 43 s
+(`{"mutations_rejected": 84, ...}`); `drive.py`, which runs every case serially with a baseline and
+a no-op per module, took 13 min 7 s. New stage estimate: the gate's mutation stage runs 88 suite
+runs (84 mutants, a baseline and a no-op per mutated module) 8 in parallel, about 66 s at 6 s a run
+and about 83 s at this load's 7.5 s, and its budget grows by 2 s per case (168 s); the unit stage
+gains the suite's 6 to 9 s. That is about 72 to 92 s in all, still over the 60 s limit, and is
+reported rather than assumed to fit.

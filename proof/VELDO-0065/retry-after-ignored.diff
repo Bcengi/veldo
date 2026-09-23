@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -996 +996 @@
+@@ -1003 +1003 @@
 -                and self.clock() < existing['retry_not_before']):
 +                and False):

@@ -1,4 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1168 +1167,0 @@
--            self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')
+@@ -1200 +1200 @@
+-                self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')
++                pass

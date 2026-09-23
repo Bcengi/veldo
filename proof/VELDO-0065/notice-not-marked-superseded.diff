@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -549 +549 @@
+@@ -552 +552 @@
 -            changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}
 +            pass

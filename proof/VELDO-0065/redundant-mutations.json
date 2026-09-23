@@ -1,0 +1,174 @@
+{
+ "kept": [
+  "answer-checks-subject-only",
+  "answer-drops-rationale",
+  "answer-only-to-last-part",
+  "answer-records-typed-choice-as-ruling",
+  "answer-skips-edge-signature",
+  "answer-time-same-second-refused",
+  "answer-time-unchecked",
+  "answered-checked-after-choice",
+  "answered-not-told",
+  "answered-told-only-while-pending",
+  "bindings-ignore-request-identity",
+  "choice-match-case-sensitive",
+  "choice-separators-distinct",
+  "choice-without-nfkc",
+  "closed-not-told",
+  "closed-reported-as-stale",
+  "edge-scope-unchecked",
+  "frame-key-by-time",
+  "frame-key-pin-read-later",
+  "frame-ledger-any-kind",
+  "frame-ledger-any-shape",
+  "frame-ledger-digest-unchecked",
+  "frame-ledger-pin-read-later",
+  "frame-ledger-unchecked",
+  "framing-key-read-now",
+  "framing-ledger-unchecked",
+  "framing-signature-unchecked",
+  "group-chat-presented",
+  "journal-reader-ignores-kind",
+  "missing-reference-uses-current",
+  "notice-intent-without-framing-pin",
+  "notice-kind-from-caller",
+  "notice-not-marked-superseded",
+  "notice-of-any-request",
+  "older-sent-notice-preferred",
+  "only-first-notice-marked",
+  "owner-enrollment-unchecked",
+  "owner-membership-unchecked",
+  "owner-not-told",
+  "part-length-in-characters",
+  "partial-never-sent-again",
+  "pending-notice-never-marked",
+  "presentation-ignores-notice",
+  "presentation-key-without-digest",
+  "project-owner-frames-again",
+  "projection-ignores-enrollment-setting",
+  "projection-ignores-presentations",
+  "projection-never-reports-presented",
+  "projection-notice-beside-presentation",
+  "rationale-keeps-the-colon",
+  "rationale-nfkc-folded",
+  "receipt-platform-reply-unchecked",
+  "receipt-reply-link-unchecked",
+  "reconcile-current-only",
+  "redelivered-answer-told",
+  "redelivery-before-edge-scope",
+  "redelivery-by-chat-only",
+  "redelivery-silent-only-while-pending",
+  "render-omits-risk",
+  "replacement-requires-reply-target",
+  "replacement-without-reply-link",
+  "reply-link-always-claimed",
+  "request-digest-omits-version",
+  "retry-after-above-bound-ignored",
+  "retry-after-any-number",
+  "retry-after-boolean-accepted",
+  "retry-after-ignored",
+  "retry-after-unbounded",
+  "split-before-nfkc",
+  "stale-neutral-not-told",
+  "stale-not-told",
+  "stored-framing-any-framer",
+  "stored-framing-any-writer",
+  "stored-framing-key-at-any-time",
+  "tell-keyed-by-text",
+  "tell-not-deduplicated",
+  "unmapped-choice-presented",
+  "unpresented-reason-not-counted",
+  "unseen-only-refused-outcome",
+  "unsent-marked-published",
+  "x-drop-2043",
+  "x-membership-pin-later",
+  "x-notice-transition-any-notice",
+  "x-versions-pin-later"
+ ],
+ "removed": [
+  {
+   "by_checks": 14,
+   "name": "published-at-from-clock",
+   "own_checks": 75,
+   "subsumed_by": "answer-drops-rationale"
+  },
+  {
+   "by_checks": 1,
+   "name": "unconfirmed-notice-not-named",
+   "own_checks": 8,
+   "subsumed_by": "older-sent-notice-preferred"
+  },
+  {
+   "by_checks": 2,
+   "name": "owner-currency-unchecked",
+   "own_checks": 4,
+   "subsumed_by": "owner-enrollment-unchecked"
+  },
+  {
+   "by_checks": 1,
+   "name": "ascii-hyphen-only",
+   "own_checks": 3,
+   "subsumed_by": "x-drop-2043"
+  },
+  {
+   "by_checks": 1,
+   "name": "edge-scope-against-itself",
+   "own_checks": 3,
+   "subsumed_by": "redelivery-before-edge-scope"
+  },
+  {
+   "by_checks": 3,
+   "name": "redelivery-after-closed-told",
+   "own_checks": 3,
+   "subsumed_by": "redelivered-answer-told"
+  },
+  {
+   "by_checks": 1,
+   "name": "frame-ledger-unpinned",
+   "own_checks": 2,
+   "subsumed_by": "frame-ledger-pin-read-later"
+  },
+  {
+   "by_checks": 1,
+   "name": "ledger-unreadable-as-empty",
+   "own_checks": 2,
+   "subsumed_by": "journal-reader-ignores-kind"
+  },
+  {
+   "by_checks": 2,
+   "name": "presenter-ledger-any-shape",
+   "own_checks": 2,
+   "subsumed_by": "frame-ledger-any-shape"
+  },
+  {
+   "by_checks": 2,
+   "name": "stale-promise-on-any-refusal",
+   "own_checks": 2,
+   "subsumed_by": "stale-neutral-not-told"
+  },
+  {
+   "by_checks": 2,
+   "name": "stale-told-only-on-mismatch",
+   "own_checks": 2,
+   "subsumed_by": "stale-neutral-not-told"
+  },
+  {
+   "by_checks": 2,
+   "name": "x-closed-any-refusal",
+   "own_checks": 2,
+   "subsumed_by": "stale-neutral-not-told"
+  },
+  {
+   "by_checks": 1,
+   "name": "reconcile-skips-replaced",
+   "own_checks": 1,
+   "subsumed_by": "reconcile-current-only"
+  },
+  {
+   "by_checks": 1,
+   "name": "x-reconcile-only-in-already-presented",
+   "own_checks": 1,
+   "subsumed_by": "reconcile-current-only"
+  }
+ ]
+}

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -560 +560 @@
+@@ -563 +563 @@
 -    if (receipt.get('outcome') != 'published' or notice not in named
 +    if (receipt.get('outcome') != 'published'
