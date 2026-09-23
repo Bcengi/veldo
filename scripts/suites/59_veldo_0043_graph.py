@@ -122,12 +122,26 @@ from langgraph.types import Command, StateSnapshot
 SWITCHES = ('LANGSMITH_TRACING', 'LANGSMITH_TRACING_V2', 'LANGCHAIN_TRACING', 'LANGCHAIN_TRACING_V2')
 
 
+# Which compiled LangGraph graphs this process actually executed (counted at Pregel.invoke).
+INVOKED = []
+import langgraph.pregel
+_invoke = langgraph.pregel.Pregel.invoke
+
+
+def _counting(self, *args, **kwargs):
+    INVOKED.append(type(self).__module__ + '.' + type(self).__qualname__)
+    return _invoke(self, *args, **kwargs)
+
+
+langgraph.pregel.Pregel.invoke = _counting
+
+
 def audit():
     import langsmith.utils
     with open(AUDIT, 'a') as log:
         log.write(json.dumps({'switches': {k: os.environ.get(k) for k in SWITCHES},
                               'tracing': langsmith.utils.tracing_is_enabled(),
-                              'sockets': sorted(set(SOCKETS))}) + '\n')
+                              'sockets': sorted(set(SOCKETS)), 'invoked': INVOKED}) + '\n')
 
 
 
@@ -319,6 +333,14 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         canceled = call('cancel', 'cycle-r2', 'command-r5', workflow('lifecycle'), second.get('resume'))
         failed = call('start', 'cycle-r3', 'command-r6', snapshot, workflow('failing'))
         lifecycle_counts = dict(adapter.counts)
+        # Runtime evidence is what the locked LangGraph produced: a stub's own label is refused.
+        try:
+            stub_answer = graph.Adapter({'python': _s43_sys.executable, 'runner': str(root / 'stub_runner.py')},
+                                        'domain', 'repository', evidence=graph.runtime_evidence()).start(
+                'cycle-stub', 'command-stub', snapshot, workflow('lifecycle'))
+            stub_evidence = 'accepted: ' + stub_answer['runtime']['name']
+        except Exception as error:
+            stub_evidence = getattr(error, 'code', type(error).__name__)
         production = call('start', 'cycle-r4', 'command-r7', snapshot, workflow('lifecycle'),
                           target=graph.Adapter(runtime, 'domain', 'repository'))
         foreign = [call('start', 'cycle-f-' + name, 'command-f-' + name, snapshot, workflow(name))
@@ -378,7 +400,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     observations.update(started=started, held=held, advanced=advanced, canceled=canceled, failed=failed,
                         production=production, foreign=foreign, untyped=untyped, assertions=assertions,
                         probe=probe.get('resume'), proposed=proposed, unit=list(unit), journal=journal,
-                        store_unchanged_by_graph=before == after, audits=audits,
+                        store_unchanged_by_graph=before == after, audits=audits, stub_evidence=stub_evidence,
                         runner_processes=sum(adapter.counts.values()))
 
     expect('graph/runtime/lifecycle', started.get('outcome') == 'suspended'
@@ -391,7 +413,11 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and failed.get('failure', {}).get('code') == 'missing_evidence'
            and production.get('failure', {}).get('code') == 'unsupported_workflow'
            and lifecycle_counts == {'accepted': 6, 'refused': 0}
-           and all(r.get('runtime') == identity for r in (started, held, advanced, canceled, failed, production))
+           and all(r.get('runtime') == identity for r in (started, held, advanced, canceled, failed))
+           and production.get('runtime') == {'name': 'none', 'version': ''}
+           and len(audits) >= 6 and all(a['invoked'] == ['langgraph.graph.state.CompiledStateGraph']
+                                        for a in audits[:6])
+           and stub_evidence == 'missing_evidence'
            and [o['operation'] for o in adapter.observations[:6]] ==
            ['start', 'suspend', 'advance', 'start', 'cancel', 'start']
            and adapter.observations[2]['accepted_inputs'] == {'snapshot': snapshot, 'workflow': workflow('lifecycle')})
