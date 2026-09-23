@@ -569,9 +569,10 @@ def exchange(runtime, sent, timeout=120):
         empty = _working_directory(work)
     except OSError as error:
         raise Refused('runtime_unavailable', 'the stage cannot be used: ' + (error.strerror or type(error).__name__)) from error
-    # Request and answer travel through anonymous files, not pipes, so a subprocess a node left
-    # holding the answer stream cannot keep the exchange open.
-    with tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:
+    # Request and answer travel through anonymous files under the stage's work directory (never
+    # the domain process's TMPDIR), not pipes, so a subprocess a node left holding the answer
+    # stream cannot keep the exchange open.
+    with tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:
         given.write(canonical(sent))
         given.seek(0)
         try:
