@@ -217,9 +217,14 @@ SETTLEMENT_TYPES = {'schema': str, 'domain_uuid': str, 'decision_id': str, 'deci
                     'request_version': int, 'principals': list, 'settled_at': str}
 
 
+SIGNER_LIMIT = 256
+SIGNATURE_LIMIT = 16384
+
+
 def _passable(text):
-    """Whether text can be handed to the signature verifier at all: it holds no NUL (an argument or
-    file the OpenSSH tool reads cannot carry one) and it encodes as UTF-8 (no lone surrogate)."""
+    """Whether text is fit to be written for the signature verifier at all: it holds no NUL (a file
+    or argument the OpenSSH tool reads cannot carry one) and it encodes as UTF-8 (no lone surrogate).
+    The size and character bounds of each field are _bounded's."""
     if '\x00' in text:
         return False
     try:
@@ -227,6 +232,16 @@ def _passable(text):
     except UnicodeEncodeError:
         return False
     return True
+
+
+def _bounded(name, text):
+    """Whether a signer or signature is within what may reach ssh-keygen: a signer (a principal, one
+    command-line argument) of at most SIGNER_LIMIT characters with no whitespace or control character,
+    and a signature (an armored block, several lines) of at most SIGNATURE_LIMIT characters. A real
+    armored Ed25519 signature is a few hundred bytes."""
+    if name == 'signer':
+        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)
+    return len(text) <= SIGNATURE_LIMIT
 
 
 def settlement_invalid(sid, data):
@@ -242,7 +257,7 @@ def settlement_invalid(sid, data):
         problems.append(code + 'settlement')
     for name in ('signature', 'signer'):
         value = data.get(name)
-        if value is not None and (not isinstance(value, str) or not _passable(value)):
+        if value is not None and (not isinstance(value, str) or not _passable(value) or not _bounded(name, value)):
             problems.append(code + name)
     if isinstance(body, dict):
         for name, kind in SETTLEMENT_TYPES.items():

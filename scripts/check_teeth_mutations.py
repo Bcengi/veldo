@@ -1097,6 +1097,15 @@ def cases():
               "    message = message.encode('ascii', 'backslashreplace').decode('ascii')\n", 'unexpected-message')
     decisions('unexpected-message-multiline', 'control_eligibility.py',
               "    message = ' '.join(str(error).split())\n", "    message = str(error)\n", 'unexpected-message')
+    # VELDO-0054 review 5, item 1: what reaches the verifier is bounded.
+    decisions('signer-unbounded', 'control_decision_dependency.py',
+              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
+              "        return True\n", 'verifier-input-bounded')
+    decisions('signer-whitespace-allowed', 'control_decision_dependency.py',
+              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
+              "        return len(text) <= SIGNER_LIMIT\n", 'verifier-input-bounded')
+    decisions('signature-unbounded', 'control_decision_dependency.py',
+              "    return len(text) <= SIGNATURE_LIMIT\n", "    return True\n", 'verifier-input-bounded')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

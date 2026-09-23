@@ -816,6 +816,38 @@ def _v54_suite():
                    and set(texts['VELDO-9514'][1]) == {wanted_text['VELDO-9514'], 'missing_authority:admission'}
                    and texts['VELDO-9514'][2] == [wanted_text['VELDO-9514']])
 
+        with region('decisions/verifier-input-bounded'):
+            # What reaches the verifier is bounded: a signer over 256 characters or holding whitespace or a
+            # control character, and a signature over 16 KiB, are invalid_input for the unit; they never
+            # reach ssh-keygen, never read as a verifier outage, never mask the unit's other refusals.
+            BOUNDED = {'VELDO-9521': ('signer', lambda d: d.update(signer='s' * 257)),
+                       'VELDO-9522': ('signer', lambda d: d.update(signer='veldo settlement')),
+                       'VELDO-9523': ('signer', lambda d: d.update(signer='veldo-settlement\x1b')),
+                       'VELDO-9524': ('signature', lambda d: d.update(signature=d['signature'] + 'A' * 16385)),
+                       'VELDO-9525': ('signer', lambda d: d.update(signer='s' * 200000))}
+            planned('PLAN-9415', sorted(BOUNDED))
+            for sid, (field, change) in BOUNDED.items():
+                rid = 'decision:D-' + sid[-4:]
+                decision(rid, 'spec', sid, [sid])
+                settle(rid, after=change)
+            put('admission:VELDO-9525', 'admission', dict(unit='VELDO-9525', state='withdrawn', scope_digest='sha256:scope'))
+            bounded = {}
+            for sid in BOUNDED:
+                try:
+                    bounded[sid] = ('ok', gate.decide('build', sid, context=CONTEXT['build'])['refusals'],
+                                    gate.decision_blockers(sid))
+                except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                    bounded[sid] = ('raised', type(error).__name__)
+            observed['verifier_input'] = {sid: (v[0], [c[:120] for c in v[1]] if v[0] == 'ok' else v[1])
+                                          for sid, v in bounded.items()}
+            wanted_bounded = {sid: 'invalid_input:settlement:decision:D-%s:1/%s' % (sid[-4:], field)
+                              for sid, (field, _) in BOUNDED.items()}
+            check('decisions/verifier-input-bounded',
+                   all(bounded[sid] == ('ok', [wanted_bounded[sid]], [wanted_bounded[sid]]) for sid in BOUNDED if sid != 'VELDO-9525')
+                   and bounded['VELDO-9525'][0] == 'ok'
+                   and set(bounded['VELDO-9525'][1]) == {wanted_bounded['VELDO-9525'], 'missing_authority:admission'}
+                   and bounded['VELDO-9525'][2] == [wanted_bounded['VELDO-9525']])
+
         with region('decisions/deep-blocks-named'):
             # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it
             # names is held by invalid_input:<id>/blocks and every other unit is decided as before. And
