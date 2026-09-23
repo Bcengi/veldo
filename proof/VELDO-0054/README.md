@@ -126,15 +126,15 @@ the settlement producer that will write them, and VELDO-0020's `settle` is the t
 sign. The fixture's signatures test consumption only and authenticate no live owner. The Gate's other
 inputs are VELDO-0052's seams as landed.
 
-## Outside this footprint: one required change and two readers
+## The suite 60 fixture, and two readers outside the footprint
 
-**Suite 60 needs one fixture line removed.** `scripts/suites/60_veldo_0052_eligibility.py` line 158
-stores `decision:settled`, a record whose only resolution is `state: 'settled'` with no settlement,
-and expects it NOT to block VELDO-9106, its valid unit. That is exactly the inline status edit this
-specification's AC2 must refuse, so with this branch suite 60 is red (15 rows). The file is not in
-VELDO-0054's footprint and was not changed here. Deleting that one line (no other change) makes suite
-60 pass 80 of 80 on this branch and `--finding 52` reject all 47 mutations; VELDO-9104's expectation
-(`unresolved_decision:decision:9104`) is unchanged.
+**Suite 60 lost one fixture line.** `scripts/suites/60_veldo_0052_eligibility.py` stored
+`decision:settled`, a record whose only resolution was `state: 'settled'` with no settlement, and
+expected it NOT to block VELDO-9106, its valid unit. That is exactly the inline status edit this
+specification's AC2 refuses, so with the new predicate suite 60 was red (15 rows). By the lead's
+decision the file joined VELDO-0054's footprint with a History line, and that one line was deleted
+(no other change): suite 60 passes 80 of 80 and `--finding 52` rejects all 47 mutations. VELDO-9104's
+expectation (`unresolved_decision:decision:9104`) is unchanged.
 
 **Two readers keep the pre-factory reading.** `runstatus._burndown` (not in this footprint) still
 calls `plan._decision_blocks(fm)` without a Gate, so its display shows every inline entry as blocking
@@ -151,7 +151,6 @@ stage's scaled budget by 36 s. Targeted checks run on this branch:
 `python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (38 passed, 12 of them this suite's),
 `python3 -B scripts/check_teeth_mutations.py --finding 54` (18 rejected), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs,
-install-and-run, and every other suite that loads a module touched here (all green except suite 60,
-above). The full gate is run by the lead.
+install-and-run, and every other suite that loads a module touched here, suite 60 included. The full gate is run by the lead.
 
 `drive.py` regenerates `observations.json` from one run of the suite.

@@ -33,6 +33,7 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/60_veldo_0052_eligibility.py"
   - "specs/VELDO-0054-floor-decision-dependencies.md"
   - "specs/index.md"
   - "proof/VELDO-0054/*"
@@ -125,3 +126,8 @@ retained function. No specification status or historical proof was changed.
 2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
 falsifiers and their second mutations are registered with the repository's mutation driver
 (finding 54). No criterion, status or evidence universe changed.
+
+2026-09-23, build: scripts/suites/60_veldo_0052_eligibility.py joined the footprint. The VELDO-0052
+fixture stored an unsettled decision marked `state: settled` and expected it to unblock work; AC2
+makes exactly that inline status edit a named blocker, so the fixture line is removed. No other line
+of that suite, and no criterion, status or evidence universe, changed.

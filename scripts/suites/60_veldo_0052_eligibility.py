@@ -155,7 +155,6 @@ def _v52_suite():
         unit('VELDO-9103', depends=('VELDO-9100', 'VELDO-9199'))
         unit('VELDO-9104')
         put('decision:9104', 'decision', dict(blocks=['VELDO-9104'], state='open'))
-        put('decision:settled', 'decision', dict(blocks=['VELDO-9106'], state='settled'))
         unit('VELDO-9105', scope='sha256:new', admission_scope='sha256:old')
         unit('VELDO-9106')
 
