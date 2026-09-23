@@ -74,7 +74,8 @@ acceptance_criteria:
     text: >
       Claim: The built UI and its dependency set satisfy the owner stack and provenance rules. Set
       and completeness: Compare the real build manifest, lockfile and imported/served assets to
-      React/TypeScript/Vite, shadcn/ui AI chat, TanStack Table, React Flow and Monaco requirements;
+      React/TypeScript/Vite, shadcn/ui AI chat, TanStack Table, React Flow, Monaco and
+      Chart.js with react-chartjs-2 requirements; explicitly reject shadcn charts and Recharts;
       record origin/license/tier evidence for each direct/transitive dependency and bundled asset.
       Reject unresolved origin, Chinese-origin dependencies or any library with free/paid tiers
       before qualification. Falsifier: Allow a dependency flagged with free and paid library tiers
@@ -110,7 +111,7 @@ specification status, implementation, test, runtime policy or deployed service c
 
 The owner requires this UI in Telegram 28857: "otherwise we'll be flying blind". The selected
 stack is React + TypeScript + Vite, shadcn/ui including its AI chat parts, TanStack Table,
-React Flow for the editor and Monaco for code/diffs. No Chinese-origin dependency anywhere and
+React Flow for the editor, Monaco for code/diffs and Chart.js with react-chartjs-2 for charts. No Chinese-origin dependency anywhere and
 no library with free and paid tiers; verify direct and transitive provenance and licenses
 before choosing versions. If a selected component conflicts, record an owner decision instead
 of silently substituting or exempting it. Bcengi products remain on Vue.
@@ -122,6 +123,16 @@ executable registrations to each criterion's declared universe, observe the real
 and retain the driven negative-control diff and named failed row. Fixtures cannot certify real
 platform, engine or host behavior. Required evidence labels describe future implementation proof,
 not tests run by this writing revision.
+
+### Allowed dependencies
+
+The allowed direct UI dependency list is React, TypeScript, Vite, shadcn/ui AI chat and UI
+components (excluding shadcn charts), TanStack Table, React Flow, Monaco, Chart.js and
+react-chartjs-2. Chart.js and react-chartjs-2 are both MIT licensed. Chart.js is the charting
+library Bcengi's Vue apps already use. Use Chart.js through react-chartjs-2 for the
+spend-over-time screen; shadcn charts and Recharts are prohibited under the owner's
+no-Chinese-origin rule. Exact versions and transitive dependencies still require the
+provenance/license checks in AC4.
 
 ## Screen contract
 
@@ -136,7 +147,7 @@ source of state and mutations. A phone is not a reduced read-only mode.
 | Live agent run | Timeline of LangGraph steps and expandable tool calls beside artifacts/code | Vertical step timeline, tap-open tool arguments/results and artifact view; progress remains visible while reading |
 | Pending decisions | Inbox plus exact shown question, choices, rationale and inline answer | Full-width decision cards, readable presentation and inline choices/rationale; stale-answer feedback stays beside the action |
 | Gate and review results | Check table, findings, proof links and Monaco source/diff panes | Check/finding cards with navigable proof; Monaco code/diff view supports wrapping and single-pane old/new selection |
-| Spend over time | Time-series totals with provider/project/run breakdown and unknown exposure | Readable time range and summary, touch-selectable points and compact breakdown; unknown exposure never shown as zero |
+| Subscription usage over time (spend view) | Chart.js via react-chartjs-2 time series in invocation/time/CLI-reported token or message units, with provider/project/run breakdown, rate-limit windows and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and compact breakdown; unknown exposure never shown as zero |
 | Team and agent/tool/MCP configuration | Role table and versioned detail forms listing exact effective tools/servers | Role cards and full-width forms; all tools/servers and protected credential references remain inspectable/editable |
 | Workflow/pipeline editor | React Flow canvas, palette and node/edge properties with version/save state | Pan/zoom canvas plus an accessible ordered node/edge list and property sheet; add/connect/reorder via touch controls, with visible version/save state |
 

@@ -28,7 +28,8 @@ is built, including W57. Earlier tracker-required wording in R03/R07/R12/R18/R37
 is superseded by this shared intake and settlement path. Additional channels require a later choice.
 
 The UI stack is the owner's 2026-09-22 decision after comparison: React + TypeScript + Vite,
-shadcn/ui including its AI chat parts, TanStack Table, React Flow and Monaco. No Chinese-origin
+shadcn/ui including its AI chat parts, TanStack Table, React Flow, Monaco and Chart.js with
+react-chartjs-2 (both MIT). Shadcn charts and Recharts are prohibited. No Chinese-origin
 dependency anywhere and no library with free and paid tiers; exact direct/transitive versions and
 licenses must satisfy that ruling before implementation selection. Every screen works excellently
 on phone and desktop. Bcengi's products remain on Vue. The authenticated API supports state reads,

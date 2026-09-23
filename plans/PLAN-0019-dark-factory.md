@@ -187,7 +187,8 @@ constraints:
     text: >
       Owner decision 2026-09-22 after stack comparison (UI requirement in Telegram 28857): Veldo
       uses React, TypeScript, Vite, shadcn/ui including its AI chat parts, TanStack Table, React
-      Flow and Monaco. No Chinese-origin dependency anywhere and no library with free and paid
+      Flow, Monaco and Chart.js with react-chartjs-2 (both MIT); shadcn charts and Recharts
+      are prohibited. No Chinese-origin dependency anywhere and no library with free and paid
       tiers. Verify provenance, transitive dependencies and licensing before selecting exact
       versions; a conflicting component requires an owner decision, not an exception hidden in
       implementation. Every screen must be excellent on phone and desktop. Bcengi products remain on

@@ -230,7 +230,7 @@ Workflow definitions are versioned Veldo data; LangGraph executes them and the c
 | NG3 | 28857, "otherwise we'll be flying blind": remove the no-management-console exclusion; Veldo's phone/desktop UI is in R1. |
 | C14 (new) | 28848, "Claude code and langgraph can't be out": every running-journey function is MVP; robustness later. |
 | C15 (new) | 28859: versioned per-role MCP/tool configuration is handed through exactly, with no silent capability reduction and no special Jira channel. |
-| C16 (new) | Owner 2026-09-22 stack decision after comparison, UI requirement 28857: React/TypeScript/Vite, shadcn/ui AI chat, TanStack Table, React Flow, Monaco; no Chinese-origin dependencies or free/paid-tier libraries; excellent phone/desktop layouts; Bcengi products stay Vue. No message number was supplied for the stack choice. |
+| C16 (new) | Owner 2026-09-22 stack decision after comparison, UI requirement 28857: React/TypeScript/Vite, shadcn/ui AI chat, TanStack Table, React Flow, Monaco, Chart.js with react-chartjs-2 (MIT); shadcn charts and Recharts prohibited; no Chinese-origin dependencies or free/paid-tier libraries; excellent phone/desktop layouts; Bcengi products stay Vue. No message number was supplied for the stack choice. |
 | C17 (new) | Owner 2026-09-22 UI/API/workflow direction, API entry in 28857: authenticated read/message/answer API; Veldo owns versioned workflow data, LangGraph runs it, canvas only edits. No separate message number was supplied for workflow data. |
 
 C13 is unchanged: exact accepted-commit, contract-named, read-only repository attachments.
