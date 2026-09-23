@@ -60,6 +60,10 @@ ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
                'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONNOUSERSITE': '1',
                'LANGSMITH_TRACING': 'false', 'LANGSMITH_TRACING_V2': 'false',
                'LANGCHAIN_TRACING': 'false', 'LANGCHAIN_TRACING_V2': 'false'}
+# Bounds checked before parsing or walking, without recursion: an answer or request nested deeper
+# than MAX_DEPTH, or an answer larger than MAX_ANSWER_BYTES, is a named refusal.
+MAX_DEPTH = 32
+MAX_ANSWER_BYTES = 1 << 20
 HERE = Path(__file__).resolve().parent
 INSTALL_COMMAND = 'python3 .veldo/control_graph_install.py'
 RUNNER = 'control_graph_langgraph.py'
@@ -78,6 +82,45 @@ class Refused(Exception):
     def __init__(self, code, detail):
         self.code, self.detail = code, detail
         super().__init__(code + ': ' + detail)
+
+
+def text_depth(raw, limit=MAX_DEPTH):
+    """Deepest array/object nesting of JSON text, scanned iteratively; stops once past `limit`."""
+    depth = deepest = 0
+    in_string = escaped = False
+    for byte in raw:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif byte == 0x5c:
+                escaped = True
+            elif byte == 0x22:
+                in_string = False
+        elif byte == 0x22:
+            in_string = True
+        elif byte in (0x5b, 0x7b):
+            depth += 1
+            if depth > deepest:
+                deepest = depth
+                if deepest > limit:
+                    return deepest
+        elif byte in (0x5d, 0x7d):
+            depth -= 1
+    return deepest
+
+
+def value_depth(value, limit=MAX_DEPTH):
+    """Deepest list/dict nesting of a Python value, walked with an explicit stack."""
+    deepest, stack = 0, [(value, 1)]
+    while stack:
+        item, depth = stack.pop()
+        if type(item) in (list, dict):
+            if depth > deepest:
+                deepest = depth
+                if deepest > limit:
+                    return deepest
+            stack.extend((child, depth + 1) for child in (item.values() if type(item) is dict else item))
+    return deepest
 
 
 def canonical(value):
@@ -139,6 +182,8 @@ def request(operation, identity, **fields):
         _versioned(body['snapshot'], 'snapshot', 'invalid_input')
     if 'supplied_results' in body and type(body['supplied_results']) is not list:
         raise Refused('invalid_input', 'supplied_results must be a list')
+    if value_depth(body) > MAX_DEPTH:
+        raise Refused('invalid_input', 'request nests deeper than ' + str(MAX_DEPTH))
     try:
         plain(body, 'request')
     except Refused as error:
@@ -148,6 +193,11 @@ def request(operation, identity, **fields):
 
 def response(sent, raw):
     """Parse the runner's bytes into one accepted plain response, or refuse by name."""
+    raw = raw.encode() if type(raw) is str else bytes(raw)
+    if len(raw) > MAX_ANSWER_BYTES:
+        raise Refused('invalid_response', 'answer is larger than ' + str(MAX_ANSWER_BYTES) + ' bytes')
+    if text_depth(raw) > MAX_DEPTH:
+        raise Refused('invalid_response', 'answer nests deeper than ' + str(MAX_DEPTH))
     try:
         value = json.loads(raw, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))
     except ValueError as error:

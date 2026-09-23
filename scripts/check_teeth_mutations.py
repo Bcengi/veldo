@@ -456,6 +456,12 @@ def cases():
           'env=dict(ENVIRONMENT),', 'env=None,', 'runtime/tracing-off')
     graph('graph-tracing-switch-on', 'control_graph.py',
           "'LANGSMITH_TRACING_V2': 'false'", "'LANGSMITH_TRACING_V2': 'true'", 'runtime/tracing-off')
+    # Review findings F5, F4, F3, F2 and F1 (2026-09-23): two different defects per new row.
+    graph('graph-deep-answer-unbounded', 'control_graph.py',
+          '    if text_depth(raw) > MAX_DEPTH:\n', '    if False:\n', 'shape/deep-answer')
+    graph('graph-deep-answer-unnamed', 'control_graph.py',
+          "        raise Refused('invalid_response', 'answer nests deeper than ' + str(MAX_DEPTH))",
+          "        raise ValueError('answer nests deeper than ' + str(MAX_DEPTH))", 'shape/deep-answer')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
