@@ -440,8 +440,8 @@ class Gate:
                  workspace=None):
         self.store, self.conn = store, conn
         # The workspace whose architecture every decision judges (VELDO-0053). A store-only Gate (no
-        # workspace) cannot look at a file: it refuses whenever the authority has accepted an
-        # architecture, and otherwise the repository has none the authority knows of.
+        # workspace) cannot look at a file, so its architecture predicate always refuses
+        # (missing_evidence:architecture/workspace): the default argument is never a pass.
         self.workspace = str(workspace) if workspace is not None else None
         self._validator = None
         self.domain_uuid, self.repository_uuid = domain_uuid, repository_uuid
@@ -751,9 +751,9 @@ class Gate:
             found['refusals'] = ['missing_authority:architecture']
             return found
         if self.workspace is None:
+            # No workspace, no file to judge: never a pass, whatever the store says (or does not say).
             found['basis'] = 'store_only'
-            if accepted:
-                found['refusals'] = ['missing_evidence:architecture/workspace']
+            found['refusals'] = ['missing_evidence:architecture/workspace']
             return found
         try:
             load, ran = self._architecture_validator().entry_contract(self.workspace, True if accepted else None)

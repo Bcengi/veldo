@@ -760,10 +760,17 @@ def cases():
                  "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'",
                  "        if accepted and (not isinstance(record, dict)",
                  ['record-states'])
+    # Review fix: a Gate with no workspace never passes, record or no record.
     architecture('architecture-store-only-passes', 'control_eligibility.py',
-                 "            if accepted:\n                found['refusals'] = ['missing_evidence:architecture/workspace']\n",
-                 "            pass  # defect: a store-only Gate passes an accepted architecture it cannot see\n",
-                 ['record-states'])
+                 "            found['basis'] = 'store_only'\n            found['refusals'] = ['missing_evidence:architecture/workspace']\n",
+                 "            found['basis'] = 'store_only'\n"
+                 "            if accepted:  # defect: without a record a store-only Gate passes\n"
+                 "                found['refusals'] = ['missing_evidence:architecture/workspace']\n",
+                 ['store-only-refuses'])
+    architecture('architecture-store-only-reads-cwd', 'control_eligibility.py',
+                 "        self.workspace = str(workspace) if workspace is not None else None\n",
+                 "        self.workspace = str(workspace) if workspace is not None else os.getcwd()  # defect: the process directory\n",
+                 ['store-only-refuses'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

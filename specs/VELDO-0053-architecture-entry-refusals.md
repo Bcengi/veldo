@@ -42,6 +42,7 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/60_veldo_0052_eligibility.py"
   - "specs/VELDO-0053-architecture-entry-refusals.md"
   - "specs/index.md"
   - "proof/VELDO-0053/*"
@@ -134,3 +135,8 @@ status or historical proof was changed.
 2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
 falsifiers and their second mutations are registered with the repository's mutation driver
 (finding 53). No criterion, status or evidence universe changed.
+
+2026-09-23, review fixes: scripts/suites/60_veldo_0052_eligibility.py joined the footprint. A Gate
+built with no workspace passed the architecture predicate whenever the authority held no record, so
+the constructor's default argument was a pass. It now always refuses by name, and the two Gates that
+suite constructs are given the workspace they read. No criterion, status or evidence universe changed.

@@ -226,11 +226,25 @@ def _v53_suite():
             ('parser', 'yamlish.py'))}
         installed_digests = {role: sha(Path(path).read_bytes()) for role, path in installed.items()}
 
+        with region('architecture/store-only-refuses'):
+            # A Gate built with no workspace (the constructor's default) cannot look at any file, so it
+            # never passes the architecture: here the authority has no record, and the repository's policy
+            # requires a contract that is malformed, which only a workspace Gate could see.
+            arrange('malformed_not_mapping')
+            policy.write_text('architecture_contract: required\n')
+            store_only = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY)
+            blind = stations(store_only)
+            seen = stations(gate)
+            clear(contract)
+            observed['store_only'] = {'store_only': sorted({r for d in blind.values() for r in d['refusals']}),
+                                      'workspace': sorted({r for d in seen.values() for r in d['refusals']})}
+            check('architecture/store-only-refuses',
+                   outcome(blind, 'missing_evidence:architecture/workspace') and outcome(seen, CODES['parse_failure'])
+                   and all(d['architecture']['basis'] == 'store_only' for d in blind.values()))
+
         # --- AC1: valid, absent and invalid contracts at every loader/ready entry -------------------------
         with region('architecture/state-kinds', 'architecture/ready-refusal'):
             kinds, processes, ready, policy_rows = {}, {}, {}, {}
-            store_only = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY)
-            store_only_ok = outcome(stations(store_only), None)
             for state, (flag, kind, proceeds) in STATES.items():
                 target = arrange(state)
                 kinds[state] = V.load_contract_state(str(base)).kind
@@ -260,7 +274,7 @@ def _v53_suite():
                     dict(state='accepted', digest=sha(body if body is not None else VALID.encode())))
                 accepted_rows[state] = stations(gate)
                 clear(target)
-            ready_ok = store_only_ok
+            ready_ok = True
             for state, (_, kind, proceeds) in STATES.items():
                 ready_ok &= (ready[state] == 0) == proceeds
                 ready_ok &= outcome(policy_rows[state], None if proceeds else CODES[kind])
