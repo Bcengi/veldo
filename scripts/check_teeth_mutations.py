@@ -343,14 +343,30 @@ def cases():
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])
-    publication('effects-push-widened-by-clone-config', "        push = git('send-pack', ",
-                "        push = git('push', ", 'publication-exact-ref')
+    push = "        push = git('-c', 'push.followTags=false', 'push', '--no-follow-tags', '--recurse-submodules=no',"
+    publication('effects-push-widened-by-clone-config', push,
+                "        push = git('push', '--recurse-submodules=no',", 'publication-exact-ref')
+    publication('effects-push-follows-tags', push,
+                push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
     confirm = "after is not None and after == dict(before, **{ref: payload['commit']})"
     publication('effects-confirm-authorized-ref-only', confirm,
                 "after is not None and after.get(ref) == payload['commit']", 'publication-confirms-one-change')
     publication('effects-confirm-ignores-new-refs', confirm,
                 "after is not None and all(after.get(k) == v for k, v in dict(before, **{ref: payload['commit']}).items())",
                 'publication-confirms-one-change')
+    # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
+    # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
+    send_pack = "        push = git('send-pack',"
+    add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
+        ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
+    publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
+                'publication-pre-push-hook')
+    publication('effects-remote-must-exist-verbatim', "        if names.returncode or remote in names.stdout.split():",
+                "        if names.returncode or remote in names.stdout.split() or not (Path(remote).exists() or '://' in remote):",
+                'publication-url-rewrite')
+    publication('effects-push-transports-restricted', push,
+                push.replace("git('-c', 'push.followTags=false',", "git('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
+                'publication-smart-http')
     return result
 
 

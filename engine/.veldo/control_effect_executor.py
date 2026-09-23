@@ -39,13 +39,20 @@ def receive(config, contract, accepted):
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
+        # The receiver names a URL, never a remote of the clone: a named remote would bring
+        # its push refspecs, mirror and pushurl configuration into the push.
+        names = git('remote')
+        if names.returncode or remote in names.stdout.split():
+            raise E.Refused('invalid-input')
         before = remote_refs()
         if before is None or before.get(ref) != payload['old_tip']:
             raise E.Refused('stale-subject')
-        # send-pack sends exactly the named refspec to the configured URL: it never consults
-        # push.followTags, push.default, remote.*.push, remote.*.mirror, remote.*.pushurl,
-        # submodule recursion or pre-push hooks. A remote NAME is not a URL to it and fails.
-        push = git('send-pack', '--force-with-lease=' + ref + ':' + payload['old_tip'],
+        # An ordinary git push, so the clone's hooks, url.*.insteadOf rewrites, transports
+        # (HTTP(S) included) and credential helpers behave exactly as configured. Only what
+        # WIDENS a push is neutralized: an explicit URL and single refspec, no tag following
+        # from the command line or config, no submodule recursion, and a lease on the old tip.
+        push = git('-c', 'push.followTags=false', 'push', '--no-follow-tags', '--recurse-submodules=no',
+                   '--force-with-lease=' + ref + ':' + payload['old_tip'],
                    remote, payload['commit'] + ':' + ref)
         # Completion is exactly one remote change: the authorized ref moved to the commit.
         after = remote_refs()

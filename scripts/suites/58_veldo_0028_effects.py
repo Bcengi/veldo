@@ -3,14 +3,70 @@
 Provider/queued-lander receivers are harmless trusted protocol witnesses, not live model
 qualification. A completed publication drives real Git and confirms the remote commit.
 """
+import http.server as _v28_http
 import importlib.util as _v28_import
+import os as _v28_os
 from pathlib import Path as _v28_Path
 import json as _v28_json
 import shutil as _v28_shutil
 import subprocess as _v28_sp
 import sys as _v28_sys
 import tempfile as _v28_temp
+import threading as _v28_threading
 import time as _v28_time
+
+
+class _V28Backend(_v28_http.BaseHTTPRequestHandler):
+    """A smart-HTTP Git remote: each request runs `git http-backend` as CGI over the fixture root."""
+    project_root = None
+
+    def do_GET(self):
+        self.backend()
+
+    def do_POST(self):
+        self.backend()
+
+    def log_message(self, *args):
+        pass
+
+    def backend(self):
+        path, _, query = self.path.partition('?')
+        if self.headers.get('Transfer-Encoding', '').lower() == 'chunked':
+            body = b''
+            while True:
+                size = int(self.rfile.readline().split(b';')[0].strip(), 16)
+                chunk = self.rfile.read(size + 2)[:size]
+                if not size:
+                    break
+                body += chunk
+        else:
+            body = self.rfile.read(int(self.headers.get('Content-Length') or 0))
+        env = {'PATH': _v28_os.environ.get('PATH', _v28_os.defpath), 'HOME': self.project_root,
+               'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': _v28_os.devnull,
+               'GIT_PROJECT_ROOT': self.project_root, 'GIT_HTTP_EXPORT_ALL': '1',
+               'REQUEST_METHOD': self.command, 'PATH_INFO': path, 'QUERY_STRING': query,
+               'CONTENT_TYPE': self.headers.get('Content-Type', ''), 'CONTENT_LENGTH': str(len(body)),
+               'REMOTE_ADDR': '127.0.0.1'}
+        if self.headers.get('Content-Encoding'):
+            env['HTTP_CONTENT_ENCODING'] = self.headers['Content-Encoding']
+        if self.headers.get('Git-Protocol'):
+            env['GIT_PROTOCOL'] = env['HTTP_GIT_PROTOCOL'] = self.headers['Git-Protocol']
+        out = _v28_sp.run(['git', 'http-backend'], input=body, capture_output=True, env=env, timeout=20).stdout
+        split = b'\r\n\r\n' if b'\r\n\r\n' in out else b'\n\n'
+        head, _, payload = out.partition(split)
+        status, headers = 200, []
+        for line in head.decode('latin-1').splitlines():
+            key, _, value = line.partition(':')
+            if key.lower() == 'status':
+                status = int(value.split()[0])
+            elif key:
+                headers.append((key, value.strip()))
+        self.send_response(status)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.send_header('Content-Length', str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
 
 
 def _v28_run():
@@ -225,6 +281,54 @@ print(json.dumps(result))
             and refs == {'refs/heads/main': tip, 'refs/tags/receiver-side-effect': old})
         for name in ('publication-exact-ref', 'publication-confirms-one-change'):
             expect('VELDO-0028 effects/' + name, checks[name])
+        # R4: publication is an ordinary git push. Whatever configured Git and its credentials
+        # allow keeps working (hooks, URL rewrites, smart HTTP); only widening is neutralized.
+        def fresh(name):
+            clone, bare = root / (name + '-source'), root / (name + '-remote.git')
+            git('clone', '-q', '--no-local', str(repo), str(clone))
+            git('init', '-q', '--bare', str(bare))
+            git('-C', str(clone), 'push', '-q', str(bare), old + ':refs/heads/main')
+            return clone, bare
+        def publish(name, clone, remote_url):
+            config['receivers']['git-' + name] = {'kind': 'publication', 'repository': str(clone),
+                                                   'remote': remote_url, 'ref': 'refs/heads/main'}
+            config_path.write_text(_v28_json.dumps(config))
+            pr, _, _, _ = setup('publication', name, target='git-' + name,
+                                 payload={'commit': tip, 'tree': tree, 'old_tip': old})
+            return call(pr).get('result', {})
+        def remote_main(bare):
+            return git('-C', str(bare), 'rev-parse', 'refs/heads/main')
+        # P1: the clone's pre-push policy hook refuses; it runs and nothing is published.
+        clone, bare = fresh('pre-push-hook')
+        ran = root / 'pre-push-hook.ran'
+        hook = clone / '.git' / 'hooks' / 'pre-push'
+        hook.write_text('#!/bin/sh\ntouch ' + str(ran) + '\necho policy refuses this push >&2\nexit 1\n')
+        hook.chmod(0o755)
+        result = publish('pre-push-hook', clone, str(bare))
+        row('publication-pre-push-hook', ran.exists() and result.get('completed') is False
+            and result.get('status') == 'unknown' and remote_main(bare) == old)
+        # P7: the clone rewrites an alias to the real remote with url.<real>.insteadOf.
+        clone, bare = fresh('url-rewrite')
+        alias = str(root / 'no-such-alias.git')
+        git('-C', str(clone), 'config', 'url.' + str(bare) + '.insteadOf', alias)
+        result = publish('url-rewrite', clone, alias)
+        row('publication-url-rewrite', result.get('completed') is True and remote_main(bare) == tip)
+        # A smart-HTTP remote served by git http-backend.
+        clone, bare = fresh('smart-http')
+        git('-C', str(bare), 'config', 'http.receivepack', 'true')
+        _V28Backend.project_root = str(root)
+        server = _v28_http.ThreadingHTTPServer(('127.0.0.1', 0), _V28Backend)
+        _v28_threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            url = 'http://127.0.0.1:%d/%s' % (server.server_address[1], bare.name)
+            reachable = git('-C', str(clone), 'ls-remote', url, 'refs/heads/main').split()[:1] == [old]
+            result = publish('smart-http', clone, url)
+        finally:
+            server.shutdown()
+            server.server_close()
+        row('publication-smart-http', reachable and result.get('completed') is True and remote_main(bare) == tip)
+        for name in ('pre-push-hook', 'url-rewrite', 'smart-http'):
+            expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'
             and credential.read_text() not in _v28_json.dumps(observations)
