@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -299 +299 @@
+-            if not decision["eligible"]:
++            if False:

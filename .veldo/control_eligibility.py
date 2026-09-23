@@ -34,6 +34,7 @@ VELDO-0036's InvocationGuard, which reserves before launch), and implements no r
 clock qualification (Release 2). VELDO-0053's architecture checks and VELDO-0054's exact decision
 consumption attach to the same registrations. Standard library only.
 """
+import collections
 import importlib.util
 import os
 from pathlib import Path
@@ -104,10 +105,14 @@ TAXONOMY = {
     'missing_evidence': 'missing_evidence', 'reviewer_not_independent': 'missing_authority',
     'clock_uncertain': 'unknown_outcome', 'unavailable_service': 'unavailable_service',
     'eligibility_required': 'missing_authority', 'reservation_required': 'missing_authority',
+    'enrollment_unanswerable': 'unavailable_service',
     'usage_cap': 'missing_authority', 'usage_refused': 'missing_authority', 'window_exhausted': 'missing_authority',
     'missing_ceiling': 'missing_authority', 'unknown_allowance': 'unknown_outcome', 'unknown_window': 'unknown_outcome',
     'unknown_window_usage': 'unknown_outcome',
 }
+
+OBSERVATION_LIMIT = 1000
+
 
 def taxonomy(code):
     return TAXONOMY.get(code.split(':', 1)[0], 'unknown_outcome')
@@ -139,11 +144,15 @@ Refused, Stopped = _errors.Refused, _errors.Stopped
 
 
 def enrolled(repo_root):
-    """Whether this workspace carries an authority enrollment binding (VELDO-0029)."""
+    """Whether this workspace carries an authority enrollment binding (VELDO-0029). A directory
+    that is not a repository carries none; a Git that cannot be run is a named stop, never a
+    silent 'not enrolled' that would let an enabled entry run without eligibility."""
     try:
         return os.path.lexists(E.binding_path(str(repo_root)))
     except E.EnrollmentRefused:
         return False
+    except OSError as error:
+        raise Stopped('enrollment_unanswerable') from error
 
 
 def gate_for(repo_root, gate):
@@ -187,7 +196,8 @@ class Gate:
         self.observe = observe or (lambda event: None)
         self.claims = _organ('control_claim')
         self.counts = {'accepted': 0, 'refused': 0}
-        self.observations = []
+        # Diagnostics only, bounded: the durable log is the observe callback's sink.
+        self.observations = collections.deque(maxlen=OBSERVATION_LIMIT)
         self.last = {}
 
     # -- reads -----------------------------------------------------------------------------------
@@ -274,7 +284,7 @@ class Gate:
             for dep in data.get('depends_on') or []:
                 inputs['dependency/' + dep] = self._entity(dep)
                 inputs['receipts/' + dep] = self._receipts(dep)
-            inputs['decisions'] = self._collection('decision', lambda d: True)
+            inputs['decisions'] = self._collection('decision', lambda d: unit in (d.get('blocks') or []))
             inputs['blockers'] = self._collection('blocker', lambda d: d.get('unit') == unit)
             inputs['approvals'] = self._collection('approval', lambda d: d.get('unit') == unit)
             watermark = self.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
@@ -455,7 +465,7 @@ class StationCalls:
 
     def __init__(self, gate, guards):
         self.gate, self.guards = gate, dict(guards)
-        self.observations = []
+        self.observations = collections.deque(maxlen=OBSERVATION_LIMIT)
 
     def handle(self, station, unit, dispatch, *, context, ticket):
         if station not in CALL_STATIONS:
@@ -486,7 +496,9 @@ class CallHandle:
             except Refused:
                 raise
             except Exception as error:
-                code = getattr(error, 'code', None) or str(error) or type(error).__name__
+                code = getattr(error, 'code', None)
+                if not isinstance(code, str) or not code:
+                    raise  # a launch failure after its reservation: outcome unknown, exposure retained
                 raise Refused(code if ':' in code or code in TAXONOMY else 'usage_refused:' + code) from error
         except Refused as error:
             self.calls.observations.append(dict(event, outcome='refused', refusal=error.code))

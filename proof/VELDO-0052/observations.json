@@ -1,0 +1,856 @@
+{
+ "failed": 0,
+ "observed": {
+  "call_refusals": [
+   "unknown_allowance:tokens",
+   "usage_cap:account:invocations",
+   "usage_cap:project:invocations",
+   "usage_cap:unit:invocations"
+  ],
+  "decision_sample": [
+   {
+    "accepted_inputs": {
+     "admission": 1,
+     "approvals": "sha256:1fa8ae780699a5165481456d9ce1660c46e3c2d89af9c26c67265f159e742097",
+     "authority": 1,
+     "backlog": 1,
+     "blockers": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "claim": 0,
+     "decisions": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "dependency/VELDO-9100": 1,
+     "plan": 1,
+     "project": 1,
+     "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
+     "unit": 1
+    },
+    "decision_id": "726c099e-5c24-4cc6-9e4c-4273906918da",
+    "domain_uuid": "domain-52",
+    "follows": null,
+    "operation": "selection",
+    "outcome": "refused",
+    "refusals": [
+     "stale_scope"
+    ],
+    "repository_uuid": "repository-52",
+    "schema": "veldo.control_eligibility/v1",
+    "taxonomy": [
+     "stale_subject"
+    ],
+    "unit": "VELDO-9105",
+    "watermark": 36
+   },
+   {
+    "accepted_inputs": {
+     "admission": 1,
+     "approvals": "sha256:1fa8ae780699a5165481456d9ce1660c46e3c2d89af9c26c67265f159e742097",
+     "authority": 1,
+     "backlog": 1,
+     "blockers": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "claim": 0,
+     "decisions": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "dependency/VELDO-9100": 1,
+     "plan": 1,
+     "project": 1,
+     "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
+     "unit": 1
+    },
+    "decision_id": "f86079d2-5635-493b-b681-64c83faecee5",
+    "domain_uuid": "domain-52",
+    "follows": null,
+    "operation": "claim",
+    "outcome": "refused",
+    "refusals": [
+     "stale_scope"
+    ],
+    "repository_uuid": "repository-52",
+    "schema": "veldo.control_eligibility/v1",
+    "taxonomy": [
+     "stale_subject"
+    ],
+    "unit": "VELDO-9105",
+    "watermark": 36
+   }
+  ],
+  "fresh_reader": {
+   "eligibility": {
+    "VELDO-9120": false,
+    "VELDO-9121": false,
+    "VELDO-9122": true,
+    "VELDO-9123": false,
+    "VELDO-9124": true,
+    "VELDO-9125": false
+   },
+   "frontier": {
+    "VELDO-9120": false,
+    "VELDO-9121": false,
+    "VELDO-9122": true,
+    "VELDO-9123": false,
+    "VELDO-9124": true,
+    "VELDO-9125": false
+   },
+   "plan": {
+    "VELDO-9120": false,
+    "VELDO-9121": false,
+    "VELDO-9122": true,
+    "VELDO-9123": false,
+    "VELDO-9124": true,
+    "VELDO-9125": false
+   },
+   "reader": {
+    "VELDO-9120": {
+     "artifact_accepted": false,
+     "attempt_finished": true,
+     "objective_satisfied": false,
+     "revision_landed": false
+    },
+    "VELDO-9121": {
+     "artifact_accepted": true,
+     "attempt_finished": true,
+     "objective_satisfied": false,
+     "revision_landed": false
+    },
+    "VELDO-9122": {
+     "artifact_accepted": true,
+     "attempt_finished": true,
+     "objective_satisfied": false,
+     "revision_landed": true
+    },
+    "VELDO-9123": {
+     "artifact_accepted": false,
+     "attempt_finished": false,
+     "objective_satisfied": false,
+     "revision_landed": false
+    },
+    "VELDO-9124": {
+     "artifact_accepted": true,
+     "attempt_finished": true,
+     "objective_satisfied": true,
+     "revision_landed": true
+    },
+    "VELDO-9125": {
+     "artifact_accepted": false,
+     "attempt_finished": true,
+     "objective_satisfied": false,
+     "revision_landed": false
+    }
+   },
+   "work_state": {
+    "VELDO-9120": {
+     "facts": {
+      "artifact_accepted": false,
+      "attempt_finished": true,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "facts_reason": null,
+     "proof_accepted": true
+    },
+    "VELDO-9121": {
+     "facts": {
+      "artifact_accepted": true,
+      "attempt_finished": true,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "facts_reason": null,
+     "proof_accepted": true
+    },
+    "VELDO-9122": {
+     "facts": {
+      "artifact_accepted": true,
+      "attempt_finished": true,
+      "objective_satisfied": false,
+      "revision_landed": true
+     },
+     "facts_reason": null,
+     "proof_accepted": false
+    },
+    "VELDO-9123": {
+     "facts": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "facts_reason": null,
+     "proof_accepted": false
+    },
+    "VELDO-9124": {
+     "facts": {
+      "artifact_accepted": true,
+      "attempt_finished": true,
+      "objective_satisfied": true,
+      "revision_landed": true
+     },
+     "facts_reason": null,
+     "proof_accepted": false
+    },
+    "VELDO-9125": {
+     "facts": {
+      "artifact_accepted": false,
+      "attempt_finished": true,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "facts_reason": null,
+     "proof_accepted": false
+    }
+   }
+  },
+  "gate_status": {
+   "accepted": 204,
+   "pending": [
+    "VELDO-9101",
+    "VELDO-9102",
+    "VELDO-9103",
+    "VELDO-9104",
+    "VELDO-9105",
+    "VELDO-9107",
+    "VELDO-9109",
+    "VELDO-9111"
+   ],
+   "refused": 123
+  },
+  "launches": {
+   "dispatch_builds": [
+    "VELDO-9106"
+   ],
+   "dispatch_reviews": [
+    "VELDO-9106"
+   ],
+   "executor_builds": [
+    "VELDO-9106"
+   ],
+   "frontier_offers": [
+    "VELDO-9106"
+   ],
+   "plan_run_check_clear": [
+    "VELDO-9106"
+   ],
+   "publication_lands": [
+    "VELDO-9106"
+   ],
+   "work_dispatches": [
+    "VELDO-9106"
+   ]
+  },
+  "raised": [],
+  "receiver": [
+   [
+    "claude_code",
+    "build-VELDO-9106",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "review-VELDO-9106",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "review-more-VELDO-9106",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9140-allowed-build-claude_code-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9140-allowed-build-claude_code-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9140-allowed-build-claude_code-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9140-allowed-build-codex-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9140-allowed-build-codex-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9140-allowed-build-codex-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9140-allowed-review-claude_code-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9140-allowed-review-claude_code-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9140-allowed-review-claude_code-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9140-allowed-review-codex-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9140-allowed-review-codex-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9140-allowed-review-codex-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9141-allowed-build-claude_code-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9141-allowed-build-claude_code-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9141-allowed-build-claude_code-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9141-allowed-build-codex-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9141-allowed-build-codex-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9141-allowed-build-codex-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9141-allowed-review-claude_code-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9141-allowed-review-claude_code-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9141-allowed-review-claude_code-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9141-allowed-review-codex-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9141-allowed-review-codex-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9141-allowed-review-codex-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9142-allowed-build-claude_code-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9142-allowed-build-claude_code-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9142-allowed-build-claude_code-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9142-allowed-build-codex-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9142-allowed-build-codex-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9142-allowed-build-codex-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9142-allowed-review-claude_code-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9142-allowed-review-claude_code-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "VELDO-9142-allowed-review-claude_code-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9142-allowed-review-codex-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9142-allowed-review-codex-retry",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "VELDO-9142-allowed-review-codex-follow_on",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "u-initial",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "u-after",
+    true,
+    [
+     "configured-tool"
+    ]
+   ]
+  ],
+  "stale_refusals": {
+   "VELDO-9107": [
+    [
+     "stale_input:receipts/VELDO-9110",
+     "unresolved_dependency:VELDO-9110"
+    ],
+    [
+     "stale_input:receipts/VELDO-9110",
+     "unresolved_dependency:VELDO-9110"
+    ],
+    [
+     "stale_input:receipts/VELDO-9110",
+     "unresolved_dependency:VELDO-9110"
+    ],
+    [
+     "stale_input:receipts/VELDO-9110",
+     "unresolved_dependency:VELDO-9110"
+    ]
+   ],
+   "VELDO-9108": [
+    [
+     "stale_input:admission"
+    ],
+    [
+     "stale_input:admission"
+    ],
+    [
+     "stale_input:admission"
+    ],
+    [
+     "stale_input:admission"
+    ]
+   ]
+  },
+  "station_refusals": {
+   "build": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [
+     "draft_plan"
+    ],
+    "VELDO-9103": [
+     "unresolved_dependency:VELDO-9199"
+    ],
+    "VELDO-9104": [
+     "unresolved_decision:decision:9104"
+    ],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   },
+   "claim": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [
+     "draft_plan"
+    ],
+    "VELDO-9103": [
+     "unresolved_dependency:VELDO-9199"
+    ],
+    "VELDO-9104": [],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   },
+   "direct_execution": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [
+     "draft_plan"
+    ],
+    "VELDO-9103": [
+     "unresolved_dependency:VELDO-9199"
+    ],
+    "VELDO-9104": [
+     "unresolved_decision:decision:9104"
+    ],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   },
+   "provider_request": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [],
+    "VELDO-9103": [],
+    "VELDO-9104": [],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   },
+   "publication": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [
+     "draft_plan"
+    ],
+    "VELDO-9103": [
+     "unresolved_dependency:VELDO-9199"
+    ],
+    "VELDO-9104": [
+     "unresolved_decision:decision:9104"
+    ],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   },
+   "review": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [
+     "draft_plan"
+    ],
+    "VELDO-9103": [
+     "unresolved_dependency:VELDO-9199"
+    ],
+    "VELDO-9104": [
+     "unresolved_decision:decision:9104"
+    ],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   },
+   "selection": {
+    "VELDO-9101": [
+     "missing_authority:admission"
+    ],
+    "VELDO-9102": [
+     "draft_plan"
+    ],
+    "VELDO-9103": [
+     "unresolved_dependency:VELDO-9199"
+    ],
+    "VELDO-9104": [
+     "unresolved_decision:decision:9104"
+    ],
+    "VELDO-9105": [
+     "stale_scope"
+    ],
+    "VELDO-9106": []
+   }
+  }
+ },
+ "passed": 32,
+ "rows": [
+  [
+   "VELDO-0052 eligibility/registrations-from-call-sites",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-frontier",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-work",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-work-rechecks",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-plan",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-executor",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/named-refusals",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-dispatch-build",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-dispatch-review",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/entry-publication",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/enrolled-entry-stops",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/stale-input",
+   true
+  ],
+  [
+   "VELDO-0052 completion/readers-agree",
+   true
+  ],
+  [
+   "VELDO-0052 completion/consumers-from-call-sites",
+   true
+  ],
+  [
+   "VELDO-0052 reservations/forbidden-call-observation",
+   true
+  ],
+  [
+   "VELDO-0052 reservations/unknown-usage-retained",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/observations",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/registrations-from-call-sites",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-frontier",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-work-rechecks",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-plan",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-executor",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/named-refusals",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-dispatch-build",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-dispatch-review",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/entry-publication",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/enrolled-entry-stops",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/stale-input",
+   true
+  ],
+  [
+   "VELDO-0052 ran/completion/readers-agree",
+   true
+  ],
+  [
+   "VELDO-0052 ran/reservations/forbidden-call-observation",
+   true
+  ],
+  [
+   "VELDO-0052 ran/reservations/unknown-usage-retained",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/observations",
+   true
+  ]
+ ],
+ "suite": "60_veldo_0052_eligibility.py",
+ "suite_seconds": 0.664
+}

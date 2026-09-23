@@ -1,0 +1,363 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 52 --diff-dir proof/VELDO-0052/mutations",
+ "summary": {
+  "mutations_rejected": 22,
+  "green_suites": {
+   "60_veldo_0052_eligibility.py": 58
+  }
+ },
+ "mutations": [
+  {
+   "mutation": "eligibility-review-bypass",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "eligibility/entry-dispatch-review"
+   ],
+   "declared_falsifier_of": "AC1",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/registrations-from-call-sites",
+    "eligibility/entry-dispatch-review",
+    "eligibility/stale-input"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-review-bypass.diff"
+  },
+  {
+   "mutation": "eligibility-review-as-provider-request",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "eligibility/entry-dispatch-review"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/registrations-from-call-sites",
+    "eligibility/entry-dispatch-review"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-review-as-provider-request.diff"
+  },
+  {
+   "mutation": "eligibility-status-only-recheck",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/stale-input"
+   ],
+   "declared_falsifier_of": "AC2",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-work-rechecks",
+    "eligibility/stale-input"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-status-only-recheck.diff"
+  },
+  {
+   "mutation": "eligibility-recheck-ignores-collections",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/stale-input"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/stale-input"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-recheck-ignores-collections.diff"
+  },
+  {
+   "mutation": "eligibility-frontier-bypass",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "eligibility/entry-frontier"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-frontier",
+    "eligibility/entry-work",
+    "eligibility/entry-work-rechecks"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-frontier-bypass.diff"
+  },
+  {
+   "mutation": "eligibility-executor-bypass",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/entry-executor"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-executor"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-executor-bypass.diff"
+  },
+  {
+   "mutation": "eligibility-plan-bypass",
+   "module": ".veldo/plan.py",
+   "target_rows": [
+    "eligibility/entry-plan"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-plan"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-plan-bypass.diff"
+  },
+  {
+   "mutation": "eligibility-build-bypass",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "eligibility/entry-dispatch-build"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-dispatch-build",
+    "eligibility/stale-input"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-build-bypass.diff"
+  },
+  {
+   "mutation": "eligibility-publication-bypass",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "eligibility/entry-publication"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-publication",
+    "eligibility/stale-input"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-publication-bypass.diff"
+  },
+  {
+   "mutation": "eligibility-work-no-preclaim-decision",
+   "module": ".veldo/work.py",
+   "target_rows": [
+    "eligibility/entry-work-rechecks"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-work-rechecks"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-work-no-preclaim-decision.diff"
+  },
+  {
+   "mutation": "eligibility-work-no-postclaim-recheck",
+   "module": ".veldo/work.py",
+   "target_rows": [
+    "eligibility/entry-work-rechecks"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-work-rechecks"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-work-no-postclaim-recheck.diff"
+  },
+  {
+   "mutation": "eligibility-enrolled-default-runs",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/enrolled-entry-stops"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/enrolled-entry-stops"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-enrolled-default-runs.diff"
+  },
+  {
+   "mutation": "eligibility-unregistered-work-entry",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/registrations-from-call-sites"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/registrations-from-call-sites"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-unregistered-work-entry.diff"
+  },
+  {
+   "mutation": "eligibility-ignores-scope",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/named-refusals"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-frontier",
+    "eligibility/entry-work",
+    "eligibility/entry-work-rechecks",
+    "eligibility/entry-plan",
+    "eligibility/entry-executor",
+    "eligibility/named-refusals",
+    "eligibility/entry-dispatch-build",
+    "eligibility/entry-dispatch-review",
+    "eligibility/entry-publication"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-ignores-scope.diff"
+  },
+  {
+   "mutation": "eligibility-refusals-not-pending",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/observations"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/eligibility-refusals-not-pending.diff"
+  },
+  {
+   "mutation": "completion-manifest-verdict-landed",
+   "module": ".veldo/work_state.py",
+   "target_rows": [
+    "completion/readers-agree"
+   ],
+   "declared_falsifier_of": "AC3",
+   "baseline": "green",
+   "red_rows": [
+    "completion/readers-agree"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/completion-manifest-verdict-landed.diff"
+  },
+  {
+   "mutation": "completion-frontier-reads-status-text",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "completion/readers-agree"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "completion/readers-agree",
+    "completion/consumers-from-call-sites"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/completion-frontier-reads-status-text.diff"
+  },
+  {
+   "mutation": "completion-any-revision-lands",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "completion/readers-agree"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "completion/readers-agree"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/completion-any-revision-lands.diff"
+  },
+  {
+   "mutation": "completion-unregistered-consumer",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "completion/consumers-from-call-sites"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "completion/consumers-from-call-sites"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/completion-unregistered-consumer.diff"
+  },
+  {
+   "mutation": "reservation-review-follow-on-bypass",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "reservations/forbidden-call-observation"
+   ],
+   "declared_falsifier_of": "AC4",
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-dispatch-review",
+    "reservations/forbidden-call-observation",
+    "reservations/unknown-usage-retained"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/reservation-review-follow-on-bypass.diff"
+  },
+  {
+   "mutation": "reservation-refusal-fails-open",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "reservations/forbidden-call-observation"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "reservations/forbidden-call-observation",
+    "reservations/unknown-usage-retained",
+    "eligibility/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/reservation-refusal-fails-open.diff"
+  },
+  {
+   "mutation": "reservation-retry-bypass",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "reservations/unknown-usage-retained"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "red_rows": [
+    "reservations/forbidden-call-observation",
+    "reservations/unknown-usage-retained"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/reservation-retry-bypass.diff"
+  }
+ ]
+}

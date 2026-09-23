@@ -1,0 +1,9 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -494 +494,5 @@
+-                receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,
++                if self.station == 'review' and boundary == 'follow_on':
++                    guard.launch(invocation, configuration)  # defect: no reservation
++                    receipt = {'replayed': False}
++                else:
++                  receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,

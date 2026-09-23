@@ -1,0 +1,7 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -294,3 +294 @@
+-            decision = gate.decide("review", sid, context=context, ticket=unit.get("eligibility"))
+-            if not decision["eligible"]:
+-                return self._refused("review", sid, decision, verdict=None, shipped=False, landed=False)
++            pass  # defect: direct review launches without the shared review decision

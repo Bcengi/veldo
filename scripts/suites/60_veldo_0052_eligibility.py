@@ -304,6 +304,8 @@ def _v52_suite():
         # Each region reds its own rows if it raises, so a mutation that crashes a region is a
         # red row there and never a suite that stops asserting (the driver refuses a dead run).
         emitted, raised = set(), []
+        # What the entries actually did, kept for the proof bundle's observations (no secrets).
+        observed = {'launches': {}, 'stale_refusals': {}}
 
         def check(label, condition):
             emitted.add(label)
@@ -375,6 +377,8 @@ def _v52_suite():
 
             counter = Counter()
             WK.WorkLoop('worker-a', [], counter, repo_root=str(base), claims_root=str(claims), eligibility=gate).run()
+            observed['launches']['frontier_offers'] = sorted(launches['frontier'])
+            observed['launches']['work_dispatches'] = list(counter.units)
             check('eligibility/entry-work', counter.units == ['VELDO-9106'])
 
         with region('eligibility/entry-work-rechecks'):
@@ -463,6 +467,11 @@ def _v52_suite():
             named_ok &= refusals_of('review', 'VELDO-9106', context={'holder': 'worker-a', 'reviewer': 'builder-a'}) \
                 == {'reviewer_not_independent'}
             named_ok &= refusals_of('build', 'VELDO-9106', context={'holder': 'worker-z'}) == {'missing_authority:claim'}
+            observed['station_refusals'] = {
+                st: {sid: sorted(gate.decide(st, sid, context={'holder': 'worker-a', 'reviewer': 'reviewer-b'})['refusals'])
+                     for sid in SCENARIOS} for st in EL.FLOOR_STATIONS}
+            observed['launches']['plan_run_check_clear'] = sorted(s for s, rc in run_checks.items() if rc == 0)
+            observed['launches']['executor_builds'] = list(hooks.builds)
             check('eligibility/named-refusals', named_ok)
 
         with region('eligibility/entry-dispatch-build'):
@@ -477,6 +486,7 @@ def _v52_suite():
                                                            dispatch='d-VELDO-9106')))
             restore()
             build_calls = receiver[before:]
+            observed['launches']['dispatch_builds'] = list(hooks.builds)
             check('eligibility/entry-dispatch-build',
                    hooks.builds == ['VELDO-9106'] and built['VELDO-9106']['ok']
                    and all(built[s]['halted_at'] == 'eligibility' for s in SCENARIOS if s != 'VELDO-9106')
@@ -490,6 +500,7 @@ def _v52_suite():
             reviewed = {sid: disp.dispatch(dict(kind='review', spec=sid, holder='worker-a', dispatch='d-' + sid))
                         for sid in SCENARIOS}
             restore()
+            observed['launches']['dispatch_reviews'] = list(reviewer.reviews)
             check('eligibility/entry-dispatch-review',
                    reviewer.reviews == ['VELDO-9106'] and reviewed['VELDO-9106']['landed']
                    and [i for _, i, c, _ in receiver[before:] if c] == ['review-VELDO-9106', 'review-more-VELDO-9106']
@@ -500,6 +511,7 @@ def _v52_suite():
             disp = DSP.Dispatcher(repo_root=str(base), lander=lander, eligibility=gate, calls=calls, worker_id='worker-a')
             for sid in SCENARIOS:
                 disp._land(dict(kind='review', spec=sid, holder='worker-a'))
+            observed['launches']['publication_lands'] = list(lander.lands)
             check('eligibility/entry-publication', lander.lands == ['VELDO-9106'])
 
         with region('eligibility/enrolled-entry-stops'):
@@ -568,6 +580,7 @@ def _v52_suite():
                             attempt(lambda: disp._land(u, ticket))]
                 outcomes.append(gate.decide('claim', sid, ticket=ticket))
                 stale_ok &= all(expected_stale[sid] in o.get('refusals', []) for o in outcomes)
+                observed['stale_refusals'][sid] = [o.get('refusals') for o in outcomes]
             stale_ok &= gate.decide('build', 'VELDO-9108', context=ctx)['eligible']
             stale_ok &= hooks.builds == [] and reviewer.reviews == [] and lander.lands == [] and receiver[before:] == []
             restore()
@@ -632,6 +645,7 @@ def _v52_suite():
             proc = subprocess.run([sys.executable, '-B', str(program), str(base), str(db), DOMAIN, REPOSITORY] + deps,
                                   capture_output=True, text=True, timeout=60)
             fresh = json.loads(proc.stdout) if proc.returncode == 0 else None
+            observed['fresh_reader'] = fresh
             readers_ok = fresh is not None
             if fresh:
                 landed_expected = {d: expected_facts[d][2] for d in deps}
@@ -706,11 +720,17 @@ def _v52_suite():
                           or any(r.startswith(('unknown_', 'usage_refused')) for r in e['refusals'])
                           for e in gate.observations for t in e['taxonomy'])
             obs_ok &= any(o['outcome'] == 'refused' and o['refusal'].startswith('usage_cap') for o in calls.observations)
+            observed['gate_status'] = status
+            observed['receiver'] = [list(r) for r in receiver]
+            observed['call_refusals'] = sorted({o['refusal'] for o in calls.observations if o['outcome'] == 'refused'})
+            observed['decision_sample'] = [e for e in gate.observations if e['unit'] == 'VELDO-9105'][:2]
             check('eligibility/observations', obs_ok)
         # One row per region saying it ran to its end: a driven mutation must red its named row by
         # a failed assertion while that row's own region still completes.
         for first in regions:
             check('ran/' + first, first not in {label for label, _ in raised})
+        observed['raised'] = raised
+        globals()['_V52_OBSERVED'] = observed
         reader.close()
         observer.close()
         writer.close()

@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -383 +383 @@
+-        for label in sorted(set(before) | set(accepted)):
++        for label in ['unit']:  # defect: only the unit's own record, its current status

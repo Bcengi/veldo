@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -467 +467 @@
+-            if not decision["eligible"]:
++            if False:

@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -502 +502,2 @@
+-                raise Refused(code if ':' in code or code in TAXONOMY else 'usage_refused:' + code) from error
++                guard.launch(invocation, configuration)  # defect: a refused reservation still launches
++                receipt = {'replayed': False}

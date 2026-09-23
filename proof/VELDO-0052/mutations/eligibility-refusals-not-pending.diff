@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -447 +447 @@
+-        self.last[decision['unit']] = outcome
++        self.last[decision['unit']] = 'accepted'

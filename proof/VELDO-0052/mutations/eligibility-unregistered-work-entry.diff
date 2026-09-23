@@ -1,0 +1,4 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -71 +70,0 @@
+-    ('work.py', 'WorkLoop._claim_next', 'claim'),
