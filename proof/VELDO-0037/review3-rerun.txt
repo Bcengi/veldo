@@ -29,11 +29,11 @@ Traceback (most recent call last):
   File "<probe>/p3_foreign_revision.py", line 9, in <module>
     acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(other_repo)})
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 353, in attach_revisions
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 383, in attach_revisions
     store.bind_repositories(conn, domain_uuid, service.paths)
   File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 714, in bind_repositories
     raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
-p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpmk9vvx_i/origin in this store, not <probe>/tmpmk9vvx_i/unrelated/origin
+p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpju5hy5ov/origin in this store, not <probe>/tmpju5hy5ov/unrelated/origin
 exit 1
 === p3a_foreign_revision_direct.py
 enable before: True
@@ -46,11 +46,11 @@ Traceback (most recent call last):
   File "<probe>/p3b_clone_revision.py", line 8, in <module>
     c3 = st.open_store(db); acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(clone)})
                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 353, in attach_revisions
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 383, in attach_revisions
     store.bind_repositories(conn, domain_uuid, service.paths)
   File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 714, in bind_repositories
     raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
-p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmps8368yot/origin in this store, not <probe>/tmps8368yot/clone
+p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpf4ff0e31/origin in this store, not <probe>/tmpf4ff0e31/clone
 exit 1
 === p3ba_clone_revision_direct.py
 attach to the clone: refused repository_binding_conflict
@@ -108,7 +108,7 @@ raw SQL rewinds counter -> next 1
 entity_owners in journal/replay state parts: False
 exit 0
 === q7_lost_commit.py (builder probe, not the reviewer's)
-side revision accepted at 67fe176becf4
+side revision accepted at d3769bb3025a
 bound repository still holds it: False
-enable: committed, next = 10 floor_commits = ['67fe176becf4', '71066e86747a']
+enable: committed, next = 10 floor_commits = ['1b3d0703d6cc', 'd3769bb3025a']
 exit 0
