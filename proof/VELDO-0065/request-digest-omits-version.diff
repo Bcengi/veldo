@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -146 +146 @@
+@@ -154 +154 @@
 -    body = {'request_id': request_id, 'request_version': request_version}
 +    body = {'request_id': request_id}

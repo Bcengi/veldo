@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -364 +364 @@
+@@ -403 +403 @@
 -            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': True}
 +            pass

@@ -2,4 +2,4 @@
 +++ b/.veldo/control_channel_presentation.py
 @@ -208 +208 @@
 -    text = unicodedata.normalize('NFKC', str(text)).casefold()
-+    text = unicodedata.normalize('NFKC', str(text))
++    text = str(text).casefold()

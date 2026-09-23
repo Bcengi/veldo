@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -539 +539 @@
+-                    or held['data'].get('assignment_id') != data['request_id']):
++                    or False):

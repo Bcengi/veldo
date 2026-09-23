@@ -162,3 +162,12 @@ a definitely refused part is sent again after its retry_after; choices match reg
 spacing and an unmatched reply gets a message back. This supersedes the review r3 line above where
 it said a projection given the presenter decides. Review disposition settlement is recorded as an
 open item for VELDO-0068. The criteria, status and risk are unchanged.
+
+2026-09-23, review r3: a third review left seven small items, each fixed test first with its own row
+and registered mutations, recorded in the proof README: a notice in flight or of unknown outcome is
+named by the first presentation and superseded once its outcome is known, and a framing landing
+after the projection's decision refuses its notice; a reply after the answer is told the ruling; the
+message back is sent once per inbound message; frame() and the presenter share one key rule and
+frame() pins the ledger it read; retry_after is honored only as a bounded integer; only the
+projection's own notice of the same request is superseded; choices match under NFKC. The journal
+scan cost is a Release 2 scale note. The criteria, status and risk are unchanged.

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -699 +699 @@
--                or key.get('revoked_at') is not None or key.get('retired_at') is not None):
-+                or key.get('retired_at') is not None):
+@@ -762 +762 @@
+-        if not usable_key(key, principal, self.clock()):
++        if key is None:

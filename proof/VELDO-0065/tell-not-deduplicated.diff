@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -685 +685 @@
--        if enrollment['data']['chat_id'] < 0:
-+        if False:
+@@ -1042,2 +1041,0 @@
+-        if self._entity(tid) is not None:
+-            return

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -927 +927 @@
+-            elif data.get('outcome') in NOTICE_UNCONFIRMED:
++            elif False:

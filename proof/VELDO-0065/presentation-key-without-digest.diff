@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -158 +158 @@
+@@ -166 +166 @@
 -    return 'presentation:%s:%s:%d:%s' % (CHANNEL, request_id, request_version, digest.split(':', 1)[-1])
 +    return 'presentation:%s:%s:%d' % (CHANNEL, request_id, request_version)

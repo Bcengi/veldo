@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1006 +1006 @@
+@@ -1113 +1113 @@
 -        if ev['platform_timestamp'] < receipt['published_at']:
 +        if ev['platform_timestamp'] <= receipt['published_at']:

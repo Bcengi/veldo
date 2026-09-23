@@ -1,0 +1,66 @@
+=== p1_framing_order.py
+scheduled future revocation recorded before frame; frame(): refused not_authorized
+  K-2 (key revoked_at in the future, recorded earlier)  frame-> present refused missing_framing
+frame K-1: accepted
+K-1 key revoked AFTER framing                           frame-> present published None
+frame K-3 with a ledger revocation landing between read and commit: refused
+K-3 (ledger revocation journaled just before the framing) frame-> present refused missing_framing
+frame K-4 with key revocation between read and commit: refused
+K-4                                                     frame-> present refused missing_framing
+open K-5: None
+frame K-5: accepted
+K-5 ledger revocation AFTER framing                     frame-> present published None
+=== p2_projection_order.py
+A before framing: ['sent']
+A after framing : [('awaiting_presentation', None)]
+A present: published | messages: [('Veldo needs your decision', None), ('Veldo needs your decision', 9001)] | notice record: [(1, 'sent', 'presentation:telegram_chat:assignment:present-repository:A-1:1:50232983e99cb11b0db59b474997dbc74af411ead7700485e8e532745a
+A presentation says Supersedes: ['Supersedes: the notice message 9001. Only this message can be answered.']
+A reply to the old notice: {'outcome': 'refused', 'reason': 'unknown_presentation'}
+A projection after presentation (no presenter): [('presented', None)]
+  B presenter during notice flight: published
+B messages: [('Veldo needs your decision', None), ('Veldo needs your decision', None)] | notice record: [(1, 'sent', None, 9005)]
+B later presenter run: already_presented | notice record: [(1, 'sent', 'presentation:telegram_chat:assignment:present-repository:B-1:1:b2b1f3b5426889a293fe0ee82736df910c5b5da110ab1dbbfbf785c9278274af', 9005)]
+B presentation Supersedes line: ['Supersedes: an earlier notice of this request whose delivery is not confirmed. Only this message can be answered.']
+  C second presenter mid-flight: {'request_id': 'assignment:present-repository:C-1', 'outcome': 'unknown_outcome', 'presentation_id': 'presentation:telegram_chat:assignment:present-repository:C-1:1:fad002ecd96b1500f8c2ff85ba33f8316ccd2bac31da67b4613e60baf1de86
+C first presenter: published
+C messages: 1
+D after v1 presentation: [(1, 'sent', 'presentation:telegram_chat:assignment:present-repository:D-1:1:d3f863540c9417b68bdd831a916ba05e9e8f1737450029a6b998abbdd590e847', 9007)]
+=== p3_retry_after.py
+int 3        runs=[('partial', 'channel_refused'), ('refused', 'retry_after'), ('refused', 'retry_after'), ('published', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+omitted      runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+string "3"   runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+float 1.5    runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+negative     runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+huge 1e12    runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+Infinity     runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+bool         runs=[('partial', 'channel_refused'), ('published', None), ('already_presented', None), ('already_presented', None)] | final=published rnb=None sends=3 parts=2/2
+             answer to last part: accepted None | published_at is last part date: True
+=== p4_choices_tell.py
+'ＡＣＣＥＰＴ: full-width letters'       -> accepted None | told: 0
+'accept： full-width colon'         -> accepted None | told: 0
+'Accept\xa0: nbsp before colon'    -> accepted None | told: 0
+'ACCEPT\u200b: zero-width space'   -> refused unmatched_choice | told: 1
+'accept.: trailing period'         -> refused unmatched_choice | told: 1
+'İaccept: odd'                     -> refused unmatched_choice | told: 1
+'Reject: fine'                     -> accepted None | told: 0
+'return for elaboration: need more' -> accepted None | told: 0
+'Return_For_Elaboration: need more' -> refused already_answered | told: 1
+choices approve/accept presented: published None
+first  "hello": unmatched_choice | told: [('That reply did not match a choice. Reply to the presentation', 9002)]
+same message redelivered: unmatched_choice | told again: 0
+our tell read as a bot message: {'outcome': 'refused', 'reason': 'not_owner'}
+owner replies to OUR tell with "accept: ok": {'outcome': 'refused', 'reason': 'unknown_presentation'} | told: 0
+real answer: accepted
+after answered, "thanks!": refused already_answered | told: [('This request version is already answered: approve.', 9007)]
+after answered, a valid second answer: refused already_answered | told: 1
+=== p5_notice_unknown.py
+notice: ['unknown_outcome']
+present: published
+messages on the phone for U-1: 2 | presentation mentions an earlier notice: True

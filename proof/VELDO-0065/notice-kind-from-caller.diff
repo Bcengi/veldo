@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -538 +538 @@
+-            if (held.get('kind') != notice_kind or not isinstance(held.get('data'), dict)
++            if (held.get('kind') != data['supersedes'].get('notice_kind', held.get('kind')) or not isinstance(held.get('data'), dict)

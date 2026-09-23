@@ -107,6 +107,12 @@ the head and answer records join accepted inputs, platform observations and auth
   compared with theirs; no time a caller supplies (the publication row's `committed_at`, or a
   record's own `revoked_at`) decides anything. A key version that carries any `revoked_at` or
   `retired_at` at the framing's position counts as revoked there, even one dated in the future.
+- **Scale note for Release 2: journal and entity scans.** The stored-framing check reads the key
+  and the revocation ledger as of the framing's journal position by scanning journal records that
+  mention those entities, newest first, and the presenter and projection find a request's receipts,
+  notices and framings by scanning entities of one kind. Each is correct and sufficient for Release
+  1's volumes; an index by entity and journal position is Release 2 scale work, not a change of
+  what is decided.
 - **Open item for VELDO-0068: review dispositions.** `authority_contract.settle` currently consumes
   decision answers only. A `review_disposition` assignment is presented, answered and recorded with
   its ruling exactly like a decision, but `settle` refuses it today as `not_a_decision_answer`; its
@@ -301,10 +307,60 @@ A projection record may carry `superseded_by`. A receipt may be `partial`, with 
 `control_channel_projection.telegram_error_answer(reply, status)` returns Telegram's error answer
 (`telegram_refusal` is built on it).
 
+## Third review fixes, 2026-09-23
+
+A third review (no blocking finding) left seven small items, probed by p1 to p5. Each was fixed
+test first in its own commit, with a new row red at `8dec396` by its own assertions, then green, and
+at least two registered mutations. Before the fixes the branch merged `origin/main` again
+(`966f7da`, no conflicts; `requires.json` regenerated, unchanged).
+
+| Item | Gap at 8dec396 | Fix | Row | Mutations | Commits |
+| --- | --- | --- | --- | --- | --- |
+| 1 (p2 B, p5) | A notice still in flight or of unknown outcome when the first presentation went out was neither named nor superseded, and a framing landing between the projection's decision and its intent did not stop the notice | The notice intent pins the framing's absence, so a later framing refuses it; the first presentation names a pending or unknown notice in its text (no reply link), marks an unknown one superseded at once and a pending one on the next run once its outcome is known | `projection/in-flight-notice-superseded` | `notice-intent-without-framing-pin`, `unconfirmed-notice-not-named`, `pending-notice-never-marked` | `edb02b9` |
+| 2 | After a version was answered, a reply got the no-match message | `already_answered` is checked first and the owner is told "already answered: <ruling>" | `answer/after-answered-reply` | `answered-checked-after-choice`, `answered-not-told` | `c91e735` |
+| 3 | The message back was sent again on redelivery | Recorded by the inbound message's platform identity (`presentation_tell`) before it is sent; a redelivery is not told again | `answer/tell-once-per-message` | `tell-not-deduplicated`, `tell-keyed-by-text` | `726eb09` |
+| 4 | frame() judged keys by time and ignored the ledger, so it could accept what the presenter refuses (and, per p1 K-3, a ledger revocation between its read and commit) | One key rule (`usable_key`): any recorded revocation or retirement counts whatever its date, `effective_at` is checked; frame() refuses a ledger-revoked principal and pins the ledger it read | `framing/frame-and-presenter-agree` | `frame-key-by-time`, `frame-ledger-unchecked`, `frame-ledger-unpinned` | `ed949f3`, `674805d` |
+| 5 | Any non-negative number was honored as retry_after, including fractions, huge values and infinity | Only a whole number of seconds from 0 to one hour (`MAX_RETRY_AFTER`); anything else means the next run | `presentation/retry-after-bounded` | `retry-after-any-number`, `retry-after-unbounded` | `9393cfb` |
+| 6 | Superseding a notice trusted the kind the intent named | Only the projection's own record kind, for the same request | `presentation/notice-kind-fixed` | `notice-kind-from-caller`, `notice-of-any-request` | `16725e5` |
+| 8 | Full-width letters, a full-width colon and "return for elaboration" did not match | Unicode NFKC plus case folding, spaces, underscores and hyphens alike, the full-width colon accepted | `answer/choice-normalization` | `choice-without-nfkc`, `choice-separators-distinct` | `9fa823e` |
+
+Item 7 (the cost of the journal scans) is the Release 2 scale note above.
+
+**A defect of my own, found and fixed.** Commit `82576d5` replaced a block of mutation registrations
+up to the next anchor and so dropped `framing-key-read-now` and `framing-ledger-unchecked`, the two
+mutations registered for `framing/key-by-store-order` in `5f42b88`. The second review's record and
+README named them though they were not registered. `9f865b7` restores both, and every row now has at
+least two registered mutations (checked from the registry).
+
+**Red at 8dec396.** `python3 -B proof/VELDO-0065/drive.py --red 8dec396` runs the current suite once
+against the presentation and projection modules of `8dec396`, unchanged, and writes
+`red-at-8dec396.json`. All seven new rows fail by their own assertions, with no section raising, and
+no existing row is red there.
+
+**The third reviewer's probes, re-run unchanged.** `review-r3-rerun.log` holds p1 to p5 against the
+final tree. p1's frame() race (K-3) is now refused and agrees with the presenter; p2's in-flight
+notice (B) is named by the presentation and marked superseded on the next run; p3 honors only the
+bounded integer; p4 matches full-width letters and colons and "return for elaboration", tells a
+redelivered message nothing, and answers "already answered: approve" after the answer; p5's unknown
+notice is named. What the probes still show by design: two messages for a notice already on its way
+(p2 B, p5), each named by the presentation; a zero-width space or a trailing period after the choice
+does not match and is told the valid choices.
+
+**Contract changes a consumer will see.** A receipt's `supersedes` for a notice carries
+`notice_state` (`sent`, `pending` or `unknown_outcome`) and `message_id` None when unconfirmed; the
+intent no longer names a notice kind. New operations `presentation_tell` and
+`presentation_notice_superseded`; new entity kind `presentation_tell`. A projection notice intent pins
+`presentation-framing:<request>` at version 0 (`control_channel_projection.framing_entity_id`).
+`usable_key(key, principal, now)` is the one key rule.
+
 ## Measurements
 
-The suite runs in about 4.2 s (`VELDO-0065 suite seconds` 4.16, 4.16 and 4.17 on three runs), 21
-rows. Finding 65 has 39 mutations. The gate's mutation stage runs one baseline and one no-op per
-mutated module (presentation and projection) and one run per mutant: 43 runs of about 4 to 5 s, 8 in
-parallel, so about 25 s of wall time, and its budget grows by 2 s per case (78 s). The unit stage
-gains the suite's 4 s. `python3 -B scripts/check_teeth_mutations.py --finding 65` took 6 min 26 s serially (`{"mutations_rejected": 39, ...}`); `drive.py` took 3 min 2 s serially on a shared host.
+The suite runs in about 5.8 s (`VELDO-0065 suite seconds` 5.74, 5.85 and 5.85 on three runs on a
+quiet host; 7.3 to 8.6 s while other agents' runs shared it), 28 rows. Finding 65 has 57 mutations.
+The gate's mutation stage runs one baseline and one no-op per mutated module (presentation and
+projection) and one run per mutant: 61 runs of about 6 to 7.5 s, 8 in parallel, so about 46 to 57 s
+of wall time, and its budget grows by 2 s per case (114 s). The unit stage gains the suite's 6 s.
+That puts the time this suite adds to the gate at about 52 to 63 s: at the 60 s limit, so it is
+reported here rather than assumed to fit. `python3 -B scripts/check_teeth_mutations.py --finding 65`
+took 12 min 2 s serially (`{"mutations_rejected": 57, ...}`); `drive.py` took 7 min 36 s serially on
+a shared host.

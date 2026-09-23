@@ -1,5 +1,4 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -685 +685 @@
--        if enrollment['data']['chat_id'] < 0:
-+        if False:
+@@ -209 +208,0 @@
+-    text = text.replace('_', ' ').replace('-', ' ')
