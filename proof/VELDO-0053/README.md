@@ -279,7 +279,7 @@ ImportError` in the decision and in the durable stop event. Mutations `architect
 installed arch.py is edited: a module loaded ordinarily from the edited file prints the edited file's
 line (at 4c29526 it printed the snapshot's), and a second snapshot of the edited file shows its own lines
 without changing what the first shows (at 4c29526 it overwrote them). The entries are dropped when the
-snapshot is collected. Mutations `architecture-linecache-keyed-by-path` (the installed path as the key)
+snapshot is collected (a finalizer; no row pins it). Mutations `architecture-linecache-keyed-by-path` (the installed path as the key)
 and `architecture-linecache-key-shared` (one key for every snapshot), besides the three from round 3.
 
 The snapshot-* mutations of earlier rounds are re-anchored on the name-keyed code; the path-lookup pair
