@@ -46,26 +46,51 @@ def _descends(repo, older, newer):
     return result.returncode == 0
 
 
-def carriers_id(repository_uuid, commit):
-    """The store entity holding what an accepted commit of a repository carries."""
-    return '%s%s/%s' % (CARRIERS_PREFIX, repository_uuid, commit)
+def carriers_id(domain_uuid, repository_uuid, commit):
+    """The store entity holding what an accepted commit of a domain's repository adds."""
+    return '%s%s/%s/%s' % (CARRIERS_PREFIX, domain_uuid, repository_uuid, commit)
 
 
-def carrier_paths(repo, commit):
-    """Every path named in an exact commit's tree and in its whole history (every parent of every
-    merge, renames as a deletion and an addition) that holds a digit, sorted and distinct: every
-    path any kind's number could be read from, since a carrier always holds its number's digits.
-    It is kind-independent because the first revision is accepted before any kind is enabled."""
+def carrier_records(conn, domain_uuid, repository_uuid):
+    """{commit: record} for every carrier record of a domain's repository, read on `conn`."""
+    prefix = '%s%s/%s/' % (CARRIERS_PREFIX, domain_uuid, repository_uuid)
+    found = {}
+    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='accepted_carriers' AND substr(id, 1, ?)=?",
+                               (len(prefix), prefix)):
+        data = json.loads(raw)
+        if data.get('domain_uuid') == domain_uuid and data.get('repository_uuid') == repository_uuid:
+            found[data['commit']] = data
+    return found
+
+
+def carrier_paths(repo, commit, base=()):
+    """Every path named by a commit reachable from `commit` and from no commit in `base`, that holds
+    a digit, sorted and distinct: each such commit's changes against every parent (every parent of a
+    merge, renames as a deletion and an addition, a root commit as the creation of its whole tree).
+    A carrier always holds its number's digits, so this is every path any kind's number could be read
+    from, and it is kind-independent because the first revision is accepted before any kind is
+    enabled. With no base it is the whole history, whose paths include every path of the tree. A base
+    commit the repository no longer holds excludes nothing, so what it held is listed again."""
     SN.commit_id(repo, commit)
-    names = set()
-    for command in (['ls-tree', '-r', '-z', '--name-only', commit],
-                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):
-        result = SN._git_process.run(['git', '-C', str(repo), *command], capture_output=True, timeout=30)
-        if result.returncode:
-            raise SN.Refused('missing_authority', 'accepted tree is unreadable')
-        names.update(name for name in result.stdout.decode('utf-8', 'surrogateescape').split('\0')
-                     if any(character.isdigit() for character in name))
-    return sorted(names)
+    # The excluded commits go through stdin, so their number is bounded by nothing on a command line.
+    exclusions = ''.join('^%s\n' % excluded for excluded in base)
+    result = SN._git_process.run(['git', '-C', str(repo), 'log', '-m', '--root', '-z', '--no-renames', '--format=',
+                                  '--name-only', '--ignore-missing', '--stdin', commit, '--'],
+                                 input=exclusions.encode(), capture_output=True, timeout=60)
+    if result.returncode:
+        raise SN.Refused('missing_authority', 'accepted history is unreadable')
+    return sorted({name for name in result.stdout.decode('utf-8', 'surrogateescape').split('\0')
+                   if any(character.isdigit() for character in name)})
+
+
+def root_commits(repo, revision='HEAD'):
+    """Every root commit reachable from a revision, sorted, or None: what an accepted commit is checked
+    to share with its enrolled repository. It is not a checkout's identity; the enrollment binding is."""
+    result = SN._git_process.run(['git', '-C', str(repo), 'rev-list', '--max-parents=0', revision, '--'],
+                                 capture_output=True, timeout=15)
+    if result.returncode:
+        return None
+    return sorted(line for line in result.stdout.decode().split() if line) or None
 
 
 def _holds(repo, commit):
@@ -267,9 +292,12 @@ class Revisions:
     allocation authority cannot read.
 
     RECORDED CARRIERS. In the same transaction, the first acceptance of a commit records what it
-    carries (carrier_paths, read from the bound repository) in an immutable accepted_carriers entity
-    keyed by the repository and commit id. VELDO-0037's floor reads that record, never Git, so a
-    branch deleted, pruned or force-pushed after acceptance changes no number the commit held."""
+    ADDS (carrier_paths against every commit already recorded for the repository, read from the
+    bound repository) and its root commits, in an immutable accepted_carriers entity keyed by the
+    domain, repository and commit id. The union of a repository's records is then every path of
+    every accepted commit's history, each named once per commit that changed it, so storage grows
+    with the history, not with its square. VELDO-0037's floor reads that union, never Git, so a
+    branch deleted, pruned or force-pushed after acceptance changes no number a commit held."""
 
     def __init__(self, store, conn, domain_uuid, repositories):
         if not isinstance(repositories, dict) or not repositories:
@@ -279,7 +307,8 @@ class Revisions:
 
     def accept(self, revision_id, repository_uuid, commit, principal, documents=None, statuses=None, **signing):
         version = SN.entity(self.store, self.conn, revision_id)['version']
-        carriers = carriers_id(repository_uuid, commit) if isinstance(repository_uuid, str) and isinstance(commit, str) else None
+        carriers = (carriers_id(self.domain_uuid, repository_uuid, commit)
+                    if isinstance(repository_uuid, str) and isinstance(commit, str) else None)
         expected = {revision_id: version}
         if carriers is not None:
             expected[carriers] = SN.entity(self.store, self.conn, carriers)['version']
@@ -326,14 +355,15 @@ class Revisions:
             changes = {identity: {'kind': 'accepted_revision', 'data': {
                 'domain_uuid': self.domain_uuid, 'repository_uuid': repository, 'commit': commit,
                 'documents': documents, 'statuses': statuses}}}
-            # What the commit carries, recorded once from the bound repository; a record already
-            # there is immutable and is only checked to be this commit's.
-            carriers = carriers_id(repository, commit)
+            # What the commit adds over every commit already recorded, read once from the bound
+            # repository; a record already there is immutable and is only checked to be this commit's.
+            carriers = carriers_id(self.domain_uuid, repository, commit)
             recorded = before.get(carriers)
             if recorded is None:
+                base = sorted(carrier_records(conn, self.domain_uuid, repository))
                 changes[carriers] = {'kind': 'accepted_carriers', 'data': {
                     'domain_uuid': self.domain_uuid, 'repository_uuid': repository, 'commit': commit,
-                    'paths': carrier_paths(bound, commit)}}
+                    'root_commits': root_commits(bound, commit), 'paths': carrier_paths(bound, commit, base)}}
             elif (recorded['kind'] != 'accepted_carriers' or recorded['data'].get('commit') != commit
                   or recorded['data'].get('repository_uuid') != repository):
                 raise SN.Refused('invalid_input', '%s is not the carrier record of %s' % (carriers, commit))

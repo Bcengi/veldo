@@ -11,11 +11,12 @@ it writes are one transaction.
                         may name a later one, never an earlier one), counting every file whose
                         name carries a number. Accepted revisions are written only by VELDO-0035's
                         accept_revision and never move back, and accept_revision records what each
-                        accepted commit carries, so the floor reads the store, not Git: a branch
-                        deleted or pruned afterwards lowers nothing. A revision accepted before that
-                        record existed is read from Git while its commit is there and refused
-                        accepted_revision_unavailable once it is not. The kind entity IS the
-                        kind's counter.
+                        accepted commit adds, so the floor reads the union of those records, not
+                        Git: a branch deleted or pruned afterwards lowers nothing, and a named
+                        revision whose commit is gone is read from its record. A revision accepted
+                        before records existed is read from Git while its commit is there and
+                        refused accepted_revision_unavailable once it is not. The kind entity IS
+                        the kind's counter.
   allocate_document     one new alias from the stored counter, its reservation, the source
                         mapping, the accepted document head, its immutable version 1 and a pending
                         publication obligation, all in one signed journal record.
@@ -202,14 +203,7 @@ def maximum(paths, kind):
     return max(found, default=0)
 
 
-def root_commits(repo, revision='HEAD'):
-    """Every root commit reachable from a revision, sorted: what an accepted commit is checked to
-    share with its enrolled repository. It is not a checkout's identity; the enrollment binding is."""
-    result = _git_process.run(['git', '-C', str(repo), 'rev-list', '--max-parents=0', revision, '--'],
-                              capture_output=True, timeout=15)
-    if result.returncode:
-        return None
-    return sorted(line for line in result.stdout.decode().split() if line) or None
+root_commits = RS.root_commits
 
 
 def accepted_maximum(repo, commit, kind):
@@ -217,18 +211,6 @@ def accepted_maximum(repo, commit, kind):
     from Git: the commit's tree AND its history, so a number whose file was later deleted or renamed
     stays taken (C9). Only a revision accepted before carriers were recorded is read this way."""
     return maximum(RS.carrier_paths(repo, commit), kind)
-
-
-def recorded_carriers(conn, repository, commit):
-    """The carrier paths accept_revision recorded for an accepted commit, or None for a revision
-    accepted before that record existed."""
-    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (RS.carriers_id(repository, commit),)).fetchone()
-    if row is None or row[0] != 'accepted_carriers':
-        return None
-    data = json.loads(row[1])
-    if data.get('commit') != commit or data.get('repository_uuid') != repository:
-        return None
-    return data['paths']
 
 
 def accepted_commits(conn, domain_uuid, repository):
@@ -622,25 +604,31 @@ class Allocations:
         if bound != os.path.realpath(self.paths[repository]):
             self._refuse('wrong_repository', 'this store reads repository %s from %s, not %s'
                          % (repository, bound, self.paths[repository]))
-        roots = root_commits(bound, accepted['commit'])
+        # The union of every record of the repository holds every path of every recorded commit's
+        # history; a revision accepted before records existed is read from Git while its commit is
+        # there, and refused by name once it is not: skipping it would drop numbers it held.
+        records = RS.carrier_records(conn, self.domain_uuid, repository)
+        named = records.get(accepted['commit'])
+        if named is not None:
+            roots = named['root_commits']
+        elif RS._holds(bound, accepted['commit']):
+            roots = root_commits(bound, accepted['commit'])
+        else:
+            self._refuse('accepted_revision_unavailable', 'the named accepted commit %s records nothing and the bound '
+                         'repository %s no longer holds it' % (accepted['commit'], bound))
         if roots != self.identities[repository]:
             self._refuse('wrong_repository', 'the accepted commit is not in the enrolled repository')
-        # Every accepted revision counts, from what accept_revision recorded it carries, never from
-        # Git: a branch deleted, pruned or force-pushed afterwards changes no number it holds. A
-        # revision accepted before that record existed is read from the bound repository while it
-        # holds the commit, and refused by name once it does not: skipping it would drop numbers.
         commits = accepted_commits(conn, self.domain_uuid, repository)
-        highest = 0
+        union = [path for record in records.values() for path in record['paths']]
         for commit in commits:
-            paths = recorded_carriers(conn, repository, commit)
-            if paths is not None:
-                highest = max(highest, maximum(paths, data))
-            elif RS._holds(bound, commit):
-                highest = max(highest, accepted_maximum(bound, commit, data))
+            if commit in records:
+                continue
+            if RS._holds(bound, commit):
+                union += RS.carrier_paths(bound, commit)
             else:
                 self._refuse('accepted_revision_unavailable', 'accepted commit %s of repository %s records no numbers and '
                              'the bound repository %s no longer holds it' % (commit, repository, bound))
-        floor = highest + 1
+        floor = maximum(union, data) + 1
         if first is None:
             data['next'] = floor
         elif first < floor:
