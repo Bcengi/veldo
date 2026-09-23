@@ -1,41 +1,41 @@
 {
   "command": "bash scripts/verify.sh",
-  "seconds": 638.374762582127,
-  "raw_log_sha256": "762437fc72e5c62358e968bc5bb27861b884d89197c3d68e636a91cf8882303d",
+  "seconds": 654.9734795629047,
+  "raw_log_sha256": "c75ef6d2a05f4214239cc6a88ccaa302993638be3df94e1e97a494435d792094",
   "summary": [
-    "selftest: 5651 passed, 0 failed",
-    "mutations: passed registered=66 executed=66 rejected=66 workers=88 elapsed=32.968s",
+    "selftest: 5658 passed, 0 failed",
+    "mutations: passed registered=74 executed=74 rejected=74 workers=96 elapsed=41.945s",
     "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
-    "GATE: GREEN (838cfebdc0084294b63850e18d68e9e1c7afec0c)"
+    "GATE: GREEN (89cc28ebab0ca8d83696811e1ff7ff1da5a53f24)"
   ],
   "mutation_stage": {
     "schema": "veldo.mutation-stage/v1",
-    "registered": 66,
-    "executed": 66,
-    "rejected": 66,
-    "elapsed": 32.968073659809306,
-    "input_digest": "700d271fff798b7e4f3b175a6821923ebfaee45ba6c7e580ab8a1cfa922a6b94",
+    "registered": 74,
+    "executed": 74,
+    "rejected": 74,
+    "elapsed": 41.94519484299235,
+    "input_digest": "b42b43eb0092918f751dba75e4afa83d92b1e9438ea3b6be37d513bd43a04cc5",
     "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
     "invalid_results": [],
     "drivers": {
       "check_review_mutations.py": {
         "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
         "registered": 5,
-        "wall_seconds": 5.455611123004928,
-        "worker_seconds": 9.181380056776106
+        "wall_seconds": 5.510316810803488,
+        "worker_seconds": 9.213521482422948
       },
       "check_teeth_mutations.py": {
-        "inventory_digest": "29cecddd00fc66cacbbf93ab36237df4d5e4a0024cf3b7fc96cf978e03b477c7",
-        "registered": 61,
-        "wall_seconds": 31.2146282910835,
-        "worker_seconds": 155.68577023409307
+        "inventory_digest": "8ea75f3f37d8ec8451309b8c64bb228dec941cccb5faa3d35c08a7e99ad679b1",
+        "registered": 69,
+        "wall_seconds": 41.31886921194382,
+        "worker_seconds": 221.1042288399767
       }
     },
     "signing_cases": [
       {
         "case": "signing-prelock-clock",
-        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
-        "new_digest": "a5177eac97c8c772e5bb0bc91eec3a503e37375d01e943d09ac62689c088f3a5",
+        "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+        "new_digest": "9b285ec0a8d8267c13f304147a718ed110511e3aeeaf8829f87f6fbfd9079a09",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -44,8 +44,8 @@
       },
       {
         "case": "signing-truncated-clock",
-        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
-        "new_digest": "37b881f64fc35a1d9cc821d2ee6e5951ea4098f7c8287c1ded3eba8808d35b2f",
+        "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+        "new_digest": "450204b1f535add50ca4a04d3d70a4ddcacd4fe8bf3d76d5baeaa0f61ae86ba0",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -54,15 +54,14 @@
           "VELDO-0027 signing/revocation",
           "VELDO-0027 signing/rotation-race",
           "VELDO-0027 signing/kill-after-rotation",
-          "VELDO-0027 signing/kill-after-retire_signing_key",
-          "VELDO-0027 signing/kill-after-revoke_signing_key",
-          "VELDO-0027 signing/transition-clock"
+          "VELDO-0027 signing/transition-clock",
+          "VELDO-0027 signing/rotation-requires-rebound-delegation"
         ]
       },
       {
         "case": "signing-remove-channel-restriction",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "48c4d84a34f7377e98b38ceeef0446169c1047ae0e2e50c89c3d3fb94f81e489",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "c7a0895ca88bb173c1e008204a5f703b9aded4c19adad299d49cca55e34df16a",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -73,8 +72,8 @@
       },
       {
         "case": "signing-permit-foreign-channel",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "3466e5a7cafb5d4a8553c422b5e50ad942c00b8c22be256d3d265463705b2e02",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "071f2399cc340bff7459afebca262d7448a51ae39e19855e66946344f3c29516",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -84,8 +83,8 @@
       },
       {
         "case": "signing-request-channel",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "3ac5611b16432ca7044f61146da8a7f97cfd1e549241cd2a66ab633a5dceb0e3",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "bcbb7793358981bf37f8c37319b71d5b80f93e1199563137e2fed34f45c98bce",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -95,8 +94,8 @@
       },
       {
         "case": "signing-request-key-channel",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "5a70e765810bd4de752f5f5c429ca7ca212eef3c5ff81d38eefb92429cc1fd8f",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "acc89b5eb81e35970ab9042db524406aefda45108f6ff82b6c6668654b812751",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -106,8 +105,8 @@
       },
       {
         "case": "signing-request-key",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "79b786586157b09ae5eb59267cdd6b3767d747c18261a683d618f5b72de85cb5",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "dc65de9dc5798e1cd9f8dc1bef296de4bb8856c394574e4545801d2482a0491d",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -116,8 +115,8 @@
       },
       {
         "case": "signing-ignore-key-crosscheck",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "78bd881bab4e9bf95d329e4ce98a964ab065493f6ca091c764243c645c53ed08",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "7db94b99d792c20d801c66b65c169d76ae0830f736f8e9029d2e8378ac55bd4f",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -126,8 +125,8 @@
       },
       {
         "case": "signing-text-without-identity",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "8541a304e6b5f29ad19d24009e073f8acc0195909aa7be98e810c08591a7447b",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "71990b7d8d43512e2c6a022912069ed21396df8b804fe8223b9f76ea22ce965a",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -139,8 +138,8 @@
       },
       {
         "case": "signing-text-substitutes-identity",
-        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-        "new_digest": "2ac366143f2ac92a5f765f4c0f29c44140e8f8670e7c7d013e5119833e2b4640",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "9b190df9a0183561d4a1241612773ce8e2460c838fd8af62bc18e3023b5cbc5f",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -149,8 +148,8 @@
       },
       {
         "case": "signing-branch-projection-authority",
-        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
-        "new_digest": "cead401a94142db62dbc16db237c203a0b654f66701b50fa32ed59c177396767",
+        "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+        "new_digest": "b5ecee24db22eeff4e62edd16e3fa5ab2ee5281a7ce946a98addacf67a8a394a",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
@@ -159,12 +158,92 @@
       },
       {
         "case": "signing-branch-preflight-bypass",
-        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
-        "new_digest": "f57ac8602f23d09fbe3b72bac310391307cfaffa49e27ad189676db8e6828c83",
+        "old_digest": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+        "new_digest": "311e41b15d3bf376606c201f3990c60fd0bf3029807656b5ed475519aeee0abd",
         "baseline_failed": [],
         "noop_failed": [],
         "mutant_failed": [
           "VELDO-0027 signing/branch-key"
+        ]
+      },
+      {
+        "case": "signing-ignore-personal-content",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "807e759ed96fcd98c51766ae086d74d811a203d9d15d0cffe54a565e5e3325c4",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/personal-content-binding"
+        ]
+      },
+      {
+        "case": "signing-ignore-personal-ruling",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "df5521c454726ec7d71f1ec217a3ccf863a89349057d83f781c3479f7af17393",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/personal-content-binding"
+        ]
+      },
+      {
+        "case": "signing-ignore-selected-key-binding",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "17491db674590d3d7a0f3892eaaaf24cdd984f10a7c9569d18426e264bac9b60",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/rotation-requires-rebound-delegation"
+        ]
+      },
+      {
+        "case": "signing-retired-key-inherits-grant",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "fe59c22b060ad9b3809a101b8765a63d262d07e46ac5c480b7f5343cc8b99cc5",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/rotation-requires-rebound-delegation"
+        ]
+      },
+      {
+        "case": "signing-leak-source-before-auth",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "4be5d8f3283ee696ad7a1f3cf55cb791db0fac822f9ee5748fb39f7720926257",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
+        ]
+      },
+      {
+        "case": "signing-leak-revision-before-auth",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "d64c24422d3d46c4220cda394b58ea7d21b45b2a492f4d073b8530e04ab4b0c7",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
+        ]
+      },
+      {
+        "case": "signing-ignore-envelope-problems",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "8a1a2aeda27ef6dacab289520b09bd6e739965e16cf0d71e24df29209df7de33",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/personal-envelope-expiry"
+        ]
+      },
+      {
+        "case": "signing-ignore-envelope-expiry",
+        "old_digest": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
+        "new_digest": "8783a67c1e4ab1b0dbd3dfe472537026569defbaff1e6a49b802dea137c4638c",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/personal-envelope-expiry"
         ]
       }
     ]

@@ -1,4 +1,4 @@
-selftest: 5651 passed, 0 failed
-mutations: passed registered=66 executed=66 rejected=66 workers=88 elapsed=32.968s
+selftest: 5658 passed, 0 failed
+mutations: passed registered=74 executed=74 rejected=74 workers=96 elapsed=41.945s
 catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
-GATE: GREEN (838cfebdc0084294b63850e18d68e9e1c7afec0c)
+GATE: GREEN (89cc28ebab0ca8d83696811e1ff7ff1da5a53f24)

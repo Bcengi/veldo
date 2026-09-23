@@ -62,5 +62,17 @@
     }
   },
   "baseline_module_sha256": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
-  "baseline_note": "The mutation worker observes each expect assertion as a Boolean; RED means the named assertion was False, not an exception or process failure. Original signer bytes were extracted with git show, without switching branches."
+  "baseline_note": "The mutation worker observes each expect assertion as a Boolean; RED means the named assertion was False, not an exception or process failure. Original signer bytes were extracted with git show, without switching branches.",
+  "final_gate": {
+    "commit": "89cc28ebab0ca8d83696811e1ff7ff1da5a53f24",
+    "clean_before": true,
+    "exit_code": 0,
+    "seconds": 654.9734795629047,
+    "summary": [
+      "selftest: 5658 passed, 0 failed",
+      "mutations: passed registered=74 executed=74 rejected=74 workers=96 elapsed=41.945s",
+      "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
+      "GATE: GREEN (89cc28ebab0ca8d83696811e1ff7ff1da5a53f24)"
+    ]
+  }
 }

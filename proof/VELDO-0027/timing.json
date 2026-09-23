@@ -8,5 +8,17 @@
   "implementation_mutation_seconds": 32.968073659809306,
   "added_mutation_seconds": 9.188750693807378,
   "method": "Same checkout, clean pre-change and clean implementation commits; monotonic wall clock around bash scripts/verify.sh. No gate stage disabled.",
-  "note": "Serial targeted mutation-driver time is not added gate time; the canonical mutation stage shares controls and runs workers concurrently."
+  "note": "Serial targeted mutation-driver time is not added gate time; the canonical mutation stage shares controls and runs workers concurrently.",
+  "review_fix_gate": {
+    "commit": "89cc28ebab0ca8d83696811e1ff7ff1da5a53f24",
+    "clean_before": true,
+    "exit_code": 0,
+    "seconds": 654.9734795629047,
+    "summary": [
+      "selftest: 5658 passed, 0 failed",
+      "mutations: passed registered=74 executed=74 rejected=74 workers=96 elapsed=41.945s",
+      "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
+      "GATE: GREEN (89cc28ebab0ca8d83696811e1ff7ff1da5a53f24)"
+    ]
+  }
 }

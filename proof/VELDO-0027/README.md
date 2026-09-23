@@ -248,3 +248,19 @@ mutations, including both variants for every finding. `mutations.json` records
 the observations and the adjacent `.diff` files retain every applied change.
 The driver timeout was increased to accommodate the eight additional full-suite
 mutation runs; expectations and mutation acceptance rules are unchanged.
+
+Final review-fix acceptance ran from a clean tree at `89cc28ebab0ca8d83696811e1ff7ff1da5a53f24`:
+
+```text
+selftest: 5658 passed, 0 failed
+mutations: passed registered=74 executed=74 rejected=74 workers=96 elapsed=41.945s
+catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (89cc28ebab0ca8d83696811e1ff7ff1da5a53f24)
+```
+
+The gate completed in 654.973 seconds. Its mutation stage includes fresh baseline,
+no-op, and defective-copy controls. [review-gate-run.json](review-gate-run.json)
+records the clean-tree precondition and exit status; [gate-summary.json](gate-summary.json)
+retains the log digest and all signing mutation observations. The final evidence
+commit changes proof only. The checkout's `.veldo/last_verify` and
+`.veldo/events.jsonl` are restored before that commit and are not included.

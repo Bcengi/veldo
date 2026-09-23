@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0027",
-  "commit": "838cfebdc0084294b63850e18d68e9e1c7afec0c",
+  "commit": "89cc28ebab0ca8d83696811e1ff7ff1da5a53f24",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-09-23T00:14:57.455034+00:00",
+  "produced_at": "2026-09-23T00:44:39.082037+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -46,6 +46,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0027/gate-summary.json",
           "detail": "Clean canonical gate passed; fresh baseline, no-op and mutant controls executed by the required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0027/review-fixes.json",
+          "detail": "Review regressions F-01 through F-04: original-code RED assertions, fixed green rows, and two distinct registered mutations per finding; final full gate includes every row."
         }
       ]
     },
@@ -62,7 +67,10 @@
         "signing/kill-after-rotation",
         "signing/kill-after-retire_signing_key",
         "signing/kill-after-revoke_signing_key",
-        "signing/transition-clock"
+        "signing/transition-clock",
+        "signing/rotation-requires-rebound-delegation",
+        "signing/rotation-source-only-refused",
+        "signing/rotation-rebound-control"
       ],
       "evidence": [
         {
@@ -74,6 +82,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0027/gate-summary.json",
           "detail": "Clean canonical gate passed; fresh baseline, no-op and mutant controls executed by the required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0027/review-fixes.json",
+          "detail": "Review regressions F-01 through F-04: original-code RED assertions, fixed green rows, and two distinct registered mutations per finding; final full gate includes every row."
         }
       ]
     },
@@ -111,7 +124,9 @@
         "signing/receipt-bound/source_digest",
         "signing/receipt-bound/payload",
         "signing/receipt-bound/delegation_id",
-        "signing/receipt-bound/delegation_version"
+        "signing/receipt-bound/delegation_version",
+        "signing/personal-content-binding",
+        "signing/personal-envelope-expiry"
       ],
       "evidence": [
         {
@@ -123,6 +138,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0027/gate-summary.json",
           "detail": "Clean canonical gate passed; fresh baseline, no-op and mutant controls executed by the required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0027/review-fixes.json",
+          "detail": "Review regressions F-01 through F-04: original-code RED assertions, fixed green rows, and two distinct registered mutations per finding; final full gate includes every row."
         }
       ]
     },
@@ -133,7 +153,9 @@
         "signing/channel-comes-from-the-connection",
         "signing/key-comes-from-the-channel",
         "signing/unauthenticated",
-        "signing/key-path"
+        "signing/key-path",
+        "signing/unauthenticated-diagnostic-is-empty",
+        "signing/ambiguous-channel-key"
       ],
       "evidence": [
         {
@@ -145,6 +167,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0027/gate-summary.json",
           "detail": "Clean canonical gate passed; fresh baseline, no-op and mutant controls executed by the required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0027/review-fixes.json",
+          "detail": "Review regressions F-01 through F-04: original-code RED assertions, fixed green rows, and two distinct registered mutations per finding; final full gate includes every row."
         }
       ]
     }
@@ -183,15 +210,26 @@
     "proof/VELDO-0027/gate.log",
     "proof/VELDO-0027/mutations.json",
     "proof/VELDO-0027/observations.json",
+    "proof/VELDO-0027/review-capsules.json",
+    "proof/VELDO-0027/review-fixes.json",
+    "proof/VELDO-0027/review-gate-run.json",
     "proof/VELDO-0027/signing-branch-preflight-bypass.diff",
     "proof/VELDO-0027/signing-branch-projection-authority.diff",
+    "proof/VELDO-0027/signing-ignore-envelope-expiry.diff",
+    "proof/VELDO-0027/signing-ignore-envelope-problems.diff",
     "proof/VELDO-0027/signing-ignore-key-crosscheck.diff",
+    "proof/VELDO-0027/signing-ignore-personal-content.diff",
+    "proof/VELDO-0027/signing-ignore-personal-ruling.diff",
+    "proof/VELDO-0027/signing-ignore-selected-key-binding.diff",
+    "proof/VELDO-0027/signing-leak-revision-before-auth.diff",
+    "proof/VELDO-0027/signing-leak-source-before-auth.diff",
     "proof/VELDO-0027/signing-permit-foreign-channel.diff",
     "proof/VELDO-0027/signing-prelock-clock.diff",
     "proof/VELDO-0027/signing-remove-channel-restriction.diff",
     "proof/VELDO-0027/signing-request-channel.diff",
     "proof/VELDO-0027/signing-request-key-channel.diff",
     "proof/VELDO-0027/signing-request-key.diff",
+    "proof/VELDO-0027/signing-retired-key-inherits-grant.diff",
     "proof/VELDO-0027/signing-text-substitutes-identity.diff",
     "proof/VELDO-0027/signing-text-without-identity.diff",
     "proof/VELDO-0027/signing-truncated-clock.diff",
@@ -199,17 +237,17 @@
     "proof/VELDO-0027/universe.json"
   ],
   "implementation_sha256": {
-    ".veldo/control_keys.py": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
-    ".veldo/control_signer.py": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+    ".veldo/control_keys.py": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+    ".veldo/control_signer.py": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
     ".veldo/keys/allowed_signers": "ccd7d84052679b8a6e2de921c663f301eb2662723ccdf7aea7339e2450bd56bb",
     "engine/.veldo/architecture.yaml": "a51297d4954f1d6b91b4f4535bdcb895457be168b5c004a91ddd8e207f6b62ce",
-    "engine/.veldo/control_keys.py": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
-    "engine/.veldo/control_signer.py": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+    "engine/.veldo/control_keys.py": "2729f0773f5bc47f6ca377c42fb9233c255797ac17c942ff58000b480a6bcdeb",
+    "engine/.veldo/control_signer.py": "2845fabcf982601f96400842cd6fca2964d427d3188eaa17c1155d73d1448de9",
     "engine/.veldo/keys/allowed_signers": "ccd7d84052679b8a6e2de921c663f301eb2662723ccdf7aea7339e2450bd56bb",
-    "scripts/check_teeth_mutations.py": "9e4e6c88a72cda8bd5b295bfb68357bcdfca8b12004fc123d22a416524f4d549",
-    "scripts/suites/56_veldo_0027_signing.py": "58a38c1d92c0ec5ff1ffadf5de79b37b68e60f5773bdedb291cb98e39751ae3a",
+    "scripts/check_teeth_mutations.py": "26c7a049e3bbdffce503cd1f06fbe9cf168db59c399b53cd80647b258e2dde3c",
+    "scripts/suites/56_veldo_0027_signing.py": "936e959207f073ab5a3f7c5a1f02ee8ce7c7d664a4b397c0191753f08a8cdd67",
     "scripts/suites/manifest.json": "1c0258bd96c97dabc695c44d0c68f916e9e385c62197d31776edb6c8f3826db2",
     "scripts/suites/requires.json": "775b938ec6729cc85ac00cb9fe6ad51b4619c6a2db4b41ec14489143dc1a7ba2",
-    "specs/VELDO-0027-protected-signing.md": "107d296b016592724b2811acb81a27d221649aece601fe641b4af6216c0bf03c"
+    "specs/VELDO-0027-protected-signing.md": "185c7788a12893128d593a397b8e2b98e35c81abafcf64f2d077cda54dd0ed6b"
   }
 }
