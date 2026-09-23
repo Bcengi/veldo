@@ -32,6 +32,7 @@ footprint:
   - "scripts/suites/*_veldo_0054_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0054-floor-decision-dependencies.md"
   - "specs/index.md"
   - "proof/VELDO-0054/*"
@@ -120,3 +121,7 @@ expiry/reverse invalidation and AC3 tripwire/adversarial decision-review depth m
 Release 3; crash/restart matrix moved to Release 2. AC1 normal exact binding consumption
 remains. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
+falsifiers and their second mutations are registered with the repository's mutation driver
+(finding 54). No criterion, status or evidence universe changed.

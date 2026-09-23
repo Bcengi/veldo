@@ -917,6 +917,62 @@ def cases():
     inbox('inbox-parked-refusal-shown-ready', 'control_assignment.py',
           "reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'",
           "reason = 'ready_to_resume'", 'inbox/parked-units-visible')
+    # VELDO-0054: every declared falsifier and a second, different defect for its row, plus a
+    # driven defect for every other row suite 62 asserts.
+    def decisions(name, module, old, new, row):
+        add(54, name, '62_veldo_0054_decisions.py', module, old, new, ['decisions/' + row])
+
+    framing = "    if not _is_str(framing) or framing != record.get('framing_digest'):\n"
+    decisions('framing-receipt-without-digest', 'control_decision_dependency.py', framing,
+              "    if framing is not None and framing != record.get('framing_digest'):\n", 'wrong-framing')
+    decisions('framing-shape-only', 'control_decision_dependency.py', framing,
+              "    if not _is_str(framing):\n", 'wrong-framing')
+    decisions('subject-currency-ignored', 'control_decision_dependency.py',
+              "    if current is None or subject.get('digest') != current:\n", "    if False:\n", 'exact-binding')
+    decisions('floor-stations-skip-decisions', 'control_eligibility.py',
+              "            return self._decision_codes(unit, inputs)\n", "            return []\n", 'exact-binding')
+    decisions('inline-status-as-ruling', 'control_decision_dependency.py',
+              "    mine = [s for s in settlements if s.get('decision') == rid]\n",
+              "    if isinstance(record, dict) and record.get('state') == 'settled':\n        return []\n"
+              "    mine = [s for s in settlements if s.get('decision') == rid]\n", 'unsigned-resolution')
+    decisions('unsigned-settlement-accepted', 'control_decision_dependency.py',
+              "        if verify is None or not isinstance(body, dict) or not _is_str(signature) or not _is_str(signer):\n"
+              "            continue\n",
+              "        if isinstance(body, dict) and not _is_str(signature):\n            verified.append(body)\n            continue\n"
+              "        if verify is None or not isinstance(body, dict) or not _is_str(signer):\n            continue\n",
+              'unsigned-resolution')
+    decisions('plan-inline-resolution-honored', 'plan.py',
+              '        if isinstance(d, dict):\n            for s in d.get("blocks") or []:\n',
+              '        if isinstance(d, dict) and d.get("status") != "resolved":\n            for s in d.get("blocks") or []:\n',
+              'unsigned-resolution')
+    decisions('ambiguous-settlement-first', 'control_decision_dependency.py',
+              "    if len(current) > 1:\n        return ['ambiguous_decision:' + rid]\n", "", 'named-blockers')
+    decisions('unsupported-obligation-presumed', 'control_decision_dependency.py',
+              "SUPPORTED_OBLIGATIONS = ()", "SUPPORTED_OBLIGATIONS = ('tripwire', 'adversarial_decision_review')",
+              'named-blockers')
+    decisions('missing-reference-ignored', 'control_decision_dependency.py',
+              "            codes.append('missing_decision:%s' % ref)\n", "            pass\n", 'named-blockers')
+    decisions('frontier-inline-decisions', 'frontier.py',
+              "        blocked = PL._decision_blocks(fm, gate)\n", "        blocked = PL._decision_blocks(fm)\n",
+              'named-blockers')
+    decisions('run-check-ignores-file-references', 'plan.py',
+              '        reasons.extend("decision refused: %s" % r for r in gate.decision_blockers(spec_id, references=refs)\n'
+              '                       if r not in decision["refusals"])\n', '', 'named-blockers')
+    decisions('scope-binding-ignored', 'control_decision_dependency.py',
+              "    problems = []\n    if body.get('subject') != record.get('subject'):\n",
+              "    return []\n    problems = []\n    if body.get('subject') != record.get('subject'):\n", 'scope-binding')
+    decisions('scope-target-may-differ', 'control_decision_dependency.py',
+              "    if body.get('scope_digest') != scope_digest(record.get('scope')) \\\n"
+              "            or (record.get('scope') or {}).get('target') != (record.get('subject') or {}).get('id'):\n",
+              "    if body.get('scope_digest') != scope_digest(record.get('scope')):\n", 'scope-binding')
+    decisions('consumer-unregistered', 'control_decision_dependency.py',
+              "    ('control_eligibility.py', 'Gate.decision_blockers'),\n", "", 'consumers-from-call-sites')
+    decisions('production-trust-not-wired', 'control_eligibility.py',
+              "                settlement_trust=settlements)\n", "                settlement_trust=None)\n",
+              'production-gate-verifies')
+    decisions('taxonomy-unbound-unknown', 'control_eligibility.py',
+              "    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',\n",
+              "    'decision_ruling': 'missing_authority',\n", 'observations')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
@@ -1007,7 +1063,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 52, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 52, 54, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
