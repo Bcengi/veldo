@@ -119,3 +119,9 @@ generation/revocation/crash interleavings and AC3 effect recovery moved to Relea
 scope is provider and publication effects. The criteria, declared evidence universe, Context
 and Notes above now carry only the retained function. No specification status or historical
 proof was changed.
+
+2026-09-23 implementation: the protected issuer, authenticated effect IPC and store transitions
+consume narrow accepted effect-contract and permission records from the upstream services.
+Registered both operation kinds and their driven negative controls in
+`scripts/check_teeth_mutations.py`, with the suite manifest and derived requires inventory.
+The proof describes the consumption seam; no status or Release 2 obligation changes.

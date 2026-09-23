@@ -20,8 +20,9 @@ worried. `authorize_use()` re-checks, and that is where the refusal actually lan
 the record, so an audit answers "who did this" from the credential itself rather than from
 correlating timestamps across two systems at three in the morning.
 
-**FAKE ISSUER ONLY.** This module mints no real token and reaches nothing; `Issuer` is the seam. A
-real one is wired per system, deliberately, by a person.
+**LEGACY FAKE AND PROTECTED ISSUERS.** FakeIssuer remains the legacy offline seam.
+ProtectedIssuer is the authenticated Effect Executor's real, contract-derived internal
+handle issuer; it returns no reusable provider or source-publication credential.
 """
 import hashlib
 
@@ -142,3 +143,20 @@ def audit_record(cred, action, now):
     "who did this" is answerable without correlating two systems by timestamp."""
     return {"schema": SCHEMA, "agent": cred.agent, "task": cred.task,
             "scopes": list(cred.scopes), "action": action, "at": now}
+
+
+class ProtectedIssuer:
+    """Real internal handles for accepted provider/publication contracts (VELDO-0028).
+
+    Constructed only inside the authenticated Effect Executor. The effect module
+    validates current accepted records and commits issuance in its configured store.
+    This deliberately does not implement FakeIssuer.mint: caller task declarations
+    cannot become authority, and reusable provider/Git credentials are never issued.
+    """
+
+    def __init__(self, effects, connection, config, journal_signer):
+        self.effects, self.connection = effects, connection
+        self.config, self.journal_signer = config, journal_signer
+
+    def issue(self, principal, request):
+        return self.effects.issue(self.connection, self.config, principal, request, self.journal_signer)

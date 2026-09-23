@@ -89,6 +89,13 @@ _FILES = [
     # VELDO-0026 (PLAN-0019 W11): the revocation organ, the acceptance guard every boundary invokes;
     # loaded by the suite and by the authority process above it.
     ".veldo/control_revocation.py",
+    # VELDO-0028: protected effects and their signing/issuer dependency closure.
+    # Runtime assets, not validator imports: REQUIRED_SUBSTRATE is unchanged.
+    ".veldo/control_keys.py",
+    ".veldo/control_signer.py",
+    ".veldo/credential_issue.py",
+    ".veldo/control_effects.py",
+    ".veldo/control_effect_executor.py",
     # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
     # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
