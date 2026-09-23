@@ -117,3 +117,9 @@ concurrent read-set matrix and AC3 crash-safe snapshot pointer switching/recover
 Release 2. Accepted snapshots and ordinary materialization remain. The criteria, declared
 evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-23 implementation: register the AC1-AC3 negative controls in the existing
+`scripts/check_teeth_mutations.py` driver (the authorized footprint exception), with two
+distinct mutations per named criterion row and fresh unmutated controls. The snapshot
+consumer registration seam uses the existing store; it does not implement future eligibility,
+project-manager, identifier-allocation or lander commands.
