@@ -466,8 +466,8 @@ def cases():
     aliases('publisher-any-repository', 'control_document.py',
             '            if repository != self.repository:', '            if False:', 'publication/bound-to-repository')
     aliases('reader-any-checkout', 'control_document.py',
-            '    if not recorded or AL.checkout_identity(os.path.realpath(root)) != recorded:', '    if False:',
-            'publication/bound-to-repository')
+            '    if enrolled_repository(root, store_file(conn), domain_uuid, verify, host_identity) != repository:',
+            '    if False:', 'publication/bound-to-repository')
     aliases('record-trusts-supplied-digest', 'control_alias.py',
             "            visible = publisher.visible_digest(data['path'])", "            visible = p['observed_digest']",
             'publication/recorded-only-by-publisher')
@@ -516,6 +516,14 @@ def cases():
     aliases('revision-regression-allowed', 'control_readset.py',
             "                if not _descends(repo, data['commit'], commit):", '                if False:',
             'aliases/floor-from-every-accepted-revision')
+    aliases('publisher-infers-root-commits', 'control_document.py',
+            '        repository = enrolled_repository(self.root, store_file(service.conn), service.domain_uuid, verify, host_identity)\n',
+            '        repository = next((r for r, roots in service.identities.items() if roots == AL.root_commits(self.root)), None)\n',
+            'publication/bound-by-enrollment')
+    aliases('binding-signature-unchecked', 'control_document.py',
+            '        problems = EN.verify_binding(root, binding, verify, host_identity, domain_uuid=domain_uuid)',
+            '        problems = EN.verify_binding(root, binding, lambda message, signature: True, host_identity, domain_uuid=domain_uuid)',
+            'publication/bound-by-enrollment')
     aliases('readset-snapshots-undeclared', 'control_readset.py',
             '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)\n', '',
             'aliases/owned-whatever-registration-order')

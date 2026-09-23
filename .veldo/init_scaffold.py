@@ -90,6 +90,9 @@ _FILES = [
     # loaded by the authority, not by the validator, so not REQUIRED_SUBSTRATE.
     ".veldo/control_alias.py",
     ".veldo/control_document.py",
+    # VELDO-0029's enrollment binding, which control_document reads to bind a checkout to the
+    # repository it is enrolled as.
+    ".veldo/control_enrollment.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.

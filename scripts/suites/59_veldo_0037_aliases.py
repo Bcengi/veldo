@@ -55,14 +55,24 @@ except st.StoreRefused as error:
 conn.close()
 '''
 
-# An independent reader: read-only store handle plus the published checkout.
+# An independent reader: read-only store handle plus the published checkout, which must carry an
+# enrollment binding the reader verifies with the enrollment service's public key.
 _S37_READ = _S37_CHILD_PRELUDE + r'''
+import tempfile
 doc = load('control_document')
+def verify(message, signature):
+    with tempfile.NamedTemporaryFile('w', suffix='.sig') as handle:
+        handle.write(signature)
+        handle.flush()
+        return subprocess.run(['ssh-keygen', '-Y', 'verify', '-f', sys.argv[5], '-I', 'enrollment-service',
+                               '-n', 'veldo-enrollment', '-s', handle.name], input=message, capture_output=True,
+                              timeout=10).returncode == 0
 conn = st.open_store(sys.argv[2], mode='r')
 out = {}
 for alias in json.loads(sys.argv[4]):
     try:
-        r = doc.read_published(st, conn, 'repository', alias, sys.argv[3])
+        r = doc.read_published(st, conn, 'repository', alias, sys.argv[3], verify=verify, host_identity='alias-host',
+                               domain_uuid='domain')
         out[alias] = {'version': r['version'], 'digest': r['digest'], 'source': r['source'], 'role': r['role'],
                       'path': r['path'], 'body': r['body'].hex()}
     except doc.SN.Refused as error:
@@ -84,6 +94,7 @@ def _s37_run():
             'control_alias.py': ROOT / ".veldo" / "control_alias.py",
             'control_document.py': ROOT / ".veldo" / "control_document.py",
             'control_snapshot.py': ROOT / '.veldo/control_snapshot.py',
+            'control_enrollment.py': ROOT / '.veldo/control_enrollment.py',
             'control_readset.py': ROOT / ".veldo" / "control_readset.py",
             'control_store.py': ROOT / ".veldo" / "control_store.py",
             'claim.py': ROOT / '.veldo/claim.py',
@@ -95,6 +106,7 @@ def _s37_run():
         doc = _s37_load('s37_document', modules / 'control_document.py')
         claim = _s37_load('s37_claim', modules / 'claim.py')
         rs = _s37_load('s37_readset', modules / 'control_readset.py')
+        enrollment = _s37_load('s37_enrollment', modules / 'control_enrollment.py')
         git = al._git_process
 
         def g(repo, *args):
@@ -141,6 +153,26 @@ def _s37_run():
                                capture_output=True, timeout=10, check=True).stdout.decode()
 
         signing = dict(signer='allocation-service', sign=sign, authority_generation=1)
+        # VELDO-0029 enrollment: a checkout is the repository its signed binding names.
+        allowed_enrollers = root / 'allowed-enrollers'
+        allowed_enrollers.write_text('enrollment-service ' + key.with_suffix('.pub').read_text())
+
+        def enrollment_sign(body):
+            return _s37_sp.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', 'veldo-enrollment'], input=body,
+                               capture_output=True, timeout=10, check=True).stdout.decode()
+
+        def verify(message, signature):
+            signature_file = root / 'binding.sig'
+            signature_file.write_text(signature)
+            return _s37_sp.run(['ssh-keygen', '-Y', 'verify', '-f', str(allowed_enrollers), '-I', 'enrollment-service',
+                                '-n', 'veldo-enrollment', '-s', str(signature_file)], input=message,
+                               capture_output=True, timeout=10).returncode == 0
+
+        def enroll(checkout, repository, store):
+            return enrollment.enroll(checkout, 'domain', 'store-' + _s37_Path(store).parent.name, str(store), 'alias-host', 1,
+                                     enrollment_sign, 'operator', '2026-09-23T00:00:00Z', repository_uuid=repository)
+
+        bindings = dict(verify=verify, host_identity='alias-host')
         db = root / 'control.sqlite3'
         conn = st.open_store(db)
         service = al.attach(st, conn, 'domain', accepted_repositories)
@@ -149,7 +181,8 @@ def _s37_run():
         accepting = rs.attach_revisions(st, conn, 'domain', accepted_repositories)
         for repository, accepted in (('repository', origin), ('other', other_origin)):
             accepting.accept('revision/' + repository, repository, g(accepted, 'rev-parse', 'HEAD'), 'operator', **signing)
-        publisher = doc.Publisher(service, publication)
+        enroll(publication, 'repository', db)
+        publisher = doc.Publisher(service, publication, **bindings)
         refusal_log = []
 
         def call(action):
@@ -185,7 +218,7 @@ def _s37_run():
 
         def child_read(aliases):
             proc = _s37_sp.run([_s37_sys.executable, '-B', '-c', _S37_READ, str(modules), str(db), str(publication),
-                                _s37_json.dumps(aliases)], capture_output=True, text=True, timeout=30)
+                                _s37_json.dumps(aliases), str(allowed_enrollers)], capture_output=True, text=True, timeout=30)
             try:
                 return _s37_json.loads(proc.stdout)
             except ValueError:
@@ -479,14 +512,15 @@ def _s37_run():
         class _S37Env:
             pass
 
-        def fresh(label, histories=None, before_attach=None):
-            """histories maps a repository to its accepted commits, each {path: bytes, or None to delete};
-            before_attach(env) runs on the new store before the allocation authority attaches."""
+        def fresh(label, histories=None, before_attach=None, origins=None):
+            """histories maps a repository to its accepted commits, each {path: bytes, or None to delete},
+            or origins maps it to an accepted repository already built; before_attach(env) runs on the
+            new store before the allocation authority attaches."""
             env = _S37Env()
             env.base = root / ('defect-' + label)
             env.base.mkdir()
-            env.origins, env.revisions = {}, {}
-            for repository, commits in (histories or {'repository': [{}]}).items():
+            env.origins, env.revisions = dict(origins or {}), {}
+            for repository, commits in ({} if origins else (histories or {'repository': [{}]})).items():
                 origin = env.base / (repository + '-origin')
                 origin.mkdir()
                 g(origin, 'init', '-q')
@@ -512,9 +546,11 @@ def _s37_run():
             env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             return env
 
-        def checkout_of(env, repository='repository', name=None):
+        def checkout_of(env, repository='repository', name=None, enrolled=True):
             path = env.base / (name or repository + '-checkout')
             g(env.base, 'clone', '-q', str(env.origins[repository]), str(path))
+            if enrolled:
+                enroll(path, repository, env.db)
             return path
 
         def enable(env, kind, prefix, template, first=1, repository='repository'):
@@ -536,7 +572,8 @@ def _s37_run():
             return attempt(lambda: publisher.publish(repository, alias, version, 'publisher', **signing))
 
         def read_by(env, repository, alias, checkout):
-            return attempt(lambda: doc.read_published(st, env.conn, repository, alias, checkout))
+            return attempt(lambda: doc.read_published(st, env.conn, repository, alias, checkout, domain_uuid='domain',
+                                                      **bindings))
 
         def files_under(directory):
             return sorted(str(p.relative_to(directory)) for p in directory.rglob('*') if '.git' not in p.parts)
@@ -549,7 +586,7 @@ def _s37_run():
         outside = env.base / 'outside'
         outside.mkdir()
         (checkout / 'specs').symlink_to(outside, target_is_directory=True)
-        publisher_1, _ = attempt(lambda: doc.Publisher(env.service, checkout))
+        publisher_1, _ = attempt(lambda: doc.Publisher(env.service, checkout, **bindings))
         enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
         enable(env, 'plan', 'PLAN', 'plans/{alias}-{slug}.md')
         allocate(env, 'escape', 'specification', 'escape', b'escaping bytes\n')
@@ -659,16 +696,16 @@ def _s37_run():
                'unrelated': None, 'next': 'VELDO-0003'})
         env.conn.close()
 
-        # 6. A publisher and a reader are bound to the repository their checkout is a clone of
-        # (its root commits): another repository's accepted document is refused by name even when
-        # its path and bytes are identical, and a directory that is no checkout binds nothing.
+        # 6. A publisher and a reader are bound to the repository their checkout is enrolled as
+        # (row 13): another repository's accepted document is refused by name even when its path
+        # and bytes are identical, and a directory that is no checkout binds nothing.
         env = fresh('cross', {'repository': [{}], 'other': [{}]})
         mine, theirs = checkout_of(env, 'repository'), checkout_of(env, 'other')
         stray = env.base / 'not-a-checkout'
         stray.mkdir()
-        publisher_mine, _ = attempt(lambda: doc.Publisher(env.service, mine))
-        publisher_theirs, _ = attempt(lambda: doc.Publisher(env.service, theirs))
-        _, stray_error = attempt(lambda: doc.Publisher(env.service, stray))
+        publisher_mine, _ = attempt(lambda: doc.Publisher(env.service, mine, **bindings))
+        publisher_theirs, _ = attempt(lambda: doc.Publisher(env.service, theirs, **bindings))
+        _, stray_error = attempt(lambda: doc.Publisher(env.service, stray, **bindings))
         for repository in ('repository', 'other'):
             enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', repository=repository)
             allocate(env, 'cross-' + repository, 'specification', 'shared', b'identical bytes\n', repository=repository)
@@ -704,7 +741,7 @@ def _s37_run():
                                                                   'someone', **signing))[1]
 
         recording = {'no-publisher': code(record_on_word())}
-        publisher_4, _ = attempt(lambda: doc.Publisher(env.service, checkout))
+        publisher_4, _ = attempt(lambda: doc.Publisher(env.service, checkout, **bindings))
         recording['no-file'] = code(record_on_word())
         declared.parent.mkdir()
         declared.write_bytes(b'other bytes\n')
@@ -926,6 +963,69 @@ def _s37_run():
         expect('aliases/floor-from-every-accepted-revision', revisions == {
                'generic-new': 'entity_owned', 'generic-rewrite': 'entity_owned', 'regression': 'revision_regression',
                'older-revision': None, 'first-1': 'below_accepted_history', 'derived': None, 'allocated': 'VELDO-0002'})
+        env.conn.close()
+
+        # 13. A checkout is the repository its VELDO-0029 enrollment binding says, never what its
+        # root commits suggest. B is A plus a merged unrelated history, so a clone of B checked out
+        # before the merge carries exactly A's root commits; it binds as nothing unenrolled, as
+        # nothing when its binding no longer matches it or is edited, and as B when enrolled so.
+        shared = root / 'shared-root'
+        shared.mkdir()
+        a_origin, unrelated = shared / 'A-origin', shared / 'X-origin'
+        for path, name in ((a_origin, 'README.md'), (unrelated, 'x.txt')):
+            path.mkdir()
+            g(path, 'init', '-q')
+            (path / name).write_bytes(name.encode() + b' starts a history\n')
+            g(path, 'add', '-A')
+            g(path, 'commit', '-qm', 'Start ' + name)
+        b_origin = shared / 'B-origin'
+        g(shared, 'clone', '-q', str(a_origin), str(b_origin))
+        g(b_origin, 'fetch', '-q', str(unrelated), 'HEAD')
+        g(b_origin, 'merge', '-q', '--allow-unrelated-histories', '-m', 'Adopt X', 'FETCH_HEAD')
+        env = fresh('enrollment', origins={'A': a_origin, 'B': b_origin})
+        for repository in ('A', 'B'):
+            enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', repository=repository)
+        allocate(env, 'enrolled-a', 'specification', 'from-a', b'A document\n', repository='A')
+
+        def publisher_for(checkout):
+            publisher, error = attempt(lambda: doc.Publisher(env.service, checkout, **bindings))
+            return publisher, (publisher.repository if publisher else code(error))
+
+        bound = {}
+        pre_merge = checkout_of(env, 'B', 'b-pre-merge', enrolled=False)
+        g(pre_merge, 'checkout', '-q', 'HEAD^1')
+        _, bound['pre-merge-unenrolled'] = publisher_for(pre_merge)
+        moved = checkout_of(env, 'B', 'b-enrolled-then-moved')
+        g(moved, 'checkout', '-q', 'HEAD^1')
+        _, bound['enrolled-then-moved'] = publisher_for(moved)
+        forged = checkout_of(env, 'B', 'b-forged')
+        binding_file = _s37_Path(enrollment.binding_path(forged))
+        binding_file.write_text(_s37_json.dumps(dict(_s37_json.loads(binding_file.read_text()), repository_uuid='A')))
+        _, bound['forged-binding'] = publisher_for(forged)
+        elsewhere = checkout_of(env, 'A', 'a-other-store', enrolled=False)
+        enroll(elsewhere, 'A', env.base / 'another-store' / 'control.sqlite3')
+        _, bound['other-store'] = publisher_for(elsewhere)
+        b_old = checkout_of(env, 'B', 'b-old', enrolled=False)
+        g(b_old, 'checkout', '-q', 'HEAD^1')
+        enroll(b_old, 'B', env.db)
+        publisher_b, bound['enrolled-pre-merge'] = publisher_for(b_old)
+        _, crossed = publish_by(publisher_b, 'A', 'VELDO-0001')
+        bound['publish-A-into-B'] = code(crossed)
+        bound['A-file-in-B'] = (b_old / 'specs/VELDO-0001-from-a.md').exists()
+        a_checkout = checkout_of(env, 'A')
+        publisher_a, bound['A-checkout'] = publisher_for(a_checkout)
+        own, _ = publish_by(publisher_a, 'A', 'VELDO-0001')
+        bound['publish-A'] = bool(own)
+        read_a, _ = read_by(env, 'A', 'VELDO-0001', a_checkout)
+        bound['read-A'] = (read_a or {}).get('body')
+        _, read_wrong = read_by(env, 'A', 'VELDO-0001', b_old)
+        bound['read-A-from-B'] = code(read_wrong)
+        defects['enrollment'] = dict(bound, **{'read-A': None if bound['read-A'] is None else bound['read-A'].decode()})
+        expect('publication/bound-by-enrollment', bound == {
+               'pre-merge-unenrolled': 'wrong_repository', 'enrolled-then-moved': 'wrong_repository',
+               'forged-binding': 'wrong_repository', 'other-store': 'wrong_repository', 'enrolled-pre-merge': 'B',
+               'publish-A-into-B': 'wrong_repository', 'A-file-in-B': False, 'A-checkout': 'A', 'publish-A': True,
+               'read-A': b'A document\n', 'read-A-from-B': 'wrong_repository'})
         env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations

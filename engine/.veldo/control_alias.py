@@ -32,8 +32,8 @@ passes claim.unit_id_problem before any artifact entity is written; this module 
 spelling of that rule.
 
 ONE CHECKOUT PER REPOSITORY. attach maps every enrolled repository UUID to its accepted Git
-repository, whose root commits are its identity (control_enrollment's rule); two repositories may
-not share them. A kind's template is ASCII and can reach neither .git/ nor .veldo/, and no two kinds
+repository. Which repository a CHECKOUT is comes from the VELDO-0029 binding it carries (see
+control_document), never from root commits, which two repositories can share. A kind's template is ASCII and can reach neither .git/ nor .veldo/, and no two kinds
 of one repository may declare one path, or a directory of the other's path, compared case-folded
 because the Mac's default filesystem is case-insensitive. Prefixes are compared case-folded too.
 OWNERSHIP IS THE STORE'S. attach declares every kind and id prefix these commands write, and
@@ -191,21 +191,13 @@ def maximum(paths, kind):
 
 
 def root_commits(repo, revision='HEAD'):
-    """A repository's identity: every root commit reachable from a revision, sorted. A different
-    repository cannot share them and a clone cannot shed them (control_enrollment's rule)."""
+    """Every root commit reachable from a revision, sorted: what an accepted commit is checked to
+    share with its enrolled repository. It is not a checkout's identity; the enrollment binding is."""
     result = _git_process.run(['git', '-C', str(repo), 'rev-list', '--max-parents=0', revision, '--'],
                               capture_output=True, timeout=15)
     if result.returncode:
         return None
     return sorted(line for line in result.stdout.decode().split() if line) or None
-
-
-def checkout_identity(root):
-    """The root commits of the Git checkout whose top level is exactly `root`, or None."""
-    result = _git_process.run(['git', '-C', str(root), 'rev-parse', '--show-toplevel'], capture_output=True, timeout=15)
-    if result.returncode or os.path.realpath(result.stdout.decode().strip()) != os.path.realpath(root):
-        return None
-    return root_commits(root)
 
 
 def _static_directory(template):
@@ -362,12 +354,11 @@ class Allocations:
         self.store, self.conn, self.domain_uuid = store, conn, domain_uuid
         self.paths = {repository: str(path) for repository, path in repositories.items()}
         self.repositories = frozenset(self.paths)
-        # Each repository's identity, which binds a checkout to it; two enrolled repositories that
-        # shared one could not tell their checkouts apart.
+        # Each accepted repository's root commits, which an accepted commit must share. Two
+        # repositories may share some: a checkout is bound by its enrollment binding, not by these.
         self.identities = {repository: root_commits(path) for repository, path in self.paths.items()}
-        known = [identity for identity in self.identities.values() if identity is not None]
-        if len(known) != len(self.identities) or len({tuple(identity) for identity in known}) != len(known):
-            raise SN.Refused('invalid_registration', 'every enrolled repository needs its own readable root commits')
+        if any(identity is None for identity in self.identities.values()):
+            raise SN.Refused('invalid_registration', 'every enrolled repository needs readable root commits')
         self.counts = {'accepted': 0, 'reused': 0, 'refused': 0}
         self.observations = []
         self.publishers = {}

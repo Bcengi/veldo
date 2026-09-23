@@ -15,15 +15,21 @@ pending until the projection exists.
 
 EVERY DECLARED PATH is walked from the checkout root one component at a time through directory
 descriptors opened with O_NOFOLLOW, for writing, re-reading and reading alike, so a symlink
-anywhere on the path refuses unsafe_path and no byte is written or read outside the root. A
-Publisher binds to the one enrolled repository whose root commits its checkout carries and
-publishes nothing else; recording a publication reads the declared path through it.
+anywhere on the path refuses unsafe_path and no byte is written or read outside the root.
+
+WHICH REPOSITORY A CHECKOUT IS comes from the VELDO-0029 enrollment binding the checkout carries
+(control_enrollment), never from its history: the binding's signature verifies, it was written for
+this clone (its clone UUID), for the root commits the checkout now has, for this host and domain,
+and it names THIS store; its repository_uuid is the answer. Root commits alone cannot decide it: two
+repositories may share one (B is A plus a merged unrelated history), and a clone of B checked out
+before the merge carries exactly A's. A Publisher binds to that one repository and publishes
+nothing else; recording a publication reads the declared path through it.
 
 READERS consume only published versions. read_published() takes the newest version whose
-obligation is recorded published, reads the complete file from a checkout of that repository (its
-root commits must be the kind's record, or wrong_repository), and compares its digest, the recorded
-publication digest, the source mapping, alias and version with the accepted store records. Edited,
-truncated or missing output refuses by name; the reader never substitutes checkout bytes.
+obligation is recorded published, reads the complete file from a checkout enrolled as that
+repository (or wrong_repository), and compares its digest, the recorded publication digest, the
+source mapping, alias and version with the accepted store records. Edited, truncated or missing
+output refuses by name; the reader never substitutes checkout bytes.
 
 NOT HERE (Release 2): recovery of a publication interrupted between rename and record, exclusion of
 a second publisher process, and remote Git confirmation. Standard library only.
@@ -42,7 +48,38 @@ def _sibling(alias, name):
 
 
 AL = _sibling('document_alias', 'control_alias.py')
+EN = _sibling('document_enrollment', 'control_enrollment.py')
 SN = AL.SN
+
+
+def store_file(conn):
+    """The database file a store connection has open: the store an enrollment binding must name."""
+    for _, name, path in conn.execute('PRAGMA database_list'):
+        if name == 'main' and path:
+            return os.path.realpath(path)
+    raise SN.Refused('missing_authority', 'the store connection has no database file')
+
+
+def enrolled_repository(root, store_path, domain_uuid, verify, host_identity):
+    """The repository UUID a checkout is enrolled as, from the binding it carries and nothing else:
+    signed (`verify` checks it), written for this clone, for its current root commits, this host
+    and this domain, and naming the store at `store_path`. `root` must be the checkout's top level."""
+    root = os.path.realpath(root)
+    top = AL._git_process.run(['git', '-C', root, 'rev-parse', '--show-toplevel'], capture_output=True, timeout=15)
+    if top.returncode or os.path.realpath(top.stdout.decode().strip()) != root:
+        raise SN.Refused('wrong_repository', '%s is not the top level of a Git checkout' % root)
+    try:
+        binding = EN.read_binding(root)
+        if binding is None:
+            raise SN.Refused('wrong_repository', '%s carries no enrollment binding' % root)
+        problems = EN.verify_binding(root, binding, verify, host_identity, domain_uuid=domain_uuid)
+    except EN.EnrollmentRefused as error:
+        raise SN.Refused('wrong_repository', '%s: %s' % (error.reason, error.message)) from error
+    if problems:
+        raise SN.Refused('wrong_repository', '; '.join('%s: %s' % problem for problem in problems))
+    if os.path.realpath(binding['store_path']) != store_path:
+        raise SN.Refused('wrong_repository', '%s is enrolled to the store at %s' % (root, binding['store_path']))
+    return binding['repository_uuid']
 
 
 def accepted(store, conn, repository, alias, version):
@@ -135,15 +172,15 @@ def read_exact(root, path):
 class Publisher:
     """Materializes accepted versions under one checkout root for an Allocations service."""
 
-    def __init__(self, service, root):
-        """Bound to the one enrolled repository whose identity (root commits) the checkout at
-        `root` carries; a directory that is no checkout of an enrolled repository binds nothing."""
+    def __init__(self, service, root, verify, host_identity):
+        """Bound to the one enrolled repository the checkout at `root` is enrolled as (its verified
+        VELDO-0029 binding, naming this service's store and domain); anything else binds nothing."""
         self.service, self.root = service, Path(os.path.realpath(root))
-        identity = AL.checkout_identity(self.root)
-        matches = [repository for repository, roots in service.identities.items() if identity and roots == identity]
-        if len(matches) != 1:
-            raise SN.Refused('wrong_repository', '%s is not a checkout of an enrolled repository' % self.root)
-        self.repository = matches[0]
+        repository = enrolled_repository(self.root, store_file(service.conn), service.domain_uuid, verify, host_identity)
+        if repository not in service.repositories:
+            raise SN.Refused('wrong_repository', '%s is enrolled as %s, which this domain does not enroll'
+                             % (self.root, repository))
+        self.repository = repository
         service.bind_publisher(self)
 
     def visible_digest(self, path):
@@ -223,9 +260,10 @@ class Publisher:
                                                     'request_id': 'publish:%s@%s' % (alias, version)}, guarded)
 
 
-def read_published(store, conn, repository, alias, root):
-    """The reader-visible complete document for the newest PUBLISHED version, checked against the
-    accepted records; any disagreement refuses by name."""
+def read_published(store, conn, repository, alias, root, verify, host_identity, domain_uuid):
+    """The reader-visible complete document for the newest PUBLISHED version, read from a checkout
+    enrolled as `repository` and checked against the accepted records; any disagreement refuses by
+    name."""
     problem = AL.CLAIM.unit_id_problem(alias)
     if problem is not None:
         raise SN.Refused('invalid_unit_id', problem)
@@ -245,9 +283,7 @@ def read_published(store, conn, repository, alias, root):
     if (mapping is None or mapping['data']['alias'] != alias or mapping['data']['version'] != version
             or mapping['data']['digest'] != data['digest'] or mapping['data']['source'] != data['source']):
         raise SN.Refused('document_mismatch', 'source mapping disagrees with %s@%d' % (alias, version))
-    kind = SN.entity(store, conn, AL.kind_id(repository, data['kind']))['value']
-    recorded = (kind or {}).get('data', {}).get('root_commits')
-    if not recorded or AL.checkout_identity(os.path.realpath(root)) != recorded:
+    if enrolled_repository(root, store_file(conn), domain_uuid, verify, host_identity) != repository:
         raise SN.Refused('wrong_repository', '%s is not a checkout of repository %s' % (root, repository))
     try:
         body = read_exact(os.path.realpath(root), data['path'])
