@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -707 +707 @@
+-        return dict(self.counts, pending=pending, parked=len(parked), parked_by_reason=by_reason)
++        return dict(self.counts, pending=pending, parked=sum(1 for u in parked if u['reason'] == 'awaiting_answer'), parked_by_reason=by_reason)

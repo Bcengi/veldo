@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_projection.py
 +++ b/.veldo/control_channel_projection.py
-@@ -96,2 +95,0 @@
+@@ -103,2 +102,0 @@
 -    if data.get('principal') != principal:
 -        problems.append('the enrollment names another principal')

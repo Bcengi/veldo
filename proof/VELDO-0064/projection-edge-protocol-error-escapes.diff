@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -164 +164 @@
+-        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as exc:
++        except (urllib.error.URLError, OSError, ValueError) as exc:

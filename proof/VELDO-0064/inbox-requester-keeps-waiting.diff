@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -331 +331 @@
+@@ -344 +344 @@
 -                'released_claim': released, 'stop_requester': op == 'open'}
 +                'released_claim': released, 'stop_requester': False}

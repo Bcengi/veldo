@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -625 +625 @@
+-        key = dict(stored['data'], key_id=kid)
++        key = dict(state['entities'].get(kid, {}).get('data') or {}, key_id=kid)

@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -365 +365 @@
+@@ -378 +378 @@
 -        params['release'] = dict(action='park', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
 +        params['release'] = dict(action='release', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,

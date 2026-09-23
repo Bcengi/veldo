@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -553 +553 @@
+@@ -568 +568 @@
 -        if not active or owner['principal_type'] != 'person' \
 +        if False and owner['principal_type'] != 'person' \

@@ -219,32 +219,124 @@ parked for good. Admission now verifies the answer against the key that was acti
 accepted, and a rotation strands nothing.) Recovering a
 `pending` or `unknown_outcome` record by looking the message up remains Release 2 work. The
 resume check mirrors the claim receiver's repository scope check, which calls
-`control_membership.scope_covers` with the repository id as a string; a string scope reads as
-the empty set, so that check passes for any named-scope member. This is what the reviewer's r6
-printed (`stranger covers repository? True`); it is outside this item's list and footprint.
+`control_membership.scope_covers` with the repository id as a string; at `0833660` a string
+scope read as the empty set, so that check passed for any named-scope member (the reviewer's
+r6 printed `stranger covers repository? True`). That is fixed on main (`f632e9f`, `4f34ed0`),
+which this branch has merged; the second reviewer's s2 now shows a resume by a member scoped to
+another repository refused as `not_authorized`.
+
+## Second review fixes, 2026-09-23
+
+A second independent check reproduced four defects at `0833660` with scripts over the same
+real store, OpenSSH keys, claim receiver and loopback Bot API (`/tmp/v64r2/s`, harness
+`/tmp/v64r2/h.py`, the tree chosen by `V64_TREE`). Before fixing them, main was merged
+(`290633c`): main carries the `control_membership.scope_covers` fix that this branch's resume
+and claim checks depend on. The only conflicts were in the mutation registry, the suite
+manifest and `requires.json`; both sides were kept, the `--finding` list holds 25 and 64 once
+each, and `requires.json` was regenerated with `run_scope.py --emit-requires`. Each defect was
+then fixed test first in its own commit: a new row, red at `0833660` by failing its own
+assertions, then green, with a mutation that reintroduces the defect and at least one more, all
+under finding 64.
+
+| Review | Defect at 0833660 | Fix | Row | Mutations |
+| --- | --- | --- | --- | --- |
+| s4 | Any `HTTPError` was a definite refusal and re-sent, so a 5xx or a gateway page after delivery published the message again | Only Telegram's own error answer, a 4xx whose body is the Bot API error object (`ok` false, `error_code` equal to the status), is `refused` and attempted again; any other HTTP error is `unknown_outcome` and never re-sent | `projection/only-telegram-refusal-retried` | `projection-any-http-error-refused`, `projection-any-4xx-refused`, `projection-telegram-5xx-refused` |
+| s5 | `http.client.BadStatusLine` (not an `OSError`) escaped `project()` after the intent was committed, with no result and no observation, and every later run died at the next entry | The edge catches every transport and protocol error (`URLError`, `HTTPException`, `OSError`, `ValueError`) as `unknown_outcome`; the projection completes as `unknown_outcome`, with an observation naming why, anything an edge raises after the intent, so one bad reply never stops the loop | `projection/protocol-error-unknown` | `projection-edge-protocol-error-escapes`, `projection-edge-error-stops-loop`, `projection-protocol-error-as-refusal` |
+| s7 | Admission verified the owner's answer against the key active NOW, so a rotation after the answer parked the unit for good: the record is `SUBMITTED`, and a new answer, a revision and a cancel are all refused as `stale_subject` | The answer records the key that verified it and when (`key_id`, `accepted_at`); admission verifies against that key as the answer's own journal record pinned it (its before-version, read from the journal record that wrote that version and checked against its digest), active at the acceptance time: VELDO-0027's historical verification rule. A revocation reaches back: the same public key revoked at or before the acceptance verifies nothing | `inbox/answer-survives-key-rotation` | `inbox-admit-current-active-key`, `inbox-answer-key-from-current-entity`, `inbox-answer-key-ignores-revocation` |
+| s6 | A unit parked on a declined or canceled assignment, or on an answer that does not admit, was invisible: `waiting_resources`, the inbox metrics and `receiver.pending` all showed nothing | `Inbox.parked_units()` lists every parked unit with its unit, claim, assignment and why it is parked (`awaiting_answer`, `ready_to_resume`, `answer_not_admitted` with the admission refusal, `declined`, `canceled`, `expired`, `invalid_assignment`, `missing_assignment`); `metrics()` adds `parked` and `parked_by_reason` | `inbox/parked-units-visible` | `inbox-parked-only-awaiting`, `inbox-parked-metric-omitted`, `inbox-parked-refusal-shown-ready` |
+
+The fixes are commits `64e46f1` (s4), `aa2adb1` (s5), `b8bb2a1` (s7, with the README correction
+above) and `117c104` (s6).
+
+**What each row drives.** The s4 row sends three assignments whose replies arrive after the
+loopback platform has published them: a 502 gateway page, Telegram's own 500 error object, and
+a 403 proxy page. Each must be `unknown_outcome` at attempt 1, and two later runs must send
+nothing. Its additive control is Telegram's own 429 error object: nothing is published, the
+record is `refused`, and the next run sends it once, at attempt 2. The s5 row has the platform
+answer two assignments with no HTTP status line at all. One run returns a result for both,
+each `unknown_outcome` with an observation, two later runs send neither, and the edge called
+directly raises `EdgeRefused('unknown_outcome')` rather than `BadStatusLine`. A second
+projection over an edge that raises `RuntimeError` must complete both of its entries as
+observed `unknown_outcome`. The s7 row covers an accepted rotation (old key retired, new key
+effective) after an answer, and the reviewer's own form, a key entity replaced in place by
+another public key. Both answers still admit, and the unit parked on the first resumes. Its
+controls are that the retired key signs no new answer (`not_authorized`), that a key revoked
+from before an answer's acceptance admits nothing it signed (`missing_authority`), and that the
+revocation does not reach answers signed with the other keys. The s6 row parks units on a
+declined, a canceled, an answered-but-not-admitted and an answered-and-admitted assignment,
+beside the two still pending. It requires the listing to be exactly those six units with the
+right assignment, claim and reason (resumed and owned units are not in it), and the metric to
+count them by reason.
+
+**A strengthened existing check.** Pinning the key by the answer's journal record also refused
+the old `F-2` forgery (a genuine owner signature over another answer, carried by a generic
+upsert naming the owner), so `inbox-admit-unbound-answer-signature` no longer turned its row
+red: the binding check it removes was no longer the only defense in that scenario. The forged
+write now also pins the owner's key, the way a forger with store access can, so the binding of
+the signed command is again the only thing that refuses it, and the mutation reds its row
+again.
+
+**Two layers for s5, each with its own teeth.** The edge's own contract, that it returns the
+platform's answer or raises `EdgeRefused`, and the projection's catch after the intent are
+tested separately. That is why no single mutation restores the exact s5 failure: a
+`BadStatusLine` escaping `project()` needs both removed.
+`projection-edge-protocol-error-escapes` breaks the edge's contract and reds the direct edge
+check. `projection-edge-error-stops-loop` breaks the projection's catch and reds the raising
+edge check. `projection-protocol-error-as-refusal` makes a protocol error a retryable refusal,
+and also reds `projection/send-outcomes`, whose dropped connection is the same class of error.
+
+**Red at 0833660.** `python3 -B proof/VELDO-0064/drive.py --red 0833660` runs the current suite
+once against the inbox, projection and claim organ read from `0833660` with `git show`, with no
+change to that code (its edge already took no configured chat), and writes
+`red-at-0833660.json`. The suite completes. Exactly the four new rows fail, each by assertion
+(23 failing check labels are recorded there), and every older row, the strengthened `F-2` check
+included, is green against that code. The new rows catch what they need to rather than letting
+the old code crash the suite: a raised `project()` and a missing `parked_units` count as
+failing checks.
+
+**The second reviewer's scripts, re-run.** All seven ran unchanged against this branch
+(`V64_TREE` set to the worktree). `review-r2-rerun.log` holds their output with each script's
+SHA-256. s1, s2 and s3 report `bugs: 0`. s4 publishes one message across the 502, 504 and 200
+runs (attempt 1, `unknown_outcome`). s5 returns both entries as `unknown_outcome`, with two
+observations and two requests, and two later runs send nothing. s7 admits after the rotation.
+Its re-answer, revise and cancel are still refused as `stale_subject`, which is now correct,
+since the unit no longer needs them. The only `BUG` lines left are s6's two, for the declined
+and the canceled unit ("unclaimable forever"). That is the open question below, and it is
+deliberately not decided. The same run shows both units in the inbox metrics
+(`parked: 2, parked_by_reason: {declined: 1, canceled: 1}`), and s6's third unit, whose owner
+key was replaced after the answer, resumes.
+
+**Open question for the owner.** The specification does not say what becomes of the blocked
+unit when its assignment is declined or canceled, or when the owner's answer no longer admits.
+Such a unit stays parked: no Release 1 command claims it, resumes it or returns it to the
+backlog. It is now visible in `parked_units` and in the metrics, and nothing more was invented.
+Whether a decline or cancel should release the unit, re-open it for another holder, retire it,
+or wait for a new assignment is recorded as an open question in the specification's Notes.
 
 ## Measurement
 
 | Measurement | Result |
 | --- | --- |
-| Suite (`python3 -B scripts/selftest.py --suite 60_veldo_0064_inbox`) | about 1.83 s per run in the suite's own timer, 1.90 s wall including interpreter start, 40 passed, 0 failed (three runs) |
-| Serial driver: baseline, three no-op controls and all 24 mutants | 55.9 s |
-| `python3 -B scripts/check_teeth_mutations.py --finding 64` | 93.8 s wall, which reruns the honest baseline for every case; 24 mutations rejected |
+| Suite (`python3 -B scripts/selftest.py --suite 60_veldo_0064_inbox`) | about 2.48 s per run in the suite's own timer, 2.55 s wall including interpreter start, 44 passed, 0 failed (three runs) |
+| Serial driver: baseline, three no-op controls and all 36 mutants | 98.4 s |
+| `python3 -B scripts/check_teeth_mutations.py --finding 64` | 182.5 s wall, which reruns the honest baseline for every case; 36 mutations rejected |
 
-These are the measurements after the review fixes; before them the suite took about 1.25 s and
-the nine-mutation registry 26.6 s. Every single suite run, honest or mutant, stays well below
+These are the measurements after the second review fixes. After the first review fixes the
+suite took about 1.83 s, the driver 55.9 s and the 24-mutation registry 93.8 s; before any
+fixes the suite took about 1.25 s and the nine-mutation registry 26.6 s. Every single suite run, honest or mutant, stays well below
 the 60-second stop threshold. The serial registry run is longer than that only because it
 executes the suite 48 times; the gate's own mutation stage (`check_gate_mutations.py`) runs
-cases in parallel under a cap of 2.0 s per registered case, and one suite run here costs about
-1.9 s of that. The slowest mutant is `inbox-requester-keeps-waiting`, at 4.7 s including its
-2 s wait.
+cases in parallel (eight at a time) under a combined cap of 2.0 s per registered case, and one
+suite run here costs about 2.5 s. The slowest mutant is `inbox-requester-keeps-waiting`,
+including its 2 s wait. The full gate was not run on this branch; the lead runs it.
 
 Targeted checks run on this branch:
 
 ```text
-python3 -B scripts/selftest.py --suite 60_veldo_0064_inbox  -> 40 passed, 0 failed
-python3 -B scripts/check_teeth_mutations.py --finding 64    -> {"mutations_rejected": 24, "green_suites": {"60_veldo_0064_inbox.py": 40}}
-python3 -B scripts/check_teeth_mutations.py --finding 31    -> {"mutations_rejected": 18, ...} (claim organ, after the r1 change)
+python3 -B scripts/selftest.py --suite 60_veldo_0064_inbox  -> 44 passed, 0 failed
+python3 -B scripts/check_teeth_mutations.py --finding 64    -> {"mutations_rejected": 36, "green_suites": {"60_veldo_0064_inbox.py": 44}}
+python3 -B scripts/check_teeth_mutations.py --finding 25    -> {"mutations_rejected": 3, "green_suites": {"61_scope_covers.py": 28}} (merged from main)
+python3 -B scripts/check_teeth_mutations.py --finding 31    -> {"mutations_rejected": 18, "green_suites": {"58_veldo_0031_claims.py": 29, "59_veldo_0031_review.py": 32}} (claim organ, after the merge)
 python3 .veldo/validate.py all                              -> exit 0
 bash scripts/check_generated.sh                             -> generated: pass
 ```

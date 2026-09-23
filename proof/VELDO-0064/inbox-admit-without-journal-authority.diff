@@ -1,6 +1,6 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -578,3 +577,0 @@
+@@ -585,3 +584,0 @@
 -        if row is None or row[0] != data['owner'] or written.get('version') != item['version'] \
 -                or written.get('digest') != item['digest']:
 -            return 'missing_authority', inputs

@@ -1,0 +1,7 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -159,4 +158,0 @@
+-            if not 400 <= exc.code < 500:
+-                raise EdgeRefused('unknown_outcome', 'HTTP %d is not a definite refusal' % exc.code) from None
+-            if not telegram_refusal(exc, exc.code):
+-                raise EdgeRefused('unknown_outcome', 'HTTP %d without the Bot API error answer' % exc.code) from None
