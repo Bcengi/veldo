@@ -699,6 +699,53 @@ def cases():
     inbox('inbox-parked-refusal-shown-ready', 'control_assignment.py',
           "reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'",
           "reason = 'ready_to_resume'", 'inbox/parked-units-visible')
+    # VELDO-0065: the declared falsifiers plus a second, different defect per named row.
+    def presentation(name, old, new, row):
+        add(65, name, '62_veldo_0065_presentations.py', 'control_channel_presentation.py', old, new, [row])
+
+    presentation('request-digest-omits-version',
+                 "    body = {'request_id': request_id, 'request_version': request_version}\n",
+                 "    body = {'request_id': request_id}\n", 'presentation/revision-identity')
+    presentation('bindings-ignore-request-identity',
+                 "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
+                 "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
+    presentation('render-omits-risk', "              'Risk: %s' % _words(record['risk_statement']),\n", "",
+                 'presentation/receipt-binds-shown-content')
+    presentation('published-at-from-clock', "published_at=platform['date'], platform_text=platform['text'],",
+                 "published_at=int(time.time()), platform_text=platform['text'],",
+                 'presentation/receipt-binds-shown-content')
+    presentation('presentation-key-without-digest',
+                 "    return 'presentation:%s:%s:%d:%s' % (CHANNEL, request_id, request_version, digest.split(':', 1)[-1])\n",
+                 "    return 'presentation:%s:%s:%d' % (CHANNEL, request_id, request_version)\n",
+                 'presentation/visible-supersession')
+    presentation('replacement-without-reply-link',
+                 "        if reply_to is not None:\n            payload['reply_parameters']",
+                 "        if False:\n            payload['reply_parameters']", 'presentation/visible-supersession')
+    presentation('answer-checks-subject-only',
+                 "    return [f for f in BOUND_FIELDS if receipt.get(f) != current.get(f)]\n",
+                 "    return [f for f in ('subject_digests',) if receipt.get(f) != current.get(f)]\n",
+                 'answer/current-presentation-only')
+    presentation('missing-reference-uses-current',
+                 "        if not all(a.get(k) is not None for k in REFERENCE_FIELDS):\n"
+                 "            raise Refused('missing_presentation', 'an answer names the presentation it addresses')\n",
+                 "        if not all(a.get(k) is not None for k in REFERENCE_FIELDS):\n"
+                 "            now_shown = self.current(a.get('request_id')) or {}\n"
+                 "            a = dict(a, presentation_id=now_shown.get('presentation_id'), presentation_digest=now_shown.get('brief_digest'),\n"
+                 "                     presentation_version=now_shown.get('presentation_version'))\n",
+                 'answer/current-presentation-only')
+    presentation('answer-drops-rationale',
+                 "                  'ruling': a['ruling'], 'rationale': a['rationale'], 'attribution': dict(ev),\n",
+                 "                  'ruling': a['ruling'], 'rationale': None, 'attribution': dict(ev),\n",
+                 'answer/ruling-and-rationale')
+    presentation('answer-skips-edge-signature',
+                 "        if not verified:\n            raise Refused('not_authorized', 'the answer signature does not verify')\n",
+                 "", 'answer/ruling-and-rationale')
+    presentation('unsent-marked-published', "        data.update(outcome='refused', refusal=refusal)\n",
+                 "        data.update(outcome='published', refusal=refusal)\n", 'answer/unseen-refused')
+    presentation('unseen-only-refused-outcome',
+                 "        if receipt['outcome'] != 'published':\n            raise Refused('unseen_presentation'",
+                 "        if receipt['outcome'] == 'refused':\n            raise Refused('unseen_presentation'",
+                 'answer/unseen-refused')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
@@ -789,7 +836,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 64, 65, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

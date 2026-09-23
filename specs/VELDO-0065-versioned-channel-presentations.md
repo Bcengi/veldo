@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0065_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0065-versioned-channel-presentations.md"
   - "specs/index.md"
   - "proof/VELDO-0065/*"
@@ -127,3 +128,7 @@ publication moved to Release 2; extra-channel coverage moved to Release 4. Jira-
 is dropped. Shown bytes, request/presentation identity and version-bound answers remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 65 of the existing teeth mutation driver. The
+criteria, status and risk are unchanged.
