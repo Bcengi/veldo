@@ -1,0 +1,7 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -438 +438,3 @@
+-    runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')
++    runners, work = root / 'runners', root / 'work'
++    runners.mkdir(exist_ok=True)
++    work.mkdir(exist_ok=True)

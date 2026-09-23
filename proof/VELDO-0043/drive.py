@@ -56,6 +56,9 @@ def why(observed):
         'closed_response': observed.get('closed_response'),
         'proc_limit': runtime.get('proc_limit'),
         'stage_in_repository': runtime.get('stage_in_repository'),
+        'stage_links': runtime.get('stage_links'),
+        'pyvenv': runtime.get('pyvenv'),
+        'process_group': observed.get('process_group'),
     }
 
 

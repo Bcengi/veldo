@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -313 +313 @@
+@@ -375 +375 @@
 -                raise Refused('invalid_response', where + ': untyped proposal')
 +                item, kind = dict(item, type='priority'), 'priority'

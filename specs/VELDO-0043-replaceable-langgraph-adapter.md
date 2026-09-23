@@ -100,8 +100,11 @@ recovery are Release 2.
 
 Stated limit: Release 1 runs graph execution as the same account with no OS-user boundary
 (owner rulings; hardening is later). What the adapter hands the graph child leads nowhere near
-the repository: a fixed environment, no inherited descriptors, a path-free closed request, and a
-content-addressed runner copy and working directory outside every repository. A deliberately
+the repository: a fixed environment, no inherited descriptors, a path-free closed request, a
+runtime whose interpreter and pyvenv.cfg name no repository, and a content-addressed runner copy
+and working directory in a per-account stage outside the runtime and every repository, reached
+through no link the adapter did not make; the child runs in its own session and its process
+group dies with the exchange. A deliberately
 hostile node can still reach the domain process through /proc (its working directory and open
 descriptors) as the same account. The proof keeps that limit visible in its own row. Real
 confinement, through a separate mount and process view or a separate account, is Release 2.

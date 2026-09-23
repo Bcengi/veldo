@@ -1,0 +1,7 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -345,3 +345 @@
+-        value = json.loads(text, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))
+-    except RecursionError as error:
+-        raise Refused('invalid_response', 'answer nests too deeply to parse') from error
++        value = json.loads(raw, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))

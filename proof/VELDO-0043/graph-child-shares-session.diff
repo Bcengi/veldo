@@ -2,4 +2,4 @@
 +++ b/.veldo/control_graph.py
 @@ -531 +531 @@
 -                                    env=dict(ENVIRONMENT), close_fds=True, start_new_session=True)
-+                                    env=dict(ENVIRONMENT), close_fds=False, start_new_session=True)
++                                    env=dict(ENVIRONMENT), close_fds=True, start_new_session=False)

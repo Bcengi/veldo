@@ -1,5 +1,5 @@
 --- a/.veldo/control_graph.py
 +++ b/.veldo/control_graph.py
-@@ -323 +323 @@
+@@ -385 +385 @@
 -        _resume_shape(value['resume'], 'resume', 'invalid_response')
 +        pass

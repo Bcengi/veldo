@@ -1,0 +1,5 @@
+--- a/.veldo/control_graph.py
++++ b/.veldo/control_graph.py
+@@ -467 +467 @@
+-                if token.startswith('/') and inside_repository(token):
++                if token.startswith('/') and key.strip() != 'command' and inside_repository(token):
