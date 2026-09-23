@@ -548,7 +548,7 @@ def _v54_suite():
                    {c.split(':', 1)[0] for c in seen} >= set(families)
                    and all(EL.taxonomy(c) == families[c.split(':', 1)[0]] for c in seen if c.split(':', 1)[0] in families)
                    and all(t != 'unknown_outcome' for e in gate.observations for t in e['taxonomy'])
-                   and reads and all({'operation', 'unit', 'domain_uuid', 'repository_uuid', 'references', 'watermark',
+                   and reads and all({'operation', 'unit', 'domain_uuid', 'repository_uuid', 'decision_id', 'references', 'watermark',
                                       'accepted_inputs', 'outcome', 'refusals', 'taxonomy'} <= set(e) for e in reads)
                    and status['decisions']['accepted'] > 0 and status['decisions']['refused'] > 0
                    and {s for s in SCEN if SCEN[s][1] == 'all' and SCEN[s][2]} <= set(status['decisions']['blocked']))

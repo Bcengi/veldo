@@ -572,7 +572,8 @@ class Gate:
         `unit` raise, [] when none blocks. Each inline reference must resolve to one accepted record
         whose current exact binding is settled; the inline text itself resolves nothing."""
         event = {'schema': SCHEMA, 'operation': 'decision_dependency', 'domain_uuid': self.domain_uuid,
-                 'repository_uuid': self.repository_uuid, 'unit': unit, 'references': list(references)}
+                 'repository_uuid': self.repository_uuid, 'unit': unit, 'decision_id': str(uuid.uuid4()),
+                 'follows': None, 'watermark': None, 'accepted_inputs': {}, 'references': list(references)}
         try:
             inputs, watermark = self.read(unit, references)
             codes = self._decision_codes(unit, inputs, references)
