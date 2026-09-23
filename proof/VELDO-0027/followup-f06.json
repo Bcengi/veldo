@@ -98,5 +98,11 @@
       }
     }
   ],
-  "note": "Foreign envelopes retain valid Ed25519 signatures; the local authority contract reports exactly the changed coordinate. Missing configuration is independently refused. Targeted checks only; acceptance requires the clean canonical gate."
+  "note": "Foreign envelopes retain valid Ed25519 signatures; the local authority contract reports exactly the changed coordinate. Missing configuration is independently refused. Targeted checks only; acceptance requires the clean canonical gate.",
+  "fix_commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+  "acceptance": {
+    "command": "bash scripts/verify.sh",
+    "commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+    "ref": "proof/VELDO-0027/gate-summary.json"
+  }
 }

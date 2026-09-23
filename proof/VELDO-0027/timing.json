@@ -20,5 +20,18 @@
       "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
       "GATE: GREEN (89cc28ebab0ca8d83696811e1ff7ff1da5a53f24)"
     ]
+  },
+  "followup_gate": {
+    "command": "bash scripts/verify.sh",
+    "commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+    "clean_tree_before": true,
+    "exit_code": 0,
+    "seconds": 661.2897266619839,
+    "summary": [
+      "selftest: 5675 passed, 0 failed",
+      "mutations: passed registered=78 executed=78 rejected=78 workers=100 elapsed=50.574s",
+      "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
+      "GATE: GREEN (7498864958570e3ac6363c79cba9a22d359bed71)"
+    ]
   }
 }

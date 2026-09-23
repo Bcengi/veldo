@@ -1,5 +1,5 @@
 --- a/.veldo/control_signer.py
 +++ b/.veldo/control_signer.py
-@@ -199,0 +200,2 @@
+@@ -201,0 +202,2 @@
 +        source = state['entities'].get(request.get('source_id'), {}).get('data', {})
 +        diagnostic.update(principal=source.get('principal'), assertion_kind=source.get('assertion_kind'))

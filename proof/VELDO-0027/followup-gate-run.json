@@ -1,0 +1,7 @@
+{
+  "command": "bash scripts/verify.sh",
+  "commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+  "clean_tree_before": true,
+  "exit_code": 0,
+  "seconds": 661.2897266619839
+}

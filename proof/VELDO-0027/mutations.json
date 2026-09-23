@@ -1,12 +1,14 @@
 {
-  "command": "python3 -B scripts/check_teeth_mutations.py --finding 27 --diff-dir proof/VELDO-0027",
-  "elapsed_seconds": 191.54772987798788,
+  "command": "bash scripts/verify.sh",
+  "gate_commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+  "source": "Required canonical mutation stage, with fresh baseline and no-op controls.",
   "results": [
     {
       "finding": 27,
       "mutation": "signing-prelock-clock",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/transition-clock"
       ]
@@ -15,15 +17,14 @@
       "finding": 27,
       "mutation": "signing-truncated-clock",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/rotation",
         "VELDO-0027 signing/retirement",
         "VELDO-0027 signing/revocation",
         "VELDO-0027 signing/rotation-race",
         "VELDO-0027 signing/kill-after-rotation",
-        "VELDO-0027 signing/kill-after-retire_signing_key",
-        "VELDO-0027 signing/kill-after-revoke_signing_key",
         "VELDO-0027 signing/transition-clock",
         "VELDO-0027 signing/rotation-requires-rebound-delegation"
       ]
@@ -32,7 +33,8 @@
       "finding": 27,
       "mutation": "signing-remove-channel-restriction",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection",
@@ -43,7 +45,8 @@
       "finding": 27,
       "mutation": "signing-permit-foreign-channel",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -53,7 +56,8 @@
       "finding": 27,
       "mutation": "signing-request-channel",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -63,7 +67,8 @@
       "finding": 27,
       "mutation": "signing-request-key-channel",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -73,7 +78,8 @@
       "finding": 27,
       "mutation": "signing-request-key",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/key-comes-from-the-channel"
       ]
@@ -82,7 +88,8 @@
       "finding": 27,
       "mutation": "signing-ignore-key-crosscheck",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/key-comes-from-the-channel"
       ]
@@ -91,7 +98,8 @@
       "finding": 27,
       "mutation": "signing-text-without-identity",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/attribution/platform_message_id",
         "VELDO-0027 signing/attribution/sender_id",
@@ -103,7 +111,8 @@
       "finding": 27,
       "mutation": "signing-text-substitutes-identity",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/text-only"
       ]
@@ -112,7 +121,8 @@
       "finding": 27,
       "mutation": "signing-branch-projection-authority",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/branch-key"
       ]
@@ -121,7 +131,8 @@
       "finding": 27,
       "mutation": "signing-branch-preflight-bypass",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/branch-key"
       ]
@@ -130,25 +141,80 @@
       "finding": 27,
       "mutation": "signing-ignore-personal-content",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
-        "VELDO-0027 signing/personal-content-binding"
+        "VELDO-0027 signing/personal-content-binding",
+        "VELDO-0027 signing/personal-relabel/presentation_digest",
+        "VELDO-0027 signing/personal-relabel/assertion_kind",
+        "VELDO-0027 signing/personal-relabel/authority_scope",
+        "VELDO-0027 signing/personal-missing/ruling",
+        "VELDO-0027 signing/personal-missing/presentation_id",
+        "VELDO-0027 signing/personal-missing/presentation_digest",
+        "VELDO-0027 signing/personal-missing/assertion_kind",
+        "VELDO-0027 signing/personal-missing/authority_scope",
+        "VELDO-0027 signing/personal-missing/request_version",
+        "VELDO-0027 signing/personal-missing/presentation_version"
       ]
     },
     {
       "finding": 27,
       "mutation": "signing-ignore-personal-ruling",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
-        "VELDO-0027 signing/personal-content-binding"
+        "VELDO-0027 signing/personal-content-binding",
+        "VELDO-0027 signing/personal-relabel/presentation_digest",
+        "VELDO-0027 signing/personal-relabel/assertion_kind",
+        "VELDO-0027 signing/personal-relabel/authority_scope",
+        "VELDO-0027 signing/personal-missing/ruling",
+        "VELDO-0027 signing/personal-missing/presentation_digest",
+        "VELDO-0027 signing/personal-missing/assertion_kind",
+        "VELDO-0027 signing/personal-missing/authority_scope",
+        "VELDO-0027 signing/personal-missing/request_version",
+        "VELDO-0027 signing/personal-missing/presentation_version"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-bind-only-original-fields",
+      "baseline": "green",
+      "noop": "green",
+      "assertions": 121,
+      "red_rows": [
+        "VELDO-0027 signing/personal-relabel/presentation_digest",
+        "VELDO-0027 signing/personal-relabel/assertion_kind",
+        "VELDO-0027 signing/personal-relabel/authority_scope",
+        "VELDO-0027 signing/personal-missing/presentation_digest",
+        "VELDO-0027 signing/personal-missing/assertion_kind",
+        "VELDO-0027 signing/personal-missing/authority_scope",
+        "VELDO-0027 signing/personal-missing/request_version",
+        "VELDO-0027 signing/personal-missing/presentation_version"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-default-missing-personal-fields",
+      "baseline": "green",
+      "noop": "green",
+      "assertions": 121,
+      "red_rows": [
+        "VELDO-0027 signing/personal-missing/ruling",
+        "VELDO-0027 signing/personal-missing/presentation_id",
+        "VELDO-0027 signing/personal-missing/presentation_digest",
+        "VELDO-0027 signing/personal-missing/assertion_kind",
+        "VELDO-0027 signing/personal-missing/authority_scope",
+        "VELDO-0027 signing/personal-missing/request_version",
+        "VELDO-0027 signing/personal-missing/presentation_version"
       ]
     },
     {
       "finding": 27,
       "mutation": "signing-ignore-selected-key-binding",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/rotation-requires-rebound-delegation"
       ]
@@ -157,7 +223,8 @@
       "finding": 27,
       "mutation": "signing-retired-key-inherits-grant",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/rotation-requires-rebound-delegation"
       ]
@@ -166,7 +233,8 @@
       "finding": 27,
       "mutation": "signing-leak-source-before-auth",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
       ]
@@ -175,7 +243,8 @@
       "finding": 27,
       "mutation": "signing-leak-revision-before-auth",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
       ]
@@ -184,27 +253,50 @@
       "finding": 27,
       "mutation": "signing-ignore-envelope-problems",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
-        "VELDO-0027 signing/personal-envelope-expiry"
+        "VELDO-0027 signing/personal-envelope-expiry",
+        "VELDO-0027 signing/personal-foreign/store_uuid",
+        "VELDO-0027 signing/personal-foreign/domain_uuid",
+        "VELDO-0027 signing/personal-foreign/repository_uuid"
       ]
     },
     {
       "finding": 27,
       "mutation": "signing-ignore-envelope-expiry",
       "baseline": "green",
-      "assertions": 104,
+      "noop": "green",
+      "assertions": 121,
       "red_rows": [
         "VELDO-0027 signing/personal-envelope-expiry"
       ]
     },
     {
-      "mutations_rejected": 20,
-      "green_suites": {
-        "56_veldo_0027_signing.py": 104
-      }
+      "finding": 27,
+      "mutation": "signing-copy-envelope-coordinates",
+      "baseline": "green",
+      "noop": "green",
+      "assertions": 121,
+      "red_rows": [
+        "VELDO-0027 signing/personal-foreign/store_uuid",
+        "VELDO-0027 signing/personal-foreign/domain_uuid",
+        "VELDO-0027 signing/personal-foreign/repository_uuid"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-ignore-coordinate-problems",
+      "baseline": "green",
+      "noop": "green",
+      "assertions": 121,
+      "red_rows": [
+        "VELDO-0027 signing/personal-foreign/store_uuid",
+        "VELDO-0027 signing/personal-foreign/domain_uuid",
+        "VELDO-0027 signing/personal-foreign/repository_uuid"
+      ]
     }
   ],
-  "raw_sha256": "b8169f5dcecd1b964bdd18dbd1ae263157517032436dc997dcf2c928907a09de",
-  "note": "Full gate additionally executes no-op controls and validates exact target observations."
+  "mutations_rejected": 24,
+  "gate_log_sha256": "2b95473a18547b2e8fb4abc47db346dde4b2e31c2e7c9c438fe6b384d71e6f94"
 }

@@ -1,4 +1,7 @@
 {
+  "command": "bash scripts/verify.sh",
+  "gate_commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+  "source": "Fresh signing baseline in the canonical mutation stage; full gate also runs the signing suite.",
   "rows": [
     {
       "row": "signing/kind/telegram_chat/decision_answer",
@@ -53,7 +56,75 @@
       "passed": true
     },
     {
+      "row": "signing/personal-relabel/presentation_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-relabel/assertion_kind",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-relabel/authority_scope",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/ruling",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/presentation_id",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/presentation_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/assertion_kind",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/authority_scope",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/request_version",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing/presentation_version",
+      "passed": true
+    },
+    {
       "row": "signing/personal-envelope-expiry",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-foreign/store_uuid",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-foreign/domain_uuid",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-foreign/repository_uuid",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing-authority/all",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing-authority/store_uuid",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing-authority/domain_uuid",
+      "passed": true
+    },
+    {
+      "row": "signing/personal-missing-authority/repository_uuid",
       "passed": true
     },
     {
@@ -313,128 +384,6 @@
       "passed": true
     }
   ],
-  "suite_seconds": 4.738478229846805,
-  "public_keys": {
-    "owner": {
-      "sha256": "e93e32feade8341c1cfc2563d505d9753b39c7f24aae1187facdd85db3b88929"
-    },
-    "edge-telegram": {
-      "sha256": "3d6fbe314729e51780c137144154c6eea06fa3548a05681de8e9fdd7668932c6"
-    },
-    "edge-jira": {
-      "sha256": "279451d348fdf77e50aa6891a47e41d79919084b707e14983c3ac5ea53166900"
-    },
-    "edge-cli": {
-      "sha256": "ada5e5af985a9baa7583af4eeb19297fc8903d6485e1e384c81c6be86b1dcdc0"
-    },
-    "evidence": {
-      "sha256": "127e8c636445de928f1e9585dec9f023e96f94fdad9f01ffa6d9d9be0eff37f5"
-    },
-    "rotated": {
-      "sha256": "0ea045ad5973a39e24b1b907452ab7e8291d1a1faea312e69c5862bc6aa743d1"
-    },
-    "branch": {
-      "sha256": "88cf28fe0878bf71aebb07c10917580ea3142e0816d3d92d0712851bca27c58b"
-    },
-    "tg-auth": {
-      "sha256": "9bc9179ad380dc1315e29a6583a2cdbf4b11c54e6d40a64d36917811a2f8ee42"
-    },
-    "jira-auth": {
-      "sha256": "4db805e663eb3e8a00b1e1bf2c442b92c42d6ee3892d44ea6a40929f8852661a"
-    },
-    "cli-auth": {
-      "sha256": "bb8121abecd2f1881e1a6530fb367b5a73941079d652bad0b8444b121b20c565"
-    },
-    "ev-auth": {
-      "sha256": "aee749a974f7ab6655f9ba0e0eaf1537986c585d6693cb511d99c346fa3b5fe6"
-    },
-    "race-key": {
-      "sha256": "c4a2a6793ef8cc3b16d91096ba4f80ba97ff94c5c58defc42a0b96fbd51bcd73"
-    },
-    "race-next": {
-      "sha256": "8b067be851f8ddf061633391172e3c8b467d16225b98461c1b328899535b2026"
-    },
-    "kill-rotated": {
-      "sha256": "d2fb429fce3967fc5b6a63e10d6d63332d881cb97201bb0a828a49e3f15c0f84"
-    },
-    "clock-key": {
-      "sha256": "6b44b438f560eb42cd5eca74d80bc4cce0c571074d424a0a112dd05005b47f65"
-    },
-    "tg-rotated": {
-      "sha256": "eeb9617b8ff839dc7e629fd5c610c7389c28425d0942291766be0ab0263bd202"
-    },
-    "tg-new-auth": {
-      "sha256": "dc7a8badf9737f19922f13ce49e066b4b60bf01be59f15da38a8b646ffa61ec6"
-    }
-  },
   "private_material_retained": false,
-  "receipt_digests": [
-    "04983a2608558bd39b0b66b7106a9b5aa5617558d64292804ab6f2e37fa095f6",
-    "ae1349b4118d640741e3b51f33f603721ec1c7912349856d0e7327a3f9487f3b",
-    "dca36a12360340c5629dc5c1975f46090b5cce406666ea73a81af05d3a9705ef",
-    "fd280c40d410d1e7c368533b22715617176fed2c945f78cb0f189b9502ffbbdb",
-    "476fb3424a358a0de01b88b804e6769285f85f6a0af7311e238a6dd484d1c1dd",
-    "efab471b7246790523352cfd9d10ff762d18d3ac82f0c6ee62fae49b93ece4e2",
-    "9a4d30f789258af3423d8ebd519b5432e0017b0e642e6e22dec2cc7ce75e30e4",
-    "22d6e84a3d7f8da6d61de849b8b5ae11d67167dfa4b9ca7f60542879210e0b8e",
-    "90d172a62ed30a020f368b51d7124eff99278db8184cff01127ab8c61e29c56e",
-    "8eff5015d8c5bfaaefef10114f1625b5b27dc3bf2e18f39f2768692d4e3dc178",
-    "828298767d8e69742ce4e877d0b9ed1902a6c2c8b4c228a9c6a0cea9f70b60fd",
-    "9a1dfb69fb1e5f68fbb8af7b557861fd5f42630f8ab5783ad741ff8cf3787c01",
-    "6eb6fcd42faefe34423164081cb054e2e77f2d4ab7d87febffbea80f016b033e",
-    "ee40630cac58c460eeef4f9a99093a67bcca3ee1badd23795c1b7f5e18f2d884",
-    "9550f06b0f603f4442b2cfa3e56d43b430e65bcbf2378ef8ece783e17b3e7faa",
-    "e65f8a93f70704247fde489e7c398146602b2490aeba1b8d99a4ef8e6f092068",
-    "f88e23b2f14e3053f5544f1b05f9b12e579343491c1719ff1de3b9a11dba598e",
-    "c497822e5e48279e1cf42735e79ff77cfefc0059028ed050aee4ab611eece73e",
-    "817fe131e514041831d201e6fd416f89963f9102bbccacb4665883a81c5286bd",
-    "9a737f3dfb3c780dedd5accd330501468c148b1974ccdff9571c2ae60eb237a0",
-    "1f202b2ee5ccd2971c70e64ce9fe1e8d190da7d3357a6b95e3454baea8b4ecca",
-    "65dee9afefc5c037d97987a37b9c0d0b864a016ba7d37e2b6959a78ca92c36fe",
-    "a3b6dd47bc9b7b3dbb1c13da64703d7bdcafd47d0891be625efdb6071ea35cd2",
-    "1da442c33e262cb41d4a5368fe56e0d2fc5d83e719ec46716870b313473abc5b",
-    "3d6e417e54819501852e43001f0148806cbf46ea5a00968ed6bebf0f8b5a7076",
-    "8dd4ccc653af0cddceea1cddd5c983781295020ec5f1ea984b4d8b7c23e5c93d",
-    "d5f1fa7cc26abcb53132ecbb1bcb7843b5b60f3e3d2367262de423f89df5d7ee",
-    "c5cee31b5f2462c8f4aaf2d4f2f630ffa7b02c8c367c30ccc652b67cdcba9212",
-    "d15edfa099a701cf8701f1e310d96d85ecf4ce842c9c515e25ee95d6ddae6238",
-    "847ef118218647a300131ffdb805af7fa99018b6037ee5fa27a2d221b2cfaa9b",
-    "184979da05295c66d319be0169cf1172fbefbdf6a49cc92438ea3c52b87f30a8",
-    "198d8fc69c8574aaca416386d133d768fcbde9e1860bd062e49b5308a538a4b4",
-    "6875cac64d5fbcbbc5434631e4d38e625ed90680d46188a595ce17320cc36554",
-    "322ed1dd00da92ca7b473b82efab95812c22b0a84d08b6e81f2925583267e967",
-    "d1b28856b6ebaf685086c9c40b7a63ba9055aa0c888860a2f3099f2458060eb9",
-    "1fe419e854111b83c0ade86f8d868302e7101ae9337ef75dceff33f8322cc818",
-    "0ac061bf674396c1a7b8ef89742cbe77c32282290c0ca73429ba99c020057bb1",
-    "f16ff360b6ff0aa072c24bd6cc230cae8206344d8c5d1d6614d118a79798632b",
-    "07e5b5930575780bb1548740e655ef6fcc72e2d14fc4600c396de685342e5168",
-    "4683d5fea0f4a7df4fbe327a8e1b022441f9af26af8c57834cf3f465d2565242",
-    "cadfe40e10a8f077276312c27f7e37293debc46586ddd0d24037e6f825406916",
-    "d5096fdecfe3c43f473d44b53f6bc147b18bcb759f3f829f0f3640573b6eb055",
-    "1b6eab08a667125981d28e88ac2d51877ec02cf454e8f41c76022ae49d194668",
-    "bbf0890824a07b2dffed54e4218f65c01a66e21318cd26589d68fdb3e17a2c6c",
-    "6632044d14bd10df0dd082233b8671669460ff0fdc8502eeda9015cd5ba3f1e3",
-    "c6733f7036aadba0c5bea5145ef27700ff986d027caf9042285b0967829ec666",
-    "b8545704a82d1fd37dd86aaf4a5d7ea0dd42573ca5b62d1808557a852b5a305f",
-    "8dc28899f57660c682b25ceed6e645c1c9565668d4952e24b48854e6d047b395",
-    "d6573730f927cd390662efc7b46b4f27da974e85d0169054c29c6e7e63b818e0",
-    "5cb025f390d94c259cc1cb3616983527693c7d18b68fcc50de6218f46b72462d",
-    "f09dfaaf44725d58de626978548a3617bc18b5c7fe98fc8666d1f783bb69c29e",
-    "6574bd2ebb5bfc40d33ff6a696256fe0cd4a1007a0f3a21ed745042774c2d4c4",
-    "7604fe099d960d74d89ba98c725e82274017576432f3f6c8f7c37e78d64ec876",
-    "cef9b5501de678dbb9db20b9ee08aa6836214bfb3e606aa8357cd3b919e5955b",
-    "7c8387f3156537146c8f7838f467df92924bfe5b3e7441f00e5d9602a5c1dea9",
-    "f0b6dd0d4aa9349d02913d3039af716092af2d6ab3358a0aeb9c017e41cae75d",
-    "dc1df6d431abcf74c341d5810471d1dc2bb87a4ced0dbae38c7b618cef442ee8",
-    "758cf317959c0d81e4261916ce4225023ff889036aa0145574507af54398ed5d",
-    "4b0cc17412a6c5d3e687b8a8c4d0517cf1edacb78336b3d529812375ffab8097",
-    "e9c6c30339ea33f5e5e7efd4c1e8535778504611a05a6867c62c1ce5897ad170",
-    "da82f83aaa9f6c066730b4e8378095ef3d8cabcb6a2bb54dd6766c03204abb84",
-    "6612db2673f398027fba5b3d952be96cd9e5c5f893169b8ea0838ec4970b7b00",
-    "1b48eef04c304cd1ac6d09144d50163e555e5712c728c2271e49c0b8058aaaa2",
-    "f2c5c10d3da906a23c96a2f2afdebb740101f001e2b4208a649ba78fcb44a992",
-    "5973ddf6462ddb41a112d2058bc62ac9698934e4dadd02fc55af9ee5c151d480",
-    "a0d15e33979ba6ab136cc5fc2f330c0017d9bb18881585eb632b0108ed8960e1"
-  ],
-  "regenerate": "python3 proof/VELDO-0027/drive.py --mutations"
+  "regenerate": "bash scripts/verify.sh"
 }

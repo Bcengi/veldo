@@ -1,4 +1,4 @@
 --- a/.veldo/control_signer.py
 +++ b/.veldo/control_signer.py
-@@ -200,0 +201 @@
+@@ -202,0 +203 @@
 +        channel = request['channel']

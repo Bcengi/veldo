@@ -101,5 +101,11 @@
       }
     }
   ],
-  "note": "Targeted development checks only; acceptance requires the clean canonical gate."
+  "note": "Targeted development checks only; acceptance requires the clean canonical gate.",
+  "fix_commit": "1124650887095080b8f1972ef22134d2fb7c031d",
+  "acceptance": {
+    "command": "bash scripts/verify.sh",
+    "commit": "7498864958570e3ac6363c79cba9a22d359bed71",
+    "ref": "proof/VELDO-0027/gate-summary.json"
+  }
 }

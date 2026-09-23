@@ -315,3 +315,34 @@ attacks with no DEFECT marker. No attack or assertion was removed or weakened.
 [followup-capsules.json](followup-capsules.json) records both runs and source hashes;
 [followup-capsule-compatibility.diff](followup-capsule-compatibility.diff) records
 the exact fixture changes. No private keys or signatures are retained.
+
+## F-05 and F-06 clean-tree acceptance
+
+The canonical gate was run from a clean tree at `7498864958570e3ac6363c79cba9a22d359bed71`:
+
+```text
+selftest: 5675 passed, 0 failed
+mutations: passed registered=78 executed=78 rejected=78 workers=100 elapsed=50.574s
+catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (7498864958570e3ac6363c79cba9a22d359bed71)
+```
+
+The run took 661.290 seconds. All 95 signing rows and all 24 signing
+mutations were exercised, including both variants of F-05 and F-06 and the
+earlier F-01 through F-04 mutations. Fresh baselines and no-op copies passed.
+[followup-gate-run.json](followup-gate-run.json) records the clean precondition,
+commit, exit code and duration. [gate-summary.json](gate-summary.json) and
+[mutations.json](mutations.json) retain the gate observations; [observations.json](observations.json)
+contains the 95 signing rows observed by the gate. The final commit changes proof
+only; `.veldo/last_verify` and `.veldo/events.jsonl` are restored and excluded.
+
+To reproduce the new RED rows without changing runtime files in this checkout:
+
+```sh
+git show f95c7a6:.veldo/control_signer.py > /tmp/f95c7a6-control_signer.py
+python3 -B scripts/check_teeth_mutations.py --worker signing-ignore-personal-content --mutant /tmp/f95c7a6-control_signer.py
+```
+
+The observer reports the three isolated F-05 relabel rows and all three F-06
+foreign-coordinate rows in `failed_rows`, as well as missing-input refusal rows.
+The worker exit status is not its assertion verdict; inspect `failed_rows`.
