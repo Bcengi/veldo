@@ -23,6 +23,12 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
+  - "packs/*/.veldo/control_store.py"
+  - "engine/.veldo/control_readset.py"
+  - ".veldo/control_readset.py"
+  - "packs/*/.veldo/control_readset.py"
   - "scripts/suites/*_veldo_0037_*.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
@@ -125,3 +131,13 @@ listed in the machine-readable footprint), with two distinct mutations per named
 and fresh unmutated controls. The allocation commands register on the existing store connection
 as 0035's read sets do; the store, its schema and the snapshot modules are consumed unchanged.
 No eligibility, project-manager, landing or remote publication behavior is implemented here.
+
+2026-09-23 second independent review: entity ownership moves into the store, so the footprint
+now also names `control_store.py` (VELDO-0023) and `control_readset.py` (VELDO-0035) in all three
+copies. The guard that refused generic writes of alias and document entities lived on the one
+connection the allocation authority attached to, so another connection, or a read set enabled after
+attach, could rewind the counter and rewrite an immutable version. Each service now declares which
+commands write the entity kinds and id prefixes it owns; the declaration is persisted with the store
+and `control_store.execute` enforces it on every connection whatever was registered where or in what
+order. Accepted revisions and snapshots (VELDO-0035) are declared owned the same way. The store's
+existing behavior for undeclared entities, its domain tables and its command registry are unchanged.

@@ -22,6 +22,21 @@ Veldo organ: signing and verification are callables passed in, so the store neve
 material. Replication is W9; the checkpoint adapter's tables are not created here. Standard
 library only.
 
+ENTITY OWNERSHIP. A service whose commands alone may write some entities (VELDO-0035's snapshots
+and accepted revisions, VELDO-0037's alias counters, reservations and immutable document versions)
+DECLARES that with declare_owners: for each owned entity kind, and for each owned entity id prefix,
+the commands allowed to write it. The declaration is persisted in the store itself (the
+entity_owners table, created by the first declaration, so a store nobody declared into has none),
+and execute reads it inside every command's own BEGIN IMMEDIATE, so it binds EVERY connection to
+the file: one another process opened, one opened before the declaration, one whose module copy
+registered nothing, and one on which a later registration replaced an earlier one. A command
+writing an entity refuses entity_owned unless it is allowed by every declaration matching that
+entity: its kind after the write, its kind before it, and every declared prefix of its id. So
+where a command is registered, and in what order, decides nothing about what it may write.
+A declaration is immutable: the same declaration again is a no-op, a different one for a declared
+kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
+that entities already occupy, because they were written while nobody owned them.
+
 CRASH POINTS. For the SIGKILL matrix the spec requires, a writer process may be told through the
 environment to kill itself at a durable boundary (before COMMIT, inside COMMIT through the
 progress handler, or after COMMIT before replying). The hooks act only when
@@ -54,7 +69,8 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
-            "read_only_handle", "publication_backfill_required", "no_explicit_store_path")
+            "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
+            "ownership_conflict")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 _DDL = (
@@ -77,6 +93,12 @@ _DDL = (
     "durability TEXT, dispatched_at REAL, backfilled INTEGER NOT NULL DEFAULT 0)",
     "CREATE TABLE IF NOT EXISTS publication_control (id INTEGER PRIMARY KEY CHECK (id = 1), paused_reason TEXT, paused_at REAL)",
 )
+
+# Entity ownership (see the module docstring). Not part of _DDL: the first declaration creates it, so
+# a store into which nothing was ever declared carries exactly the DOMAIN_TABLES and no owner rule.
+OWNERS_TABLE = "entity_owners"
+_OWNERS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owners (selector TEXT NOT NULL CHECK (selector IN ('kind', 'prefix')), "
+               "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, PRIMARY KEY (selector, value))")
 
 
 class StoreRefused(Exception):
@@ -396,6 +418,14 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         for eid in changes:
             if eid not in command["expected_versions"]:
                 raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
+        owners = entity_owners(conn)
+        for eid, new in changes.items():
+            kinds = {new["kind"], before.get(eid, {}).get("kind")}
+            for selector, value, owner, commands in owners:
+                hit = value in kinds if selector == "kind" else eid.startswith(value)
+                if hit and command["operation"] not in commands:
+                    raise StoreRefused("entity_owned", "%s may not write %s: %s %r belongs to %s, written only by %s"
+                                       % (command["operation"], eid, selector, value, owner, ", ".join(commands)))
         before_versions = {eid: before.get(eid, {}).get("version", 0) for eid in sorted(set(before) | set(changes))}
         after_versions = dict(before_versions)
         transition = {}
@@ -467,6 +497,75 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
 
     finally:
         conn.command_transaction = False
+
+
+# ---------------------------------------------------------------------------------------------
+# Entity ownership: declared once per store, enforced by execute on every connection.
+# ---------------------------------------------------------------------------------------------
+
+def entity_owners(conn):
+    """Every persisted declaration as (selector, value, owner, commands), or [] when none exists."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (OWNERS_TABLE,)).fetchone():
+        return []
+    return [(r[0], r[1], r[2], tuple(json.loads(r[3])))
+            for r in conn.execute("SELECT selector, value, owner, commands FROM entity_owners ORDER BY selector, value")]
+
+
+def _ownership_rows(owner, kinds, prefixes):
+    if not _is_str(owner):
+        raise StoreRefused("malformed_command", "an ownership declaration names its owner")
+    rows = []
+    for selector, table in (("kind", kinds or {}), ("prefix", prefixes or {})):
+        if not isinstance(table, dict):
+            raise StoreRefused("malformed_command", "owned %ss map each value to its writing commands" % selector)
+        for value, commands in table.items():
+            if not _is_str(value) or isinstance(commands, str) or not commands or not all(_is_str(c) for c in commands):
+                raise StoreRefused("malformed_command", "owned %s %r needs a value and at least one command" % (selector, value))
+            rows.append((selector, value, owner, tuple(sorted(set(commands)))))
+    if not rows:
+        raise StoreRefused("malformed_command", "an ownership declaration owns at least one kind or prefix")
+    return rows
+
+
+def _occupied(conn, selector, value):
+    if selector == "kind":
+        return conn.execute("SELECT 1 FROM entities WHERE kind=? LIMIT 1", (value,)).fetchone() is not None
+    return conn.execute("SELECT 1 FROM entities WHERE substr(id, 1, ?)=? LIMIT 1", (len(value), value)).fetchone() is not None
+
+
+def declare_owners(conn, owner, kinds=None, prefixes=None):
+    """Persist that the entities of each kind in `kinds`, and every entity whose id begins with a
+    prefix in `prefixes`, are written only by the commands mapped to it. Idempotent for the same
+    declaration; ownership_conflict for a different one, or for a first declaration of a kind or
+    prefix that entities already occupy. Its own transaction, like the publication cursor's writes."""
+    rows = _ownership_rows(owner, kinds, prefixes)
+    if set(rows) <= set(entity_owners(conn)):
+        return rows
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot declare ownership (%s)" % e)
+    try:
+        conn.execute(_OWNERS_DDL)
+        declared = {(r[0], r[1]): r for r in entity_owners(conn)}
+        for row in rows:
+            prior = declared.get(row[:2])
+            if prior is not None:
+                if prior != row:
+                    raise StoreRefused("ownership_conflict", "%s %r is owned by %s (written only by %s); %s declares %s"
+                                       % (row[0], row[1], prior[2], ", ".join(prior[3]), owner, ", ".join(row[3])))
+                continue
+            if _occupied(conn, row[0], row[1]):
+                raise StoreRefused("ownership_conflict", "entities of %s %r exist already, written while nobody owned them"
+                                   % (row[0], row[1]))
+            conn.execute("INSERT INTO entity_owners (selector, value, owner, commands) VALUES (?,?,?,?)",
+                         (row[0], row[1], owner, json.dumps(list(row[3]))))
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return rows
 
 
 # ---------------------------------------------------------------------------------------------

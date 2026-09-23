@@ -457,12 +457,12 @@ def cases():
             "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),\n"
             "                              (['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit], scope)):",
             "    for command, narrowed in ((['ls-tree', '-r', '-z', '--name-only', commit], []),):", 'aliases/historical-floor')
-    aliases('alias-generic-commands-unguarded', 'control_alias.py',
-            '        conn.command_registry[operation] = _guard_generic(store, operation, registration)',
-            '        pass', 'aliases/generic-writes-refused')
-    aliases('alias-guard-by-new-kind-only', 'control_alias.py',
-            "            if _owned(identity, change['kind']) or _owned(identity, before.get(identity, {}).get('kind')):",
-            "            if change['kind'] in OWNED_KINDS:", 'aliases/generic-writes-refused')
+    aliases('alias-owners-undeclared', 'control_alias.py',
+            '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES)', '    pass',
+            'aliases/generic-writes-refused')
+    aliases('store-owner-by-new-kind-only', 'control_store.py',
+            '                hit = value in kinds if selector == "kind" else eid.startswith(value)',
+            '                hit = selector == "kind" and value == new["kind"]', 'aliases/generic-writes-refused')
     aliases('publisher-any-repository', 'control_document.py',
             '            if repository != self.repository:', '            if False:', 'publication/bound-to-repository')
     aliases('reader-any-checkout', 'control_document.py',
@@ -500,6 +500,12 @@ def cases():
     aliases('alias-floor-slug-grammar', 'control_alias.py',
             "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'",
             "    regex += '([0-9]+)(?![0-9])-[a-z0-9]+(?:-[a-z0-9]+)*[.][a-z]+'", 'aliases/floor-counts-every-carrier')
+    aliases('store-owners-only-where-registered', 'control_store.py',
+            '        owners = entity_owners(conn)\n', '        owners = entity_owners(conn) if conn.command_registry else []\n',
+            'aliases/owned-on-every-connection')
+    aliases('store-owners-unchecked', 'control_store.py',
+            '                if hit and command["operation"] not in commands:', '                if False:',
+            'aliases/owned-on-every-connection')
     return result
 
 

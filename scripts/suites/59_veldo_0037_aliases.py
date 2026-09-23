@@ -84,7 +84,7 @@ def _s37_run():
             'control_alias.py': ROOT / ".veldo" / "control_alias.py",
             'control_document.py': ROOT / ".veldo" / "control_document.py",
             'control_snapshot.py': ROOT / '.veldo/control_snapshot.py',
-            'control_store.py': ROOT / '.veldo/control_store.py',
+            'control_store.py': ROOT / ".veldo" / "control_store.py",
             'claim.py': ROOT / '.veldo/claim.py',
             'git_process.py': ROOT / '.veldo/git_process.py',
         }.items():
@@ -481,8 +481,9 @@ def _s37_run():
         class _S37Env:
             pass
 
-        def fresh(label, histories=None):
-            """histories maps a repository to its accepted commits, each {path: bytes, or None to delete}."""
+        def fresh(label, histories=None, before_attach=None):
+            """histories maps a repository to its accepted commits, each {path: bytes, or None to delete};
+            before_attach(env) runs on the new store before the allocation authority attaches."""
             env = _S37Env()
             env.base = root / ('defect-' + label)
             env.base.mkdir()
@@ -501,7 +502,10 @@ def _s37_run():
                     g(origin, 'add', '-A')
                     g(origin, 'commit', '-qm', 'Accepted %s %d' % (repository, index))
                 env.origins[repository] = origin
-            env.conn = st.open_store(env.base / 'control.sqlite3')
+            env.db = env.base / 'control.sqlite3'
+            env.conn = st.open_store(env.db)
+            if before_attach is not None:
+                before_attach(env)
             env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             for repository, origin in env.origins.items():
                 env.revisions[repository] = 'revision/' + repository
@@ -657,8 +661,8 @@ def _s37_run():
         generic['next'] = (next_alias or {}).get('alias')
         defects['generic'] = generic
         expect('aliases/generic-writes-refused', unchanged and generic == {
-               'rewind-counter': 'allocation_owned', 'retire-reservation': 'allocation_owned',
-               'receipt-over-version': 'allocation_owned', 'owned-kind-elsewhere': 'allocation_owned',
+               'rewind-counter': 'entity_owned', 'retire-reservation': 'entity_owned',
+               'receipt-over-version': 'entity_owned', 'owned-kind-elsewhere': 'entity_owned',
                'unrelated': None, 'next': 'VELDO-0003'})
         env.conn.close()
 
@@ -789,6 +793,56 @@ def _s37_run():
         defects['carriers'] = carriers
         expect('aliases/floor-counts-every-carrier', carriers == {'case-directory': 5, 'irregular-slug': 7,
                'missing-slug': 8, 'number-template': 9, 'not-carriers': 1})
+
+        # 10. Ownership is the store's, on EVERY connection: a second connection from another copy
+        # of the store module with nothing registered, and one opened before the allocation
+        # authority attached, cannot write what the allocation commands own either.
+        other_store = _s37_load('s37_store_other', modules / 'control_store.py')
+        early = {}
+        env = fresh('connections', before_attach=lambda env: early.update(conn=other_store.open_store(env.db)))
+        enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+        for index in (1, 2):
+            allocate(env, 'connection-%d' % index, 'specification', 'connection-%d' % index, b'connection %d\n' % index)
+        second = other_store.open_store(env.db)
+        counter_id = al.kind_id('repository', 'specification')
+        first_version = al.version_id('repository', 'VELDO-0001', 1)
+        _, kind_before = env.service.current(counter_id)
+        _, version_before = env.service.current(first_version)
+        connections = {}
+        for label, connection, operation, parameters, identity in [
+                ('rewind-counter', second, 'upsert_entity', {'entity_id': counter_id, 'kind': 'artifact_kind',
+                                                             'data': dict(kind_before or {}, next=1)}, counter_id),
+                ('rewrite-version', second, 'upsert_entity', {'entity_id': first_version, 'kind': 'document_version',
+                                                              'data': dict(version_before or {}, content='REWRITTEN\n')},
+                 first_version),
+                ('relabel-version', second, 'upsert_entity', {'entity_id': first_version, 'kind': 'note',
+                                                              'data': {'text': 'no longer a version'}}, first_version),
+                ('retire-reservation', second, 'retire_entity', {'entity_id': al.alias_id('repository', 'VELDO-0002')},
+                 al.alias_id('repository', 'VELDO-0002')),
+                ('opened-before-attach', early['conn'], 'upsert_entity', {'entity_id': counter_id, 'kind': 'artifact_kind',
+                                                                          'data': dict(kind_before or {}, next=1)}, counter_id),
+                ('unrelated', second, 'upsert_entity', {'entity_id': 'note/2', 'kind': 'note', 'data': {'text': 'ok'}},
+                 'note/2')]:
+            row = connection.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+            try:
+                other_store.execute(connection, {'command_id': 'connection-' + label, 'principal': 'anyone',
+                    'operation': operation, 'parameters': parameters, 'nonce': 'connection-%s/nonce' % label,
+                    'expected_versions': {identity: row[0] if row else 0}, 'artifact_digests': []}, **signing)
+                connections[label] = None
+            except other_store.StoreRefused as error:
+                connections[label] = error.code
+        second.close()
+        early['conn'].close()
+        connections['counter'] = (env.service.current(counter_id)[1] or {}).get('next')
+        connections['version-content'] = (env.service.current(first_version)[1] or {}).get('content')
+        next_alias, _ = allocate(env, 'connection-3', 'specification', 'connection-3', b'connection 3\n')
+        connections['next'] = (next_alias or {}).get('alias')
+        defects['connections'] = connections
+        expect('aliases/owned-on-every-connection', connections == {
+               'rewind-counter': 'entity_owned', 'rewrite-version': 'entity_owned', 'relabel-version': 'entity_owned',
+               'retire-reservation': 'entity_owned', 'opened-before-attach': 'entity_owned', 'unrelated': None,
+               'counter': 3, 'version-content': 'connection 1\n', 'next': 'VELDO-0003'})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

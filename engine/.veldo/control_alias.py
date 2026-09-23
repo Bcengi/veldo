@@ -34,10 +34,12 @@ repository, whose root commits are its identity (control_enrollment's rule); two
 not share them. A kind's template is ASCII and can reach neither .git/ nor .veldo/, and no two kinds
 of one repository may declare one path, or a directory of the other's path, compared case-folded
 because the Mac's default filesystem is case-insensitive. Prefixes are compared case-folded too.
-Every other command registered on the connection when attach runs, the store's generic
-upsert_entity, retire_entity and record_receipt included, is refused allocation_owned when it
-would write an entity these commands own. A read set enabled for a generic command AFTER attach
-replaces its registration and with it this guard: attach the allocation authority last.
+OWNERSHIP IS THE STORE'S. attach declares every kind and id prefix these commands write, and
+which of them writes each, with control_store.declare_owners; the declaration is persisted in the
+store and control_store.execute enforces it inside every command's transaction on every connection
+to that store. So the store's generic upsert_entity, retire_entity and record_receipt, a read set
+enabled for them before or after attach, and any other process or connection all refuse
+entity_owned when they would write one of these entities. Registration order decides nothing.
 
 ACCEPTED BYTES. Document content is UTF-8 text committed in the store beside its sha256 digest.
 Version entities are immutable, so the prior bytes stay readable after every edit. Publication to a
@@ -68,10 +70,16 @@ _git_process = SN._git_process
 SCHEMA = 'veldo.control_alias/v1'
 OPERATIONS = ('enable_artifact_kind', 'allocate_document', 'edit_document', 'record_publication')
 ATTEMPTS = 16
-# Everything these commands write; no other command on the allocation connection may write it.
-OWNED_KINDS = frozenset(('artifact_kind', 'alias_reservation', 'alias_source', 'accepted_document',
-                         'document_version', 'publication_obligation'))
-OWNED_PREFIXES = ('artifact-kind/', 'alias/', 'alias-source/', 'document/', 'publication/')
+# Everything these commands write, and which of them writes it. attach declares it in the store
+# (control_store.declare_owners), so no other command writes it on ANY connection to that store.
+OWNER = 'VELDO-0037 alias allocation'
+_COUNTER = ('enable_artifact_kind', 'allocate_document')
+_DOCUMENT = ('allocate_document', 'edit_document')
+_PUBLICATION = _DOCUMENT + ('record_publication',)
+OWNED_KINDS = {'artifact_kind': _COUNTER, 'alias_reservation': ('allocate_document',), 'alias_source': _DOCUMENT,
+               'accepted_document': _DOCUMENT, 'document_version': _DOCUMENT, 'publication_obligation': _PUBLICATION}
+OWNED_PREFIXES = {'artifact-kind/': _COUNTER, 'alias/': ('allocate_document',), 'alias-source/': _DOCUMENT,
+                  'document/': _DOCUMENT, 'publication/': _PUBLICATION}
 RESERVED_DIRECTORIES = ('.git', '.veldo')
 # The error taxonomy every refusal is reported under. A code missing here is unknown_outcome,
 # never success.
@@ -79,7 +87,8 @@ CATEGORIES = {
     'invalid_input': 'invalid_input', 'invalid_unit_id': 'invalid_input',
     'malformed_command': 'invalid_input', 'invalid_registration': 'invalid_input',
     'wrong_repository': 'invalid_input', 'transition_refused': 'invalid_input',
-    'missing_authority': 'missing_authority', 'allocation_owned': 'missing_authority',
+    'missing_authority': 'missing_authority', 'entity_owned': 'missing_authority',
+    'ownership_conflict': 'invalid_input',
     'unregistered_inputs': 'invalid_input', 'reserved_path': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
     'source_content_conflict': 'stale_subject', 'command_content_conflict': 'stale_subject',
@@ -617,7 +626,7 @@ class Allocations:
         repository = self._guard(conn, p)
         source, role, kind_name = parse_source(p['source'], p['role'])
         counter = kind_id(repository, kind_name)
-        if counter not in before:
+        if counter not in before or before[counter]['kind'] != 'artifact_kind':
             self._refuse('missing_authority', 'artifact kind %s is not enabled' % kind_name)
         kind = before[counter]['data']
         number = p['number']
@@ -711,38 +720,15 @@ class Allocations:
                              'data': dict(data, state='published', observed_digest=p['observed_digest'])}}
 
 
-def _owned(identity, kind):
-    return (isinstance(identity, str) and identity.startswith(OWNED_PREFIXES)) or kind in OWNED_KINDS
-
-
-def _guard_generic(store, operation, registration):
-    """The registration with one more rule: whatever this command would write, no alias or
-    document entity, recognized by its id or by its kind before or after. The original transition
-    still decides everything else, and a snapshot command it could not guard stays refused."""
-    inner, plain = registration.get('transaction_transition'), registration.get('transition')
-
-    def transition(conn, parameters, before):
-        if inner is None and 'snapshot_id' in parameters:
-            raise store.StoreRefused('unregistered_inputs', 'snapshot command requires a connection-local guard')
-        changes = inner(conn, parameters, before) if inner is not None else plain(parameters, before)
-        for identity, change in changes.items():
-            if _owned(identity, change['kind']) or _owned(identity, before.get(identity, {}).get('kind')):
-                raise store.StoreRefused('allocation_owned', '%s cannot write %s: only the allocation commands do'
-                                         % (operation, identity))
-        return changes
-    return dict(registration, transaction_transition=transition)
-
-
 def attach(store, conn, domain_uuid, repositories):
-    """Register the allocation commands on one store connection; returns the service. Every other
-    command registered on the connection at this moment, the store's generic ones included, is
-    guarded so that it cannot write the entities these commands own (a counter moved backwards or
-    a version rewritten by upsert_entity would bypass every rule below)."""
+    """Register the allocation commands on one store connection; returns the service. First it
+    declares, in the store, that only these commands write the entities they own: a counter moved
+    backwards or a version rewritten by upsert_entity would bypass every rule above, from this
+    connection or any other, whatever else is registered where or when."""
     if any(operation in conn.command_registry for operation in OPERATIONS):
         raise SN.Refused('invalid_registration', 'connection already has an allocation authority')
     service = Allocations(store, conn, domain_uuid, repositories)
-    for operation, registration in dict(store.COMMAND_REGISTRY, **conn.command_registry).items():
-        conn.command_registry[operation] = _guard_generic(store, operation, registration)
+    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES)
     for operation, body in zip(OPERATIONS, (service._t_enable, service._t_allocate, service._t_edit, service._t_publish)):
         conn.command_registry[operation] = {'transaction_transition': service._transition(body),
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
