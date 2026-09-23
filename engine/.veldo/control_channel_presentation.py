@@ -1067,6 +1067,12 @@ class Presenter:
                                       accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',
                                       reason=sent['refusal'], error_class=None))
 
+    @staticmethod
+    def _is_recorded_answer(recorded, ev):
+        """Whether this inbound message is the recorded answer itself (same chat and message id)."""
+        was = ((recorded or {}).get('data') or {}).get('attribution') or {}
+        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id'])
+
     def _edge_key(self, state, edge, now):
         wanted = self.AC.CHANNELS[CHANNEL]['edge_key_id']
         keys = [k for k in state['keyring'] if k.get('key_id') == wanted]
@@ -1133,6 +1139,12 @@ class Presenter:
         head = self.head(request)
         if head is None or head['current'] != pid:
             raise Refused('superseded_presentation', 'the named presentation is not the current one')
+        aid = answer_id(request, receipt['request_version'], receipt['owner'])
+        recorded = self._entity(aid)
+        if self._is_recorded_answer(recorded, ev):
+            # The recorded answer itself delivered again: it needs no reply, whatever has happened to
+            # the request since, so this comes before every message back.
+            raise Refused('already_answered', 'this is the recorded answer, delivered again')
         refusal, current, versions = self.bindings(request)
         if refusal == 'stale_subject':
             # The request has left pending (answered, declined or canceled in the inbox): say so, once.
@@ -1144,14 +1156,9 @@ class Presenter:
             raise Refused('not_authorized', 'the edge scope does not cover the request')
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.
-        aid = answer_id(request, receipt['request_version'], receipt['owner'])
-        recorded = self._entity(aid)
         if recorded is not None:
-            # Answered already: say so and name the ruling, whatever this reply says, unless this is
-            # the recorded answer itself delivered again, which needs no reply.
-            was = recorded['data'].get('attribution') or {}
-            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):
-                self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
+            # Answered already: say so and name the ruling, whatever this reply says.
+            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
             raise Refused('already_answered', 'the owner has answered this request version')
         if a.get('choice') not in receipt['choices']:
             self._tell(ev, receipt, self._how(receipt, 'That reply did not match a choice.'))

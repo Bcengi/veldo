@@ -1100,8 +1100,8 @@ def cases():
     presentation('answered-checked-after-choice', "        if recorded is not None:\n", "        if False:\n",
                  'answer/after-answered-reply')
     presentation('answered-not-told',
-                 "                self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
-                 "                pass\n", 'answer/after-answered-reply')
+                 "            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
+                 "", 'answer/after-answered-reply')
     # VELDO-0065 third review item 3: one message back per inbound message, recorded.
     presentation('tell-not-deduplicated', "        if self._entity(tid) is not None:\n            return\n", "",
                  'answer/tell-once-per-message')
@@ -1128,11 +1128,18 @@ def cases():
                  "CHOICE_SEPARATORS = str.maketrans({c: ' ' for c in '_-'})\n", 'answer/reply-nfkc-before-split')
     # VELDO-0065 fourth review item 2: the accepted answer delivered again gets no reply.
     presentation('redelivered-answer-told',
-                 "            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):\n",
-                 "            if True:\n", 'answer/redelivered-answer-silent')
+                 "        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id'])\n",
+                 "        return False\n", 'answer/redelivered-answer-silent')
     presentation('redelivery-by-chat-only',
-                 "            if (was.get('chat_id'), was.get('platform_message_id')) != (ev['chat_id'], ev['platform_message_id']):\n",
-                 "            if was.get('chat_id') != ev['chat_id']:\n", 'answer/redelivered-answer-silent')
+                 "        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id'])\n",
+                 "        return recorded is not None and was.get('chat_id') == ev['chat_id']\n", 'answer/redelivered-answer-silent')
+    # VELDO-0065 fifth review item 1: the recorded answer delivered again is silent even after the request closed.
+    presentation('redelivery-silent-only-while-pending', "        if self._is_recorded_answer(recorded, ev):\n",
+                 "        if self._is_recorded_answer(recorded, ev) and self.inbox.brief(request).get('category') == 'pending':\n",
+                 'answer/redelivered-after-closed')
+    presentation('redelivery-after-closed-told', "        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id'])\n",
+                 "        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id']) and False\n",
+                 'answer/redelivered-after-closed')
     # VELDO-0065 fourth review item 7: a reply after the request left pending is told so, once.
     presentation('closed-not-told',
                  "            self._tell(ev, receipt, 'This request is no longer open, so this reply changes nothing.')\n", "",

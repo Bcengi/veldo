@@ -108,7 +108,8 @@ def _v65_checks(base):
                                   'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed',
                                   'presentation/retry-after-capped', 'answer/reply-nfkc-before-split',
                                   'answer/redelivered-answer-silent', 'answer/reply-after-closed',
-                                  'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement')}
+                                  'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
+                                  'answer/redelivered-after-closed')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1477,6 +1478,30 @@ def _v65_checks(base):
             check(orphan, 'the notice is marked superseded by the presentation that named it, once its outcome is known',
                   len(notice_row_now) == 1 and notice_row_now[0][1] == 'sent'
                   and notice_row_now[0][2] == naming.get('presentation_id') is not None)
+
+        # Review 5 item 1: the accepted answer delivered again after the request left pending gets no reply
+        after_close = 'answer/redelivered-after-closed'
+        with section(after_close):
+            for how in ('answer', 'cancel'):
+                alias = 'RCL-' + how
+                rcl = opened(alias)
+                presenter.present(rcl)
+                rcl_r = presenter.current(rcl) or {}
+                accepted_msg = owner_reply(rcl_r, 'accept: fine')
+                first = answer(accepted_msg)
+                closed_now = (command('owner', 'answer', alias, request_version=1, ruling='accept') if how == 'answer'
+                              else command('pm', 'cancel', alias, request_version=1))
+                asked = len(api['requests'])
+                again = answer(accepted_msg)
+                done = {'answer': 'answered in the inbox', 'cancel': 'canceled'}[how]
+                check(after_close, 'after the request is %s, the accepted answer delivered again gets no reply' % done,
+                      reason(first) == ('accepted', None) and closed_now.get('ok') is True
+                      and again.get('outcome') == 'refused' and len(api['requests']) == asked)
+                asked = len(api['requests'])
+                other = answer(owner_reply(rcl_r, 'reject: a different message'))
+                check(after_close, 'control: after the request is %s, a different message is told it is no longer open' % done,
+                      reason(other) == ('refused', 'request_closed') and len(api['requests']) == asked + 1
+                      and 'no longer open' in api['requests'][-1][1])
     finally:
         server.shutdown()
         server.server_close()
