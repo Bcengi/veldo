@@ -572,6 +572,15 @@
    ],
    "regions": "Release 1 committed notifications, idle signals and journal authority",
    "requires_note": "Uses shared ROOT and expect only; real installer, SQLite, Ed25519 signatures and joined event-loop threads."
+  },
+  {
+   "name": "60_veldo_0064_inbox",
+   "file": "60_veldo_0064_inbox.py",
+   "requires": [
+    "60_veldo_0064_inbox"
+   ],
+   "regions": "Assignment inbox, released waiting claims, Telegram correlation and authority-only admission",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, claim receiver, Ed25519 signatures, a child worker process and loopback HTTP."
   }
  ]
 }
