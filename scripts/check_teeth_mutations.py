@@ -1014,6 +1014,21 @@ def cases():
     decisions('malformed-blocks-unrecorded', 'control_eligibility.py',
               "                self._invalid_record(identity, 'blocks')\n", "                pass\n",
               'malformed-blocks-held')
+    # Item 3: a wrong-typed schema is invalid_input, decided before unsupported and unresolved.
+    decisions('schema-type-unchecked', 'control_decision_dependency.py',
+              "    for name, ok in (('schema', record.get('schema') is None or isinstance(record.get('schema'), str)),\n"
+              "                     ('decision_id',",
+              "    for name, ok in (('decision_id',", 'invalid-before-unsupported')
+    decisions('invalid-after-unresolved', 'control_decision_dependency.py',
+              "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n"
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n"
+              "    if not mine:\n        return ['unresolved_decision:' + rid]\n",
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n"
+              "    if not mine:\n        return ['unresolved_decision:' + rid]\n"
+              "    problems = record_problems(rid, record) if not record_invalid(rid, record) else []\n"
+              "    if problems:\n        return problems\n"
+              "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n",
+              'invalid-before-unsupported')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

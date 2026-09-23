@@ -178,7 +178,8 @@ def record_invalid(rid, record):
     if not isinstance(record, dict):
         return [code + 'record']
     problems = []
-    for name, ok in (('decision_id', record.get('decision_id') is None or isinstance(record.get('decision_id'), str)),
+    for name, ok in (('schema', record.get('schema') is None or isinstance(record.get('schema'), str)),
+                     ('decision_id', record.get('decision_id') is None or isinstance(record.get('decision_id'), str)),
                      ('blocks', record.get('blocks') is None or _str_list(record.get('blocks'))),
                      ('obligations', record.get('obligations') is None or _str_list(record.get('obligations')))):
         if not ok:

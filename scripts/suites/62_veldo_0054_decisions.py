@@ -639,6 +639,28 @@ def _v54_suite():
                    and all(verdict(blocks_seen[1][sid], {'invalid_input:decision:D-%s/blocks' % sid[-4:]}) for sid in BLOCKS)
                    and {'decision:D-%s' % sid[-4:] for sid in BLOCKS} | {'decision:D-NOBODY'} <= recorded_blocks)
 
+        with region('decisions/invalid-before-unsupported'):
+            # A wrong-typed schema is invalid_input, not unsupported; invalid_input is decided before
+            # unsupported and before unresolved, as the module says.
+            planned('PLAN-9409', ['VELDO-9491', 'VELDO-9492', 'VELDO-9493'])
+            decision('decision:D-9491', 'spec', 'VELDO-9491', ['VELDO-9491'])
+            settle('decision:D-9491')
+            reshape('decision:D-9491', schema=['veldo.governing_decision/v1'])
+            decision('decision:D-9492', 'spec', 'VELDO-9492', ['VELDO-9492'])
+            reshape('decision:D-9492', schema=7)
+            decision('decision:D-9493', 'contract', 'CONTRACT-2', ['VELDO-9493'],
+                     scope=dict(operation='proceed', target='CONTRACT-2', parameters={}))
+            settle('decision:D-9493')
+            reshape('decision:D-9493', obligations='tripwire')
+            order_seen = swept(['VELDO-9491', 'VELDO-9492', 'VELDO-9493'])
+            observed['invalid_order'] = order_seen[1] if order_seen[0] == 'raised' else {
+                sid: o['stations']['build'] for sid, o in order_seen[1].items()}
+            check('decisions/invalid-before-unsupported',
+                   order_seen[0] == 'ok'
+                   and verdict(order_seen[1]['VELDO-9491'], {'invalid_input:decision:D-9491/schema'})
+                   and verdict(order_seen[1]['VELDO-9492'], {'invalid_input:decision:D-9492/schema'})
+                   and verdict(order_seen[1]['VELDO-9493'], {'invalid_input:decision:D-9493/obligations'}))
+
         with region('decisions/production-gate-verifies'):
             # The production construction: an enrolled workspace's Gate verifies settlements against
             # the settlement signers the HOST trusts (outside the workspace); a host naming none trusts no
