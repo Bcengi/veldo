@@ -113,9 +113,11 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC1 full transition/channel matrix, AC2 release-
-contribution/replay qualification, AC3 cross-project/restart cases; retain objective
-acceptance and evidence-based satisfaction. Removed recovery, durability and failure-matrix
-obligations belong to Release 2; additional host/channel/version and full distribution breadth
-belongs to Release 4. Normal function and the checks stated above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 full
+transition/channel and AC2 release-contribution breadth moved to Releases 3/4; AC2 replay and
+AC3 restart moved to Release 2; cross-project depth moved to Release 3. Exact objective
+acceptance and evidence-based satisfaction remain. The criteria, declared evidence universe,
+Context and Notes above now carry only the retained function. No specification status or
+historical proof was changed.

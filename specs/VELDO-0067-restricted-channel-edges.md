@@ -118,11 +118,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC3 rotation/restart/cross-channel failover matrix and
-plural-channel AC1/AC2 coverage; retain one enrolled restricted Telegram edge and current
-authorization. Jira-specific intake/decision/projection work is dropped under 28857/28859;
-additional non-Jira channel breadth is Release 4. UI/API support is supplied by 0130/0131
-against the retained settlement contract. Removed recovery, durability and failure-matrix
-obligations belong to Release 2; additional host/channel/version and full distribution breadth
-belongs to Release 4. Normal function and the checks stated above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC3
+rotation/restart/failover moved to Release 2; AC1/AC2 plural-channel coverage moved to Release
+4. Jira-specific enrollment is dropped. Restricted Telegram edge and current authorization
+remain. The criteria, declared evidence universe, Context and Notes above now carry only the
+retained function. No specification status or historical proof was changed.

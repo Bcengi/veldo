@@ -126,10 +126,11 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC3 recovery, AC1 multiple-version/host matrix and
-recovery query, AC4 exhaustive escape/resource/quarantine qualification; retain one real
-Claude configuration, artifact handling, credentials, stop, and caps. Removed recovery,
-durability and failure-matrix obligations belong to Release 2; additional host/channel/version
-and full distribution breadth belongs to Release 4. Normal function and the checks stated
-above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC3 recovery
+and AC4 exhaustive escape/resource/quarantine qualification moved to Release 2; AC1 extra-
+version/host matrix moved to Release 4, except Mac retained by 28852. One real configuration,
+artifacts, custody, stop and caps remain. The criteria, declared evidence universe, Context
+and Notes above now carry only the retained function. No specification status or historical
+proof was changed.

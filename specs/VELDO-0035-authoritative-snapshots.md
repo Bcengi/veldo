@@ -110,7 +110,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. AC1 exhaustive concurrent complete-read-set qualification
-and AC3 crash-safe pointer switching, interrupted publication and recovery move to Release 2;
-accepted snapshots and ordinary materialization remain.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 exhaustive
+concurrent read-set matrix and AC3 crash-safe snapshot pointer switching/recovery moved to
+Release 2. Accepted snapshots and ordinary materialization remain. The criteria, declared
+evidence universe, Context and Notes above now carry only the retained function. No
+specification status or historical proof was changed.

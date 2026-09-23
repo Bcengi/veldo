@@ -155,3 +155,12 @@ New board workflows, live ingress enabling, general project intake, and replacem
 ## Notes
 
 D1/D2 block accepted projection and settlement history; D3/D4 remain inherited C prerequisites. AC1 owns the reproduced projection comment key defect. Reuse W50 receipts, W51 attribution, and W53 settlement rather than implementing tracker-specific authority. Verify the actual PLAN-0016 filename before ready and retain original decisions as historical provenance while amending superseded instructions. All listed tracker/reconcile modules missing from engine require canonical copies, explicit W30 inventory and byte-identical pack coverage, not repository-only tests. Any workflow or policy mutation requires W58 activation qualification and its scoped approval; this footprint grants no board administration. Save canonical pages, rendered revised bytes, applied mutation diffs and named failures in secret-safe evidence.
+
+## Revision 3 disposition
+
+2026-09-22, owner Telegram 28857 and 28859: this Jira-specific factory channel work is
+dropped. W57 remains in PLAN-0019's Release 4 allocation solely to preserve the existing work
+identity and historical draft; it is not scheduled implementation, an activation prerequisite
+or a promise to build Jira intake later. New work arrives only through Telegram or the
+authenticated API. Agents may fetch referenced tickets using exactly their configured tools.
+The historical criteria above are not a Release 1 test universe. Status remains unchanged.

@@ -91,7 +91,7 @@ acceptance_criteria:
   - id: AC4
     text: >
       Claim: Release 1 completion is evidenced by the complete installed journey and exact immutable
-      candidate observations. Set and completeness: Compare RJ1-RJ3 declarations to executable
+      candidate observations. Set and completeness: Compare RJ1-RJ3 and RJ11-RJ12 declarations to executable
       registrations and actual receipts for the relevant candidate/environment. Remove one required
       journey result, required runtime asset or post-gate tree equality observation; each must
       refuse release acceptance. API/UI and Telegram receipts identify the same authoritative
@@ -128,7 +128,7 @@ This is the Release 1 stage 6 full-journey qualification. Declare the reference 
 distribution and both actual host profiles before ready. Real Claude Code/Codex and real
 Telegram plus authenticated UI/API are required; deterministic model fixtures may add
 repeatable negative controls but cannot certify live behavior. No fake LoopSteps, LandOps,
-store, signer, policy or gate substitutes for the installed integration. Register RJ1-RJ3 and
+store, signer, policy or gate substitutes for the installed integration. Register RJ1-RJ3 and RJ11-RJ12 and
 retain their actual candidate/environment-bound observations; RJ4 recovery is owned by Release
 2/0097.
 
@@ -142,10 +142,11 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 6: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop existing AC4 lost-ack/checkpoint recovery and AC3
-fencing/contention/resource matrices; extend AC1 to the full Telegram -> PM -> workers ->
-review -> land -> Telegram journey, retaining AC2's meaningful rejection checks. Removed
-recovery, durability and failure-matrix obligations belong to Release 2; additional
-host/channel/version and full distribution breadth belongs to Release 4. Normal function and
-the checks stated above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 6: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC4 lost-
+ack/checkpoint recovery and AC3 fencing/contention/resource matrices moved to Release 2. AC1
+now spans Telegram/API moved to PM moved to owner admission moved to Linux/Mac workers moved
+to proof/gate/review moved to exact land moved to Telegram/UI; meaningful AC2 refusals remain.
+The criteria, declared evidence universe, Context and Notes above now carry only the retained
+function. No specification status or historical proof was changed.

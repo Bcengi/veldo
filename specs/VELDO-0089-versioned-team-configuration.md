@@ -115,9 +115,11 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC2 amendment races/multiple channels and AC3 mid-cycle
-change/every-review-tier matrix; keep versioned roles, expertise, budgets, and applicable
-independent-review policy. Removed recovery, durability and failure-matrix obligations belong
-to Release 2; additional host/channel/version and full distribution breadth belongs to Release
-4. Normal function and the checks stated above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC2 amendment
+races and AC3 mid-cycle matrix moved to Release 2; extra channels moved to Release 4; every-
+review-tier/adversarial decision-review depth moved to Release 3. Versioned roles, expertise,
+budgets and applicable 0049 engineering review remain. The criteria, declared evidence
+universe, Context and Notes above now carry only the retained function. No specification
+status or historical proof was changed.

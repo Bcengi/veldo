@@ -121,10 +121,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC1 crash recovery, AC2 lost-send/reconnect recovery,
-and AC3 uncertain-effect reconciliation/automatic recovery; retain ordinary stop, Telegram
-notification, and authorized resumption after a clean decision stop. Removed recovery,
-durability and failure-matrix obligations belong to Release 2; additional host/channel/version
-and full distribution breadth belongs to Release 4. Normal function and the checks stated
-above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 crash, AC2
+lost-send/reconnect and AC3 uncertain-effect/automatic recovery moved to Release 2. Ordinary
+stop, Telegram notice and authorized clean decision-stop resumption remain. The criteria,
+declared evidence universe, Context and Notes above now carry only the retained function. No
+specification status or historical proof was changed.

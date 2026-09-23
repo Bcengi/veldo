@@ -120,7 +120,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
-recovery/robustness to Release 2. AC1 commit-barrier crashes and AC2/AC3 concurrent/restart
-qualification move to Release 2; expiry, reopening, tripwire and reverse invalidation
-machinery moves to Release 3. Normal exact settlement-to-dependency binding remains.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 commit-
+barrier crashes and AC2/AC3 concurrent/restart matrices moved to Release 2; expiry, reopening,
+tripwires and reverse invalidation moved to Release 3. Normal settlement updates its exact
+governing binding. The criteria, declared evidence universe, Context and Notes above now carry
+only the retained function. No specification status or historical proof was changed.

@@ -7,7 +7,7 @@ status: ready
 revision: 3
 owner: dmitry
 approved_by: dmitry
-approved_at: 2026-09-17
+approved_at: 2026-09-22
 risk: critical
 
 outcomes:
@@ -1027,6 +1027,20 @@ regression:
       release: 2
       profiles: [per_spec, release]
       suite: PLAN-0019 RJ10 (planned; implementation must register executable checks)
+    - id: RJ11
+      title: Release 1 Mac relay commands reach Linux authority and iOS work never falls back to Linux
+      activation: {when: after:VELDO-0125}
+      owner_spec: VELDO-0125
+      release: 1
+      profiles: [per_spec, release]
+      suite: PLAN-0019 Mac routing (planned; implementation must register executable checks)
+    - id: RJ12
+      title: Release 1 authenticated UI message and decision flow on phone and desktop with workflow edits that never execute
+      activation: {when: after:VELDO-0131}
+      owner_spec: VELDO-0131
+      release: 1
+      profiles: [per_spec, release]
+      suite: PLAN-0019 UI and API (planned; implementation must register executable checks)
 
 release:
   milestone: Dark Factory roadmap - Release 1 running journey, then recovery, governance and scale
@@ -1107,7 +1121,7 @@ and 28859, not scheduled to be built in that release. No later release silently 
 The YAML `release` and `stage` annotations and the table below assign every existing and new work item.
 The roadmap's continuous-release flags prevent all four releases becoming a single MVP barrier. They do
 not waive a release's own work or regression: Release 1 requires every assigned functional item
-and RJ1-RJ3; Release 2 requires its work and RJ4-RJ7/RJ10; Release 3 requires its governance evidence;
+and RJ1-RJ3/RJ11-RJ12; Release 2 requires its work and RJ4-RJ7/RJ10; Release 3 requires its governance evidence;
 Release 4 requires its active work and RJ8-RJ9. The retained dropped W57 is not an activation gate.
 These are writing-only allocations; no specification status or existing evidence is re-certified.
 

@@ -107,10 +107,11 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC2 checkpoint recovery and AC3 recovery-with-runtime-
-removed qualification; narrow AC1 replacement equivalence testing while retaining the
-replaceable interface and actual LangGraph execution. Removed recovery, durability and
-failure-matrix obligations belong to Release 2; additional host/channel/version and full
-distribution breadth belongs to Release 4. Normal function and the checks stated above remain
-Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC2 checkpoint
+recovery and AC3 recovery without runtime moved to Release 2; broad AC1 replacement-
+equivalence matrix moved to Release 2. Actual nonpersistent LangGraph and replaceable
+interface remain; 0044 is not an MVP dependency. The criteria, declared evidence universe,
+Context and Notes above now carry only the retained function. No specification status or
+historical proof was changed.

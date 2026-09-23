@@ -121,10 +121,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC1 crash recovery and broad allocation matrix, AC3
-restart/reordering qualification, AC4 durable quarantine recovery; keep caps, ordinary
-accounting, and conservative treatment of unknown charges. Removed recovery, durability and
-failure-matrix obligations belong to Release 2; additional host/channel/version and full
-distribution breadth belongs to Release 4. Normal function and the checks stated above remain
-Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 crash/broad
+intersecting allocation matrix, AC3 restart/reordering and AC4 durable quarantine recovery
+moved to Release 2. Caps, deduplicated accounting and unknown exposure remain. The criteria,
+declared evidence universe, Context and Notes above now carry only the retained function. No
+specification status or historical proof was changed.

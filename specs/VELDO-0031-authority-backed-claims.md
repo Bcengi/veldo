@@ -110,9 +110,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC2 takeover fencing, AC3 reclaim/clock/receiver
-matrix, and AC1 lost-reply crash proof; keep one owner and coherent claim/unit activation.
-Removed recovery, durability and failure-matrix obligations belong to Release 2; additional
-host/channel/version and full distribution breadth belongs to Release 4. Normal function and
-the checks stated above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 lost-reply
+crash proof, AC2 takeover fencing and AC3 reclaim/clock/receiver matrix moved to Release 2.
+Current-holder checks and uncertainty stop remain. The criteria, declared evidence universe,
+Context and Notes above now carry only the retained function. No specification status or
+historical proof was changed.

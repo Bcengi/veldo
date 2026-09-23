@@ -120,9 +120,11 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC2 automatic recovery, plural-profile AC1
-qualification, and AC3/AC4 remote-relay cases; retain explicit install/start/stop, one local
-instance, and honest unavailable behavior. Removed recovery, durability and failure-matrix
-obligations belong to Release 2; additional host/channel/version and full distribution breadth
-belongs to Release 4. Normal function and the checks stated above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC2 automatic
+recovery moved to Release 2; AC1 plural-profile and AC3/AC4 remote inspection/optional legacy
+status listener breadth moved to Release 4. Local exclusion and actual IPC-to-SQLite
+application are retained now. The criteria, declared evidence universe, Context and Notes
+above now carry only the retained function. No specification status or historical proof was
+changed.

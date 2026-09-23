@@ -113,7 +113,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. AC2 expiry, supersession and reverse invalidation plus AC3
-tripwire/adversarial-review depth move to Release 3; crash and restart matrices move to
-Release 2. AC1 exact normal binding consumption remains.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC2
+expiry/reverse invalidation and AC3 tripwire/adversarial decision-review depth moved to
+Release 3; crash/restart matrix moved to Release 2. AC1 normal exact binding consumption
+remains. The criteria, declared evidence universe, Context and Notes above now carry only the
+retained function. No specification status or historical proof was changed.

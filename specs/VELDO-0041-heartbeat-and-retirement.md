@@ -110,10 +110,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: owner Telegram 28848 moves
-recovery/robustness to Release 2. Drop AC1 leadership fencing/timing qualification, AC2 all-
-profile and stopped-orchestrator matrix, AC3 crash-safe retirement; retain ordinary liveness,
-stop, exit, and release after actual worker termination. Removed recovery, durability and
-failure-matrix obligations belong to Release 2; additional host/channel/version and full
-distribution breadth belongs to Release 4. Normal function and the checks stated above remain
-Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 1: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC1 leadership
+fencing/timing, AC2 all-profile/stopped-orchestrator matrix and AC3 crash-safe retirement
+moved to Release 2; broader hosts moved to Release 4. Normal liveness/stop/exit/retirement
+remain. The criteria, declared evidence universe, Context and Notes above now carry only the
+retained function. No specification status or historical proof was changed.

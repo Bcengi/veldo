@@ -120,12 +120,10 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
 
-2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: owner Telegram 28848 moves
-recovery/robustness to Release 2. Narrow AC1 to Telegram; drop AC3 cross-
-channel/concurrent/lost-ack qualification while retaining exact authorization material, owner
-ruling, and separate admission/priority decisions. Jira-specific intake/decision/projection
-work is dropped under 28857/28859; additional non-Jira channel breadth is Release 4. UI/API
-support is supplied by 0130/0131 against the retained settlement contract. Removed recovery,
-durability and failure-matrix obligations belong to Release 2; additional host/channel/version
-and full distribution breadth belongs to Release 4. Normal function and the checks stated
-above remain Release 1.
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
+Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
+Telegram/API/UI scope and configured capabilities governed by 28857/28859. Old AC3
+concurrent/lost-ack qualification moved to Release 2; extra-channel coverage moved to Release
+4. Jira-specific grooming is dropped. Exact material, owner ruling and distinct
+admission/priority remain. The criteria, declared evidence universe, Context and Notes above
+now carry only the retained function. No specification status or historical proof was changed.
