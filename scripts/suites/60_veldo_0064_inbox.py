@@ -4,12 +4,15 @@ Criterion rows collect every observation, including negative requests. The claim
 through the real claim receiver, the waiting worker is a real child process speaking signed
 JSON lines, Telegram sends go over real HTTP to a loopback Bot API endpoint that answers with
 the platform's sendMessage shape, and every journal record carries a real OpenSSH signature.
-Mutation workers replace one production module copy below, never assertions or fixtures.
+Mutation workers replace one production module copy below, never assertions or fixtures. The
+claim organ loads its sibling organs from its own directory, so the suite copies the installed
+organs into one directory and then the claim organ from its own anchor.
 """
 import http.server as _v64_http
 import importlib.util as _v64_import
 import json as _v64_json
 from pathlib import Path as _v64_Path
+import shutil as _v64_shutil
 import subprocess as _v64_sp
 import sys as _v64_sys
 import tempfile as _v64_temp
@@ -85,7 +88,7 @@ class _V64BotApi(_v64_http.BaseHTTPRequestHandler):
 def _v64_checks(base):
     rows = {name: [] for name in ('install/assets', 'inbox/states-and-authority', 'inbox/waiting-resources',
                                   'projection/correlation', 'projection/send-outcomes', 'inbox/visible-invalid',
-                                  'inbox/unauthorized-admission')}
+                                  'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -99,7 +102,12 @@ def _v64_checks(base):
         check('install/assets', rel + ' laid by the installer', (base / 'installed' / rel).read_bytes() == (ROOT / rel).read_bytes())
 
     contract = _v64_load('v64_contract', ROOT / '.veldo' / 'entity_contract.py')
-    claims = _v64_load('v64_claims', ROOT / '.veldo' / 'control_claim.py')
+    organs = base / 'organs'
+    organs.mkdir()
+    for source in sorted((ROOT / '.veldo').glob('*.py')):
+        _v64_shutil.copyfile(source, organs / source.name)
+    _v64_shutil.copyfile(ROOT / ".veldo" / "control_claim.py", organs / 'control_claim.py')
+    claims = _v64_load('v64_claims', organs / 'control_claim.py')
     S, CM, AC = claims.S, claims.CM, claims.AC
     I = _v64_load('v64_inbox', ROOT / ".veldo" / "control_assignment.py")
     P = _v64_load('v64_projection', ROOT / ".veldo" / "control_channel_projection.py")
@@ -218,6 +226,39 @@ def _v64_checks(base):
     check('inbox/waiting-resources', 'claim release and assignment committed in one journal record',
           len(replies) == 2 and set(replies[1]['receipt']['after_versions']) >= {w1, cid}
           and opened.get('state') == 'OFFERED')
+
+    # --- the parked unit is not claimable; the blocked work resumes only through admission ---------
+    parked = 'inbox/parked-unit-unclaimable'
+
+    def claim_packet(who, unit, command_id, operation='claim'):
+        body = dict(ids, operation=operation, unit_id=unit, principal=who, command_id=command_id,
+                    nonce=command_id + '-n', generation=0, capabilities=[])
+        return {'command': body, 'signature': sign_as(who, S.canonical_bytes(body))}
+
+    check(parked, 'the released claim names the assignment the unit waits for', claim_now.get('parked_on') == w1)
+    reclaim = receiver.apply(claim_packet('worker-a', 'unit-1', 'c-reclaim-1'))
+    check(parked, 'a claim on the parked unit is refused as parked', reclaim == {'ok': False, 'reason': 'parked'})
+    inspected = receiver.apply(claim_packet('worker-a', 'unit-1', 'c-inspect-1', 'inspect'))
+    check(parked, 'inspection reports the unit parked', inspected.get('ok') is False and inspected.get('reason') == 'parked')
+    early = command('worker-a', 'resume', 'W-1', request_version=1, capabilities=[])
+    check(parked, 'resume before the owner answers is refused as not answered', early == {'ok': False, 'reason': 'not_answered'})
+    check(parked, 'the claim is unchanged by every refusal', (entity(cid) or {}).get('data') == claim_now)
+    w1_answer = command('owner', 'answer', 'W-1', request_version=1, ruling='accept')
+    check(parked, 'control: the owner answer admits the blocked work',
+          w1_answer.get('ok') is True and inbox.admit(w1)['admitted'] is True)
+    person_resume = command('stranger', 'resume', 'W-1', request_version=1, capabilities=[])
+    check(parked, 'a person cannot take the claim by resuming', person_resume.get('ok') is False)
+    plain = receiver.apply(claim_packet('worker-a', 'unit-1', 'c-reclaim-2'))
+    check(parked, 'admission does not reopen a plain claim', plain == {'ok': False, 'reason': 'parked'})
+    resumed = command('worker-a', 'resume', 'W-1', request_version=1, capabilities=[])
+    taken = (entity(cid) or {}).get('data', {})
+    check(parked, 'resume after admission takes the claim again at the next generation',
+          resumed.get('ok') is True and taken.get('state') == 'owned' and taken.get('holder') == 'worker-a'
+          and taken.get('generation') == claim_now.get('generation', 0) + 1 and taken.get('resumed_from') == w1
+          and not taken.get('parked_on'))
+    twice = command('worker-a', 'resume', 'W-1', request_version=1, capabilities=[])
+    check(parked, 'a second resume is refused while the claim is owned', twice.get('ok') is False)
+
     # Additive control: the check sees a held claim when one exists.
     claim2 = receiver.apply({'command': dict(ids, operation='claim', unit_id='unit-2', principal='worker-a',
                                              command_id='c-claim-2', nonce='n-claim-2', generation=0, capabilities=[]),

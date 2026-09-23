@@ -10,10 +10,14 @@ writes. Telegram and the later authenticated UI/API are projections of this inbo
 they never become a second record.
 
 WAITING HOLDS NOTHING. Opening a person assignment stops its requester. When the requester holds
-the claim on the execution unit the assignment blocks, the SAME transaction releases that claim
-through the claim organ's own release transition, and the reply tells the requester to exit. The
-answer arrives later on its own, from the owner, with no model process or claim lease waiting
-for it. `waiting_resources` reports any claim still held by a pending assignment's unit.
+the claim on the execution unit the assignment blocks, the SAME transaction parks that claim
+through the claim organ's own `park` transition (a release that records the assignment the unit
+waits for), and the reply tells the requester to exit. The answer arrives later on its own, from
+the owner, with no model process or claim lease waiting for it. A parked unit is not claimable:
+the blocked work resumes only through `resume`, which takes the claim again through the claim
+organ's `resume` transition in the same store transaction that binds the versions of every input
+`admit` read, and only while `admit` admits. `waiting_resources` reports any claim still held
+by a pending assignment's unit.
 
 VIEWS ARE NOT AUTHORITY. `index` and `brief` describe the current stored version and show an
 invalid record as visibly invalid, never skipped and never presented as content. `admit` is the
@@ -42,7 +46,7 @@ from datetime import datetime
 SCHEMA = 'veldo.assignment/v1'
 ENTITY_KIND = 'assignment'
 OPERATION = 'assignment_operation'
-OPERATIONS = ('open', 'revise', 'answer', 'decline', 'cancel')
+OPERATIONS = ('open', 'revise', 'answer', 'decline', 'cancel', 'resume')
 COORDINATES = ('domain_uuid', 'repository_uuid', 'store_uuid')
 # Enabled person-required assignment kinds and the assertion kind an answer to each carries
 # (authority_contract.ASSERTION_KINDS).
@@ -272,7 +276,7 @@ class Inbox:
             params['alias'] = command['alias']
             unit = content.get('unit_id')
             if unit is not None:
-                released = self._claim_to_release(entities, unit, principal, command.get('claim_generation'), params)
+                released = self._claim_to_park(entities, unit, principal, command.get('claim_generation'), params, aid)
                 touched.update(params.pop('claim_inputs'))
         else:
             if current is None or current['kind'] != ENTITY_KIND:
@@ -286,6 +290,8 @@ class Inbox:
             if op in ('answer', 'decline'):
                 self._active(state, principal, now, ('person',), data['scope'])
                 params['ruling'] = command.get('ruling')
+            elif op == 'resume':
+                touched.update(self._resume(state, entities, current, principal, now, command, params))
             else:
                 entry = self._active(state, principal, now, self.AC.BOUNDARIES['proposal_commit'], data['scope'])
                 params['project_owner'] = 'project_owner' in (entry.get('roles') or [])
@@ -307,7 +313,7 @@ class Inbox:
         return {'ok': True, 'reason': op, 'assignment_id': aid, 'assignment': record, 'receipt': receipt,
                 'released_claim': released, 'stop_requester': op == 'open'}
 
-    def _claim_to_release(self, entities, unit, principal, generation, params):
+    def _claim_to_park(self, entities, unit, principal, generation, params, aid):
         cid = self.claims.claim_id(self.ids['repository_uuid'], unit)
         claim = entities.get(cid, {}).get('data')
         u = entities.get(unit, {})
@@ -321,10 +327,37 @@ class Inbox:
             raise Refused('not_owner', 'the claim on this unit is held by another principal')
         if type(generation) is not int:
             raise Refused('invalid_input', 'releasing a claim names its generation')
-        params['release'] = dict(action='release', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
+        params['release'] = dict(action='park', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
                                  holder=principal, generation=generation, capabilities=[],
-                                 repository_uuid=self.ids['repository_uuid'])
+                                 repository_uuid=self.ids['repository_uuid'], parked_on=aid)
         return cid
+
+    def _resume(self, state, entities, current, principal, now, command, params):
+        """The inputs a resume binds: the claim principal's eligibility, every input admission
+        read, and the parked claim, unit and backlog. Admission is decided here and its inputs
+        are pinned by version, so the transaction commits only against what was admitted."""
+        repository = self.ids['repository_uuid']
+        self._active(state, principal, now, self.AC.BOUNDARIES['claim'], repository)
+        capabilities = command.get('capabilities', [])
+        if not isinstance(capabilities, list) or not all(isinstance(c, str) for c in capabilities):
+            raise Refused('invalid_input', 'capabilities is a list of names')
+        item = self.read(params['assignment_id'])
+        if item is None or item['version'] != current['version']:
+            raise Refused('stale_subject', 'the assignment changed while it was read')
+        reason, inputs = self._admission(item)
+        if reason != 'admitted':
+            raise Refused(reason, 'the assignment does not admit the blocked work')
+        unit = item['data'].get('unit_id')
+        u = entities.get(unit, {}) if unit else {}
+        backlog = u.get('data', {}).get('backlog_item_uuid')
+        if (u.get('kind') != 'execution_unit' or u['data'].get('repository_uuid') != repository
+                or entities.get(backlog, {}).get('kind') != 'backlog_item'):
+            raise Refused('invalid_input', 'the assignment blocks no execution unit of this repository')
+        cid = self.claims.claim_id(repository, unit)
+        params['resume'] = dict(action='resume', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
+                                holder=principal, generation=0, capabilities=capabilities,
+                                repository_uuid=repository, parked_on=params['assignment_id'])
+        return set(inputs) | {unit, backlog, cid}
 
     def _transition(self, params, before):
         """The registered transaction: re-checks every precondition against the versions the
@@ -344,6 +377,10 @@ class Inbox:
                 changes.update(self.claims.transition(params['release'], before))
             return changes
         data = dict(before[aid]['data'])
+        if op == 'resume':
+            if data['request_version'] != params['request_version'] or data['state'] != 'SUBMITTED':
+                raise refused('stale_subject', 'the assignment no longer admits at this request version')
+            return self.claims.transition(params['resume'], before)
         if data['request_version'] != params['request_version'] or data['state'] not in PENDING:
             raise refused('stale_subject', 'the assignment is no longer pending at this request version')
         if op == 'answer':
@@ -461,26 +498,30 @@ class Inbox:
                 'content': content, 'watermark': item['watermark']}
 
     def _admission(self, item):
+        """(reason, inputs): the admission answer and the entity ids it read, so a command that
+        acts on the answer can bind their versions."""
+        inputs = {item['id'], self.membership.VERSIONS_ENTITY}
         if item['problems']:
-            return 'invalid_record'
+            return 'invalid_record', inputs
         data = item['data']
         if data['state'] not in ANSWERED:
-            return 'not_answered'
+            return 'not_answered', inputs
         if data['state'] != 'SUBMITTED':
-            return 'missing_evidence'
+            return 'missing_evidence', inputs
         state = self.membership.authority_state(self.store, self.conn)
+        inputs.add(data['owner'])
         owner = self.AC.membership_entry(state['membership'], data['owner'])
         active, _ = self.AC.active_member(owner, self.clock())
         if not active or owner['principal_type'] != 'person' \
                 or not self.membership.scope_covers(owner.get('scope'), data['scope']):
-            return 'missing_authority'
+            return 'missing_authority', inputs
         row = self.conn.execute('SELECT principal, transition FROM journal WHERE command_id=?',
                                 (data['answer']['command_id'],)).fetchone()
         written = json.loads(row[1]).get(item['id'], {}) if row else {}
         if row is None or row[0] != data['owner'] or written.get('version') != item['version'] \
                 or written.get('digest') != item['digest']:
-            return 'missing_authority'
-        return 'admitted'
+            return 'missing_authority', inputs
+        return 'admitted', inputs
 
     def admit(self, assignment):
         """Whether the work this assignment blocks may proceed, from current authority only."""
@@ -489,7 +530,7 @@ class Inbox:
             reason = 'missing_authority'
             item = {'id': assignment, 'version': 0}
         else:
-            reason = self._admission(item)
+            reason = self._admission(item)[0]
         admitted = reason == 'admitted'
         self.counts['accepted' if admitted else 'refused'] += 1
         self.observations.append(dict(self.ids, operation='admit', assignment_id=assignment,

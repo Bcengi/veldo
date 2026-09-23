@@ -580,13 +580,13 @@ def cases():
     inbox('projection-configured-chat', 'control_channel_projection.py',
           "chat_id=sent['chat_id']", "chat_id=self.edge.chat", 'projection/correlation')
     inbox('inbox-admit-displayed-assigned-status', 'control_assignment.py',
-          "    def _admission(self, item):\n        if item['problems']:",
-          "    def _admission(self, item):\n        if item['raw'].get('display_status') == 'assigned':\n"
-          "            return 'admitted'\n        if item['problems']:",
+          "        if item['problems']:\n            return 'invalid_record', inputs\n",
+          "        if item['raw'].get('display_status') == 'assigned':\n            return 'admitted', inputs\n"
+          "        if item['problems']:\n            return 'invalid_record', inputs\n",
           'inbox/unauthorized-admission')
     inbox('inbox-admit-without-journal-authority', 'control_assignment.py',
           "        if row is None or row[0] != data['owner'] or written.get('version') != item['version'] \\\n"
-          "                or written.get('digest') != item['digest']:\n            return 'missing_authority'\n",
+          "                or written.get('digest') != item['digest']:\n            return 'missing_authority', inputs\n",
           "", 'inbox/unauthorized-admission')
     inbox('inbox-admit-ignores-owner-membership', 'control_assignment.py',
           "        if not active or owner['principal_type'] != 'person' \\",
@@ -598,6 +598,15 @@ def cases():
           "        if raw is not None and self.store.digest_of({'kind': kind, 'data': raw, 'version': version}) != digest:\n"
           "            problems.append('stored data does not match its committed digest')\n",
           "", 'inbox/visible-invalid')
+    # VELDO-0064 review r1: a unit parked on a pending person assignment is not claimable.
+    inbox('inbox-park-as-plain-release', 'control_assignment.py',
+          "params['release'] = dict(action='park',", "params['release'] = dict(action='release',",
+          'inbox/parked-unit-unclaimable')
+    inbox('claims-claim-ignores-park', 'control_claim.py',
+          "        if op == 'claim' and parked:", "        if False and parked:", 'inbox/parked-unit-unclaimable')
+    inbox('inbox-resume-without-admission', 'control_assignment.py',
+          "        if reason != 'admitted':\n            raise Refused(reason, 'the assignment does not admit the blocked work')\n",
+          "", 'inbox/parked-unit-unclaimable')
     return result
 
 

@@ -29,6 +29,9 @@ footprint:
   - "engine/.veldo/control_channel_projection*.py"
   - ".veldo/control_channel_projection*.py"
   - "packs/*/.veldo/control_channel_projection*.py"
+  - "engine/.veldo/control_claim.py"
+  - ".veldo/control_claim.py"
+  - "packs/*/.veldo/control_claim.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -130,3 +133,10 @@ changed.
 2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
 declared falsifiers can be registered as finding 64 of the existing teeth mutation driver. The
 criteria, status and risk are unchanged.
+
+2026-09-23, review r1: the claim organ (`control_claim.py`, VELDO-0031) was added to the
+footprint because the parked state is part of this item's contract: a unit whose claim was given
+up for a pending person assignment must not be claimable until that assignment admits the
+blocked work. The change is made through the claim organ's own transition, as a `park` release
+and a `resume` claim that only the inbox's store transaction reaches, and the VELDO-0031 suites
+and finding-31 mutations stay green. The criteria, status and risk are unchanged.

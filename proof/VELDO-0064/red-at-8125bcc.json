@@ -1,0 +1,70 @@
+{
+ "commit": "8125bcc16ebc70f67907cfe8a621ddbabc03a119",
+ "details": [
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: the released claim names the assignment the unit waits for",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: a claim on the parked unit is refused as parked",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: inspection reports the unit parked",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: resume before the owner answers is refused as not answered",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: the claim is unchanged by every refusal",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: admission does not reopen a plain claim",
+  "VELDO-0064 inbox/parked-unit-unclaimable detail: resume after admission takes the claim again at the next generation"
+ ],
+ "failed_rows": [
+  "VELDO-0064 inbox/parked-unit-unclaimable"
+ ],
+ "modules": {
+  "control_assignment.py": {
+   "changed": [],
+   "sha256": "312e4a52f78baacab24dafbb4f981d43b3648276df61015fcf79fd766dd29b4d"
+  },
+  "control_channel_projection.py": {
+   "changed": [
+    "def __init__(self, base_url, token, chat=5550001, timeout=10):"
+   ],
+   "sha256": "0b30885e062f3f50ef00d2443715cc3ed25dbc64b2f4b8ed5ac5d7a17ccea2ff"
+  },
+  "control_claim.py": {
+   "changed": [],
+   "sha256": "ee4a69129b506c6a57f2d461c005fe7871381ec20555c6e8c25bceec046c354a"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0064 install/assets",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/states-and-authority",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/waiting-resources",
+   true
+  ],
+  [
+   "VELDO-0064 projection/correlation",
+   true
+  ],
+  [
+   "VELDO-0064 projection/send-outcomes",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/visible-invalid",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/unauthorized-admission",
+   true
+  ],
+  [
+   "VELDO-0064 inbox/parked-unit-unclaimable",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.299,
+ "spec_id": "VELDO-0064",
+ "suite": "scripts/suites/60_veldo_0064_inbox.py"
+}

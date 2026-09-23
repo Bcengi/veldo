@@ -6,6 +6,14 @@ its backlog_item is PRIORITIZED or ACTIVE (the existing entity lifecycle). Provi
 Release never rewinds activation. It retains the generation, so a later explicit
 claim increments it. No stale or uncertain claim is automatically reclaimed.
 
+Parking (VELDO-0064). A holder that stops for a person assignment gives its claim up through
+`park`, the release transition that also records `parked_on`, the assignment the unit now waits
+for. A parked unit is not claimable: `claim` refuses it as `parked` and inspection reports
+`parked`. Only `resume`, naming the same assignment, takes it again, and it takes the same
+eligibility, capability and activation checks as a claim. Neither `park` nor `resume` is an IPC
+operation of the Receiver: the assignment inbox reaches them inside its own store transaction,
+after that assignment's admission, so no holder resumes blocked work on its own word.
+
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
 Protected use records acceptance at this receiver; it is not a landing permit and
@@ -49,7 +57,7 @@ def ownership(data, unit, backlog, action='inspect'):
     if not data:
         return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'
     if data.get('state') == 'released':
-        return 'unowned'
+        return 'parked' if data.get('parked_on') else 'unowned'
     if unit.get('state') not in ACTIVE_UNIT_STATES or backlog.get('state') != 'ACTIVE':
         return 'ownership_uncertain'
     if data.get('state') != 'owned' or not data.get('holder'):
@@ -76,9 +84,14 @@ def transition(params, before):
     if status in ('unanswerable', 'ownership_uncertain'):
         raise S.StoreRefused(status, 'ownership cannot be established; stop without takeover')
     op, holder = params['action'], params['holder']
-    if op == 'claim':
+    if op in ('claim', 'resume'):
         if status == 'owned':
             raise S.StoreRefused('claimed', 'an owner already holds this unit')
+        parked = current.get('parked_on') if status == 'parked' else None
+        if op == 'claim' and parked:
+            raise S.StoreRefused('parked', 'the unit waits for a person assignment; it resumes only through its admission')
+        if op == 'resume' and (not parked or parked != params.get('parked_on')):
+            raise S.StoreRefused('stale_subject', 'resume names the assignment the unit is parked on')
         if (u.get('state') != 'READY' and not (u.get('state') == 'CLAIMED' and current.get('state') == 'released')
                 or b.get('state') not in ('PRIORITIZED', 'ACTIVE')):
             raise S.StoreRefused('not_admitted', 'unit must be READY and backlog PRIORITIZED or ACTIVE')
@@ -89,6 +102,8 @@ def transition(params, before):
         data = dict(unit_id=unit, backlog_item_uuid=backlog, repository_uuid=params['repository_uuid'],
                     holder=holder, generation=current.get('generation', 0) + 1,
                     state='owned', heartbeat_at=CL._now())
+        if op == 'resume':
+            data['resumed_from'] = parked
         return {cid: {'kind': 'claim', 'data': data},
                 unit: {'kind': 'execution_unit', 'data': dict(u, state='CLAIMED')},
                 backlog: {'kind': 'backlog_item', 'data': dict(b, state='ACTIVE')}}
@@ -98,8 +113,12 @@ def transition(params, before):
         raise S.StoreRefused('not_owner', 'operation requires the stored holder')
     if current.get('generation') != params['generation']:
         raise S.StoreRefused('stale_generation', 'operation requires the stored claim generation')
-    if op == 'release':
+    if op in ('release', 'park'):
         data = dict(current, state='released', holder=None)
+        if op == 'park':
+            if not isinstance(params.get('parked_on'), str) or not params['parked_on']:
+                raise S.StoreRefused('invalid_input', 'park names the assignment the unit waits for')
+            data['parked_on'] = params['parked_on']
     elif op == 'renew':
         data = dict(current, heartbeat_at=CL._now())
     else:
