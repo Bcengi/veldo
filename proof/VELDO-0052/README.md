@@ -66,6 +66,8 @@ reddened their target rows with their regions completing (`mutations.json`, each
 `enrolled-entry-stops`. Scenarios against the real store: absent admission, draft governing plan,
 unresolved dependency, unresolved decision, stale scope and valid. Launch counts: only the valid unit
 is offered, dispatched, cleared, built, reviewed and landed (`observations.json`, `launches`).
+`named-refusals` also pins the station-specific answers: a builder that does not hold the claim, a
+reviewer who is the producer, and a claim whose heartbeat is an hour ahead (`clock_uncertain`).
 - Declared falsifier `eligibility-review-bypass` (direct `_dispatch_review` without its decision):
   red `entry-dispatch-review` (blocked items launched the reviewer).
 - Second mutation `eligibility-review-as-provider-request` (review decided without the draft-plan,

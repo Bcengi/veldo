@@ -23,7 +23,7 @@
      "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
      "unit": 1
     },
-    "decision_id": "726c099e-5c24-4cc6-9e4c-4273906918da",
+    "decision_id": "a0f0d9b2-0afc-4399-b4d5-8da84e5cd38a",
     "domain_uuid": "domain-52",
     "follows": null,
     "operation": "selection",
@@ -54,7 +54,7 @@
      "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
      "unit": 1
     },
-    "decision_id": "f86079d2-5635-493b-b681-64c83faecee5",
+    "decision_id": "e9ca79d7-bac9-4a82-9965-e8930e11c32f",
     "domain_uuid": "domain-52",
     "follows": null,
     "operation": "claim",
@@ -207,9 +207,10 @@
     "VELDO-9105",
     "VELDO-9107",
     "VELDO-9109",
-    "VELDO-9111"
+    "VELDO-9111",
+    "VELDO-9160"
    ],
-   "refused": 123
+   "refused": 124
   },
   "launches": {
    "dispatch_builds": [
@@ -852,5 +853,5 @@
   ]
  ],
  "suite": "60_veldo_0052_eligibility.py",
- "suite_seconds": 0.664
+ "suite_seconds": 0.65
 }

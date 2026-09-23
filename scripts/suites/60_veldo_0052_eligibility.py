@@ -467,6 +467,14 @@ def _v52_suite():
             named_ok &= refusals_of('review', 'VELDO-9106', context={'holder': 'worker-a', 'reviewer': 'builder-a'}) \
                 == {'reviewer_not_independent'}
             named_ok &= refusals_of('build', 'VELDO-9106', context={'holder': 'worker-z'}) == {'missing_authority:claim'}
+            # Canonical clock uncertainty stays a named refusal, never contention or permission.
+            unit('VELDO-9160')
+            claim('VELDO-9160')
+            held = json.loads(writer.execute('SELECT data FROM entities WHERE id=?',
+                                             (CLM.claim_id(REPOSITORY, 'VELDO-9160'),)).fetchone()[0])
+            ahead = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time() + 3600))
+            put(CLM.claim_id(REPOSITORY, 'VELDO-9160'), 'claim', dict(held, heartbeat_at=ahead))
+            named_ok &= refusals_of('build', 'VELDO-9160', context={'holder': 'worker-a'}) == {'clock_uncertain'}
             observed['station_refusals'] = {
                 st: {sid: sorted(gate.decide(st, sid, context={'holder': 'worker-a', 'reviewer': 'reviewer-b'})['refusals'])
                      for sid in SCENARIOS} for st in EL.FLOOR_STATIONS}
