@@ -711,6 +711,8 @@ def cases():
                  "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
     presentation('render-omits-risk', "              'Risk: %s' % _words(record['risk_statement']),\n", "",
                  'presentation/receipt-binds-shown-content')
+    presentation('framing-signature-unchecked', "                or not self._framing_signed(request, fdata, state)):\n",
+                 "                or False):\n", 'presentation/receipt-binds-shown-content')
     presentation('published-at-from-clock', "published_at=platform['date'], platform_text=platform['text'],",
                  "published_at=int(time.time()), platform_text=platform['text'],",
                  'presentation/receipt-binds-shown-content')

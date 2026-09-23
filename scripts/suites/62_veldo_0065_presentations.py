@@ -307,6 +307,26 @@ def _v65_checks(base):
         altered.get('request', {})['brief'] = 'Another brief.'
         check(shown, 'a receipt with its request content changed does not verify',
               V.receipt_problems(altered, platform(altered.get('chat_id'), altered.get('message_id'))) != [])
+        # A framing the requester never signed frames nothing, whoever wrote it into the store.
+        command('pm', 'open', 'F-1', assignment=content())
+        f1 = I.assignment_id(ids['repository_uuid'], 'F-1')
+        genuine = entity(V.framing_id(d1))['data']
+        forged_body = dict(ids, operation='frame', alias='F-1', principal='pm', request_version=1,
+                           risk_statement='None: nothing can go wrong.', command_id='forged-1', nonce='forged-1')
+        forgeries = {'signed by another principal': dict(genuine, request_id=f1, command_id='forged-1',
+                                                         risk_statement='None: nothing can go wrong.',
+                                                         signed={'command': forged_body,
+                                                                 'signature': sign_as('stranger', S.canonical_bytes(forged_body))}),
+                     'carrying another request\'s signed framing': dict(genuine, request_id=f1,
+                                                                        risk_statement='None: nothing can go wrong.')}
+        for label, forged in forgeries.items():
+            asked = len(api['requests'])
+            fixture('presentation-framing:' + f1, 'presentation_framing', forged)
+            check(shown, 'a framing %s is not presented' % label,
+                  reason(presenter.present(f1)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+        check(shown, 'control: the requester\'s own framing is presented',
+              reason(frame('pm', 'F-1', 1, 'Low: a wrong choice costs one review cycle.')) == ('accepted', None)
+              and reason(presenter.present(f1)) == ('published', None))
         check(shown, 'metrics show nothing left to present', presenter.metrics()['pending'] == 0)
         check(shown, 'the token is never recorded', api['token'] not in _v65_json.dumps(S.materialized_state(conn)['entities'])
               and api['token'] not in _v65_json.dumps(presenter.observations))

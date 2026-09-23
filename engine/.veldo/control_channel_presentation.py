@@ -194,10 +194,11 @@ def render(record):
     return '\n'.join(line.rstrip() for line in lines)
 
 
-def receipt_problems(receipt, platform=None):
+def receipt_problems(receipt, platform=None, retrieved=True):
     """Why a receipt does not bind what the owner was shown, by name. Every bound field is recomputed
     from the receipt's own request snapshot; `platform` is what the platform returns for the
-    receipt's (chat, message): {'text', 'date'}, or None when it has nothing there."""
+    receipt's (chat, message): {'text', 'date'}, or None when it has nothing there. With
+    `retrieved` false the receipt is checked on its own, without the platform."""
     if not isinstance(receipt, dict):
         return ['a receipt is a mapping']
     missing = [f for f in INTENT_FIELDS + ('outcome', 'external_id', 'published_at') if f not in receipt]
@@ -229,6 +230,8 @@ def receipt_problems(receipt, platform=None):
         problems.append('external identity is not the platform chat and message')
     if receipt.get('platform_text') != receipt['rendered']:
         problems.append('the platform text is not the rendered bytes')
+    if not retrieved:
+        return problems
     if platform is None:
         problems.append('the platform holds no message at the recorded chat and message')
     else:
@@ -459,9 +462,10 @@ class Presenter:
         framing = self._entity(framing_id(request))
         versions[framing_id(request)] = framing['version'] if framing else 0
         fdata = framing['data'] if framing and framing['kind'] == FRAMING_KIND else {}
-        if fdata.get('request_version') != c['request_version'] or not _is_str(fdata.get('risk_statement')):
-            return 'missing_framing', None, versions
         state = self.membership.authority_state(self.store, self.conn)
+        if (fdata.get('request_version') != c['request_version'] or not _is_str(fdata.get('risk_statement'))
+                or not self._framing_signed(request, fdata, state)):
+            return 'missing_framing', None, versions
         entry = self.AC.membership_entry(state['membership'], c['owner'])
         active, _ = self.AC.active_member(entry, self.clock())
         if not active or entry['principal_type'] != 'person' or not self.membership.scope_covers(entry.get('scope'), c['scope']):
@@ -495,6 +499,31 @@ class Presenter:
         if current.get('request_version') != framing.get('request_version'):
             raise ValueError('the framing names another request version')
         return {fid: {'kind': FRAMING_KIND, 'data': framing}}
+
+    def _framing_signed(self, request, fdata, state):
+        """Whether a stored framing is the requester's own signed command for exactly this request,
+        version and risk statement, verified against the key that accepted it (a later rotation
+        strands nothing; a revocation dated at or before the framing refuses it). A framing written
+        any other way, such as a generic store write, frames nothing."""
+        signed = fdata.get('signed') if isinstance(fdata.get('signed'), dict) else {}
+        command, signature = signed.get('command'), signed.get('signature')
+        if not isinstance(command, dict) or not isinstance(signature, str) or not signature.isascii():
+            return False
+        principal, at = fdata.get('framed_by'), fdata.get('framed_at')
+        if (command.get('operation') != 'frame' or not _is_str(command.get('alias'))
+                or self.inbox_request(command['alias']) != request or command.get('principal') != principal
+                or command.get('request_version') != fdata.get('request_version')
+                or _words(command.get('risk_statement', '')) != fdata.get('risk_statement')
+                or command.get('command_id') != fdata.get('command_id')
+                or any(command.get(k) != v for k, v in self.ids.items()) or type(at) not in (int, float)):
+            return False
+        key = next((k for k in state['keyring'] if k.get('key_id') == fdata.get('key_id')
+                    and k.get('principal') == principal and _is_str(k.get('public_key'))), None)
+        if key is None or (key.get('effective_at') is not None and key['effective_at'] > at) \
+                or (key.get('revoked_at') is not None and key['revoked_at'] <= at):
+            return False
+        return self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), signature,
+                                         self.AC.allowed_signers_line(principal, key['public_key']), principal)[0]
 
     def frame(self, packet):
         """Record the risk statement the requester (or a project owner) signed for the current
@@ -535,7 +564,8 @@ class Presenter:
                         self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0)}
             framing = {'schema': FRAMING_SCHEMA, 'request_id': request, 'request_version': c['request_version'],
                        'risk_statement': _words(command['risk_statement']), 'framed_by': principal,
-                       'command_id': command['command_id'], 'signed': {'command': command, 'signature': packet['signature']}}
+                       'command_id': command['command_id'], 'key_id': key['key_id'], 'framed_at': now,
+                       'signed': {'command': command, 'signature': packet['signature']}}
             self.store.execute(self.conn, dict(command_id=command['command_id'], principal=principal,
                                                operation=FRAME_OPERATION,
                                                parameters=dict(framing_id=fid, request_id=request, framing=framing),
@@ -710,6 +740,8 @@ class Presenter:
             raise Refused('unknown_presentation', 'no receipt is the presentation this answer names')
         if receipt['outcome'] != 'published':
             raise Refused('unseen_presentation', 'the named presentation has no confirmed publication')
+        if receipt_problems(receipt, retrieved=False):
+            raise Refused('unknown_presentation', 'the named receipt does not bind its own shown bytes')
         ev = a.get('attribution') if isinstance(a.get('attribution'), dict) else {}
         if (not all(type(ev.get(f)) is int for f in ATTRIBUTION_FIELDS)
                 or ev['chat_id'] != receipt['chat_id'] or ev['reply_to_message_id'] != receipt['message_id']):
