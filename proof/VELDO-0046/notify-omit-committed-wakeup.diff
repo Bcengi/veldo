@@ -1,0 +1,5 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -113 +113 @@
+-                self.notify(self.hint(result))
++                pass  # defective: committed event never signals

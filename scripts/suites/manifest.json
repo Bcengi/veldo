@@ -572,6 +572,24 @@
    ],
    "regions": "Shared floor eligibility at every enabled entry, stale tickets, completion readers and pre-call caps",
    "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, a fresh reader process over real receipts and real VELDO-0036 reservation transactions."
+  },
+  {
+   "name": "58_veldo_0046_notifications",
+   "file": "58_veldo_0046_notifications.py",
+   "requires": [
+    "58_veldo_0046_notifications"
+   ],
+   "regions": "Release 1 committed notifications, idle signals and journal authority",
+   "requires_note": "Uses shared ROOT and expect only; real installer, SQLite, Ed25519 signatures and joined event-loop threads."
+  },
+  {
+   "name": "61_scope_covers",
+   "file": "61_scope_covers.py",
+   "requires": [
+    "61_scope_covers"
+   ],
+   "regions": "Scope coverage of a plain-string inner scope (repository id)",
+   "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
   }
  ]
 }

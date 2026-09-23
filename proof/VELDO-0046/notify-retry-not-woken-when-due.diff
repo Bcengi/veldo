@@ -1,0 +1,5 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -171 +171 @@
+-                bounds = self._retry_waits(now) + ([] if deadline is None else [deadline - now])
++                bounds = [] + ([] if deadline is None else [deadline - now])

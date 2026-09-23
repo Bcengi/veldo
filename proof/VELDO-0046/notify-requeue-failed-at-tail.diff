@@ -1,0 +1,6 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -252,0 +253,3 @@
++                with self._condition:
++                    self._queue.remove(entry)
++                    self._queue.append(entry)

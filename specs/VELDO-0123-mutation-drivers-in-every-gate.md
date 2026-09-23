@@ -50,7 +50,7 @@ acceptance_criteria:
       Treat a mutated worker's nonzero exit as successful mutation detection; gate/mutation-results-have-teeth must turn red.
   - id: AC3
     text: >
-      Claim: The combined mutation stage finishes or fails within 120 seconds of monotonic wall time and reaps its workers within a further 5 seconds.
+      Claim: The combined mutation stage finishes or fails within its cap of monotonic wall time, the larger of 120 seconds and 2 seconds per registered case, and reaps its workers within a further 5 seconds.
       Set: Both full inventories together, including consecutive fresh runs, a hung worker and slow suite-per-mutation runs; each baseline/mutant worker has at most 120 seconds within the shared remaining budget.
       Completeness: The stage owns one non-resetting deadline, counts snapshotting, setup, all suite processes and teardown, and reports per-driver/mutation elapsed time on the qualification host. Demonstrate a successful real fresh run covering every registered case within 120 seconds. Timeout kills the owned process group, records mutation_budget_exceeded and reddens the gate; no subset run or silent scheduling deferral may meet the budget.
       Refutation: gate/mutation-stage-budget-is-enforced is false if the stage reports success after deadline or leaves a child alive after the cleanup allowance.
@@ -94,3 +94,13 @@ For each declared falsifier, retain the applied diff, require the named row to b
 2026-09-22: Fixed the required stage's hard-coded .veldo module base and single-file materialization, which failed closed on fixture-kind registry entries. The teeth driver now owns source selection, whole-directory fixture copies and actual mutated-file digests for both drivers and the gate. Suite 53 qualifies a disposable fixture-kind registry with a named red target, an unmutated control and two driven regressions, including removal of fixtures from the frozen snapshot.
 
 2026-09-22: Reuse was specified on an unmeasured cost estimate. The cold stage was then measured at 13.8 seconds on this machine. Reuse was removed on the owner's approval: Telegram 28800, "Yes", answering 28798, "can I take the reuse part out?" Status remains ready.
+
+2026-09-23: The combined cap now scales with the registered inventory: the larger of 120 seconds and
+2 seconds per registered case, recorded in the stage receipt as budget_seconds. Measured on this
+machine: 38 cases took 13.8 seconds on 2026-09-22 and 116 cases took 91.8 seconds on 2026-09-23, about
+0.36 then 0.79 seconds per case (the per-case cost is rising as suites grow, so the 2 second figure is
+about 2.5 times today's rate and must be revisited if it approaches 1.5), so a fixed 120 second cap would turn the gate red for inventory growth alone as
+Release 1 adds cases. The per-worker bound of 120 seconds is unchanged. Row
+gate/mutation-budget-scales-with-inventory drives the real run_stage and checks the recorded cap, the
+enforced worker deadline and the armed alarm; three mutations (fixed cap, deadline ignoring the scaled
+cap, alarm not re-armed) each turn it red.

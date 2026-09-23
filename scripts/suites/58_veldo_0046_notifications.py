@@ -1,0 +1,571 @@
+"""Release 1 signal delivery over an installed module and real signed SQLite journal.
+
+Criterion and regression rows, driven by registered production mutations. Barriers expose both
+sides of idle entry; joins and cleanup signals bound a defective copy's lifetime.
+Handlers observe journal records only: these are consumer seams, not implementations
+of settlement, assignment, eligibility, intake or the PM owned by other specifications.
+"""
+import importlib.util as _n46_import
+import json as _n46_json
+import shutil as _n46_shutil
+import subprocess as _n46_subprocess
+import tempfile as _n46_tempfile
+import threading as _n46_threading
+import time as _n46_time
+from pathlib import Path as _n46_Path
+
+
+def _n46_load(name, path):
+    spec = _n46_import.spec_from_file_location(name, path)
+    module = _n46_import.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _n46_checks(directory):
+    # Exercise the installer file writer and declared asset inventory. Mutation gate
+    # snapshots intentionally omit docs and engine/scripts, so install only this seam.
+    scaffold = _n46_load('notify_scaffold', ROOT / '.veldo' / 'init_scaffold.py')
+    target = directory / 'installed'
+    created, skipped = [], []
+    for rel in ('.veldo/control_notify.py', '.veldo/control_store.py'):
+        if rel not in scaffold._FILES:
+            return False, False, False
+        scaffold._lay(ROOT / 'engine' / rel, target / rel, rel, created, skipped)
+    installed = target / '.veldo' / 'control_notify.py'
+    source = ROOT / ".veldo" / "control_notify.py"
+    installed.write_bytes(source.read_bytes())
+    delivery = _n46_load('notify_installed', installed)
+    store = _n46_load('notify_store', target / '.veldo' / 'control_store.py')
+    coords = dict(domain_uuid='domain-test', repository_uuid='repository-test', store_uuid='store-test')
+    key = directory / 'journal-key'
+    _n46_subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'notification-test',
+                         '-f', str(key)], check=True, capture_output=True)
+    allowed = directory / 'allowed_signers'
+    allowed.write_text('journal ' + key.with_suffix('.pub').read_text())
+    signed = []
+
+    def sign(payload):
+        proc = _n46_subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', 'veldo-journal'],
+                                  input=payload, capture_output=True, check=True)
+        signed.append((payload, proc.stdout))
+        return proc.stdout.decode()
+
+    seq = 0
+
+    def command(kind):
+        nonlocal seq
+        seq += 1
+        return dict(command_id='command-' + str(seq), principal='journal', operation='upsert_entity',
+                    parameters=dict(entity_id='unit-' + str(seq), kind=kind, data={'version': 1}),
+                    expected_versions={'unit-' + str(seq): 0}, artifact_digests=[], nonce='nonce-' + str(seq))
+
+    observed = []
+    premature = []
+    inside_sign = False
+    expected_enabled = ('settlement', 'assignment', 'dependency', 'completion', 'budget', 'intake', 'pm')
+    expected_kinds = expected_enabled[:-1]
+    expected_pairs = {(kind, kind) for kind in expected_kinds} | {(kind, 'pm') for kind in expected_kinds}
+    path = directory / 'control.sqlite3'
+    writer = store.open_store(str(path))
+
+    def handler(name):
+        def apply(event):
+            if inside_sign:
+                premature.append(name)
+            # A second independent connection proves the callback can see the committed identity.
+            conn = store.open_store(str(path), mode='r')
+            row = conn.execute('SELECT command_id, record_digest FROM journal WHERE seq=?',
+                               (event.get('watermark', event.get('seq')),)).fetchone()
+            conn.close()
+            observed.append((name, event, row))
+        return apply
+
+    service = delivery.Delivery(store, str(path), coords, expected_enabled,
+                                {name: handler(name) for name in expected_enabled})
+    ac1 = set(service.inventory()) == expected_pairs
+    ac1 = ac1 and '.veldo/control_notify.py' in scaffold._FILES
+    ac1 = ac1 and (ROOT / 'engine/.veldo/control_notify.py').read_bytes() == (ROOT / '.veldo/control_notify.py').read_bytes()
+    for kind in expected_kinds:
+        cmd = command(kind)
+
+        def guarded_sign(payload):
+            nonlocal inside_sign
+            inside_sign = True
+            record = _n46_json.loads(payload)
+            hint = service.hint(record)
+            # The producer knows its would-be event before COMMIT. It is not evidence yet.
+            hint['event'] = dict(record, watermark=record['seq'], **coords)
+            service.notify(hint)
+            result = service.run_once(timeout=0)
+            premature.append(result['outcome'] != 'missing_evidence')
+            result = sign(payload)
+            inside_sign = False
+            return result
+
+        start = len(observed)
+        result = service.execute(writer, cmd, 'journal', guarded_sign, 1)
+        pending = service.metrics()['pending']
+        receipt = service.run_once(timeout=0)
+        seen = observed[start:]
+        ac1 = ac1 and pending == 1 and receipt is not None and receipt['outcome'] == 'delivered'
+        ac1 = ac1 and {name for name, _, _ in seen} == {kind, 'pm'}
+        ac1 = ac1 and all(row == (result['command_id'], result['record_digest']) for _, _, row in seen)
+        ac1 = ac1 and all(event['watermark'] == result['seq'] for _, event, _ in seen)
+        service.execute(writer, cmd, 'journal', sign, 1)
+        ac1 = ac1 and service.metrics()['pending'] == 0  # identical store retry is not a new commit
+    ac1 = ac1 and premature == [False] * len(expected_kinds)
+    # A refused transaction must not leave delivery work behind.
+    invalid = command('settlement')
+    invalid['expected_versions'] = {'missing-unit': 0}
+    try:
+        service.execute(writer, invalid, 'journal', sign, 1)
+        ac1 = False
+    except store.StoreRefused:
+        ac1 = ac1 and service.metrics()['pending'] == 0
+    for payload, signature in signed:
+        signature_file = directory / 'record.sig'
+        signature_file.write_bytes(signature)
+        verified = _n46_subprocess.run(['ssh-keygen', '-Y', 'verify', '-f', str(allowed), '-I', 'journal',
+                                        '-n', 'veldo-journal', '-s', str(signature_file)],
+                                       input=payload, capture_output=True)
+        ac1 = ac1 and verified.returncode == 0
+    try:
+        delivery.Delivery(store, str(path), coords, expected_enabled, {'settlement': handler('settlement')})
+        ac1 = False
+    except delivery.Refused as exc:
+        ac1 = ac1 and exc.reason == 'invalid_registration'
+    minimal = delivery.Delivery(store, str(path), coords, expected_enabled[:5],
+                                {name: handler(name) for name in expected_enabled[:5]})
+    ac1 = ac1 and set(minimal.inventory()) == {(kind, kind) for kind in expected_enabled[:5]}
+    minimal.close()
+
+    # Existing committed identities, invented identities, altered watermarks and foreign coordinates
+    # go through the same transport queue for every enabled consumer, including the optional two.
+    ac3 = True
+    for kind in expected_kinds:
+        result = service.execute(writer, command(kind), 'journal', sign, 1)
+        service.run_once(timeout=0)
+        hint = service.hint(result)
+        for field, value, reason in [('command_id', 'invented-event', 'stale_subject'),
+                                     ('record_digest', 'invented-digest', 'stale_subject'),
+                                     ('watermark', 99999, 'missing_evidence'),
+                                     ('domain_uuid', 'foreign-domain', 'missing_authority'),
+                                     ('repository_uuid', 'foreign-repository', 'missing_authority'),
+                                     ('store_uuid', 'foreign-store', 'missing_authority')]:
+            before = len(observed)
+            service.notify(dict(hint, **{field: value}, event={'arbitrary': 'untrusted-payload'}))
+            refusal = service.run_once(timeout=0)
+            ac3 = ac3 and len(observed) == before and refusal['outcome'] == reason
+        # A genuine hint with forged data must still deliver exactly what the journal stored.
+        before = len(observed)
+        service.notify(dict(hint, transition={'fake': {'kind': 'completion'}}, principal='invented'))
+        receipt = service.run_once(timeout=0)
+        ac3 = ac3 and receipt['consumers'] == [kind, 'pm']
+        ac3 = ac3 and all(event['principal'] == 'journal' and 'fake' not in event['transition']
+                          for _, event, _ in observed[before:])
+        ac3 = ac3 and receipt['accepted_input_versions'] == result['after_versions']
+    # Reservation commits are budget events too, even without an entity transition.
+    reservation = command('budget')
+    reservation.update(operation='reserve', parameters=dict(reservation_id='hold', ceiling='unit', delta=1),
+                       expected_versions={})
+    service.execute(writer, reservation, 'journal', sign, 1)
+    receipt = service.run_once(timeout=0)
+    ac3 = ac3 and receipt is not None and receipt['consumers'] == ['budget', 'pm']
+    # Handler mutation cannot alter the next consumer's authoritative input.
+    service.handlers['settlement'] = lambda event: event['transition'].clear()
+    before = len(observed)
+    service.execute(writer, command('settlement'), 'journal', sign, 1)
+    service.run_once(timeout=0)
+    ac3 = ac3 and bool(observed[before:]) and bool(observed[-1][1]['transition'])
+    service.handlers['settlement'] = handler('settlement')
+    ac3 = ac3 and 'untrusted-payload' not in _n46_json.dumps(service.observations)
+    ac3 = ac3 and service.metrics()['pending'] == 0 and service.metrics()['refused'] >= 36
+
+    # Real event-loop barriers, not sleeps hoping to hit the race. The first barrier is
+    # immediately before taking the idle lock; the other is Condition.wait's lock release.
+    ac2 = True
+    for order in ('before-lock', 'after-wait'):
+        entered, proceed, waiting = (_n46_threading.Event() for _ in range(3))
+        completed = _n46_threading.Event()
+        wait_with_pending, errors, outcomes = [], [], []
+        reading = []
+
+        class Reader:
+            sqlite3, StoreRefused = store.sqlite3, store.StoreRefused
+
+            def open_store(self, *args, **kwargs):
+                reading.append(True)
+                return store.open_store(*args, **kwargs)
+
+            execute = staticmethod(store.execute)
+
+        loop = delivery.Delivery(Reader(), str(path), coords, ['completion'], {'completion': handler('completion')})
+
+        class Boundary(_n46_threading.Condition):
+            def __enter__(self):
+                if order == 'before-lock' and _n46_threading.current_thread().name == 'notification-loop' and not entered.is_set():
+                    entered.set()
+                    proceed.wait(3)
+                return super().__enter__()
+
+            def wait(self, timeout=None):
+                wait_with_pending.append(bool(loop._queue))
+                waiting.set()
+                return super().wait(timeout)
+
+        loop._condition = Boundary()
+
+        def consume():
+            try:
+                outcomes.append(loop.run_once(timeout=1))
+            except Exception as exc:
+                errors.append(type(exc).__name__)
+            finally:
+                completed.set()
+
+        thread = _n46_threading.Thread(target=consume, name='notification-loop')
+        thread.start()
+        barrier = entered if order == 'before-lock' else waiting
+        reached = barrier.wait(3)
+        ac2 = ac2 and reached and not reading
+        if order == 'after-wait':
+            ac2 = ac2 and not completed.wait(0.02) and not reading
+        result = loop.execute(writer, command('completion'), 'journal', sign, 1)
+        proceed.set()
+        delivered = completed.wait(2)
+        loop.close()
+        thread.join(3)
+        ac2 = ac2 and delivered and not thread.is_alive() and not errors and not any(wait_with_pending)
+        ac2 = ac2 and len(outcomes) == 1 and outcomes[0] is not None and outcomes[0]['outcome'] == 'delivered'
+        ac2 = ac2 and len(reading) == 1 and loop.metrics()['pending'] == 0
+    # Ordinary absence and handler uncertainty are named; neither is a success.
+    unavailable = delivery.Delivery(store, str(directory / 'missing.sqlite3'), coords,
+                                    ['completion'], {'completion': handler('completion')})
+    unavailable.notify(service.hint(result))
+    ac3 = ac3 and unavailable.run_once(timeout=0)['outcome'] == 'service_unavailable'
+    unavailable.close()
+    def uncertain(event):
+        raise RuntimeError('private diagnostic must not enter observations')
+    service.handlers['completion'] = uncertain
+    service.execute(writer, command('completion'), 'journal', sign, 1)
+    stopped = service.run_once(timeout=0)
+    ac3 = ac3 and stopped is not None and stopped['outcome'] == 'unknown_outcome' and not stopped['accepted']
+    ac3 = ac3 and 'private diagnostic' not in _n46_json.dumps(service.observations)
+    # F01 capsule: a JSON integer outside SQLite's range precedes a real commit.
+    # Capture the loop's exception so the regression is a RED assertion, not a crash.
+    ac4 = True
+    for watermark, reason in ((2**63, 'invalid_input'), (2**80, 'invalid_input'),
+                              (0, 'invalid_input'), (-1, 'invalid_input'),
+                              (True, 'invalid_input'), ('1', 'invalid_input'),
+                              (2**63 - 1, 'missing_evidence')):
+        seen, outcomes, errors = [], [], []
+        loop = delivery.Delivery(store, str(path), coords, ['completion'], {'completion': seen.append})
+        hint = _n46_json.loads(_n46_json.dumps(dict(service.hint(result), watermark=watermark)))
+        loop.notify(hint)
+        committed = loop.execute(writer, command('completion'), 'journal', sign, 1)
+        try:
+            # Bound the drain even when testing a defective copy.
+            for _ in range(2):
+                outcomes.append(loop.run_once(timeout=0))
+        except Exception as exc:
+            errors.append(type(exc).__name__)
+        ac4 = ac4 and not errors and len(outcomes) == 2 and all(outcomes)
+        ac4 = ac4 and outcomes[0]['outcome'] == reason and not outcomes[0]['accepted']
+        ac4 = ac4 and outcomes[1]['outcome'] == 'delivered'
+        ac4 = ac4 and [event['command_id'] for event in seen] == [committed['command_id']]
+        ac4 = ac4 and loop.metrics()['pending'] == 0
+        loop.close()
+    now = [0.0]
+
+    def drain(loop, steps=40):
+        # Move an injected clock past any retry delay; never a real sleep.
+        outcomes = []
+        for _ in range(steps):
+            if not loop.metrics()['pending']:
+                break
+            now[0] += 60.0
+            outcomes.append(loop.run_once(timeout=0))
+        return outcomes
+
+    # F02 capsule and reversed order: failed callbacks remain pending only for
+    # those subscribers; every healthy subscriber receives the same committed event.
+    ac5 = True
+    for enabled, failures in ((('settlement', 'pm'), {'settlement'}),
+                              (('pm', 'settlement'), {'pm'}),
+                              (('settlement', 'pm'), {'settlement', 'pm'})):
+        blocked = set(failures)
+        attempts = {name: [] for name in enabled}
+        received = {name: [] for name in enabled}
+
+        def subscriber(name):
+            def receive(event):
+                attempts[name].append(event['command_id'])
+                if name in blocked:
+                    event['transition'].clear()
+                    raise RuntimeError('private subscriber failure')
+                received[name].append(event)
+            return receive
+
+        loop = delivery.Delivery(store, str(path), coords, enabled,
+                                 {name: subscriber(name) for name in enabled})
+        loop.clock = lambda: now[0]
+        committed = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+        first = loop.run_once(timeout=0)
+        ac5 = ac5 and first is not None and first['outcome'] == 'unknown_outcome' and not first['accepted']
+        ac5 = ac5 and all(len(attempts[name]) == 1 for name in enabled)
+        ac5 = ac5 and {name for name in enabled if received[name]} == set(enabled) - failures
+        ac5 = ac5 and loop.metrics()['pending'] > 0
+        # A retry waits for its delay; a second failed attempt must neither forget work
+        # nor redeliver healthy callbacks.
+        ac5 = ac5 and loop.run_once(timeout=0) is None
+        ac5 = ac5 and all(len(attempts[name]) == 1 for name in enabled)
+        now[0] += 60.0
+        second = loop.run_once(timeout=0)
+        ac5 = ac5 and second is not None and second['outcome'] == 'unknown_outcome'
+        ac5 = ac5 and loop.metrics()['pending'] > 0
+        ac5 = ac5 and all(len(attempts[name]) == (2 if name in failures else 1) for name in enabled)
+        attributed = [row.get('stopped_consumer') for row in loop.observations
+                      if row['outcome'] == 'unknown_outcome']
+        ac5 = ac5 and all(attributed.count(name) == 2 for name in failures)
+        blocked.clear()
+        now[0] += 60.0
+        recovered = loop.run_once(timeout=0)
+        ac5 = ac5 and recovered is not None and recovered['outcome'] == 'delivered'
+        ac5 = ac5 and all(len(attempts[name]) == (3 if name in failures else 1) for name in enabled)
+        ac5 = ac5 and all(len(received[name]) == 1 and
+                          received[name][0]['command_id'] == committed['command_id'] and
+                          received[name][0]['watermark'] == committed['seq'] and
+                          bool(received[name][0]['transition']) for name in enabled)
+        ac5 = ac5 and loop.metrics()['pending'] == 0 and loop.run_once(timeout=0) is None
+        ac5 = ac5 and 'private subscriber failure' not in _n46_json.dumps(loop.observations)
+        # A temporarily unreadable journal cannot discard a pending subscriber retry.
+        blocked.update(failures)
+        queued = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+        loop.run_once(timeout=0)
+        loop.path = str(directory / 'temporarily-unavailable.sqlite3')
+        now[0] += 60.0
+        unavailable_retry = loop.run_once(timeout=0)
+        ac5 = ac5 and unavailable_retry is not None and unavailable_retry['outcome'] == 'service_unavailable'
+        ac5 = ac5 and loop.metrics()['pending'] > 0
+        loop.path = str(path)
+        # Persistent failure holds only the failing subscribers' later events behind the
+        # one they have not accepted; a healthy subscriber is not starved by them.
+        later = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+        loop.run_once(timeout=0)
+        loop.run_once(timeout=0)
+        ac5 = ac5 and all((later['command_id'] in attempts[name]) == (name not in failures)
+                          for name in enabled)
+        blocked.clear()
+        drain(loop)
+        ac5 = ac5 and loop.metrics()['pending'] == 0
+        ac5 = ac5 and all([event['command_id'] for event in received[name]] ==
+                          [committed['command_id'], queued['command_id'], later['command_id']]
+                          for name in enabled)
+        loop.close()
+    # R3 capsule: a committed event whose FIRST resolution meets an unavailable store is
+    # retained exactly like a retry, and an interrupt raised by one subscriber's callback
+    # propagates without discarding that event for it or for subscribers not yet called.
+    ac6 = True
+
+    class Flaky:
+        sqlite3, StoreRefused = store.sqlite3, store.StoreRefused
+        execute = staticmethod(store.execute)
+        failures = 0
+
+        def open_store(self, *args, **kwargs):
+            if self.failures:
+                self.failures -= 1
+                raise store.sqlite3.OperationalError('database is locked')
+            return store.open_store(*args, **kwargs)
+
+    for transient in (1, 3):
+        flaky, got = Flaky(), []
+        loop = delivery.Delivery(flaky, str(path), coords, ['completion'], {'completion': got.append})
+        loop.clock = lambda: now[0]
+        committed = loop.execute(writer, command('completion'), 'journal', sign, 1)
+        flaky.failures = transient
+        first = loop.run_once(timeout=0)
+        ac6 = ac6 and first is not None and first['outcome'] == 'service_unavailable' and not first['accepted']
+        ac6 = ac6 and loop.metrics()['pending'] == 1
+        outcomes = [row for row in drain(loop) if row is not None]
+        ac6 = ac6 and [event['command_id'] for event in got] == [committed['command_id']]
+        ac6 = ac6 and [row['outcome'] for row in outcomes] == ['service_unavailable'] * (transient - 1) + ['delivered']
+        ac6 = ac6 and loop.metrics()['pending'] == 0 and flaky.failures == 0
+        loop.close()
+    interrupts = ['settlement']
+    seen = {'settlement': [], 'pm': []}
+
+    def interrupted(name):
+        def receive(event):
+            if name in interrupts:
+                interrupts.remove(name)
+                raise KeyboardInterrupt
+            seen[name].append(event['command_id'])
+        return receive
+
+    loop = delivery.Delivery(store, str(path), coords, ('settlement', 'pm'),
+                             {name: interrupted(name) for name in ('settlement', 'pm')})
+    loop.clock = lambda: now[0]
+    committed = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    raised = []
+    try:
+        loop.run_once(timeout=0)
+    except KeyboardInterrupt:
+        raised.append('KeyboardInterrupt')
+    ac6 = ac6 and raised == ['KeyboardInterrupt'] and loop.metrics()['pending'] == 1
+    ac6 = ac6 and [row.get('stopped_consumer') for row in loop.observations
+                   if row['operation'] == 'handler'] == ['settlement']
+    drain(loop)
+    ac6 = ac6 and seen == {'settlement': [committed['command_id']], 'pm': [committed['command_id']]}
+    ac6 = ac6 and loop.metrics()['pending'] == 0
+    loop.close()
+    # R2 capsule: a permanently failing subscriber under the documented blocking loop.
+    # Expected with the default 0.1 s initial delay: the first attempt, the reader of a
+    # later commit, and retries at 0.1 s and 0.3 s, so at most four journal reads in the
+    # window. A retry that does not back off re-reads the journal thousands of times.
+    ac7 = True
+    opens, served, stop, errors = [], [], _n46_threading.Event(), []
+
+    class Counting:
+        sqlite3, StoreRefused = store.sqlite3, store.StoreRefused
+        execute = staticmethod(store.execute)
+
+        def open_store(self, *args, **kwargs):
+            opens.append(True)
+            return store.open_store(*args, **kwargs)
+
+    def down(event):
+        raise RuntimeError('subscriber down')
+
+    loop = delivery.Delivery(Counting(), str(path), coords, ['settlement', 'completion'],
+                             {'settlement': down, 'completion': served.append})
+    loop.execute(writer, command('settlement'), 'journal', sign, 1)
+
+    def blocking():
+        try:
+            while not stop.is_set():
+                loop.run_once()
+        except Exception as exc:
+            errors.append(type(exc).__name__)
+
+    thread = _n46_threading.Thread(target=blocking, name='notification-loop')
+    thread.start()
+    _n46_time.sleep(0.15)
+    later = loop.execute(writer, command('completion'), 'journal', sign, 1)
+    _n46_time.sleep(0.15)
+    stop.set()
+    loop.close()
+    thread.join(3)
+    ac7 = ac7 and not thread.is_alive() and not errors and 2 <= len(opens) <= 4
+    ac7 = ac7 and [event['command_id'] for event in served] == [later['command_id']]
+    ac7 = ac7 and loop.metrics()['pending'] == 1 and len(loop.observations) <= 2 * len(opens) + 2
+    # Exact schedule on an injected clock. The simulated wait advances that clock by the
+    # timeout the loop asked for, so a retry is reached only by waiting on the condition.
+    now[0] = 0.0
+    reads, waits = [], []
+
+    class Timed(Counting):
+        def open_store(self, *args, **kwargs):
+            reads.append(now[0])
+            return store.open_store(*args, **kwargs)
+
+    loop = delivery.Delivery(Timed(), str(path), coords, ['settlement'], {'settlement': down})
+    loop.clock = lambda: now[0]
+    loop.retry_initial, loop.retry_cap, loop.observation_limit = 0.125, 0.5, 8
+
+    class Simulated(_n46_threading.Condition):
+        def wait(self, timeout=None):
+            waits.append(timeout)
+            if timeout is None or len(waits) > 20:
+                loop._closed = True  # a wait nothing will end; stop instead of hanging
+                return False
+            now[0] += timeout
+            return False
+
+    loop._condition = Simulated()
+    loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    results = [loop.run_once() for _ in range(6)]
+    ac7 = ac7 and reads == [0.0, 0.125, 0.375, 0.875, 1.375, 1.875]
+    ac7 = ac7 and waits == [0.125, 0.25, 0.5, 0.5, 0.5]
+    ac7 = ac7 and all(row is not None and row['outcome'] == 'unknown_outcome' for row in results)
+    ac7 = ac7 and len(loop.observations) == 8 and loop.observations[-1] == results[-1]
+    ac7 = ac7 and loop.metrics()['refused'] == 12 and loop.metrics()['pending'] == 1
+    # The constructor carries the same settings, and refuses a delay that is not bounded.
+    configured = ac7 and delivery.Delivery(store, str(path), coords, ['settlement'], {'settlement': down},
+                                           retry_initial=0.125, retry_cap=0.5, observation_limit=8,
+                                           clock=loop.clock)
+    ac7 = ac7 and (configured.retry_initial, configured.retry_cap, configured.observation_limit,
+                   configured.clock) == (0.125, 0.5, 8, loop.clock)
+    for bad in (dict(retry_initial=0), dict(retry_initial=1, retry_cap=0.5), dict(retry_cap=float('inf')),
+                dict(observation_limit=0), dict(retry_initial=True)):
+        try:
+            ac7 = ac7 and not delivery.Delivery(store, str(path), coords, ['settlement'],
+                                                {'settlement': down}, **bad)
+        except delivery.Refused as exc:
+            ac7 = ac7 and exc.reason == 'invalid_registration'
+    # R1 capsule: each subscriber receives events in commit order. A retry goes ahead
+    # of that subscriber's later events, which wait behind the one it has not accepted,
+    # while a healthy subscriber keeps receiving them during the failing one's delay.
+    ac8 = True
+    for backlog, failures in ((True, 1), (False, 1), (True, 3), (False, 3)):
+        now[0] = 0.0
+        remaining = {'settlement': failures}
+        attempts = {'settlement': [], 'pm': []}
+        received = {'settlement': [], 'pm': []}
+
+        def ordered(name):
+            def receive(event):
+                attempts[name].append(event['watermark'])
+                if remaining.get(name):
+                    remaining[name] -= 1
+                    raise RuntimeError('subscriber down')
+                received[name].append(event['watermark'])
+            return receive
+
+        loop = delivery.Delivery(store, str(path), coords, ('settlement', 'pm'),
+                                 {name: ordered(name) for name in ('settlement', 'pm')})
+        loop.clock = lambda: now[0]
+        marks = [loop.execute(writer, command('settlement'), 'journal', sign, 1)['seq']]
+        if not backlog:
+            loop.run_once(timeout=0)
+        marks += [loop.execute(writer, command('settlement'), 'journal', sign, 1)['seq'] for _ in range(2)]
+        # Without moving the clock, only work that is not waiting on a delay can run.
+        for _ in range(4):
+            loop.run_once(timeout=0)
+        ac8 = ac8 and received == {'settlement': [], 'pm': marks}
+        ac8 = ac8 and attempts['settlement'] == marks[:1] and loop.metrics()['pending'] > 0
+        drain(loop)
+        ac8 = ac8 and received == {'settlement': marks, 'pm': marks}
+        ac8 = ac8 and attempts['settlement'] == marks[:1] * (failures + 1) + marks[1:]
+        ac8 = ac8 and attempts['pm'] == marks and loop.metrics()['pending'] == 0
+        loop.close()
+    # An event whose journal read failed may be owed to anyone, so a later event waits
+    # behind it for every subscriber until it is resolved.
+    now[0] = 0.0
+    flaky, got = Flaky(), {'settlement': [], 'pm': []}
+    loop = delivery.Delivery(flaky, str(path), coords, ('settlement', 'pm'),
+                             {name: got[name].append for name in ('settlement', 'pm')})
+    loop.clock = lambda: now[0]
+    first = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    flaky.failures = 1
+    ac8 = ac8 and loop.run_once(timeout=0)['outcome'] == 'service_unavailable'
+    second = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    ac8 = ac8 and loop.run_once(timeout=0) is None and got == {'settlement': [], 'pm': []}
+    drain(loop)
+    order = [first['command_id'], second['command_id']]
+    ac8 = ac8 and all([event['command_id'] for event in got[name]] == order for name in got)
+    ac8 = ac8 and loop.metrics()['pending'] == 0
+    loop.close()
+    service.close()
+    writer.close()
+    return ac1, ac2, ac3, ac4, ac5, ac6, ac7, ac8
+
+
+_n46_started = _n46_time.monotonic()
+with _n46_tempfile.TemporaryDirectory(prefix='v46-') as _n46_dir:
+    _n46_results = _n46_checks(_n46_Path(_n46_dir))
+for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range', 'subscriber-isolation',
+                                       'first-attempt-retained', 'retry-backoff', 'subscriber-order'), _n46_results):
+    expect('VELDO-0046 notify/' + _n46_name, _n46_result)
+print('VELDO-0046 suite seconds: %.3f' % (_n46_time.monotonic() - _n46_started))

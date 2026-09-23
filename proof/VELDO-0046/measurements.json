@@ -1,0 +1,266 @@
+{
+  "description": "Measured serial cost of unit, first-use integration, shared baseline/noop and six mutants; includes child startup and shared preamble.",
+  "total_seconds": 7.450854952214286,
+  "results": [
+    {
+      "label": "unit",
+      "mode": "baseline",
+      "seconds": 0.34491830389015377,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    {
+      "label": "first-use-integration",
+      "mode": "baseline",
+      "seconds": 0.3464459602255374,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    {
+      "label": "mutation-baseline",
+      "mode": "baseline",
+      "seconds": 0.3545714921783656,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    {
+      "label": "mutation-noop",
+      "mode": "noop",
+      "seconds": 0.36364933103322983,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/committed-event": [
+          true
+        ]
+      }
+    },
+    {
+      "label": "notify-before-commit",
+      "mode": "mutant",
+      "seconds": 0.3474868901539594,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "bb0454acf698c1d7ae32a3e317b66b6c04c6d1aab7eef8999e7d32598c1c66a1",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          false
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/committed-event": [
+          false
+        ]
+      }
+    },
+    {
+      "label": "notify-omit-committed-wakeup",
+      "mode": "mutant",
+      "seconds": 2.3102654630783945,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "25a824d4c6015f325e83938a00ffd9ad97ff95824893fdcde403a6ffad2a1353",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          false
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          false
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          false
+        ]
+      ],
+      "targets": {
+        "notify/committed-event": [
+          false
+        ]
+      }
+    },
+    {
+      "label": "notify-check-outside-idle-lock",
+      "mode": "mutant",
+      "seconds": 1.3364807909820229,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "8494a24aedc93fd8ca0acd21bdc3c05d459a6d49f9eb6bae7685f76f231d4100",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          false
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/event-in-the-gap": [
+          false
+        ]
+      }
+    },
+    {
+      "label": "notify-wait-without-queue-predicate",
+      "mode": "mutant",
+      "seconds": 1.3478585099801421,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "162630219b8d25988f9c8b28b362fe73ec7f41b71a1ab2c49391ba448e524bb8",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          false
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          true
+        ]
+      ],
+      "targets": {
+        "notify/event-in-the-gap": [
+          false
+        ]
+      }
+    },
+    {
+      "label": "notify-trust-invented-event-identity",
+      "mode": "mutant",
+      "seconds": 0.36080691404640675,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "7c07aa0fe339f2d6cea21d53239346e5e3061f9b28f3782279a69d962e49d722",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          false
+        ]
+      ],
+      "targets": {
+        "notify/fabricated-event": [
+          false
+        ]
+      }
+    },
+    {
+      "label": "notify-trust-invented-event-digest",
+      "mode": "mutant",
+      "seconds": 0.3378655679989606,
+      "old_digest": "c5b6550db644a2cd4eaf6a13f3348d36855c85620a368c6bd1b023a6bd07bae5",
+      "new_digest": "4e4d1b910121cb25f8aaf994841be14ed540d90c88d4fb0b16b371fc0c96ed04",
+      "observations": [
+        [
+          "VELDO-0046 notify/committed-event",
+          true
+        ],
+        [
+          "VELDO-0046 notify/event-in-the-gap",
+          true
+        ],
+        [
+          "VELDO-0046 notify/fabricated-event",
+          false
+        ]
+      ],
+      "targets": {
+        "notify/fabricated-event": [
+          false
+        ]
+      }
+    }
+  ]
+}

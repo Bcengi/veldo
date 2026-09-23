@@ -1,0 +1,470 @@
+{
+ "findings": [
+  "R1",
+  "R2",
+  "R3"
+ ],
+ "reviewed_commit": "1dc0ddeb96f3b361b7b67dd93426f2c1ec26ae0e",
+ "descriptions": {
+  "R1": "a failing subscriber retry was appended behind later events, so it received events out of order ([2, 3, 1])",
+  "R2": "a permanently failing subscriber turned the blocking run_once into a hot loop re-reading the journal while quiet, with unbounded observations",
+  "R3": "a first delivery attempt refused as service_unavailable was dropped instead of retained; a callback BaseException also dropped the event for the remaining subscribers"
+ },
+ "rows": {
+  "R1": "VELDO-0046 notify/subscriber-order",
+  "R2": "VELDO-0046 notify/retry-backoff",
+  "R3": "VELDO-0046 notify/first-attempt-retained"
+ },
+ "red_command": "git show 1dc0dde:.veldo/control_notify.py > /tmp/veldo46-1dc0dde-control_notify.py; python3 -B scripts/check_teeth_mutations.py --worker notify-requeue-failed-at-tail --mutant /tmp/veldo46-1dc0dde-control_notify.py",
+ "reviewed_source_sha256": "5224a4b5543902786b2164984c9cc779326a98d1eb3fb91966c94aac59e94941",
+ "red_note": "Final suite over the exact 1dc0dde module bytes: every row completes its assertion (no worker exception). The three new rows are RED; subscriber-isolation is also RED because this change rewrote that row to require a retry delay and to hold only the failing subscriber behind its unaccepted event.",
+ "red": {
+  "count": 34,
+  "observations": [
+   [
+    "good spec accepted",
+    true
+   ],
+   [
+    "spec without criteria rejected",
+    true
+   ],
+   [
+    "unknown evidence kind rejected",
+    true
+   ],
+   [
+    "bad status rejected",
+    true
+   ],
+   [
+    "invented proof criterion rejected",
+    true
+   ],
+   [
+    "missing proof criterion rejected",
+    true
+   ],
+   [
+    "absent required evidence rejected",
+    true
+   ],
+   [
+    "passed-without-evidence rejected",
+    true
+   ],
+   [
+    "bad verdict value rejected",
+    true
+   ],
+   [
+    "good plan accepted",
+    true
+   ],
+   [
+    "plan dependency cycle rejected",
+    true
+   ],
+   [
+    "dangling dependency rejected",
+    true
+   ],
+   [
+    "unknown outcome ref rejected",
+    true
+   ],
+   [
+    "unknown feature ref rejected",
+    true
+   ],
+   [
+    "undeclared depends_on rejected",
+    true
+   ],
+   [
+    "ready without approval rejected",
+    true
+   ],
+   [
+    "decision without blocks rejected",
+    true
+   ],
+   [
+    "decision blocking unknown spec rejected",
+    true
+   ],
+   [
+    "duplicate work spec rejected",
+    true
+   ],
+   [
+    "bad release mode rejected",
+    true
+   ],
+   [
+    "mirror mismatch rejected",
+    true
+   ],
+   [
+    "correct mirror accepted",
+    true
+   ],
+   [
+    "spec binding to wrong plan rejected",
+    true
+   ],
+   [
+    "spec claiming missing work item rejected",
+    true
+   ],
+   [
+    "spec plan without work rejected",
+    true
+   ],
+   [
+    "correct spec binding accepted",
+    true
+   ],
+   [
+    "VELDO-0046 notify/committed-event",
+    true
+   ],
+   [
+    "VELDO-0046 notify/event-in-the-gap",
+    true
+   ],
+   [
+    "VELDO-0046 notify/fabricated-event",
+    true
+   ],
+   [
+    "VELDO-0046 notify/watermark-range",
+    true
+   ],
+   [
+    "VELDO-0046 notify/subscriber-isolation",
+    false
+   ],
+   [
+    "VELDO-0046 notify/first-attempt-retained",
+    false
+   ],
+   [
+    "VELDO-0046 notify/retry-backoff",
+    false
+   ],
+   [
+    "VELDO-0046 notify/subscriber-order",
+    false
+   ]
+  ],
+  "row_names": [
+   "good spec accepted",
+   "spec without criteria rejected",
+   "unknown evidence kind rejected",
+   "bad status rejected",
+   "invented proof criterion rejected",
+   "missing proof criterion rejected",
+   "absent required evidence rejected",
+   "passed-without-evidence rejected",
+   "bad verdict value rejected",
+   "good plan accepted",
+   "plan dependency cycle rejected",
+   "dangling dependency rejected",
+   "unknown outcome ref rejected",
+   "unknown feature ref rejected",
+   "undeclared depends_on rejected",
+   "ready without approval rejected",
+   "decision without blocks rejected",
+   "decision blocking unknown spec rejected",
+   "duplicate work spec rejected",
+   "bad release mode rejected",
+   "mirror mismatch rejected",
+   "correct mirror accepted",
+   "spec binding to wrong plan rejected",
+   "spec claiming missing work item rejected",
+   "spec plan without work rejected",
+   "correct spec binding accepted",
+   "VELDO-0046 notify/committed-event",
+   "VELDO-0046 notify/event-in-the-gap",
+   "VELDO-0046 notify/fabricated-event",
+   "VELDO-0046 notify/watermark-range",
+   "VELDO-0046 notify/subscriber-isolation",
+   "VELDO-0046 notify/first-attempt-retained",
+   "VELDO-0046 notify/retry-backoff",
+   "VELDO-0046 notify/subscriber-order"
+  ],
+  "failed_rows": [
+   "VELDO-0046 notify/subscriber-isolation",
+   "VELDO-0046 notify/first-attempt-retained",
+   "VELDO-0046 notify/retry-backoff",
+   "VELDO-0046 notify/subscriber-order"
+  ],
+  "targets": {
+   "notify/subscriber-order": [
+    false
+   ]
+  }
+ },
+ "red_per_commit": {
+  "R3 row added, before the R3 fix": {
+   "assertions": 32,
+   "failed_rows": [
+    "VELDO-0046 notify/first-attempt-retained"
+   ]
+  },
+  "R2 row added, before the R2 fix": {
+   "assertions": 33,
+   "failed_rows": [
+    "VELDO-0046 notify/first-attempt-retained",
+    "VELDO-0046 notify/retry-backoff"
+   ]
+  },
+  "R1 row added, before the R1 fix": {
+   "assertions": 34,
+   "failed_rows": [
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/first-attempt-retained",
+    "VELDO-0046 notify/retry-backoff",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  }
+ },
+ "green": {
+  "command": "python3 -B scripts/selftest.py --suite 58_veldo_0046_notifications",
+  "passed": 34,
+  "failed": 0,
+  "suite_seconds": [
+   0.905,
+   0.92,
+   0.897
+  ]
+ },
+ "reproduction_scripts": {
+  "note": "The reviewer scripts t_f02.py, t_starve.py and t_lost.py with h.py pointed at this worktree. Retries now wait a delay (R2), so the non-blocking run_once(0) calls that expected an immediate retry were changed to run_once(1), a bounded blocking wait; every BUG condition is unchanged. The adapted copies still print all four BUG lines against the 1dc0dde module, and print none against the final code.",
+  "adaptations": [
+   "t_f02.py: run_once(0) -> run_once(1) (5 calls)",
+   "t_lost.py: the \"next run_once\" call run_once(0) -> run_once(1)",
+   "h.py: V points at the worktree .veldo"
+  ],
+  "at_1dc0dde_bug_lines": [
+   "BUG: backlog out of order [2, 3, 1]",
+   "BUG: permanently failing subscriber turns blocking run_once into a hot loop that re-reads the store while quiet (no backoff, no give-up)",
+   "BUG: committed event lost after one transient read failure (fresh events are dropped; only retry items are requeued)",
+   "BUG: handler BaseException drops the event for every remaining subscriber"
+  ],
+  "final_output": [
+   "== t_f02",
+   "1st: {'outcome': 'unknown_outcome', 'consumers': [], 'failed_consumers': ['settlement', 'pm']}",
+   "2nd: {'outcome': 'delivered', 'consumers': ['settlement', 'pm']}",
+   "got {'settlement': [1], 'pm': [1]} pending 0",
+   "order settlement: [1, 2] pm: [1, 2]",
+   "backlog order settlement: [1, 2, 3]",
+   "== t_starve",
+   "quiet 0.5s: run_once returned 4 times, store opened 4 times; pending 1 observations 9",
+   "other consumer still served: [2]",
+   "== t_lost",
+   "first attempt: service_unavailable pending after: 1",
+   "next run_once: {'domain_uuid': 'd', 'repository_uuid': 'r', 'store_uuid': 's', 'operation': 'consume', 'outcome': 'delivered', 'accepted': True, 'consumers': ['completion'], 'command_id': 'c1', 'record_digest': 'sha256:c7c2ab79d89e2ccc14baa7844f39a476f62ff79d80dbf5d385de1a2132cd54eb', 'watermark': 1, 'accepted_input_versions': {'u1': 1}} delivered: [1]",
+   "loop raised KeyboardInterrupt",
+   "after restart run_once: {'domain_uuid': 'd', 'repository_uuid': 'r', 'store_uuid': 's', 'operation': 'consume', 'outcome': 'delivered', 'accepted': True, 'consumers': ['pm'], 'command_id': 'c2', 'record_digest': 'sha256:2e46b265bd4d544b43270afacff989c40f0550f91d2e28b02b27654aa6c899ac', 'watermark': 1, 'accepted_input_versions': {'u2': 1}} pm got [1] pending 1"
+  ],
+  "final_bug_lines": []
+ },
+ "measurement": {
+  "command": "python3 -B proof/VELDO-0046/measure_gate_cost.py",
+  "serial_seconds": 26.864,
+  "mutants": 18,
+  "note": "Serial upper bound: unit, first-use integration, baseline, no-op and all 18 finding-46 mutants. measurements.json is the historical 7.451 s record and was not rewritten."
+ },
+ "mutations": [
+  {
+   "finding": 46,
+   "mutation": "notify-stop-after-handler-failure",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/first-attempt-retained",
+    "VELDO-0046 notify/retry-backoff",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-retry-successful-subscribers",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/retry-backoff",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-drop-unavailable-first-attempt",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/first-attempt-retained",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-accept-before-callback",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/first-attempt-retained",
+    "VELDO-0046 notify/retry-backoff",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-requeue-failed-at-tail",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-skip-head-of-line",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-retry-without-backoff",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/retry-backoff",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-uncapped-backoff",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/retry-backoff"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-retry-not-woken-when-due",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/retry-backoff"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-unbounded-observations",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/retry-backoff"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-unbounded-watermark",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/watermark-range"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-reject-valid-max-watermark",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/watermark-range"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-before-commit",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/committed-event"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-omit-committed-wakeup",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/committed-event",
+    "VELDO-0046 notify/event-in-the-gap",
+    "VELDO-0046 notify/fabricated-event",
+    "VELDO-0046 notify/watermark-range",
+    "VELDO-0046 notify/subscriber-isolation",
+    "VELDO-0046 notify/first-attempt-retained",
+    "VELDO-0046 notify/retry-backoff",
+    "VELDO-0046 notify/subscriber-order"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-check-outside-idle-lock",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/event-in-the-gap"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-wait-without-queue-predicate",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/event-in-the-gap",
+    "VELDO-0046 notify/retry-backoff"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-trust-invented-event-identity",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/fabricated-event"
+   ]
+  },
+  {
+   "finding": 46,
+   "mutation": "notify-trust-invented-event-digest",
+   "baseline": "green",
+   "assertions": 34,
+   "red_rows": [
+    "VELDO-0046 notify/fabricated-event"
+   ]
+  },
+  {
+   "mutations_rejected": 18,
+   "green_suites": {
+    "58_veldo_0046_notifications.py": 34
+   }
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -132 +132 @@
+-                or not 1 <= hint['watermark'] <= 2**63 - 1
++                or not 1 <= hint['watermark'] < 2**63 - 1

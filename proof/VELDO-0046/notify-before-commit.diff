@@ -1,0 +1,6 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -119,0 +120,3 @@
++        if 'event' in hint and 'transition' in hint['event']:
++            for handler in self.handlers.values():
++                handler(hint['event'])

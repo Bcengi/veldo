@@ -1,0 +1,4 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -162,0 +163 @@
++                self._condition.wait(None if deadline is None else max(0.0, deadline - self.clock()))
