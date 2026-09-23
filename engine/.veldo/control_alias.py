@@ -5,15 +5,18 @@ control_readset registers snapshot consumers. control_store.execute alone writes
 below runs inside its BEGIN IMMEDIATE on that same connection, so what a transition reads and what
 it writes are one transaction.
 
-  enable_artifact_kind  a per-repository artifact kind: alias prefix, number width, path template
-                        and first number. The kind entity IS the kind's alias counter.
+  enable_artifact_kind  a per-repository artifact kind: alias prefix, number width and path
+                        template. Its first number is derived inside the transaction from an
+                        accepted revision's commit, tree and history (a caller may name a later
+                        one, never an earlier one). The kind entity IS the kind's alias counter.
   allocate_document     one new alias from the stored counter, its reservation, the source
                         mapping, the accepted document head, its immutable version 1 and a pending
                         publication obligation, all in one signed journal record.
   edit_document         a new immutable version of an accepted document, only when the caller's
                         expected version AND expected content digest are both current.
-  record_publication    one declared version's publication obligation becomes published, carrying
-                        the digest of the bytes the publisher actually made visible.
+  record_publication    one declared version's publication obligation becomes published, only on
+                        the bound publisher's own reading, inside the transaction, of the exact
+                        accepted bytes at the declared path; a supplied digest records nothing.
 
 IDENTITY. An alias never comes from a checkout: only allocate_document advances the counter, and it
 refuses a command whose number is not the counter's current value. Each alias is reserved as its own
@@ -25,6 +28,16 @@ bytes is the named conflict source_content_conflict, never an overwrite. A role 
 '<kind>/<label>', so one source can produce several specifications and other artifacts. Every alias
 passes claim.unit_id_problem before any artifact entity is written; this module has no second
 spelling of that rule.
+
+ONE CHECKOUT PER REPOSITORY. attach maps every enrolled repository UUID to its accepted Git
+repository, whose root commits are its identity (control_enrollment's rule); two repositories may
+not share them. A kind's template is ASCII and can reach neither .git/ nor .veldo/, and no two kinds
+of one repository may declare one path, or a directory of the other's path, compared case-folded
+because the Mac's default filesystem is case-insensitive. Prefixes are compared case-folded too.
+Every other command registered on the connection when attach runs, the store's generic
+upsert_entity, retire_entity and record_receipt included, is refused allocation_owned when it
+would write an entity these commands own. A read set enabled for a generic command AFTER attach
+replaces its registration and with it this guard: attach the allocation authority last.
 
 ACCEPTED BYTES. Document content is UTF-8 text committed in the store beside its sha256 digest.
 Version entities are immutable, so the prior bytes stay readable after every edit. Publication to a
@@ -78,6 +91,7 @@ CATEGORIES = {
     'incomplete_transaction': 'unavailable_service', 'wrong_connection': 'unavailable_service',
     'missing_transaction': 'unavailable_service',
     'accepted_digest_mismatch': 'missing_evidence', 'publication_mismatch': 'missing_evidence',
+    'unsafe_path': 'missing_evidence',
     'missing_publication': 'missing_evidence', 'document_mismatch': 'missing_evidence',
     'input_digest_mismatch': 'missing_evidence',
 }

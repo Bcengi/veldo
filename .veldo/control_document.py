@@ -13,8 +13,15 @@ pending until the projection exists.
               the prior accepted version's bytes and that version is recorded published;
               otherwise publication_conflict or publication_order, and nothing is overwritten.
 
+EVERY DECLARED PATH is walked from the checkout root one component at a time through directory
+descriptors opened with O_NOFOLLOW, for writing, re-reading and reading alike, so a symlink
+anywhere on the path refuses unsafe_path and no byte is written or read outside the root. A
+Publisher binds to the one enrolled repository whose root commits its checkout carries and
+publishes nothing else; recording a publication reads the declared path through it.
+
 READERS consume only published versions. read_published() takes the newest version whose
-obligation is recorded published, reads the complete file, and compares its digest, the recorded
+obligation is recorded published, reads the complete file from a checkout of that repository (its
+root commits must be the kind's record, or wrong_repository), and compares its digest, the recorded
 publication digest, the source mapping, alias and version with the accepted store records. Edited,
 truncated or missing output refuses by name; the reader never substitutes checkout bytes.
 
@@ -70,7 +77,11 @@ def _open_parent(root, path, create):
     """A descriptor for the declared path's parent directory and the file's own name, walked from
     the checkout root with no symlink followed. Missing directories are created only when asked."""
     parts = PurePosixPath(SN.safe_path(path)).parts
-    handle = os.open(root, _DIRECTORY)
+    try:
+        handle = os.open(root, _DIRECTORY)
+    except OSError as error:
+        raise SN.Refused('missing_publication', 'checkout root %s is not a directory (%s)'
+                         % (root, error.strerror)) from error
     try:
         for part in parts[:-1]:
             try:
