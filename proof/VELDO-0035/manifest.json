@@ -1,0 +1,159 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0035",
+  "commit": "06b58e898daaafd17c51b2d1865945c51258bf49",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-09-23T04:15:08.516414+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "rows": [
+        "snapshots/registration-inventory",
+        "snapshots/control/upsert_entity",
+        "snapshots/control/retire_entity",
+        "snapshots/control/record_receipt",
+        "snapshots/control/reserve",
+        "snapshots/control/record_effect",
+        "snapshots/stale-input",
+        "snapshots/refusal/unregistered",
+        "snapshots/refusal/missing-snapshot",
+        "snapshots/refusal-observations"
+      ],
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0035/observations.json",
+          "detail": "Actual registered-suite observations, corroborated by the full canonical gate."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0035/gate-summary.json",
+          "detail": "Clean-tree full gate, real SQLite/Git/Ed25519/process tests, and required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0035/mutations.json",
+          "detail": "Two distinct production mutations turn the criterion row red; baseline and unchanged-copy controls remain green."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "rows": [
+        "snapshots/installed-assets",
+        "snapshots/signed-watermark",
+        "snapshots/missing-artifact/specification.md",
+        "snapshots/missing-artifact/plan.md",
+        "snapshots/missing-artifact/release.md",
+        "snapshots/missing-artifact/decision.md",
+        "snapshots/missing-artifact/floor.md",
+        "snapshots/missing-artifact/policy.md",
+        "snapshots/missing-artifact/graph.md",
+        "snapshots/missing-artifact/roster.md",
+        "snapshots/missing-artifact/admission.md",
+        "snapshots/missing-artifact/receipt.md",
+        "snapshots/accepted-bytes",
+        "snapshots/coordinates"
+      ],
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0035/observations.json",
+          "detail": "Actual registered-suite observations, corroborated by the full canonical gate."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0035/gate-summary.json",
+          "detail": "Clean-tree full gate, real SQLite/Git/Ed25519/process tests, and required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0035/mutations.json",
+          "detail": "Two distinct production mutations turn the criterion row red; baseline and unchanged-copy controls remain green."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "rows": [
+        "snapshots/materialized-revision",
+        "snapshots/tampered-projection",
+        "snapshots/incomplete-projection"
+      ],
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0035/observations.json",
+          "detail": "Actual registered-suite observations, corroborated by the full canonical gate."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0035/gate-summary.json",
+          "detail": "Clean-tree full gate, real SQLite/Git/Ed25519/process tests, and required mutation stage."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0035/mutations.json",
+          "detail": "Two distinct production mutations turn the criterion row red; baseline and unchanged-copy controls remain green."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0035/gate-summary.json"
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0035/gate-summary.json"
+    },
+    {
+      "name": "mutations",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0035/gate-summary.json"
+    }
+  ],
+  "rollback": "Disable snapshot consumers, preserve accepted snapshot and journal evidence, and revert these runtime assets through the ordinary review process. No service was activated.",
+  "review": "Implementation evidence only; independent engineering review and owner approval are not asserted. Specification status remains ready.",
+  "implementation_sha256": {
+    ".veldo/control_readset.py": "532e73c7fbcd5aaf6db060a4c4705ac9778e5ac49753965225ca8ba81055ccd7",
+    ".veldo/control_snapshot.py": "dcecfd55b49c98067c1957b678179795aa25b94c66efbb8c0c4212e44fb11426",
+    ".veldo/init_scaffold.py": "9f0fd514c30ca158e9888046fe7d62e6f7ed5218d660280ec0c62f3dd2229ab4",
+    "engine/.veldo/control_readset.py": "532e73c7fbcd5aaf6db060a4c4705ac9778e5ac49753965225ca8ba81055ccd7",
+    "engine/.veldo/control_snapshot.py": "dcecfd55b49c98067c1957b678179795aa25b94c66efbb8c0c4212e44fb11426",
+    "engine/.veldo/init_scaffold.py": "9f0fd514c30ca158e9888046fe7d62e6f7ed5218d660280ec0c62f3dd2229ab4",
+    "scripts/check_teeth_mutations.py": "371272356e68f76e870752dfb5e41da134b8880ff115f3c225f7be185c8610f9",
+    "scripts/suites/58_veldo_0035_snapshots.py": "1fc0335b2ee0059a105e701d8fd8215712dc6a0cc98b187858994c7c8969b8ac",
+    "scripts/suites/manifest.json": "ad6d2a347fcc132df0a0ecd788352a626da8e34c137b4b59ed046118071421f5",
+    "scripts/suites/requires.json": "4ffccd55aac09851275fdf05f6ec3fdd760662583c25c1d672ec213151b200d9",
+    "specs/VELDO-0035-authoritative-snapshots.md": "23936095c53787f43d559c6cc1476d56c83f0f9f4efda4f8111db9030f9aff18"
+  },
+  "artifacts": [
+    "proof/VELDO-0035/README.md",
+    "proof/VELDO-0035/drive.py",
+    "proof/VELDO-0035/gate-summary.json",
+    "proof/VELDO-0035/initial-attempt.json",
+    "proof/VELDO-0035/mutations.json",
+    "proof/VELDO-0035/observations.json",
+    "proof/VELDO-0035/snapshot-checkout-bytes.diff",
+    "proof/VELDO-0035/snapshot-head-bytes.diff",
+    "proof/VELDO-0035/snapshot-ignore-collections.diff",
+    "proof/VELDO-0035/snapshot-project-only.diff",
+    "proof/VELDO-0035/snapshot-working-status.diff",
+    "proof/VELDO-0035/snapshot-wrong-watermark.diff",
+    "proof/VELDO-0035/timing.json"
+  ]
+}

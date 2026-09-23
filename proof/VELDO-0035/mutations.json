@@ -1,10 +1,10 @@
 {
+  "source": "Full clean-tree canonical gate",
+  "commit": "06b58e898daaafd17c51b2d1865945c51258bf49",
   "status": "passed",
   "registered": 6,
   "executed": 6,
   "rejected": 6,
-  "worker_invocations": 10,
-  "surviving_workers": 0,
   "records": [
     {
       "mutation": "snapshot-project-only",
@@ -32,7 +32,7 @@
       "replacement_count": 1,
       "old_digest": "532e73c7fbcd5aaf6db060a4c4705ac9778e5ac49753965225ca8ba81055ccd7",
       "new_digest": "80ea62a65ec161971bb6a30f3668ebed264333b84c154951fd780dc2191c8098",
-      "elapsed_seconds": 11.132149084936827
+      "elapsed_seconds": 10.558328184997663
     },
     {
       "mutation": "snapshot-ignore-collections",
@@ -60,7 +60,7 @@
       "replacement_count": 1,
       "old_digest": "532e73c7fbcd5aaf6db060a4c4705ac9778e5ac49753965225ca8ba81055ccd7",
       "new_digest": "5bec2f00c903b21c9a46131cebfcfa4f2e5db406ded1f11cbac124df02edfa75",
-      "elapsed_seconds": 10.910877421032637
+      "elapsed_seconds": 10.497340621193871
     },
     {
       "mutation": "snapshot-checkout-bytes",
@@ -89,7 +89,7 @@
       "replacement_count": 1,
       "old_digest": "dcecfd55b49c98067c1957b678179795aa25b94c66efbb8c0c4212e44fb11426",
       "new_digest": "133bdb30ce398ed8cec62db29100bccce640be60ee6a7e2fd3dcc1963a0411c6",
-      "elapsed_seconds": 10.809894108911976
+      "elapsed_seconds": 10.51593546802178
     },
     {
       "mutation": "snapshot-head-bytes",
@@ -118,7 +118,7 @@
       "replacement_count": 1,
       "old_digest": "dcecfd55b49c98067c1957b678179795aa25b94c66efbb8c0c4212e44fb11426",
       "new_digest": "b2c0d0ba887bebfbd809f1c5b620ecb654af9647803f3b41933750831363758e",
-      "elapsed_seconds": 11.572540933964774
+      "elapsed_seconds": 11.419158498058096
     },
     {
       "mutation": "snapshot-working-status",
@@ -146,7 +146,7 @@
       "replacement_count": 1,
       "old_digest": "dcecfd55b49c98067c1957b678179795aa25b94c66efbb8c0c4212e44fb11426",
       "new_digest": "749251e02922ad4a0e69f032176aecc597778dcd31b98d59ac663dd9acae3223",
-      "elapsed_seconds": 10.648286584066227
+      "elapsed_seconds": 10.494131397921592
     },
     {
       "mutation": "snapshot-wrong-watermark",
@@ -174,7 +174,7 @@
       "replacement_count": 1,
       "old_digest": "dcecfd55b49c98067c1957b678179795aa25b94c66efbb8c0c4212e44fb11426",
       "new_digest": "f0a194d4ec30bb2230d2cf132cdd2ac04c95b080e3df5c13fbd1353d22ec82f1",
-      "elapsed_seconds": 10.768648475874215
+      "elapsed_seconds": 10.493549307109788
     }
   ]
 }

@@ -4,8 +4,20 @@ Implementation: accepted snapshots, complete transactional read-set registration
 materialization at an explicit local watermark. Specification remains **ready**. This bundle is
 implementation evidence, not independent engineering review, owner approval, or service activation.
 
-Canonical verification: pending the clean-tree `bash scripts/verify.sh` run. Its summary and
-log digest will be recorded here; no full gate log is committed.
+Canonical verification: `bash scripts/verify.sh` passed from clean commit `06b58e898daaafd17c51b2d1865945c51258bf49`.
+`gate-summary.json` retains the full-gate summary and log digest; no full gate log is committed.
+
+```text
+selftest: 5705 passed, 0 failed
+FIRST USE: pass. Every family's sanctioned first use leaves the suite exactly as green as it was, so no assertion in scripts/suites/ requires this repository's current emptiness. What that does and does not cover is in this file's docstring.
+template sync: pass (157 pair(s) compared, 6 declared per-repo, 131 engine-only)
+mutations: passed registered=90 executed=90 rejected=90 workers=122 elapsed=73.108s
+GATE: GREEN (06b58e898daaafd17c51b2d1865945c51258bf49)
+```
+
+Two earlier runs were stopped after diagnosed integration issues (the mutation registry footprint
+declaration and the required Git-helper alias); `initial-attempt.json` records them. Both were
+corrected before the successful clean-tree run. The final evidence commit changes proof only.
 
 ## Criteria and observed rows
 
