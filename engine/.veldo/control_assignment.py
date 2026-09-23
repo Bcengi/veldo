@@ -184,6 +184,8 @@ class Inbox:
                  authority_generation=1, clock=time.time):
         if set(coordinates) != set(COORDINATES) or not all(_is_str(v) for v in coordinates.values()):
             raise Refused('invalid_input', 'coordinates are domain, repository and store identities')
+        if claims.S is not store:
+            raise Refused('invalid_input', 'the claim organ must commit through this same store module')
         states = tuple(contract.LIFECYCLES['assignment']['states'])
         if set(states) != set(CATEGORIES):
             raise Refused('invalid_input', 'inbox categories do not cover the assignment schema')
@@ -309,7 +311,9 @@ class Inbox:
         cid = self.claims.claim_id(self.ids['repository_uuid'], unit)
         claim = entities.get(cid, {}).get('data')
         u = entities.get(unit, {})
-        backlog = u.get('data', {}).get('backlog_item_uuid')
+        if u.get('kind') != 'execution_unit' or u['data'].get('repository_uuid') != self.ids['repository_uuid']:
+            raise Refused('invalid_input', 'unit_id must name an execution unit of this repository')
+        backlog = u['data'].get('backlog_item_uuid')
         params['claim_inputs'] = [x for x in (unit, backlog, cid) if _is_str(x)]
         if not claim or claim.get('state') == 'released':
             return None
@@ -419,7 +423,11 @@ class Inbox:
 
     def index(self, conn=None):
         """Every stored assignment at one watermark. Invalid records are listed as invalid."""
-        rows, seq = self._rows(conn, "kind=? OR id LIKE 'assignment:%'", (ENTITY_KIND,))
+        # This repository's assignment ids whatever their kind, and assignment-kind entities
+        # whose id is not an assignment id at all; another repository's inbox is not listed.
+        prefix = assignment_id(self.ids['repository_uuid'], '')
+        rows, seq = self._rows(conn, "substr(id, 1, ?) = ? OR (kind = ? AND substr(id, 1, 11) != 'assignment:')",
+                               (len(prefix), prefix, ENTITY_KIND))
         entries = []
         for row in rows:
             item = self._item(row)

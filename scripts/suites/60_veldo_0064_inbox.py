@@ -149,6 +149,12 @@ def _v64_checks(base):
                                              backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a']))
 
     receiver = claims.Receiver(conn, ids, 'authority', journal_sign)
+    try:
+        I.Inbox(_v64_load('v64_other_store', ROOT / '.veldo' / 'control_store.py'), CM, claims, contract, conn, ids,
+                'authority', journal_sign)
+        check('inbox/states-and-authority', 'a store module other than the claim organ\'s is refused', False)
+    except I.Refused as exc:
+        check('inbox/states-and-authority', 'a store module other than the claim organ\'s is refused', exc.code == 'invalid_input')
     inbox = I.Inbox(S, CM, claims, contract, conn, ids, 'authority', journal_sign)
     counter = [0]
 
@@ -253,6 +259,7 @@ def _v64_checks(base):
         'unoffered ruling': command('owner', 'answer', 'K-decision', request_version=1, ruling='maybe'),
         'answer after cancel': command('owner', 'answer', 'T-cancel', request_version=1, ruling='accept'),
         'agent owner': command('pm', 'open', 'T-agent', assignment=content('decision', owner='worker-a')),
+        'unknown unit': command('pm', 'open', 'T-unit', assignment=content('decision', unit='no-such-unit')),
         'stranger cancels': command('stranger', 'cancel', 'K-decision', request_version=1),
         'forged signature': inbox.apply({'command': dict(ids, operation='cancel', alias='K-decision', principal='pm',
                                                          command_id='c-forged', nonce='n-forged', request_version=1),
@@ -394,8 +401,11 @@ def _v64_checks(base):
     fixture(tampered, 'assignment', dict(held, alias='X-tamper', unit_id=None))
     conn.execute('UPDATE entities SET data=? WHERE id=?',
                  (_v64_json.dumps(dict(held, alias='X-tamper', unit_id=None, owner='stranger'), sort_keys=True), tampered))
+    fixture(I.assignment_id('other-repository', 'Y-1'), 'assignment', dict(held, alias='Y-1', repository_uuid='other-repository'))
     invalid_ids = [I.assignment_id(ids['repository_uuid'], a) for a in ('X-state', 'X-kind', 'X-tamper')]
     after = {e['id']: e for e in inbox.index()['entries']}
+    check('inbox/visible-invalid', "another repository's assignment is not in this inbox",
+          I.assignment_id('other-repository', 'Y-1') not in after)
     for eid in invalid_ids:
         entry = after.get(eid)
         check('inbox/visible-invalid', eid + ' is listed as invalid with its problems',
