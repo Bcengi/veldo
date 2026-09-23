@@ -458,8 +458,10 @@ def runtime_problems(runtime):
     interpreter recorded in `command`) that lies inside one. Checked before every launch."""
     problems = []
     python = Path(runtime['python'])
-    if inside_repository(os.path.realpath(python)):
-        problems.append('the runtime interpreter resolves inside a repository')
+    for hop in link_chain(python):
+        if inside_repository(hop):
+            problems.append('the runtime interpreter links through a repository: ' + hop)
+            break
     config = python.parent.parent / 'pyvenv.cfg'
     if config.is_file():
         for line in config.read_text(errors='replace').splitlines():
@@ -470,6 +472,16 @@ def runtime_problems(runtime):
                 if inside_repository(path):
                     problems.append('pyvenv.cfg ' + key.strip() + ' names a repository path')
     return problems
+
+
+def link_chain(path, limit=40):
+    """Every path on the way from `path` to its final file, one readlink at a time, as written."""
+    chain, current = [os.path.abspath(path)], os.path.abspath(path)
+    while os.path.islink(current) and len(chain) <= limit:
+        target = os.readlink(current)
+        current = os.path.abspath(os.path.join(os.path.dirname(current), target))
+        chain.append(current)
+    return chain
 
 
 def config_paths(key, value):
