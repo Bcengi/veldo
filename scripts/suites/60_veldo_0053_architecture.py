@@ -1011,6 +1011,42 @@ def _v53_suite():
             observed['snapshot_held_names'] = {'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked)}
             check('architecture/snapshot-held-names', all(held_names.values()) and len(held_names) == 2)
 
+        with region('architecture/snapshot-module-files'):
+            # Each held module's __file__ is the installed path of its name, never the file a link resolves to,
+            # in a per-file link farm too; and linecache holds a module's lines BEFORE it runs, so an error
+            # raised while a module loads shows the line that raised.
+            import traceback
+            files = {}
+            farm_keep = top / 'files' / 'keep' / '.veldo'
+            farm_keep.mkdir(parents=True)
+            files_farm = engine_copy(top / 'files' / 'i' / '.veldo', links_into=farm_keep)
+            files_el = load('v53_files_eligibility', files_farm / 'control_eligibility.py')
+            expected_dir = os.path.realpath(str(files_farm))
+            try:
+                farm_snapshot = files_el.ValidatorSnapshot(str(files_farm))
+                files['file_is_installed_path'] = (
+                    farm_snapshot.validate.__file__ == os.path.join(expected_dir, 'validate.py')
+                    and farm_snapshot.arch.__file__ == os.path.join(expected_dir, 'arch.py')
+                    and all(entry['path'] == os.path.join(expected_dir, entry['module'] + '.py')
+                            for entry in farm_snapshot.identity.values()))
+            except Exception as error:  # noqa: BLE001 - a snapshot that cannot load names no file
+                files['file_is_installed_path'] = False
+                observed['snapshot_module_files_error'] = type(error).__name__
+            failing = engine_copy(top / 'files-raise' / '.veldo')
+            raising_line = "raise RuntimeError('raised while tracker loads')"
+            with open(str(failing / 'tracker.py'), 'a') as handle:
+                handle.write('\n' + raising_line + '\n')
+            failing_el = load('v53_failing_eligibility', failing / 'control_eligibility.py')
+            shown = None
+            try:
+                failing_el.ValidatorSnapshot(str(failing))
+            except RuntimeError:
+                frames = traceback.extract_tb(sys.exc_info()[2])
+                shown = frames[-1].line if frames else None
+            files['load_error_shows_its_line'] = shown == raising_line
+            observed['snapshot_module_files'] = files
+            check('architecture/snapshot-module-files', all(files.values()) and len(files) == 2)
+
         with region('architecture/snapshot-source'):
             # Tracebacks and inspect show the code that ran, and ONLY the snapshot's code: its lines are kept
             # under a key no other loader uses. After the installed arch.py is edited on disk: the snapshot's

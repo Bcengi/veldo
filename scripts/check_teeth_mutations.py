@@ -926,6 +926,24 @@ def cases():
                  "_read_engine_file(path) for path in sorted(installed.glob('*.py'))",
                  "path.read_bytes() for path in sorted(installed.glob('*.py'))",
                  ['snapshot-held-names'])
+    # Round 5 pins: __file__ is the installed path of the name, and linecache is seeded before a module runs.
+    origin = "origin=str(self._installed / (held + '.py')))\n"
+    architecture('architecture-snapshot-file-resolved', 'control_eligibility.py', origin,
+                 "origin=os.path.realpath(str(self._installed / (held + '.py'))))  # defect: the link's target\n",
+                 ['snapshot-module-files'])
+    architecture('architecture-snapshot-file-is-key', 'control_eligibility.py', origin,
+                 "origin=self.source_key(held))  # defect: __file__ is the snapshot's cache key, not the installed path\n",
+                 ['snapshot-module-files'])
+    load_block = (seed + "        self.snapshot._keys.append(key)\n"
+                  "        # Recorded before the module runs, so a module that fails during its own load is still in the identity.\n"
+                  "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()\n"
+                  "        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)\n")
+    architecture('architecture-linecache-seeded-after-load', 'control_eligibility.py', load_block,
+                 load_block.replace(seed, "").rstrip("\n") + "  # defect: lines cached only after the module ran\n" + seed,
+                 ['snapshot-module-files'])
+    architecture('architecture-linecache-seeded-for-roles-only', 'control_eligibility.py', seed,
+                 "        if self.held in ROLE_LABELS:  # defect: only the labelled modules' lines are cached\n    " + seed,
+                 ['snapshot-module-files'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
