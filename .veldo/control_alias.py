@@ -32,7 +32,10 @@ passes claim.unit_id_problem before any artifact entity is written; this module 
 spelling of that rule.
 
 ONE CHECKOUT PER REPOSITORY. attach maps every enrolled repository UUID to its accepted Git
-repository. Which repository a CHECKOUT is comes from the VELDO-0029 binding it carries (see
+repository and binds that mapping in the store (control_store.bind_repositories), the binding
+VELDO-0035's accept_revision checks every accepted commit against; another repository for a bound
+UUID is refused repository_binding_conflict, and enabling reads only the bound repository and only
+the accepted commits it holds. Which repository a CHECKOUT is comes from the VELDO-0029 binding it carries (see
 control_document), never from root commits, which two repositories can share. A kind's template is ASCII and can reach neither .git/ nor .veldo/, and no two kinds
 of one repository may declare one path, or a directory of the other's path, compared case-folded
 because the Mac's default filesystem is case-insensitive. Prefixes are compared case-folded too.
@@ -91,7 +94,7 @@ CATEGORIES = {
     'malformed_command': 'invalid_input', 'invalid_registration': 'invalid_input',
     'wrong_repository': 'invalid_input', 'transition_refused': 'invalid_input',
     'missing_authority': 'missing_authority', 'entity_owned': 'missing_authority',
-    'ownership_conflict': 'invalid_input',
+    'ownership_conflict': 'invalid_input', 'repository_binding_conflict': 'invalid_input',
     'unregistered_inputs': 'invalid_input', 'reserved_path': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
     'source_content_conflict': 'stale_subject', 'command_content_conflict': 'stale_subject',
@@ -616,11 +619,19 @@ class Allocations:
         accepted = revision['data']
         if accepted.get('domain_uuid') != self.domain_uuid or accepted.get('repository_uuid') != repository:
             self._refuse('wrong_repository', 'the accepted revision belongs to another repository')
-        commits = accepted_commits(conn, self.domain_uuid, repository)
-        floor = max(accepted_maximum(self.paths[repository], commit, data) for commit in commits) + 1
-        roots = root_commits(self.paths[repository], accepted['commit'])
+        # The repository read here is the one this store binds the uuid to, whatever path this
+        # object was constructed with: accept_revision checked every accepted commit against it.
+        bound = self.store.bound_repository(conn, self.domain_uuid, repository)
+        if bound != os.path.realpath(self.paths[repository]):
+            self._refuse('wrong_repository', 'this store reads repository %s from %s, not %s'
+                         % (repository, bound, self.paths[repository]))
+        roots = root_commits(bound, accepted['commit'])
         if roots != self.identities[repository]:
             self._refuse('wrong_repository', 'the accepted commit is not in the enrolled repository')
+        # Only revisions whose commit the bound repository holds count: accept_revision refuses any
+        # other, so one that is here anyway was written around it and holds no number of this one.
+        commits = [commit for commit in accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]
+        floor = max(accepted_maximum(bound, commit, data) for commit in commits) + 1
         if first is None:
             data['next'] = floor
         elif first < floor:
@@ -736,6 +747,7 @@ def attach(store, conn, domain_uuid, repositories):
     if any(operation in conn.command_registry for operation in OPERATIONS):
         raise SN.Refused('invalid_registration', 'connection already has an allocation authority')
     service = Allocations(store, conn, domain_uuid, repositories)
+    store.bind_repositories(conn, domain_uuid, service.paths)
     store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES)
     # First numbers come from accepted revisions: they are VELDO-0035's accept_revision's alone.
     store.declare_owners(conn, RS.REVISION_OWNER, kinds=RS.REVISION_KINDS)

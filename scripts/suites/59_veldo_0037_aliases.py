@@ -1027,6 +1027,100 @@ def _s37_run():
                'publish-A-into-B': 'wrong_repository', 'A-file-in-B': False, 'A-checkout': 'A', 'publish-A': True,
                'read-A': b'A document\n', 'read-A-from-B': 'wrong_repository'})
         env.conn.close()
+
+        # 14. An accepted revision names a commit the store's bound repository holds at acceptance
+        # time. The first attach binds each repository uuid to its accepted repository in the store;
+        # a revision service attached to another repository (an unrelated one, or a clone holding
+        # an unpushed commit) is refused by name, and accept_revision registered straight from a
+        # Revisions object refuses a commit the bound repository lacks. The floor counts only
+        # revisions whose commit the bound repository holds, so a revision it could never have
+        # accepted (written around every command, by raw SQL) cannot make enabling refuse.
+        env = fresh('enrolled', {'repository': [{'specs/VELDO-0002-held.md': b'# held\n'}]})
+        bound_origin = env.origins['repository']
+        foreign = env.base / 'unrelated-origin'
+        foreign.mkdir()
+        g(foreign, 'init', '-q')
+        (foreign / 'specs').mkdir()
+        (foreign / 'specs/VELDO-0040-foreign.md').write_bytes(b'# not in the bound repository\n')
+        g(foreign, 'add', '-A')
+        g(foreign, 'commit', '-qm', 'Unrelated history')
+        foreign_commit = g(foreign, 'rev-parse', 'HEAD')
+        clone = env.base / 'working-clone'
+        g(env.base, 'clone', '-q', str(bound_origin), str(clone))
+        (clone / 'specs/VELDO-0007-clone.md').write_bytes(b'# pushed later\n')
+        g(clone, 'add', '-A')
+        g(clone, 'commit', '-qm', 'Local, unpushed')
+        clone_commit = g(clone, 'rev-parse', 'HEAD')
+        enrolled = {}
+        handles = []
+
+        def accept_through(label, repository_path, commit, direct):
+            connection = st.open_store(env.db)
+            handles.append(connection)
+            if direct:
+                # accept_revision's own code, registered without attach_revisions.
+                accepting = rs.Revisions(st, connection, 'domain', {'repository': str(repository_path)})
+                connection.command_registry['accept_revision'] = {
+                    'transaction_transition': accepting.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+            else:
+                accepting, error = attempt(lambda: rs.attach_revisions(st, connection, 'domain',
+                                                                       {'repository': str(repository_path)}))
+                if error is not None:
+                    enrolled[label] = code(error)
+                    return
+            _, error = attempt(lambda: accepting.accept('revision/' + label, 'repository', commit, 'operator', **signing))
+            enrolled[label] = code(error)
+
+        accept_through('foreign-attach', foreign, foreign_commit, direct=False)
+        accept_through('foreign-direct', foreign, foreign_commit, direct=True)
+        accept_through('clone-attach', clone, clone_commit, direct=False)
+        accept_through('clone-unpushed', clone, clone_commit, direct=True)
+        g(bound_origin, 'fetch', '-q', str(clone), 'HEAD:refs/heads/accepted-next')
+        _, error = attempt(lambda: env.accepting.accept('revision/clone-pushed', 'repository', clone_commit, 'operator',
+                                                        **signing))
+        enrolled['clone-after-push'] = code(error)
+        _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None)
+        enrolled['enable-after'] = code(error)
+        allocated, _ = allocate(env, 'enrolled-first', 'specification', 'first', b'first after the floor\n')
+        enrolled['allocated'] = (allocated or {}).get('alias')
+        # A revision no command could have accepted, written around execute.
+        env.conn.execute('INSERT INTO entities (id, kind, version, digest, data) VALUES (?,?,?,?,?)', (
+            'revision/raw', 'accepted_revision', 1, 'sha256:' + '0' * 64, _s37_json.dumps({
+                'domain_uuid': 'domain', 'repository_uuid': 'repository', 'commit': foreign_commit,
+                'documents': {}, 'statuses': {}}, sort_keys=True)))
+        _, error = enable(env, 'plan', 'PLAN', 'plans/{alias}-{slug}.md', first=None)
+        enrolled['enable-beside-raw'] = code(error)
+        plan = env.service.current(al.kind_id('repository', 'plan'))[1] or {}
+        enrolled['plan-floor-commits'] = foreign_commit not in plan.get('floor_commits', [foreign_commit]) \
+            and clone_commit in plan.get('floor_commits', [])
+        # The allocation side: its own attach to another repository is refused by name, and
+        # Allocations registered without attach reads no repository but the bound one.
+        elsewhere = st.open_store(env.db)
+        handles.append(elsewhere)
+        _, error = attempt(lambda: al.attach(st, elsewhere, 'domain', {'repository': str(clone)}))
+        enrolled['allocation-attach-elsewhere'] = code(error)
+        direct = st.open_store(env.db)
+        handles.append(direct)
+        allocations, error = attempt(lambda: al.Allocations(st, direct, 'domain', {'repository': str(clone)}))
+        if allocations is not None:
+            direct.command_registry['enable_artifact_kind'] = {
+                'transaction_transition': allocations._transition(allocations._t_enable),
+                'writes': ('entities', 'journal', 'commands', 'nonces')}
+            serial[0] += 1
+            _, error = attempt(lambda: allocations.enable_kind({'request_id': 'enable-%d' % serial[0], 'principal': 'operator',
+                'repository_uuid': 'repository', 'kind': 'decision', 'prefix': 'DEC', 'width': 4,
+                'path_template': 'decisions/{alias}-{slug}.md', 'revision_id': 'revision/repository'}, **signing))
+        enrolled['allocation-direct-elsewhere'] = code(error)
+        for handle in handles:
+            handle.close()
+        defects['enrolled-repository'] = enrolled
+        expect('aliases/revision-in-enrolled-repository', enrolled == {
+               'foreign-attach': 'repository_binding_conflict', 'foreign-direct': 'unenrolled_commit',
+               'clone-attach': 'repository_binding_conflict', 'clone-unpushed': 'unenrolled_commit',
+               'clone-after-push': None, 'enable-after': None, 'allocated': 'VELDO-0008', 'enable-beside-raw': None,
+               'plan-floor-commits': True, 'allocation-attach-elsewhere': 'repository_binding_conflict',
+               'allocation-direct-elsewhere': 'wrong_repository'})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

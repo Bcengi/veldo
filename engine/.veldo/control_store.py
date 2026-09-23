@@ -37,6 +37,14 @@ A declaration is immutable: the same declaration again is a no-op, a different o
 kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
 that entities already occupy, because they were written while nobody owned them.
 
+ACCEPTED REPOSITORIES. A service that reads an enrolled repository's commits BINDS each repository
+uuid of a domain to the local Git repository it reads, with bind_repositories, and the binding is
+persisted beside the declarations (the repository_bindings table, created by the first binding).
+The first binding wins and is immutable: the same path again is a no-op and another path refuses
+repository_binding_conflict, so every service on every connection to this store reads one
+repository for one uuid. Transitions read it back inside their own transaction with
+bound_repository. Neither table is part of the journal.
+
 CRASH POINTS. For the SIGKILL matrix the spec requires, a writer process may be told through the
 environment to kill itself at a durable boundary (before COMMIT, inside COMMIT through the
 progress handler, or after COMMIT before replying). The hooks act only when
@@ -70,7 +78,7 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
-            "ownership_conflict")
+            "ownership_conflict", "repository_binding_conflict")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 _DDL = (
@@ -99,6 +107,12 @@ _DDL = (
 OWNERS_TABLE = "entity_owners"
 _OWNERS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owners (selector TEXT NOT NULL CHECK (selector IN ('kind', 'prefix')), "
                "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, PRIMARY KEY (selector, value))")
+
+
+# Accepted repositories (see the module docstring), created by the first binding like entity_owners.
+BINDINGS_TABLE = "repository_bindings"
+_BINDINGS_DDL = ("CREATE TABLE IF NOT EXISTS repository_bindings (domain_uuid TEXT NOT NULL, repository_uuid TEXT NOT NULL, "
+                 "path TEXT NOT NULL, PRIMARY KEY (domain_uuid, repository_uuid))")
 
 
 class StoreRefused(Exception):
@@ -566,6 +580,49 @@ def declare_owners(conn, owner, kinds=None, prefixes=None):
             conn.execute("ROLLBACK")
         raise
     return rows
+
+
+def bound_repository(conn, domain_uuid, repository_uuid):
+    """The resolved path of the local repository bound to a domain's repository uuid, or None."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (BINDINGS_TABLE,)).fetchone():
+        return None
+    row = conn.execute("SELECT path FROM repository_bindings WHERE domain_uuid=? AND repository_uuid=?",
+                       (domain_uuid, repository_uuid)).fetchone()
+    return row[0] if row else None
+
+
+def bind_repositories(conn, domain_uuid, repositories):
+    """Persist that each repository uuid of `domain_uuid` in `repositories` is read from the Git
+    repository at its path (resolved), all of them or none. Idempotent for the same paths;
+    repository_binding_conflict for another path, because the first binding is the one every
+    accepted commit of that repository has been checked against. Its own transaction, like
+    declare_owners."""
+    if not _is_str(domain_uuid) or not isinstance(repositories, dict) or not repositories or not all(
+            _is_str(r) and _is_str(p) for r, p in repositories.items()):
+        raise StoreRefused("malformed_command", "a repository binding names its domain and maps each repository to a path")
+    targets = {repository: os.path.realpath(path) for repository, path in sorted(repositories.items())}
+    if all(bound_repository(conn, domain_uuid, r) == t for r, t in targets.items()):
+        return targets
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot bind a repository (%s)" % e)
+    try:
+        conn.execute(_BINDINGS_DDL)
+        for repository, target in targets.items():
+            prior = bound_repository(conn, domain_uuid, repository)
+            if prior is None:
+                conn.execute("INSERT INTO repository_bindings (domain_uuid, repository_uuid, path) VALUES (?,?,?)",
+                             (domain_uuid, repository, target))
+            elif prior != target:
+                raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
+                                   % (repository, domain_uuid, prior, target))
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return targets
 
 
 # ---------------------------------------------------------------------------------------------

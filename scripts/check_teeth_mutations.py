@@ -511,7 +511,7 @@ def cases():
             '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
             'aliases/owned-whatever-registration-order')
     aliases('alias-floor-named-revision-only', 'control_alias.py',
-            '        commits = accepted_commits(conn, self.domain_uuid, repository)\n',
+            '        commits = [commit for commit in accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]\n',
             "        commits = [accepted['commit']]\n", 'aliases/floor-from-every-accepted-revision')
     aliases('revision-regression-allowed', 'control_readset.py',
             "                if not _descends(repo, data['commit'], commit):", '                if False:',
@@ -527,6 +527,18 @@ def cases():
     aliases('readset-snapshots-undeclared', 'control_readset.py',
             '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)\n', '',
             'aliases/owned-whatever-registration-order')
+    # Third review (2026-09-23): each row's reintroducing mutation, then distinct second ones.
+    aliases('revision-any-repository', 'control_readset.py',
+            '            if bound is None or not _holds(bound, commit):', '            if False:',
+            'aliases/revision-in-enrolled-repository')
+    aliases('floor-counts-unheld-revisions', 'control_alias.py',
+            'accepted_commits(conn, self.domain_uuid, repository) if RS._holds(bound, commit)]',
+            'accepted_commits(conn, self.domain_uuid, repository)]', 'aliases/revision-in-enrolled-repository')
+    aliases('enable-reads-unbound-repository', 'control_alias.py',
+            '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
+            'aliases/revision-in-enrolled-repository')
+    aliases('repository-binding-unchecked', 'control_store.py',
+            '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
     return result
 
 

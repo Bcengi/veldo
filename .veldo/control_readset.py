@@ -41,6 +41,15 @@ def _descends(repo, older, newer):
     return result.returncode == 0
 
 
+def _holds(repo, commit):
+    """Whether the Git repository at `repo` holds `commit` as a commit object now."""
+    try:
+        SN.commit_id(repo, commit)
+    except SN.Refused:
+        return False
+    return True
+
+
 class ReadSets:
     def __init__(self, store, conn, repo, domain_uuid, repository_uuid):
         self.store, self.conn, self.repo = store, conn, Path(repo)
@@ -219,7 +228,16 @@ class Revisions:
     enrolled repository, its documents {output_path: sha256} and statuses {output_path: entity_id},
     each checked inside the store's transaction exactly as inputs() checks them when consumed; a
     revision id already accepted moves only to a descendant of its commit. attach_revisions declares
-    in the store that nothing but accept_revision writes an accepted_revision, on any connection."""
+    in the store that nothing but accept_revision writes an accepted_revision, on any connection.
+
+    WHICH REPOSITORY. attach_revisions binds each repository uuid to its accepted repository in the
+    store (control_store.bind_repositories): the first service to attach, this one or VELDO-0037's
+    allocation authority, fixes it, and another repository for that uuid is refused
+    repository_binding_conflict. The transition reads that binding back inside its transaction and
+    refuses unenrolled_commit when the bound repository does not hold the commit at acceptance time
+    (an unrelated repository's commit, or a clone's unpushed one), whatever path this object was
+    constructed with, so no revision service reading another repository can record a commit the
+    allocation authority cannot read."""
 
     def __init__(self, store, conn, domain_uuid, repositories):
         if not isinstance(repositories, dict) or not repositories:
@@ -246,6 +264,10 @@ class Revisions:
                 raise SN.Refused('wrong_repository', 'repository is not enrolled in this domain')
             repo = self.paths[repository]
             SN.commit_id(repo, commit)
+            bound = self.store.bound_repository(conn, self.domain_uuid, repository)
+            if bound is None or not _holds(bound, commit):
+                raise SN.Refused('unenrolled_commit', '%s is not in the accepted repository %s of this store'
+                                 % (commit, bound or '(none bound)'))
             documents, statuses = parameters['documents'], parameters['statuses']
             for path, identity_of_status in statuses.items():
                 SN.safe_path(path)
@@ -280,6 +302,7 @@ def attach_revisions(store, conn, domain_uuid, repositories):
         raise SN.Refused('invalid_registration', 'connection already accepts revisions')
     service = Revisions(store, conn, domain_uuid, repositories)
     store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS)
+    store.bind_repositories(conn, domain_uuid, service.paths)
     conn.command_registry['accept_revision'] = {
         'transaction_transition': service.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
     return service
