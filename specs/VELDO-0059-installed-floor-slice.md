@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W44
-plan_revision: 1
-depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0024, VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0028, VELDO-0029, VELDO-0030, VELDO-0031, VELDO-0032, VELDO-0033, VELDO-0034, VELDO-0035, VELDO-0036, VELDO-0037, VELDO-0038, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0043, VELDO-0044, VELDO-0045, VELDO-0046, VELDO-0047, VELDO-0048, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058]
+plan_revision: 3
+depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108]
 placement: [distribution, fleet, loop, enforcement, docs]
 protected_paths: []
 footprint:
@@ -35,107 +35,117 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Slice reports identify installed pack/runtime digests, enrolled fixture domain, journey,
-    station, dispatch, and exact failure barrier.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Report RJ1-RJ4 execution coverage, actual child and receiver counts, retained reservations,
-    missing installed assets, and unchanged-trunk assertions.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join admitted spec and signed fixture authority through claim, clone, construction, proof,
-    separate review, candidate gate, remote confirmation, and replicated completion.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish installation omission, unqualified host, unsafe reservation/limits, station refusal,
-    changed trunk on failure, and repeated publication after recovery.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: An installed composed pack drives one admitted specification from real claim to
-      remotely confirmed and replicated completion with only model responses faked. Set:
-      pack.assemble_pack and engine_files, init_scaffold.scaffold, scripts/check_install_and_run.py
-      install_and_run, installed WorkLoop.step, Dispatcher._dispatch_build/_dispatch_review,
-      Executor.run, and Lander.land with GitLandOps. Completeness: Install a declared reference pack
-      into a fresh repository without source-tree imports; enumerate its actual
-      modules/runtime/assets against W30 inventory. Use real control.sqlite3, OpenSSH signatures,
-      locks, isolated clones/read-only pinned cache, contained builder and independent reviewer
-      processes, canonical gate, policy, files, and bare remote. Run the minimal real LangGraph
-      adapter with its local restricted checkpointer. Bind every station receipt and RJ1 observation
-      to exact subjects. Remove a required installed asset and require failure rather than host
-      fallback. Falsifier: Fall back to repository executor.py after omitting it from the installed
-      pack; slice/installed-provenance must detect execution outside the installed artifact.
+      Claim: The installed factory carries an owner objective from Telegram or the authenticated API
+      through LangGraph grooming, owner admission, implementation, independent review, exact landing
+      and completion reporting. Set and completeness: Install the declared reference distribution
+      without source-tree imports. Run a real Telegram objective and an API objective using the same
+      intake (including the UI message box). The actual LangGraph PM asks a blocking question
+      answered by the enrolled owner, publishes a prioritized backlog of specifications/nested
+      units, and obtains distinct admission and priority. A versioned team and exact configured
+      MCP/tool surface assigns real Claude Code and Codex workers across Linux and the Mac, with iOS
+      work only on the Mac via the relay. Observe isolated accepted-commit clones/C13 attachments,
+      kept proof, the trusted gate outside the candidate, fresh independent review, confirmed exact
+      tested-tree landing, stored completion and Telegram/UI progress, stops and completion. Compare
+      every journey step to installed service registrations and correlated receipts. Falsifier: Fall
+      back to a source-tree LiveLoop implementation after omitting the installed adapter wiring; the
+      installed-provenance journey must fail.
     falsified_by: >
-      Fall back to repository executor.py after omitting it from the installed pack;
-      slice/installed-provenance must detect execution outside the installed artifact.
+      Fall back to a source-tree LiveLoop implementation after omitting the installed adapter
+      wiring; the installed-provenance journey must fail.
   - id: AC2
     text: >
-      Claim: The same installed slice leaves both trunk refs unchanged after a real red gate or
-      rejected approval, including direct executor and review entry attempts. Set: RJ2 through
-      installed Executor.run, Dispatcher._dispatch_review, GitLandOps.gate/finalize, separate
-      reviewer assignment, and real signed approval fixtures consumed by installed policy.
-      Completeness: Enumerate normal, direct build, and direct review entries; drive each with a
-      failing candidate test and a rejected protected-path approval. Also try builder-as-reviewer
-      and a later passing assertion with an unresolved objection. Record actual processes,
-      candidate/proof bytes, policy result, local and remote refs. SIGKILL during the rejecting
-      stage and rerun recovery; no path may grant completion or alter either trunk. Falsifier:
-      Advance local trunk before candidate policy rejects approval;
-      slice/rejected-approval-isolation must detect changed refs through the direct review journey.
+      Claim: A red gate, invalid approval/answer or invalid independent review preserves both trunk
+      refs. Set and completeness: For normal, direct build and direct review entry points, run real
+      red checks, wrong-subject approval, forged owner identity, stale presentation, self-review and
+      unresolved blocking finding followed by a pass. Compare local/remote refs, actual
+      policy/review/settlement results and absence of completion. Fixtures prove only these
+      consumption checks, not live enrollment. Falsifier: Move trunk before the protected-path
+      approval rejects; the unchanged-ref journey must fail.
     falsified_by: >
-      Advance local trunk before candidate policy rejects approval;
-      slice/rejected-approval-isolation must detect changed refs through the direct review journey.
+      Move trunk before the protected-path approval rejects; the unchanged-ref journey must fail.
   - id: AC3
     text: >
-      Claim: Dependency or authority regression refuses execution and publication through every
-      installed floor entry while B spend and containment protections remain active. Set: RJ3 across
-      WorkLoop._still_claimable, Executor.run, Dispatcher._dispatch_review, and GitLandOps.finalize
-      using real signed revocation/dependency commands and separate contained fake-model processes.
-      Completeness: Derive entry/prerequisite coverage from W37 registrations. Change a dependency
-      or authority after selection, before review, and before publication; race requests for one
-      remaining reservation, withhold delayed usage, and verify hard memory, cumulative CPU-time,
-      writable-byte and inode limits. SIGSTOP the checkpoint writer in a real write transaction and
-      require independent holder cancellation and committed revocation within B bounds. Observe no
-      denied provider request, stale launch/publication, or premature slot release; source-only
-      fixtures cannot replace these installed operations. Falsifier: Cache publication eligibility
-      before the real revocation commits and resume the lander afterward;
-      slice/revocation-before-publication must detect the remote ref update.
+      Claim: Current dependency, authority and pre-call spending predicates apply through every
+      installed station. Set and completeness: Enumerate enabled floor entries from 0052
+      registrations; change dependency or authority after selection and before review/publication,
+      and submit an excessive or unknown request maximum for build, review and PM calls. Observe
+      named refusal, zero forbidden provider calls/launches/publications and retained unknown charge
+      exposure. Compare actual entry coverage to RJ3; no resource-exhaustion, checkpoint or recovery
+      matrix is required. Falsifier: Cache publication eligibility across a committed authority
+      change; the stale-publication journey must fail.
     falsified_by: >
-      Cache publication eligibility before the real revocation commits and resume the lander
-      afterward; slice/revocation-before-publication must detect the remote ref update.
+      Cache publication eligibility across a committed authority change; the stale-publication
+      journey must fail.
   - id: AC4
     text: >
-      Claim: Restart after a lost landing acknowledgment reconciles the original exact candidate
-      without second publication, and RJ1-RJ4 remain executable registered regression obligations.
-      Set: RJ4 through installed GitLandOps.finalize, B recovery commands, real remote receive
-      records, journal replica, and local LangGraph checkpoint state, with W40 regression
-      consumption. Completeness: SIGKILL after remote ref acceptance before authority
-      acknowledgment, delete graph checkpoints, restart the installed authority/adapter, and query
-      remote commit and ancestry. Require one source publication attempt, recovered signed landing
-      receipt/spec.shipped, and no completion from unknown or divergent observations. Compare active
-      RJ1-RJ4 plan declarations to executable suite registration and observed
-      candidate/environment-bound receipts; omit one journey result and require release refusal.
-      Falsifier: Allocate a fresh landing dispatch after checkpoint deletion following accepted
-      remote publication; slice/lost-ack-no-repeat must detect the second receive attempt.
+      Claim: Release 1 completion is evidenced by the complete installed journey and exact immutable
+      candidate observations. Set and completeness: Compare RJ1-RJ3 declarations to executable
+      registrations and actual receipts for the relevant candidate/environment. Remove one required
+      journey result, required runtime asset or post-gate tree equality observation; each must
+      refuse release acceptance. API/UI and Telegram receipts identify the same authoritative
+      request/unit, and build-only output cannot substitute for confirmed landing. Falsifier: Accept
+      release readiness with a missing RJ1 result; the complete-journey-evidence check must fail.
     falsified_by: >
-      Allocate a fresh landing dispatch after checkpoint deletion following accepted remote
-      publication; slice/lost-ack-no-repeat must detect the second receive attempt.
+      Accept release readiness with a missing RJ1 result; the complete-journey-evidence check must
+      fail.
 required_evidence: [unit, integration, journeys]
 rollback: >
-  Keep project coordination and live worker activation disabled, preserve failed slice artifacts and
-  unresolved effects, and restore only compatible installed components after reconciliation.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Prove the repaired floor as an installed system before production workers, channels, or project coordination depend on it.
+Installed end-to-end floor slice with fake model and real enforcement. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package C, W44 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A and B contracts govern this repair. This is a draft, not implementation or activation authority.
-
-R35, R43-R45, R51, R53, R58, and R76 define the first real engineering delivery slice. Incomplete integration could hide authorization or publication failures behind successful component tests. The declared risk floor is critical; required approval must bind the eventual change and proof and is not recorded by this declaration.
+W44 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 6.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Production engine qualification is D, real presentation/attribution/settlement and interrupted decision proof is E, project-manager behavior is G, and every-pack operational qualification is H.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1-D4 block this slice until Dmitry ratifies the store/replica, off-host acknowledgment, Linux systemd/cgroup runner, and isolated clones/cache respectively, and the A/B implementations qualify them. Declare the reference pack and qualified host before ready; H expands to every pack and operational recovery. Unavailable systemd, isolation, or resource limits is blocked qualification, never a mocked pass. Wire installed deterministic services and fake model bytes only; do not inject fake LoopSteps, LandOps, stores, signing, policy, or gates. Use real command signatures that bind full parameters, enforce request maxima before local fake-provider calls, and retain conservative exposure. Fixtures test policy consumption only and certify no live decision channel. Register RJ1-RJ4 in the plan when executable checks exist, preserving their activation. Save applied mutation diffs, named failing rows, process observations, and pre/post Git refs. New slice assets need W30 inventory/scaffolder coverage and byte-identical composition; resolve proposed control_floor_slice placement before ready.
+This is the Release 1 stage 6 full-journey qualification. Declare the reference installed
+distribution and both actual host profiles before ready. Real Claude Code/Codex and real
+Telegram plus authenticated UI/API are required; deterministic model fixtures may add
+repeatable negative controls but cannot certify live behavior. No fake LoopSteps, LandOps,
+store, signer, policy or gate substitutes for the installed integration. Register RJ1-RJ3 and
+retain their actual candidate/environment-bound observations; RJ4 recovery is owned by Release
+2/0097.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 6: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop existing AC4 lost-ack/checkpoint recovery and AC3
+fencing/contention/resource matrices; extend AC1 to the full Telegram -> PM -> workers ->
+review -> land -> Telegram journey, retaining AC2's meaningful rejection checks. Removed
+recovery, durability and failure-matrix obligations belong to Release 2; additional
+host/channel/version and full distribution breadth belongs to Release 4. Normal function and
+the checks stated above remain Release 1.
