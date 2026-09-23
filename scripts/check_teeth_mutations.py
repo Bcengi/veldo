@@ -463,6 +463,11 @@ def cases():
     aliases('alias-guard-by-new-kind-only', 'control_alias.py',
             "            if _owned(identity, change['kind']) or _owned(identity, before.get(identity, {}).get('kind')):",
             "            if change['kind'] in OWNED_KINDS:", 'aliases/generic-writes-refused')
+    aliases('publisher-any-repository', 'control_document.py',
+            '            if repository != self.repository:', '            if False:', 'publication/bound-to-repository')
+    aliases('reader-any-checkout', 'control_document.py',
+            '    if not recorded or AL.checkout_identity(os.path.realpath(root)) != recorded:', '    if False:',
+            'publication/bound-to-repository')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')

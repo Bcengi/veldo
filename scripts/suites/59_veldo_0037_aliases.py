@@ -661,6 +661,36 @@ def _s37_run():
                'receipt-over-version': 'allocation_owned', 'owned-kind-elsewhere': 'allocation_owned',
                'unrelated': None, 'next': 'VELDO-0003'})
         env.conn.close()
+
+        # 6. A publisher and a reader are bound to the repository their checkout is a clone of
+        # (its root commits): another repository's accepted document is refused by name even when
+        # its path and bytes are identical, and a directory that is no checkout binds nothing.
+        env = fresh('cross', {'repository': [{}], 'other': [{}]})
+        mine, theirs = checkout_of(env, 'repository'), checkout_of(env, 'other')
+        stray = env.base / 'not-a-checkout'
+        stray.mkdir()
+        publisher_mine, _ = attempt(lambda: doc.Publisher(env.service, mine))
+        publisher_theirs, _ = attempt(lambda: doc.Publisher(env.service, theirs))
+        _, stray_error = attempt(lambda: doc.Publisher(env.service, stray))
+        for repository in ('repository', 'other'):
+            enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', repository=repository)
+            allocate(env, 'cross-' + repository, 'specification', 'shared', b'identical bytes\n', repository=repository)
+        _, crossed = publish_by(publisher_mine, 'other', 'VELDO-0001')
+        after_cross = files_under(mine)
+        own, _ = publish_by(publisher_mine, 'repository', 'VELDO-0001')
+        their_own, _ = publish_by(publisher_theirs, 'other', 'VELDO-0001')
+        honest_read, _ = read_by(env, 'repository', 'VELDO-0001', mine)
+        _, other_from_mine = read_by(env, 'other', 'VELDO-0001', mine)
+        _, mine_from_theirs = read_by(env, 'repository', 'VELDO-0001', theirs)
+        defects['cross-repository'] = {'stray_publisher': code(stray_error), 'publish_other_here': code(crossed),
+                                       'files_after': after_cross, 'read_other_here': code(other_from_mine),
+                                       'read_here_from_other': code(mine_from_theirs)}
+        expect('publication/bound-to-repository', publisher_mine is not None and publisher_theirs is not None
+               and code(stray_error) == 'wrong_repository' and code(crossed) == 'wrong_repository'
+               and after_cross == ['README.md'] and bool(own) and bool(their_own)
+               and (honest_read or {}).get('body') == b'identical bytes\n'
+               and code(other_from_mine) == 'wrong_repository' and code(mine_from_theirs) == 'wrong_repository')
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

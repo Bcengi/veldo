@@ -125,7 +125,14 @@ class Publisher:
     """Materializes accepted versions under one checkout root for an Allocations service."""
 
     def __init__(self, service, root):
+        """Bound to the one enrolled repository whose identity (root commits) the checkout at
+        `root` carries; a directory that is no checkout of an enrolled repository binds nothing."""
         self.service, self.root = service, Path(os.path.realpath(root))
+        identity = AL.checkout_identity(self.root)
+        matches = [repository for repository, roots in service.identities.items() if identity and roots == identity]
+        if len(matches) != 1:
+            raise SN.Refused('wrong_repository', '%s is not a checkout of an enrolled repository' % self.root)
+        self.repository = matches[0]
 
     def visible_digest(self, path):
         """The digest of the bytes a reader of this checkout sees at a declared path, or None."""
@@ -170,8 +177,8 @@ class Publisher:
 
         def work(event):
             event.update(alias=alias, version=version)
-            if repository not in service.repositories:
-                raise SN.Refused('wrong_repository', 'repository is not enrolled in this domain')
+            if repository != self.repository:
+                raise SN.Refused('wrong_repository', 'this checkout is repository %s, not %r' % (self.repository, repository))
             data, obligation, body = accepted(service.store, service.conn, repository, alias, version)
             current = read_exact(self.root, data['path'])
             if obligation['state'] == 'published':
@@ -226,6 +233,10 @@ def read_published(store, conn, repository, alias, root):
     if (mapping is None or mapping['data']['alias'] != alias or mapping['data']['version'] != version
             or mapping['data']['digest'] != data['digest'] or mapping['data']['source'] != data['source']):
         raise SN.Refused('document_mismatch', 'source mapping disagrees with %s@%d' % (alias, version))
+    kind = SN.entity(store, conn, AL.kind_id(repository, data['kind']))['value']
+    recorded = (kind or {}).get('data', {}).get('root_commits')
+    if not recorded or AL.checkout_identity(os.path.realpath(root)) != recorded:
+        raise SN.Refused('wrong_repository', '%s is not a checkout of repository %s' % (root, repository))
     try:
         body = read_exact(os.path.realpath(root), data['path'])
     except OSError as error:
