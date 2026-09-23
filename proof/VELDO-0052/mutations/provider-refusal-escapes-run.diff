@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -552,0 +553,2 @@
++                if opened:
++                    raise  # defect: a refusal inside the launch escapes run()

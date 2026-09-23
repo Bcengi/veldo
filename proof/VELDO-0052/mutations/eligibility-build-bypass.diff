@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -273 +273 @@
+@@ -270 +270 @@
 -            if not decision["eligible"]:
 +            if False:

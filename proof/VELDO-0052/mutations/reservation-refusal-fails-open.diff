@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -726 +726,2 @@
+@@ -817 +817,2 @@
 -                raise named from error
 +                guard.launch(invocation, configuration)  # defect: a refused reservation still launches
 +                receipt = {'replayed': False}

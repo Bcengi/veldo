@@ -2,6 +2,7 @@
  "failed": 0,
  "observed": {
   "call_refusals": [
+   "stale_input:admission",
    "unknown_allowance:tokens",
    "usage_cap:account:invocations",
    "usage_cap:project:invocations",
@@ -23,7 +24,7 @@
      "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
      "unit": 1
     },
-    "decision_id": "34f026ed-8ff3-4c80-9d0e-49bb9b0b2089",
+    "decision_id": "d4f590ac-66f8-42b7-96f0-038ceb75dcb6",
     "domain_uuid": "domain-52",
     "follows": null,
     "operation": "selection",
@@ -54,7 +55,7 @@
      "receipts/VELDO-9100": "sha256:5fb881bd245abcdb3f547297f1506900bfecd35a615f8e13e789f6944c36fd7f",
      "unit": 1
     },
-    "decision_id": "bc90c02e-c872-4619-87df-d43738da7ba6",
+    "decision_id": "14a1f5d7-a071-408c-9676-292e7131eb0f",
     "domain_uuid": "domain-52",
     "follows": null,
     "operation": "claim",
@@ -245,7 +246,7 @@
    }
   },
   "gate_status": {
-   "accepted": 241,
+   "accepted": 307,
    "pending": [
     "VELDO-9101",
     "VELDO-9102",
@@ -255,12 +256,53 @@
     "VELDO-9107",
     "VELDO-9109",
     "VELDO-9111",
-    "VELDO-9160"
+    "VELDO-9160",
+    "VELDO-9173",
+    "VELDO-9174",
+    "VELDO-9175"
    ],
-   "refused": 149
+   "refused": 153
+  },
+  "host_trust": {
+   "git-directory": [
+    "raised",
+    "Stopped:host_trust_refused:signers_inside_workspace"
+   ],
+   "host": [
+    "ok",
+    "Gate"
+   ],
+   "host-through-symlink": [
+    "ok",
+    "Gate"
+   ],
+   "inside": [
+    "raised",
+    "Stopped:host_trust_refused:signers_inside_workspace"
+   ],
+   "relative": [
+    "raised",
+    "Stopped:host_trust_refused:signers_not_absolute"
+   ],
+   "symlink-into-workspace": [
+    "raised",
+    "Stopped:host_trust_refused:signers_inside_workspace"
+   ]
   },
   "landed_offers": {
    "VELDO-9163": "build"
+  },
+  "launch_calls": {
+   "taken": {
+    "halted_at": "eligibility",
+    "reason": "eligibility refused before build: missing_authority:claim"
+   },
+   "taken_builds": 1,
+   "unheld": {
+    "halted_at": "eligibility",
+    "reason": "eligibility refused before build: missing_authority:claim"
+   },
+   "unheld_builds": 0
   },
   "launches": {
    "dispatch_builds": [
@@ -316,6 +358,36 @@
      "veldo work stopped: authority_required"
     ]
    }
+  },
+  "provider_refusal": {
+   "direct-cap": {
+    "halted_at": "eligibility",
+    "reason": "call refused during build: usage_cap:unit:invocations",
+    "refusals": null,
+    "state": "halted"
+   },
+   "direct-moved": {
+    "halted_at": "eligibility",
+    "reason": "call refused during build: stale_input:admission; missing_authority:admission",
+    "refusals": null,
+    "state": "halted"
+   },
+   "dispatch-build": {
+    "halted_at": "eligibility",
+    "reason": "call refused during build: usage_cap:unit:invocations",
+    "refusals": null,
+    "state": "halted"
+   },
+   "dispatch-review": {
+    "halted_at": "eligibility",
+    "reason": "usage_cap:unit:invocations",
+    "refusals": [
+     "usage_cap:unit:invocations"
+    ],
+    "state": "refused"
+   },
+   "launched": [],
+   "review_status": "review"
   },
   "raised": [],
   "receiver": [
@@ -710,8 +782,191 @@
     [
      "configured-tool"
     ]
+   ],
+   [
+    "claude_code",
+    "slot-build-49",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "slot-build-50",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "slot-review-51",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "slot-review-52",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "slot-direct-build-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "slot-direct-review-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "codex",
+    "slot-direct-review-more-1",
+    true,
+    [
+     "configured-tool"
+    ]
+   ],
+   [
+    "claude_code",
+    "calls-taken-build-1",
+    true,
+    [
+     "configured-tool"
+    ]
    ]
   ],
+  "slot_retirement": {
+   "calls": [
+    {
+     "charge": {
+      "invocations": 1,
+      "wall_seconds": 10
+     },
+     "state": "unknown",
+     "unknown": [
+      "tokens",
+      "messages"
+     ]
+    },
+    {
+     "charge": {
+      "invocations": 1,
+      "wall_seconds": 10
+     },
+     "state": "unknown",
+     "unknown": [
+      "tokens",
+      "messages"
+     ]
+    }
+   ],
+   "direct": "ready",
+   "direct_slots": [
+    true,
+    true
+   ],
+   "dispatches": {
+    "first": [
+     "review",
+     [
+      "VELDO-9170"
+     ],
+     2
+    ],
+    "no-call": [
+     "review",
+     [
+      "VELDO-9170"
+     ],
+     1
+    ],
+    "plan_check": [
+     "plan_check",
+     [],
+     0
+    ],
+    "recheck": [
+     "eligibility",
+     [],
+     0
+    ],
+    "resolve": [
+     "resolve",
+     [],
+     0
+    ],
+    "second": [
+     "review",
+     [
+      "VELDO-9170"
+     ],
+     3
+    ]
+   },
+   "launched": [
+    "slot-build-49",
+    "slot-build-50"
+   ],
+   "reviews": [
+    "shipped",
+    "shipped"
+   ],
+   "slots": [
+    {
+     "retired": true,
+     "retirement": {
+      "basis": "no_call_launched",
+      "calls": 0,
+      "cleaned": true,
+      "observer": "runner",
+      "outcome": "completed",
+      "terminated": true
+     }
+    },
+    {
+     "retired": true,
+     "retirement": {
+      "basis": "launch_returned",
+      "calls": 1,
+      "cleaned": true,
+      "observer": "runner",
+      "outcome": "completed",
+      "terminated": true
+     }
+    },
+    {
+     "retired": true,
+     "retirement": {
+      "basis": "launch_returned",
+      "calls": 1,
+      "cleaned": true,
+      "observer": "runner",
+      "outcome": "completed",
+      "terminated": true
+     }
+    }
+   ],
+   "unit_balance": {
+    "capacity": 0,
+    "invocations": 2,
+    "messages": 0,
+    "tokens": 0,
+    "wall_seconds": 20
+   }
+  },
   "stale_refusals": {
    "VELDO-9107": [
     [
@@ -926,7 +1181,7 @@
    }
   }
  },
- "passed": 46,
+ "passed": 54,
  "rows": [
   [
    "VELDO-0052 eligibility/registrations-from-call-sites",
@@ -1013,11 +1268,27 @@
    true
   ],
   [
+   "VELDO-0052 reservations/dispatch-slot-retired",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/provider-refusal-halts",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/launch-decides-its-calls",
+   true
+  ],
+  [
    "VELDO-0052 completion/landed-units-not-reoffered",
    true
   ],
   [
    "VELDO-0052 eligibility/production-entries-build-the-gate",
+   true
+  ],
+  [
+   "VELDO-0052 eligibility/host-trust-outside-workspace",
    true
   ],
   [
@@ -1101,6 +1372,18 @@
    true
   ],
   [
+   "VELDO-0052 ran/reservations/dispatch-slot-retired",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/provider-refusal-halts",
+   true
+  ],
+  [
+   "VELDO-0052 ran/eligibility/launch-decides-its-calls",
+   true
+  ],
+  [
    "VELDO-0052 ran/completion/landed-units-not-reoffered",
    true
   ],
@@ -1109,10 +1392,14 @@
    true
   ],
   [
+   "VELDO-0052 ran/eligibility/host-trust-outside-workspace",
+   true
+  ],
+  [
    "VELDO-0052 ran/eligibility/observations",
    true
   ]
  ],
  "suite": "60_veldo_0052_eligibility.py",
- "suite_seconds": 1.16
+ "suite_seconds": 1.3
 }

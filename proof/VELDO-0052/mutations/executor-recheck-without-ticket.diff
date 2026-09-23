@@ -1,5 +1,5 @@
 --- a/.veldo/executor.py
 +++ b/.veldo/executor.py
-@@ -527 +527 @@
+@@ -535 +535 @@
 -            current = self._decide(gate, sid, launch, decision)
 +            current = self._decide(gate, sid, launch, None)  # defect: the recheck forgets what it consumed

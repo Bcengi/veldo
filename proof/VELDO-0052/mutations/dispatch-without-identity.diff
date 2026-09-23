@@ -1,5 +1,5 @@
---- a/.veldo/dispatch.py
-+++ b/.veldo/dispatch.py
-@@ -170 +170 @@
--        return self._calls.open_dispatch(unit["spec"], context=context)
-+        return unit.get("dispatch")  # defect: the work loop's unit carries no identity
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -744 +744 @@
+-        dispatch = self.open_dispatch(unit, context=context)
++        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved

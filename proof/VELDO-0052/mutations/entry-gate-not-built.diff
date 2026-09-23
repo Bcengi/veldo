@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -321 +321 @@
+@@ -360 +360 @@
 -    return enrolled_gate(repo_root, trust, observe=observe)
 +    raise Stopped('eligibility_required')  # defect: the production entries build no Gate

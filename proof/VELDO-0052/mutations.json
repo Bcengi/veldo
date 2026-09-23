@@ -1,9 +1,9 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 52 --diff-dir proof/VELDO-0052/mutations",
  "summary": {
-  "mutations_rejected": 36,
+  "mutations_rejected": 47,
   "green_suites": {
-   "60_veldo_0052_eligibility.py": 72
+   "60_veldo_0052_eligibility.py": 80
   }
  },
  "mutations": [
@@ -18,7 +18,9 @@
    "red_rows": [
     "eligibility/registrations-from-call-sites",
     "eligibility/entry-dispatch-review",
-    "eligibility/stale-input"
+    "eligibility/stale-input",
+    "reservations/dispatch-slot-retired",
+    "eligibility/provider-refusal-halts"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -50,7 +52,8 @@
    "red_rows": [
     "eligibility/entry-work-rechecks",
     "eligibility/stale-input",
-    "eligibility/executor-rechecks-every-launch"
+    "eligibility/executor-rechecks-every-launch",
+    "reservations/dispatch-slot-retired"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -326,6 +329,7 @@
    "red_rows": [
     "reservations/forbidden-call-observation",
     "reservations/unknown-usage-retained",
+    "eligibility/provider-refusal-halts",
     "eligibility/observations"
    ],
    "target_red": true,
@@ -446,7 +450,7 @@
   },
   {
    "mutation": "dispatch-without-identity",
-   "module": ".veldo/dispatch.py",
+   "module": ".veldo/control_eligibility.py",
    "target_rows": [
     "reservations/work-loop-dispatch-identity"
    ],
@@ -454,8 +458,15 @@
    "role": "reintroduces the defect",
    "baseline": "green",
    "red_rows": [
+    "eligibility/entry-executor",
     "eligibility/entry-dispatch-build",
-    "reservations/work-loop-dispatch-identity"
+    "eligibility/entry-dispatch-review",
+    "eligibility/executor-station-decisions",
+    "eligibility/executor-rechecks-every-launch",
+    "reservations/work-loop-dispatch-identity",
+    "reservations/dispatch-slot-retired",
+    "eligibility/provider-refusal-halts",
+    "eligibility/launch-decides-its-calls"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -477,8 +488,9 @@
     "eligibility/executor-station-decisions",
     "eligibility/executor-rechecks-every-launch",
     "reservations/work-loop-dispatch-identity",
-    "ran/eligibility/entry-dispatch-build",
-    "ran/eligibility/entry-dispatch-review"
+    "reservations/dispatch-slot-retired",
+    "eligibility/provider-refusal-halts",
+    "eligibility/launch-decides-its-calls"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -528,7 +540,8 @@
    "role": "reintroduces the defect",
    "baseline": "green",
    "red_rows": [
-    "eligibility/executor-rechecks-every-launch"
+    "eligibility/executor-rechecks-every-launch",
+    "reservations/dispatch-slot-retired"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -544,7 +557,8 @@
    "role": "second, different mutation",
    "baseline": "green",
    "red_rows": [
-    "eligibility/executor-rechecks-every-launch"
+    "eligibility/executor-rechecks-every-launch",
+    "reservations/dispatch-slot-retired"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -560,7 +574,8 @@
    "role": "reintroduces the defect",
    "baseline": "green",
    "red_rows": [
-    "eligibility/production-entries-build-the-gate"
+    "eligibility/production-entries-build-the-gate",
+    "eligibility/host-trust-outside-workspace"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -581,6 +596,185 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/entry-gate-unverified-binding.diff"
+  },
+  {
+   "mutation": "slot-opened-before-prelaunch-halts",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "reservations/dispatch-slot-retired"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/entry-dispatch-build",
+    "reservations/dispatch-slot-retired",
+    "eligibility/provider-refusal-halts"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/slot-opened-before-prelaunch-halts.diff",
+   "review_r52b": "defect g",
+   "role": "reintroduces the defect"
+  },
+  {
+   "mutation": "slot-kept-after-launch-returns",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "reservations/dispatch-slot-retired"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "reservations/work-loop-dispatch-identity",
+    "reservations/dispatch-slot-retired"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/slot-kept-after-launch-returns.diff",
+   "review_r52b": "defect g",
+   "role": "second, different mutation"
+  },
+  {
+   "mutation": "slot-close-zeroes-exposure",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "reservations/dispatch-slot-retired"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "reservations/dispatch-slot-retired"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/slot-close-zeroes-exposure.diff",
+   "review_r52b": "defect g",
+   "role": "third mutation: the close forgets the calls' exposure"
+  },
+  {
+   "mutation": "trust-accepts-workspace-signers",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/host-trust-outside-workspace"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/host-trust-outside-workspace"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/trust-accepts-workspace-signers.diff",
+   "review_r52b": "defect h",
+   "role": "reintroduces the defect"
+  },
+  {
+   "mutation": "trust-accepts-relative-signers",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/host-trust-outside-workspace"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/host-trust-outside-workspace"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/trust-accepts-relative-signers.diff",
+   "review_r52b": "defect h",
+   "role": "second, different mutation"
+  },
+  {
+   "mutation": "trust-judges-unresolved-path",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "eligibility/host-trust-outside-workspace"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/host-trust-outside-workspace"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/trust-judges-unresolved-path.diff",
+   "review_r52b": "defect h",
+   "role": "third mutation: containment judged before symlinks"
+  },
+  {
+   "mutation": "provider-refusal-escapes-run",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/provider-refusal-halts"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/provider-refusal-halts"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/provider-refusal-escapes-run.diff",
+   "review_r52b": "provider refusal",
+   "role": "reintroduces the defect"
+  },
+  {
+   "mutation": "provider-refusal-escapes-review",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "eligibility/provider-refusal-halts"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/provider-refusal-halts"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/provider-refusal-escapes-review.diff",
+   "review_r52b": "provider refusal",
+   "role": "second, different mutation"
+  },
+  {
+   "mutation": "provider-refusal-halt-unnamed",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/provider-refusal-halts"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/provider-refusal-halts"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/provider-refusal-halt-unnamed.diff",
+   "review_r52b": "provider refusal",
+   "role": "third mutation: the halt loses its name"
+  },
+  {
+   "mutation": "launch-skips-call-boundary",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/launch-decides-its-calls"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/launch-decides-its-calls"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/launch-skips-call-boundary.diff",
+   "review_r52b": "probe i",
+   "role": "reintroduces the defect"
+  },
+  {
+   "mutation": "launch-call-boundary-first-cycle-only",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "eligibility/launch-decides-its-calls"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "eligibility/launch-decides-its-calls"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/launch-call-boundary-first-cycle-only.diff",
+   "review_r52b": "probe i",
+   "role": "second, different mutation"
   }
  ]
 }

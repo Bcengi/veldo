@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -387 +387 @@
+@@ -426 +426 @@
 -            if CC.fact_problems('revision_landed', r, subject):
 +            if CC.fact_problems('revision_landed', r, None):

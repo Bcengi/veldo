@@ -17,7 +17,9 @@ build, plus reviewer independence. Predicates this release cannot evaluate refus
 **The registered entries** (`REGISTRATIONS`, checked against the actual call sites by AST):
 frontier `claimable._add` (selection), work loop `WorkLoop._claim_next` (claim, before and after the
 claim), plan `cmd_run_check` (direct execution), `Executor._decide` (direct execution, and build
-and review for every launch the executor makes; see the 2026-09-23 section), `Dispatcher._dispatch_build` (build), `Dispatcher._dispatch_review` (review), `Dispatcher._land`
+and review for every launch the executor makes; see the 2026-09-23 section), `Executor._decide_calls`
+(provider request, before each executor launch; see the second check below),
+`Dispatcher._dispatch_build` (build), `Dispatcher._dispatch_review` (review), `Dispatcher._land`
 (publication) and `CallHandle.invoke` (provider request, every subscription CLI call).
 
 **Enablement.** `gate_for()` is the one resolution each entry calls. A wired Gate is used. A
@@ -275,10 +277,108 @@ eligibility after one build, d's burn-down says `shipped_without_landing_receipt
 status does and the enrolled reader reports `burndown_stopped: eligibility_required` with no
 burn-down, and e's builder call launches with its reservation committed. No BUG line in any run.
 
-**Not done here, stated.** Retirement of a dispatch's worker slot needs the supervisor's lifecycle
+**Not done here, stated.** (Superseded by the second check below: a worker slot is now retired
+when its launch returns.) Retirement of a dispatch's worker slot needs the supervisor's lifecycle
 observation, which no production path supplies yet; slots stay counted until then. A direct run
 makes subscription calls only for a claim holder, because `provider_request` requires
 `claim_current`. `veldo work` in an enrolled repository now stops at VELDO-0031's
 `authority_required` until an authority claim client is wired. claim.py's own `_authority` still reads
 a failing `git rev-parse` as "no ledger enrollment"; it is VELDO-0031's module and outside this
 footprint.
+
+## Second independent check (r52b): the slot leak, host trust inside the workspace, named halts
+
+A second independent check reproduced two defects in 668d104, and the lead added a third. A probe
+from the same check showed a fourth. Main was merged first (2503c81: registry conflicts kept both
+sides, one `--finding` list, requires.json regenerated). Each was fixed test first: a suite row that
+fails its assertion over 668d104's production modules, then the fix, then registered mutations for
+finding 52, one reintroducing the defect and at least one a different way to break the same row.
+One commit per defect: 8130d75 (g), 1572ae5 (h), f85d5f0 (named halt), 01e1343 (probe i).
+
+**Recorded red at 668d104.** `red.py 668d104` (`red-668d104.json`) runs the current suite over
+668d104's production modules with no substitution at all, since 668d104 already has the runner's
+StationCalls; red.py now substitutes its one fixture line only for a commit that predates it. The
+four new rows and the tightened work-loop row fail by assertion, and no region raised (no `ran/`
+row red). The observations show each defect: every dispatch of a one-slot unit after the first
+refused `usage_cap:unit:capacity` with one slot held and never retired; every host trust
+naming a signers file inside the workspace built a Gate; each refusal inside a launch was raised.
+
+**g, a worker slot for every dispatch, forever.** `Dispatcher._dispatch_build` reserved the build's
+worker slot before the executor's resolve, plan check and recheck, and nothing in production called
+`Reservations.retire`, so every dispatch, launched or not, held capacity until the account ran out.
+`StationCalls.launch` is now the one scope a build or review launch runs in. The executor enters it
+only after every pre-launch decision passed (so a halted dispatch reserves nothing), one launch per
+scope (a second build cycle gets a slot of its own, and the build's slot is free again before the
+review opens its own); the dispatcher's review enters it after the review decision. When the
+launched call returns, normally or by any exception, `close_dispatch` retains the calls' exposure
+and retires the slot. Exposure stays conservative: each call with no final usage report gets one
+final report carrying no usage, which leaves it UNKNOWN, with its reserved invocation and wall time
+still charged and its tokens and messages still unknown (VELDO-0036 AC3, and AC4's "retained
+unknown-usage reservations"). The retirement's lifecycle observation is the runner's own: the
+launching call returned in this process (`observer: runner`, `basis: launch_returned` or
+`no_call_launched`, and the number of calls). The VELDO-0040/0041 supervisor is not built yet; once it
+exists it owns this observation and retirement, and `close_dispatch` is where it plugs in. A retirement
+the service refuses leaves the slot held and is recorded, never raised. Row
+`reservations/dispatch-slot-retired`: with a unit ceiling of ONE slot, halts at resolve, plan check
+and recheck hold no slot; a builder that makes no call, then two that each make one, each hold one
+slot and retire it (0, 1 and 1 calls); the unit's balance is capacity 0, invocations 2, wall time 20,
+both calls UNKNOWN with tokens and messages unknown; two review dispatches of the same one-slot unit
+both ship; a direct run of another one-slot unit reaches ready with its build's and its review's
+slots both retired. `reservations/work-loop-dispatch-identity` now also requires the real path's
+slot retired. Mutations `slot-opened-before-prelaunch-halts` (reintroduced),
+`slot-kept-after-launch-returns` and `slot-close-zeroes-exposure` (the close settles the calls as not
+executed). The anchor of `dispatch-without-identity` moved into `StationCalls.launch`, where the
+identity is now opened.
+
+**h, the workspace vouching for itself.** HostTrust's docstring said the workspace's own
+.veldo/keys cannot vouch for itself, but a signers path inside the workspace, or a relative one
+(resolved against the process's directory, the workspace), built a Gate. The signers path must now be
+absolute (`host_trust_refused:signers_not_absolute`, at construction) and resolve, after every
+symlink, outside the workspace: the path it was named by, its working tree, its git common directory
+and, for a clone whose common directory is its `.git`, that clone's working tree
+(`host_trust_refused:signers_inside_workspace`). The resolved file is the one read, so a symlink
+retargeted after the check cannot substitute another. Row `eligibility/host-trust-outside-workspace`:
+the fixture is enrolled with a real ed25519 signature and every signers file below holds the GENUINE
+signer's key, so only its location decides. Inside the workspace, relative (run from the
+workspace), a host symlink into the workspace, and a file in the git directory are refused by those
+names; the host's own file and a host symlink to it build the Gate. Mutations
+`trust-accepts-workspace-signers` (reintroduced), `trust-accepts-relative-signers` and
+`trust-judges-unresolved-path`.
+
+**A refusal inside a launch is a named halt.** A refusal at a launched call's own boundary (its
+usage reservation, or the provider_request decision over an input that moved during the launch) came
+out of `Executor.run`, and out of the dispatcher's review, as a raised `Refused`. The executor now
+finishes halted at the eligibility step (`call refused during build: <every refusal>`), the
+dispatcher's build reports that halt, and its review returns the station's named refusal without
+shipping, landing or changing the spec's status. Row `eligibility/provider-refusal-halts`: a
+direct build whose call exceeds a zero invocation ceiling, and one whose builder withdraws admission
+before calling, halt by name; the same through the dispatcher's build; the dispatcher's review
+returns refused with `usage_cap:unit:invocations` and the spec still in review; nothing launched and
+every slot retired. Mutations `provider-refusal-escapes-run` (reintroduced),
+`provider-refusal-escapes-review` and `provider-refusal-halt-unnamed`.
+
+**i, a launch decided at the boundary its calls face.** The check's probe i printed BUG on the fixed
+code as first rerun: after another holder took the claim during review, a direct run's cycle-2
+builder was entered and only its first call was refused. Direct execution asks no claim question,
+but every call it makes does. Every executor launch now also asks provider_request's predicates
+(admission and the claim) before its dispatch is opened (`Executor._decide_calls`, registered). It
+carries no ticket: staleness against the last decision stays the station recheck's question (b),
+and each call asks it again. Row `eligibility/launch-decides-its-calls`: the claim taken during
+review stops cycle 2 before its builder (`missing_authority:claim`, one build), and a unit the run
+does not hold is never built. `entry-executor` now claims every scenario, so its station-bypass
+falsifier is not masked by this boundary. Mutations `launch-skips-call-boundary` (reintroduced) and
+`launch-call-boundary-first-cycle-only`.
+
+**The check's scripts against the final code.** Pointed at this branch's tree, none of the four
+prints BUG. g: the dispatch halted at plan check holds no slot and the second dispatch builds. h:
+the inside path stops with `host_trust_refused:signers_inside_workspace` and the relative one with
+`host_trust_refused:signers_not_absolute`. smoke: no refusal, no worker held. probe i: open decision,
+draft plan and claim taken each stop cycle 2 before its build, and the unrelated write reaches the
+second review.
+
+**Cost.** Suite 60: 54 rows (28 assertions and 26 `ran/` rows), 1.3 s (`observations.json`,
+`suite_seconds`). `--finding 52`: 47 mutations rejected in 129 s here (94 suite runs of about 1.35 s),
+under the gate's mutation-stage cap, which now scales with the registered inventory. Targeted checks
+on this branch: suite 60 and every suite that loads the executor, dispatcher or eligibility module
+(01, 02, 03, 06, 07, 09, 11, 12, 13, 19), `--finding 52`, `validate.py all`, `check_generated.sh`,
+`check_template_sync.sh`, `check_lint.sh`, `check_docs.sh`. The full gate is run by the lead.
