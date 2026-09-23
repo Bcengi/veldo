@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0059
-title: Installed end-to-end floor slice with fake model and real enforcement
+title: Installed full factory journey with real workers and enforcement
 status: draft
 risk: critical
 owner: dmitry
@@ -108,7 +108,7 @@ rollback: >
 
 ## Intent
 
-Installed end-to-end floor slice with fake model and real enforcement. Deliver the normal function needed by the running factory journey.
+Installed full factory journey with real workers and enforcement. Deliver the normal function needed by the running factory journey.
 
 ## Context
 

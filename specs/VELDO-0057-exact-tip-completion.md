@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0057
-title: Exact-tip publication, lost acknowledgement recovery, and completion receipt
+title: Exact-tip publication and confirmed completion receipt
 status: draft
 risk: critical
 owner: dmitry
@@ -87,7 +87,7 @@ rollback: >
 
 ## Intent
 
-Exact-tip publication, lost acknowledgement recovery, and completion receipt. Deliver the normal function needed by the running factory journey.
+Exact-tip publication and confirmed completion receipt. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
