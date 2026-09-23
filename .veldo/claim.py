@@ -169,16 +169,25 @@ def _enrollment_ledger():
 def _authority(root):
     if getattr(root, 'authority_claim_client', False):
         return root
-    # An explicit filesystem root is the documented compatibility path; no Git runs for it.
-    ledger_root = os.path.dirname(claims_root(root)) if root is not None else _enrollment_ledger()
-    if ledger_root is None:
-        return None
-    try:
-        enrolled = _git_process.entry_exists(os.path.join(ledger_root, 'control', 'enrollment.json'))
-    except OSError:
-        raise ClaimStopped('enrollment_unanswerable')     # unreadable is not absent
-    if enrolled:
-        raise ClaimStopped('authority_required')
+    if root:
+        # An explicit filesystem root is the documented compatibility path; no Git runs for it.
+        ledgers = [os.path.dirname(claims_root(root))]
+    else:
+        # BOTH the ledger Git's discovery gives this repository AND the ledger the claim would
+        # actually be written to (VELDO_RUNS_ROOT may point anywhere, including at an enrolled
+        # ledger): neither may be enrolled.
+        ledgers = [_enrollment_ledger()]
+        if os.environ.get("VELDO_RUNS_ROOT"):
+            ledgers.append(os.path.dirname(claims_root(None)))
+    for ledger_root in ledgers:
+        if ledger_root is None:
+            continue
+        try:
+            enrolled = _git_process.entry_exists(os.path.join(ledger_root, 'control', 'enrollment.json'))
+        except OSError:
+            raise ClaimStopped('enrollment_unanswerable')     # unreadable is not absent
+        if enrolled:
+            raise ClaimStopped('authority_required')
     return None
 
 

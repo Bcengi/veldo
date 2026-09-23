@@ -195,7 +195,14 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
             _v31_runs = {'broken': _v31_run(_v31_broken), 'broken-sub': _v31_run(_v31_os.path.join(_v31_broken, 'sub')),
                          'no-git': _v31_run(_v31_healthy, PATH=_v31_nogit), 'plain': _v31_run(_v31_plain),
                          'env-override': _v31_run(_v31_repos[0], VELDO_RUNS_ROOT=_v31_os.path.join(_v31_tmp, 'elsewhere')),
-                         'unreadable-control': _v31_run(_v31_unreadable)}
+                         'unreadable-control': _v31_run(_v31_unreadable),
+                         'override-into-enrolled-from-plain': _v31_run(
+                             _v31_plain, VELDO_RUNS_ROOT=_v31_sp.run(['git', '-C', str(_v31_repos[0]), 'rev-parse', '--path-format=absolute', '--git-common-dir'],
+                                                                     capture_output=True, text=True, check=True).stdout.strip() + '/veldo'),
+                         'vanished-cwd': _v31_sp.run([__import__('sys').executable, '-B', '-c',
+                             "import os, tempfile; d = tempfile.mkdtemp(dir=" + repr(_v31_tmp) + "); os.chdir(d); os.rmdir(d); " + _v31_default],
+                             cwd=_v31_plain, capture_output=True, text=True, timeout=30,
+                             env=dict(_v31_env, VELDO_RUNS_ROOT=_v31_os.path.join(_v31_tmp, 'elsewhere')))}
         finally:
             _v31_os.chmod(_v31_control, 0o755)
             __import__('shutil').rmtree(_v31_tmp, ignore_errors=True)
@@ -212,6 +219,8 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
                    and 'claim stopped' not in _v31_runs['plain'].stderr)
         _v31_check(1, 'enrollment-read-never-fails-open',
                    _v31_stopped('env-override', 'authority_required')
+                   and _v31_stopped('override-into-enrolled-from-plain', 'authority_required')
+                   and _v31_stopped('vanished-cwd', 'enrollment_unanswerable')
                    and (_v31_os.geteuid() == 0 or _v31_stopped('unreadable-control', 'enrollment_unanswerable')))
         _v31_backlog_data = _v31_S.materialized_state(_v31_conn)['entities']['backlog']['data']
         _v31_write('backlog', 'backlog_item', dict(_v31_backlog_data, state='ADMITTED'))
