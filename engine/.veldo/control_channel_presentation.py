@@ -219,9 +219,11 @@ def _fold(text):
 
 
 def split_reply(text):
-    """(choice, reason) of `<choice>: <reason>`, split at the first character NFKC folds to a colon
-    (the ASCII, full-width, small and vertical colons). Normalization only finds the split: both
-    parts are the owner's original text, and the choice is folded later only to match it."""
+    """(choice, reason) of `<choice>: <reason>`, split at the first character whose NFKC form
+    contains a colon. Those characters are exactly U+003A COLON, U+FE13 PRESENTATION FORM FOR
+    VERTICAL COLON, U+FE55 SMALL COLON, U+FF1A FULLWIDTH COLON and U+2A74 DOUBLE COLON EQUAL (whose
+    form is '::='). Normalization only finds the split: both parts are the owner's original text,
+    and the choice is folded later only to match it."""
     text = text or ''
     cut = next((i for i, ch in enumerate(text) if ':' in unicodedata.normalize('NFKC', ch)), None)
     if cut is None:
