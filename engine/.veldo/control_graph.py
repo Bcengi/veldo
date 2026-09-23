@@ -510,7 +510,7 @@ def runtime_problems(runtime):
     interpreter recorded in `command`) that lies inside one. Checked before every launch."""
     problems = []
     python = Path(runtime['python'])
-    for hop in link_chain(python):
+    for hop in visited_paths(python):
         if inside_repository(hop):
             problems.append('the runtime interpreter links through a repository: ' + hop)
             break
@@ -526,14 +526,39 @@ def runtime_problems(runtime):
     return problems
 
 
-def link_chain(path, limit=40):
-    """Every path on the way from `path` to its final file, one readlink at a time, as written."""
-    chain, current = [os.path.abspath(path)], os.path.abspath(path)
-    while os.path.islink(current) and len(chain) <= limit:
-        target = os.readlink(current)
-        current = os.path.abspath(os.path.join(os.path.dirname(current), target))
-        chain.append(current)
-    return chain
+def visited_paths(path, limit=40):
+    """The paths to judge while resolving `path` component by component, the way the kernel does:
+    a link at ANY component is followed (a relative target from the link's own directory, and a
+    later '..' taken physically, after the link), up to `limit` links; more is a loop, raised as
+    RuntimeError. Returned are the ends of every straight run (each link reached, the directory
+    left by each '..', and the final path): Git's discovery from a run's end covers the run."""
+    path = os.fspath(path)
+    if not path.startswith('/'):
+        path = os.path.join(os.getcwd(), path)
+    pending = [part for part in path.split('/') if part]
+    current, ends, links = '/', [], 0
+    while pending:
+        part = pending.pop(0)
+        if part == '.':
+            continue
+        if part == '..':
+            ends.append(current)
+            current = os.path.dirname(current)
+            continue
+        candidate = os.path.join(current, part)
+        if os.path.islink(candidate):
+            ends.append(candidate)
+            links += 1
+            if links > limit:
+                raise RuntimeError('too many links resolving ' + path)
+            target = os.readlink(candidate)
+            if target.startswith('/'):
+                current = '/'
+            pending = [part for part in target.split('/') if part] + pending
+        else:
+            current = candidate
+    ends.append(current)
+    return list(dict.fromkeys(ends))
 
 
 def config_paths(key, value):

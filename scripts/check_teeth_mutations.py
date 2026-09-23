@@ -546,7 +546,10 @@ def cases():
     graph('graph-pyvenv-values-split', 'control_graph.py',
           "    else:\n        words = [value]\n", "    else:\n        words = value.split()\n", 'runtime/pyvenv-clean')
     graph('graph-interpreter-final-hop-only', 'control_graph.py',
-          '    for hop in link_chain(python):\n', '    for hop in link_chain(python)[-1:]:\n', 'runtime/pyvenv-clean')
+          '    for hop in visited_paths(python):\n', '    for hop in visited_paths(python)[-1:]:\n', 'runtime/pyvenv-clean')
+    graph('graph-relative-link-misjoined', 'control_graph.py',
+          "            if target.startswith('/'):\n                current = '/'\n",
+          "            current = '/'\n", 'runtime/pyvenv-clean')
     graph('graph-repository-judged-resolved-only', 'control_graph.py',
           '    places = [os.path.abspath(path), os.path.realpath(path, strict=False)]\n',
           '    places = [os.path.realpath(path, strict=False)]\n', 'runtime/pyvenv-clean')
