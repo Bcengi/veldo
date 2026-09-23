@@ -3,8 +3,9 @@
 
   python3 .veldo/control_graph_install.py
 
-Builds <account home>/.local/share/veldo/langgraph/<lock digest>/ as a virtual environment
-WITHOUT pip and installs exactly the wheels in control_graph_lock.py into it: a throwaway tool
+Builds <account home>/.local/share/veldo/langgraph/<lock digest>/ as a virtual environment,
+created from the RESOLVED base interpreter (so pyvenv.cfg names no repository virtual environment;
+a creating interpreter or prefix inside a repository is refused), WITHOUT pip and installs exactly the wheels in control_graph_lock.py into it: a throwaway tool
 environment's pip (the interpreter's own bundled copy, never kept) runs
 `pip --python <runtime python> install --require-hashes --no-deps --only-binary=:all:` from the
 lock's exact pins and sha256 hashes, so the runtime holds the locked distributions and nothing
@@ -27,11 +28,30 @@ HERE = Path(__file__).resolve().parent
 COMMAND = 'python3 .veldo/control_graph_install.py'
 
 
+def _load(name, file):
+    spec = importlib.util.spec_from_file_location(name, HERE / file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _lock():
-    spec = importlib.util.spec_from_file_location('veldo_control_graph_lock', HERE / 'control_graph_lock.py')
-    lock = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(lock)
-    return lock
+    return _load('veldo_control_graph_lock', 'control_graph_lock.py')
+
+
+def base_interpreter(python):
+    """The resolved base interpreter behind `python` (never a virtual environment's wrapper), its
+    resolved prefix, and its version. The runtime is created from this path, so pyvenv.cfg records
+    it; an interpreter or prefix inside a repository is refused by name."""
+    out = subprocess.run([python, '-I', '-c', 'import os, sys; print(os.path.realpath(getattr(sys, "_base_executable", '
+                          'sys.executable))); print(os.path.realpath(sys.base_prefix)); print("%d.%d" % sys.version_info[:2])'],
+                         capture_output=True, text=True, check=True).stdout.split('\n')
+    base, prefix, version = out[0], out[1], out[2]
+    graph = _load('veldo_control_graph', 'control_graph.py')
+    for label, path in (('interpreter', base), ('prefix', prefix)):
+        if graph.inside_repository(path):
+            raise SystemExit('refused: the creating ' + label + ' ' + path + ' lies inside a repository')
+    return base, version
 
 
 def _environment():
@@ -49,8 +69,7 @@ def install(python=sys.executable, home=None, out=sys.stdout):
     if (target / 'bin' / 'python').is_file():
         out.write('present: ' + str(target) + '\n')
         return target
-    version = subprocess.run([python, '-I', '-c', 'import sys; print("%d.%d" % sys.version_info[:2])'],
-                             capture_output=True, text=True, check=True).stdout.strip()
+    python, version = base_interpreter(python)
     if version != lock.PYTHON:
         raise SystemExit('refused: the lock is for Python ' + lock.PYTHON + ', not ' + version)
     target.parent.mkdir(parents=True, exist_ok=True)

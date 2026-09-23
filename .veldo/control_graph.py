@@ -393,6 +393,24 @@ def stage(runtime):
     return target, work
 
 
+def runtime_problems(runtime):
+    """Why the runtime interpreter would lead a child toward a repository: the interpreter itself
+    resolving inside one, or a path in its virtual environment's pyvenv.cfg (such as the creating
+    interpreter recorded in `command`) that lies inside one. Checked before every launch."""
+    problems = []
+    python = Path(runtime['python'])
+    if inside_repository(os.path.realpath(python)):
+        problems.append('the runtime interpreter resolves inside a repository')
+    config = python.parent.parent / 'pyvenv.cfg'
+    if config.is_file():
+        for line in config.read_text(errors='replace').splitlines():
+            key, _, value = line.partition('=')
+            for token in value.split():
+                if token.startswith('/') and inside_repository(token):
+                    problems.append('pyvenv.cfg ' + key.strip() + ' names a repository path')
+    return problems
+
+
 def _working_directory(work):
     """A fresh working directory for one child, resolved and checked immediately before launch."""
     path = Path(tempfile.mkdtemp(prefix='veldo-graph-', dir=work))
@@ -417,6 +435,9 @@ def exchange(runtime, sent, timeout=120):
     if not available(runtime):
         raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
                       + INSTALL_COMMAND)
+    problems = runtime_problems(runtime)
+    if problems:
+        raise Refused('runtime_unavailable', '; '.join(problems))
     staged, work = stage(runtime)
     empty = _working_directory(work)
     try:

@@ -503,6 +503,13 @@ def cases():
           "    if path.is_symlink() or not path.is_dir() or path.resolve() != path:\n",
           "    path.mkdir(mode=0o700, exist_ok=True)\n"
           "    if False:\n", 'authority/stage-links')
+    graph('graph-pyvenv-unchecked', 'control_graph.py',
+          '    problems = runtime_problems(runtime)\n    if problems:\n',
+          '    problems = runtime_problems(runtime)\n    if False:\n', 'runtime/pyvenv-clean')
+    graph('graph-pyvenv-command-ignored', 'control_graph.py',
+          "                if token.startswith('/') and inside_repository(token):\n",
+          "                if token.startswith('/') and key.strip() != 'command' and inside_repository(token):\n",
+          'runtime/pyvenv-clean')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
