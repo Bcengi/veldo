@@ -521,6 +521,12 @@ def cases():
     graph('graph-descriptors-in-parent-tmpdir', 'control_graph.py',
           'tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:',
           'tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:', 'authority/no-direct-write')
+    graph('graph-unserializable-escapes', 'control_graph.py',
+          '    except (ValueError, TypeError, OverflowError, RecursionError) as error:\n'
+          "        raise Refused('invalid_input', 'request cannot be serialized: ' + type(error).__name__) from error\n",
+          '    except OverflowError as error:\n'
+          "        raise Refused('invalid_input', 'request cannot be serialized: ' + type(error).__name__) from error\n",
+          'shape/closed-request')
     graph('graph-pyvenv-unchecked', 'control_graph.py',
           '    problems = runtime_problems(runtime)\n    if problems:\n',
           '    problems = runtime_problems(runtime)\n    if False:\n', 'runtime/pyvenv-clean')

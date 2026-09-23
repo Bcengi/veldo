@@ -324,7 +324,11 @@ def request(operation, identity, **fields):
             continue
         if looks_like_path(text):
             raise Refused('path_in_request', 'a request carries no filesystem location: ' + repr(text[:80]))
-    if len(canonical(body)) > MAX_REQUEST_BYTES:
+    try:
+        encoded = canonical(body)
+    except (ValueError, TypeError, OverflowError, RecursionError) as error:
+        raise Refused('invalid_input', 'request cannot be serialized: ' + type(error).__name__) from error
+    if len(encoded) > MAX_REQUEST_BYTES:
         raise Refused('invalid_input', 'request is larger than ' + str(MAX_REQUEST_BYTES) + ' bytes')
     return body
 
