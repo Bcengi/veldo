@@ -137,6 +137,8 @@ result={k:p[k] for k in ('dispatch_id','target','request_digest')}
 result.update(status=p['payload'].get('outcome','completed'),evidence={'observed':True})
 if p['payload'].get('misbind'):
     result['dispatch_id']='foreign-dispatch'
+if 'refusal' in p['payload']:
+    result['refusal']=p['payload']['refusal']
 print(json.dumps(result))
 ''')
         repo, remote = root / 'source', root / 'remote.git'
@@ -257,6 +259,19 @@ print(json.dumps(result))
             wrong = call(r).get('result', {})
             row('completion/' + kind, all(statuses) and wrong.get('status') == 'unknown'
                 and wrong.get('completed') is False and wrong.get('stop') == 'effect-outcome-unknown')
+            # A receiver that ran and then reports refused may already have acted: only the
+            # executor's own refusal, before any receiver runs, is conclusive, and the receiver's
+            # text is neither returned to the worker nor stored.
+            r, _, _, _ = setup(kind, 'receiver-refused', payload={'outcome': 'refused', 'refusal': 'RECEIVERTEXT'})
+            before = len(calls(kind + '-good'))
+            answer = call(r)
+            result = answer.get('result', {})
+            stored = E.S.materialized_state(conn)['entities'].get('effect:' + r['dispatch_id'], {}).get('data', {})
+            row('receiver-refused-is-unknown/' + kind, len(calls(kind + '-good')) == before + 1
+                and answer.get('accepted') is True and result.get('status') == 'unknown'
+                and result.get('completed') is False and result.get('stop') == 'effect-outcome-unknown'
+                and 'RECEIVERTEXT' not in _v28_json.dumps(answer) and 'RECEIVERTEXT' not in _v28_json.dumps(stored))
+            expect('VELDO-0028 effects/receiver-refused-is-unknown/' + kind, checks['receiver-refused-is-unknown/' + kind])
             # Current authority and evidence must fail before receiver invocation.
             r, _, c, p = setup(kind, 'authority')
             before = len(calls(kind + '-good'))
