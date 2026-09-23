@@ -384,6 +384,11 @@ print(json.dumps(result))
             if gitconfig is not None:
                 (home / '.gitconfig').write_text(gitconfig)
             return {'HOME': str(home), 'XDG_CONFIG_HOME': str(home)}
+        def elsewhere_for(name):
+            other = root / (name + '-elsewhere.git')
+            git('init', '-q', '--bare', str(other))
+            git('-C', str(repo), 'push', '-q', str(other), old + ':refs/heads/main')
+            return other
         # R5 1: push options configured in the clone or globally never reach the receiver. The
         # control push is a plain git push of another ref from the same clone: the receiver's
         # hook sees both options, so the fixture can see them when they are sent.
@@ -403,7 +408,50 @@ print(json.dumps(result))
         seen_result('push-options', result, receiver_saw=lines)
         row('publication-push-options', result.get('completed') is True and remote_main(bare) == tip
             and lines == [['count=2', 'merge_request.create', 'ci.skip'], ['count=0']])
-        for name in ('push-options',):
+        # R5 2: the push reaches exactly the authorized URL. A clone section named exactly by the
+        # URL (a file:// URL with a space in its path included), its pushurl alone, a
+        # pushInsteadOf and a legacy remotes/ or branches/ file each could send the commit
+        # elsewhere; each is refused before anything is pushed. Control: a differently named
+        # remote whose URL is the authorized one, with its own pushurl, publishes normally.
+        redirects = {}
+        for name in ('space-section', 'pushurl-only', 'push-instead-of',
+                     'remotes-file', 'branches-file', 'other-remote-control'):
+            clone, bare = fresh('redirect-' + name)
+            other = elsewhere_for('redirect-' + name)
+            env = None
+            if name == 'space-section':
+                spaced = root / ('redirect ' + name + '.git')
+                bare.rename(spaced)
+                bare = spaced
+            url = 'file://' + str(bare)
+            if name in ('space-section', 'pushurl-only'):
+                if name == 'space-section':
+                    git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
+                git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other))
+            elif name == 'push-instead-of':
+                git('-C', str(clone), 'config', 'url.' + str(other) + '.pushInsteadOf', url)
+            elif name in ('remotes-file', 'branches-file'):
+                # A remote nickname: a clone rewrite maps it to the authorized remote, and the
+                # legacy file of the same name would point both listing and push elsewhere.
+                url = 'publish-target'
+                git('-C', str(clone), 'config', 'url.' + str(bare) + '.insteadOf', url)
+                legacy = clone / '.git' / name.split('-')[0]
+                legacy.mkdir(exist_ok=True)
+                (legacy / url).write_text(('URL: %s\n' if name == 'remotes-file' else '%s\n') % other)
+            else:
+                git('-C', str(clone), 'remote', 'add', 'origin-control', url)
+                git('-C', str(clone), 'config', 'remote.origin-control.pushurl', str(other))
+            result = publish('redirect-' + name, clone, url, env=env)
+            redirects[name] = (result, remote_main(bare), remote_main(other))
+            seen_result('redirect-' + name, result, authorized_moved=redirects[name][1] == tip,
+                        elsewhere_moved=redirects[name][2] == tip)
+        row('publication-push-reaches-only-authorized-url',
+            all(result.get('completed') is False and result.get('status') == 'unknown'
+                and landed == old and diverted == old
+                for name, (result, landed, diverted) in redirects.items() if name != 'other-remote-control')
+            and redirects['other-remote-control'][0].get('completed') is True
+            and redirects['other-remote-control'][1:] == (tip, old))
+        for name in ('push-options', 'push-reaches-only-authorized-url'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'

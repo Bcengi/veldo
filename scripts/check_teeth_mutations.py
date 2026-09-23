@@ -362,8 +362,9 @@ def cases():
         ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
     publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
                 'publication-pre-push-hook')
-    publication('effects-remote-must-exist-verbatim', "        if names.returncode or remote in names.stdout.split():",
-                "        if names.returncode or remote in names.stdout.split() or not (Path(remote).exists() or '://' in remote):",
+    redirect_list = "        listed = git('config', '-z', '--list')\n        if listed.returncode:"
+    publication('effects-remote-must-exist-verbatim', redirect_list,
+                redirect_list.replace("if listed.returncode:", "if listed.returncode or not (Path(remote).exists() or '://' in remote):"),
                 'publication-url-rewrite')
     publication('effects-push-transports-restricted', push,
                 push.replace("git('-c', 'push.followTags=false',", "git('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
@@ -381,6 +382,20 @@ def cases():
     publication('effects-push-options-flag-only', push,
                 push.replace("'-c', 'push.pushOption=', 'push',", "'push', '--no-push-option',"),
                 'publication-push-options')
+    # R5 2: the push reaches exactly the authorized URL. Reintroducing the whitespace-split name
+    # match lets a URL with a space through; each narrower mutant drops one redirect route.
+    section = "            if key.startswith('remote.') and key[len('remote.'):key.rindex('.')] == remote:"
+    exact = 'publication-push-reaches-only-authorized-url'
+    publication('effects-remote-name-as-words', section,
+                section.replace("key[len('remote.'):key.rindex('.')] == remote", "remote in key[len('remote.'):key.rindex('.')].split()"),
+                exact)
+    publication('effects-remote-section-url-key-only', section,
+                "            if key == 'remote.' + remote + '.url':", exact)
+    publication('effects-push-instead-of-allowed',
+                "            if key.startswith('url.') and key.endswith('.pushinsteadof') and remote.startswith(value):",
+                "            if False:", exact)
+    publication('effects-legacy-remote-files-allowed', "            for legacy in ('remotes/', 'branches/'):",
+                "            for legacy in ():", exact)
     return result
 
 

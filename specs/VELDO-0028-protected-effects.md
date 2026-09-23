@@ -114,12 +114,13 @@ tested-tree landing remain mandatory at the boundaries this concern consumes.
 Source publication is an ordinary `git push` from the trusted clone to the receiver's explicit URL,
 so hooks, URL rewrites, transports and credential helpers behave as configured; only what widens a
 push is neutralized (one explicit refspec, no tag following, no push options from any configuration
-scope, no submodule recursion, a lease on the old tip). Completion is claimed only when the remote's advertised state (every advertised ref,
+scope, no submodule recursion, a lease on the old tip). The push reaches exactly the authorized
+URL: a remote section named by it, a legacy `remotes/` or `branches/` file of that name, or a
+`pushInsteadOf` prefix of it is refused before anything is pushed. Completion is claimed only when the remote's advertised state (every advertised ref,
 HEAD, peeled tags and symbolic-ref targets) equals the state before the push with the authorized
 ref moved. Two remote changes cannot be observed from outside by design and are stated limits, not
 passing claims: a ref the remote hides from advertisement (for example `transfer.hideRefs`), and a
-ref the remote changes and restores while the push runs. A clone `pushInsteadOf` rewrite makes the
-push and the listing address different URLs; the outcome is then unknown, never completed.
+ref the remote changes and restores while the push runs.
 
 ## History
 

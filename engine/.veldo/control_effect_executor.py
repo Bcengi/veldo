@@ -47,11 +47,27 @@ def receive(config, contract, accepted):
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
-        # The receiver names a URL, never a remote of the clone: a named remote would bring
-        # its push refspecs, mirror and pushurl configuration into the push.
-        names = git('remote')
-        if names.returncode or remote in names.stdout.split():
+        # The receiver names a URL, never a remote of the clone, and the push must reach exactly
+        # that URL. Git resolves a push destination by name first. A remote section named
+        # exactly by the URL, in any configuration scope, brings its pushurl,
+        # refspecs and mirror setting (a pushurl alone is enough); a legacy remotes/ or branches/
+        # file of that name replaces the URL for the listing and the push alike; a pushInsteadOf
+        # prefix of the URL rewrites the push only. Each could send the commit somewhere the
+        # authorization does not name, so each is refused before anything is pushed. Names are
+        # compared exactly, never as whitespace-separated words.
+        listed = git('config', '-z', '--list')
+        if listed.returncode:
             raise E.Refused('invalid-input')
+        for key, _, value in (entry.partition('\n') for entry in listed.stdout.split('\0') if entry):
+            if key.startswith('remote.') and key[len('remote.'):key.rindex('.')] == remote:
+                raise E.Refused('invalid-input')
+            if key.startswith('url.') and key.endswith('.pushinsteadof') and remote.startswith(value):
+                raise E.Refused('invalid-input')
+        if '/' not in remote and remote not in ('', '.', '..'):
+            for legacy in ('remotes/', 'branches/'):
+                path = git('rev-parse', '--git-path', legacy + remote)
+                if path.returncode or (Path(repo) / path.stdout.strip()).exists():
+                    raise E.Refused('invalid-input')
         before = remote_refs()
         if before is None or before.get(ref) != payload['old_tip']:
             raise E.Refused('stale-subject')
