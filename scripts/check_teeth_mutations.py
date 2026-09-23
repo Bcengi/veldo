@@ -451,6 +451,12 @@ def cases():
     aliases('alias-overlap-ignores-directories', 'control_alias.py',
             'def _meet(first, second, directories=True):', 'def _meet(first, second, directories=False):',
             'aliases/one-path-per-kind')
+    aliases('alias-trusts-first-number', 'control_alias.py',
+            '        elif first < floor:', '        elif False:', 'aliases/historical-floor')
+    aliases('alias-floor-ignores-history', 'control_alias.py',
+            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],\n"
+            "                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):",
+            "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):", 'aliases/historical-floor')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')

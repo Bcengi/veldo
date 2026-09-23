@@ -46,7 +46,7 @@ def sign(body):
     return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', sys.argv[4], '-n', 'veldo-alias'], input=body,
                           capture_output=True, timeout=10, check=True).stdout.decode()
 conn = st.open_store(sys.argv[2])
-service = al.attach(st, conn, 'domain', ['repository', 'other'])
+service = al.attach(st, conn, 'domain', json.loads(sys.argv[5]))
 try:
     result = service.allocate(request, signer='allocation-service', sign=sign, authority_generation=1)
     print(json.dumps({'alias': result['alias'], 'reused': bool(result.get('reused')), 'seq': result.get('seq')}))
@@ -120,6 +120,13 @@ def _s37_run():
         g(origin, 'add', '.')
         g(origin, 'commit', '-qm', 'Accepted inventory')
         accepted_commit = g(origin, 'rev-parse', 'HEAD')
+        other_origin = root / 'other-origin'
+        other_origin.mkdir()
+        g(other_origin, 'init', '-q')
+        (other_origin / 'README.md').write_bytes(b'the other repository\n')
+        g(other_origin, 'add', '.')
+        g(other_origin, 'commit', '-qm', 'Other accepted inventory')
+        accepted_repositories = {'repository': str(origin), 'other': str(other_origin)}
         w1, w2, publication = root / 'w1', root / 'w2', root / 'authority'
         for clone in (w1, w2, publication):
             g(root, 'clone', '-q', str(origin), str(clone))
@@ -134,7 +141,16 @@ def _s37_run():
         signing = dict(signer='allocation-service', sign=sign, authority_generation=1)
         db = root / 'control.sqlite3'
         conn = st.open_store(db)
-        service = al.attach(st, conn, 'domain', ['repository', 'other'])
+        service = al.attach(st, conn, 'domain', accepted_repositories)
+        # The accepted revisions (VELDO-0035's authority) that enabling reads its first numbers from.
+        for repository, accepted in (('repository', origin), ('other', other_origin)):
+            st.execute(conn, {'command_id': 'accept-' + repository, 'principal': 'operator', 'operation': 'upsert_entity',
+                              'nonce': 'accept-%s/nonce' % repository, 'artifact_digests': [],
+                              'parameters': {'entity_id': 'revision/' + repository, 'kind': 'accepted_revision',
+                                             'data': {'domain_uuid': 'domain', 'repository_uuid': repository,
+                                                      'commit': g(accepted, 'rev-parse', 'HEAD'),
+                                                      'documents': {}, 'statuses': {}}},
+                              'expected_versions': {'revision/' + repository: 0}}, **signing)
         publisher = doc.Publisher(service, publication)
         refusal_log = []
 
@@ -162,7 +178,8 @@ def _s37_run():
         def child_allocate(item):
             payload = dict(item, content=item['content'].decode('utf-8'))
             proc = _s37_sp.run([_s37_sys.executable, '-B', '-c', _S37_ALLOCATE, str(modules), str(db),
-                                _s37_json.dumps(payload), str(key)], capture_output=True, text=True, timeout=30)
+                                _s37_json.dumps(payload), str(key), _s37_json.dumps(accepted_repositories)],
+                               capture_output=True, text=True, timeout=30)
             try:
                 return _s37_json.loads(proc.stdout)
             except ValueError:
@@ -195,7 +212,8 @@ def _s37_run():
             config = {'prefix': prefix, 'width': 4, 'path_template': template}
             firsts[kind] = al.accepted_maximum(origin, accepted_commit, config) + 1
             call(lambda: service.enable_kind(dict(config, request_id='enable-' + kind, principal='operator',
-                                                  repository_uuid='repository', kind=kind, first=firsts[kind]), **signing))
+                                                  repository_uuid='repository', kind=kind, first=firsts[kind],
+                                                  revision_id='revision/repository'), **signing))
         expect('aliases/accepted-floor', firsts == {'specification': 4, 'plan': 3, 'decision': 5}
                and [counter(kind=k) for k in kinds] == [4, 3, 5])
 
@@ -206,7 +224,7 @@ def _s37_run():
         for index, prefix in enumerate(('VEL DO', 'VELDO/X', '../VELDO')):
             _, error = call(lambda: service.enable_kind({'request_id': 'enable-broken-%d' % index, 'principal': 'operator',
                 'repository_uuid': 'repository', 'kind': 'broken', 'prefix': prefix, 'width': 4,
-                'path_template': 'specs/{alias}-{slug}.md', 'first': 1}, **signing))
+                'path_template': 'specs/{alias}-{slug}.md', 'first': 1, 'revision_id': 'revision/repository'}, **signing))
             problem = claim.unit_id_problem(prefix + '-0001')
             invalid.append(problem is not None and code(error) == 'invalid_unit_id' and error.detail == problem)
         bad_alias = 'VELDO-0004/../x'
@@ -279,7 +297,7 @@ def _s37_run():
             removed.unlink()
         _, reseed = call(lambda: service.enable_kind({'request_id': 'enable-specification-again', 'principal': 'operator',
             'repository_uuid': 'repository', 'kind': 'specification', 'prefix': 'VELDO', 'width': 4,
-            'path_template': 'specs/{alias}-{slug}.md', 'first': 4}, **signing))
+            'path_template': 'specs/{alias}-{slug}.md', 'first': 4, 'revision_id': 'revision/repository'}, **signing))
         request_g = request('req-g', 'telegram', 'msg-400', 'r1', 'specification', 'after-removal', bodies['g'], w1)
         fresh, _ = call(lambda: service.allocate(request_g, **signing))
         reserved = [row[0] for row in conn.execute("SELECT data FROM entities WHERE kind='alias_reservation'")]
@@ -292,7 +310,7 @@ def _s37_run():
         # Counters are per repository; an unenrolled repository refuses by name.
         call(lambda: service.enable_kind({'request_id': 'enable-other', 'principal': 'operator', 'repository_uuid': 'other',
             'kind': 'specification', 'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md',
-            'first': 1}, **signing))
+            'first': 1, 'revision_id': 'revision/other'}, **signing))
         other, _ = call(lambda: service.allocate(request('req-o', 'telegram', 'msg-100', 'r1', 'specification/api',
                                                          'api-contract', bodies['other'], w1, repository='other'), **signing))
         _, wrong = call(lambda: service.allocate(request('req-x', 'telegram', 'msg-900', 'r1', 'specification',
@@ -580,6 +598,29 @@ def _s37_run():
         expect('aliases/one-path-per-kind', overlap == {'first': None, 'same-path': 'invalid_registration',
                'directory-of': 'invalid_registration', 'slug-meets-number': 'invalid_registration', 'disjoint': None}
                and kinds_stored == ['memo', 'specification'] and allocated_plan is None)
+        env.conn.close()
+
+        # 3. The enabling transition derives the first number from the accepted revision's commit,
+        # tree and history, so a historical number (even one whose file was later deleted) is
+        # never issued again, whatever first number the caller asks for.
+        env = fresh('history', {'repository': [
+            {'specs/VELDO-0001-first.md': b'# first\n', 'specs/VELDO-0002-gone.md': b'# gone\n'},
+            {'specs/VELDO-0002-gone.md': None}]})
+        floor = {}
+        serial[0] += 1
+        _, error = attempt(lambda: env.service.enable_kind({'request_id': 'enable-%d' % serial[0], 'principal': 'operator',
+            'repository_uuid': 'repository', 'kind': 'specification', 'prefix': 'VELDO', 'width': 4,
+            'path_template': 'specs/{alias}-{slug}.md', 'revision_id': 'revision/never-accepted', 'first': 1}, **signing))
+        floor['unaccepted-revision'] = code(error)
+        for label, first in (('first-1', 1), ('first-2-deleted', 2), ('derived', None)):
+            _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=first)
+            floor[label] = code(error)
+        allocated, _ = allocate(env, 'after-history', 'specification', 'after', b'new document\n')
+        floor['allocated'] = (allocated or {}).get('alias')
+        defects['history'] = floor
+        expect('aliases/historical-floor', floor == {'unaccepted-revision': 'missing_authority',
+               'first-1': 'below_accepted_history', 'first-2-deleted': 'below_accepted_history', 'derived': None,
+               'allocated': 'VELDO-0003'})
         env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations

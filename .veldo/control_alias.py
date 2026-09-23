@@ -64,6 +64,7 @@ CATEGORIES = {
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
     'source_content_conflict': 'stale_subject', 'command_content_conflict': 'stale_subject',
     'publication_conflict': 'stale_subject', 'publication_order': 'stale_subject',
+    'below_accepted_history': 'stale_subject',
     'nonce_consumed': 'stale_subject',
     'allocation_contention': 'unavailable_service', 'read_only_handle': 'unavailable_service',
     'unsupported_filesystem': 'unavailable_service', 'durability_not_enabled': 'unavailable_service',
@@ -146,16 +147,32 @@ def maximum(paths, kind):
     return max(found, default=0)
 
 
+def _static_directory(template):
+    """The deepest directory every path of a template lies under: its leading placeholder-free
+    components, or '' for the whole tree."""
+    parts = []
+    for part in PurePosixPath(template).parts[:-1]:
+        if '{' in part:
+            break
+        parts.append(part)
+    return '/'.join(parts)
+
+
 def accepted_maximum(repo, commit, kind):
-    """The kind's highest existing number in an EXACT accepted commit, used once to choose the
-    first number when a kind is enabled (C9). Allocation itself never reads any tree."""
+    """The kind's highest number among the paths its template matches in an EXACT accepted commit,
+    counting the commit's tree AND its history, so a number whose file was later deleted or renamed
+    stays taken (C9). Only the enabling transition calls it; allocation never reads any tree."""
     SN.commit_id(repo, commit)
-    directory = str(PurePosixPath(kind['path_template']).parent)
-    result = _git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '--name-only', commit, '--', directory],
-                              capture_output=True, timeout=15)
-    if result.returncode:
-        raise SN.Refused('missing_authority', 'accepted tree is unreadable')
-    return maximum(result.stdout.decode().splitlines(), kind)
+    directory = _static_directory(kind['path_template'])
+    scope = ['--', directory] if directory else []
+    names = []
+    for command in (['ls-tree', '-r', '-z', '--name-only', commit],
+                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):
+        result = _git_process.run(['git', '-C', str(repo), *command, *scope], capture_output=True, timeout=30)
+        if result.returncode:
+            raise SN.Refused('missing_authority', 'accepted tree is unreadable')
+        names += result.stdout.decode('utf-8', 'surrogateescape').split('\0')
+    return maximum(names, kind)
 
 
 _DIGITS = frozenset('0123456789')
@@ -251,8 +268,13 @@ class Allocations:
     """One domain's allocation authority over the repositories enrolled in that domain."""
 
     def __init__(self, store, conn, domain_uuid, repositories):
+        """repositories maps each enrolled repository UUID to its accepted Git repository, the one
+        accepted revisions name commits of; the path is configuration, never a request field."""
+        if not isinstance(repositories, dict) or not repositories:
+            raise SN.Refused('invalid_registration', 'repositories map each repository uuid to its accepted repository')
         self.store, self.conn, self.domain_uuid = store, conn, domain_uuid
-        self.repositories = frozenset(repositories)
+        self.paths = {repository: str(path) for repository, path in repositories.items()}
+        self.repositories = frozenset(self.paths)
         self.counts = {'accepted': 0, 'reused': 0, 'refused': 0}
         self.observations = []
 
@@ -328,11 +350,15 @@ class Allocations:
         def work(event):
             repository = self._repository(request)
             event.update(kind=request['kind'])
+            revision = request['revision_id']
+            if not isinstance(revision, str) or not revision:
+                raise SN.Refused('invalid_input', 'a kind names the accepted revision its first number comes from')
             parameters = {'repository_uuid': repository, 'kind': request['kind'], 'prefix': request['prefix'],
                           'width': request['width'], 'path_template': request['path_template'],
-                          'next': request['first']}
+                          'revision_id': revision, 'first': request.get('first')}
             command = self._command('alias.enable:' + request['request_id'], request['principal'],
-                                    'enable_artifact_kind', parameters, {kind_id(repository, request['kind']): 0})
+                                    'enable_artifact_kind', parameters,
+                                    {kind_id(repository, request['kind']): 0, revision: self.current(revision)[0]})
             return self._execute(command, signing)
         return self.observe('enable_artifact_kind', request, work)
 
@@ -460,11 +486,12 @@ class Allocations:
         repository = self._guard(conn, p)
         if not isinstance(p['kind'], str) or not _KIND.fullmatch(p['kind']):
             self._refuse('invalid_input', 'a kind is a lowercase word')
+        first = p['first']
         if (not isinstance(p['prefix'], str) or not p['prefix'] or type(p['width']) is not int
-                or not 1 <= p['width'] <= 9 or type(p['next']) is not int or p['next'] < 1):
-            self._refuse('invalid_input', 'prefix is text, width 1-9 and the first number positive')
+                or not 1 <= p['width'] <= 9 or (first is not None and (type(first) is not int or first < 1))):
+            self._refuse('invalid_input', 'prefix is text, width 1-9 and a first number, when named, positive')
         data = {'schema': SCHEMA, 'repository_uuid': repository, 'kind': p['kind'], 'prefix': p['prefix'],
-                'width': p['width'], 'path_template': p['path_template'], 'next': p['next']}
+                'width': p['width'], 'path_template': p['path_template'], 'next': 1 if first is None else first}
         problem = CLAIM.unit_id_problem(alias_for(data, data['next']))
         if problem is not None:
             self._refuse('invalid_unit_id', problem)
@@ -481,6 +508,21 @@ class Allocations:
                 self._refuse('invalid_registration', 'prefix %s already allocates kind %s' % (data['prefix'], other['kind']))
             if _meet(_items(data), _items(other)):
                 self._refuse('invalid_registration', 'kinds %s and %s can declare one path' % (data['kind'], other['kind']))
+        # The first number comes from an accepted revision's commit, read here inside the
+        # transaction; a caller may name a later first number, never an earlier one.
+        revision = before.get(p['revision_id'])
+        if revision is None or revision['kind'] != 'accepted_revision':
+            self._refuse('missing_authority', 'no accepted revision %r' % (p['revision_id'],))
+        accepted = revision['data']
+        if accepted.get('domain_uuid') != self.domain_uuid or accepted.get('repository_uuid') != repository:
+            self._refuse('wrong_repository', 'the accepted revision belongs to another repository')
+        floor = accepted_maximum(self.paths[repository], accepted['commit'], data) + 1
+        if first is None:
+            data['next'] = floor
+        elif first < floor:
+            self._refuse('below_accepted_history', 'accepted commit %s already holds %s numbers below %d'
+                         % (accepted['commit'], data['kind'], floor))
+        data.update(accepted_revision=p['revision_id'], accepted_commit=accepted['commit'])
         return {kind_id(repository, data['kind']): {'kind': 'artifact_kind', 'data': data}}
 
     def _t_allocate(self, conn, p, before):
