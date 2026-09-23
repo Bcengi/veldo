@@ -69,6 +69,8 @@ CHANNEL = 'telegram_chat'
 OUTCOMES = ('pending', 'published', 'anomaly', 'refused', 'unknown_outcome')
 ANOMALIES = ('presentation_mismatch', 'chat_mismatch', 'supersession_mismatch', 'incomplete_parts')
 RETRYABLE = ('refused',)
+# The revocation organ's ledger entity (control_revocation.LEDGER_ENTITY; the suite binds the two).
+REVOCATION_LEDGER = 'authority:revocations'
 # Telegram's sendMessage text limit, counted as the platform counts it: UTF-16 code units.
 MESSAGE_LIMIT = 4096
 # Room kept in each part of a split presentation for its `Part k of n` line.
@@ -609,10 +611,11 @@ class Presenter:
         and the versions it pinned, so a framing written by any other store command frames nothing);
         the signed command is the frame command for this request and version, with this statement,
         by the requester; the requester is still an active member entitled to propose in the
-        request's scope; and the signature verifies with the requester's key as it stood when the
-        STORE accepted the command (the publication record's committed time, never a field the
-        writer supplies). A revocation dated at or before that acceptance refuses; a later one
-        strands nothing."""
+        request's scope; and the signature verifies with the requester's key as the journal held
+        it at the framing's own journal position. The key must not have been revoked or retired,
+        nor the requester entered in the revocation ledger, earlier in the journal: validity is
+        decided by the store's own order, never by a time any caller supplies. A revocation
+        recorded later in the journal strands nothing."""
         fid, data, version = framing_id(request), framing['data'], framing['version']
         signed = data.get('signed') if isinstance(data.get('signed'), dict) else {}
         command, signature = signed.get('command'), signed.get('signature')
@@ -643,13 +646,15 @@ class Presenter:
                            expected_versions=data['expected_versions'], artifact_digests=[], nonce=command.get('nonce'))
         if written[1] != command['command_id'] or self.store.command_digest(accepted_by) != written[2]:
             return False
-        publication = self.store.publication_row_for_command(self.conn, written[1]) or {}
-        at = publication.get('committed_at')
-        if type(at) not in (int, float):
+        # Key validity by the store's own order: the key and the revocation ledger as they stood at
+        # the framing's journal position. A time field any caller writes (the publication row's
+        # committed_at is the caller's to choose) decides nothing.
+        key = self._as_of(data.get('key_id'), 'verification_key', written[0])
+        if (key is None or key.get('principal') != principal or not _is_str(key.get('public_key'))
+                or key.get('revoked_at') is not None or key.get('retired_at') is not None):
             return False
-        key = next((k for k in state['keyring'] if k.get('key_id') == data.get('key_id')
-                    and k.get('principal') == principal and _is_str(k.get('public_key'))), None)
-        if key is None or self.AC.active_key([key], principal, at) is None:
+        ledger = self._as_of(REVOCATION_LEDGER, 'revocation_ledger', written[0]) or {}
+        if principal in (ledger.get('revoked') or {}):
             return False
         entry = self.AC.membership_entry(state['membership'], principal)
         if (not self.AC.active_member(entry, self.clock())[0]
@@ -658,6 +663,20 @@ class Presenter:
             return False
         return self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), signature,
                                          self.AC.allowed_signers_line(principal, key['public_key']), principal)[0]
+
+    def _as_of(self, eid, kind, seq):
+        """The data of entity `eid` as the journal left it before sequence `seq`, checked against
+        the digest that record committed, or None when it did not exist then."""
+        for (transition,) in self.conn.execute('SELECT transition FROM journal WHERE seq < ? AND instr(transition, ?) > 0 '
+                                               'ORDER BY seq DESC', (seq, json.dumps(eid))):
+            entry = json.loads(transition).get(eid)
+            if entry is None:
+                continue
+            if (entry.get('kind') != kind or not isinstance(entry.get('data'), dict) or entry.get('digest') != self.store.digest_of(
+                    {'kind': entry['kind'], 'data': entry['data'], 'version': entry.get('version')})):
+                return None
+            return entry['data']
+        return None
 
     def frame(self, packet):
         """Record the risk statement the requester signed for the current request version. Only the

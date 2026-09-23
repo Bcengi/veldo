@@ -985,8 +985,8 @@ def cases():
                  "        if written[1] != command['command_id'] or self.store.command_digest(accepted_by) != written[2]:\n",
                  "        if written[1] != command['command_id']:\n", 'framing/stored-framing-reverified')
     presentation('stored-framing-key-at-any-time',
-                 "        if key is None or self.AC.active_key([key], principal, at) is None:\n",
-                 "        if key is None:\n", 'framing/stored-framing-reverified')
+                 "                or key.get('revoked_at') is not None or key.get('retired_at') is not None):\n",
+                 "                or key.get('retired_at') is not None):\n", 'framing/stored-framing-reverified')
     # VELDO-0065 review r5: an answer cannot predate the presentation it answers.
     presentation('answer-time-unchecked',
                  "        if ev['platform_timestamp'] < receipt['published_at']:\n"
@@ -1028,6 +1028,11 @@ def cases():
     one_message('projection-defers-only-once-presented',
                 "        return [self._presented(e) if self.presenter is not None else self._project(e)\n",
                 "        return [self._presented(e) if self.presenter is not None and self.presenter.current(e['id']) else self._project(e)\n")
+    # VELDO-0065 second review n6: the framing key is judged by the store's journal order.
+    presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
+                 "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')
+    presentation('framing-ledger-unchecked', "        if principal in (ledger.get('revoked') or {}):\n",
+                 "        if False:\n", 'framing/key-by-store-order')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

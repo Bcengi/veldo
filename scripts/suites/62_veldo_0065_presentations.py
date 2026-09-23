@@ -81,7 +81,7 @@ def _v65_checks(base):
                                   'framing/stored-framing-reverified', 'answer/not-before-publication',
                                   'presentation/private-chat-only', 'presentation/replacement-without-reply-target',
                                   'presentation/reply-link-verified', 'presentation/long-brief-split',
-                                  'projection/one-message-per-version')}
+                                  'projection/one-message-per-version', 'framing/key-by-store-order')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -109,7 +109,8 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'grouped', 'stranger', 'telegram-edge', 'telegram-edge-other'):
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'grouped', 'stranger', 'telegram-edge',
+                'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -146,6 +147,8 @@ def _v65_checks(base):
                'stranger': dict(principal_type='person', roles=[], scope=['project-a']),
                'pm2': dict(principal_type='service', roles=[], scope=['project-a']),
                'grouped': dict(principal_type='person', roles=[], scope=['project-a']),
+               'pm3': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm4': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -247,7 +250,7 @@ def _v65_checks(base):
         row = conn.execute('SELECT version, digest, data FROM entities WHERE id=?', (eid,)).fetchone()
         return None if row is None else {'version': row[0], 'digest': row[1], 'data': _v65_json.loads(row[2])}
 
-    def direct_frame(who, alias, version, risk, key=None, signer=None):
+    def direct_frame(who, alias, version, risk, key=None, signer=None, committed_at=None):
         """A framing committed through the registered frame operation itself, bypassing frame()'s
         checks, as any holder of the store connection could."""
         counter[0] += 1
@@ -264,7 +267,7 @@ def _v65_checks(base):
         return S.execute(conn, dict(command_id=body['command_id'], principal=who, operation=V.FRAME_OPERATION,
                                     parameters=dict(framing_id=fid, request_id=rid, framing=framing),
                                     expected_versions=pinned, artifact_digests=[], nonce=body['nonce']),
-                         'authority', journal_sign, 1)
+                         'authority', journal_sign, 1, committed_at=committed_at)
 
     def answered(rid, version):
         """The answer record of one request version, read from the store itself."""
@@ -853,6 +856,35 @@ def _v65_checks(base):
                   and (answered(t1, 2) or {}).get('presentation_id') == t1_r2.get('presentation_id'))
             check(one, 'the projection\'s metrics show what could not be presented, by reason',
                   (projector.metrics().get('unpresented_by_reason') or {}).get('group_chat') == 1)
+
+        # Review 2 n6: a framing key is judged by the store's journal order, never by a time a caller supplies
+        order_row = 'framing/key-by-store-order'
+        with section(order_row):
+            for alias in ('K3-1', 'K3-2', 'K3-3'):
+                command('pm3', 'open', alias, assignment=content())
+            k31, k32, k33 = (I.assignment_id(ids['repository_uuid'], a) for a in ('K3-1', 'K3-2', 'K3-3'))
+            now = _v65_time.time()
+            direct_frame('pm3', 'K3-1', 1, 'Low: framed before the revocation.', committed_at=now + 10 ** 6)
+            fixture('key-pm3', 'verification_key', dict(principal='pm3', public_key=public['pm3'], effective_at=0,
+                                                        revoked_at=now - 1000))
+            check(order_row, 'control: a framing the store took before the revocation counts, whatever times the records carry',
+                  reason(presenter.present(k31)) == ('published', None))
+            asked = len(api['requests'])
+            direct_frame('pm3', 'K3-2', 1, 'None: back-dated before the revocation.', committed_at=now - 2000)
+            check(order_row, 'a framing the store took after the revocation, with a back-dated time, is not presented',
+                  reason(presenter.present(k32)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+            direct_frame('pm3', 'K3-3', 1, 'None: at the store\'s own time.')
+            check(order_row, 'the same framing at the store\'s own time is not presented either',
+                  reason(presenter.present(k33)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+            command('pm4', 'open', 'K4-1', assignment=content())
+            k41 = I.assignment_id(ids['repository_uuid'], 'K4-1')
+            fixture('authority:revocations', 'revocation_ledger',
+                    {'revocation_version': 1, 'revoked': {'pm4': {'at': now + 10 ** 6, 'reason': 'test', 'by': 'authority'}}})
+            direct_frame('pm4', 'K4-1', 1, 'None: framed by a revoked principal.')
+            check(order_row, 'a framing by a principal the revocation ledger revoked earlier in the journal is not presented',
+                  reason(presenter.present(k41)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+            check(order_row, 'the ledger this reads is the revocation organ\'s',
+                  getattr(V, 'REVOCATION_LEDGER', None) == _v65_load('v65_revocation', organs / 'control_revocation.py').LEDGER_ENTITY)
     finally:
         server.shutdown()
         server.server_close()
