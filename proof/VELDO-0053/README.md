@@ -4,7 +4,7 @@ Architecture failure handling at every eligibility entry, Release 1 stage 1 of P
 (W38). Branch `build-veldo-0053`, built on main acd877c and merged with main at 07c7557. Specification
 status, policy and every other specification are unchanged; the specification gained footprint lines,
 each with a History line: the mutation driver, and for the 2026-09-23 review fixes suite 60_0052,
-validate.py, contract_loader.py and arch.py (and their engine copies).
+validate.py and contract_loader.py (and their engine copies; arch.py was already in the footprint).
 
 ## What landed
 
@@ -182,13 +182,41 @@ unchanged (suite 29 at 325 of 325).
   the registry covers, and `control_eligibility.py` calls no loader name. A row for the new entry is owed
   to VELDO-0016's registry.
 
+- **(d) The loader's is_file/open race (VELDO-0016, predates this item).** The loader asks whether the
+  path is a regular file and then opens it, as two steps; something that replaces the file between them
+  (a FIFO, a symlink to elsewhere) is opened as it is then. A FIFO swapped in there would block the open.
+  The bytes parsed are still the bytes digested and compared, so no unaccepted contract passes through
+  it; the missing piece is a single open that refuses anything but a regular file (open, then fstat the
+  open descriptor). Racing inputs are Release 2 qualification; this belongs to VELDO-0016's loader.
+
+## 2026-09-23 second review: the snapshot in memory, and text that is not UTF-8
+
+A fresh review of 07c7557..8798a78 found fixes 1, 2 and 5 sound and one blocker in the snapshot: the
+private copy on disk could be swapped by another process of the same account between the snapshot's write
+and its load (probe `r4c_inotify_tmp.py` did it over the real /tmp with inotify), so the Gate ran code whose
+digest it had not recorded. Each fix below got a row first, red by a failed assertion over 8798a78's
+modules, then the fix, then two registered mutations (the driver's baseline run is the unmutated control).
+
+**The snapshot runs from memory** (ec80409). Row `architecture/snapshot-in-memory`: a same-account writer
+acts at the one moment a copy on disk is exposed, just before any engine module is loaded from a path
+outside the installed engine, and replaces the arch.py beside it with one that passes everything. At
+8798a78 it swapped the private arch.py 11 times, the Gate passed a structurally invalid accepted contract
+and recorded the installed validator's digest. Now no engine module of the validator is loaded from any
+path on disk, nothing is written, the contract is refused by name and the recorded digests are the
+installed bytes'. Mutations `architecture-snapshot-private-copy` (reintroduced) and
+`architecture-siblings-from-disk` (the top module from memory, its siblings from disk).
+
+**Text that is not UTF-8** (3901ed5). Row `architecture/not-text-refused`: an accepted contract whose bytes
+end in a comment that is not UTF-8 is refused `invalid_input:architecture/parse_failure` with the digest of
+those bytes recorded; at 8798a78 the decode error escaped the loader and every station said
+`unavailable_service:architecture_validator`. The decode is now explicit UTF-8 inside the named refusal.
+Mutations `architecture-decode-outside-refusal` (reintroduced) and `architecture-decode-lossy` (a
+replacing decode parses the rest).
+
 ## Narrowest seams, stated
 
 - **The accepted architecture record.** See open items (a) and (b).
 - **The loader registry.** See open item (c).
-- **Digest of a parse failure.** A contract that is read but does not parse is refused by name with no
-  artifact digest recorded: VELDO-0016's suite anchors its own mutations on that return line, so the
-  digest is handed to the caller through `digested` before it, and the refusal itself is unchanged.
 - Not isolated: the executor's `_decide_calls` registration is always preceded by its station decision,
   which asks the same predicate first, so its driver shows the refusal of that earlier decision. Under
   `architecture-review-skipped` the executor's review still refuses at its provider-request boundary;
