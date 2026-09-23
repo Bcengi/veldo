@@ -151,7 +151,8 @@ def _burndown(root, eligibility=None):
         for pid in sorted(reg):
             fm = reg[pid]["fm"]
             shipped = PL._shipped_set(fm, status_by_id)
-            blocked = PL._decision_blocks(fm)
+            # VELDO-0054: decisions read through the same Gate plan status reads them through.
+            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))
             work = sorted(PL._work(fm), key=lambda w: (w.get("order") or 0))
             items, frontier = [], []
             for w in work:

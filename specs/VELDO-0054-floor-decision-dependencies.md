@@ -34,6 +34,8 @@ footprint:
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/60_veldo_0052_eligibility.py"
+  - "engine/.veldo/runstatus.py"
+  - ".veldo/runstatus.py"
   - "specs/VELDO-0054-floor-decision-dependencies.md"
   - "specs/index.md"
   - "proof/VELDO-0054/*"
@@ -131,3 +133,9 @@ falsifiers and their second mutations are registered with the repository's mutat
 fixture stored an unsettled decision marked `state: settled` and expected it to unblock work; AC2
 makes exactly that inline status edit a named blocker, so the fixture line is removed. No other line
 of that suite, and no criterion, status or evidence universe, changed.
+
+2026-09-23, review fixes: .veldo/runstatus.py and its engine copy joined the footprint. `veldo status`
+built its plan burn-down with plan._decision_blocks and no Gate, so a unit a governing decision held
+back (VELDO-9428 in suite 62, VELDO-9104 in suite 60) showed at the frontier while plan status blocked
+it. The burn-down now reads decisions through the same Gate plan status reads them through. No
+criterion, status or evidence universe changed.

@@ -886,7 +886,8 @@ def _v52_suite():
                 fm = PL.load_plan(plan_path)[1]
                 plan_view = PL._status(gate)
                 shipped = PL._shipped_set(fm, plan_view)
-                wanted = {w['spec']: PL.item_state(w, plan_view, shipped, PL._decision_blocks(fm)) for w in PL._work(fm)}
+                # VELDO-0054: plan status reads decisions through the Gate, so veldo status must too.
+                wanted = {w['spec']: PL.item_state(w, plan_view, shipped, PL._decision_blocks(fm, gate)) for w in PL._work(fm)}
                 binding.parent.mkdir(parents=True, exist_ok=True)
                 binding.write_text('{}')
                 try:
@@ -902,6 +903,7 @@ def _v52_suite():
                                          'status_enrolled': model[1].get('burndown_stopped') if model[0] == 'ok' else list(model)}
             check('completion/status-reader-agrees',
                    burn[0] == 'ok' and items == wanted and items['VELDO-9106'] != 'shipped'
+                   and items['VELDO-9104'].startswith('blocked: decision unresolved_decision:decision:9104')
                    and [p_['shipped'] for p_ in burn[1]] == [len(shipped)]
                    and plan_stop == ('raised', 'Stopped:eligibility_required')
                    and model[0] == 'ok' and model[1].get('burndown_stopped') == 'eligibility_required'

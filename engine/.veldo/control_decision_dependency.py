@@ -67,6 +67,7 @@ CONSUMERS = (
     ('plan.py', 'cmd_run_check'),
     ('plan.py', '_decision_blocks'),
     ('frontier.py', '_plan_build_candidates'),
+    ('runstatus.py', '_burndown'),
     ('control_eligibility.py', 'Gate._predicate'),
     ('control_eligibility.py', 'Gate.decision_blockers'),
     ('control_eligibility.py', 'Gate._decision_codes'),

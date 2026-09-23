@@ -31,9 +31,9 @@ def _v54_suite():
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
         'plan.py': ROOT / ".veldo" / "plan.py",
         'frontier.py': ROOT / ".veldo" / "frontier.py",
+        'runstatus.py': ROOT / ".veldo" / "runstatus.py",
     }
-    # The modules whose call sites the consumer registration is derived from. runstatus.py is read
-    # too: a consumer that exists and is not wired must be visible, never silently outside the scan.
+    # The modules whose call sites the consumer registration is derived from.
     SCANNED = ('plan.py', 'frontier.py', 'control_eligibility.py', 'runstatus.py')
 
     def load(name, path):
@@ -317,6 +317,7 @@ def _v54_suite():
         gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, settlement_trust=trust)
         PL = load('v54_plan', mods / 'plan.py')
         FR = load('v54_frontier', mods / 'frontier.py')
+        RS = load('v54_runstatus', mods / 'runstatus.py')
         claims = base / 'claims'
         DECIDING = [s for s in EL.FLOOR_STATIONS if 'decisions_settled' in EL.STATION_PREDICATES[s]]
         CONTEXT = {'build': {'holder': 'worker-a'}, 'publication': {'holder': 'worker-a'},
@@ -333,6 +334,11 @@ def _v54_suite():
                 for sid in sids:
                     out[sid]['stations'][station] = sorted(gate.decide(station, sid, context=CONTEXT.get(station))['refusals'])
             offered = {u['spec'] for u in FR.claimable(repo_root=str(base), claims_root=str(claims), eligibility=gate)}
+            # veldo status: the run lens's burn-down, which must say what plan status says.
+            try:
+                lens = {i['spec']: i['state'] for p_ in RS._burndown(base, eligibility=gate) for i in p_['items']}
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                lens = {'raised': type(error).__name__}
             for pid in PLANS:
                 _, fm = PL.load_plan(plan_path(pid))
                 blocks = PL._decision_blocks(fm, gate)
@@ -351,6 +357,7 @@ def _v54_suite():
                     with contextlib.redirect_stdout(buffer):
                         rc = PL.cmd_run_check(plan_path(pid), sid, eligibility=gate)
                     out[sid].update(offered=sid in offered, blocks=sorted(blocks.get(sid, [])), burn=burn.get(sid),
+                                    lens=lens.get(sid),
                                     item_state=states.get(sid), run_check=rc,
                                     run_codes=sorted(set(re.findall(r'refused: (\S+)', buffer.getvalue()))))
             return out
@@ -408,18 +415,15 @@ def _v54_suite():
             derived = set()
             for name in SCANNED:
                 derived |= calls_in(mods / name, DD.CONSUMER_CALLS)
-            # The one reader this item's footprint cannot wire: runstatus's burn-down display still reads
-            # inline entries without a Gate. It is listed so the scan names it rather than hiding it.
-            unwired = {('runstatus.py', '_burndown')}
             deciding = {s for s in EL.FLOOR_STATIONS if 'decisions_settled' in EL.CC.ENTRY_PREDICATES[s]}
             observed['consumers'] = sorted('%s:%s' % c for c in derived)
             check('decisions/consumers-from-call-sites',
-                   derived == set(DD.CONSUMERS) | unwired
+                   derived == set(DD.CONSUMERS)
                    and set(DECIDING) == deciding == {'selection', 'direct_execution', 'build', 'review', 'publication'}
                    and DD.SETTLEMENT_FIELDS == FX_FIELDS)
 
         rows = ('decisions/exact-binding', 'decisions/wrong-framing', 'decisions/named-blockers',
-                'decisions/unsigned-resolution', 'decisions/scope-binding')
+                'decisions/unsigned-resolution', 'decisions/scope-binding', 'decisions/status-reader-agrees')
         with region(*rows):
             before_ids = ['VELDO-9401', 'VELDO-9402', 'VELDO-9403', 'VELDO-9404', 'VELDO-9405', 'VELDO-9406',
                           'VELDO-9407', 'VELDO-9441', 'VELDO-9446', 'VELDO-9443', 'VELDO-9444', 'VELDO-9445']
@@ -482,6 +486,12 @@ def _v54_suite():
                          'VELDO-9447', 'VELDO-9448')
                    and all(verdict(before[s], set()) for s in ('VELDO-9441', 'VELDO-9443', 'VELDO-9444', 'VELDO-9445', 'VELDO-9446'))
                    and preserved)
+            # veldo status agrees with plan status on every unit, decision-held ones included.
+            observed['status_reader'] = {sid: [o['lens'], o['burn']] for sid, o in after.items() if o['lens'] != o['burn']}
+            check('decisions/status-reader-agrees',
+                   all(o['lens'] == o['burn'] for o in after.values())
+                   and after['VELDO-9428']['lens'] == 'blocked: decision unresolved_decision:decision:D-9428'
+                   and after['VELDO-9401']['lens'].endswith('(frontier)'))
 
         with region('decisions/production-gate-verifies'):
             # The production construction: an enrolled workspace's Gate verifies settlements against

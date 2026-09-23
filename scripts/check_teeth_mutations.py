@@ -586,6 +586,11 @@ def cases():
            '    except EL.Stopped as stop:\n        return [], stop.reason',
            '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
            'completion/status-reader-agrees')
+    # VELDO-0054 review A: veldo status reads decisions through the Gate, as plan status does.
+    review('status-reader-decisions-inline', 'runstatus.py',
+           "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'completion/status-reader-agrees')
+    review('status-reader-decisions-dropped', 'runstatus.py',
+           "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'completion/status-reader-agrees')
     review('dispatch-without-identity', 'control_eligibility.py',
            '        dispatch = self.open_dispatch(unit, context=context)\n',
            "        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved\n",
@@ -973,6 +978,10 @@ def cases():
     decisions('taxonomy-unbound-unknown', 'control_eligibility.py',
               "    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',\n",
               "    'decision_ruling': 'missing_authority',\n", 'observations')
+    decisions('status-reader-inline-decisions', 'runstatus.py',
+              "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'status-reader-agrees')
+    decisions('status-reader-ignores-decisions', 'runstatus.py',
+              "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'status-reader-agrees')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
