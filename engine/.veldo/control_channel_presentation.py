@@ -36,10 +36,13 @@ ruling and its rationale, and the platform's own message id, sender id, timestam
 message it replies to. It settles only when the named receipt is confirmed published, is the
 head's current presentation, and still binds the current request, framing, authority statement,
 choices and enrolled chat. Everything else refuses by name. The owner answers a request version
-once. The answer record is the assertion `authority_contract.settle` consumes (VELDO-0068 performs
-the one settlement): its ruling is in the contract's RULINGS vocabulary, mapped from the offered
-choice in CHOICE_RULINGS and nowhere else, beside the choice the owner typed, the rationale and
-the edge's signature. No second settlement record is written here.
+once. The answer record carries the signed assertion for the one settlement VELDO-0068 performs:
+its ruling is in the contract's RULINGS vocabulary, mapped from the offered choice in
+CHOICE_RULINGS and nowhere else, beside the choice the owner picked, the rationale and the edge's
+signature. `authority_contract.settle` currently consumes decision answers only. A
+review_disposition answer is presented and recorded with its ruling in the same way, for VELDO-0068
+to settle (settle today refuses it as not a decision answer); an acknowledgement settles nothing.
+No second settlement record is written here.
 
 WHAT IT IS NOT. Not canonical acquisition of updates from the platform (VELDO-0066), edge
 enrollment and delegation (VELDO-0067), settlement, quorum and decision effects (VELDO-0068), or
