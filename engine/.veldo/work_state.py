@@ -314,6 +314,33 @@ def concluded(entry, root=None, records=None, vc=None, passing=None):
     return any(r["concludes"] for r in recs)
 
 
+def completion_view(spec_ids=None, root=None, eligibility=None):
+    """VELDO-0052 AC3: the four completion facts beside this reader's own DONE, never merged.
+
+    DONE here is a manifest plus a passing verdict: PROOF ACCEPTED, the artifact half. It is not a
+    landed revision and not a satisfied objective, and no consumer may read it as either. With the
+    floor enabled (an explicit Gate, or an enrolled repository, which stops by name without one)
+    each spec carries the facts the ONE completion reader (control_eligibility) establishes from
+    stored receipts: attempt finished, artifact accepted, revision landed, objective satisfied.
+    Unenrolled, the facts are None with the reason, never a guessed False or True.
+    {spec: {"proof_accepted": bool|None, "facts": {fact: bool}|None, "facts_reason": str|None}}"""
+    base = Path(root) if root is not None else ROOT
+    gate = _sibling("control_eligibility").gate_for(base, eligibility)
+    arts = artifact_items(base)
+    vc = _sibling("verdict_corpus")
+    passing = passing_verdicts()
+    ids = sorted(set(arts) | set(ready_specs(base))) if spec_ids is None else list(spec_ids)
+    out = {}
+    for sid in ids:
+        entry = arts.get(sid, {})
+        facts = gate.completion(sid) if gate is not None else None
+        out[sid] = {"proof_accepted": concluded(entry, base, vc=vc, passing=passing),
+                    "facts": facts,
+                    "facts_reason": None if gate is not None else
+                    "the floor is not enabled here: no authority records completion receipts"}
+    return out
+
+
 def manifest_produced_at(entry, root=None, vc=None):
     """WHAT THE BUNDLE ITSELF SAYS ABOUT WHEN IT WAS PRODUCED, read from the manifest's bytes the
     way the verdict is read from its own, and returned as the recorded STRING so the report can

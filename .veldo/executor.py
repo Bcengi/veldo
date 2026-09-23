@@ -79,6 +79,10 @@ ROOT = Path(__file__).resolve().parent.parent
 STEP_SEQUENCE = ("resolve", "plan_check", "build", "gate", "proof", "review",
                  "merge_ready")
 
+# VELDO-0052: with the floor enabled the direct-execution eligibility decision runs after resolve
+# and before the plan check and the build. It is not part of the pre-factory sequence above.
+ELIGIBILITY_STEP = "eligibility"
+
 # A review verdict that lets the loop proceed to merge readiness. Anything else
 # is a failed cycle.
 PASSING_VERDICTS = ("pass", "pass_with_notes")
@@ -95,6 +99,10 @@ def _load_module(name, rel):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+# VELDO-0052: the shared floor eligibility service every enabled floor entry calls.
+EL = _load_module("veldo_eligibility_exec", ".veldo/control_eligibility.py")
 
 
 class LoopSteps:
@@ -348,9 +356,15 @@ class Executor:
     entirely here; the seam supplies the surfaces. Nothing is fabricated: a
     build, a verdict, and an approval come from the delegated callables."""
 
-    def __init__(self, hooks, observer=None):
+    def __init__(self, hooks, observer=None, eligibility=None, calls=None):
         self.hooks = hooks
         self.observer = observer
+        # VELDO-0052: the shared eligibility Gate and the station's subscription-call handle. With
+        # the floor enabled (a Gate, or an enrolled repository, which stops by name without one)
+        # the direct-execution station decides before any build, and the build receives the handle
+        # as its only path to a subscription CLI.
+        self.eligibility = eligibility
+        self.calls = calls
 
     def run(self, spec_id, max_review_cycles=2, stop_after=None):
         """Drive the spec through the loop. stop_after is a DEFAULTED build-only
@@ -433,6 +447,16 @@ class Executor:
             return finish("halted", "resolve", reason, None)
         record("resolve", True)
 
+        # 1b. VELDO-0052: the shared direct-execution eligibility over the real store.
+        gate = EL.gate_for(getattr(self.hooks, "root", ROOT), self.eligibility)
+        if gate is not None:
+            ob("on_step", ELIGIBILITY_STEP)
+            decision = gate.decide("direct_execution", spec.get("id", spec_id))
+            reason = "; ".join(decision["refusals"]) or None
+            record(ELIGIBILITY_STEP, decision["eligible"], reason=reason)
+            if not decision["eligible"]:
+                return finish("halted", ELIGIBILITY_STEP, "eligibility refused: " + reason, None)
+
         # 1a. plan enforcement for a planned spec (mechanical refusal)
         if spec.get("plan") and spec.get("work"):
             ob("on_step", "plan_check")
@@ -449,7 +473,8 @@ class Executor:
             cycle += 1
             # 2. build (delegated agent step; the executor pauses here)
             ob("on_step", "build")
-            build = self.hooks.build(spec)
+            build = (self.hooks.build(spec) if self.calls is None
+                     else self.hooks.build(spec, calls=self.calls))
             ob("on_heartbeat", "build")
             b_ok = bool(build.get("ok", True))
             record("build", b_ok, cycle=cycle, commit=build.get("commit"))

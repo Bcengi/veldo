@@ -28,6 +28,19 @@ V = importlib.util.module_from_spec(_vspec)
 _vspec.loader.exec_module(V)
 
 
+# VELDO-0052: the shared floor eligibility service, loaded by sibling path.
+_elspec = importlib.util.spec_from_file_location("veldo_eligibility_plan", ROOT / ".veldo" / "control_eligibility.py")
+EL = importlib.util.module_from_spec(_elspec)
+_elspec.loader.exec_module(EL)
+
+
+def _status(eligibility=None):
+    """The status map every plan reader consumes. With the floor enabled (an explicit Gate, or an
+    enrolled repository, which stops by name without one) 'shipped' means exactly a landed
+    revision from the one completion reader (VELDO-0052 AC3), never status text or a verdict."""
+    return EL.completion_status(EL.gate_for(ROOT, eligibility), spec_status_by_id())
+
+
 def spec_status_by_id():
     out = {}
     specs = ROOT / "specs"
@@ -84,9 +97,9 @@ def item_state(w, status, shipped, blocked):
     return (st or "unstarted") + " (frontier)"
 
 
-def cmd_status(arg):
+def cmd_status(arg, eligibility=None):
     path, fm = load_plan(arg)
-    status = spec_status_by_id()
+    status = _status(eligibility)
     shipped = _shipped_set(fm, status)
     blocked = _decision_blocks(fm)
     work = sorted(_work(fm), key=lambda w: (w.get("order") or 0))
@@ -103,9 +116,9 @@ def cmd_status(arg):
     return 0
 
 
-def cmd_release_check(arg):
+def cmd_release_check(arg, eligibility=None):
     path, fm = load_plan(arg)
-    status = spec_status_by_id()
+    status = _status(eligibility)
     work = _work(fm)
     rel = fm.get("release") or {}
     reasons = []
@@ -131,7 +144,7 @@ def cmd_release_check(arg):
     return 0
 
 
-def cmd_impact(arg, spec_id):
+def cmd_impact(arg, spec_id, eligibility=None):
     """Transitive dependents of spec_id within the plan: what a change to it
     could invalidate downstream."""
     path, fm = load_plan(arg)
@@ -150,7 +163,7 @@ def cmd_impact(arg, spec_id):
                 seen.add(dep)
                 order.append(dep)
                 stack.append(dep)
-    status = spec_status_by_id()
+    status = _status(eligibility)
     print(f"impact of {spec_id} in {fm.get('id')}:")
     if not order:
         print("  no downstream dependents")
@@ -184,9 +197,9 @@ def _journey_active(j, context, spec_id, shipped):
     return False
 
 
-def cmd_regression(arg, ctx):
+def cmd_regression(arg, ctx, eligibility=None):
     path, fm = load_plan(arg)
-    status = spec_status_by_id()
+    status = _status(eligibility)
     shipped = _shipped_set(fm, status)
     journeys = (fm.get("regression") or {}).get("journeys") or []
     if ctx == "release":
@@ -247,7 +260,7 @@ def cmd_hash(arg):
     return 0
 
 
-def cmd_bundle(arg, spec_id):
+def cmd_bundle(arg, spec_id, eligibility=None):
     """The whole reaches the part: everything the agent building SPEC needs to
     see the iteration it belongs to, without copying the plan around."""
     path, fm = load_plan(arg)
@@ -255,7 +268,7 @@ def cmd_bundle(arg, spec_id):
     item = next((w for w in work if w.get("spec") == spec_id), None)
     if not item:
         raise SystemExit(f"{spec_id} is not a work item of {fm.get('id')}")
-    status = spec_status_by_id()
+    status = _status(eligibility)
     print(f"PLAN CONTEXT BUNDLE for {spec_id} ({item.get('item')})")
     print(f"plan: {fm.get('id')} - {fm.get('title')} (revision {fm.get('revision')})")
     print(f"plan_hash: {plan_hash(fm)}")
@@ -288,7 +301,7 @@ def cmd_bundle(arg, spec_id):
     return 0
 
 
-def cmd_run_check(arg, spec_id):
+def cmd_run_check(arg, spec_id, eligibility=None):
     """The run-time refusal: a planned spec may not be built if its declared
     dependencies are not all shipped, if the plan has revised since the spec was
     pulled (its context is stale), or - when the repository carries an architecture
@@ -300,8 +313,14 @@ def cmd_run_check(arg, spec_id):
     item = next((w for w in work if w.get("spec") == spec_id), None)
     if not item:
         raise SystemExit(f"{spec_id} is not a work item of {fm.get('id')}")
-    status = spec_status_by_id()
+    gate = EL.gate_for(ROOT, eligibility)
+    status = _status(gate)
     reasons = []
+    if gate is not None:
+        # THE DIRECT-EXECUTION STATION over the real store (VELDO-0052): admission, governing plan,
+        # dependencies, decisions and blockers as the authority records them, not as files say.
+        decision = gate.decide("direct_execution", spec_id)
+        reasons.extend("eligibility refused: %s" % r for r in decision["refusals"])
     for d in item.get("depends_on") or []:
         if status.get(d) != "shipped":
             reasons.append(f"dependency {d} is {status.get(d, 'unshipped')}, not shipped")

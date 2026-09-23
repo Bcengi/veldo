@@ -38,6 +38,8 @@ def _load(name, rel):
 
 FR = _load("veldo_frontier_wk", ".veldo/frontier.py")
 CL = _load("veldo_claim_wk", ".veldo/claim.py")
+# VELDO-0052: the shared floor eligibility service (selection, claim and every later station).
+EL = _load("veldo_eligibility_wk", ".veldo/control_eligibility.py")
 
 
 class Dispatcher:
@@ -86,8 +88,13 @@ class WorkLoop:
     """The claim/dispatch/release/drain loop. Control logic only; dispatch is delegated."""
 
     def __init__(self, worker_id, capabilities, dispatcher, scope=None,
-                 repo_root=None, claims_root=None):
+                 repo_root=None, claims_root=None, eligibility=None):
         self.worker_id = worker_id
+        # VELDO-0052: the shared eligibility Gate. With the floor enabled (a Gate, or an enrolled
+        # repository, which stops by name without one) the claim station decides against the
+        # selection ticket before the claim, and again after it, so a consumed input that moved
+        # in the claim-time window is a named refusal and the claim is released.
+        self.eligibility = eligibility
         self.caps = list(capabilities or [])
         self.dispatcher = dispatcher
         self.scope = scope
@@ -114,9 +121,13 @@ class WorkLoop:
         succeeds (another worker may have raced us). After a successful claim, re-checks the
         unit is still claimable (claim-then-recheck) and releases + skips it if another worker
         finished it in the claim-time window, so two workers never dispatch the same unit."""
+        gate = EL.gate_for(self.repo_root or FR.ROOT, self.eligibility)
         for u in FR.claimable(worker_caps=self.caps, scope=self.scope,
-                              repo_root=self.repo_root, claims_root=self.claims_root):
+                              repo_root=self.repo_root, claims_root=self.claims_root,
+                              eligibility=gate):
             if u["spec"] in self._failed:
+                continue
+            if gate is not None and not gate.decide("claim", u["spec"], ticket=u.get("eligibility"))["eligible"]:
                 continue
             ok, _reason = CL.claim(u["spec"], self.worker_id, self.caps,
                                    u.get("requires"), root=self.claims_root)
@@ -125,6 +136,13 @@ class WorkLoop:
             if not self._still_claimable(u):
                 CL.release(u["spec"], self.worker_id, root=self.claims_root)
                 continue
+            if gate is not None:
+                # CLAIM-THEN-RECHECK against every consumed input, not the status line alone.
+                after = gate.decide("claim", u["spec"], ticket=u.get("eligibility"))
+                if not after["eligible"]:
+                    CL.release(u["spec"], self.worker_id, root=self.claims_root)
+                    continue
+                u = dict(u, eligibility=after, holder=self.worker_id)
             return u
         return None
 
@@ -160,10 +178,10 @@ class WorkLoop:
 
 
 def veldo_work(dispatcher, worker_id=None, capabilities=None, scope=None,
-              repo_root=None, claims_root=None, max_units=10000):
+              repo_root=None, claims_root=None, max_units=10000, eligibility=None):
     """Front door: allocate a worker id, run the loop with the given dispatcher, return the
     outcomes. A real caller injects a Dispatcher that delegates build/review to the agent."""
     wid = worker_id or ("worker-" + uuid.uuid4().hex[:12])
     loop = WorkLoop(wid, capabilities, dispatcher, scope=scope,
-                    repo_root=repo_root, claims_root=claims_root)
+                    repo_root=repo_root, claims_root=claims_root, eligibility=eligibility)
     return {"worker_id": wid, "outcomes": loop.run(max_units=max_units)}
