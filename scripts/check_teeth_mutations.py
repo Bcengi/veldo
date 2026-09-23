@@ -1029,6 +1029,19 @@ def cases():
               "    if problems:\n        return problems\n"
               "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n",
               'invalid-before-unsupported')
+    # VELDO-0054 review 3, item 1: blocks walked without recursion; unexpected faults named.
+    decisions('blocks-walk-recursive', 'control_decision_dependency.py',
+              "    stack = [value]\n    while stack:\n        current = stack.pop()\n",
+              "    stack = []\n    current = value\n    if isinstance(current, list):\n"
+              "        for item in current:\n            yield from _named(item)\n        return\n"
+              "    stack = [value]\n    while stack:\n        current = stack.pop()\n",
+              'deep-blocks-named')
+    decisions('decide-raises-unexpected', 'control_eligibility.py',
+              "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
+              "            decision['refusals'] = [unexpected(error)]\n", "", 'deep-blocks-named')
+    decisions('blockers-raise-unexpected', 'control_eligibility.py',
+              "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
+              "            codes = [unexpected(error)]\n", "", 'deep-blocks-named')
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')

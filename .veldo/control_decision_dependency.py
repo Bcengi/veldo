@@ -133,16 +133,20 @@ def references(plan_data, unit):
 
 
 def _named(value):
-    """Every text value anywhere in a JSON value: keys, items and nested members."""
-    if isinstance(value, str):
-        yield value
-    elif isinstance(value, dict):
-        for key, item in value.items():
-            yield key
-            yield from _named(item)
-    elif isinstance(value, list):
-        for item in value:
-            yield from _named(item)
+    """Every text value anywhere in a JSON value: keys, items and nested members. Walked with an
+    explicit stack, never by recursion, so no nesting depth the store accepts can exhaust the
+    interpreter's recursion limit."""
+    stack = [value]
+    while stack:
+        current = stack.pop()
+        if isinstance(current, str):
+            yield current
+        elif isinstance(current, dict):
+            for key, item in current.items():
+                yield key
+                stack.append(item)
+        elif isinstance(current, list):
+            stack.extend(current)
 
 
 def blocks_malformed(record):

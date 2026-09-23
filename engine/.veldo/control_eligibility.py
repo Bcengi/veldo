@@ -151,6 +151,12 @@ def taxonomy(code):
     return TAXONOMY.get(code.split(':', 1)[0], 'unknown_outcome')
 
 
+def unexpected(error):
+    """The named refusal for a fault nothing anticipated while deciding one unit (VELDO-0054): its
+    outcome is unknown, so it refuses that unit by name and never raises into the caller's loop."""
+    return 'unknown_outcome:evaluation_error/' + type(error).__name__
+
+
 class Refused(Exception):
     """A named refusal of one station decision; `decision` carries every refusal and input."""
     def __init__(self, code, detail='', decision=None):
@@ -632,6 +638,8 @@ class Gate:
             codes = ['invalid_input:' + error.code]
         except sqlite3.Error:
             codes = ['unavailable_service:store']
+        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
+            codes = [unexpected(error)]
         event.update(outcome='refused' if codes else 'accepted', refusals=list(codes),
                      taxonomy=sorted({taxonomy(c) for c in codes}))
         self.observations.append(event)
@@ -772,6 +780,8 @@ class Gate:
             decision['refusals'] = [('missing_authority:' if 'digest' in error.code else 'invalid_input:') + error.code]
         except sqlite3.Error:
             decision['refusals'] = ['unavailable_service:store']
+        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised
+            decision['refusals'] = [unexpected(error)]
         decision['eligible'] = not decision['refusals']
         self._record(decision)
         return decision

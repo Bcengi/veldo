@@ -743,13 +743,46 @@ def _v54_suite():
                    and status['decisions']['accepted'] > 0 and status['decisions']['refused'] > 0
                    and {s for s in SCEN if SCEN[s][1] == 'all' and SCEN[s][2]} <= set(status['decisions']['blocked']))
 
+        with region('decisions/deep-blocks-named'):
+            # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it
+            # names is held by invalid_input:<id>/blocks and every other unit is decided as before. And
+            # an unexpected error while deciding is named for the unit it concerns, never raised.
+            planned('PLAN-9411', ['VELDO-9496'])
+            deep = 'VELDO-9496'
+            for _ in range(5000):
+                deep = [deep]
+            decision('decision:D-DEEP', 'spec', 'VELDO-9496', ['VELDO-9496'])
+            reshape('decision:D-DEEP', blocks=deep)
+            deep_seen = swept(['VELDO-9401', 'VELDO-9496'])
+
+            class Exploding:
+                def verify(self, message, signature, principal):
+                    raise RuntimeError('a verifier fault nobody named')
+            exploding = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, settlement_trust=Exploding())
+            try:
+                unexpected = ('ok', exploding.decide('selection', 'VELDO-9401')['refusals'],
+                              exploding.decision_blockers('VELDO-9401'))
+            except Exception as error:  # noqa: BLE001 - recorded, then asserted
+                unexpected = ('raised', '%s: %s' % (type(error).__name__, error))
+            # The deep record would otherwise weigh on every later region's reads: it is set aside.
+            reshape('decision:D-DEEP', blocks=['VELDO-9496'])
+            observed['deep_blocks'] = {'sweep': deep_seen[1] if deep_seen[0] == 'raised' else {
+                sid: o['stations']['build'] for sid, o in deep_seen[1].items()}, 'unexpected': unexpected}
+            check('decisions/deep-blocks-named',
+                   deep_seen[0] == 'ok' and verdict(deep_seen[1]['VELDO-9401'], set())
+                   and verdict(deep_seen[1]['VELDO-9496'], {'invalid_input:decision:D-DEEP/blocks'})
+                   and unexpected == ('ok', ['unknown_outcome:evaluation_error/RuntimeError'],
+                                      ['unknown_outcome:evaluation_error/RuntimeError']))
+
         with region('decisions/status-names-its-stop'):
             # veldo status names a burn-down it cannot build instead of crashing the whole read model. The
-            # probe is a unit record whose plan is a list, which still raises inside the Gate's read (an
-            # open item with its own ticket, predating VELDO-0054); it is repaired at once afterwards.
+            # probe is a plan file whose open_decisions entry has a nested list in blocks, which still
+            # raises in plan._decision_blocks's inline half (an open item with its own ticket, predating
+            # VELDO-0054); the fixture files are removed at once afterwards.
             planned('PLAN-9410', ['VELDO-9495'])
-            good = dict(written['VELDO-9495'])
-            put('VELDO-9495', 'execution_unit', dict(good, plan=['PLAN-9410']))
+            broken = base / 'plans' / 'PLAN-9410-fixture.md'
+            broken.write_text(broken.read_text().replace('\n---\n\nFixture plan.', '\nopen_decisions:\n'
+                                                         '  - id: DEC-NESTED\n    blocks: [[VELDO-9495]]\n---\n\nFixture plan.'))
             quiet = dict(runs_root=str(Path(directory) / 'runs'), events_path=str(Path(directory) / 'no-events.jsonl'),
                          control_db=str(Path(directory) / 'no-store.sqlite3'))
             try:
@@ -757,7 +790,6 @@ def _v54_suite():
             except Exception as error:  # noqa: BLE001 - recorded, then asserted
                 model = ('raised', '%s: %s' % (type(error).__name__, error))
             finally:
-                put('VELDO-9495', 'execution_unit', good)
                 for suffix in ('specs/VELDO-9495-fixture.md', 'plans/PLAN-9410-fixture.md'):
                     (base / suffix).unlink()
                 PLANS.pop('PLAN-9410')
