@@ -1,0 +1,6 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -138,0 +139,3 @@
++        if action in ('worker', 'invocation'):
++            snapshot = self._records()
++            self._check = lambda context, wanted, records, now: type(self)._check(self, context, wanted, snapshot, now)

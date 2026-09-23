@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -268 +268 @@
+-            if observation.get('cleaned') is not True:
++            if False:

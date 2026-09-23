@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_runtime.py
++++ b/.veldo/control_reservation_runtime.py
+@@ -40 +40 @@
+-        reached = now - active['start'] >= active['wall_seconds']
++        reached = False

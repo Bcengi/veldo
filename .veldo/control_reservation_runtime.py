@@ -38,6 +38,7 @@ class InvocationGuard:
         call = next(r for r in records.values() if r['type'] == 'invocation' and r['invocation'] == invocation
                     and r['context']['domain'] == self.reservations.domain)
         reached = now - active['start'] >= active['wall_seconds']
+        reached = reached or call['observed'].get('wall_seconds', 0) >= active['wall_seconds']
         for policy in self.reservations._policies(call['context'], records):
             balance = self.reservations.balances(policy['scope'], policy['subject'], records)
             for unit in ('tokens', 'messages'):

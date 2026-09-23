@@ -47,6 +47,7 @@ class Reservations:
         self.principal = identity(principal)
         self.authorize, self.signer, self.sign = authorize, signer, sign
         self.generation, self.observe = generation, observe
+        self.counts = dict(accepted=0, refused=0)
         store.COMMAND_REGISTRY['subscription_reservation'] = {
             'transition': self._transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -103,13 +104,14 @@ class Reservations:
             if window and wanted.get('invocations'):
                 if window['remaining'] is None:
                     raise Refused('unknown_window')
+                unit = window['unit']
+                outstanding = [r for key, r in records.items() if r['type'] == 'invocation'
+                               and self._matches(r, scope, subject)
+                               and (r['accepted_seq'] > window['store_watermark']
+                                    or key in window['outstanding'])]
+                if any(unit in r['unknown'] for r in outstanding):
+                    raise Refused('unknown_window_usage')
                 if now < window['reset_at']:
-                    unit = window['unit']
-                    outstanding = [r for r in records.values() if r['type'] == 'invocation'
-                                   and self._matches(r, scope, subject)
-                                   and r['accepted_seq'] > window['store_watermark']]
-                    if any(unit in r['unknown'] for r in outstanding):
-                        raise Refused('unknown_window_usage')
                     used = sum(r['charge'].get(unit, 0) for r in outstanding)
                     if window['remaining'] - used <= 0 or used + wanted.get(unit, 0) > window['remaining']:
                         raise Refused('window_exhausted')
@@ -137,8 +139,10 @@ class Reservations:
         try:
             result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
         except (Refused, self.store.StoreRefused) as error:
+            self.counts['refused'] += 1
             self.observe(dict(event, outcome='refused', refusal=error.code))
             raise
+        self.counts['accepted'] += 1
         self.observe(dict(event, outcome='accepted', watermark=result['seq']))
         return result
 
@@ -225,13 +229,15 @@ class Reservations:
                 raise Refused('stale_report')
             if any(v < value['observed'].get(k, 0) for k, v in p['usage'].items()):
                 raise Refused('usage_regressed')
+            if p['outcome'] != 'not_executed' and p['usage'].get('invocations', 1) != 1:
+                raise Refused('invalid_invocation_count')
             value['sequence'] = p['sequence']
             value['reports'][str(p['sequence'])] = p
             value['observed'].update(p['usage'])
             value['outcome'] = p['outcome'] or value['outcome']
             for unit, amount in p['usage'].items():
                 value['charge'][unit] = max(value['charge'].get(unit, 0), amount)
-                if unit in value['unknown']:
+                if p['final'] and unit in value['unknown']:
                     value['unknown'].remove(unit)
             if p['outcome'] == 'not_executed':
                 # Only the trusted evidence service can attest non-execution via authorize().
@@ -248,7 +254,10 @@ class Reservations:
             if current.get('window', {}).get('watermark', 0) >= p['watermark']:
                 raise Refused('stale_window')
             value = current
-            value['window'] = dict(p, store_watermark=self.conn.execute(
+            unresolved = [key for key, r in records.items() if r['type'] == 'invocation'
+                          and self._matches(r, 'account', current['subject'])
+                          and r['state'] in ('pending', 'unknown')]
+            value['window'] = dict(p, outstanding=unresolved, store_watermark=self.conn.execute(
                 'SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0])
         elif action == 'retire':
             if not current or current['type'] != 'worker':
@@ -272,6 +281,6 @@ class Reservations:
     def status(self):
         records = self._records()
         own = [r for r in records.values() if r.get('context', {}).get('domain') == self.domain]
-        return dict(pending=sum(r['type'] == 'invocation' and r['state'] == 'pending' for r in own),
+        return dict(self.counts, pending=sum(r['type'] == 'invocation' and r['state'] == 'pending' for r in own),
                     unknown=sum(r['type'] == 'invocation' and r['state'] == 'unknown' for r in own),
                     workers=sum(r['type'] == 'worker' and not r['retired'] for r in own))

@@ -278,6 +278,69 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
+    # VELDO-0036: each reservation assertion has two independently driven defects.
+    def reservation(name, module, old, new, row):
+        add(36, name, '58_veldo_0036_reservations.py', module, old, new,
+            ['reservations/' + row])
+
+    reservation('reservation-extra-slot', 'control_reservations.py',
+                "if balance[unit] + wanted.get(unit, 0) > cap:",
+                "if balance[unit] + wanted.get(unit, 0) > cap + 1:", 'ceilings')
+    reservation('reservation-ignore-ceiling', 'control_reservations.py',
+                "if balance[unit] + wanted.get(unit, 0) > cap:",
+                "if False:", 'ceilings')
+    reservation('reservation-check-outside-transaction', 'control_reservations.py',
+                "        self._command = command",
+                "        self._command = command\n"
+                "        if action in ('worker', 'invocation'):\n"
+                "            snapshot = self._records()\n"
+                "            self._check = lambda context, wanted, records, now: type(self)._check(self, context, wanted, snapshot, now)",
+                'atomic-last-slot')
+    reservation('reservation-ignore-capacity-and-count', 'control_reservations.py',
+                "if balance[unit] + wanted.get(unit, 0) > cap:",
+                "if unit not in ('capacity', 'invocations') and balance[unit] + wanted.get(unit, 0) > cap:",
+                'atomic-last-slot')
+    reservation('reservation-follow-on-after-launch', 'control_reservation_runtime.py',
+                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                "        if boundary == 'follow_on':\n            self.launch(invocation, configuration)\n"
+                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                'pre-call-order')
+    reservation('reservation-retry-after-launch', 'control_reservation_runtime.py',
+                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                "        if boundary == 'retry':\n            self.launch(invocation, configuration)\n"
+                "        receipt = self.reservations.reserve_call(command_id, dispatch, invocation, boundary, wall_seconds, now=now)",
+                'pre-call-order')
+    reservation('reservation-ignore-wall-time', 'control_reservation_runtime.py',
+                "        reached = now - active['start'] >= active['wall_seconds']",
+                "        reached = False", 'usage-controls')
+    reservation('reservation-ignore-window', 'control_reservations.py',
+                "            window = policy.get('window')",
+                "            window = None", 'usage-controls')
+    reservation('reservation-duplicate-settlement', 'control_reservations.py',
+                "                return {}  # Duplicate sequence under a different delivery command settles nothing twice.",
+                "                value['charge'] = {k: v * 2 for k, v in value['charge'].items()}\n"
+                "                return {target: {'kind': 'subscription_reservation', 'data': value}}",
+                'settles-once')
+    reservation('reservation-double-reported-usage', 'control_reservations.py',
+                "value['charge'][unit] = max(value['charge'].get(unit, 0), amount)",
+                "value['charge'][unit] = max(value['charge'].get(unit, 0), amount) + amount",
+                'settles-once')
+    reservation('reservation-timeout-frees-exposure', 'control_reservations.py',
+                "            elif p['final']:",
+                "            elif p['final']:\n"
+                "                if p['outcome'] == 'timeout':\n                    value['charge'] = dict.fromkeys(USAGE, 0)",
+                'unknown-retained')
+    reservation('reservation-cancel-frees-exposure', 'control_reservations.py',
+                "            elif p['final']:",
+                "            elif p['final']:\n"
+                "                if p['outcome'] == 'cancelled':\n                    value['charge'] = dict.fromkeys(USAGE, 0)",
+                'unknown-retained')
+    reservation('reservation-parent-exit-releases-slot', 'control_reservations.py',
+                "            if observation.get('terminated') is not True:",
+                "            if False:", 'retirement')
+    reservation('reservation-ignore-cleanup', 'control_reservations.py',
+                "            if observation.get('cleaned') is not True:",
+                "            if False:", 'retirement')
     return result
 
 
@@ -348,7 +411,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 36, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

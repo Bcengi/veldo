@@ -26,7 +26,10 @@ def _v36_suite():
 
     reservations = load(ROOT / ".veldo" / "control_reservations.py")
     runtime = load(ROOT / ".veldo" / "control_reservation_runtime.py")
-    with tempfile.TemporaryDirectory(prefix='v36-') as directory:
+    # Real files and SQLite locks on tmpfs avoid paying disk durability latency for
+    # every mutation. Crash/durability qualification is explicitly outside Release 1.
+    fast_temp = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    with tempfile.TemporaryDirectory(prefix='v36-', dir=fast_temp) as directory:
         base = Path(directory)
         serial = 0
         connections = []
@@ -162,6 +165,16 @@ def _v36_suite():
                     denied = refusal(lambda: guard.invoke('second', 'worker', 'second', boundary, 5, configuration, now=4))
                     ordering_ok &= bool(denied) and launches == [('first', True, 1)]
                     ordering_ok &= events[-1]['outcome'] == 'refused'
+                    ordering_ok &= service.status()['refused'] == 1 and service.status()['pending'] == 1
+                    ordering_ok &= all(e['domain'] == 'domain' and e['repository'] == 'repository'
+                                       and e['request'] and 'accepted_versions' in e for e in events)
+            service, _ = fixture()
+            worker(service)
+            service.store.execute(service.conn, dict(command_id='revoke', operation='upsert_entity',
+                parameters=dict(entity_id='runner', kind='membership', data=dict(roles=['reservation_service'], revoked_at=3)),
+                principal='owner', nonce='revoke', expected_versions={'runner': 1}, artifact_digests=[]),
+                'authority', sign, 1)
+            ordering_ok &= refusal(lambda: call(service)) == 'missing_authority'
             expect('VELDO-0036 reservations/pre-call-order', ordering_ok)
 
             controls_ok = True
@@ -193,6 +206,18 @@ def _v36_suite():
                         controls_ok &= error is None
                         service.window('refresh', 'account', unit, 5, 40, 2, now=21)
                         controls_ok &= service._records()[service._policy_id('account', 'account')]['window']['watermark'] == 2
+            # A refresh cannot erase an unfinished call; a later conclusive report is
+            # still charged against that observed allowance, even across its watermark.
+            service, _ = fixture()
+            worker(service)
+            service.window('window', 'account', 'tokens', 5, 20, 1, now=2)
+            call(service)
+            service.report('partial', 'call', 1, {'tokens': 1}, now=4)
+            service.window('refresh', 'account', 'tokens', 5, 30, 2, now=5)
+            controls_ok &= refusal(lambda: call(service, 'unknown-after-refresh')) == 'unknown_window_usage'
+            service.report('final', 'call', 2, dict(invocations=1, wall_seconds=1, tokens=5, messages=1),
+                           final=True, outcome='completed', now=6)
+            controls_ok &= refusal(lambda: call(service, 'spent-after-refresh')) == 'window_exhausted'
             expect('VELDO-0036 reservations/usage-controls', controls_ok)
 
             # AC3: cumulative reports, duplicates and conservative unknown charges.
@@ -241,8 +266,8 @@ def _v36_suite():
                 worker(service)
                 call(service)
                 clone = base / 'clone'
-                clone.mkdir()
-                outcome = None
+                service.report('retained-before-exit', 'call', 1, {}, final=True, outcome='timeout', now=3)
+                outcome = 'unknown'
                 child_alive = True
                 def lifecycle(dispatch):
                     os.kill(child_pid, 0) if child_alive else None
@@ -254,6 +279,11 @@ def _v36_suite():
                 os.waitpid(child_pid, 0)
                 child_pid = None
                 child_alive = False
+                service, _ = fixture({'capacity': 1})
+                worker(service)
+                call(service)
+                clone.mkdir()
+                outcome = None
                 retirement_ok &= refusal(lambda: service.retire('dirty', 'worker', lifecycle, now=5)) == 'cleanup_incomplete'
                 clone.rmdir()
                 retirement_ok &= refusal(lambda: service.retire('outcome', 'worker', lifecycle, now=6)) == 'missing_outcome'

@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -245,0 +246,2 @@
++                if p['outcome'] == 'timeout':
++                    value['charge'] = dict.fromkeys(USAGE, 0)
