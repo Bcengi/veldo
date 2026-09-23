@@ -324,6 +324,12 @@ def cases():
     add(31, 'review-r3-swallow-heartbeat-stop', '59_veldo_0031_review.py', 'lander.py',
         '                self._hb_error = exc',
         '                self._hb_error = None', ['claims/review-r3'])
+    add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
+        '        ledger_root = os.path.dirname(claims_root(root))',
+        "        common = _git_process.check_output(['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()\n        ledger_root = os.path.join(common, 'veldo')", ['claims/review-r4'])
+    add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
+        "    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):",
+        "    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):", ['claims/review-r4'])
     return result
 
 

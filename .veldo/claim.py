@@ -144,14 +144,12 @@ ClaimStopped = _claim_errors.ClaimStopped
 def _authority(root):
     if getattr(root, 'authority_claim_client', False):
         return root
-    if not getattr(root, 'authority_claim_client', False):
-        try:
-            common = _git_process.check_output(
-                ['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()
-        except subprocess.CalledProcessError:
-            return None
-        if os.path.exists(os.path.join(common, 'veldo', 'control', 'enrollment.json')):
-            raise ClaimStopped('authority_required')
+    try:
+        ledger_root = os.path.dirname(claims_root(root))
+    except subprocess.CalledProcessError:
+        return None
+    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):
+        raise ClaimStopped('authority_required')
     return None
 
 
