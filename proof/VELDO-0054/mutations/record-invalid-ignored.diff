@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -306,2 +305,0 @@
+@@ -321,2 +320,0 @@
 -    if invalid:
 -        return invalid

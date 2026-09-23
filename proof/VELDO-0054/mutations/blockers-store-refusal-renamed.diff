@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -644 +644 @@
+@@ -652 +652 @@
 -            codes = [self.refusal_code(error)]
 +            codes = ['invalid_input:' + error.code]

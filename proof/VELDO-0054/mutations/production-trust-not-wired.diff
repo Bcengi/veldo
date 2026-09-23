@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -367 +367 @@
+@@ -375 +375 @@
 -                settlement_trust=settlements)
 +                settlement_trust=None)

@@ -960,10 +960,22 @@
    "unsupported_decision:decision:D-9427/subject_kind:contract": "missing_authority"
   },
   "unexpected_messages": {
+   "control": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/RuntimeError/\\x1b[2J\\x07 fault\\x00tail\\x7f"
+    ]
+   ],
    "long": [
     "ok",
     [
      "unknown_outcome:evaluation_error/RuntimeError/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ]
+   ],
+   "separator": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/RuntimeError/a, unsigned_decision:decision:D-9401"
     ]
    ],
    "short": [
@@ -977,13 +989,52 @@
     [
      "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
     ]
+   ],
+   "unprintable": [
+    "ok",
+    [
+     "unknown_outcome:evaluation_error/Unprintable/<unprintable>"
+    ]
+   ]
+  },
+  "verifier_input": {
+   "VELDO-9521": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9521:1/signer"
+    ]
+   ],
+   "VELDO-9522": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9522:1/signer"
+    ]
+   ],
+   "VELDO-9523": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9523:1/signer"
+    ]
+   ],
+   "VELDO-9524": [
+    "ok",
+    [
+     "invalid_input:settlement:decision:D-9524:1/signature"
+    ]
+   ],
+   "VELDO-9525": [
+    "ok",
+    [
+     "missing_authority:admission",
+     "invalid_input:settlement:decision:D-9525:1/signer"
+    ]
    ]
   },
   "verifier_unavailable": [
    "unavailable_service:settlement_verifier"
   ]
  },
- "passed": 37,
+ "passed": 39,
  "rows": [
   [
    "VELDO-0054 decisions/consumers-from-call-sites",
@@ -1047,6 +1098,10 @@
   ],
   [
    "VELDO-0054 decisions/settlement-text-encodable",
+   true
+  ],
+  [
+   "VELDO-0054 decisions/verifier-input-bounded",
    true
   ],
   [
@@ -1114,6 +1169,10 @@
    true
   ],
   [
+   "VELDO-0054 ran/decisions/verifier-input-bounded",
+   true
+  ],
+  [
    "VELDO-0054 ran/decisions/deep-blocks-named",
    true
   ],
@@ -1135,5 +1194,5 @@
   ]
  ],
  "suite": "62_veldo_0054_decisions.py",
- "suite_seconds": 4.43
+ "suite_seconds": 3.917
 }

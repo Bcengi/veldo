@@ -1,12 +1,12 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 54 --diff-dir proof/VELDO-0054/mutations",
  "summary": {
-  "mutations_rejected": 50,
+  "mutations_rejected": 56,
   "green_suites": {
-   "62_veldo_0054_decisions.py": 63
+   "62_veldo_0054_decisions.py": 65
   }
  },
- "wall_seconds_here": 50.15,
+ "wall_seconds_here": 35.27,
  "mutations": [
   {
    "mutation": "framing-receipt-without-digest",
@@ -74,6 +74,7 @@
     "decisions/settlement-invalid-before-unsupported",
     "decisions/minor-shapes",
     "decisions/settlement-text-encodable",
+    "decisions/verifier-input-bounded",
     "decisions/deep-blocks-named",
     "decisions/stops-propagate",
     "decisions/unexpected-message"
@@ -325,7 +326,8 @@
    "red_rows": [
     "decisions/malformed-records-named",
     "decisions/settlement-invalid-before-unsupported",
-    "decisions/settlement-text-encodable"
+    "decisions/settlement-text-encodable",
+    "decisions/verifier-input-bounded"
    ],
    "diff": "mutations/settlement-invalid-ignored.diff",
    "review_item": "B"
@@ -560,7 +562,8 @@
    "red_rows": [
     "decisions/malformed-records-named",
     "decisions/settlement-invalid-before-unsupported",
-    "decisions/settlement-text-encodable"
+    "decisions/settlement-text-encodable",
+    "decisions/verifier-input-bounded"
    ],
    "diff": "mutations/settlement-signature-type-unchecked.diff",
    "review_item": "3.3"
@@ -694,6 +697,84 @@
    ],
    "diff": "mutations/unexpected-message-multiline.diff",
    "review_item": "4.3"
+  },
+  {
+   "mutation": "signer-unbounded",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-unbounded.diff",
+   "review_item": "5.1"
+  },
+  {
+   "mutation": "signer-whitespace-allowed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-whitespace-allowed.diff",
+   "review_item": "5.1"
+  },
+  {
+   "mutation": "signature-unbounded",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signature-unbounded.diff",
+   "review_item": "5.1"
+  },
+  {
+   "mutation": "unexpected-controls-kept",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-controls-kept.diff",
+   "review_item": "5.2"
+  },
+  {
+   "mutation": "unexpected-separator-kept",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-separator-kept.diff",
+   "review_item": "5.2"
+  },
+  {
+   "mutation": "unexpected-str-unguarded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-str-unguarded.diff",
+   "review_item": "5.2"
   },
   {
    "mutation": "verifier-unavailable-as-unsigned",

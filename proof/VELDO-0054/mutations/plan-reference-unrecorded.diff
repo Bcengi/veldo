@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -547 +547 @@
+@@ -555 +555 @@
 -                self._invalid_record(inputs['plan']['id'], 'open_decisions')
 +                pass

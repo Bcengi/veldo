@@ -49,8 +49,9 @@ reports `decisions` (accepted, refused, and the units whose latest decision eval
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/62_veldo_0054_decisions.py`, 37 rows (21 assertions and 16 `ran/` rows, one per
-region; 12 before the first review, 15 before the second, 23 before the third, 31 before the fourth). One temporary tree is both the repository the plan and frontier readers read and the
+Suite `scripts/suites/62_veldo_0054_decisions.py`, 39 rows (22 assertions and 17 `ran/` rows, one per
+region; 12 before the first review, 15 before the second, 23 before the third, 31 before the fourth,
+37 before the fifth). One temporary tree is both the repository the plan and frontier readers read and the
 installed `.veldo` they run from; a real SQLite store with keyed journal signatures; settlements
 signed by real Ed25519 keys through `ssh-keygen -Y sign` and verified by the production
 `SettlementTrust`. 34 units are admitted, claimed, approved and dependency-free under ready plans,
@@ -62,7 +63,7 @@ burn-down and `cmd_run_check` (its exit and every named refusal it prints). `obs
 
 Every mutation below is registered as finding 54 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and required to turn its named row red by a failed assertion while the unmutated
-copy is green; none reddened a `ran/` row. All 50 were rejected (18 before the first review, 24 before the second, 32 before the third, 43 before the fourth) (`mutations.json`, each diff in
+copy is green; none reddened a `ran/` row. All 56 were rejected (18 before the first review, 24 before the second, 32 before the third, 43 before the fourth, 50 before the fifth) (`mutations.json`, each diff in
 `mutations/`).
 
 **AC1, exact binding.** Rows `decisions/consumers-from-call-sites`, `decisions/exact-binding` and
@@ -230,6 +231,9 @@ unsupported and before unresolved. Row `decisions/invalid-before-unsupported`; m
 - A malformed governing record reached only through an ambiguous reference (two records carrying
   the same `decision_id`, one of them malformed) is named `ambiguous_decision:<ref>` alone; the
   malformed one's own `invalid_input` is not reported beside it.
+- `record_problems` puts a record's obligation text into its refusal codes verbatim
+  (`unsupported_decision:<id>/obligation:<text>`), control characters included, while `unexpected()`
+  sanitizes its message; both code paths should share one sanitizer.
 - `scripts/update_index.py` derives each plan item's frontier state in the committed `specs/index.md`
   from the inline `open_decisions` text. That is by design: the committed index is generated from the
   checkout and cannot read the control store, so it shows every inline entry as blocking and knows
@@ -297,18 +301,40 @@ to 160 characters. Row `decisions/unexpected-message`; mutations `unexpected-mes
 everywhere; it now says where that holds (decide, decision_blockers and `veldo status`) and that plan
 status and the frontier are the open item.
 
+## 2026-09-23 fifth review: bounded verifier input and a plain fault message
+
+A fresh review of 486ca23..cbc273d found the fixes holding and one item to close, in two parts. Each
+was fixed test first, one commit per part: its row fails by assertion over cbc273d's production
+modules (`red-cbc273d-suite62.json`: exactly those two rows red, no region raised), then the fix,
+then three mutations per row with the unmutated copy as control.
+
+**1, what reaches the verifier (ff6f33e).** A signer 131072 characters long made ssh-keygen fail to
+start, which read as a verifier outage and hid the unit's other refusals. A signer is now at most 256
+characters with no whitespace or control character, and a signature at most 16 KiB (a real armored
+Ed25519 signature is a few hundred bytes); anything else is `invalid_input:<id>/signer` or
+`/signature`, decided before the verifier is asked, and the unit's other refusals stand beside it.
+Row `decisions/verifier-input-bounded`; mutations `signer-unbounded`, `signer-whitespace-allowed`,
+`signature-unbounded`.
+
+**2, a plain fault message (14f0342).** `unexpected()` now shows control characters as `\xNN`
+escapes, turns ';' into ',' so one fault never reads as two refusals, and names an exception whose
+own text raises as `<unprintable>`. The row is tightened to the real 160-character limit. Row
+`decisions/unexpected-message`; mutations `unexpected-controls-kept`, `unexpected-separator-kept`,
+`unexpected-str-unguarded`.
+
 ## Cost and verification
 
-After four reviews suite 62 runs in 4.4 s here (`observations.json`, `suite_seconds`; 1.2 s as first
+After five reviews suite 62 runs in 3.9 s here (`observations.json`, `suite_seconds`; 1.2 s as first
 built; the growth is the new regions' sweeps, each of which reads every decision and settlement
-record per unit), measured while this host's load average was about 36. With main's parallel driver
-`--finding 54` drives 50 mutations in 50.15 s here and `--finding 52` drives 49 in 12.14 s. In the gate's
-mutation stage (8 workers) finding 54 is about 55 runs (50 mutants and 5 control groups) or roughly
-30 s of wall time at this host's current speed, and it raises the stage's scaled budget by 100 s;
-with the unit stage that is about 35 s the new suite adds to the gate, under the 60 s limit. Targeted checks run on this branch:
-`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (63 passed, 37 of them this suite's),
+record per unit), measured while this host's load average was about 21. With main's parallel driver
+`--finding 54` drives 56 mutations in 35.27 s here and `--finding 52` drives 49 in 11.60 s. In the gate's
+mutation stage (8 workers) finding 54 is about 61 runs (56 mutants and 5 control groups) or roughly
+30 s of wall time at this host's current speed, and it raises the stage's scaled budget by 112 s;
+with the unit stage that is about 34 s the new suite adds to the gate, under the 60 s limit.
+Targeted checks run on this branch:
+`python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (65 passed, 39 of them this suite's),
 `--suite 60_veldo_0052_eligibility` (80 passed), `python3 -B scripts/check_teeth_mutations.py --finding 54`
-(50 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
+(56 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs,
 install-and-run, and every other suite that loads a module touched here, suite 60 included. The full gate is run by the lead.
 

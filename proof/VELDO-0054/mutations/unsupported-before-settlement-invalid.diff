@@ -1,10 +1,10 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -310,0 +311,3 @@
+@@ -325,0 +326,3 @@
 +    problems = record_problems(rid, record)
 +    if problems:
 +        return problems
-@@ -314,3 +316,0 @@
+@@ -329,3 +331,0 @@
 -    problems = record_problems(rid, record)
 -    if problems:
 -        return problems

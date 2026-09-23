@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -404 +404 @@
+@@ -419 +419 @@
 -            if not verified and str(detail).startswith('ssh-keygen unavailable'):
 +            if False:

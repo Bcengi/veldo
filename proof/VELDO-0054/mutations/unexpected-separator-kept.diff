@@ -2,4 +2,4 @@
 +++ b/.veldo/control_eligibility.py
 @@ -168 +168 @@
 -    message = ' '.join(text.split()).replace(';', ',')
-+    message = text.replace(';', ',')
++    message = ' '.join(text.split())

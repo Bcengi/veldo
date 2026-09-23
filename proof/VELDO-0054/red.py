@@ -58,7 +58,7 @@ def main(which, commit):
             exec(compile(source, str(suite), 'exec'), ns)
     mine = [r for r in rows[before:] if r[0].startswith(prefix)]
     observed = ns.get(observed_name) or {}
-    keep = ('status_reader', 'malformed', 'malformed_subject', 'malformed_blocks', 'invalid_order', 'status_stop', 'deep_blocks', 'store_refusal', 'settlement_order', 'minor_shapes', 'settlement_text', 'stops', 'unexpected_messages', 'raised')
+    keep = ('status_reader', 'malformed', 'malformed_subject', 'malformed_blocks', 'invalid_order', 'status_stop', 'deep_blocks', 'store_refusal', 'settlement_order', 'minor_shapes', 'settlement_text', 'stops', 'unexpected_messages', 'verifier_input', 'raised')
     print(json.dumps({'suite': suite.name, 'production_at': commit,
                       'substituted_modules': sorted('/'.join(p.strip('"') for p in v) for v in anchors.values()),
                       'failed': [n for n, ok in mine if not ok], 'passed': sum(ok for _, ok in mine),

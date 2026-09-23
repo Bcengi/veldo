@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -647,2 +646,0 @@
+@@ -655,2 +654,0 @@
 -        except Stopped:
 -            raise  # a named stop is the caller's, never a unit hold

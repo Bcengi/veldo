@@ -164,3 +164,9 @@ encode is a named invalid input for its unit, a named stop raised under decide p
 and an unexpected fault is named with its message as well as its type. The third review's entry
 above now says where a store refusal is named by its code. The footprint is unchanged. No criterion,
 status or evidence universe changed.
+
+2026-09-23, fifth review fixes: a settlement signer over 256 characters or holding whitespace or a
+control character, and a signature over 16 KiB, are named invalid input before the verifier is
+asked, and an unexpected fault's message is kept plain (control characters escaped, no separator,
+an unprintable message named). The footprint is unchanged. No criterion, status or evidence universe
+changed.
