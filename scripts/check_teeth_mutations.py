@@ -744,7 +744,7 @@ def cases():
                  "  # defect: the workspace's own validator judges the workspace\n",
                  ['substitution'])
     architecture('architecture-accepted-digest-ignored', 'control_eligibility.py',
-                 "        elif accepted and found['artifact']['digest'] != accepted['digest']:",
+                 "        elif accepted and parsed != accepted['digest']:",
                  "        elif False:  # defect: whatever bytes are at the path are the accepted architecture",
                  ['substitution'])
     architecture('architecture-identity-from-workspace', 'control_eligibility.py',
@@ -800,6 +800,19 @@ def cases():
                  "        if self._validator is None:\n            self._validator = ValidatorSnapshot()\n",
                  "        if True:  # defect: a new snapshot for every decision\n            self._validator = ValidatorSnapshot()\n",
                  ['identity-is-what-ran'])
+    # Review fix: the digest compared is the loader's, of the very bytes it parsed.
+    architecture('architecture-digest-second-read', 'control_eligibility.py',
+                 "        elif accepted and parsed != accepted['digest']:",
+                 "        elif accepted and 'sha256:' + hashlib.sha256(Path(load.path).read_bytes()).hexdigest() != accepted['digest']:"
+                 "  # defect: a second read",
+                 ['validated-is-digested'])
+    reported = ("    if digested is not None:\n        digested(body_digest)\n    problems = []\n"
+                "    arch.validate_contract(data, base, p, lambda _where, msg: (problems.append(msg), 1)[1])\n")
+    architecture('architecture-loader-digest-second-read', 'contract_loader.py', reported,
+                 "    problems = []\n    arch.validate_contract(data, base, p, lambda _where, msg: (problems.append(msg), 1)[1])\n"
+                 "    if digested is not None:\n"
+                 "        digested(arch.read_contract(p, parse)[1])  # defect: the digest of a second read, after validation\n",
+                 ['validated-is-digested'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

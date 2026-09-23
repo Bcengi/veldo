@@ -240,7 +240,7 @@ def _v53_suite():
                                       'workspace': sorted({r for d in seen.values() for r in d['refusals']})}
             check('architecture/store-only-refuses',
                    outcome(blind, 'missing_evidence:architecture/workspace') and outcome(seen, CODES['parse_failure'])
-                   and all(d['architecture']['basis'] == 'store_only' for d in blind.values()))
+                   and all((d.get('architecture') or {}).get('basis') == 'store_only' for d in blind.values()))
 
         # --- AC1: valid, absent and invalid contracts at every loader/ready entry -------------------------
         with region('architecture/state-kinds', 'architecture/ready-refusal'):
@@ -692,6 +692,43 @@ def _v53_suite():
                    and all(r == installed_digests for r in recorded)
                    and changed != installed_digests and outcome(fresh, None) and all(r == changed for r in fresh_recorded))
             reset('valid')
+
+        with region('architecture/validated-is-digested'):
+            # The digest compared with the accepted record is the digest of the very bytes the loader parsed
+            # and validated, never a second read: a writer lands while the contract is being validated.
+            # Validated unaccepted bytes are refused (and recorded) as what was validated even though the
+            # file now holds the accepted bytes; validated accepted bytes pass although the file changed.
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=sha(VALID.encode())))
+            raced = {}
+            for name, (validated, lands) in {'unaccepted_validated': (WEAKENED, VALID),
+                                             'accepted_validated': (VALID, WEAKENED)}.items():
+                arrange('optional_absent', text=validated)
+                racing = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+                validator = racing._architecture_validator().arch
+                real_validate, versions = validator.validate_contract, []
+
+                def validate_then_write(data, root, path, fail, real_validate=real_validate, lands=lands, versions=versions):
+                    versions.append(data.get('version'))
+                    contract.write_text(lands)  # the concurrent writer, after the loader read the bytes
+                    return real_validate(data, root, path, fail)
+
+                validator.validate_contract = validate_then_write
+                decided = {}
+                for st in EL.FLOOR_STATIONS:
+                    contract.write_text(validated)  # each decision reads `validated`; the writer lands during it
+                    decided[st] = racing.decide(st, SID, context=CTX)
+                raced[name] = (decided, list(versions))
+            reset('valid')
+            race_ok = outcome(raced['unaccepted_validated'][0], CODES['unaccepted_artifact'])
+            race_ok &= outcome(raced['accepted_validated'][0], None)
+            race_ok &= set(raced['unaccepted_validated'][1]) == {2} and set(raced['accepted_validated'][1]) == {1}
+            for name, validated in (('unaccepted_validated', WEAKENED), ('accepted_validated', VALID)):
+                race_ok &= all(((d.get('architecture') or {}).get('artifact') or {}).get('digest') == sha(validated.encode())
+                               for d in raced[name][0].values())
+            observed['validated_is_digested'] = {name: {'refusals': sorted({r for d in ds.values() for r in d['refusals']}),
+                                                        'validated_versions': sorted(set(v))}
+                                                 for name, (ds, v) in raced.items()}
+            check('architecture/validated-is-digested', race_ok)
 
         with region('architecture/observations'):
             # Every decision records the architecture it judged, and its refusals keep their taxonomy.

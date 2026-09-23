@@ -320,10 +320,12 @@ def load_contract_state(repo_root=None, required=None, contract_path=None):
 
 
 def entry_contract(workspace, required=None, arch=None):
-    """VELDO-0053: the ContractLoad an eligibility entry consumes, judged by `arch`, the one structural validator
-    instance the caller loaded (validate.entry_validator) and reuses for every call. `required` True is the
-    authority's accepted architecture; None reads the policy flag."""
-    return _CL.load_contract_state(Path(workspace), arch or _arch_module(), parse_yamlish, required=required)
+    """VELDO-0053: (ContractLoad, digest of the bytes it parsed or None) for an eligibility entry, judged by `arch`,
+    the one structural validator instance the caller loaded (validate.entry_validator) and reuses. `required`
+    True is the authority's accepted architecture; None reads the policy flag."""
+    seen = []
+    load = _CL.load_contract_state(Path(workspace), arch or _arch_module(), parse_yamlish, required=required, digested=seen.append)
+    return load, (seen[0] if seen else None)
 
 
 def load_repo_contract(repo_root=None, required=None):

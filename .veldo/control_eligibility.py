@@ -435,27 +435,16 @@ class ValidatorSnapshot:
                          for role, name in VALIDATOR_ROLES}
 
     def contract(self, workspace, required):
-        """The ContractLoad of the workspace's contract, through validate.py's public entry_contract."""
+        """(ContractLoad, digest of the bytes the loader parsed) through validate.py's public entry_contract."""
         return self.validate.entry_contract(workspace, required, arch=self.arch)
 
 
-def _digest_file(path):
-    with open(path, 'rb') as handle:
-        return 'sha256:' + hashlib.sha256(handle.read()).hexdigest()
-
-
-def _artifact_identity(path):
-    """{path, type, digest} of the architecture artifact that was judged. Only a regular file is
-    opened (a FIFO at the path is never read); a file the worker may not read has no digest."""
+def _artifact_identity(path, parsed):
+    """{path, type, digest} of the architecture artifact that was judged. The digest is the loader's,
+    of the very bytes it parsed (None when nothing was read and parsed); the file is never read here."""
     kind = ('absent' if not os.path.lexists(path) else 'symlink' if os.path.islink(path)
             else 'directory' if os.path.isdir(path) else 'regular' if os.path.isfile(path) else 'other')
-    digest = None
-    if os.path.isfile(path):
-        try:
-            digest = _digest_file(path)
-        except OSError:
-            digest = None
-    return {'path': str(path), 'type': kind, 'digest': digest}
+    return {'path': str(path), 'type': kind, 'digest': parsed}
 
 
 class Gate:
@@ -780,18 +769,18 @@ class Gate:
             return found
         try:
             snapshot = self._architecture_validator()
-            load = snapshot.contract(self.workspace, True if accepted else None)
+            load, parsed = snapshot.contract(self.workspace, True if accepted else None)
             found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}
         except Exception as error:  # noqa: BLE001 - a validator that cannot answer refuses, never passes
             found['refusals'] = ['unavailable_service:architecture_validator']
             found['error'] = type(error).__name__
             return found
         found.update(kind=load.kind, state=load.state, required=load.required,
-                     artifact=_artifact_identity(load.path))
+                     artifact=_artifact_identity(load.path, parsed))
         if load.refused:
             found['refusals'] = [ARCHITECTURE_REFUSALS.get(load.kind, 'invalid_input:architecture/' + load.kind)]
             found['problems'] = list(load.problems)
-        elif accepted and found['artifact']['digest'] != accepted['digest']:
+        elif accepted and parsed != accepted['digest']:
             found['kind'] = 'unaccepted_artifact'
             found['refusals'] = [ARCHITECTURE_REFUSALS['unaccepted_artifact']]
         return found

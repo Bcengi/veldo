@@ -85,7 +85,7 @@ def contract_requirement(repo_root):
     return "architecture_contract" in policy and policy["architecture_contract"] != "optional"
 
 
-def load_contract_state(repo_root, arch, parse, required=None, contract_path=None):
+def load_contract_state(repo_root, arch, parse, required=None, contract_path=None, digested=None):
     """The tri-state load of a repository's architecture contract, as a ContractLoad. `arch` is the
     loaded arch organ and `parse` the one front-matter parser. `required` None reads the policy
     flag (contract_requirement); True or False overrides it (the CLI's and a fixture's explicit
@@ -94,7 +94,9 @@ def load_contract_state(repo_root, arch, parse, required=None, contract_path=Non
     only a regular file is ever opened, so a FIFO or a socket at the path cannot block the loader.
     A present file is read by arch.load_contract (the one reader) and then structurally validated
     by arch.validate_contract with a collecting reporter, so "valid" here means exactly what
-    check_arch means by it and a consumer never gates against a contract the gate would refuse."""
+    check_arch means by it and a consumer never gates against a contract the gate would refuse.
+    `digested`, when given, is called with the sha256 digest of the very bytes that were parsed
+    (VELDO-0053), before they are judged, so a caller never digests the file a second time."""
     base = Path(repo_root)
     p = Path(contract_path) if contract_path else base / ".veldo" / "architecture.yaml"
     req = contract_requirement(base) if required is None else bool(required)
@@ -114,10 +116,14 @@ def load_contract_state(repo_root, arch, parse, required=None, contract_path=Non
                             ("architecture contract at %s is present but not a regular file, so it is "
                              "unreadable and was not opened" % p,), str(p), req)
     try:
-        data = arch.load_contract(p, parse)
+        data, body_digest = arch.read_contract(p, parse)
     except arch.ArchContractError as e:
+        if digested is not None and getattr(e, "digest", None):
+            digested(e.digest)
         kind = "unreadable" if getattr(e, "kind", None) == "unreadable" else "parse_failure"
         return ContractLoad(CONTRACT_INVALID, kind, arch, None, (str(e),), str(p), req)
+    if digested is not None:
+        digested(body_digest)
     problems = []
     arch.validate_contract(data, base, p, lambda _where, msg: (problems.append(msg), 1)[1])
     if problems:

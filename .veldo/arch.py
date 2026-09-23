@@ -49,6 +49,8 @@ front-matter parser and the failure reporter it already owns, so this module add
 no second YAML parser and no import cycle. W2 and W3 read the contract through
 load_contract, the one place the artifact is parsed.
 """
+import hashlib
+import io
 import re
 from pathlib import Path
 
@@ -66,9 +68,11 @@ class ArchContractError(ValueError):
     "unreadable" when the file could not be read at all, "parse_failure" when it
     was read but is not a mapping in the contract subset."""
 
-    def __init__(self, message, kind="parse_failure"):
+    def __init__(self, message, kind="parse_failure", digest=None):
         super().__init__(message)
         self.kind = kind
+        # The sha256 digest of the bytes that were read and failed to parse (None when nothing was read).
+        self.digest = digest
 
 
 def default_contract_path(root=None):
@@ -84,18 +88,28 @@ def load_contract(path, parse):
     parser (the VELDO yamlish subset), raising ArchContractError on unreadable or
     unparseable input. The single place the artifact is read, so W2 and W3 reuse
     it rather than parsing the file a second way."""
+    return read_contract(path, parse)[0]
+
+
+def read_contract(path, parse):
+    """load_contract, and the sha256 digest of the very bytes it parsed (VELDO-0053): the file is read
+    ONCE, as bytes, decoded exactly as Path.read_text decodes, and parsed, so a caller comparing the
+    contract with an accepted digest compares the bytes that were judged, never a second read."""
     p = Path(path)
     try:
-        text = p.read_text()
+        with open(p, "rb") as handle:
+            body = handle.read()
     except OSError as e:
         raise ArchContractError("architecture contract unreadable: %s" % e, kind="unreadable")
+    digest = "sha256:" + hashlib.sha256(body).hexdigest()
+    text = io.TextIOWrapper(io.BytesIO(body)).read()
     try:
         data = parse(text)
     except ValueError as e:
-        raise ArchContractError("architecture contract outside the contract subset: %s" % e)
+        raise ArchContractError("architecture contract outside the contract subset: %s" % e, digest=digest)
     if not isinstance(data, dict):
-        raise ArchContractError("architecture contract must be a mapping at the top level")
-    return data
+        raise ArchContractError("architecture contract must be a mapping at the top level", digest=digest)
+    return data, digest
 
 
 def _is_str(v):

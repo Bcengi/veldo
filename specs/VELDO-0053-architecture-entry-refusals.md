@@ -45,6 +45,10 @@ footprint:
   - "scripts/suites/60_veldo_0052_eligibility.py"
   - ".veldo/validate.py"
   - "engine/.veldo/validate.py"
+  - ".veldo/contract_loader.py"
+  - "engine/.veldo/contract_loader.py"
+  - ".veldo/arch.py"
+  - "engine/.veldo/arch.py"
   - "specs/VELDO-0053-architecture-entry-refusals.md"
   - "specs/index.md"
   - "proof/VELDO-0053/*"
@@ -147,3 +151,9 @@ suite constructs are given the workspace they read. No criterion, status or evid
 the entry through validate.py's private validate_checks instance; validate.py now re-exports
 entry_contract, and the Gate calls only that public name. No criterion, status or evidence universe
 changed.
+
+2026-09-23, review fixes: .veldo/contract_loader.py, .veldo/arch.py and their engine copies joined the
+footprint. The Gate digested the workspace contract with a second read after the loader had parsed
+it, so a writer landing in between made it pass bytes it never validated. arch.read_contract now reads
+the file once and returns the digest of the bytes it parsed, the loader hands that digest to its
+caller, and the Gate compares only it. No criterion, status or evidence universe changed.
