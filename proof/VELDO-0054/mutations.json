@@ -1,12 +1,12 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 54 --diff-dir proof/VELDO-0054/mutations",
  "summary": {
-  "mutations_rejected": 56,
+  "mutations_rejected": 59,
   "green_suites": {
    "62_veldo_0054_decisions.py": 65
   }
  },
- "wall_seconds_here": 35.27,
+ "wall_seconds_here": 34.92,
  "mutations": [
   {
    "mutation": "framing-receipt-without-digest",
@@ -712,7 +712,7 @@
    "review_item": "5.1"
   },
   {
-   "mutation": "signer-whitespace-allowed",
+   "mutation": "signer-controls-allowed",
    "module": ".veldo/control_decision_dependency.py",
    "target_rows": [
     "decisions/verifier-input-bounded"
@@ -721,8 +721,47 @@
    "red_rows": [
     "decisions/verifier-input-bounded"
    ],
-   "diff": "mutations/signer-whitespace-allowed.diff",
+   "diff": "mutations/signer-controls-allowed.diff",
    "review_item": "5.1"
+  },
+  {
+   "mutation": "signer-whitespace-refused",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-whitespace-refused.diff",
+   "review_item": "6.1"
+  },
+  {
+   "mutation": "signature-limit-1024",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signature-limit-1024.diff",
+   "review_item": "6.2"
+  },
+  {
+   "mutation": "signer-limit-exclusive",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-limit-exclusive.diff",
+   "review_item": "6.2"
   },
   {
    "mutation": "signature-unbounded",

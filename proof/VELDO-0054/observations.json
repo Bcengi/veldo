@@ -826,6 +826,9 @@
    ]
   },
   "raised": [],
+  "rsa_signature_chars": [
+   1584
+  ],
   "settlement_order": {
    "VELDO-9497": [
     "invalid_input:settlement:decision:D-9497:1/signature"
@@ -1006,9 +1009,7 @@
    ],
    "VELDO-9522": [
     "ok",
-    [
-     "invalid_input:settlement:decision:D-9522:1/signer"
-    ]
+    []
    ],
    "VELDO-9523": [
     "ok",
@@ -1028,6 +1029,18 @@
      "missing_authority:admission",
      "invalid_input:settlement:decision:D-9525:1/signer"
     ]
+   ],
+   "VELDO-9526": [
+    "ok",
+    []
+   ],
+   "VELDO-9527": [
+    "ok",
+    []
+   ],
+   "VELDO-9528": [
+    "ok",
+    []
    ]
   },
   "verifier_unavailable": [
@@ -1194,5 +1207,5 @@
   ]
  ],
  "suite": "62_veldo_0054_decisions.py",
- "suite_seconds": 3.917
+ "suite_seconds": 4.053
 }

@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -245 +245 @@
--    return len(text) <= SIGNATURE_LIMIT
-+    return True
+@@ -221 +221 @@
+-SIGNATURE_LIMIT = 16384
++SIGNATURE_LIMIT = 1024

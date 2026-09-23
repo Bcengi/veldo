@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -327,2 +326,0 @@
+@@ -328,2 +327,0 @@
 -    if malformed:
 -        return malformed

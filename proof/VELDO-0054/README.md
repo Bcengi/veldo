@@ -63,7 +63,7 @@ burn-down and `cmd_run_check` (its exit and every named refusal it prints). `obs
 
 Every mutation below is registered as finding 54 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and required to turn its named row red by a failed assertion while the unmutated
-copy is green; none reddened a `ran/` row. All 56 were rejected (18 before the first review, 24 before the second, 32 before the third, 43 before the fourth, 50 before the fifth) (`mutations.json`, each diff in
+copy is green; none reddened a `ran/` row. All 59 were rejected (18 before the first review, 24 before the second, 32 before the third, 43 before the fourth, 50 before the fifth, 56 before the sixth) (`mutations.json`, each diff in
 `mutations/`).
 
 **AC1, exact binding.** Rows `decisions/consumers-from-call-sites`, `decisions/exact-binding` and
@@ -310,11 +310,12 @@ then three mutations per row with the unmutated copy as control.
 
 **1, what reaches the verifier (ff6f33e).** A signer 131072 characters long made ssh-keygen fail to
 start, which read as a verifier outage and hid the unit's other refusals. A signer is now at most 256
-characters with no whitespace or control character, and a signature at most 16 KiB (a real armored
-Ed25519 signature is a few hundred bytes); anything else is `invalid_input:<id>/signer` or
-`/signature`, decided before the verifier is asked, and the unit's other refusals stand beside it.
-Row `decisions/verifier-input-bounded`; mutations `signer-unbounded`, `signer-whitespace-allowed`,
-`signature-unbounded`.
+characters with no control character, and a signature at most 16 KiB (a real armored Ed25519
+signature is a few hundred bytes); anything else is `invalid_input:<id>/signer` or `/signature`,
+decided before the verifier is asked, and the unit's other refusals stand beside it. (As first built
+it also refused whitespace in a signer; the sixth review dropped that arm, below.) Row
+`decisions/verifier-input-bounded`; mutations `signer-unbounded`, `signer-controls-allowed`
+(`signer-whitespace-allowed` before the sixth review), `signature-unbounded`.
 
 **2, a plain fault message (14f0342).** `unexpected()` now shows control characters as `\xNN`
 escapes, turns ';' into ',' so one fault never reads as two refusals, and names an exception whose
@@ -322,19 +323,40 @@ own text raises as `<unprintable>`. The row is tightened to the real 160-charact
 `decisions/unexpected-message`; mutations `unexpected-controls-kept`, `unexpected-separator-kept`,
 `unexpected-str-unguarded`.
 
+## 2026-09-23 sixth review: the bounds refuse nothing real
+
+A fresh review of ff6f33e..50ef009 found one regression and a coverage gap. origin/main had nothing
+new to merge. Each fix was test first, one commit each: the row fails by assertion over 50ef009's
+production modules (`red-50ef009-suite62.json`: only `decisions/verifier-input-bounded` red, no region
+raised), then the fix, then mutations with the unmutated copy as control.
+
+**1, a signer with a space (79ecf79).** The whitespace arm refused valid OpenSSH principals that
+verify, a quoted principal with a space (a person's name) and Unicode whitespace. It is dropped; the
+256-character and ASCII-control bounds stay. VELDO-9522 is now a settlement signed for the quoted
+principal "Settlement Authority", required to verify and clear its unit. Mutation
+`signer-whitespace-refused` reintroduces the regression; `signer-controls-allowed` replaces
+`signer-whitespace-allowed`.
+
+**2, real edges (def0e6d).** The same row now also requires a 256-character principal, an email
+principal and a real armored RSA-4096 signature (about 1.6 KB, from a key generated in the suite's
+temporary directory beside the rest of the setup) to verify and clear their units. The reviewer's
+four limit-tightening mutants (SIGNER_LIMIT 32, SIGNATURE_LIMIT 1024, < for <=, refusing '.' and
+'@') each red the row; `signature-limit-1024` and `signer-limit-exclusive` are registered.
+
 ## Cost and verification
 
-After five reviews suite 62 runs in 3.9 s here (`observations.json`, `suite_seconds`; 1.2 s as first
+After six reviews suite 62 runs in 4.1 s here (`observations.json`, `suite_seconds`; 1.2 s as first
 built; the growth is the new regions' sweeps, each of which reads every decision and settlement
-record per unit), measured while this host's load average was about 21. With main's parallel driver
-`--finding 54` drives 56 mutations in 35.27 s here and `--finding 52` drives 49 in 11.60 s. In the gate's
-mutation stage (8 workers) finding 54 is about 61 runs (56 mutants and 5 control groups) or roughly
-30 s of wall time at this host's current speed, and it raises the stage's scaled budget by 112 s;
-with the unit stage that is about 34 s the new suite adds to the gate, under the 60 s limit.
+record per unit, and the RSA-4096 key, generated in parallel with the rest of the setup), measured
+while this host's load average was about 11. With main's parallel driver `--finding 54` drives 59
+mutations in 34.92 s here and `--finding 52` drives 49 in 12.12 s. In the gate's mutation stage (8 workers)
+finding 54 is about 64 runs (59 mutants and 5 control groups) or roughly 33 s of wall time at this
+host's current speed, and it raises the stage's scaled budget by 118 s; with the unit stage that is
+about 37 s the new suite adds to the gate, under the 60 s limit.
 Targeted checks run on this branch:
 `python3 -B scripts/selftest.py --suite 62_veldo_0054_decisions` (65 passed, 39 of them this suite's),
 `--suite 60_veldo_0052_eligibility` (80 passed), `python3 -B scripts/check_teeth_mutations.py --finding 54`
-(56 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
+(59 rejected) and `--finding 52` (49 rejected), `check_first_use.py` (pass, 353 s, at 1e1bc00), `python3 .veldo/validate.py
 all`, `bash scripts/check_generated.sh`, `bash scripts/check_template_sync.sh`, lint, docs,
 install-and-run, and every other suite that loads a module touched here, suite 60 included. The full gate is run by the lead.
 

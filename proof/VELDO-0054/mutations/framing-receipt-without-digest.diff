@@ -1,5 +1,5 @@
 --- a/.veldo/control_decision_dependency.py
 +++ b/.veldo/control_decision_dependency.py
-@@ -308 +308 @@
+@@ -309 +309 @@
 -    if not _is_str(framing) or framing != record.get('framing_digest'):
 +    if framing is not None and framing != record.get('framing_digest'):

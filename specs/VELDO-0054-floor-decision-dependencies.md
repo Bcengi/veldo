@@ -170,3 +170,9 @@ control character, and a signature over 16 KiB, are named invalid input before t
 asked, and an unexpected fault's message is kept plain (control characters escaped, no separator,
 an unprintable message named). The footprint is unchanged. No criterion, status or evidence universe
 changed.
+
+2026-09-23, sixth review fixes: the signer bound no longer refuses whitespace, which valid OpenSSH
+principals carry (a quoted name); the 256-character and control-character bounds stay, and the
+bounds are now held to a real 256-character principal, an email principal, a principal with a
+space and a real RSA-4096 signature. The footprint is unchanged. No criterion, status or evidence
+universe changed.
