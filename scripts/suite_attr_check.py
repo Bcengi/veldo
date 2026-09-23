@@ -18,10 +18,16 @@ are also rebound in loops and function bodies, and static analysis that ignores 
 one of those as missing. A first cut did exactly that: 40-odd findings, all false, which is a check
 somebody switches off within a week - and then the real one ships.
 
-So the rule is: an alias assigned EXACTLY ONCE anywhere in the corpus is unambiguous, and only those
-are checked. That covers 138 aliases and ~3,900 references at ZERO false positives, and it still
-catches the real bug, which was verified by seeding it back in. Narrowing the SCOPE to keep the
-signal clean is right; lowering the BAR by allowlisting the noisy names would not be.
+So the rule is: an alias bound EXACTLY ONCE in the scope a reference resolves to is unambiguous, and
+only those are checked. Scope is Python's own: a name bound in a function is that function's
+variable, a free name is found in the nearest enclosing function and then the module, and every
+binding form counts (assignment and unpacking, loop and comprehension targets, with ... as, the
+walrus, del, parameters and PEP 695 type parameters, imports, def and class names, except ... as,
+match captures, global and nonlocal writes). An alias whose module depends on WHEN a function runs
+(loaded in a function from a module spec variable bound more than once, or from a spec variable some
+function rebinds) is not checked either. The resolver is judged against CPython's symtable over the
+real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to keep the signal clean
+is right; lowering the BAR by allowlisting the noisy names would not be.
 
 A module that cannot be imported standalone (one that needs helpers injected by its caller) is
 UNVERIFIABLE, not passed, and is reported as such.
@@ -69,8 +75,8 @@ _COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
 class _Scope:
     """One Python scope. `key` names it; the module scope of every fragment is the same MODULE."""
 
-    def __init__(self, key, kind, parent):
-        self.key, self.kind, self.parent = key, kind, parent
+    def __init__(self, key, kind, parent, node=None):
+        self.key, self.kind, self.parent, self.node = key, kind, parent, node
         self.bound, self.globals, self.nonlocals = set(), set(), set()
 
     def local(self, name):
@@ -91,7 +97,7 @@ class _Walk:
         self.stack = [module]
 
     def scope(self, node, kind):
-        s = _Scope((self.fname, node.lineno, node.col_offset, kind), kind, self.stack[-1])
+        s = _Scope((self.fname, node.lineno, node.col_offset, kind), kind, self.stack[-1], node)
         self.scopes.append(s)
         return s
 
@@ -107,13 +113,46 @@ class _Walk:
         for child in ast.iter_child_nodes(node) if not isinstance(node, list) else node:
             self.one(child)
 
+    def type_params(self, n):
+        """PEP 695: `def f[T]` and `class C[T]` bind T in an annotation scope between the enclosing
+        scope and the definition, which the body, the signature and nested methods all see."""
+        params = getattr(n, "type_params", None) or []
+        if not params:
+            return False
+        scope = self.scope(n, "annotation")
+        for p in params:
+            self.bind(p.name, p, scope)
+        self.stack.append(scope)
+        return True
+
     def one(self, n):
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            for d in n.decorator_list:
+                self.one(d)
+            if not isinstance(n, ast.ClassDef):
+                self.defaults(n)                       # outside any type-parameter scope
+            self.bind(n.name, n)
+            pushed = self.type_params(n)
+            self.definition(n)
+            if pushed:
+                self.stack.pop()
+        elif isinstance(n, getattr(ast, "TypeAlias", ())):
+            self.bind(n.name.id, n)
+            pushed = self.type_params(n)
+            self.one(n.value)
+            if pushed:
+                self.stack.pop()
+        else:
+            self.statement(n)
+
+    def defaults(self, n):
+        a = n.args
+        for d in a.defaults + [k for k in a.kw_defaults if k is not None]:
+            self.one(d)
+
+    def definition(self, n):
         if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
-            for d in getattr(n, "decorator_list", []):
-                self.one(d)
             a = n.args
-            for d in a.defaults + [k for k in a.kw_defaults if k is not None]:
-                self.one(d)
             params = a.posonlyargs + a.args + a.kwonlyargs + [x for x in (a.vararg, a.kwarg) if x]
             for p in params:
                 if p.annotation is not None:
@@ -121,21 +160,23 @@ class _Walk:
             if getattr(n, "returns", None) is not None:
                 self.one(n.returns)
             inner = self.scope(n, "function")
-            if not isinstance(n, ast.Lambda):
-                self.bind(n.name, n)
             for p in params:
                 self.bind(p.arg, p, inner)
             self.stack.append(inner)
             self.visit(n.body if isinstance(n.body, list) else [n.body])
             self.stack.pop()
-        elif isinstance(n, ast.ClassDef):
-            for d in n.decorator_list + n.bases + [k.value for k in n.keywords]:
+        else:
+            for d in n.bases + [k.value for k in n.keywords]:
                 self.one(d)
             inner = self.scope(n, "class")
-            self.bind(n.name, n)
             self.stack.append(inner)
             self.visit(n.body)
             self.stack.pop()
+
+    def statement(self, n):
+        if isinstance(n, ast.Lambda):
+            self.defaults(n)
+            self.definition(n)
         elif isinstance(n, _COMPREHENSIONS):
             first, rest = n.generators[0], n.generators[1:]
             self.one(first.iter)                       # evaluated in the enclosing scope
@@ -188,6 +229,9 @@ class _Walk:
                 if sv:
                     self.events.append((n.lineno, n.col_offset, "mod", self.stack[-1],
                                         n.targets[0].id, sv))
+            # Reads AND writes: a monkeypatch of a name the module does not have
+            # (`M.lauch = spy`) replaces nothing, and the test that relies on it passes having
+            # proved nothing, which is exactly the failure this check exists for.
             if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) \
                     and isinstance(n.value.ctx, ast.Load):
                 self.events.append((n.lineno, n.col_offset, "ref", self.stack[-1],
@@ -219,7 +263,12 @@ def _binding_key(scope, name):
     if scope.kind == "module" or name in scope.globals:
         return MODULE
     if name in scope.nonlocals:
-        return resolve(scope.parent, name)
+        cur = scope.parent
+        while cur is not None and cur.kind != "module":
+            if cur.kind != "class" and cur.local(name):
+                return cur.key
+            cur = cur.parent
+        return MODULE
     return scope.key
 
 
@@ -253,13 +302,23 @@ def references(order, trees, counts):
     genuinely is reused for two different modules in one file, and last-assignment-wins reports the
     wrong module - which was the second false-positive source before this ordered."""
     walks = walk(trees)
+    # Source line order is execution order only at MODULE level. A spec variable some function
+    # rebinds through `global` holds whatever the call order made it, anywhere, so it never maps.
+    unknown_order = {(MODULE, a) for w in walks.values() for _l, _c, kind, scope, a, _b in w.events
+                     if kind == "spec" and scope.kind != "module" and resolve(scope, a) == MODULE}
     spec_paths, mod_paths, out = {}, {}, []
     for fname in order:
         for line, _col, kind, scope, a, b in sorted(walks[fname].events, key=lambda e: e[:2]):
             if kind == "spec":
-                spec_paths[(resolve(scope, a), a)] = b
+                key = (resolve(scope, a), a)
+                if key not in unknown_order:
+                    spec_paths[key] = b
             elif kind == "mod":
                 src = (resolve(scope, b), b)
+                # A function reads a module spec variable when it is CALLED; if that variable is
+                # bound more than once, which binding it sees is not decided by the source.
+                if scope.kind != "module" and src[0] == MODULE and counts[src] > 1:
+                    continue
                 if src in spec_paths:
                     mod_paths[(resolve(scope, a), a)] = spec_paths[src]
             else:
@@ -267,6 +326,15 @@ def references(order, trees, counts):
                 if key in mod_paths and counts[key] == 1:
                     out.append((fname, line, a, b, mod_paths[key]))
     return out
+
+
+def _encloses(outer, inner):
+    cur = inner.parent
+    while cur is not None:
+        if cur is outer:
+            return True
+        cur = cur.parent
+    return False
 
 
 def symtable_disagreements(sources):
@@ -284,17 +352,10 @@ def symtable_disagreements(sources):
     for fname, text in sources.items():
         tree = ast.parse(text)
         w = walk({fname: tree})[fname]
-        mine = {}
+        mine, by_key = {}, {s.key: s for s in w.scopes}
         for s in w.scopes:
             if s.kind in ("function", "class"):
-                node_name = None
-                for n in ast.walk(tree):
-                    if (getattr(n, "lineno", None), getattr(n, "col_offset", None)) == s.key[1:3] \
-                            and isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef,
-                                               ast.ClassDef, ast.Lambda)):
-                        node_name = getattr(n, "name", "lambda")
-                        break
-                mine.setdefault((s.kind, node_name, s.key[1]), []).append(s)
+                mine.setdefault((s.kind, getattr(s.node, "name", "lambda"), s.key[1]), []).append(s)
         comp_targets = collections.defaultdict(set)
         for s in w.scopes:
             if s.kind == "comprehension":
@@ -330,8 +391,14 @@ def symtable_disagreements(sources):
                 if n in our_local or n in comp_targets[s.key]:
                     continue
                 got = resolve(s, n)
-                if x.is_free() and (got == MODULE or got == s.key):
-                    out.append((fname, k, "free", n, got))
+                if x.is_free():
+                    # Free: it must be THE enclosing scope that binds it (a class only for the
+                    # implicit __class__ cell), not merely "somewhere other than here".
+                    owner = by_key.get(got)
+                    if not (owner is not None and _encloses(owner, s) and (
+                            (owner.kind == "class" and n == "__class__")
+                            or (owner.kind != "class" and owner.local(n)))):
+                        out.append((fname, k, "free", n, got))
                 elif x.is_global() and got != MODULE:
                     out.append((fname, k, "global", n, got))
     return out, compared

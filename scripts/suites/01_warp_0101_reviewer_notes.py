@@ -2797,6 +2797,39 @@ def reads_the_global():
     SCOPED.contract(3, 4)
 def takes_it_as_a_parameter(SCOPED):
     SCOPED.parameter_not_an_alias()
+def generic_reader[SCOPED](x) -> SCOPED:
+    return SCOPED.type_parameter_not_an_alias
+class GenericHolder[SCOPED]:
+    def method(self):
+        return SCOPED.class_type_parameter_not_an_alias
+UNIQ.monkeypatched_but_missing = lambda: None
+DELETED = importlib.util.module_from_spec(_sp)
+DELETED.rebound()
+del DELETED
+RESTED = importlib.util.module_from_spec(_sp)
+RESTED.rebound()
+match {}:
+    case {**RESTED}:
+        pass
+def rebinds_through_nonlocal():
+    NONLOCALED = importlib.util.module_from_spec(_spn)
+    class Middle:
+        NONLOCALED = 1
+        def inner(self):
+            nonlocal NONLOCALED
+            NONLOCALED = 2
+    NONLOCALED.rebound()
+_spo = importlib.util.spec_from_file_location("o1", ROOT / ".veldo/naming.py")
+_spo = importlib.util.spec_from_file_location("o2", ROOT / ".veldo/secret_scan.py")
+def loads_at_call_time():
+    LATE = importlib.util.module_from_spec(_spo)
+    LATE.which_module_depends_on_when_called()
+def rebinds_a_spec_globally():
+    global _spg
+    _spg = importlib.util.spec_from_file_location("g", ROOT / ".veldo/secret_scan.py")
+_spg = importlib.util.spec_from_file_location("g0", ROOT / ".veldo/naming.py")
+GLATE = importlib.util.module_from_spec(_spg)
+GLATE.which_module_depends_on_call_order()
 '''
 import ast as _sac_ast
 
@@ -2812,8 +2845,12 @@ _SAC_REBOUND = ("TUPLED", "LISTED", "STARRED", "WITHED", "IMPORTED", "EXCEPTED",
                 "COMPWALRUSED", "DEFFED", "CLASSED", "ANNOTATED", "MATCHED", "GLOBALED")
 expect("suite attr check TEETH: an alias rebound in the SAME SCOPE by ANY binding form Python has (tuple, list and starred unpacking, a loop target, with ... as, import ... as, except ... as, the walrus, a walrus inside a comprehension, def, class, an annotated assignment, a match capture, a global declaration in a function) is ambiguous and excluded. A reader that knew only `X = ...` called such an alias unique and checked it against the wrong module",
        not any(a in _SAC_REBOUND for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: the forms the first scope-aware cut missed are rebindings too: `del`, a match `**rest` capture, and a `nonlocal` write from a method, which binds the enclosing FUNCTION's name and never the class body's same-named attribute between them",
+       not any(a in ("DELETED", "RESTED", "NONLOCALED") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: an alias whose module depends on WHEN a function runs is not checked. Source line order is execution order only at module level: a function loading from a module spec variable bound more than once, and a spec variable some function rebinds through `global`, each hold whatever the call order made them, so a reader that replays function bodies at their definition line maps the alias to the wrong module",
+       not any(a in ("LATE", "GLATE") for _f, _l, a, _at, _r in _sac_refs))
 _sac_scoped = sorted({(at, rel) for _f, _l, a, at, rel in _sac_refs if a == "SCOPED"})
-expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter of the same name is not an alias at all, and a comprehension variable does not rebind the module name",
+expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter or a PEP 695 type parameter of the same name is not an alias at all, and a comprehension variable does not rebind the module name",
        _sac_scoped == [("contract", ".veldo/naming.py"), ("local_gone", ".veldo/secret_scan.py"),
                        ("scan_text", ".veldo/secret_scan.py")]
        and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 2
@@ -2825,9 +2862,10 @@ def _sac_resolves(rel, attr):
 
 
 _sac_seeded = sorted((a, at) for _f, _l, a, at, rel in _sac_refs if not _sac_resolves(rel, at))
-expect("suite attr check TEETH: the SEEDED missing attributes are all caught, including one read on a function-local alias, and the real ones are not - the check is neither blind nor hysterical",
+expect("suite attr check TEETH: the SEEDED missing attributes are all caught, including one read on a function-local alias and a MONKEYPATCH of a name the module does not have (it replaces nothing, so the test relying on it proves nothing), and the real ones are not - the check is neither blind nor hysterical",
        _sac_seeded == [("COMPREHENDED", "stays_unique"), ("SCOPED", "local_gone"),
-                       ("SECOND", "also_missing"), ("UNIQ", "no_such_function")])
+                       ("SECOND", "also_missing"), ("UNIQ", "monkeypatched_but_missing"),
+                       ("UNIQ", "no_such_function")])
 
 # The resolver is judged against CPython's own reading, not only against the fixture above, which
 # was written by the same hand. Over the real corpus (every suite fragment and every script and
