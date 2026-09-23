@@ -6,9 +6,11 @@ below runs inside its BEGIN IMMEDIATE on that same connection, so what a transit
 it writes are one transaction.
 
   enable_artifact_kind  a per-repository artifact kind: alias prefix, number width and path
-                        template. Its first number is derived inside the transaction from an
-                        accepted revision's commit, tree and history (a caller may name a later
-                        one, never an earlier one). The kind entity IS the kind's alias counter.
+                        template. Its first number is derived inside the transaction from the
+                        trees and histories of EVERY accepted revision of the repository (a caller
+                        may name a later one, never an earlier one), counting every file whose
+                        name carries a number. Accepted revisions are written only by VELDO-0035's
+                        accept_revision and never move back. The kind entity IS the kind's counter.
   allocate_document     one new alias from the stored counter, its reservation, the source
                         mapping, the accepted document head, its immutable version 1 and a pending
                         publication obligation, all in one signed journal record.
@@ -65,6 +67,7 @@ def _sibling(alias, name):
 
 
 SN = _sibling('alias_snapshot', 'control_snapshot.py')
+RS = _sibling('alias_readset', 'control_readset.py')
 CLAIM = _sibling('alias_claim', 'claim.py')
 _git_process = SN._git_process
 SCHEMA = 'veldo.control_alias/v1'
@@ -234,6 +237,16 @@ def accepted_maximum(repo, commit, kind):
             raise SN.Refused('missing_authority', 'accepted tree is unreadable')
         names += result.stdout.decode('utf-8', 'surrogateescape').split('\0')
     return maximum(names, kind)
+
+
+def accepted_commits(conn, domain_uuid, repository):
+    """Every commit an accepted revision of this repository names, sorted and distinct."""
+    found = set()
+    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='accepted_revision'"):
+        data = json.loads(raw)
+        if data.get('domain_uuid') == domain_uuid and data.get('repository_uuid') == repository:
+            found.add(data['commit'])
+    return sorted(found)
 
 
 _DIGITS = frozenset('0123456789')
@@ -602,15 +615,18 @@ class Allocations:
                 self._refuse('invalid_registration', 'prefix %s already allocates kind %s' % (data['prefix'], other['kind']))
             if _meet(_items(data), _items(other)):
                 self._refuse('invalid_registration', 'kinds %s and %s can declare one path' % (data['kind'], other['kind']))
-        # The first number comes from an accepted revision's commit, read here inside the
-        # transaction; a caller may name a later first number, never an earlier one.
+        # The first number is above every number held in the history of EVERY accepted revision
+        # of this repository, read here inside the transaction: the named one only proves the
+        # request stands on an accepted revision, and naming an earlier one lowers nothing. A
+        # caller may name a later first number, never an earlier one.
         revision = before.get(p['revision_id'])
         if revision is None or revision['kind'] != 'accepted_revision':
             self._refuse('missing_authority', 'no accepted revision %r' % (p['revision_id'],))
         accepted = revision['data']
         if accepted.get('domain_uuid') != self.domain_uuid or accepted.get('repository_uuid') != repository:
             self._refuse('wrong_repository', 'the accepted revision belongs to another repository')
-        floor = accepted_maximum(self.paths[repository], accepted['commit'], data) + 1
+        commits = accepted_commits(conn, self.domain_uuid, repository)
+        floor = max(accepted_maximum(self.paths[repository], commit, data) for commit in commits) + 1
         roots = root_commits(self.paths[repository], accepted['commit'])
         if roots != self.identities[repository]:
             self._refuse('wrong_repository', 'the accepted commit is not in the enrolled repository')
@@ -619,7 +635,8 @@ class Allocations:
         elif first < floor:
             self._refuse('below_accepted_history', 'accepted commit %s already holds %s numbers below %d'
                          % (accepted['commit'], data['kind'], floor))
-        data.update(accepted_revision=p['revision_id'], accepted_commit=accepted['commit'], root_commits=roots)
+        data.update(accepted_revision=p['revision_id'], accepted_commit=accepted['commit'], root_commits=roots,
+                    floor_commits=commits)
         return {kind_id(repository, data['kind']): {'kind': 'artifact_kind', 'data': data}}
 
     def _t_allocate(self, conn, p, before):
@@ -729,6 +746,8 @@ def attach(store, conn, domain_uuid, repositories):
         raise SN.Refused('invalid_registration', 'connection already has an allocation authority')
     service = Allocations(store, conn, domain_uuid, repositories)
     store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES)
+    # First numbers come from accepted revisions: they are VELDO-0035's accept_revision's alone.
+    store.declare_owners(conn, RS.REVISION_OWNER, kinds=RS.REVISION_KINDS)
     for operation, body in zip(OPERATIONS, (service._t_enable, service._t_allocate, service._t_edit, service._t_publish)):
         conn.command_registry[operation] = {'transaction_transition': service._transition(body),
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}

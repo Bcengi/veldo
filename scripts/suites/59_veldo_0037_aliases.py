@@ -144,15 +144,11 @@ def _s37_run():
         db = root / 'control.sqlite3'
         conn = st.open_store(db)
         service = al.attach(st, conn, 'domain', accepted_repositories)
-        # The accepted revisions (VELDO-0035's authority) that enabling reads its first numbers from.
+        # The accepted revisions (VELDO-0035's authority) that enabling reads its first numbers from,
+        # written by their own accepting command: no generic command writes one.
+        accepting = rs.attach_revisions(st, conn, 'domain', accepted_repositories)
         for repository, accepted in (('repository', origin), ('other', other_origin)):
-            st.execute(conn, {'command_id': 'accept-' + repository, 'principal': 'operator', 'operation': 'upsert_entity',
-                              'nonce': 'accept-%s/nonce' % repository, 'artifact_digests': [],
-                              'parameters': {'entity_id': 'revision/' + repository, 'kind': 'accepted_revision',
-                                             'data': {'domain_uuid': 'domain', 'repository_uuid': repository,
-                                                      'commit': g(accepted, 'rev-parse', 'HEAD'),
-                                                      'documents': {}, 'statuses': {}}},
-                              'expected_versions': {'revision/' + repository: 0}}, **signing)
+            accepting.accept('revision/' + repository, repository, g(accepted, 'rev-parse', 'HEAD'), 'operator', **signing)
         publisher = doc.Publisher(service, publication)
         refusal_log = []
 
@@ -506,16 +502,11 @@ def _s37_run():
                 env.origins[repository] = origin
             env.db = env.base / 'control.sqlite3'
             env.conn = st.open_store(env.db)
+            env.accepting = rs.attach_revisions(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             for repository, origin in env.origins.items():
                 env.revisions[repository] = 'revision/' + repository
-                st.execute(env.conn, {'command_id': 'seed-' + repository, 'principal': 'operator',
-                                      'operation': 'upsert_entity', 'nonce': 'seed-%s/nonce' % repository,
-                                      'parameters': {'entity_id': 'revision/' + repository, 'kind': 'accepted_revision',
-                                                     'data': {'domain_uuid': 'domain', 'repository_uuid': repository,
-                                                              'commit': g(origin, 'rev-parse', 'HEAD'),
-                                                              'documents': {}, 'statuses': {}}},
-                                      'expected_versions': {'revision/' + repository: 0}, 'artifact_digests': []},
-                           **signing)
+                env.accepting.accept('revision/' + repository, repository, g(origin, 'rev-parse', 'HEAD'), 'operator',
+                                     **signing)
             if before_attach is not None:
                 before_attach(env)
             env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
@@ -903,6 +894,39 @@ def _s37_run():
                'registered': (None, None), 'counter': (None, 'entity_owned'), 'unowned': (None, None),
                'forged-snapshot': 'entity_owned', 'counter-after': 4}
                for label in ('readset-after-attach', 'readset-before-attach')})
+
+        # 12. The first number is above EVERY accepted revision of the repository, not only the
+        # one an enabling request names; accepted revisions are written only by accept_revision,
+        # never by a generic command on any connection, and an accepted revision never moves back.
+        env = fresh('revisions', {'repository': [{}, {'specs/VELDO-0001-held.md': b'# held\n'}]})
+        first_commit = g(env.origins['repository'], 'rev-list', '--max-parents=0', 'HEAD')
+        revisions = {}
+        for label, identity in (('generic-new', 'revision/repository/generic'), ('generic-rewrite', 'revision/repository')):
+            row = env.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+            _, error = attempt(lambda: st.execute(env.conn, {'command_id': 'revisions-' + label, 'principal': 'anyone',
+                'operation': 'upsert_entity', 'nonce': 'revisions-%s/nonce' % label, 'artifact_digests': [],
+                'parameters': {'entity_id': identity, 'kind': 'accepted_revision', 'data': {
+                    'domain_uuid': 'domain', 'repository_uuid': 'repository', 'commit': first_commit,
+                    'documents': {}, 'statuses': {}}},
+                'expected_versions': {identity: row[0] if row else 0}}, **signing))
+            revisions[label] = code(error)
+        _, regression = attempt(lambda: env.accepting.accept('revision/repository', 'repository', first_commit, 'operator',
+                                                             **signing))
+        revisions['regression'] = code(regression)
+        _, older = attempt(lambda: env.accepting.accept('revision/repository/older', 'repository', first_commit,
+                                                        'operator', **signing))
+        revisions['older-revision'] = code(older)
+        env.revisions['repository'] = 'revision/repository/older'
+        for label, first in (('first-1', 1), ('derived', None)):
+            _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=first)
+            revisions[label] = code(error)
+        allocated, _ = allocate(env, 'after-revisions', 'specification', 'after', b'after revisions\n')
+        revisions['allocated'] = (allocated or {}).get('alias')
+        defects['revisions'] = revisions
+        expect('aliases/floor-from-every-accepted-revision', revisions == {
+               'generic-new': 'entity_owned', 'generic-rewrite': 'entity_owned', 'regression': 'revision_regression',
+               'older-revision': None, 'first-1': 'below_accepted_history', 'derived': None, 'allocated': 'VELDO-0002'})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

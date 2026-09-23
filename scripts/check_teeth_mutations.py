@@ -510,6 +510,12 @@ def cases():
             '        owners = entity_owners(conn)\n',
             '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
             'aliases/owned-whatever-registration-order')
+    aliases('alias-floor-named-revision-only', 'control_alias.py',
+            '        commits = accepted_commits(conn, self.domain_uuid, repository)\n',
+            "        commits = [accepted['commit']]\n", 'aliases/floor-from-every-accepted-revision')
+    aliases('revision-regression-allowed', 'control_readset.py',
+            "                if not _descends(repo, data['commit'], commit):", '                if False:',
+            'aliases/floor-from-every-accepted-revision')
     aliases('readset-snapshots-undeclared', 'control_readset.py',
             '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)\n', '',
             'aliases/owned-whatever-registration-order')

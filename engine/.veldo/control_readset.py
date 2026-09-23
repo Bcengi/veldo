@@ -28,6 +28,17 @@ def _snapshots():
 SN = _snapshots()
 OWNER = 'VELDO-0035 accepted snapshots'
 SNAPSHOT_KINDS = {'control_snapshot': ('accept_snapshot',)}
+REVISION_OWNER = 'VELDO-0035 accepted revisions'
+REVISION_KINDS = {'accepted_revision': ('accept_revision',)}
+
+
+def _descends(repo, older, newer):
+    """Whether `newer` has `older` in its history (or is it)."""
+    result = SN._git_process.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', older, newer],
+                                 capture_output=True, timeout=15)
+    if result.returncode not in (0, 1):
+        raise SN.Refused('missing_authority', 'the accepted history is unreadable')
+    return result.returncode == 0
 
 
 class ReadSets:
@@ -200,6 +211,78 @@ class ReadSets:
         for (raw,) in self.conn.execute('SELECT before_versions FROM journal'):
             used.update(key for key, version in json.loads(raw).items() if version > 0 and key in snapshots)
         return sorted(snapshots - used)
+
+
+class Revisions:
+    """The accepting command for accepted_revision entities, the inputs every read set consumes and
+    VELDO-0037 derives its first numbers from. An accepted revision names an exact commit of an
+    enrolled repository, its documents {output_path: sha256} and statuses {output_path: entity_id},
+    each checked inside the store's transaction exactly as inputs() checks them when consumed; a
+    revision id already accepted moves only to a descendant of its commit. attach_revisions declares
+    in the store that nothing but accept_revision writes an accepted_revision, on any connection."""
+
+    def __init__(self, store, conn, domain_uuid, repositories):
+        if not isinstance(repositories, dict) or not repositories:
+            raise SN.Refused('invalid_registration', 'repositories map each repository uuid to its accepted repository')
+        self.store, self.conn, self.domain_uuid = store, conn, domain_uuid
+        self.paths = {repository: str(path) for repository, path in repositories.items()}
+
+    def accept(self, revision_id, repository_uuid, commit, principal, documents=None, statuses=None, **signing):
+        version = SN.entity(self.store, self.conn, revision_id)['version']
+        command_id = 'revision.accept:%s:%d:%s' % (revision_id, version, commit)
+        return self.store.execute(self.conn, {
+            'command_id': command_id, 'principal': principal, 'operation': 'accept_revision',
+            'parameters': {'revision_id': revision_id, 'repository_uuid': repository_uuid, 'commit': commit,
+                           'documents': dict(documents or {}), 'statuses': dict(statuses or {})},
+            'expected_versions': {revision_id: version}, 'artifact_digests': [], 'nonce': command_id + '/nonce'}, **signing)
+
+    def transition(self, conn, parameters, before):
+        try:
+            ReadSets.require_transaction(self, conn)   # the read sets' own guard: this connection, its BEGIN IMMEDIATE
+            if set(parameters) != {'revision_id', 'repository_uuid', 'commit', 'documents', 'statuses'}:
+                raise SN.Refused('invalid_input', 'an accepted revision is revision_id, repository_uuid, commit, documents, statuses')
+            identity, repository, commit = parameters['revision_id'], parameters['repository_uuid'], parameters['commit']
+            if repository not in self.paths:
+                raise SN.Refused('wrong_repository', 'repository is not enrolled in this domain')
+            repo = self.paths[repository]
+            SN.commit_id(repo, commit)
+            documents, statuses = parameters['documents'], parameters['statuses']
+            for path, identity_of_status in statuses.items():
+                SN.safe_path(path)
+                if SN.entity(self.store, conn, identity_of_status)['value'] is None:
+                    raise SN.Refused('missing_authority', identity_of_status)
+            # Every document read at the exact commit, and no two projection paths overlapping.
+            SN.members({'documents': documents, 'statuses': {path: None for path in statuses},
+                        'accepted_commit': commit}, repo)
+            prior = before.get(identity)
+            if prior is not None:
+                data = prior['data']
+                if (prior['kind'] != 'accepted_revision' or data.get('domain_uuid') != self.domain_uuid
+                        or data.get('repository_uuid') != repository):
+                    raise SN.Refused('invalid_input', '%s is not an accepted revision of this repository' % identity)
+                # An accepted revision only moves forward: its history is what VELDO-0037's first
+                # numbers are derived from, and a revision moved back would drop numbers it held.
+                if not _descends(repo, data['commit'], commit):
+                    raise SN.Refused('revision_regression', '%s is at %s; %s does not descend from it'
+                                     % (identity, data['commit'], commit))
+            return {identity: {'kind': 'accepted_revision', 'data': {
+                'domain_uuid': self.domain_uuid, 'repository_uuid': repository, 'commit': commit,
+                'documents': documents, 'statuses': statuses}}}
+        except SN.Refused as error:
+            raise self.store.StoreRefused(error.code, error.detail) from error
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise self.store.StoreRefused('invalid_input', 'malformed accepted revision') from error
+
+
+def attach_revisions(store, conn, domain_uuid, repositories):
+    """Register accept_revision on one store connection; returns the accepting service."""
+    if 'accept_revision' in conn.command_registry:
+        raise SN.Refused('invalid_registration', 'connection already accepts revisions')
+    service = Revisions(store, conn, domain_uuid, repositories)
+    store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS)
+    conn.command_registry['accept_revision'] = {
+        'transaction_transition': service.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+    return service
 
 
 def attach(store, conn, repo, domain_uuid, repository_uuid):
