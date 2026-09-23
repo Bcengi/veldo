@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0067
 title: Per-channel restricted edge signing and enrollment
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

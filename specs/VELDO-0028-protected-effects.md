@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0028
 title: Protected effect execution and atomic nonce consumption
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

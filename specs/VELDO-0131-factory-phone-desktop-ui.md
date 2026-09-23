@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0131
 title: Veldo factory UI on phone and desktop
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

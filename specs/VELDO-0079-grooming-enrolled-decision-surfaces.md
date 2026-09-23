@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0079
 title: Grooming and admission requests through enrolled decision surfaces
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

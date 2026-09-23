@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0037
 title: Atomic specification alias allocation and document publication
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

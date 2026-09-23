@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0078
 title: Backlog lifecycle and priority-controlled execution
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

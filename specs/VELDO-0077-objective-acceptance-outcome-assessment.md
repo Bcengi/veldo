@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0077
 title: Objective acceptance and signed outcome assessment
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

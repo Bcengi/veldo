@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0050
 title: Executor persists proof and performs complete contextual validation
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

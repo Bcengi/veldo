@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0047
 title: Authority service installation, startup, stop, and absent-service behavior
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0126
 title: One Telegram and API message intake for proposed work
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

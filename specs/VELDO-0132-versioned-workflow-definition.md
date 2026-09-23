@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0132
 title: Versioned workflow definitions consumed by LangGraph
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

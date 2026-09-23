@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0058
 title: Gate-output isolation and exact tested-tree evidence
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

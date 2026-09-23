@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0129
 title: Real worker adapter wiring for LiveLoop and LiveReviewer
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0130
 title: Authenticated factory state, message and decision API
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

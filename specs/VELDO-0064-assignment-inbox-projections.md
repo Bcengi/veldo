@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0064
 title: Assignment inbox and durable projections on enrolled input surfaces
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

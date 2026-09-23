@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0125
 title: Mac worker dispatch through the relay with host-capability routing
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

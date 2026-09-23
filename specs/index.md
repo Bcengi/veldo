@@ -18,7 +18,52 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded artifact the machine may draft and may never rule on, where the ruling is representable ONLY as a human decision settled through the ticket channel and joined to the observation by a digest the validator recomputes, so the agent under the gate cannot write its own exemption | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered "unanswerable, human needed", never "alive", so a fast-clocked worker can no longer lock a unit forever, and never "stale", so its live claim is never handed to a second worker | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
 | VELDO-0027 | Protected signing and key lifecycle | ready | critical | dmitry | required | VELDO-0027-protected-signing.md |
+| VELDO-0028 | Protected effect execution and atomic nonce consumption | ready | critical | dmitry | required | VELDO-0028-protected-effects.md |
 | VELDO-0029 | One signed enrollment binding decides which authority a clone writes to, and nothing ambient does | ready | critical | dmitry | required | VELDO-0029-repository-enrollment.md |
+| VELDO-0031 | Authority-backed claims and claim-generation fencing | ready | critical | dmitry | required | VELDO-0031-authority-backed-claims.md |
+| VELDO-0035 | Complete read-set validation and authoritative snapshots | ready | critical | dmitry | required | VELDO-0035-authoritative-snapshots.md |
+| VELDO-0036 | Capacity and subscription usage reservations | ready | critical | dmitry | required | VELDO-0036-capacity-and-spend-reservations.md |
+| VELDO-0037 | Atomic specification alias allocation and document publication | ready | high | dmitry | required | VELDO-0037-specification-alias-publication.md |
+| VELDO-0039 | Durable dispatch acceptance and launch records | ready | critical | dmitry | required | VELDO-0039-durable-dispatch-acceptance.md |
+| VELDO-0040 | Provider-neutral process supervision and descendant containment | ready | critical | dmitry | required | VELDO-0040-process-containment.md |
+| VELDO-0041 | Independent heartbeat, bounded stopping, and safe capacity retirement | ready | critical | dmitry | required | VELDO-0041-heartbeat-and-retirement.md |
+| VELDO-0042 | Isolated worker clones and pinned read-only shared object cache | ready | critical | dmitry | required | VELDO-0042-isolated-worker-clones.md |
+| VELDO-0043 | Replaceable LangGraph execution adapter | ready | high | dmitry | required | VELDO-0043-replaceable-langgraph-adapter.md |
+| VELDO-0045 | Pinned isolated runtime, dependency licenses, and distribution inventory | ready | high | dmitry | required | VELDO-0045-isolated-runtime-distribution.md |
+| VELDO-0046 | Durable wake-up, cursor replay, and notification delivery | ready | high | dmitry | required | VELDO-0046-durable-notification-delivery.md |
+| VELDO-0047 | Authority service installation, startup, stop, and absent-service behavior | ready | critical | dmitry | required | VELDO-0047-authority-service-lifecycle.md |
+| VELDO-0049 | Dispatch and tracker bridge consume authoritative state transitions | ready | critical | dmitry | required | VELDO-0049-authoritative-floor-transitions.md |
+| VELDO-0050 | Executor persists proof and performs complete contextual validation | ready | critical | dmitry | required | VELDO-0050-durable-contextual-proof.md |
+| VELDO-0051 | Canonical event vocabulary and journal-derived publication | ready | critical | dmitry | required | VELDO-0051-journal-event-publication.md |
+| VELDO-0052 | Shared eligibility in work, frontier, plan, direct executor, and review | ready | critical | dmitry | required | VELDO-0052-shared-floor-eligibility.md |
+| VELDO-0053 | Architecture failure handling at every eligibility entry | ready | high | dmitry | required | VELDO-0053-architecture-entry-refusals.md |
+| VELDO-0054 | Decision-record dependency evaluation for the floor slice | ready | high | dmitry | required | VELDO-0054-floor-decision-dependencies.md |
+| VELDO-0056 | Disposable landing candidate construction and failure isolation | ready | critical | dmitry | required | VELDO-0056-disposable-landing-candidates.md |
+| VELDO-0057 | Exact-tip publication and confirmed completion receipt | ready | critical | dmitry | required | VELDO-0057-exact-tip-completion.md |
+| VELDO-0058 | Gate-output isolation and exact tested-tree evidence | ready | critical | dmitry | required | VELDO-0058-isolated-gate-observations.md |
+| VELDO-0059 | Installed full factory journey with real workers and enforcement | ready | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
+| VELDO-0060 | Claude Code production adapter qualification | ready | critical | dmitry | required | VELDO-0060-claude-code-adapter-qualification.md |
+| VELDO-0061 | Codex production adapter qualification | ready | critical | dmitry | required | VELDO-0061-codex-adapter-qualification.md |
+| VELDO-0062 | Provider credential separation and live usage accounting | ready | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
+| VELDO-0064 | Assignment inbox and durable projections on enrolled input surfaces | ready | high | dmitry | required | VELDO-0064-assignment-inbox-projections.md |
+| VELDO-0065 | Versioned presentation receipts for every enrolled channel | ready | critical | dmitry | required | VELDO-0065-versioned-channel-presentations.md |
+| VELDO-0066 | Canonical channel attribution including platform-derived chat message, sender, and time | ready | critical | dmitry | required | VELDO-0066-canonical-channel-attribution.md |
+| VELDO-0067 | Per-channel restricted edge signing and enrollment | ready | critical | dmitry | required | VELDO-0067-restricted-channel-edges.md |
+| VELDO-0068 | Atomic cross-channel settlement and principal-based quorum enforcement | ready | critical | dmitry | required | VELDO-0068-atomic-cross-channel-settlement.md |
+| VELDO-0069 | Governing decision binding, supersession, and eligibility updates | ready | critical | dmitry | required | VELDO-0069-governing-decision-bindings.md |
+| VELDO-0073 | Per-channel live ingress activation and real sandbox qualification | ready | critical | dmitry | required | VELDO-0073-channel-ingress-activation.md |
+| VELDO-0075 | Andon delivery and authorized resumption through enrolled channels | ready | critical | dmitry | required | VELDO-0075-andon-delivery-resumption.md |
+| VELDO-0076 | Project ownership, charter, lifecycle, and transfers | ready | critical | dmitry | required | VELDO-0076-project-ownership-charter-lifecycle.md |
+| VELDO-0077 | Objective acceptance and signed outcome assessment | ready | critical | dmitry | required | VELDO-0077-objective-acceptance-outcome-assessment.md |
+| VELDO-0078 | Backlog lifecycle and priority-controlled execution | ready | critical | dmitry | required | VELDO-0078-backlog-lifecycle-priority-execution.md |
+| VELDO-0079 | Grooming and admission requests through enrolled decision surfaces | ready | critical | dmitry | required | VELDO-0079-grooming-enrolled-decision-surfaces.md |
+| VELDO-0080 | Ordinary defect dispatch through normal admission | ready | critical | dmitry | required | VELDO-0080-work-class-dispatch-defect-reproduction.md |
+| VELDO-0085 | Decomposition and concurrent elaboration publication | ready | critical | dmitry | required | VELDO-0085-decomposition-concurrent-publication.md |
+| VELDO-0088 | Project-manager execution graphs | ready | critical | dmitry | required | VELDO-0088-project-manager-execution-graphs.md |
+| VELDO-0089 | Versioned team configuration | ready | critical | dmitry | required | VELDO-0089-versioned-team-configuration.md |
+| VELDO-0090 | Capability-bound specialist selection | ready | critical | dmitry | required | VELDO-0090-capability-bound-specialist-selection.md |
+| VELDO-0091 | Budgeted requirements elaboration | ready | critical | dmitry | required | VELDO-0091-budgeted-requirements-elaboration.md |
+| VELDO-0092 | Typed proposals and complete authorization validation | ready | critical | dmitry | required | VELDO-0092-typed-proposals-authorization-validation.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
 | VELDO-0106 | The owner's two settings are read exactly as written - the policy reader, and a start line that must be a commit id | ready | high | dmitry | required | VELDO-0106-policy-read-exactly-as-written.md |
 | VELDO-0107 | Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates | ready | critical | dmitry | required | VELDO-0107-local-authenticated-ipc-routing.md |
@@ -38,6 +83,15 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0121 | Qualify relay behavior at every transport exchange failure boundary | ready | high | dmitry | required | VELDO-0121-relay-transport-failure-interleavings.md |
 | VELDO-0122 | Observe transient and out-of-directory writes during unavailable calls | ready | high | dmitry | required | VELDO-0122-unavailable-calls-have-no-transient-writes.md |
 | VELDO-0123 | Run every registered mutation fresh in every gate | ready | high | dmitry | required | VELDO-0123-mutation-drivers-in-every-gate.md |
+| VELDO-0124 | Simple macOS worker lifecycle profile | ready | high | dmitry | required | VELDO-0124-macos-worker-profile.md |
+| VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | ready | high | dmitry | required | VELDO-0125-mac-relay-capability-routing.md |
+| VELDO-0126 | One Telegram and API message intake for proposed work | ready | high | dmitry | required | VELDO-0126-message-objective-intake.md |
+| VELDO-0127 | Versioned per-role MCP server and tool configuration | ready | high | dmitry | required | VELDO-0127-agent-capability-configuration.md |
+| VELDO-0128 | Telegram progress and completion from journal events | ready | high | dmitry | required | VELDO-0128-telegram-journal-reporting.md |
+| VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | ready | high | dmitry | required | VELDO-0129-live-build-review-adapter-wiring.md |
+| VELDO-0130 | Authenticated factory state, message and decision API | ready | high | dmitry | required | VELDO-0130-authenticated-factory-api.md |
+| VELDO-0131 | Veldo factory UI on phone and desktop | ready | high | dmitry | required | VELDO-0131-factory-phone-desktop-ui.md |
+| VELDO-0132 | Versioned workflow definitions consumed by LangGraph | ready | high | dmitry | required | VELDO-0132-versioned-workflow-definition.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a human decision must arrive as an attested record and never as an answer typed at a prompt | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning method just as unreachable as an instance one and neither wired site refuses it, the function that catches it already sits in the file wired to nothing, and wiring it also removes both known false positives (hardening of WARP-0623, from its own review's ranked notes) | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to read 9,096 - compute each derivation ONCE, with every optimized value asserted equal to the naive one | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
@@ -61,70 +115,25 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | WARP-0620 | The live-sandbox proof of the inbound edge - execute the codified path against a real board for the first time, with the owner present, and find out what the offline fake could not tell us: the real changelog shape, real actor attribution, and whether the agent's withheld scopes actually stop it from approving its own work (W7 of PLAN-0016, the activation gate the reviews required) | blocked | high | dmitry | required | WARP-0620-live-sandbox-proof.md |
 | VELDO-0013 | A declared falsification is DRIVEN once per item and recorded against the commit it was driven at, so a criterion that cannot fail is caught when the evidence is written rather than by the next reviewer who happens to try it | draft | standard | dmitry | not_required | VELDO-0013-a-declared-falsification-is-driven-and-recorded.md |
 | VELDO-0014 | What a criterion may assert about the live repository - a stated rule that a check describes a property and never today's contents, with the mechanisable half enforced and the half a scan cannot see declared rather than implied | draft | standard | dmitry | not_required | VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md |
-| VELDO-0028 | Protected effect execution and atomic nonce consumption | draft | critical | dmitry | required | VELDO-0028-protected-effects.md |
 | VELDO-0030 | Exclusive leadership and authority-generation fencing | draft | critical | dmitry | required | VELDO-0030-authority-generation-fencing.md |
-| VELDO-0031 | Authority-backed claims and claim-generation fencing | draft | critical | dmitry | required | VELDO-0031-authority-backed-claims.md |
 | VELDO-0032 | Clock uncertainty in task reporting | draft | high | dmitry | required | VELDO-0032-clock-task-reporting.md |
 | VELDO-0033 | Clock claim-refusal propagation through execution and landing | draft | high | dmitry | required | VELDO-0033-clock-refusal-propagation.md |
 | VELDO-0034 | Clock uncertainty in the status display | draft | high | dmitry | required | VELDO-0034-clock-status-display.md |
-| VELDO-0035 | Complete read-set validation and authoritative snapshots | draft | critical | dmitry | required | VELDO-0035-authoritative-snapshots.md |
-| VELDO-0036 | Capacity and subscription usage reservations | draft | critical | dmitry | required | VELDO-0036-capacity-and-spend-reservations.md |
-| VELDO-0037 | Atomic specification alias allocation and document publication | draft | high | dmitry | required | VELDO-0037-specification-alias-publication.md |
 | VELDO-0038 | Effect-specific reconciliation and recovery commands | draft | critical | dmitry | required | VELDO-0038-effect-recovery-commands.md |
-| VELDO-0039 | Durable dispatch acceptance and launch records | draft | critical | dmitry | required | VELDO-0039-durable-dispatch-acceptance.md |
-| VELDO-0040 | Provider-neutral process supervision and descendant containment | draft | critical | dmitry | required | VELDO-0040-process-containment.md |
-| VELDO-0041 | Independent heartbeat, bounded stopping, and safe capacity retirement | draft | critical | dmitry | required | VELDO-0041-heartbeat-and-retirement.md |
-| VELDO-0042 | Isolated worker clones and pinned read-only shared object cache | draft | critical | dmitry | required | VELDO-0042-isolated-worker-clones.md |
-| VELDO-0043 | Replaceable LangGraph execution adapter | draft | high | dmitry | required | VELDO-0043-replaceable-langgraph-adapter.md |
 | VELDO-0044 | Checkpoint namespace isolation and bounded contention | draft | critical | dmitry | required | VELDO-0044-checkpoint-isolation.md |
-| VELDO-0045 | Pinned isolated runtime, dependency licenses, and distribution inventory | draft | high | dmitry | required | VELDO-0045-isolated-runtime-distribution.md |
-| VELDO-0046 | Durable wake-up, cursor replay, and notification delivery | draft | high | dmitry | required | VELDO-0046-durable-notification-delivery.md |
-| VELDO-0047 | Authority service installation, startup, stop, and absent-service behavior | draft | critical | dmitry | required | VELDO-0047-authority-service-lifecycle.md |
 | VELDO-0048 | Integrity verification, replica restoration, and host-replacement fencing | draft | critical | dmitry | required | VELDO-0048-integrity-and-replica-restoration.md |
-| VELDO-0049 | Dispatch and tracker bridge consume authoritative state transitions | draft | critical | dmitry | required | VELDO-0049-authoritative-floor-transitions.md |
-| VELDO-0050 | Executor persists proof and performs complete contextual validation | draft | critical | dmitry | required | VELDO-0050-durable-contextual-proof.md |
-| VELDO-0051 | Canonical event vocabulary and journal-derived publication | draft | critical | dmitry | required | VELDO-0051-journal-event-publication.md |
-| VELDO-0052 | Shared eligibility in work, frontier, plan, direct executor, and review | draft | critical | dmitry | required | VELDO-0052-shared-floor-eligibility.md |
-| VELDO-0053 | Architecture failure handling at every eligibility entry | draft | high | dmitry | required | VELDO-0053-architecture-entry-refusals.md |
-| VELDO-0054 | Decision-record dependency evaluation for the floor slice | draft | high | dmitry | required | VELDO-0054-floor-decision-dependencies.md |
 | VELDO-0055 | Release regression receipt consumption | draft | high | dmitry | required | VELDO-0055-release-regression-receipts.md |
-| VELDO-0056 | Disposable landing candidate construction and failure isolation | draft | critical | dmitry | required | VELDO-0056-disposable-landing-candidates.md |
-| VELDO-0057 | Exact-tip publication and confirmed completion receipt | draft | critical | dmitry | required | VELDO-0057-exact-tip-completion.md |
-| VELDO-0058 | Gate-output isolation and exact tested-tree evidence | draft | critical | dmitry | required | VELDO-0058-isolated-gate-observations.md |
-| VELDO-0059 | Installed full factory journey with real workers and enforcement | draft | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
-| VELDO-0060 | Claude Code production adapter qualification | draft | critical | dmitry | required | VELDO-0060-claude-code-adapter-qualification.md |
-| VELDO-0061 | Codex production adapter qualification | draft | critical | dmitry | required | VELDO-0061-codex-adapter-qualification.md |
-| VELDO-0062 | Provider credential separation and live usage accounting | draft | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
 | VELDO-0063 | Production governor and lifecycle failure qualification | draft | critical | dmitry | required | VELDO-0063-production-governor-lifecycle.md |
-| VELDO-0064 | Assignment inbox and durable projections on enrolled input surfaces | draft | high | dmitry | required | VELDO-0064-assignment-inbox-projections.md |
-| VELDO-0065 | Versioned presentation receipts for every enrolled channel | draft | critical | dmitry | required | VELDO-0065-versioned-channel-presentations.md |
-| VELDO-0066 | Canonical channel attribution including platform-derived chat message, sender, and time | draft | critical | dmitry | required | VELDO-0066-canonical-channel-attribution.md |
-| VELDO-0067 | Per-channel restricted edge signing and enrollment | draft | critical | dmitry | required | VELDO-0067-restricted-channel-edges.md |
-| VELDO-0068 | Atomic cross-channel settlement and principal-based quorum enforcement | draft | critical | dmitry | required | VELDO-0068-atomic-cross-channel-settlement.md |
-| VELDO-0069 | Governing decision binding, supersession, and eligibility updates | draft | critical | dmitry | required | VELDO-0069-governing-decision-bindings.md |
 | VELDO-0070 | Independent decision review bound to full framing and distinct principals | draft | critical | dmitry | required | VELDO-0070-independent-decision-review.md |
 | VELDO-0071 | Governing assumption observations and tripwire review flow | draft | critical | dmitry | required | VELDO-0071-governing-assumptions-tripwires.md |
 | VELDO-0072 | PLAN-0016 tracker projection and canonical-history repair | draft | high | dmitry | required | VELDO-0072-tracker-projection-history-repair.md |
-| VELDO-0073 | Per-channel live ingress activation and real sandbox qualification | draft | critical | dmitry | required | VELDO-0073-channel-ingress-activation.md |
 | VELDO-0074 | Interrupted and concurrent decisions across enrolled channels | draft | critical | dmitry | required | VELDO-0074-interrupted-channel-decisions.md |
-| VELDO-0075 | Andon delivery and authorized resumption through enrolled channels | draft | critical | dmitry | required | VELDO-0075-andon-delivery-resumption.md |
-| VELDO-0076 | Project ownership, charter, lifecycle, and transfers | draft | critical | dmitry | required | VELDO-0076-project-ownership-charter-lifecycle.md |
-| VELDO-0077 | Objective acceptance and signed outcome assessment | draft | critical | dmitry | required | VELDO-0077-objective-acceptance-outcome-assessment.md |
-| VELDO-0078 | Backlog lifecycle and priority-controlled execution | draft | critical | dmitry | required | VELDO-0078-backlog-lifecycle-priority-execution.md |
-| VELDO-0079 | Grooming and admission requests through enrolled decision surfaces | draft | critical | dmitry | required | VELDO-0079-grooming-enrolled-decision-surfaces.md |
-| VELDO-0080 | Ordinary defect dispatch through normal admission | draft | critical | dmitry | required | VELDO-0080-work-class-dispatch-defect-reproduction.md |
 | VELDO-0081 | Quarantine inspection, taint propagation, and bounded execution | draft | critical | dmitry | required | VELDO-0081-quarantine-inspection-taint-execution.md |
 | VELDO-0082 | Standing maintenance and compliance occurrence admission | draft | critical | dmitry | required | VELDO-0082-standing-maintenance-compliance-occurrences.md |
 | VELDO-0083 | Bounded security emergency and incident containment admission | draft | critical | dmitry | required | VELDO-0083-security-emergency-incident-containment.md |
 | VELDO-0084 | Readmission, scope enforcement, and admission-debt reporting | draft | critical | dmitry | required | VELDO-0084-readmission-scope-admission-debt.md |
-| VELDO-0085 | Decomposition and concurrent elaboration publication | draft | critical | dmitry | required | VELDO-0085-decomposition-concurrent-publication.md |
 | VELDO-0086 | Release-execution ownership and contribution binding | draft | critical | dmitry | required | VELDO-0086-release-execution-ownership-contributions.md |
 | VELDO-0087 | Project dependency invalidation and outcome-to-evidence traceability | draft | critical | dmitry | required | VELDO-0087-project-dependency-invalidation-traceability.md |
-| VELDO-0088 | Project-manager execution graphs | draft | critical | dmitry | required | VELDO-0088-project-manager-execution-graphs.md |
-| VELDO-0089 | Versioned team configuration | draft | critical | dmitry | required | VELDO-0089-versioned-team-configuration.md |
-| VELDO-0090 | Capability-bound specialist selection | draft | critical | dmitry | required | VELDO-0090-capability-bound-specialist-selection.md |
-| VELDO-0091 | Budgeted requirements elaboration | draft | critical | dmitry | required | VELDO-0091-budgeted-requirements-elaboration.md |
-| VELDO-0092 | Typed proposals and complete authorization validation | draft | critical | dmitry | required | VELDO-0092-typed-proposals-authorization-validation.md |
 | VELDO-0093 | Per-project cycle serialization and replaceable checkpoint recovery | draft | critical | dmitry | required | VELDO-0093-project-cycle-serialization-checkpoint-recovery.md |
 | VELDO-0094 | Every-pack runtime installation and floor-slice qualification | draft | high | dmitry | required | VELDO-0094-every-pack-installation-floor-slice.md |
 | VELDO-0095 | Historical migration and atomic reader-writer cutover | draft | critical | dmitry | required | VELDO-0095-historical-migration-atomic-cutover.md |
@@ -132,15 +141,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
-| VELDO-0124 | Simple macOS worker lifecycle profile | draft | high | dmitry | required | VELDO-0124-macos-worker-profile.md |
-| VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | draft | high | dmitry | required | VELDO-0125-mac-relay-capability-routing.md |
-| VELDO-0126 | One Telegram and API message intake for proposed work | draft | high | dmitry | required | VELDO-0126-message-objective-intake.md |
-| VELDO-0127 | Versioned per-role MCP server and tool configuration | draft | high | dmitry | required | VELDO-0127-agent-capability-configuration.md |
-| VELDO-0128 | Telegram progress and completion from journal events | draft | high | dmitry | required | VELDO-0128-telegram-journal-reporting.md |
-| VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | draft | high | dmitry | required | VELDO-0129-live-build-review-adapter-wiring.md |
-| VELDO-0130 | Authenticated factory state, message and decision API | draft | high | dmitry | required | VELDO-0130-authenticated-factory-api.md |
-| VELDO-0131 | Veldo factory UI on phone and desktop | draft | high | dmitry | required | VELDO-0131-factory-phone-desktop-ui.md |
-| VELDO-0132 | Versioned workflow definitions consumed by LangGraph | draft | high | dmitry | required | VELDO-0132-versioned-workflow-definition.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 - the keyed bytes and the validated bytes must be the same bytes | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -741,8 +741,8 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W13 | VELDO-0028 | Protected effect execution and atomic nonce consumption | VELDO-0023, VELDO-0025, VELDO-0027 | waiting: VELDO-0027 |
 | W14 | VELDO-0029 | One signed enrollment binding decides which authority a clone writes to, and nothing ambient does | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025 | ready (frontier) |
 | W16 | VELDO-0031 | Authority-backed claims and claim-generation fencing | VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107 | waiting: VELDO-0029, VELDO-0107 |
-| W20 | VELDO-0035 | Complete read-set validation and authoritative snapshots | VELDO-0023, VELDO-0025 | draft (frontier) |
-| W21 | VELDO-0036 | Capacity and subscription usage reservations | VELDO-0023, VELDO-0025 | draft (frontier) |
+| W20 | VELDO-0035 | Complete read-set validation and authoritative snapshots | VELDO-0023, VELDO-0025 | ready (frontier) |
+| W21 | VELDO-0036 | Capacity and subscription usage reservations | VELDO-0023, VELDO-0025 | ready (frontier) |
 | W24 | VELDO-0039 | Durable dispatch acceptance and launch records | VELDO-0028, VELDO-0031, VELDO-0036 | waiting: VELDO-0028, VELDO-0031, VELDO-0036 |
 | W25 | VELDO-0040 | Provider-neutral process supervision and descendant containment | VELDO-0039 | waiting: VELDO-0039 |
 | W26 | VELDO-0041 | Independent heartbeat, bounded stopping, and safe capacity retirement | VELDO-0036, VELDO-0039, VELDO-0040 | waiting: VELDO-0036, VELDO-0039, VELDO-0040 |

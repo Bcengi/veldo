@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0046
 title: Durable wake-up, cursor replay, and notification delivery
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

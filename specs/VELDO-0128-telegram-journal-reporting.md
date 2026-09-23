@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0128
 title: Telegram progress and completion from journal events
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

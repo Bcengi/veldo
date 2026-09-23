@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0052
 title: Shared eligibility in work, frontier, plan, direct executor, and review
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

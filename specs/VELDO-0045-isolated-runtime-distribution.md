@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0045
 title: Pinned isolated runtime, dependency licenses, and distribution inventory
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
