@@ -1,0 +1,55 @@
+--- a/F-01/fixture.py
++++ b/F-01/fixture.py
+@@ -39,7 +39,7 @@
+         self.config = self.root / 'config.json'
+         self.config.write_text(json.dumps(dict(store=str(self.root / 'control.sqlite3'),
+                                               repository=str(self.repo), allowed_signers=str(self.projection),
+-                                              key_directory=str(self.keys))))
++                                              key_directory=str(self.keys), authority_ids=self.ids)))
+         self.serial = 0
+         self.journal = ('owner', lambda b: self.sign('owner', b))
+         self.admin('enroll_principal', dict(principal='owner', principal_type='person',
+@@ -94,7 +94,9 @@
+                        attribution={f: True if f.endswith('_verified') else 'source-1'
+                                     for f in self.A.CHANNELS[self.channel]['attribution']})
+         if self.channel == 'signed_cli':
+-            command = self.command('answer', dict(ruling='approve', presentation_id='p1'))
++            command = self.command('answer', {field: payload[field] for field in (
++                'ruling', 'presentation_id', 'presentation_digest', 'assertion_kind',
++                'authority_scope', 'request_version', 'presentation_version')})
+             env = self.envelope(command)
+             payload['personal_command'] = dict(command=command, envelope=env,
+                                                signature=self.sign('owner', self.A.canonical_envelope_bytes(env)))
+--- a/F-01/repro.py
++++ b/F-01/repro.py
+@@ -6,7 +6,7 @@
+     # The person signed a rejection of p1. The acquired record retains that exact
+     # signed command alongside a conflicting normalized approval of p2.
+     personal = payload['personal_command']
+-    personal['command']['parameters'] = dict(ruling='reject', presentation_id='p1')
++    personal['command']['parameters'].update(ruling='reject', presentation_id='p1')
+     personal['envelope'] = f.envelope(personal['command'])
+     personal['signature'] = f.sign('owner', f.A.canonical_envelope_bytes(personal['envelope']))
+     payload.update(ruling='reject', presentation_id='p1')
+--- a/F-04/fixture.py
++++ b/F-04/fixture.py
+@@ -39,7 +39,7 @@
+         self.config = self.root / 'config.json'
+         self.config.write_text(json.dumps(dict(store=str(self.root / 'control.sqlite3'),
+                                               repository=str(self.repo), allowed_signers=str(self.projection),
+-                                              key_directory=str(self.keys))))
++                                              key_directory=str(self.keys), authority_ids=self.ids)))
+         self.serial = 0
+         self.journal = ('owner', lambda b: self.sign('owner', b))
+         self.admin('enroll_principal', dict(principal='owner', principal_type='person',
+@@ -94,7 +94,9 @@
+                        attribution={f: True if f.endswith('_verified') else 'source-1'
+                                     for f in self.A.CHANNELS[self.channel]['attribution']})
+         if self.channel == 'signed_cli':
+-            command = self.command('answer', dict(ruling='approve', presentation_id='p1'))
++            command = self.command('answer', {field: payload[field] for field in (
++                'ruling', 'presentation_id', 'presentation_digest', 'assertion_kind',
++                'authority_scope', 'request_version', 'presentation_version')})
+             env = self.envelope(command)
+             payload['personal_command'] = dict(command=command, envelope=env,
+                                                signature=self.sign('owner', self.A.canonical_envelope_bytes(env)))

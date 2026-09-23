@@ -1,0 +1,102 @@
+{
+  "finding": "F-06",
+  "baseline_commit": "f95c7a6",
+  "red_failed_rows": [
+    "VELDO-0027 signing/personal-relabel/presentation_digest",
+    "VELDO-0027 signing/personal-relabel/assertion_kind",
+    "VELDO-0027 signing/personal-relabel/authority_scope",
+    "VELDO-0027 signing/personal-missing/presentation_digest",
+    "VELDO-0027 signing/personal-missing/assertion_kind",
+    "VELDO-0027 signing/personal-missing/authority_scope",
+    "VELDO-0027 signing/personal-missing/request_version",
+    "VELDO-0027 signing/personal-missing/presentation_version",
+    "VELDO-0027 signing/personal-foreign/store_uuid",
+    "VELDO-0027 signing/personal-foreign/domain_uuid",
+    "VELDO-0027 signing/personal-foreign/repository_uuid",
+    "VELDO-0027 signing/personal-missing-authority/all",
+    "VELDO-0027 signing/personal-missing-authority/store_uuid",
+    "VELDO-0027 signing/personal-missing-authority/domain_uuid",
+    "VELDO-0027 signing/personal-missing-authority/repository_uuid"
+  ],
+  "red_command": "python3 -B scripts/check_teeth_mutations.py --worker signing-ignore-personal-content --mutant /tmp/veldo-0027-followup/baseline-control_signer.py",
+  "green_development_check": [
+    "  56_veldo_0027_signing                           95 passed    5.99s",
+    "selftest (PARTIAL, 1 of 63 suites): 121 passed, 0 failed in 5.99s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+  ],
+  "mutations": [
+    {
+      "mutation": "signing-copy-envelope-coordinates",
+      "observations": {
+        "baseline": {
+          "count": 121,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-foreign/store_uuid": [
+              true
+            ]
+          }
+        },
+        "noop": {
+          "count": 121,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-foreign/store_uuid": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 121,
+          "failed_rows": [
+            "VELDO-0027 signing/personal-foreign/store_uuid",
+            "VELDO-0027 signing/personal-foreign/domain_uuid",
+            "VELDO-0027 signing/personal-foreign/repository_uuid"
+          ],
+          "targets": {
+            "signing/personal-foreign/store_uuid": [
+              false
+            ]
+          }
+        }
+      }
+    },
+    {
+      "mutation": "signing-ignore-coordinate-problems",
+      "observations": {
+        "baseline": {
+          "count": 121,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-foreign/domain_uuid": [
+              true
+            ]
+          }
+        },
+        "noop": {
+          "count": 121,
+          "failed_rows": [],
+          "targets": {
+            "signing/personal-foreign/domain_uuid": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 121,
+          "failed_rows": [
+            "VELDO-0027 signing/personal-foreign/store_uuid",
+            "VELDO-0027 signing/personal-foreign/domain_uuid",
+            "VELDO-0027 signing/personal-foreign/repository_uuid"
+          ],
+          "targets": {
+            "signing/personal-foreign/domain_uuid": [
+              false
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "note": "Foreign envelopes retain valid Ed25519 signatures; the local authority contract reports exactly the changed coordinate. Missing configuration is independently refused. Targeted checks only; acceptance requires the clean canonical gate."
+}

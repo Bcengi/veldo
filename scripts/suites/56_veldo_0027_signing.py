@@ -58,7 +58,8 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
     _v27_projection = _v27_repo / '.veldo/keys/allowed_signers'
     _v27_config = _v27_root / 'authority.json'
     _v27_config.write_text(_v27_json.dumps({'store': str(_v27_db), 'repository': str(_v27_repo),
-                                          'allowed_signers': str(_v27_projection), 'key_directory': str(_v27_keydir)}))
+                                          'allowed_signers': str(_v27_projection), 'key_directory': str(_v27_keydir),
+                                          'authority_ids': _v27_ids}))
     _v27_number = 0
     _v27_results = []
     _v27_rows = []
@@ -277,6 +278,50 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
         _v27_expiry_control['accepted'] and _v27_keys.verify(_v27_state(), _v27_expiry_control, fresh=True)
         and not _v27_contract_ok and any('expired' in p for p in _v27_expiry_problems)
         and not _v27_expired_result['accepted'] and _v27_expired_result.get('refusal') == 'missing-attribution')
+
+    # F-06: signatures are valid, but each envelope names a different authority.
+    _v27_local_request = _v27_source('signed_cli', 'decision_answer')
+    _v27_local_control = _v27_call(_v27_local_request, 'signed_cli')
+    _v27_coordinate_state = _v27_state()
+    _v27_local_authority = dict(_v27_ids,
+        membership_version=_v27_coordinate_state['membership_version'],
+        delegation_version=_v27_coordinate_state['delegation_version'])
+    for _v27_coordinate in ('store_uuid', 'domain_uuid', 'repository_uuid'):
+        _v27_foreign = _v27_copy.deepcopy(_v27_local_request['payload']['personal_command'])
+        _v27_foreign['envelope'][_v27_coordinate] = 'another-' + _v27_coordinate
+        _v27_foreign['signature'] = _v27_sign('owner',
+            _v27_ac.canonical_envelope_bytes(_v27_foreign['envelope']))
+        _v27_signature_ok, _ = _v27_ac.ssh_keygen_verify(
+            _v27_ac.canonical_envelope_bytes(_v27_foreign['envelope']), _v27_foreign['signature'],
+            _v27_ac.allowed_signers_line('owner', _v27_public['owner']), 'owner')
+        _v27_foreign_problems = _v27_ac.envelope_problems(
+            _v27_foreign['envelope'], _v27_foreign['command'], _v27_local_authority,
+            _v27_time.time(), set(), _v27_coordinate_state['keyring'],
+            _v27_coordinate_state['membership'], _v27_coordinate_state['delegations'])
+        _v27_foreign_result = _v27_call(_v27_source('signed_cli', 'decision_answer',
+            {'personal_command': _v27_foreign}), 'signed_cli')
+        _v27_expect('signing/personal-foreign/' + _v27_coordinate,
+            _v27_local_control['accepted'] and _v27_keys.verify(_v27_state(), _v27_local_control)
+            and _v27_signature_ok and len(_v27_foreign_problems) == 1
+            and _v27_coordinate in _v27_foreign_problems[0]
+            and not _v27_foreign_result['accepted']
+            and _v27_foreign_result.get('refusal') == 'missing-attribution')
+    # Missing authority configuration must not borrow coordinates from evidence.
+    _v27_original_config = _v27_config.read_text()
+    try:
+        for _v27_coordinate in ('all', 'store_uuid', 'domain_uuid', 'repository_uuid'):
+            _v27_bad_config = _v27_json.loads(_v27_original_config)
+            if _v27_coordinate == 'all':
+                del _v27_bad_config['authority_ids']
+            else:
+                del _v27_bad_config['authority_ids'][_v27_coordinate]
+            _v27_config.write_text(_v27_json.dumps(_v27_bad_config))
+            _v27_config_result = _v27_call(_v27_local_request, 'signed_cli')
+            _v27_expect('signing/personal-missing-authority/' + _v27_coordinate,
+                not _v27_config_result['accepted']
+                and _v27_config_result.get('refusal') == 'missing-attribution')
+    finally:
+        _v27_config.write_text(_v27_original_config)
 
     _v27_tg = _v27_controls['telegram_chat', 'acknowledgement'][0]
     _v27_jira = _v27_controls['jira', 'acknowledgement'][0]

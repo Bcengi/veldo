@@ -105,7 +105,7 @@ def capture(store, conn, identity, argv, provenance, journal_signer):
     return data, out, err
 
 
-def _payload(state, request, channel, now):
+def _payload(state, request, channel, now, authority_ids):
     entry = state['entities'].get(request.get('source_id'))
     if not entry or entry['kind'] not in ('captured_evidence', 'agent_assertion', 'edge_source'):
         raise K.Refused('missing-attribution')
@@ -159,10 +159,12 @@ def _payload(state, request, channel, now):
         if any(field not in parameters or field not in payload or parameters[field] != payload[field]
                for field in AC.DECISION_ASSERTION_FIELDS):
             raise K.Refused('provenance-mismatch')
-        # Coordinates come from the authority-captured source, not new admission.
-        # Recheck its envelope against current membership/delegation and time via
-        # the contract. Reading evidence neither executes nor consumes its nonce.
-        authority = dict(envelope, membership_version=state['membership_version'],
+        # Compare captured evidence with this authority's configured coordinates.
+        # Reading evidence neither executes the command nor consumes its nonce.
+        if any(not isinstance(authority_ids.get(field), str) or not authority_ids[field]
+               for field in ('domain_uuid', 'repository_uuid', 'store_uuid')):
+            raise K.Refused('missing-attribution')
+        authority = dict(authority_ids, membership_version=state['membership_version'],
                          delegation_version=state['delegation_version'])
         problems = AC.envelope_problems(envelope, command, authority, now, set(),
                                         state['keyring'], state['membership'], state['delegations'])
@@ -210,7 +212,7 @@ def issue(config, request, challenge, identity, authentication):
         diagnostic['key_id'] = key['key_id']
         if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:
             raise K.Refused('channel-mismatch')
-        payload = _payload(state, request, channel, now)
+        payload = _payload(state, request, channel, now, config.get('authority_ids', {}))
         key_path = (Path(config['key_directory']) / key['key_id']).resolve()
         if key_path.is_relative_to(Path(config['repository']).resolve()):
             raise K.Refused('key-custody')

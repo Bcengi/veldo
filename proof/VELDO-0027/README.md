@@ -282,3 +282,36 @@ development run (88 signing rows), and baseline/no-op/mutant observations for
 `signing-default-missing-personal-fields` (defaults an omitted signed field).
 Both mutations fail their named rows; their applied diffs are adjacent. These
 development checks are not a gate or a landing approval.
+
+## Follow-up F-06: compare against this authority
+
+Before the fix, the unmodified `f95c7a6` signer accepted personally signed commands
+for another store, domain and repository, each changed independently. Each source
+was captured in this store, each Ed25519 signature verified, and the authority
+contract rejected exactly the foreign coordinate. Those three signer refusal rows
+were RED, as were missing authority configuration cases.
+
+The signer's trusted configuration now supplies `authority_ids`, containing
+`domain_uuid`, `repository_uuid` and `store_uuid`. All three must be nonempty
+strings. The signer combines these coordinates with current accepted membership
+and delegation versions, as `control_keys.admit` does, and passes them to
+`AC.envelope_problems`. It never derives authority coordinates from the envelope.
+Missing configuration refuses; reading evidence still does not execute a command
+or consume its nonce. The signer and its engine mirror are byte-identical.
+
+[followup-f06.json](followup-f06.json) records RED and targeted green observations
+(95 signing rows), plus baseline/no-op/mutant results for
+`signing-copy-envelope-coordinates` (reintroduces F-06) and
+`signing-ignore-coordinate-problems` (discards only coordinate refusals). Both
+mutations are caught by their named rows; the exact applied diffs are adjacent.
+
+All four earlier capsules were replayed. The original F-02 and F-03 scripts pass
+unchanged with their controls and attacks intact. Original F-01 and F-04 fixtures
+omit newly mandatory signed parameters and authority configuration, so they now
+stop at their positive controls. A second replay supplies those required inputs;
+F-01's parameter assignment becomes an update so its rejection retains the other
+signed fields. All four compatible replays pass their controls and refuse their
+attacks with no DEFECT marker. No attack or assertion was removed or weakened.
+[followup-capsules.json](followup-capsules.json) records both runs and source hashes;
+[followup-capsule-compatibility.diff](followup-capsule-compatibility.diff) records
+the exact fixture changes. No private keys or signatures are retained.

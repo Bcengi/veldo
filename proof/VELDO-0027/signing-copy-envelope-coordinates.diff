@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer.py
++++ b/.veldo/control_signer.py
+@@ -167 +167 @@
+-        authority = dict(authority_ids, membership_version=state['membership_version'],
++        authority = dict(envelope, membership_version=state['membership_version'],

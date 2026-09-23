@@ -242,6 +242,13 @@ def cases():
     signing('signing-ignore-envelope-expiry', 'control_signer.py', envelope_check,
             "        if any('expired' not in problem for problem in problems):\n            raise K.Refused('missing-attribution')",
             'personal-envelope-expiry')
+    signing('signing-copy-envelope-coordinates', 'control_signer.py',
+            "        authority = dict(authority_ids, membership_version=state['membership_version'],",
+            "        authority = dict(envelope, membership_version=state['membership_version'],",
+            'personal-foreign/store_uuid')
+    signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
+            "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
+            "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
     return result
 
 

@@ -86,7 +86,14 @@
       "signing/personal-missing/assertion_kind",
       "signing/personal-missing/authority_scope",
       "signing/personal-missing/request_version",
-      "signing/personal-missing/presentation_version"
+      "signing/personal-missing/presentation_version",
+      "signing/personal-foreign/store_uuid",
+      "signing/personal-foreign/domain_uuid",
+      "signing/personal-foreign/repository_uuid",
+      "signing/personal-missing-authority/all",
+      "signing/personal-missing-authority/store_uuid",
+      "signing/personal-missing-authority/domain_uuid",
+      "signing/personal-missing-authority/repository_uuid"
     ],
     "AC4": [
       "signing/channel-comes-from-the-connection",

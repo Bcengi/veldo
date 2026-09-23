@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer.py
++++ b/.veldo/control_signer.py
+@@ -171 +171 @@
+-        if problems:
++        if any('wrong repository, domain or store' not in problem for problem in problems):
