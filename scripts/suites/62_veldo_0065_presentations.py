@@ -110,7 +110,8 @@ def _v65_checks(base):
                                   'answer/redelivered-answer-silent', 'answer/reply-after-closed',
                                   'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
                                   'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope',
-                                  'answer/rationale-original-text', 'answer/stale-current-told')}
+                                  'answer/rationale-original-text', 'answer/stale-current-told',
+                                  'answer/owner-not-current-silent')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -138,7 +139,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'pm10', 'pm11', 'pm12', 'grouped',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'pm10', 'pm11', 'pm12', 'owner2', 'grouped',
                 'stranger',
                 'telegram-edge',
                 'telegram-edge-other'):
@@ -188,6 +189,7 @@ def _v65_checks(base):
                'pm10': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm11': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm12': dict(principal_type='service', roles=[], scope=['project-a']),
+               'owner2': dict(principal_type='person', roles=['project_owner'], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1543,9 +1545,9 @@ def _v65_checks(base):
                       and again.get('outcome') == 'refused' and len(api['requests']) == asked)
                 asked = len(api['requests'])
                 other = answer(owner_reply(rcl_r, 'reject: a different message'))
-                check(after_close, 'control: after the request is %s, a different message is told it is no longer open' % done,
-                      reason(other) == ('refused', 'request_closed') and len(api['requests']) == asked + 1
-                      and 'no longer open' in api['requests'][-1][1])
+                check(after_close, 'control: after the request is %s, a different message is told it is already answered' % done,
+                      reason(other) == ('refused', 'already_answered') and len(api['requests']) == asked + 1
+                      and 'already answered: approve' in api['requests'][-1][1])
 
         # Review 5 item 2: no message is sent for an edge whose scope does not cover the request
         scoped = 'answer/closed-tell-after-edge-scope'
@@ -1591,20 +1593,38 @@ def _v65_checks(base):
         # Review 5: a reply to a pending request whose presentation no longer binds is told a new one is coming
         coming = 'answer/stale-current-told'
         with section(coming):
+            def reply_and_count(receipt, text):
+                asked = len(api['requests'])
+                result = answer(owner_reply(receipt, text))
+                sent = api['requests'][asked:]
+                return reason(result), len(sent), (sent[-1][1] if sent else '')
+            # Only a bound field changed and nothing refuses: the presenter will present again.
             sp1 = opened('SP-1')
             presenter.present(sp1)
             sp1_r = presenter.current(sp1) or {}
-            command('pm', 'revise', 'SP-1', request_version=1, changes={'brief': 'A changed brief not yet presented.'})
+            frame('pm', 'SP-1', 1, 'Medium: the risk was restated.')
             stale_msg = owner_reply(sp1_r, 'accept: as shown')
-            told = []
-            for message in (stale_msg, stale_msg):
-                asked = len(api['requests'])
-                result = answer(message)
-                told.append((reason(result), len(api['requests']) - asked,
-                             api['requests'][-1][1] if len(api['requests']) > asked else ''))
-            check(coming, 'a reply to a presentation the request has moved past is told a new one is coming',
-                  told[0][0] == ('refused', 'stale_presentation') and told[0][1] == 1 and 'new presentation' in told[0][2])
-            check(coming, 'the same message delivered again is not told again', told[1][1] == 0)
+            asked = len(api['requests'])
+            first = answer(stale_msg)
+            first_sent = api['requests'][asked:]
+            again_count = len(api['requests'])
+            answer(stale_msg)
+            check(coming, 'when only a bound field changed, the reply is told a new presentation is coming',
+                  reason(first) == ('refused', 'stale_presentation') and len(first_sent) == 1
+                  and 'new presentation is coming' in first_sent[0][1])
+            check(coming, 'the same message delivered again is not told again', len(api['requests']) == again_count)
+            check(coming, 'and a new presentation does come on the next run',
+                  reason(presenter.present(sp1)) == ('published', None)
+                  and (presenter.current(sp1) or {}).get('presentation_id') != sp1_r.get('presentation_id'))
+            # A revision the requester has not framed yet: no presentation will come until they do.
+            sp4 = opened('SP-4')
+            presenter.present(sp4)
+            sp4_r = presenter.current(sp4) or {}
+            command('pm', 'revise', 'SP-4', request_version=1, changes={'brief': 'A changed brief not yet framed.'})
+            got = reply_and_count(sp4_r, 'accept: as shown')
+            check(coming, 'a revision not yet framed is told the presentation is no longer current, with no promise',
+                  got[0] == ('refused', 'stale_presentation') and got[1] == 1 and 'no longer current' in got[2]
+                  and 'new presentation' not in got[2] and reason(presenter.present(sp4)) == ('refused', 'missing_framing'))
             for alias in ('SP-2', 'SP-3'):
                 command('pm10', 'open', alias, assignment=content())
                 frame('pm10', alias, 1, 'Low: a wrong choice costs one review cycle.')
@@ -1612,11 +1632,45 @@ def _v65_checks(base):
             sp2_r = presenter.current(I.assignment_id(ids['repository_uuid'], 'SP-2')) or {}
             pm10 = entity('pm10') or {}
             fixture('pm10', 'membership', dict(pm10.get('data') or {}, revoked_at=_v65_time.time() - 1))
+            got = reply_and_count(sp2_r, 'accept: as shown')
+            check(coming, 'a reply while the framing no longer counts (its requester revoked) is told no longer current, no promise',
+                  got[0] == ('refused', 'stale_presentation') and got[1] == 1 and 'no longer current' in got[2]
+                  and 'new presentation' not in got[2])
+
+        # Review 6 item 1: nothing at all is sent when the owner's membership or chat enrollment no longer holds
+        silent_owner = 'answer/owner-not-current-silent'
+        with section(silent_owner):
+            chat2, enroll2 = 5550003, 'channel-enrollment:telegram_chat:owner2'
+            enrolled2 = dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner2',
+                             chat_id=chat2, revoked_at=None)
+            fixture(enroll2, 'channel_enrollment', enrolled2)
+            cases = []
+            for n, (closing, lose) in enumerate(((False, 'enrollment'), (True, 'enrollment'), (False, 'membership'),
+                                                 (True, 'membership'))):
+                alias = 'OC-%d' % n
+                ocid = opened(alias, owner='owner2')
+                presenter.present(ocid)
+                oc_r = presenter.current(ocid) or {}
+                if closing:
+                    command('pm', 'cancel', alias, request_version=1)
+                if lose == 'enrollment':
+                    fixture(enroll2, 'channel_enrollment', dict(enrolled2, revoked_at=_v65_time.time() - 1))
+                else:
+                    fixture('owner2', 'membership', dict(members['owner2'], revoked_at=_v65_time.time() - 1, expires_at=None))
+                asked = len(api['requests'])
+                result = answer(owner_reply(oc_r, 'nonsense', sender=chat2))
+                cases.append((closing, lose, reason(result), len(api['requests']) - asked))
+                fixture(enroll2, 'channel_enrollment', enrolled2)
+                fixture('owner2', 'membership', dict(members['owner2'], revoked_at=None, expires_at=None))
+            for closing, lose, got, sent in cases:
+                check(silent_owner, 'a reply to a %s request after the owner\'s %s was revoked is refused and nothing is sent'
+                      % ('closed' if closing else 'pending', lose), got[0] == 'refused' and sent == 0)
+            control_id = opened('OC-C', owner='owner2')
+            presenter.present(control_id)
             asked = len(api['requests'])
-            result = answer(owner_reply(sp2_r, 'accept: as shown'))
-            check(coming, 'a reply while the framing no longer counts (its requester revoked) is told a new one is coming',
-                  reason(result) == ('refused', 'stale_presentation') and len(api['requests']) == asked + 1
-                  and 'new presentation' in api['requests'][-1][1])
+            answer(owner_reply(presenter.current(control_id) or {}, 'nonsense', sender=chat2))
+            check(silent_owner, 'control: with the membership and enrollment current, the owner is told the valid choices',
+                  len(api['requests']) == asked + 1 and api['requests'][-1][0] == chat2)
     finally:
         server.shutdown()
         server.server_close()

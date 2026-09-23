@@ -1182,8 +1182,8 @@ def cases():
     # VELDO-0065 fifth review: a reply to a presentation that no longer binds is told a new one is coming,
     # and only a request that left pending is closed.
     presentation('stale-not-told',
-                 "            self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')\n",
-                 "", 'answer/stale-current-told')
+                 "                self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')\n",
+                 "                pass\n", 'answer/stale-current-told')
     presentation('stale-told-only-on-mismatch', "        if refusal or binding_mismatches(receipt, current):\n",
                  "        if refusal:\n            raise Refused('stale_presentation', 'the named presentation no longer binds the current request')\n"
                  "        if binding_mismatches(receipt, current):\n", 'answer/stale-current-told')
@@ -1200,6 +1200,22 @@ def cases():
                  "    if (receipt.get('outcome') != 'published'\n", 'projection/pending-notice-reconciled-after-replacement')
     presentation('x-reconcile-only-in-already-presented', '        self._reconcile_notices(request)\n        refusal, record, versions = self.compose(request)\n',
                  '        refusal, record, versions = self.compose(request)\n        if record is None: self._reconcile_notices(request)\n', 'projection/pending-notice-reconciled-after-replacement')
+    # VELDO-0065 sixth review item 1: a promise only where one will come; nothing for an owner no longer current;
+    # the recorded answer before any other message.
+    presentation('stale-promise-on-any-refusal', "            if not refusal:\n", "            if True:\n", 'answer/stale-current-told')
+    presentation('stale-neutral-not-told',
+                 "                self._tell(ev, receipt, 'This presentation is no longer current, so this reply changes nothing.')\n",
+                 "                pass\n", 'answer/stale-current-told')
+    presentation('owner-currency-unchecked', "        if not self._owner_current(receipt):\n", "        if False:\n",
+                 'answer/owner-not-current-silent')
+    presentation('owner-enrollment-unchecked', "        return (enrollment is not None\n", "        return True or (enrollment is not None\n",
+                 'answer/owner-not-current-silent')
+    presentation('owner-membership-unchecked',
+                 "        if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'\n                or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):\n            return False\n        enrollment",
+                 "        if False:\n            return False\n        enrollment", 'answer/owner-not-current-silent')
+    presentation('answered-told-only-while-pending', "        if recorded is not None:\n",
+                 "        if recorded is not None and self.inbox.brief(request).get('category') == 'pending':\n",
+                 'answer/redelivered-after-closed')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

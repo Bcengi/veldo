@@ -107,6 +107,7 @@ REFERENCE_FIELDS = ('presentation_id', 'presentation_digest', 'presentation_vers
 # Every named refusal and the error class it belongs to; unknown is never labeled success.
 REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_input',
             'not_authorized': 'missing_authority', 'not_owner': 'missing_authority',
+            'owner_not_current': 'missing_authority',
             'missing_authority': 'missing_authority',
             'missing_presentation': 'missing_evidence', 'unknown_presentation': 'missing_evidence',
             'unseen_presentation': 'missing_evidence', 'evidence_mismatch': 'missing_evidence',
@@ -1077,6 +1078,20 @@ class Presenter:
                                       accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',
                                       reason=sent['refusal'], error_class=None))
 
+    def _owner_current(self, receipt):
+        """Whether the owner the receipt was shown to is still an active person member covering the
+        request's scope, enrolled in the very chat the receipt went to."""
+        state = self.membership.authority_state(self.store, self.conn)
+        owner = receipt['owner']
+        entry = self.AC.membership_entry(state['membership'], owner)
+        if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'
+                or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):
+            return False
+        enrollment = self._entity(self.P.enrollment_id(owner))
+        return (enrollment is not None
+                and not self.P.enrollment_problems(enrollment['kind'], enrollment['data'], owner)
+                and enrollment['data'].get('chat_id') == receipt['chat_id'])
+
     @staticmethod
     def _is_recorded_answer(recorded, ev):
         """Whether this inbound message is the recorded answer itself (same chat and message id)."""
@@ -1158,21 +1173,31 @@ class Presenter:
         # Authority first: nothing, not even a message back, for an edge that may not act here.
         if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
             raise Refused('not_authorized', 'the edge scope does not cover the request')
+        # Nothing at all goes to an owner who is no longer a current member or whose chat enrollment
+        # no longer holds, whatever the reply says.
+        if not self._owner_current(receipt):
+            raise Refused('owner_not_current', 'the owner or the owner\'s chat enrollment is no longer current')
+        if recorded is not None:
+            # Answered already: say so and name the ruling, whatever this reply says or the request's state.
+            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
+            raise Refused('already_answered', 'the owner has answered this request version')
         refusal, current, versions = self.bindings(request)
         if refusal == 'stale_subject':
             # The request has left pending (answered, declined or canceled in the inbox): say so, once.
             self._tell(ev, receipt, 'This request is no longer open, so this reply changes nothing.')
             raise Refused('request_closed', 'the request is no longer pending')
         if refusal or binding_mismatches(receipt, current):
-            # Still pending, but what the owner saw no longer binds: say a new presentation is coming.
-            self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')
+            if not refusal:
+                # Nothing refuses and only a bound field changed: the presenter presents again on its
+                # next run, so the promise is true.
+                self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')
+            else:
+                # Something refuses (an unframed revision, a framing that no longer counts): no
+                # presentation will come until that is resolved, so nothing is promised.
+                self._tell(ev, receipt, 'This presentation is no longer current, so this reply changes nothing.')
             raise Refused('stale_presentation', 'the named presentation no longer binds the current request')
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.
-        if recorded is not None:
-            # Answered already: say so and name the ruling, whatever this reply says.
-            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))
-            raise Refused('already_answered', 'the owner has answered this request version')
         if a.get('choice') not in receipt['choices']:
             self._tell(ev, receipt, self._how(receipt, 'That reply did not match a choice.'))
             raise Refused('unmatched_choice', 'the reply names no offered choice')
