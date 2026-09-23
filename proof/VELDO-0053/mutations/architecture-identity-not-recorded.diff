@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -775 +775 @@
+@@ -787 +787 @@
 -        if decision.get('architecture'):
 +        if False:  # defect: the decision's architecture is not in its observation

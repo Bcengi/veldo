@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -792 +792 @@
+-            if found.get('error'):
++            if False:  # defect: the stop event does not name its error

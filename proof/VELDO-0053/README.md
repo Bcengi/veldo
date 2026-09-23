@@ -17,14 +17,15 @@ review and publication, and `CallHandle.invoke`) now refuses by name when the ar
 entry module changed.
 
 **The installed validator, loaded once.** Each Gate builds one `ValidatorSnapshot` of the engine
-installed beside it, never the copy a workspace carries: every engine module is read once into memory
-and executed from those bytes, compiled into a fresh module object with the same name and `__file__` as
-loading from the installed path gives, and each sibling a module loads by path resolves to the in-memory
-bytes of that sibling, by its installed path or the file it resolves to (a symlinked engine file
-included); any other path is refused, with no fallback to the disk. Nothing is written to or loaded from
-disk, so no file can be swapped between the digest and the code that runs (second and third reviews,
-below). linecache is seeded from the held bytes and the loader answers get_source, so tracebacks and
-inspect show the code that ran. The snapshot keeps one
+installed beside it, never the copy a workspace carries: every engine module is read exactly once by its
+installed name (the open follows links) and held under its module NAME, never under a path. Every load
+request the validator makes is answered by the module name it asks for, from those held bytes, compiled
+into a fresh module object whose `__file__` is the installed path of that name; there is no path lookup,
+so aliases, links and resolved paths cannot make one name's bytes serve another, and a name not held is
+the named stop ImportError, recorded in the decision and in the durable stop event. Nothing is written to
+or loaded from disk (second, third and fourth reviews, below). The code is compiled under a file name
+only that snapshot uses, and linecache holds its lines under that name with no modification time, so
+tracebacks and inspect show the code that ran without leaking into any other loader's traceback. The snapshot keeps one
 structural validator (arch.py) instance for every contract and asks validate.py's PUBLIC `entry_contract`
 (re-exported on validate.py, with `entry_validator`), which runs VELDO-0016's one tri-state loader. Every
 decision records the snapshot's identity, the installed path and the digest of the bytes loaded for
@@ -50,15 +51,15 @@ success. `enrolled_gate` passes the workspace it verified, so every production G
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/60_veldo_0053_architecture.py`, 27 rows: 15 assertions and 12 `ran/` rows, one per
+Suite `scripts/suites/60_veldo_0053_architecture.py`, 29 rows: 16 assertions and 13 `ran/` rows, one per
 region, which stay green under every mutation, so each red row below failed its assertion with its region
 completing. A temporary Git repository is both the workspace and the installed `.veldo`; a second tree is
 a clone with its own `.veldo` whose `arch.py` is a success stub that writes a marker file when loaded.
 One unit passes every other predicate at every station, so each refusal is the architecture's.
 
-All 33 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
+All 36 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and each turned its named rows red while the unmutated copy (the driver's baseline run
-of the same suite) was green with 53 assertions (`mutations.json`, each diff in `mutations/`).
+of the same suite) was green with 55 assertions (`mutations.json`, each diff in `mutations/`).
 
 **AC1, valid, absent and invalid contracts.** Rows `architecture/state-kinds` and
 `architecture/ready-refusal`. Nine real-file states: valid, optional absent, required absent (policy
@@ -248,11 +249,44 @@ finds the function it names and the loader's get_source returns the held text. A
 printed the disk's line and inspect returned `def load_contract` for `read_contract`. linecache is seeded
 from the held bytes with no modification time (so checkcache never replaces it) and the memory loader has
 get_source. Mutations `architecture-linecache-unseeded`, `architecture-linecache-mtime-checked` and
-`architecture-get-source-missing`. The seeding is process-wide by file name: a module loaded normally from
-the same installed file shares the entry, which is the same bytes unless the file changed after loading.
+`architecture-get-source-missing`. (Round 4 below replaced the seeding key; the shared-entry caveat
+recorded here no longer applies.)
+
+## 2026-09-23 fourth review: the snapshot keyed by module name
+
+A review of e299772..4c29526 blocked ccaf693: installed-path keys and resolved-path keys shared one
+dictionary, so a later file's resolved key overwrote an earlier file's installed key, and a writer racing
+the snapshot's reads could have one file's bytes served under another name (probes p2 and p5). Each round
+had patched the path mapping and opened a new case, so the lead changed the design: the snapshot is keyed
+by module NAME, never by a path (72a46c1, with main merged at d3cc356 for its parallel mutation driver).
+`red.py 4c29526` (`red-4c29526.json`): both rows below fail by assertion with every region completing,
+no fixture substitution.
+
+**Row `architecture/snapshot-by-name`**, four fixtures, each a separate installed engine judging an
+accepted, structurally invalid contract: the p2 collision (after arch.py's one read the writer makes it
+pass everything, and before budget.py's read budget.py becomes a link to arch.py); the p5 collision in a
+per-file link farm whose Gate file is regular; an alias link zz_alias.py -> arch.py; and an engine without
+verdict_corpus.py, a module validate_checks loads. At 4c29526 the two collisions passed the invalid
+contract recording arch.py's original digest, the alias served arch.py under the alias's name, and the
+stop event carried no error name. Now all three refuse by name with the digest of the bytes that ran and
+`__file__` naming arch.py, and the miss is `unavailable_service:architecture_validator` with `error:
+ImportError` in the decision and in the durable stop event. Mutations `architecture-snapshot-disk-fallback`
+(a miss read from disk), `architecture-snapshot-keyed-by-path` (the path keys reintroduced) and
+`architecture-stop-error-unrecorded`.
+
+**Row `architecture/snapshot-source`, extended.** The snapshot's code is compiled under
+`<veldo validator snapshot <id>: <installed path>>` and its lines cached under that name. After the
+installed arch.py is edited: a module loaded ordinarily from the edited file prints the edited file's
+line (at 4c29526 it printed the snapshot's), and a second snapshot of the edited file shows its own lines
+without changing what the first shows (at 4c29526 it overwrote them). The entries are dropped when the
+snapshot is collected. Mutations `architecture-linecache-keyed-by-path` (the installed path as the key)
+and `architecture-linecache-key-shared` (one key for every snapshot), besides the three from round 3.
+
+The snapshot-* mutations of earlier rounds are re-anchored on the name-keyed code; the path-lookup pair
+of round 3 is replaced by the two name mutations above.
 
 Each red record was taken with the suite as of that review's fixes (`red-60d5018.json`,
-`red-8798a78.json`, `red-e299772.json`).
+`red-8798a78.json`, `red-e299772.json`, `red-4c29526.json`).
 
 ## Narrowest seams, stated
 
@@ -267,15 +301,15 @@ Each red record was taken with the suite as of that review's fixes (`red-60d5018
 
 ## Cost and verification
 
-Suite 60_veldo_0053 runs in about 1.3 s (`observations.json`, `suite_seconds`), including seven
-installed-validator processes run in sequence; a validator snapshot, executed from memory, costs about
-21 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 33 mutations in 98 s here (66 suite
-runs), about 12 s of wall time in the gate's 8-worker mutation stage. Targeted checks on this branch after
-the third review's fixes (main merged at 7c1094b): `python3 -B scripts/selftest.py --suite
-60_veldo_0053_architecture` (27 rows, 53 assertions with the shared preamble, 0 failed),
-`python3 -B scripts/check_teeth_mutations.py --finding 53` (33 rejected, no `ran/` row red), `--finding 52`
-(47 rejected, suite 60_0052 at 80 of 80), the whole `python3 -B scripts/selftest.py` (5858 passed, 0
+Suite 60_veldo_0053 runs in about 3.3 s (`observations.json`, `suite_seconds`), including seven
+installed-validator processes and five separate installed-engine fixtures; a validator snapshot costs
+about 22 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 36 mutations in 105 s here
+serially (`--jobs 1`) and in 29 s with main's parallel driver at its default of 8 jobs. Targeted checks on
+this branch after the fourth review's fix (main merged at d3cc356): `python3 -B scripts/selftest.py --suite
+60_veldo_0053_architecture` (29 rows, 55 assertions with the shared preamble, 0 failed),
+`python3 -B scripts/check_teeth_mutations.py --finding 53` (36 rejected, no `ran/` row red), `--finding 52`
+(47 rejected, suite 60_0052 at 80 of 80), the whole `python3 -B scripts/selftest.py` (5860 passed, 0
 failed; not the gate), `python3 .veldo/validate.py all` (exit 0), `bash scripts/check_generated.sh` and
 `bash scripts/check_template_sync.sh` (pass). The full gate is run by the lead.
 
-`red.py <commit>` regenerates `red-60d5018.json`, `red-8798a78.json` and `red-e299772.json`. `drive.py` regenerates `observations.json` from one run of the suite.
+`red.py <commit>` regenerates `red-60d5018.json`, `red-8798a78.json`, `red-e299772.json` and `red-4c29526.json`. `drive.py` regenerates `observations.json` from one run of the suite.

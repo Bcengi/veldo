@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -825 +825 @@
+@@ -840 +840 @@
 -        elif accepted and parsed != accepted['digest']:
 +        elif False:  # defect: whatever bytes are at the path are the accepted architecture

@@ -1,9 +1,9 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 53 --diff-dir proof/VELDO-0053/mutations",
  "summary": {
-  "mutations_rejected": 33,
+  "mutations_rejected": 36,
   "green_suites": {
-   "60_veldo_0053_architecture.py": 53
+   "60_veldo_0053_architecture.py": 55
   }
  },
  "mutations": [
@@ -15,7 +15,7 @@
    ],
    "declared_falsifier_of": "AC1",
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses",
     "architecture/ready-refusal",
@@ -32,7 +32,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses",
     "architecture/state-kinds",
@@ -50,7 +50,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/state-kinds",
     "architecture/ready-refusal"
@@ -65,7 +65,7 @@
    ],
    "declared_falsifier_of": "AC2",
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses",
     "architecture/ready-refusal",
@@ -77,6 +77,7 @@
     "architecture/public-seam",
     "architecture/identity-is-what-ran",
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/not-text-refused",
     "architecture/validated-is-digested",
     "architecture/observations"
@@ -91,7 +92,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses",
     "architecture/ready-refusal",
@@ -102,6 +103,7 @@
     "architecture/public-seam",
     "architecture/identity-is-what-ran",
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/not-text-refused",
     "architecture/validated-is-digested",
     "architecture/observations"
@@ -116,14 +118,15 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/ready-refusal",
     "architecture/entries-blocked",
     "architecture/forbidden-review-launch",
     "architecture/substitution",
     "architecture/identity-is-what-ran",
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name"
    ],
    "diff": "mutations/architecture-invalid-structure-passes.diff"
   },
@@ -136,7 +139,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/ready-refusal",
     "architecture/entries-blocked",
@@ -154,7 +157,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses",
     "architecture/ready-refusal",
@@ -165,6 +168,7 @@
     "architecture/public-seam",
     "architecture/identity-is-what-ran",
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/not-text-refused",
     "architecture/validated-is-digested",
     "architecture/observations"
@@ -179,11 +183,12 @@
    ],
    "declared_falsifier_of": "AC3",
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/substitution",
     "architecture/public-seam",
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name"
    ],
    "diff": "mutations/architecture-clone-validator.diff"
   },
@@ -195,7 +200,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/substitution",
     "architecture/validated-is-digested"
@@ -210,7 +215,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/substitution"
    ],
@@ -224,8 +229,9 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
+    "architecture/snapshot-by-name",
     "architecture/observations"
    ],
    "diff": "mutations/architecture-identity-not-recorded.diff"
@@ -238,7 +244,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/record-states"
    ],
@@ -252,7 +258,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses"
    ],
@@ -266,7 +272,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/store-only-refuses",
     "architecture/record-states"
@@ -281,7 +287,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/public-seam"
    ],
@@ -295,7 +301,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/public-seam"
    ],
@@ -309,9 +315,10 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/snapshot-source"
    ],
    "diff": "mutations/architecture-snapshot-private-copy.diff"
@@ -324,9 +331,10 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/snapshot-source"
    ],
    "diff": "mutations/architecture-siblings-from-disk.diff"
@@ -339,10 +347,11 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/identity-is-what-ran",
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name"
    ],
    "diff": "mutations/architecture-identity-read-at-decision.diff"
   },
@@ -354,10 +363,11 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/identity-is-what-ran",
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/validated-is-digested"
    ],
    "diff": "mutations/architecture-validator-reexecuted-per-call.diff"
@@ -370,10 +380,11 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/identity-is-what-ran",
     "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name",
     "architecture/validated-is-digested"
    ],
    "diff": "mutations/architecture-snapshot-per-decision.diff"
@@ -386,7 +397,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/validated-is-digested"
    ],
@@ -400,7 +411,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/validated-is-digested"
    ],
@@ -414,7 +425,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/not-text-refused",
     "architecture/observations"
@@ -429,7 +440,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/not-text-refused"
    ],
@@ -439,29 +450,43 @@
    "mutation": "architecture-snapshot-disk-fallback",
    "module": ".veldo/control_eligibility.py",
    "target_rows": [
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-by-name"
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-by-name"
    ],
    "diff": "mutations/architecture-snapshot-disk-fallback.diff"
   },
   {
-   "mutation": "architecture-snapshot-realpath-only",
+   "mutation": "architecture-snapshot-keyed-by-path",
    "module": ".veldo/control_eligibility.py",
    "target_rows": [
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-by-name"
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-by-name"
    ],
-   "diff": "mutations/architecture-snapshot-realpath-only.diff"
+   "diff": "mutations/architecture-snapshot-keyed-by-path.diff"
+  },
+  {
+   "mutation": "architecture-stop-error-unrecorded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/snapshot-by-name"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 55,
+   "red_rows": [
+    "architecture/snapshot-by-name"
+   ],
+   "diff": "mutations/architecture-stop-error-unrecorded.diff"
   },
   {
    "mutation": "architecture-exec-rereads-disk",
@@ -471,9 +496,10 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name"
    ],
    "diff": "mutations/architecture-exec-rereads-disk.diff"
   },
@@ -485,9 +511,10 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
-    "architecture/snapshot-in-memory"
+    "architecture/snapshot-in-memory",
+    "architecture/snapshot-by-name"
    ],
    "diff": "mutations/architecture-arch-digest-reread.diff"
   },
@@ -499,7 +526,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/snapshot-source"
    ],
@@ -513,7 +540,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/snapshot-source"
    ],
@@ -527,11 +554,39 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 53,
+   "assertions": 55,
    "red_rows": [
     "architecture/snapshot-source"
    ],
    "diff": "mutations/architecture-get-source-missing.diff"
+  },
+  {
+   "mutation": "architecture-linecache-keyed-by-path",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/snapshot-source"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 55,
+   "red_rows": [
+    "architecture/snapshot-source"
+   ],
+   "diff": "mutations/architecture-linecache-keyed-by-path.diff"
+  },
+  {
+   "mutation": "architecture-linecache-key-shared",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/snapshot-source"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 55,
+   "red_rows": [
+    "architecture/snapshot-source"
+   ],
+   "diff": "mutations/architecture-linecache-key-shared.diff"
   }
  ]
 }

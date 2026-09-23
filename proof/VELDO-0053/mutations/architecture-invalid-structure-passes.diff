@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -822 +822 @@
+@@ -837 +837 @@
 -        if load.refused:
 +        if load.refused and load.kind != 'invalid_structure':  # defect: only unreadable input refuses
