@@ -529,6 +529,15 @@
    ],
    "regions": "Policy envelopes over every shared grammar witness and schema partition",
    "requires_note": "Uses shared ROOT, expect and json only. Full inventory in present, absent, broken and omitted-result runs."
+  },
+  {
+   "name": "58_veldo_0035_snapshots",
+   "file": "58_veldo_0035_snapshots.py",
+   "requires": [
+    "58_veldo_0035_snapshots"
+   ],
+   "regions": "Accepted snapshots, transactional inputs and complete materialization",
+   "requires_note": "Uses only shared ROOT and expect; real SQLite, Git, Ed25519 signatures and a separate reader process."
   }
  ]
 }

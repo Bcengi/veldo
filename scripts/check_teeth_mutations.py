@@ -278,6 +278,31 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
+    # VELDO-0035: each declared falsifier and a distinct second mutation target
+    # the same assertion row; the gate additionally drives an unchanged copy.
+    def snapshots(name, module, old, new, row):
+        add(35, name, '58_veldo_0035_snapshots.py', module, old, new, ['snapshots/' + row])
+
+    snapshots('snapshot-project-only', 'control_readset.py',
+              '                for name in sorted(set(current) | set(accepted)):',
+              "                for name in ['entity/project']:", 'stale-input')
+    snapshots('snapshot-ignore-collections', 'control_readset.py',
+              '                    if current.get(name) != accepted.get(name):',
+              "                    if not name.startswith('collection/') and current.get(name) != accepted.get(name):",
+              'stale-input')
+    snapshots('snapshot-checkout-bytes', 'control_snapshot.py',
+              '    return body\n', '    return (Path(repo) / path).read_bytes()\n', 'accepted-bytes')
+    snapshots('snapshot-head-bytes', 'control_snapshot.py',
+              '    return body\n',
+              "    return GIT.check_output(['git', '-C', str(repo), 'cat-file', 'blob', 'HEAD:' + path])\n",
+              'accepted-bytes')
+    snapshots('snapshot-working-status', 'control_snapshot.py',
+              '        result[safe_path(path)] = canonical(value)',
+              '        result[safe_path(path)] = (Path(repo) / path).read_bytes()', 'materialized-revision')
+    snapshots('snapshot-wrong-watermark', 'control_snapshot.py',
+              "'accepted_commit': snapshot['accepted_commit'], 'watermark': snapshot['watermark'],",
+              "'accepted_commit': snapshot['accepted_commit'], 'watermark': snapshot['watermark'] + 1,",
+              'materialized-revision')
     return result
 
 
@@ -348,7 +373,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
