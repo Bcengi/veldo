@@ -59,7 +59,7 @@ def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
         path = os.path.dirname(path)
 
 
-def worker_count(cpus=None):
+def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
     """Workers the stage runs at once: the CPUs this process may use (its affinity set, bounded by
     a cgroup CPU quota), never fewer than 2 or more than 16. A fixed 8 left most of a 20-core host
     idle while the stage grew with every item, and would oversubscribe a small one. Verdicts do not
@@ -69,7 +69,7 @@ def worker_count(cpus=None):
             cpus = len(os.sched_getaffinity(0))
         except (AttributeError, OSError):
             cpus = os.cpu_count() or 2
-        quota = _quota_cpus()
+        quota = _quota_cpus(cgroup_root, membership)
         if quota:
             cpus = min(cpus, quota)
     return max(2, min(16, int(cpus)))

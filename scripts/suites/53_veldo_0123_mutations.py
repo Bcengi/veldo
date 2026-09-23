@@ -641,12 +641,19 @@ if 'expect' in globals():
         (_m123_cgp / 'self-cgroup').write_text('0::/user.slice/app.scope\n')
         (_m123_cgp / 'none-cgroup').write_text('0::/\n')
         (_m123_cgp / 'v1-cgroup').write_text('4:cpu,cpuacct:/user.slice\n')
+        (_m123_cgp / 'half.scope').mkdir()
+        (_m123_cgp / 'half.scope/cpu.max').write_text('350000 100000\n')
+        (_m123_cgp / 'half-cgroup').write_text('0::/half.scope\n')
         _m123_quotas = [_m123_gate._quota_cpus(str(_m123_cgp), str(_m123_cgp / n))
-                        for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup')]
+                        for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup', 'half-cgroup')]
+        # And the worker count really applies it: a 3.5-CPU quota rounds UP to 4 workers.
+        _m123_quota_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'half-cgroup'))
+        _m123_host_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'none-cgroup'))
     expect('VELDO-0123 gate/workers-follow-the-host: the mutation stage runs as many workers as the CPUs it '
            'may use (its affinity set, bounded by a cgroup quota), never fewer than 2 or more than 16: a '
            'child pinned to 1 or 4 CPUs computes 2 or 4, and Workers.run really runs exactly that many at once',
            [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
            and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, n)) for n in _m123_affinity))
            and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_driven_parallel == 3
-           and _m123_quotas == [2, None, None])
+           and _m123_quotas == [2, None, None, 4]
+           and _m123_quota_workers == min(4, _m123_host_workers))
