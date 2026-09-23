@@ -348,11 +348,11 @@ def cases():
                 "        push = git('push', '--recurse-submodules=no',", 'publication-exact-ref')
     publication('effects-push-follows-tags', push,
                 push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
-    confirm = "after is not None and after == dict(before, **{ref: payload['commit']})"
+    confirm = "after is not None and after == expected"
     publication('effects-confirm-authorized-ref-only', confirm,
                 "after is not None and after.get(ref) == payload['commit']", 'publication-confirms-one-change')
     publication('effects-confirm-ignores-new-refs', confirm,
-                "after is not None and all(after.get(k) == v for k, v in dict(before, **{ref: payload['commit']}).items())",
+                "after is not None and all(after.get(k) == v for k, v in expected.items())",
                 'publication-confirms-one-change')
     # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
     # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
@@ -367,6 +367,12 @@ def cases():
     publication('effects-push-transports-restricted', push,
                 push.replace("git('-c', 'push.followTags=false',", "git('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
                 'publication-smart-http')
+    # R4 P2: confirmation reads HEAD and its symbolic target, not only the refs namespace.
+    listing = "            listed = git('ls-remote', '--symref', remote)"
+    publication('effects-confirm-without-head', listing,
+                "            listed = git('ls-remote', '--refs', remote)", 'publication-head-change')
+    publication('effects-confirm-without-symref-targets', listing,
+                "            listed = git('ls-remote', remote)", 'publication-head-change')
     return result
 
 

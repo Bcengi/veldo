@@ -32,10 +32,18 @@ def receive(config, contract, accepted):
         def git(*args):
             return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20)
         def remote_refs():
-            listed = git('ls-remote', '--refs', remote)
+            # Every advertised ref, HEAD and peeled tags included, plus each symbolic ref's target.
+            listed = git('ls-remote', '--symref', remote)
             if listed.returncode:
                 return None
-            return {name: sha for sha, name in (line.split('\t', 1) for line in listed.stdout.splitlines())}
+            refs = {}
+            for line in listed.stdout.splitlines():
+                value, name = line.split('\t', 1)
+                if value.startswith('ref: '):
+                    refs['symref:' + name] = value[len('ref: '):]
+                else:
+                    refs[name] = value
+            return refs
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
@@ -54,9 +62,13 @@ def receive(config, contract, accepted):
         push = git('-c', 'push.followTags=false', 'push', '--no-follow-tags', '--recurse-submodules=no',
                    '--force-with-lease=' + ref + ':' + payload['old_tip'],
                    remote, payload['commit'] + ':' + ref)
-        # Completion is exactly one remote change: the authorized ref moved to the commit.
+        # Completion is exactly one remote change: the authorized ref (and any symbolic ref
+        # that targets it, HEAD included) moved to the commit; every other entry is unchanged.
         after = remote_refs()
-        complete = push.returncode == 0 and after is not None and after == dict(before, **{ref: payload['commit']})
+        expected = dict(before, **{ref: payload['commit']})
+        expected.update({name[len('symref:'):]: payload['commit'] for name, target in before.items()
+                         if name.startswith('symref:') and target == ref})
+        complete = push.returncode == 0 and after is not None and after == expected
         return dict(binding, status='completed' if complete else 'unknown',
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)
     # Only a service-selected adapter sees reusable authentication, on stdin. Its stdout

@@ -327,7 +327,24 @@ print(json.dumps(result))
             server.shutdown()
             server.server_close()
         row('publication-smart-http', reachable and result.get('completed') is True and remote_main(bare) == tip)
-        for name in ('pre-push-hook', 'url-rewrite', 'smart-http'):
+        # P2: HEAD is confirmed with its target. Control: HEAD names the authorized ref and
+        # follows it, so the publication completes. Then the remote repoints HEAD at another
+        # branch that already holds the commit: every ref and HEAD's own commit are as
+        # expected; only HEAD's target changed.
+        clone, bare = fresh('head-follows')
+        git('-C', str(bare), 'symbolic-ref', 'HEAD', 'refs/heads/main')
+        follows = publish('head-follows', clone, str(bare))
+        clone, bare = fresh('head-change')
+        git('-C', str(bare), 'symbolic-ref', 'HEAD', 'refs/heads/main')
+        git('-C', str(clone), 'push', '-q', str(bare), tip + ':refs/heads/other')
+        hook = bare / 'hooks' / 'post-receive'
+        hook.write_text('#!/bin/sh\ngit symbolic-ref HEAD refs/heads/other\n')
+        hook.chmod(0o755)
+        result = publish('head-change', clone, str(bare))
+        row('publication-head-change', follows.get('completed') is True and result.get('completed') is False and result.get('status') == 'unknown'
+            and result.get('stop') == 'effect-outcome-unknown' and remote_main(bare) == tip
+            and git('-C', str(bare), 'symbolic-ref', 'HEAD') == 'refs/heads/other')
+        for name in ('pre-push-hook', 'url-rewrite', 'smart-http', 'head-change'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'
