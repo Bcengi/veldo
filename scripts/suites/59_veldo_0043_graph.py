@@ -645,6 +645,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
             'home': 'home = ' + str(spaced / '.venv/bin'),
             'executable': 'executable = ' + venv_python,
             'base-prefix': 'base-prefix = ' + str(spaced / '.venv'),
+            'home-quoted': 'home = "' + str(spaced / '.venv/bin') + '"',
+            'command-prompt-option': 'command = /usr/bin/python3.12 -m venv --prompt="' + str(spaced) + '" /elsewhere',
         }
         # The interpreter resolved component by component, the way the kernel does: (A) through a
         # directory link on a hop, (B) through a relative target whose '..' follows a link first.
@@ -667,7 +669,9 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                 if name == 'directory-hop' else _s43_os.path.realpath(runtime['python']))
             (probe_runtime / 'pyvenv.cfg').write_text(line + '\nversion = 3.12.3\n')
             try:
-                cfg_judged[name] = bool(graph.runtime_problems({'python': str(probe_runtime / 'bin/python')}))
+                found = graph.runtime_problems({'python': str(probe_runtime / 'bin/python')})
+                # Each problem is reported once.
+                cfg_judged[name] = bool(found) and len(found) == len(set(found))
             except Exception as error:
                 cfg_judged[name] = type(error).__name__
         # A stage inside a repository is refused before anything launches.
