@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1204 +1204 @@
+@@ -1225 +1225 @@
 -                self._tell(ev, receipt, 'This presentation is no longer current, so this reply changes nothing.')
 +                pass

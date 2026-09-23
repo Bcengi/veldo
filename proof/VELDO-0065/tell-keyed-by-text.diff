@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1073 +1073 @@
+@@ -1075 +1075 @@
 -        tid = tell_id(ev['chat_id'], ev['platform_message_id'])
 +        tid = tell_id(ev['chat_id'], len(text))

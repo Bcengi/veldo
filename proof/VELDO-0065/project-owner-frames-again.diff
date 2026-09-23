@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -850 +850 @@
+@@ -852 +852 @@
 -                    or principal != c['requested_by']):
 +                    or (principal != c['requested_by'] and 'project_owner' not in (entry.get('roles') or []))):

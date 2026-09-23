@@ -165,9 +165,13 @@
    [
     "VELDO-0065 answer/owner-not-current-silent",
     true
+   ],
+   [
+    "VELDO-0065 answer/owner-ledger-revoked-silent",
+    true
    ]
   ],
-  "seconds": 7.626
+  "seconds": 7.896
  },
  "controls_green": true,
  "mutants": [
@@ -186,7 +190,7 @@
     "VELDO-0065 presentation/revision-identity"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c93ec94b143a074f0f21bd001fae65f19174f9107fe3af172c4908760cacc44c",
+   "mutant_sha256": "c04dda05735f5f373738f20eccb3cd7d43ebb2376fa38ce6e3bd3cdd957a9957",
    "name": "request-digest-omits-version",
    "named_row_red": true,
    "named_rows": [
@@ -353,10 +357,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.945,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 9.538,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -368,7 +376,7 @@
     "VELDO-0065 presentation/revision-identity"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "6dbd5f378609929491a001fd844a7b0ed8deda5651155b6348c61378d6e42164",
+   "mutant_sha256": "d31e5d118980d73c17a89859df89accc0bdb83180e9ad05495dfc827a0494096",
    "name": "bindings-ignore-request-identity",
    "named_row_red": true,
    "named_rows": [
@@ -535,10 +543,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.091,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.372,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -553,7 +565,7 @@
     "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "b81f0e56a578bd91bc706e786fe6c025568f3c1d0724b623ee9c24bb55e946a4",
+   "mutant_sha256": "48d704c386c2d09471e467ab9b5582a7a25d1bf870336452c26a92d033716871",
    "name": "render-omits-risk",
    "named_row_red": true,
    "named_rows": [
@@ -720,10 +732,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.241,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 13.134,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -758,7 +774,7 @@
     "VELDO-0065 answer/stale-current-told"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "24cbf8631f1fc18ce12d32f84e6954b852dce20962cc6cb3c995d138ec68457d",
+   "mutant_sha256": "851dbbfdaf31677c22db6ca31b368915553aa0239b4875b0ad2eaea9681a983a",
    "name": "framing-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -925,10 +941,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.565,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 10.911,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -953,7 +973,7 @@
     "VELDO-0065 answer/stale-current-told"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "ddd9791538cf85175ca72b6ea493656ce4b5974a103b4397811657a8d81832da",
+   "mutant_sha256": "b5bb5342762cd827f56d0a745a5b066cb46c38da238627e862be9a17b5c63351",
    "name": "presentation-key-without-digest",
    "named_row_red": true,
    "named_rows": [
@@ -1120,10 +1140,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.705,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.035,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -1153,7 +1177,7 @@
     "VELDO-0065 answer/after-answered-reply"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "4dfb22b03e2712aaebbc3ddc98077722c677e47306de9bbf72f6eb6a479dfc15",
+   "mutant_sha256": "858ca4fe2bd94af6c19cb4b85ca00cf1d8746e379b95ceaac6912fe81e178908",
    "name": "replacement-without-reply-link",
    "named_row_red": true,
    "named_rows": [
@@ -1320,10 +1344,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.465,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.219,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -1384,7 +1412,7 @@
     "VELDO-0065 answer/stale-current-told"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a6ede7b44e28b9e230e0cdda781f8064dc53aa728fb0e61afe1b64f64d9a8e5f",
+   "mutant_sha256": "597743fda426046bc4dc0db78b0e5bb4dcbc0d4edd3bbade6bf2634be7ff25df",
    "name": "answer-checks-subject-only",
    "named_row_red": true,
    "named_rows": [
@@ -1551,10 +1579,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.038,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 9.949,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -1570,7 +1602,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "b5dad5aad067bb414a37be3d54acf4b9ad5798ba6b952006d6ac69204a3432eb",
+   "mutant_sha256": "5e69c99c15c4d1f1b83e6a55312a118c3167b73ce2fb84fc9455334ec0b07615",
    "name": "missing-reference-uses-current",
    "named_row_red": true,
    "named_rows": [
@@ -1737,10 +1769,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.565,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 9.359,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -1768,7 +1804,7 @@
     "VELDO-0065 answer/rationale-original-text"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "5e1f82dc2777caf245f55019121de9015c3b8d827a238a5ec5bbe95413df684d",
+   "mutant_sha256": "3e214944498cf22eaa4767adba416fe9afa57d9d7df7bee173a1b3ef4c4fe326",
    "name": "answer-drops-rationale",
    "named_row_red": true,
    "named_rows": [
@@ -1935,10 +1971,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.229,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.346,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -1954,7 +1994,7 @@
     "VELDO-0065 answer/ruling-and-rationale"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "4809335116bb95edec2b6efae3bbaf6f18534bf1b93a4382ef45192f2e34ea61",
+   "mutant_sha256": "d26135f18aabc36203dbbdc142979d3b1e09a2fee0bcb85b991075ce425cdb03",
    "name": "answer-skips-edge-signature",
    "named_row_red": true,
    "named_rows": [
@@ -2121,10 +2161,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.724,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 9.876,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -2139,7 +2183,7 @@
     "VELDO-0065 answer/unseen-refused"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8d13bb8df54bebcddab745f3d6dea3901aba8baae6d8f2b78119e08fc2ed9a0a",
+   "mutant_sha256": "4b7535602b7baac5b06ef376a7b7c36c2cdf5931773580625729888381b6750b",
    "name": "unsent-marked-published",
    "named_row_red": true,
    "named_rows": [
@@ -2306,10 +2350,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.488,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 11.677,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -2322,7 +2370,7 @@
     "VELDO-0065 answer/unseen-refused"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "fa9ad62c2e00b116182df771f7253cd85cdd9d1017f2afc2516649d7cd311380",
+   "mutant_sha256": "4f03cdc9dc0cfbd681c8c54344c79de4b7a44a5a3f57582e4d28a2fb2355ea01",
    "name": "unseen-only-refused-outcome",
    "named_row_red": true,
    "named_rows": [
@@ -2489,10 +2537,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.687,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.985,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -2522,7 +2574,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "f42299a404c6840dfffcf9962f8db88778004f8d3e16b360e4c777636313444a",
+   "mutant_sha256": "cbb122100aa3c935eebfd2b970fb879ebd6c64a87e06b59031aaf51d4f955af2",
    "name": "answer-records-typed-choice-as-ruling",
    "named_row_red": true,
    "named_rows": [
@@ -2689,10 +2741,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.544,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 11.59,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -2704,7 +2760,7 @@
     "VELDO-0065 answer/settle-consumes-answer"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "e98c6b517f621359f6b1b56f94ebb42afcbf3b824488533fb01c2a6f2016079b",
+   "mutant_sha256": "7d0543b02df2f187072062b839410605b7e1432c4bc225123fd93958f0b01394",
    "name": "unmapped-choice-presented",
    "named_row_red": true,
    "named_rows": [
@@ -2871,10 +2927,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 14.072,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 11.639,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -2886,7 +2946,7 @@
     "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "15e7359ab1f1e54eb94e5ff80905f2a35dd8370b4580f39cc372f4daa4281541",
+   "mutant_sha256": "028b0c9c7a15abc5c49642a199c5d191596d6bc4bf2ab7022b2000c860e91841",
    "name": "project-owner-frames-again",
    "named_row_red": true,
    "named_rows": [
@@ -3053,10 +3113,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 16.423,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.83,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -3069,7 +3133,7 @@
     "VELDO-0065 framing/requester-only"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "b4cf6f01d5ad8765e8ce18b6ee9311d7437b26b457c23a38319fbe21e65be3ed",
+   "mutant_sha256": "758757f88551950bc05ff83d6550e5e13d9fc85e108788d4292a3cf64e8ef662",
    "name": "stored-framing-any-framer",
    "named_row_red": true,
    "named_rows": [
@@ -3236,10 +3300,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 15.014,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.829,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -3253,7 +3321,7 @@
     "VELDO-0065 framing/stored-framing-reverified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "16cf7a5af5a005e18ac6ddb6a228ba15b4156f8c67f308a5d79961d3c1b67e81",
+   "mutant_sha256": "247d1c1ea06194be03d3ade50ca3b9d32221175abcfe5c6fe39e98b9b5cb015a",
    "name": "stored-framing-any-writer",
    "named_row_red": true,
    "named_rows": [
@@ -3420,10 +3488,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 19.976,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.739,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -3443,7 +3515,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "5817390877efff82264a6e6d39c485ab6fe4f16965f09f1d02cd91f3c3c86ed7",
+   "mutant_sha256": "ef5ddefe7aa72b3a5691daf9b33fe54960b4128747f4e9e696ab0b36f9e6aedb",
    "name": "stored-framing-key-at-any-time",
    "named_row_red": true,
    "named_rows": [
@@ -3610,10 +3682,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 22.269,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.688,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -3626,7 +3702,7 @@
     "VELDO-0065 answer/not-before-publication"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "36407a1731cc3eb4366ef3c323b90e1dee9545fff14d3bb869f771d0dd2abd9f",
+   "mutant_sha256": "0b025eb2beae235276b6a8ddc5d5f03759e870eaf7234ec2a2455b848d83059e",
    "name": "answer-time-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -3793,10 +3869,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 10.518,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.417,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -3808,7 +3888,7 @@
     "VELDO-0065 answer/not-before-publication"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d0b9f8e23d22a1f9bfea6ea3c945bcd3e801ca7fe3c2c128f4ca5a348da29052",
+   "mutant_sha256": "6d1ceaf7af61eb6b7b82628bacb12b025e4c7b5fdd4fd7bf05aace64b30b7ea1",
    "name": "answer-time-same-second-refused",
    "named_row_red": true,
    "named_rows": [
@@ -3975,10 +4055,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 17.172,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.602,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -3993,7 +4077,7 @@
     "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "9cc7d3629ca2cd533cce15e365a02b8cb8b662a5e10c07e9468aad539fc578f7",
+   "mutant_sha256": "ab29ad77faff1f6d3e87297391ebfd7ef63f482d95ebd0680b1f6862584ad153",
    "name": "group-chat-presented",
    "named_row_red": true,
    "named_rows": [
@@ -4160,10 +4244,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 14.821,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.733,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -4177,7 +4265,7 @@
     "VELDO-0065 projection/one-message-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a00bfdfdda8d9a15187f732e97621df1bf1f8d4d9c2613c0b566da584c9f8ad0",
+   "mutant_sha256": "5b461084f47111e10c691af74e9be1ad76f59450ca62a3034e717910ebd7df1c",
    "name": "unpresented-reason-not-counted",
    "named_row_red": true,
    "named_rows": [
@@ -4344,10 +4432,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.628,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.56,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -4363,7 +4455,7 @@
     "VELDO-0065 presentation/reply-link-verified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "8e671f8a828fdb8b51b8fa2048f3146136407ac53fa83ca5f8ab5af94ff1a7b5",
+   "mutant_sha256": "265e9bef033d551dbc936098caf08540a8671c8144ed3d64f57bd86316e8cad8",
    "name": "replacement-requires-reply-target",
    "named_row_red": true,
    "named_rows": [
@@ -4530,10 +4622,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.496,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.615,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -4545,7 +4641,7 @@
     "VELDO-0065 presentation/replacement-without-reply-target"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c5fffc7ef631539872a62e547433260ba8b9e866217c3bf5dfae13af68ebe308",
+   "mutant_sha256": "c21320ae6a6e50f809213a64db7b4f03250802429e43a7c887236f7c69103c4a",
    "name": "reply-link-always-claimed",
    "named_row_red": true,
    "named_rows": [
@@ -4712,10 +4808,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.684,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.756,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -4727,7 +4827,7 @@
     "VELDO-0065 presentation/reply-link-verified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "6335948df84837b4e9228ed23ea3f5d5691445d89e2ee5dfff21285a38d1d7f5",
+   "mutant_sha256": "14af6cfb69cd9ad9dac80cea187cb7b938b1cf39d119c72379dd4ffbedd7f49c",
    "name": "receipt-reply-link-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -4894,10 +4994,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.521,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.596,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -4909,7 +5013,7 @@
     "VELDO-0065 presentation/reply-link-verified"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "25dc542b06c7552ef066b305850f2b17332faa17201473956b25ce68682c69ff",
+   "mutant_sha256": "3181d0c20d7b022736bb552bf8b2678b1bef1c0eeaa89ab2723ac5d4d9cb20fe",
    "name": "receipt-platform-reply-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -5076,10 +5180,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.525,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.733,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -5096,7 +5204,7 @@
     "VELDO-0065 presentation/long-brief-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d005f5d929622f9231171898edc27a8f4cc3b0998f4576ca7a9c23dcc294e320",
+   "mutant_sha256": "396a913dc98da64c07a901947f4a9d35bd4909b6cc915db27d33dbd7dcc38df5",
    "name": "part-length-in-characters",
    "named_row_red": true,
    "named_rows": [
@@ -5263,10 +5371,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.671,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.662,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -5280,7 +5392,7 @@
     "VELDO-0065 presentation/refused-part-sent-again"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "ee794e4b530270f8824a8bd26d2bb78b373911d127872b10f0c7a51bb490b50b",
+   "mutant_sha256": "ce337dcccb90bd0f25746f9d647ae9f3bc40e9bae7d09b8a11bdee356c3d28e8",
    "name": "answer-only-to-last-part",
    "named_row_red": true,
    "named_rows": [
@@ -5447,10 +5559,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.605,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.036,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -5634,9 +5750,13 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.502,
+   "seconds": 7.911,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -5816,9 +5936,13 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.044,
+   "seconds": 8.034,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -5999,9 +6123,13 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.026,
+   "seconds": 8.622,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -6181,9 +6309,13 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.01,
+   "seconds": 8.16,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -6209,7 +6341,7 @@
     "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "9b1c511665d81b1385da3b02ddf27dab22f6bff6b7977f9a47589d10166c40f4",
+   "mutant_sha256": "86a87776c1aa324e92e652454194bee114e7e885fbc77b0c3703805cb91d51ba",
    "name": "presentation-ignores-notice",
    "named_row_red": true,
    "named_rows": [
@@ -6376,10 +6508,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.607,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.074,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -6395,7 +6531,7 @@
     "VELDO-0065 projection/notices-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d9ca28c296c892ca3ea0c5c24c5fbb1f8b31b338beb31dde6dfdb6068dcd30ae",
+   "mutant_sha256": "74e7c0ea1f0f48c141b7cc72708b3a10fd4422228c9340345879c9a9d72c0d86",
    "name": "notice-not-marked-superseded",
    "named_row_red": true,
    "named_rows": [
@@ -6562,10 +6698,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.331,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.328,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -6590,7 +6730,7 @@
     "VELDO-0065 presentation/retry-after-capped"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a80e20a64bf7d13bc8a6a0b4d9902bfbc404fcb3500dc7f563f7661c92738b2d",
+   "mutant_sha256": "aa3eaf3bcb7b2278b8f97c3200ba5c64780a28a23d0279adeffea3881d02c66b",
    "name": "partial-never-sent-again",
    "named_row_red": true,
    "named_rows": [
@@ -6757,10 +6897,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.669,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.322,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -6776,7 +6920,7 @@
     "VELDO-0065 presentation/retry-after-capped"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "768496a71b54191c9fe2da62619750b33e31279f71d2354b6793ffd784265e21",
+   "mutant_sha256": "213e5bde50c511ce3bfaf5fb8d1488698e26692e126c9236a61bf81c5357aa18",
    "name": "retry-after-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -6943,10 +7087,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.812,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.073,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -6968,7 +7116,7 @@
     "VELDO-0065 answer/rationale-original-text"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "3359b9a84a4578df22c67c3b8b05c9fd8948d8aea4eef848a0ad391fe9708464",
+   "mutant_sha256": "9393603f50fdb31e2a4122a6acf4893d3afa31c90797b831395054d4a49acfbc",
    "name": "choice-match-case-sensitive",
    "named_row_red": true,
    "named_rows": [
@@ -7135,10 +7283,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.638,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.068,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -7159,7 +7311,8 @@
     "VELDO-0065 answer/stale-current-told detail: when only a bound field changed, the reply is told a new presentation is coming",
     "VELDO-0065 answer/stale-current-told detail: a revision not yet framed is told the presentation is no longer current, with no promise",
     "VELDO-0065 answer/stale-current-told detail: a reply while the framing no longer counts (its requester revoked) is told no longer current, no promise",
-    "VELDO-0065 answer/owner-not-current-silent detail: control: with the membership and enrollment current, the owner is told the valid choices"
+    "VELDO-0065 answer/owner-not-current-silent detail: control: with the membership and enrollment current, the owner is told the valid choices",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: control: with the ledger restored, a request of the same owner is presented and the owner told the valid choices"
    ],
    "diff": "proof/VELDO-0065/owner-not-told.diff",
    "failed_rows": [
@@ -7171,10 +7324,11 @@
     "VELDO-0065 answer/redelivered-after-closed",
     "VELDO-0065 answer/closed-tell-after-edge-scope",
     "VELDO-0065 answer/stale-current-told",
-    "VELDO-0065 answer/owner-not-current-silent"
+    "VELDO-0065 answer/owner-not-current-silent",
+    "VELDO-0065 answer/owner-ledger-revoked-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "ba9b94f4c4e5030790e1f8d466b432d56bb8b45308151f4ac543c2f120ae755c",
+   "mutant_sha256": "4eda285759a3d96b03b0cf4274cb5208485327ab3cd04953b348a538e9345e97",
    "name": "owner-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -7341,10 +7495,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      false
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     false
     ]
    ],
-   "seconds": 7.63,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.65,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -7356,7 +7514,7 @@
     "VELDO-0065 presentation/notice-kind-fixed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "e24dda70606f9777e488b2e65fb8103dec5ce2ce5b95c70651517b9a0da9ef3b",
+   "mutant_sha256": "c1605d20387ddb58582b1950ea1e4cd4504b470434c56b64df1d846d8a57e5c1",
    "name": "notice-kind-from-caller",
    "named_row_red": true,
    "named_rows": [
@@ -7523,10 +7681,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.547,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.241,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -7538,7 +7700,7 @@
     "VELDO-0065 presentation/notice-kind-fixed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "91f08c6e44638d9e4116d9d5cb96721f386c5d8196f8c18cc5108fb4716c1a97",
+   "mutant_sha256": "fd7f8b71a877b856f08069c25e4bf2d5d087662e39606ffa4694b08bff985c91",
    "name": "notice-of-any-request",
    "named_row_red": true,
    "named_rows": [
@@ -7705,10 +7867,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.601,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.965,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -7721,7 +7887,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2ae146d139ee1c0fc55fcfb6444ffcc08b8d479ff099f9a786ae332d8c34c99c",
+   "mutant_sha256": "1bb7d00f4ed69bf63c530b41da860ac9a384d0be060a1782b3752edd828760fd",
    "name": "frame-key-by-time",
    "named_row_red": true,
    "named_rows": [
@@ -7888,10 +8054,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.792,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.766,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -7903,7 +8073,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a2196eb6a730fe3f3c649416e84cc39bb7c086cc7626776f9c270a192778f1a7",
+   "mutant_sha256": "5b68b35cc184292ab9bbf3e54eaa21ae1e0f13fa7a7a69d57d46d4fcb176daf2",
    "name": "frame-ledger-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -8070,10 +8240,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.939,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.699,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -8085,7 +8259,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "5a79f821b43b7cb75b071bcda30d35fd87cdfb182cc7dea31c1bd0584060b725",
+   "mutant_sha256": "00d3f40c264c3cb2b931e12c96065384c3d27a9acf77ed132bd5e708fea18853",
    "name": "frame-ledger-pin-read-later",
    "named_row_red": true,
    "named_rows": [
@@ -8252,10 +8426,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.769,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.105,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -8267,7 +8445,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "5a72626e3861b6ff81f07e1883190d1179a0348c5015cbc8730e4ce9a0abafa9",
+   "mutant_sha256": "ecbd0982ddd437f416ca7b5d03c88cf38818f183b3e510e64e4ce10d5817fe3b",
    "name": "frame-key-pin-read-later",
    "named_row_red": true,
    "named_rows": [
@@ -8434,10 +8612,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.865,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.962,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -8451,7 +8633,7 @@
     "VELDO-0065 framing/key-by-store-order"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "6e8b362aa4461ff05e4f14848b64dccd5598ee72334c6f114740299795a18032",
+   "mutant_sha256": "f3c6e16df5f6cb986bec972a6d70783d0638b64cdb0d750c03b6c1e15f2850ce",
    "name": "framing-key-read-now",
    "named_row_red": true,
    "named_rows": [
@@ -8618,10 +8800,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.1,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.621,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -8636,7 +8822,7 @@
     "VELDO-0065 framing/ledger-read-fails-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "74335ea1bc06b60c545bf1c633d4cca98e5802b04f28638baf5a62cb66183b9f",
+   "mutant_sha256": "c673cd888f4f10b3d72bae29bc67756ae20e64a2f349eec95831d70613e190ff",
    "name": "framing-ledger-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -8803,10 +8989,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.456,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.891,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -8819,7 +9009,7 @@
     "VELDO-0065 presentation/retry-after-bounded"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "e59e0fa8552e97edebfc613ddb34d9390770c347f3ac1dbf4908516a4551f6ef",
+   "mutant_sha256": "fd90d6c9d53a131d01bac38de329d38c85550d3fbd602c124e82fbfddc007059",
    "name": "retry-after-any-number",
    "named_row_red": true,
    "named_rows": [
@@ -8986,10 +9176,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.565,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.77,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -9001,7 +9195,7 @@
     "VELDO-0065 presentation/retry-after-bounded"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "fbdec6f8d1138e4a7c045fe3e3db8fa86e84431e428ad7a34597ef2d96777ae9",
+   "mutant_sha256": "3bf9f4507137f91c117fe55162683323ae217b9ef46e828e2815a1a760ae97a5",
    "name": "retry-after-boolean-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -9168,10 +9362,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.292,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.63,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -9184,7 +9382,7 @@
     "VELDO-0065 presentation/retry-after-capped"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "61f395acaa3d940e86d3fcaa9e3f696493aa2d386068767c5277e7310dc48ee6",
+   "mutant_sha256": "6788406fd7e65b5a84fd49193017f6c8ed2ec480228f35e1cc54a1f64f3d9ca7",
    "name": "retry-after-unbounded",
    "named_row_red": true,
    "named_rows": [
@@ -9351,10 +9549,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.247,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.703,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -9367,7 +9569,7 @@
     "VELDO-0065 presentation/retry-after-capped"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "59c9d123fe8ddbce3d99e26f9b0c1bc56b7732cde8c2cd7ec9b8b2c4640f7d6c",
+   "mutant_sha256": "9a52a5967b8cbf251193307f65d3781c34d3fda4d8fbd086f96db7e58c0bb7da",
    "name": "retry-after-above-bound-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -9534,10 +9736,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.164,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.68,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -9555,7 +9761,7 @@
     "VELDO-0065 answer/rationale-original-text"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "302158b835f12f140117f94f905396fc7b34ed7297187fb207d9d6b1ef922122",
+   "mutant_sha256": "3750efcda993706292f39bf624d67624ba56d98c5b27ea02870a7929dbdad8c0",
    "name": "choice-without-nfkc",
    "named_row_red": true,
    "named_rows": [
@@ -9722,10 +9928,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.095,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.755,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -9742,7 +9952,7 @@
     "VELDO-0065 answer/reply-nfkc-before-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "bb0bff3482fcda0980bced530cd31b552e48b0507247d9fa3bdad51ef9d7388a",
+   "mutant_sha256": "7508ed0db0c809acd0734e3ea7e10a70618d5ad13f4047668094f424db53e5ac",
    "name": "choice-separators-distinct",
    "named_row_red": true,
    "named_rows": [
@@ -9909,10 +10119,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.656,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.834,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -9932,7 +10146,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "57c618777668b2712ad3eb8662b3e3a9e343605ccac973bd877fdcf47929d457",
+   "mutant_sha256": "0685b6d0d8398447153a125f63723a9924f4ec620d7a24bbfbcf35c75db6c46f",
    "name": "answered-checked-after-choice",
    "named_row_red": true,
    "named_rows": [
@@ -10099,10 +10313,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.297,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.747,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -10120,7 +10338,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "be17f1521a2ccbbdb4f92f8b334e063cdfe6c3a3ec10d6fd4aad2423c5ac4de1",
+   "mutant_sha256": "75e7e0a41ca4104b67b5bd787c54daa6434bdb6aaa4f8be96c6db0b0213dd99e",
    "name": "answered-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -10287,10 +10505,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.41,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.67,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -10306,7 +10528,7 @@
     "VELDO-0065 answer/stale-current-told"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "267d53e1e5d537790c45564f3e71783b5c3ea9a9144dcac10709f8f813910564",
+   "mutant_sha256": "1150028ac64f48949f452816fd837fe5f8d433b3faef4ed6284c8cadc7f98c91",
    "name": "tell-not-deduplicated",
    "named_row_red": true,
    "named_rows": [
@@ -10473,10 +10695,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.522,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.711,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -10495,7 +10721,8 @@
     "VELDO-0065 answer/redelivered-after-closed detail: control: after the request is canceled, a different message is told it is already answered",
     "VELDO-0065 answer/closed-tell-after-edge-scope detail: control: with the edge scope restored, the closed request's reply is told once",
     "VELDO-0065 answer/stale-current-told detail: when only a bound field changed, the reply is told a new presentation is coming",
-    "VELDO-0065 answer/stale-current-told detail: a reply while the framing no longer counts (its requester revoked) is told no longer current, no promise"
+    "VELDO-0065 answer/stale-current-told detail: a reply while the framing no longer counts (its requester revoked) is told no longer current, no promise",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: control: with the ledger restored, a request of the same owner is presented and the owner told the valid choices"
    ],
    "diff": "proof/VELDO-0065/tell-keyed-by-text.diff",
    "failed_rows": [
@@ -10506,10 +10733,11 @@
     "VELDO-0065 answer/reply-after-closed",
     "VELDO-0065 answer/redelivered-after-closed",
     "VELDO-0065 answer/closed-tell-after-edge-scope",
-    "VELDO-0065 answer/stale-current-told"
+    "VELDO-0065 answer/stale-current-told",
+    "VELDO-0065 answer/owner-ledger-revoked-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "0a38faef8c894c46feae237aae93e08478243c60b3f40db4f0a0a3783fc991b8",
+   "mutant_sha256": "a088426e572c7947a54b1f70244fc2bfc5fb32c9e29e0b0d0c062a92d59ee8a9",
    "name": "tell-keyed-by-text",
    "named_row_red": true,
    "named_rows": [
@@ -10676,10 +10904,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     false
     ]
    ],
-   "seconds": 9.383,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.623,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -10858,9 +11090,13 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.473,
+   "seconds": 7.728,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   },
   {
@@ -10875,7 +11111,7 @@
     "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "46602294c45d75a2e35274b220fd4c7288b9dbe6002b1f62954c53312f941537",
+   "mutant_sha256": "579b368947e64b97b67a7328b39a6c3930e3fb5a590f720069dc695d52e428c3",
    "name": "pending-notice-never-marked",
    "named_row_red": true,
    "named_rows": [
@@ -11042,10 +11278,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.343,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.753,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -11057,7 +11297,7 @@
     "VELDO-0065 framing/ledger-read-fails-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "04b9adb28ff750e30a56c500faecd0fb75b70545a8d9001035751c1740a622c3",
+   "mutant_sha256": "019c6ee92c65221763733b55c3da52e1866a125c5256ab865ae3279caf4ff202",
    "name": "journal-reader-ignores-kind",
    "named_row_red": true,
    "named_rows": [
@@ -11224,10 +11464,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.517,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.591,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -11242,7 +11486,7 @@
     "VELDO-0065 answer/rationale-original-text"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "cbf8f9825b2121a63ef4af0b7d6441ebca1b3a37d3c417f6d81e6ec092820e0f",
+   "mutant_sha256": "08942d890ea8e17e36ccc0034f5425aa7ef97d482f89b8bc781ea18347f2999a",
    "name": "split-before-nfkc",
    "named_row_red": true,
    "named_rows": [
@@ -11409,10 +11653,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.352,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.64,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -11427,7 +11675,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "f2cfc6f1bac75422d92c1f7373eb83903b959244e6f373a9388aa59be72e10be",
+   "mutant_sha256": "a4c6894a5daad9567d21c7fdef0888c9f194bbdbf4c64de09f94cfdb61006b7a",
    "name": "redelivered-answer-told",
    "named_row_red": true,
    "named_rows": [
@@ -11594,10 +11842,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.609,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.438,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -11615,7 +11867,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "f77f712abd39bd205d2317cf70f16ae5be504384cd3afc253c76f5b5658830ef",
+   "mutant_sha256": "9e3635e3321ef7c373d20191818ec2686fc7713af033218fe79f68faf93c0908",
    "name": "redelivery-by-chat-only",
    "named_row_red": true,
    "named_rows": [
@@ -11782,10 +12034,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.257,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.353,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -11798,7 +12054,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "384e51980dc2021d1e06d46e616eda48320ce3f46e5c819f60a4e92ab3644e11",
+   "mutant_sha256": "d16c4a19435c55d7f0db534bc9f4e273d9acc01d775b748497bb419f68147ccf",
    "name": "redelivery-silent-only-while-pending",
    "named_row_red": true,
    "named_rows": [
@@ -11965,10 +12221,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.966,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.853,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -11983,7 +12243,7 @@
     "VELDO-0065 answer/closed-tell-after-edge-scope"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "adf7304eecf02f3921cf5c585a0bc88a79e9e9c9946533c47228de789a2ec2f5",
+   "mutant_sha256": "fdfbbbe99c917cf054b158bc4a7666e57d86bcfa0293c9702bdab6a64ae8bdd9",
    "name": "closed-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -12150,10 +12410,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.467,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.379,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -12167,7 +12431,7 @@
     "VELDO-0065 answer/closed-tell-after-edge-scope"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2e90362d2b55afbe7e8dfab3a0d8e8c2a5f9c35e62851b4a17da9f0bd30b52f1",
+   "mutant_sha256": "4c4309ceb402de3e66214af87c01de1f75093d0c4ffd7a8da319371b89ebdbb6",
    "name": "closed-reported-as-stale",
    "named_row_red": true,
    "named_rows": [
@@ -12334,10 +12598,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.466,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.394,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -12349,7 +12617,7 @@
     "VELDO-0065 projection/notices-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "56b827cada0ea6da72709cc2736d0b25ade536e34347b05a57f6475bbc095a1c",
+   "mutant_sha256": "867a735c51aef432e3c001ddf4da49ce81f2a7886228a5612f4b51dc007111ee",
    "name": "older-sent-notice-preferred",
    "named_row_red": true,
    "named_rows": [
@@ -12516,10 +12784,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.462,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.406,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -12531,7 +12803,7 @@
     "VELDO-0065 projection/notices-per-version"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a2a336e29ad262c539c539ca4252430b1009fff29f7801dbcec13e14b8a8fe06",
+   "mutant_sha256": "a8c206c6ba90c76a0ee746029a02104d1224a3dc0459fc9b2b38c31845246f2c",
    "name": "only-first-notice-marked",
    "named_row_red": true,
    "named_rows": [
@@ -12698,10 +12970,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.109,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.786,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -12713,7 +12989,7 @@
     "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "1bb2a7d37a7dc23cafb8eafa26a1fd36b202a82392f031656c6f98b3bcd062e8",
+   "mutant_sha256": "3be5930c75e5180889e43f5a1f2d11e896d41576fded8fd59970a355efa0689d",
    "name": "reconcile-current-only",
    "named_row_red": true,
    "named_rows": [
@@ -12880,10 +13156,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.51,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.328,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -12897,7 +13177,7 @@
     "VELDO-0065 answer/closed-tell-after-edge-scope"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a6838dcf41ec18899eedeababa68841aeab69d97ff740e9055ecdfb216688a8e",
+   "mutant_sha256": "0603fbd2deb08d2168c321dd192b93e904495b63427185297f0f30086cac434d",
    "name": "edge-scope-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -13064,10 +13344,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.026,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.411,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -13079,7 +13363,7 @@
     "VELDO-0065 framing/ledger-read-fails-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "a4773ed62b20328d1a96fe31f802f5d85d1774b1540610606da931b47891dc62",
+   "mutant_sha256": "20de63251646c5df248a3ee0e8b863e540f825975a287c05baa2f3945a227757",
    "name": "frame-ledger-any-kind",
    "named_row_red": true,
    "named_rows": [
@@ -13246,10 +13530,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 10.093,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.415,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -13261,7 +13549,7 @@
     "VELDO-0065 framing/ledger-read-fails-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2480af2fd5269f25679a0fd0414423233af3533858b38a148af7e1eb8cf1e99b",
+   "mutant_sha256": "d679245e06a556874085aa9e6ac472d7d7d90cac637be880e075159b204ee6e8",
    "name": "frame-ledger-digest-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -13428,10 +13716,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.726,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.858,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -13445,7 +13737,7 @@
     "VELDO-0065 answer/rationale-original-text"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "64edf2e520f9b9613bfb7bfa20cd33e9557a994f73b0c7b1bd5929fbf02bcd4c",
+   "mutant_sha256": "1fd48feed43acbfc12b6f63679dc527bb3a2cf0434476201f09c519602ec9eac",
    "name": "rationale-nfkc-folded",
    "named_row_red": true,
    "named_rows": [
@@ -13612,10 +13904,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.402,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.27,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -13646,7 +13942,7 @@
     "VELDO-0065 answer/rationale-original-text"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "1f5ac9beaf79dcd5056fbd09e03013b945cd5c7dda03f924a3545e81aef82e58",
+   "mutant_sha256": "ba109bd1a15eb1eab0df3e9ff3bcad4ba65d20b7ac3675da8728589da9f08bb4",
    "name": "rationale-keeps-the-colon",
    "named_row_red": true,
    "named_rows": [
@@ -13813,10 +14109,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.515,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.346,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -13828,7 +14128,7 @@
     "VELDO-0065 answer/stale-current-told"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "7703a83d190d8303079d230f3437d477b884f39bb0d654b478018849540ee1ee",
+   "mutant_sha256": "481627bb5d1765221bbb0727dc636e26137a70696b72d99f81ca9123ef8df49f",
    "name": "stale-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -13995,10 +14295,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.973,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.305,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -14010,7 +14314,7 @@
     "VELDO-0065 answer/reply-nfkc-before-split"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "6cadfc849d5a75d7df236fe990ad5e5136efd45d404ad21cbee994e758e6c521",
+   "mutant_sha256": "b645b11b9c9f23b153715005984fa89472d4aedfdb0ba60d9ff6fdb0308620c8",
    "name": "x-drop-2043",
    "named_row_red": true,
    "named_rows": [
@@ -14177,10 +14481,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.497,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.033,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -14192,7 +14500,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "070904b36165a153bf1b2dd4effaec12c8d8a050ea4d0e66cd42fb4d0ae8c7af",
+   "mutant_sha256": "67ed141d7c1aba4c689170516e7196c0f4539a87899d750eb9bdb57e7f5a10af",
    "name": "x-membership-pin-later",
    "named_row_red": true,
    "named_rows": [
@@ -14359,10 +14667,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 9.173,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.296,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -14374,7 +14686,7 @@
     "VELDO-0065 framing/frame-and-presenter-agree"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2c59d83a2ba0d53d3af13f5fb48efc24cbc6c5a15aadc37a6ecb5778a90a05ab",
+   "mutant_sha256": "2a4a7781b3791f4d7571787c4ab7c3c4208479d6e4ccf58c0c3142950fd6a87a",
    "name": "x-versions-pin-later",
    "named_row_red": true,
    "named_rows": [
@@ -14541,10 +14853,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.053,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.447,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -14556,7 +14872,7 @@
     "VELDO-0065 projection/pending-notice-reconciled-after-replacement"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "b81dbed0c17eaf9290e2ac480189b9b60fbabe5f5bd9aa1ab4007a6220a31c9a",
+   "mutant_sha256": "4137a319f4bdc7f8a471429a70c86efa18947a4d0d6dbb55782af77eb5e14dca",
    "name": "x-notice-transition-any-notice",
    "named_row_red": true,
    "named_rows": [
@@ -14723,10 +15039,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.232,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.308,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -14739,7 +15059,7 @@
     "VELDO-0065 answer/stale-current-told"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "5ce99411bba99e199b729ae82a510df35e5f35e0036f00b10cfc081ef6274826",
+   "mutant_sha256": "95689d4d428407b41dcb2f7f074a08c884ddc0c9abbe8b9c3291f8fafab03d82",
    "name": "stale-neutral-not-told",
    "named_row_red": true,
    "named_rows": [
@@ -14906,10 +15226,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.397,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.255,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -14922,7 +15246,7 @@
     "VELDO-0065 answer/owner-not-current-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "206f39f8fb60911bd0b56fbb66e2f1593cadf7c8e9b49af7eb1b029f1f01650d",
+   "mutant_sha256": "c1b5fa41ce70c2d665fff487b335a4e29c7c3b578adf81532ee816ee14cd2454",
    "name": "owner-enrollment-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -15089,10 +15413,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      false
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.409,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.008,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -15105,7 +15433,7 @@
     "VELDO-0065 answer/owner-not-current-silent"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "4e890cc39b81429acc69fc6b5927010e8001658d4870bc5ee0fe3c818ea045ae",
+   "mutant_sha256": "50de1a1b8457120ae6aa6f9d4c464b3585c7b38cda234317dfb61dace99eda74",
    "name": "owner-membership-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -15272,10 +15600,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      false
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.403,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.42,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -15288,7 +15620,7 @@
     "VELDO-0065 answer/redelivered-after-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "99cfab7d49acd3b36ce454370c102fd2157bb38406c0c272e718bf42ab6b089c",
+   "mutant_sha256": "5add88c29e5e3818c38194445ceb7accd40951dac2fd061832c418903c04e994",
    "name": "answered-told-only-while-pending",
    "named_row_red": true,
    "named_rows": [
@@ -15455,10 +15787,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.638,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.461,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -15470,7 +15806,7 @@
     "VELDO-0065 answer/closed-tell-after-edge-scope"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "49f6062c909e816a03eae81a091a932e6ecddf4ea51deb9f6fc9a4784979af9f",
+   "mutant_sha256": "e67aab29ecd5c9e5ddf026e8097c3b093d9defc9ffa84b1f10d1c47dfdba74a4",
    "name": "redelivery-before-edge-scope",
    "named_row_red": true,
    "named_rows": [
@@ -15637,10 +15973,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.419,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 7.896,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
    "by_assertion": true,
@@ -15653,7 +15993,7 @@
     "VELDO-0065 framing/ledger-read-fails-closed"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "b8b018576f0652b6d159af85bf7e9d55269fe8da975401e9364418438d667403",
+   "mutant_sha256": "5e6c499bcd5187e5a97fe7beb3dd6199087f3294d675aba52c0553a1621e4d71",
    "name": "frame-ledger-any-shape",
    "named_row_red": true,
    "named_rows": [
@@ -15820,15 +16160,583 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 8.573,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 8.011,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a pending nonsense reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a pending valid answer reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a closed request reply after the ledger revoked the owner is refused owner_not_current and nothing is sent"
+   ],
+   "diff": "proof/VELDO-0065/owner-ledger-unread.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/owner-ledger-revoked-silent"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "d5643af5dbe62a35ac13cc10ef3aa4c712308abbb24aba553ad9bb36066d4bed",
+   "name": "owner-ledger-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/owner-ledger-revoked-silent"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 answer/closed-tell-after-edge-scope",
+     true
+    ],
+    [
+     "VELDO-0065 answer/rationale-original-text",
+     true
+    ],
+    [
+     "VELDO-0065 answer/stale-current-told",
+     true
+    ],
+    [
+     "VELDO-0065 answer/owner-not-current-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     false
+    ]
+   ],
+   "seconds": 8.436,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a pending nonsense reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a pending valid answer reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a closed request reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: the valid answer is not recorded",
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a request of the ledger-revoked owner is not presented, and nothing is sent"
+   ],
+   "diff": "proof/VELDO-0065/ledger-owner-not-looked-up.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/owner-ledger-revoked-silent"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "b741f15d3cbdcb88dbf3b70b54bf3d1c4bca5bed32544ec3ca8e837b64991cde",
+   "name": "ledger-owner-not-looked-up",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/owner-ledger-revoked-silent"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 answer/closed-tell-after-edge-scope",
+     true
+    ],
+    [
+     "VELDO-0065 answer/rationale-original-text",
+     true
+    ],
+    [
+     "VELDO-0065 answer/stale-current-told",
+     true
+    ],
+    [
+     "VELDO-0065 answer/owner-not-current-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     false
+    ]
+   ],
+   "seconds": 8.406,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0065 answer/owner-ledger-revoked-silent detail: a request of the ledger-revoked owner is not presented, and nothing is sent"
+   ],
+   "diff": "proof/VELDO-0065/bindings-ledger-unread.diff",
+   "failed_rows": [
+    "VELDO-0065 answer/owner-ledger-revoked-silent"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "5350529641daa3a32a5f748b6f72e87242c6e7fd4f23142ab8e33950ef57ff1f",
+   "name": "bindings-ledger-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/owner-ledger-revoked-silent"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0065 install/assets",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/receipt-binds-shown-content",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/revision-identity",
+     true
+    ],
+    [
+     "VELDO-0065 answer/current-presentation-only",
+     true
+    ],
+    [
+     "VELDO-0065 answer/ruling-and-rationale",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/visible-supersession",
+     true
+    ],
+    [
+     "VELDO-0065 answer/unseen-refused",
+     true
+    ],
+    [
+     "VELDO-0065 answer/settle-consumes-answer",
+     true
+    ],
+    [
+     "VELDO-0065 framing/requester-only",
+     true
+    ],
+    [
+     "VELDO-0065 framing/stored-framing-reverified",
+     true
+    ],
+    [
+     "VELDO-0065 answer/not-before-publication",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/private-chat-only",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/replacement-without-reply-target",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/reply-link-verified",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/long-brief-split",
+     true
+    ],
+    [
+     "VELDO-0065 projection/one-message-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 framing/key-by-store-order",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 projection/silent-from-store",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/refused-part-sent-again",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-matching-and-feedback",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/notice-kind-fixed",
+     true
+    ],
+    [
+     "VELDO-0065 framing/frame-and-presenter-agree",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-bounded",
+     true
+    ],
+    [
+     "VELDO-0065 answer/choice-normalization",
+     true
+    ],
+    [
+     "VELDO-0065 answer/after-answered-reply",
+     true
+    ],
+    [
+     "VELDO-0065 answer/tell-once-per-message",
+     true
+    ],
+    [
+     "VELDO-0065 projection/in-flight-notice-superseded",
+     true
+    ],
+    [
+     "VELDO-0065 framing/ledger-read-fails-closed",
+     true
+    ],
+    [
+     "VELDO-0065 presentation/retry-after-capped",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-nfkc-before-split",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-answer-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/reply-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 projection/notices-per-version",
+     true
+    ],
+    [
+     "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+     true
+    ],
+    [
+     "VELDO-0065 answer/redelivered-after-closed",
+     true
+    ],
+    [
+     "VELDO-0065 answer/closed-tell-after-edge-scope",
+     true
+    ],
+    [
+     "VELDO-0065 answer/rationale-original-text",
+     true
+    ],
+    [
+     "VELDO-0065 answer/stale-current-told",
+     true
+    ],
+    [
+     "VELDO-0065 answer/owner-not-current-silent",
+     true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     false
+    ]
+   ],
+   "seconds": 8.249,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   }
  ],
  "noop": {
   "control_channel_presentation.py": {
-   "copy_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e",
+   "copy_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -15992,10 +16900,14 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.822,
-   "source_sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+   "seconds": 9.17,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   "control_channel_projection.py": {
    "copy_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188",
@@ -16162,15 +17074,19 @@
     [
      "VELDO-0065 answer/owner-not-current-silent",
      true
+    ],
+    [
+     "VELDO-0065 answer/owner-ledger-revoked-silent",
+     true
     ]
    ],
-   "seconds": 7.678,
+   "seconds": 8.581,
    "source_sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 65",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 786.837,
+ "serial_seconds": 749.168,
  "spec_id": "VELDO-0065",
  "suite": "scripts/suites/62_veldo_0065_presentations.py"
 }

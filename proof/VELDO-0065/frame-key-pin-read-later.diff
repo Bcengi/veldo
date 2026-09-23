@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -858 +858 @@
+@@ -860 +860 @@
 -                        key['key_id']: seen.get(key['key_id'], {}).get('version', 0),
 +                        key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0),

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -745 +745 @@
+@@ -747 +747 @@
 -                or principal != content['requested_by'] or command.get('principal') != principal
 +                or command.get('principal') != principal

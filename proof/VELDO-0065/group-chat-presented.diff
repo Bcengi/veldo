@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -697 +697 @@
+@@ -699 +699 @@
 -        if enrollment['data']['chat_id'] < 0:
 +        if False:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1175 +1175 @@
+@@ -1196 +1196 @@
 -        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
 +        if False:

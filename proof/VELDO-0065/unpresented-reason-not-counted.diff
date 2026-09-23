@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1245 +1245 @@
+@@ -1266 +1266 @@
 -                unpresented[refusal] = unpresented.get(refusal, 0) + 1
 +                pass

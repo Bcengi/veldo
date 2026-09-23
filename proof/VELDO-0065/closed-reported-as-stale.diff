@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1195 +1195 @@
+@@ -1216 +1216 @@
 -            raise Refused('request_closed', 'the request is no longer pending')
 +            raise Refused('stale_presentation', 'the request is no longer pending')

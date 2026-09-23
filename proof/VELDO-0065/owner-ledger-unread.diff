@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1114,2 +1113,0 @@
+-            return False
+-        if self._ledger_revokes(state, owner):

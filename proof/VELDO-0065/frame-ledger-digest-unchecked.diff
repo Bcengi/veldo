@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -826 +826 @@
+@@ -828 +828 @@
 -                                       or ledger.get('digest') != self.store.digest_of(
 +                                       or False and self.store.digest_of(
