@@ -517,7 +517,9 @@ class Executor:
             second build cycle's included, re-decides its station over the COMPLETE current read set
             against the last accepted decision as its ticket, so an input that moved since (a
             withdrawn admission, or one re-accepted with its predicate still true) is refused by name
-            before the effect. Only then is its dispatch opened; it is closed when `call` returns."""
+            before the effect. Only then is its dispatch opened; it is closed when `call` returns. A
+            refusal inside the launch (a call's usage reservation, or its provider_request decision)
+            is a named halt like every other refusal, never an exception out of run()."""
             nonlocal decision
             current = self._decide(gate, sid, launch, decision)
             if not current["eligible"]:
@@ -533,12 +535,11 @@ class Executor:
                     opened = True
                     return call(handle), None
             except EL.Refused as error:
-                if opened:
-                    raise
-                record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=error.code)
-                return None, finish("halted", ELIGIBILITY_STEP,
-                                    "reservation refused before %s: %s" % (launch, error.code), None,
-                                    proof, gate_green, verdict)
+                codes = "; ".join((error.decision or {}).get("refusals") or [error.code])
+                record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=codes)
+                said = ("call refused during %s: %s" if opened
+                        else "reservation refused before %s: %s") % (launch, codes)
+                return None, finish("halted", ELIGIBILITY_STEP, said, None, proof, gate_green, verdict)
 
         # 1a. plan enforcement for a planned spec (mechanical refusal)
         if spec.get("plan") and spec.get("work"):

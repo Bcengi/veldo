@@ -656,6 +656,23 @@ def cases():
            "        resolved = os.path.realpath(self.enrollment_signers)\n",
            "        resolved = os.path.abspath(self.enrollment_signers)  # defect: symlinks not followed\n",
            'eligibility/host-trust-outside-workspace')
+    # A refusal inside a launch escapes Executor.run again (the defect reintroduced), escapes the
+    # dispatcher's review as an error, or halts without the name of what refused.
+    review('provider-refusal-escapes-run', 'executor.py',
+           '            except EL.Refused as error:\n                codes = "; ".join(',
+           '            except EL.Refused as error:\n                if opened:\n'
+           '                    raise  # defect: a refusal inside the launch escapes run()\n                codes = "; ".join(',
+           'eligibility/provider-refusal-halts')
+    review('provider-refusal-escapes-review', 'dispatch.py',
+           '                    rv = self._reviewer.review(spec, unit, calls=handle) or {}\n',
+           '                    try:\n                        rv = self._reviewer.review(spec, unit, calls=handle) or {}\n'
+           '                    except EL.Refused as inner:\n'
+           '                        raise RuntimeError(inner.code)  # defect: the refusal escapes as an error\n',
+           'eligibility/provider-refusal-halts')
+    review('provider-refusal-halt-unnamed', 'executor.py',
+           '                        else "reservation refused before %s: %s") % (launch, codes)',
+           '                        else "reservation refused before %s: %s") % (launch, "refused")  # defect',
+           'eligibility/provider-refusal-halts')
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

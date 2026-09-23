@@ -1040,6 +1040,62 @@ def _v52_suite():
                    and direct.builds == [(direct_sid, True)] and direct.reviews == [True]
                    and [r['retired'] for r in slots(direct_sid)] == [True, True])
 
+        with region('eligibility/provider-refusal-halts'):
+            # A refusal at a launched call's own boundary (its usage reservation, or the provider_request
+            # decision over an input that moved during the launch) ends the run as a NAMED halt, like
+            # every other refusal, never a raised exception; the review station reports it as refused.
+            capped, moved_sid = 'VELDO-9172', 'VELDO-9173'
+            for s in (capped, moved_sid):
+                unit(s)
+                claim(s)
+                spec(s, lane='standalone')
+            reservations.configure('ceiling-unit-' + capped, 'unit', capped, dict(CEILING, invocations=0), now=tick())
+            reservations.configure('ceiling-unit-' + moved_sid, 'unit', moved_sid, CEILING, now=tick())
+            accepted_admission = dict(unit=moved_sid, state='accepted', scope_digest='sha256:scope')
+
+            class Withdraws(Direct):
+                def build(self, spec_view, calls=None):
+                    put('admission:' + moved_sid, 'admission', dict(accepted_admission, state='withdrawn'))
+                    return super().build(spec_view, calls=calls)
+
+            before = len(receiver)
+            capped_hooks, moved_hooks = Direct('prov-cap'), Withdraws('prov-moved')
+            runs_p = {'direct-cap': observe_effect(lambda: EX.Executor(capped_hooks, eligibility=gate, calls=calls,
+                                                                        context=ctx_x).run(capped, stop_after='proof')),
+                      'direct-moved': observe_effect(lambda: EX.Executor(moved_hooks, eligibility=gate, calls=calls,
+                                                                          context=ctx_x).run(moved_sid, stop_after='proof'))}
+            put('admission:' + moved_sid, 'admission', accepted_admission)
+            build_hooks = Direct('prov-dispatch')
+            disp = DSP.Dispatcher(repo_root=str(base), hooks=build_hooks, reviewer=Reviewer(), lander=Lander(),
+                                  eligibility=gate, calls=calls, worker_id='worker-a')
+            runs_p['dispatch-build'] = observe_effect(lambda: disp.dispatch(dict(kind='build', spec=capped, holder='worker-a')))
+            capped_file = base / 'specs' / (capped + '-fixture.md')
+            capped_file.write_text(capped_file.read_text().replace('status: ready', 'status: review'))
+            runs_p['dispatch-review'] = observe_effect(lambda: disp.dispatch(dict(kind='review', spec=capped, holder='worker-a')))
+            review_status = FR.current_status(capped, str(base))
+            for s in (capped, moved_sid):
+                (base / 'specs' / (s + '-fixture.md')).unlink()
+            summary = {name: (dict(state=r[1].get('state'), halted_at=r[1].get('halted_at'), reason=r[1].get('reason'),
+                                   refusals=r[1].get('refusals')) if r[0] == 'ok' else list(r)) for name, r in runs_p.items()}
+            observed['provider_refusal'] = dict(summary, review_status=review_status,
+                                                launched=[i for _, i, c, _ in receiver[before:]])
+
+            def halted_by(name, code):
+                kind, result = runs_p[name]
+                return (kind == 'ok' and result.get('halted_at') == EX.ELIGIBILITY_STEP
+                        and code in (result.get('reason') or ''))
+
+            check('eligibility/provider-refusal-halts',
+                   halted_by('direct-cap', 'usage_cap:unit:invocations')
+                   and runs_p['direct-cap'][1].get('state') == 'halted' and capped_hooks.builds == [(capped, True)]
+                   and halted_by('direct-moved', 'missing_authority:admission') and moved_hooks.builds == [(moved_sid, True)]
+                   and halted_by('dispatch-build', 'usage_cap:unit:invocations') and runs_p['dispatch-build'][1]['ok'] is False
+                   and runs_p['dispatch-review'][0] == 'ok' and runs_p['dispatch-review'][1].get('state') == 'refused'
+                   and runs_p['dispatch-review'][1].get('refusals') == ['usage_cap:unit:invocations']
+                   and review_status == 'review' and receiver[before:] == []
+                   and all(r['retired'] for r in reservations._records().values()
+                           if r['type'] == 'worker' and r['context']['unit'] in (capped, moved_sid)))
+
         with region('completion/landed-units-not-reoffered'):
             # DEFECT f. Every lane asks the one completion reader, never the front matter: a landed unit is
             # offered for neither a build nor a review, whatever its file still says.

@@ -307,15 +307,14 @@ class Dispatcher(WK.Dispatcher):
         if decision is None:
             rv = self._reviewer.review(spec, unit) or {}
         else:
-            opened = False
+            # A refusal at the open, or inside the review at a call's own boundary, is this station's
+            # named refusal: nothing is shipped or landed and the spec keeps its status for a retry.
             try:
                 with self._launch("review", unit, context, decision) as handle:
-                    opened = True
                     rv = self._reviewer.review(spec, unit, calls=handle) or {}
             except EL.Refused as error:
-                if opened:
-                    raise
-                return self._refused("review", sid, {"refusals": [error.code]}, verdict=None, shipped=False,
+                codes = (error.decision or {}).get("refusals") or [error.code]
+                return self._refused("review", sid, {"refusals": list(codes)}, verdict=None, shipped=False,
                                      landed=False)
         verdict = rv.get("verdict")
         if not self._verdict_passes(rv):
