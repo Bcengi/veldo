@@ -1,0 +1,64 @@
+{
+ "production_at": "8798a78",
+ "modules": ".veldo/*.py of 8798a78",
+ "fixture_substitution": null,
+ "failed": [
+  "VELDO-0053 architecture/snapshot-in-memory",
+  "VELDO-0053 architecture/not-text-refused",
+  "VELDO-0053 architecture/observations"
+ ],
+ "passed": 22,
+ "observed": {
+  "store_only": {
+   "store_only": [
+    "missing_evidence:architecture/workspace"
+   ],
+   "workspace": [
+    "invalid_input:architecture/parse_failure"
+   ]
+  },
+  "public_seam": {
+   "judgements": 7,
+   "through_public_entry": 7,
+   "refusals": []
+  },
+  "identity_is_what_ran": {
+   "before_change": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "same_gate_after_change": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "fresh_gate_after_change": [],
+   "recorded_is_loaded": true,
+   "fresh_records_new": true
+  },
+  "validated_is_digested": {
+   "unaccepted_validated": {
+    "refusals": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "validated_versions": [
+     2
+    ]
+   },
+   "accepted_validated": {
+    "refusals": [],
+    "validated_versions": [
+     1
+    ]
+   }
+  },
+  "snapshot_in_memory": {
+   "refusals": [],
+   "engine_loads_from_disk": 11,
+   "swapped": 11,
+   "left_on_disk": [],
+   "recorded_is_installed": true
+  },
+  "not_text": [
+   "unavailable_service:architecture_validator"
+  ],
+  "raised": []
+ }
+}

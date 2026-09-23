@@ -26,10 +26,10 @@
       "entry_point": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
       "loader": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
-      "validator": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862"
+      "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20"
      }
     },
-    "decision_id": "315582ce-a218-40e8-ace6-ad74567f555d",
+    "decision_id": "a6971e35-1cbc-4fb1-bd3c-f9c5a176ca7a",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "selection",
@@ -68,10 +68,10 @@
       "entry_point": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
       "loader": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
-      "validator": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862"
+      "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20"
      }
     },
-    "decision_id": "0e339cb7-79f9-4c06-a450-c1037cfaab70",
+    "decision_id": "3c711666-23e7-46b2-85c2-7ada82a2bc19",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "claim",
@@ -267,8 +267,10 @@
   },
   "gate_status": {
    "accepted": 71,
-   "pending": [],
-   "refused": 153
+   "pending": [
+    "VELDO-9301"
+   ],
+   "refused": 160
   },
   "identity_is_what_ran": {
    "before_change": [
@@ -281,6 +283,9 @@
     "invalid_input:architecture/invalid_structure"
    ]
   },
+  "not_text": [
+   "invalid_input:architecture/parse_failure"
+  ],
   "permission_denied": {
    "unreadable": true
   },
@@ -307,6 +312,15 @@
    "{\"digest\": \"md5:nothing\", \"state\": \"accepted\"}": true,
    "{\"digest\": \"sha256:17f07d72db9eea71a5a0c6e4d5dc49aa226dbf2c784223d5729febddb2858671\", \"state\": \"withdrawn\"}": true,
    "{\"state\": \"accepted\"}": true
+  },
+  "snapshot_in_memory": {
+   "engine_loads_from_disk": 0,
+   "left_on_disk": [],
+   "recorded_is_installed": true,
+   "refusals": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "swapped": 0
   },
   "state_kinds": {
    "malformed_not_mapping": "parse_failure",
@@ -410,7 +424,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
+      "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -443,7 +457,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
+      "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -476,7 +490,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
+      "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -509,7 +523,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
+      "digest": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -541,7 +555,7 @@
    "wrong_type_fifo": 1
   }
  },
- "passed": 21,
+ "passed": 25,
  "rows": [
   [
    "VELDO-0053 architecture/store-only-refuses",
@@ -584,6 +598,14 @@
    true
   ],
   [
+   "VELDO-0053 architecture/snapshot-in-memory",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/not-text-refused",
+   true
+  ],
+  [
    "VELDO-0053 architecture/validated-is-digested",
    true
   ],
@@ -620,6 +642,14 @@
    true
   ],
   [
+   "VELDO-0053 ran/architecture/snapshot-in-memory",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/not-text-refused",
+   true
+  ],
+  [
    "VELDO-0053 ran/architecture/validated-is-digested",
    true
   ],
@@ -629,5 +659,5 @@
   ]
  ],
  "suite": "60_veldo_0053_architecture.py",
- "suite_seconds": 1.173
+ "suite_seconds": 1.167
 }

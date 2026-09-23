@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -764 +764 @@
+@@ -802 +802 @@
 -        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'
 +        if accepted and (not isinstance(record, dict)

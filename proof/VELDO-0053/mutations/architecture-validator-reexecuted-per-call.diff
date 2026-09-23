@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -442 +442 @@
+@@ -480 +480 @@
 -        return self.validate.entry_contract(workspace, required, arch=self.arch)
 +        return self.validate.entry_contract(workspace, required, arch=_organ('arch'))  # defect: the structural validator re-executed from disk at every call

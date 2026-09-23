@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -462 +462 @@
+@@ -500 +500 @@
 -        self.workspace = str(workspace) if workspace is not None else None
 +        self.workspace = str(workspace) if workspace is not None else os.getcwd()  # defect: the process directory

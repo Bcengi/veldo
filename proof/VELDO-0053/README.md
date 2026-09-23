@@ -47,15 +47,15 @@ success. `enrolled_gate` passes the workspace it verified, so every production G
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/60_veldo_0053_architecture.py`, 21 rows: 12 assertions and 9 `ran/` rows, one per
+Suite `scripts/suites/60_veldo_0053_architecture.py`, 25 rows: 14 assertions and 11 `ran/` rows, one per
 region, which stay green under every mutation, so each red row below failed its assertion with its region
 completing. A temporary Git repository is both the workspace and the installed `.veldo`; a second tree is
 a clone with its own `.veldo` whose `arch.py` is a success stub that writes a marker file when loaded.
 One unit passes every other predicate at every station, so each refusal is the architecture's.
 
-All 22 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
+All 26 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and each turned its named rows red while the unmutated copy (the driver's baseline run
-of the same suite) was green with 47 assertions (`mutations.json`, each diff in `mutations/`).
+of the same suite) was green with 51 assertions (`mutations.json`, each diff in `mutations/`).
 
 **AC1, valid, absent and invalid contracts.** Rows `architecture/state-kinds` and
 `architecture/ready-refusal`. Nine real-file states: valid, optional absent, required absent (policy
@@ -196,6 +196,9 @@ private copy on disk could be swapped by another process of the same account bet
 and its load (probe `r4c_inotify_tmp.py` did it over the real /tmp with inotify), so the Gate ran code whose
 digest it had not recorded. Each fix below got a row first, red by a failed assertion over 8798a78's
 modules, then the fix, then two registered mutations (the driver's baseline run is the unmutated control).
+`red.py 8798a78` records it in `red-8798a78.json`: the two new rows fail by assertion with every region
+completing, and so does `observations` (the escaped decode error is an unavailable-service refusal there),
+with no fixture substitution; `red-60d5018.json` is regenerated with the same suite.
 
 **The snapshot runs from memory** (ec80409). Row `architecture/snapshot-in-memory`: a same-account writer
 acts at the one moment a copy on disk is exposed, just before any engine module is loaded from a path
@@ -227,14 +230,14 @@ replacing decode parses the rest).
 ## Cost and verification
 
 Suite 60_veldo_0053 runs in about 1.2 s (`observations.json`, `suite_seconds`), including seven
-installed-validator processes run in sequence; a validator snapshot costs about 23 ms once per Gate and a
-judgement about 0.7 ms. `--finding 53` drives 22 mutations in 68 s here (44 suite runs), about 9 s of wall
-time in the gate's 8-worker mutation stage. Targeted checks on this branch after the review fixes:
-`python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (21 rows, 47 assertions with the
-shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (22 rejected, no
-`ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), the whole
-`python3 -B scripts/selftest.py` (5850 passed, 0 failed; not the gate), `python3 .veldo/validate.py all`
+installed-validator processes run in sequence; a validator snapshot, executed from memory, costs about
+20 ms once per Gate and a judgement about 0.7 ms. `--finding 53` drives 26 mutations in 72 s here (52 suite
+runs), about 9 s of wall time in the gate's 8-worker mutation stage. Targeted checks on this branch after
+the second review's fixes: `python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (25 rows,
+51 assertions with the shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53`
+(26 rejected, no `ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), the whole
+`python3 -B scripts/selftest.py` (5854 passed, 0 failed; not the gate), `python3 .veldo/validate.py all`
 (exit 0), `bash scripts/check_generated.sh` and `bash scripts/check_template_sync.sh` (pass). The full
 gate is run by the lead.
 
-`red.py 60d5018` regenerates `red-60d5018.json`. `drive.py` regenerates `observations.json` from one run of the suite.
+`red.py <commit>` regenerates `red-60d5018.json` and `red-8798a78.json`. `drive.py` regenerates `observations.json` from one run of the suite.

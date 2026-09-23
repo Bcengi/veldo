@@ -10,10 +10,12 @@
   "VELDO-0053 architecture/substitution",
   "VELDO-0053 architecture/public-seam",
   "VELDO-0053 architecture/identity-is-what-ran",
+  "VELDO-0053 architecture/snapshot-in-memory",
+  "VELDO-0053 architecture/not-text-refused",
   "VELDO-0053 architecture/validated-is-digested",
   "VELDO-0053 architecture/observations"
  ],
- "passed": 15,
+ "passed": 17,
  "observed": {
   "store_only": {
    "store_only": [],
@@ -51,6 +53,18 @@
     ]
    }
   },
+  "snapshot_in_memory": {
+   "refusals": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "engine_loads_from_disk": 17,
+   "swapped": 0,
+   "left_on_disk": [],
+   "recorded_is_installed": false
+  },
+  "not_text": [
+   "unavailable_service:architecture_validator"
+  ],
   "raised": []
  }
 }

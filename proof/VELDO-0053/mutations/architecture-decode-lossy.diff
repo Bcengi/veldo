@@ -1,0 +1,5 @@
+--- a/.veldo/arch.py
++++ b/.veldo/arch.py
+@@ -107 +107 @@
+-        text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()
++        text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8", errors="replace").read()

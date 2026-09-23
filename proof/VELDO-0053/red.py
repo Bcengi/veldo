@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Run the CURRENT suite 60_veldo_0053 over every .veldo module of an earlier commit and print every row.
 
-    python3 -B proof/VELDO-0053/red.py 60d5018
+    python3 -B proof/VELDO-0053/red.py 60d5018     (the first review's rows)
+    python3 -B proof/VELDO-0053/red.py 8798a78     (the second review's rows)
 
 This is how the rows added for the 2026-09-23 review were recorded red before their fixes. The suite's
 ROOT is pointed at an export of that commit's .veldo directory, so every module the suite installs
@@ -63,7 +64,8 @@ def main(commit):
                       'fixture_substitution': [FIXTURE_LINE, FIXTURE_THEN] if substituted else None,
                       'failed': [n for n, ok in mine if not ok], 'passed': sum(ok for _, ok in mine),
                       'observed': {k: observed.get(k) for k in ('store_only', 'public_seam', 'identity_is_what_ran',
-                                                                'validated_is_digested', 'raised')}},
+                                                                'validated_is_digested', 'snapshot_in_memory', 'not_text',
+                                                                'raised')}},
                      indent=1, default=str))
 
 

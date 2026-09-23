@@ -1,0 +1,8 @@
+--- a/.veldo/arch.py
++++ b/.veldo/arch.py
+@@ -106,4 +106 @@
+-    try:
+-        text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()
+-    except UnicodeDecodeError as e:
+-        raise ArchContractError("architecture contract is not UTF-8 text: %s" % e, digest=digest)
++    text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()  # defect: decoded outside the refusal
