@@ -189,7 +189,7 @@ def _v64_checks(base):
         worker.stdin.write(_v64_json.dumps({'result': {k: v for k, v in result.items() if k != 'receipt'}}) + '\n')
         worker.stdin.flush()
     try:
-        exit_code = worker.wait(timeout=3)
+        exit_code = worker.wait(timeout=2)
     except _v64_sp.TimeoutExpired:
         exit_code = None
         worker.kill()

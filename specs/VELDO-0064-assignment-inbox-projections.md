@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0064_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0064-assignment-inbox-projections.md"
   - "specs/index.md"
   - "proof/VELDO-0064/*"
@@ -125,3 +126,7 @@ channels moved to Release 4. Jira-specific projection work is dropped. Telegram 
 release of waiting workers remain. The criteria, declared evidence universe, Context and Notes
 above now carry only the retained function. No specification status or historical proof was
 changed.
+
+2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 64 of the existing teeth mutation driver. The
+criteria, status and risk are unchanged.

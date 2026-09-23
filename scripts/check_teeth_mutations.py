@@ -561,6 +561,43 @@ def cases():
     notification('notify-trust-invented-event-digest',
                  "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
                  "        if row[0] != hint['command_id']:", 'fabricated-event')
+    # VELDO-0064: the declared falsifiers plus a second, different defect per named row.
+    def inbox(name, module, old, new, row):
+        add(64, name, '60_veldo_0064_inbox.py', module, old, new, [row])
+
+    inbox('inbox-retain-claim-while-waiting', 'control_assignment.py',
+          "            if 'release' in params:\n                changes.update(self.claims.transition(params['release'], before))\n",
+          "            if 'release' in params:\n                pass  # defective: the claim stays owned while the person is asked\n",
+          'inbox/waiting-resources')
+    inbox('inbox-requester-keeps-waiting', 'control_assignment.py',
+          "'released_claim': released, 'stop_requester': op == 'open'}",
+          "'released_claim': released, 'stop_requester': False}",
+          'inbox/waiting-resources')
+    inbox('projection-discard-message-id', 'control_channel_projection.py',
+          "record.update(outcome='sent', chat_id=sent['chat_id'], message_id=sent['message_id'],",
+          "record.update(outcome='sent', chat_id=sent['chat_id'], message_id=None,",
+          'projection/correlation')
+    inbox('projection-configured-chat', 'control_channel_projection.py',
+          "chat_id=sent['chat_id']", "chat_id=self.edge.chat", 'projection/correlation')
+    inbox('inbox-admit-displayed-assigned-status', 'control_assignment.py',
+          "    def _admission(self, item):\n        if item['problems']:",
+          "    def _admission(self, item):\n        if item['raw'].get('display_status') == 'assigned':\n"
+          "            return 'admitted'\n        if item['problems']:",
+          'inbox/unauthorized-admission')
+    inbox('inbox-admit-without-journal-authority', 'control_assignment.py',
+          "        if row is None or row[0] != data['owner'] or written.get('version') != item['version'] \\\n"
+          "                or written.get('digest') != item['digest']:\n            return 'missing_authority'\n",
+          "", 'inbox/unauthorized-admission')
+    inbox('inbox-admit-ignores-owner-membership', 'control_assignment.py',
+          "        if not active or owner['principal_type'] != 'person' \\",
+          "        if False and owner['principal_type'] != 'person' \\", 'inbox/unauthorized-admission')
+    inbox('inbox-index-skips-invalid', 'control_assignment.py',
+          "            if item['problems']:\n                entry['category'] = 'invalid'\n",
+          "            if item['problems']:\n                continue\n", 'inbox/visible-invalid')
+    inbox('inbox-trust-tampered-content', 'control_assignment.py',
+          "        if raw is not None and self.store.digest_of({'kind': kind, 'data': raw, 'version': version}) != digest:\n"
+          "            problems.append('stored data does not match its committed digest')\n",
+          "", 'inbox/visible-invalid')
     return result
 
 
@@ -631,7 +668,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 46, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 46, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
