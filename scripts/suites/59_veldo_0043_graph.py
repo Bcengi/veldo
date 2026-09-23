@@ -967,10 +967,30 @@ def _s43_run():
                               shaped_adapter.observations[-1]['refusal']]
             if (stage / 'runners').is_dir():
                 (stage / 'runners').chmod(0o700)
+        # Where the stage root may be: never written inside a repository (even when it resolves
+        # outside one), never inside the runtime.
+        (root / 'shape-repository/.git').mkdir(parents=True)
+        (root / 'outside-stage').mkdir()
+        (root / 'shape-repository/.git/out').symlink_to(root / 'outside-stage')
+        (root / 'shape-runtime/bin').mkdir(parents=True)
+        (root / 'shape-runtime/bin/python').symlink_to(_s43_sys.executable)
+        (root / 'into-runtime').symlink_to(root / 'shape-runtime/stage')
+        for shape, python, place in (
+                ('root-written-in-repository', _s43_sys.executable, root / 'shape-repository/.git/out'),
+                ('root-in-runtime', str(root / 'shape-runtime/bin/python'), root / 'into-runtime')):
+            placed = graph.Adapter({'python': python, 'runner': str(stub), 'stage': str(place)}, 'domain', 'repository')
+            try:
+                placed.start('cycle-place', 'command-place', snapshot, version)
+                shapes[shape] = ['launched']
+            except Exception as error:
+                shapes[shape] = [getattr(error, 'code', type(error).__name__), getattr(error, 'detail', str(error))[:80]]
+            shapes[shape] += [placed.counts == {'accepted': 0, 'refused': 1}, (placed.observations or [{}])[-1].get('refusal')]
         observations['stage_shapes'] = shapes
         reasons = {'runners-file': 'the stage runners is not a directory', 'work-file': 'the stage work is not a directory',
                    'runner-directory': 'the staged runner is not a file', 'root-file': 'the stage root is not a directory',
-                   'runners-unwritable': 'the stage cannot be used'}
+                   'runners-unwritable': 'the stage cannot be used',
+                   'root-written-in-repository': 'the runtime stage lies inside a repository',
+                   'root-in-runtime': 'the runtime stage lies inside the runtime'}
         expect('graph/authority/stage-shapes', all(
             shapes[name][0] == 'runtime_unavailable' and shapes[name][1].startswith(reason)
             and shapes[name][2] is True and shapes[name][3] == 'runtime_unavailable' for name, reason in reasons.items()))
