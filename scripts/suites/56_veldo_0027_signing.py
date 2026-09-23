@@ -537,8 +537,12 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
     _v27_lock_release = _v27_time.time()
     _v27_conn.execute('COMMIT')
     _v27_clock_child.communicate(timeout=10)
+    # The clock is read AFTER the lock (effective_at >= the release) and at full precision: a truncated
+    # clock passes the ordering check whenever a whole second ticks over between the release and the
+    # read, so the row also requires a fractional reading, which a truncated clock never gives.
+    _v27_effective = _v27_keys.entries(_v27_state())['clock-key']['effective_at']
     _v27_expect('signing/transition-clock', _v27_clock_child.returncode == 0 and
-                 _v27_keys.entries(_v27_state())['clock-key']['effective_at'] >= _v27_lock_release)
+                 _v27_effective >= _v27_lock_release and _v27_effective != int(_v27_effective))
 
     # F-02: new signing AND connection keys cannot inherit the retired key's grant.
     _v27_rotation_request = _v27_source('telegram_chat', 'decision_answer')
