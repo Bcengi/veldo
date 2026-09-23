@@ -231,6 +231,21 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
 
     _v27_tg = _v27_controls['telegram_chat', 'acknowledgement'][0]
     _v27_jira = _v27_controls['jira', 'acknowledgement'][0]
+    # F-03: an id-only unauthenticated lookup cannot reveal any stored metadata.
+    _v27_private_source = _v27_source('telegram_chat', 'decision_answer')
+    _v27_private_control = _v27_call(_v27_private_source)
+    _v27_unauthenticated_results = []
+    for _v27_id in (_v27_private_source['source_id'], 'unknown-source'):
+        for _v27_identity in (None, 'edge-telegram'):
+            _v27_unauthenticated_results.append(_v27_signer.call(
+                _v27_config, {'source_id': _v27_id}, _v27_identity, None))
+    _v27_expect('signing/unauthenticated-diagnostic-is-empty',
+        _v27_private_control['accepted'] and all(
+            not r['accepted'] and r.get('refusal') == 'unauthenticated-channel'
+            and r.get('diagnostic') == dict(key_id=None, principal=None, assertion_kind=None,
+                delegation_revision=None, refusal='unauthenticated-channel')
+            and r.get('metrics') == {'unauthenticated-channel': 1}
+            for r in _v27_unauthenticated_results))
     _v27_cross = _v27_call(_v27_jira)
     _v27_expect('signing/cross-channel', _v27_cross.get('refusal') == 'channel-mismatch' and not _v27_cross['accepted'])
     _v27_expect('signing/channel-comes-from-the-connection',

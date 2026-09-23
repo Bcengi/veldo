@@ -24,6 +24,21 @@
         "signing-ignore-selected-key-binding",
         "signing-retired-key-inherits-grant"
       ]
+    },
+    "F-03": {
+      "row": "signing/unauthenticated-diagnostic-is-empty",
+      "baseline_command": "python3 -B scripts/check_teeth_mutations.py --worker signing-ignore-personal-content --mutant /tmp/veldo-0027-review/original-control_signer.py",
+      "baseline_module": "git show 68ea1f3:.veldo/control_signer.py (unaltered temporary copy)",
+      "red_failed_rows": [
+        "VELDO-0027 signing/personal-content-binding",
+        "VELDO-0027 signing/unauthenticated-diagnostic-is-empty",
+        "VELDO-0027 signing/rotation-requires-rebound-delegation"
+      ],
+      "green": "76 suite rows passed; targeted development check only",
+      "mutations": [
+        "signing-leak-source-before-auth",
+        "signing-leak-revision-before-auth"
+      ]
     }
   }
 }

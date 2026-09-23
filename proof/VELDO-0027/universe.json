@@ -81,7 +81,8 @@
       "signing/channel-comes-from-the-connection",
       "signing/key-comes-from-the-channel",
       "signing/unauthenticated",
-      "signing/key-path"
+      "signing/key-path",
+      "signing/unauthenticated-diagnostic-is-empty"
     ]
   },
   "completeness_row": "signing/universe"

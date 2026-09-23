@@ -188,11 +188,11 @@ def issue(config, request, challenge, identity, authentication):
         conn.execute('BEGIN IMMEDIATE')
         now = time.time()
         state = CM.authority_state(S, conn)
+        channel = authenticate(state, challenge, request, identity, authentication, now)
         diagnostic['delegation_revision'] = state['delegation_version']
         source = state['entities'].get(request.get('source_id'), {}).get('data', {})
         diagnostic.update(principal=source.get('principal', source.get('actor')),
                           assertion_kind=source.get('assertion_kind', source.get('type')))
-        channel = authenticate(state, challenge, request, identity, authentication, now)
         if any(f in request for f in ('key_path', 'private_key', 'path')):
             raise K.Refused('key-path')
         if request.get('operation') != 'sign_receipt':

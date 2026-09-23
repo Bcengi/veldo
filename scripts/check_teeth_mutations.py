@@ -223,6 +223,13 @@ def cases():
     signing('signing-retired-key-inherits-grant', 'control_signer.py', binding,
             "    if payload.get('edge_key_id') != request['edge_key_id'] and K.active(K.entries(state)[payload['edge_key_id']], now):",
             'rotation-requires-rebound-delegation')
+    signing('signing-leak-source-before-auth', 'control_signer.py', auth,
+            "        source = state['entities'].get(request.get('source_id'), {}).get('data', {})\n"
+            "        diagnostic.update(principal=source.get('principal'), assertion_kind=source.get('assertion_kind'))\n" + auth,
+            'unauthenticated-diagnostic-is-empty')
+    signing('signing-leak-revision-before-auth', 'control_signer.py', auth,
+            "        diagnostic['delegation_revision'] = state['delegation_version']\n" + auth,
+            'unauthenticated-diagnostic-is-empty')
     return result
 
 
