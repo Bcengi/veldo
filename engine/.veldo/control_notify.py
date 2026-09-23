@@ -145,23 +145,31 @@ class Delivery:
         try:
             event = self.resolve(hint)
         except Refused as exc:
-            if remaining is not None:
+            # A retry was already resolved once; a first attempt is retained on the same
+            # terms when the store was only unavailable. Other refusals are not events.
+            if remaining is not None or exc.reason == 'service_unavailable':
                 self._retry(hint, remaining)
             return self._observe('consume', hint, exc.reason)
         kinds = {value['kind'] for value in event['transition'].values()}
         if event['reservations']:
             kinds.add('budget')
         delivered, failed = [], []
-        for consumer, subscriptions in self.registrations.items():
-            if kinds.intersection(subscriptions) and (remaining is None or consumer in remaining):
-                try:
-                    # A handler may mutate its argument; the next handler still sees the journal.
-                    self.handlers[consumer](json.loads(json.dumps(event)))
-                except Exception:
-                    self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)
-                    failed.append(consumer)
-                    continue
-                delivered.append(consumer)
+        owed = [consumer for consumer, subscriptions in self.registrations.items()
+                if kinds.intersection(subscriptions) and (remaining is None or consumer in remaining)]
+        for index, consumer in enumerate(owed):
+            try:
+                # A handler may mutate its argument; the next handler still sees the journal.
+                self.handlers[consumer](json.loads(json.dumps(event)))
+            except BaseException as exc:
+                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)
+                failed.append(consumer)
+                if not isinstance(exc, Exception):
+                    # An interrupt still propagates, but never discards this event for the
+                    # interrupted subscriber or for subscribers not yet called.
+                    self._retry(hint, failed + owed[index + 1:])
+                    raise
+                continue
+            delivered.append(consumer)
         if failed:
             self._retry(hint, failed)
         return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',
@@ -171,7 +179,7 @@ class Delivery:
         # Only internal dispatch state chooses retry recipients; transport cannot skip one.
         # Append behind other events so a failing subscriber cannot starve queued work.
         with self._condition:
-            self._queue.append((hint, tuple(remaining)))
+            self._queue.append((hint, None if remaining is None else tuple(remaining)))
             self._condition.notify()
 
     def _observe(self, operation, event, outcome, delivered=(), stopped_consumer=None, failed=()):

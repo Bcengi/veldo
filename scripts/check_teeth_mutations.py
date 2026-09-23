@@ -284,12 +284,18 @@ def cases():
             old, new, ['notify/' + row])
 
     notification('notify-stop-after-handler-failure',
-                 "                    self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
-                 "                    return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 "                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 "                return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
                  'subscriber-isolation')
     notification('notify-retry-successful-subscribers',
-                 "self._queue.append((hint, tuple(remaining)))",
+                 "self._queue.append((hint, None if remaining is None else tuple(remaining)))",
                  "self._queue.append((hint, None))", 'subscriber-isolation')
+    notification('notify-drop-unavailable-first-attempt',
+                 "if remaining is not None or exc.reason == 'service_unavailable':",
+                 "if remaining is not None:", 'first-attempt-retained')
+    notification('notify-drop-undelivered-on-interrupt',
+                 "                    self._retry(hint, failed + owed[index + 1:])\n",
+                 "", 'first-attempt-retained')
     notification('notify-unbounded-watermark',
                  "or not 1 <= hint['watermark'] <= 2**63 - 1",
                  "or hint['watermark'] < 1", 'watermark-range')

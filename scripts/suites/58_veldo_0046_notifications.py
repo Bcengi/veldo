@@ -343,14 +343,83 @@ def _n46_checks(directory):
                           [committed['command_id'], queued['command_id'], later['command_id']]
                           for name in enabled)
         loop.close()
+    # R3 capsule: a committed event whose FIRST resolution meets an unavailable store is
+    # retained exactly like a retry, and an interrupt raised by one subscriber's callback
+    # propagates without discarding that event for it or for subscribers not yet called.
+    ac6 = True
+    now = [0.0]
+
+    def drain(loop, steps=40):
+        # Move an injected clock past any retry delay; never a real sleep.
+        outcomes = []
+        for _ in range(steps):
+            if not loop.metrics()['pending']:
+                break
+            now[0] += 60.0
+            outcomes.append(loop.run_once(timeout=0))
+        return outcomes
+
+    class Flaky:
+        sqlite3, StoreRefused = store.sqlite3, store.StoreRefused
+        execute = staticmethod(store.execute)
+        failures = 0
+
+        def open_store(self, *args, **kwargs):
+            if self.failures:
+                self.failures -= 1
+                raise store.sqlite3.OperationalError('database is locked')
+            return store.open_store(*args, **kwargs)
+
+    for transient in (1, 3):
+        flaky, got = Flaky(), []
+        loop = delivery.Delivery(flaky, str(path), coords, ['completion'], {'completion': got.append})
+        loop.clock = lambda: now[0]
+        committed = loop.execute(writer, command('completion'), 'journal', sign, 1)
+        flaky.failures = transient
+        first = loop.run_once(timeout=0)
+        ac6 = ac6 and first is not None and first['outcome'] == 'service_unavailable' and not first['accepted']
+        ac6 = ac6 and loop.metrics()['pending'] == 1
+        outcomes = [row for row in drain(loop) if row is not None]
+        ac6 = ac6 and [event['command_id'] for event in got] == [committed['command_id']]
+        ac6 = ac6 and [row['outcome'] for row in outcomes] == ['service_unavailable'] * (transient - 1) + ['delivered']
+        ac6 = ac6 and loop.metrics()['pending'] == 0 and flaky.failures == 0
+        loop.close()
+    interrupts = ['settlement']
+    seen = {'settlement': [], 'pm': []}
+
+    def interrupted(name):
+        def receive(event):
+            if name in interrupts:
+                interrupts.remove(name)
+                raise KeyboardInterrupt
+            seen[name].append(event['command_id'])
+        return receive
+
+    loop = delivery.Delivery(store, str(path), coords, ('settlement', 'pm'),
+                             {name: interrupted(name) for name in ('settlement', 'pm')})
+    loop.clock = lambda: now[0]
+    committed = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    raised = []
+    try:
+        loop.run_once(timeout=0)
+    except KeyboardInterrupt:
+        raised.append('KeyboardInterrupt')
+    ac6 = ac6 and raised == ['KeyboardInterrupt'] and loop.metrics()['pending'] == 1
+    ac6 = ac6 and [row.get('stopped_consumer') for row in loop.observations
+                   if row['operation'] == 'handler'] == ['settlement']
+    drain(loop)
+    ac6 = ac6 and seen == {'settlement': [committed['command_id']], 'pm': [committed['command_id']]}
+    ac6 = ac6 and loop.metrics()['pending'] == 0
+    loop.close()
     service.close()
     writer.close()
-    return ac1, ac2, ac3, ac4, ac5
+    return ac1, ac2, ac3, ac4, ac5, ac6
 
 
 _n46_started = _n46_time.monotonic()
 with _n46_tempfile.TemporaryDirectory(prefix='v46-') as _n46_dir:
     _n46_results = _n46_checks(_n46_Path(_n46_dir))
-for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range', 'subscriber-isolation'), _n46_results):
+for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range', 'subscriber-isolation',
+                                       'first-attempt-retained'), _n46_results):
     expect('VELDO-0046 notify/' + _n46_name, _n46_result)
 print('VELDO-0046 suite seconds: %.3f' % (_n46_time.monotonic() - _n46_started))
