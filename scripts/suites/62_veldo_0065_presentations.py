@@ -105,7 +105,7 @@ def _v65_checks(base):
                                   'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
                                   'presentation/retry-after-bounded', 'answer/choice-normalization',
                                   'answer/after-answered-reply', 'answer/tell-once-per-message',
-                                  'projection/in-flight-notice-superseded')}
+                                  'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -133,7 +133,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'grouped', 'stranger', 'telegram-edge',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'grouped', 'stranger', 'telegram-edge',
                 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
@@ -175,6 +175,7 @@ def _v65_checks(base):
                'pm4': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm5': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm6': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm7': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1275,6 +1276,33 @@ def _v65_checks(base):
                   and any(line.startswith('Supersedes: an earlier notice of this request') for line in (if3_r.get('rendered') or [''])[0].split('\n')))
             check(flight, 'the ids the projection pins are the presentation organ\'s',
                   getattr(P, 'framing_entity_id', lambda r: None)(if1) == V.framing_id(if1))
+
+        # Review 4 item 8: an unreadable revocation ledger fails closed
+        closed = 'framing/ledger-read-fails-closed'
+        with section(closed):
+            for alias in ('LC-1', 'LC-2', 'LC-3'):
+                command('pm7', 'open', alias, assignment=content())
+            lc1, lc2, lc3 = (I.assignment_id(ids['repository_uuid'], a) for a in ('LC-1', 'LC-2', 'LC-3'))
+            ledger_entity = entity('authority:revocations') or {}
+            fixture('authority:revocations', 'decoy_record', dict(ledger_entity.get('data') or {}))
+            direct_frame('pm7', 'LC-1', 1, 'Low: a wrong choice costs one review cycle.')
+            check(closed, 'a ledger journaled as another kind before the framing refuses it',
+                  reason(presenter.present(lc1)) == ('refused', 'missing_framing'))
+            fixture('authority:revocations', 'revocation_ledger', dict(ledger_entity.get('data') or {}))
+            seq = conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+            row = _v65_json.loads(conn.execute('SELECT transition FROM journal WHERE seq=?', (seq,)).fetchone()[0])
+            tampered = dict(row)
+            tampered['authority:revocations'] = dict(row['authority:revocations'], digest='sha256:' + '0' * 64)
+            conn.execute('UPDATE journal SET transition=? WHERE seq=?', (_v65_json.dumps(tampered, sort_keys=True), seq))
+            conn.commit()
+            direct_frame('pm7', 'LC-2', 1, 'Low: a wrong choice costs one review cycle.')
+            check(closed, 'a ledger record whose digest does not match refuses the framing',
+                  reason(presenter.present(lc2)) == ('refused', 'missing_framing'))
+            conn.execute('UPDATE journal SET transition=? WHERE seq=?', (_v65_json.dumps(row, sort_keys=True), seq))
+            conn.commit()
+            direct_frame('pm7', 'LC-3', 1, 'Low: a wrong choice costs one review cycle.')
+            check(closed, 'control: with the ledger readable again the framing counts',
+                  reason(presenter.present(lc3)) == ('published', None))
     finally:
         server.shutdown()
         server.server_close()

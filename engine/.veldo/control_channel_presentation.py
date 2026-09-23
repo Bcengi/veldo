@@ -80,6 +80,8 @@ ANOMALIES = ('presentation_mismatch', 'chat_mismatch', 'supersession_mismatch', 
 # A definite refusal is attempted again: of the whole presentation (`refused`), or of the parts still
 # unsent after some were published (`partial`), never before the platform's retry_after.
 RETRYABLE = ('refused', 'partial')
+# What the journal reader returns for a record of another kind or a digest mismatch.
+UNREADABLE = object()
 # The revocation organ's ledger entity (control_revocation.LEDGER_ENTITY; the suite binds the two).
 REVOCATION_LEDGER = 'authority:revocations'
 # Telegram's sendMessage text limit, counted as the platform counts it: UTF-16 code units.
@@ -761,8 +763,10 @@ class Presenter:
         key = self._as_of(data.get('key_id'), 'verification_key', written[0])
         if not usable_key(key, principal, self.clock()):
             return False
-        ledger = self._as_of(REVOCATION_LEDGER, 'revocation_ledger', written[0]) or {}
-        if principal in (ledger.get('revoked') or {}):
+        ledger = self._as_of(REVOCATION_LEDGER, 'revocation_ledger', written[0])
+        if ledger is UNREADABLE:
+            return False  # an unreadable ledger fails closed, as an unreadable key does
+        if principal in ((ledger or {}).get('revoked') or {}):
             return False
         entry = self.AC.membership_entry(state['membership'], principal)
         if (not self.AC.active_member(entry, self.clock())[0]
@@ -774,7 +778,8 @@ class Presenter:
 
     def _as_of(self, eid, kind, seq):
         """The data of entity `eid` as the journal left it before sequence `seq`, checked against
-        the digest that record committed, or None when it did not exist then."""
+        the digest that record committed; None when it did not exist then, UNREADABLE when the
+        record is of another kind or does not match its digest (callers refuse on it)."""
         for (transition,) in self.conn.execute('SELECT transition FROM journal WHERE seq < ? AND instr(transition, ?) > 0 '
                                                'ORDER BY seq DESC', (seq, json.dumps(eid))):
             entry = json.loads(transition).get(eid)
@@ -782,7 +787,7 @@ class Presenter:
                 continue
             if (entry.get('kind') != kind or not isinstance(entry.get('data'), dict) or entry.get('digest') != self.store.digest_of(
                     {'kind': entry['kind'], 'data': entry['data'], 'version': entry.get('version')})):
-                return None
+                return UNREADABLE
             return entry['data']
         return None
 

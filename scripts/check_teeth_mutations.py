@@ -1071,7 +1071,7 @@ def cases():
     # VELDO-0065 second review n6 (restored: dropped by 82576d5): the framing key by the journal's order.
     presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
                  "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')
-    presentation('framing-ledger-unchecked', "        if principal in (ledger.get('revoked') or {}):\n",
+    presentation('framing-ledger-unchecked', "        if principal in ((ledger or {}).get('revoked') or {}):\n",
                  "        if False:\n", 'framing/key-by-store-order')
     # VELDO-0065 third review item 5: retry_after counts only as a bounded non-negative integer.
     presentation('retry-after-any-number', "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None",
@@ -1102,6 +1102,12 @@ def cases():
                  "            elif False:\n", 'projection/in-flight-notice-superseded')
     presentation('pending-notice-never-marked', "            self._reconcile_notice(request)\n", "",
                  'projection/in-flight-notice-superseded')
+    # VELDO-0065 fourth review item 8: an unreadable revocation ledger fails closed.
+    presentation('ledger-unreadable-as-empty',
+                 "        if ledger is UNREADABLE:\n            return False  # an unreadable ledger fails closed, as an unreadable key does\n",
+                 "        ledger = {} if ledger is UNREADABLE else ledger\n", 'framing/ledger-read-fails-closed')
+    presentation('journal-reader-ignores-kind', "            if (entry.get('kind') != kind or not isinstance(entry.get('data'), dict)",
+                 "            if (not isinstance(entry.get('data'), dict)", 'framing/ledger-read-fails-closed')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
