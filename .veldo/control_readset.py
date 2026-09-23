@@ -63,19 +63,29 @@ def carrier_records(conn, domain_uuid, repository_uuid):
     return found
 
 
+# Repository-local configuration stays authoritative at the Git boundary, so every option that
+# configuration could change about which paths `git log --name-only` names is passed explicitly:
+# log.diffMerges (off names nothing a merge adds), log.showRoot, diff.renames, diff.relative,
+# diff.ignoreSubmodules, color, notes, an external diff and log.showSignature. -z keeps
+# core.quotePath from quoting names.
+HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',
+                   '--no-ext-diff', '--no-color', '--no-notes', '--no-show-signature')
+
+
 def carrier_paths(repo, commit, base=()):
     """Every path named by a commit reachable from `commit` and from no commit in `base`, that holds
     a digit, sorted and distinct: each such commit's changes against every parent (every parent of a
     merge, renames as a deletion and an addition, a root commit as the creation of its whole tree).
     A carrier always holds its number's digits, so this is every path any kind's number could be read
     from, and it is kind-independent because the first revision is accepted before any kind is
-    enabled. With no base it is the whole history, whose paths include every path of the tree. A base
-    commit the repository no longer holds excludes nothing, so what it held is listed again."""
+    enabled. With no base it is the whole history, which names every path of the tree, since every
+    tree path was added or changed by some commit of it. A base commit the repository no longer holds excludes
+    nothing, so what it held is listed again."""
     SN.commit_id(repo, commit)
     # The excluded commits go through stdin, so their number is bounded by nothing on a command line.
     exclusions = ''.join('^%s\n' % excluded for excluded in base)
-    result = SN._git_process.run(['git', '-C', str(repo), 'log', '-m', '--root', '-z', '--no-renames', '--format=',
-                                  '--name-only', '--ignore-missing', '--stdin', commit, '--'],
+    result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',
+                                  '--ignore-missing', '--stdin', commit, '--'],
                                  input=exclusions.encode(), capture_output=True, timeout=60)
     if result.returncode:
         raise SN.Refused('missing_authority', 'accepted history is unreadable')
