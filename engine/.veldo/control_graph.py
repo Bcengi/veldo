@@ -289,11 +289,11 @@ def response(sent, raw):
             if item['proposal_id'] in seen:
                 raise Refused('invalid_response', where + ': duplicate proposal_id')
             seen.add(item['proposal_id'])
-    if outcome == 'suspended' and type(value['resume']) is not dict:
-        raise Refused('invalid_response', 'resume must be an object')
+    if outcome == 'suspended':
+        _resume_shape(value['resume'], 'resume', 'invalid_response')
     if outcome == 'failure':
         failure = _exact(value['failure'], ('code', 'detail'), 'failure', 'invalid_response')
-        if failure['code'] not in FAILURES or type(failure['detail']) is not str:
+        if failure['code'] not in FAILURES or type(failure['detail']) is not str or len(failure['detail']) > 500:
             raise Refused('invalid_response', 'failure must carry a named code')
     return value
 

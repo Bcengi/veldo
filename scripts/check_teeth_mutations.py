@@ -467,6 +467,12 @@ def cases():
           'shape/closed-request')
     graph('graph-request-path-unchecked', 'control_graph.py',
           '        if looks_like_path(text):\n', '        if False:\n', 'shape/closed-request')
+    graph('graph-answer-resume-open', 'control_graph.py',
+          "        _resume_shape(value['resume'], 'resume', 'invalid_response')\n", "        pass\n",
+          'shape/closed-response')
+    graph('graph-answer-notes-any-plain', 'control_graph.py',
+          "    if type(value['notes']) is not str or len(value['notes']) > MAX_NOTES:\n",
+          "    if len(value['notes']) > MAX_NOTES:\n", 'shape/closed-response')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
