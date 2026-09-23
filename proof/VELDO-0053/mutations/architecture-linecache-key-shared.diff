@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -510 +510 @@
+-        return '<veldo validator snapshot %s: %s>' % (self._id, self._installed / (held + '.py'))
++        return '<veldo validator snapshot: %s>' % (self._installed / (held + '.py'))  # defect: one key for every snapshot

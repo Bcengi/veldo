@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -521 +521 @@
+-        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, held), origin=str(self._installed / (held + '.py')))
++        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, held), origin=self.source_key(held))  # defect: __file__ is the snapshot's cache key, not the installed path

@@ -1,0 +1,8 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -504 +504 @@
+-        return {held: {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),
++        return {ROLE_LABELS.get(held, held): {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),
+@@ -506 +506 @@
+-                for held, digest in self._executed.items()}
++                for held, digest in self._executed.items()}  # defect: keyed by role label

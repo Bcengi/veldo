@@ -1,0 +1,9 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -504,3 +504,3 @@
+-        return {held: {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),
+-                       'digest': digest}
+-                for held, digest in self._executed.items()}
++        return {name[:-3]: {'module': name[:-3], 'role': role, 'path': str(self._installed / name),
++                            'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}
++                for role, name in VALIDATOR_ROLES}  # defect: the hand-written list of five

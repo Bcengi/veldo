@@ -187,7 +187,7 @@ def _v52_suite():
                 p.write_bytes(body)
 
         reader = S.open_store(str(db), mode='r')
-        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY)
+        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         FR = load('v52_frontier', mods / 'frontier.py')
         WK = load('v52_work', mods / 'work.py')
         PL = load('v52_plan', mods / 'plan.py')
@@ -683,7 +683,7 @@ def _v52_suite():
                 '    spec.loader.exec_module(module)',
                 '    return module',
                 'S, EL, FR, PL, WS = (load(n) for n in ("control_store", "control_eligibility", "frontier", "plan", "work_state"))',
-                'gate = EL.Gate(S, S.open_store(db, mode="r"), domain_uuid=domain, repository_uuid=repository)',
+                'gate = EL.Gate(S, S.open_store(db, mode="r"), domain_uuid=domain, repository_uuid=repository, workspace=base)',
                 'withheld = {h["spec"] for h in FR.withheld(repo_root=base, eligibility=gate)}',
                 'plan = PL._status(gate)',
                 'view = WS.completion_view(deps, root=base, eligibility=gate)',

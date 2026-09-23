@@ -1,0 +1,10 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -529 +529,6 @@
+-        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')
++        by_path = {}
++        for held in self._bodies:
++            by_path[str(self._installed / (held + '.py'))] = held
++            by_path[os.path.realpath(str(self._installed / (held + '.py')))] = held
++        where = str(location) if location is not None else ''
++        return self._named(name, by_path.get(os.path.abspath(where)) or by_path.get(os.path.realpath(where)) or '')  # defect: keyed by path

@@ -1,0 +1,146 @@
+{
+ "production_at": "8a3c709",
+ "modules": ".veldo/*.py of 8a3c709",
+ "fixture_substitution": null,
+ "failed": [
+  "VELDO-0053 architecture/identity-keyed-by-module",
+  "VELDO-0053 architecture/snapshot-file-bounded",
+  "VELDO-0053 architecture/observations"
+ ],
+ "passed": 36,
+ "observed": {
+  "store_only": {
+   "store_only": [
+    "missing_evidence:architecture/workspace"
+   ],
+   "workspace": [
+    "invalid_input:architecture/parse_failure"
+   ]
+  },
+  "public_seam": {
+   "judgements": 7,
+   "through_public_entry": 7,
+   "refusals": []
+  },
+  "identity_is_what_ran": {
+   "before_change": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "same_gate_after_change": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "fresh_gate_after_change": [],
+   "recorded_is_loaded": true,
+   "fresh_records_new": true
+  },
+  "validated_is_digested": {
+   "unaccepted_validated": {
+    "refusals": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "validated_versions": [
+     2
+    ]
+   },
+   "accepted_validated": {
+    "refusals": [],
+    "validated_versions": [
+     1
+    ]
+   }
+  },
+  "snapshot_in_memory": {
+   "refusals": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "engine_loads_from_disk": 0,
+   "swapped": 0,
+   "left_on_disk": [],
+   "recorded_is_installed": true,
+   "writes_after_the_one_read": 2,
+   "link_farm": {
+    "refusals": [
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "recorded_arch_is_bytes_read": true
+   },
+   "rewritten_after_read": {
+    "refusals": [
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "recorded_is_bytes_read": true
+   }
+  },
+  "not_text": [
+   "invalid_input:architecture/parse_failure"
+  ],
+  "snapshot_source": {
+   "traceback_line_is_the_line_that_ran": true,
+   "getsource_first_line": "def read_contract(path, parse):",
+   "get_source_is_held": true,
+   "ordinary_loader_sees_its_own_file": true,
+   "second_snapshot_sees_its_own_bytes": true,
+   "first_snapshot_unchanged_by_second": true,
+   "snapshot_key_is_not_the_installed_path": true
+  },
+  "snapshot_by_name": {
+   "collision": true,
+   "farm_collision": true,
+   "alias": true,
+   "miss_is_import_error": true
+  },
+  "identity_covers_what_ran": {
+   "tracker": true,
+   "verdict_corpus": true,
+   "hooked_tracker_recorded": true
+  },
+  "snapshot_held_names": {
+   "requests": {
+    "arch.pyc": "ImportError",
+    "engine/arch": "ImportError",
+    "engine/.py": "ImportError",
+    ".py": "ImportError",
+    "no location": "ImportError"
+   },
+   "cases": {
+    "empty_name": true,
+    "fifo_is_named_stop": true
+   },
+   "fifo_readers_released": 0
+  },
+  "snapshot_module_files": {
+   "file_is_installed_path": true,
+   "load_error_shows_its_line": true
+  },
+  "identity_keyed_by_module": {
+   "both_recorded": false,
+   "keyed_by_module": false,
+   "roles_kept": false,
+   "events_record_both": false,
+   "decisions": true,
+   "recorded": [
+    [
+     "arch",
+     "contract_loader",
+     "git_process",
+     "parser",
+     "tracker",
+     "validate",
+     "validate_checks",
+     "verdict_corpus"
+    ]
+   ]
+  },
+  "snapshot_file_bounded": {
+   "limit_stated": false,
+   "over_limit_is_named_stop": false,
+   "read_is_bounded": false,
+   "one_over_limit_refused": false,
+   "at_limit_held": true,
+   "limit": null,
+   "largest_engine_file": 88768,
+   "traced_peak_mib": 70.5
+  },
+  "raised": []
+ }
+}

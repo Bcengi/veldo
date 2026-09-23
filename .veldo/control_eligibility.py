@@ -49,16 +49,36 @@ writes on this path are the runner's own reservation commands (StationCalls.open
 dispatch's worker slot, each launch its call, and close_dispatch settles unreported calls as unknown
 and retires the slot, through VELDO-0036's reservation service, which commits through control_store).
 It holds no key, launches nothing itself (StationCalls hands launches to VELDO-0036's InvocationGuard,
-which reserves before launch), and implements no recovery, fencing or clock qualification (Release 2). VELDO-0053's architecture checks and VELDO-0054's exact decision
-consumption attach to the same registrations. Standard library only.
+which reserves before launch), and implements no recovery, fencing or clock qualification (Release 2). VELDO-0054's exact decision
+consumption attaches to the same registrations. Standard library only.
+
+ARCHITECTURE AT EVERY ENTRY (VELDO-0053, R50). Every station asks architecture_accepted. The answer
+comes from the structural validator INSTALLED beside this module (never the copy a workspace carries),
+executed once per Gate from one in-memory read of its bytes (ValidatorSnapshot) and asked through validate.py's
+public entry_contract, over the workspace's .veldo/architecture.yaml. A Gate with no workspace always
+refuses (missing_evidence:architecture/workspace). The authority's record
+architecture:<repository> (state accepted, digest of the accepted bytes) makes the contract required
+whatever the workspace's policy says, and the workspace file must be exactly those bytes; with no
+record the repository's policy flag decides absence, as VELDO-0016's loader always has. A present
+contract that is unreadable, malformed, of the wrong type or structurally invalid refuses by name
+(invalid_input:architecture/<kind>), a required one that is absent refuses
+(missing_evidence:architecture/required_absence), and bytes the authority did not accept refuse
+(missing_authority:architecture/unaccepted_artifact), compared by the digest of the very bytes the
+loader parsed. Each decision records the artifact it judged and the snapshot of the code that judged it
+(every module it executed, keyed by module name, with its role label, installed path and the digest of
+the bytes loaded).
 """
+import builtins
 import collections
 import contextlib
+import hashlib
 import importlib.util
 import json
+import linecache
 import os
 from pathlib import Path
 import sqlite3
+import stat
 import subprocess
 import time
 import uuid
@@ -81,8 +101,19 @@ SN = _organ('control_snapshot')
 # contract's set is the floor of each; current admission is added to every station because R52
 # excludes unadmitted work from autonomous dispatch and R69 invalidates admission on scope change.
 FLOOR_STATIONS = ('selection', 'claim', 'direct_execution', 'build', 'review', 'publication', 'provider_request')
-STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + tuple(CC.ENTRY_PREDICATES[s])))
+# VELDO-0053: required architecture is asked at every station too, before the station's own questions.
+ARCHITECTURE_PREDICATE = 'architecture_accepted'
+STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', ARCHITECTURE_PREDICATE) + tuple(CC.ENTRY_PREDICATES[s])))
                       for s in FLOOR_STATIONS}
+# The refusal each refused architecture kind is named by (contract_loader.CONTRACT_KINDS, plus the
+# accepted-digest check this module adds).
+ARCHITECTURE_REFUSALS = {
+    'required_absence': 'missing_evidence:architecture/required_absence',
+    'unreadable': 'invalid_input:architecture/unreadable',
+    'parse_failure': 'invalid_input:architecture/parse_failure',
+    'invalid_structure': 'invalid_input:architecture/invalid_structure',
+    'unaccepted_artifact': 'missing_authority:architecture/unaccepted_artifact',
+}
 # Predicates satisfied only by a store transaction at the call boundary, never by a read.
 TRANSACTIONAL = {'charge_reserved': 'control_reservations.Reservations.reserve_call'}
 
@@ -163,6 +194,7 @@ class Stopped(RuntimeError):
 # for both exceptions, as claim.py does for ClaimStopped, so any caller can catch them by class.
 import sys as _sys
 import types as _types
+import weakref as _weakref
 _errors = _sys.modules.setdefault('veldo_eligibility_errors', _types.ModuleType('veldo_eligibility_errors'))
 for _name, _cls in (('Refused', Refused), ('Stopped', Stopped)):
     if not hasattr(_errors, _name):
@@ -322,7 +354,7 @@ def enrolled_gate(repo_root, trust, observe=None):
     except (store.StoreRefused, sqlite3.Error, OSError) as error:
         raise Stopped('unavailable_service:store') from error
     return Gate(store, conn, domain_uuid=binding['domain_uuid'], repository_uuid=binding['repository_uuid'],
-                authority_generation=binding['authority_generation'], observe=observe)
+                authority_generation=binding['authority_generation'], observe=observe, workspace=workspace)
 
 
 def entry_gate(repo_root, gate=None, trust=None, observe=None):
@@ -362,11 +394,164 @@ def _definition(label, data):
     return SN.digest(SN.canonical(body))
 
 
+# The installed files whose code judges an architecture, by the role each plays.
+VALIDATOR_ROLES = (('entry_point', 'validate.py'), ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'),
+                   ('validator', 'arch.py'), ('parser', 'yamlish.py'))
+# Labels only: the recorded identity is whatever the snapshot executes, each module keyed by its module name
+# (unique among held files) with its role label as a field. A role label is never a key: an engine file named
+# after a role (parser.py) would take the key of that role's module and drop it from the identity.
+ROLE_LABELS = {name[:-3]: role for role, name in VALIDATOR_ROLES}
+
+
+class _MemoryLoader:
+    """Executes one held engine module, by name, from the bytes the snapshot read for that name."""
+
+    def __init__(self, snapshot, held):
+        self.snapshot, self.held = snapshot, held
+        self.body = snapshot._bodies[held]
+
+    def create_module(self, spec):
+        return None
+
+    def get_source(self, fullname):
+        """The source that runs, decoded from the held bytes (inspect and tracebacks ask the loader)."""
+        return importlib.util.decode_source(self.body)
+
+    def exec_module(self, module):
+        # The module's own `import importlib.util` resolves to the snapshot's, so every sibling it loads
+        # is answered by name from the same held bytes, never read from disk.
+        module.__dict__['__builtins__'] = self.snapshot.builtins
+        # The code is compiled under a key only this snapshot uses, and linecache holds its lines under that
+        # key with no modification time: tracebacks and inspect show the code that ran, no other loader's
+        # traceback ever reads these lines, and a second snapshot never replaces them.
+        key = self.snapshot.source_key(self.held)
+        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)
+        self.snapshot._keys.append(key)
+        # Recorded before the module runs. A module whose load raises stays in the identity only when the module
+        # loading it catches the error; a raise out of the snapshot refuses the decision with validator {}.
+        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()
+        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
+
+
+# The most bytes the snapshot reads from any one engine file (the largest is under 100 KiB). Every held file
+# is read at snapshot construction, whether or not anything runs it, so without a limit one large file (a
+# sparse 1 GiB zz.py) costs its whole size in time and memory before the first decision answers.
+ENGINE_FILE_LIMIT = 1 << 20
+
+
+def _read_engine_file(path):
+    """The bytes of one engine file, read once. The file is opened without waiting and judged by the open
+    descriptor: only a regular file (after links) is read; a FIFO, a directory or anything else under a
+    '.py' name is the named stop ImportError, never a wait. At most ENGINE_FILE_LIMIT + 1 bytes are read,
+    and a file longer than the limit is the named stop ImportError (the length read decides, not the size
+    the file reports, so a file that grows or reports no size is bounded too)."""
+    try:
+        fd = os.open(str(path), os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
+    except OSError as error:
+        raise ImportError('engine file %s cannot be opened: %s' % (path, error)) from error
+    with os.fdopen(fd, 'rb') as handle:
+        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
+            raise ImportError('engine file %s is not a regular file' % (path,))
+        body = handle.read(ENGINE_FILE_LIMIT + 1)
+    if len(body) > ENGINE_FILE_LIMIT:
+        raise ImportError('engine file %s is longer than the %d byte limit' % (path, ENGINE_FILE_LIMIT))
+    return body
+
+
+def _forget_lines(keys):
+    for key in keys:
+        linecache.cache.pop(key, None)
+
+
+class ValidatorSnapshot:
+    """The installed structural validator, loaded ONCE from ONE read of the installed engine's bytes
+    (VELDO-0053, R50), held by MODULE NAME. Each engine module is read exactly once by its installed name
+    (the open follows links), its bytes digested and held under its name, never under a path. Every load
+    request the validator makes (importlib.util's spec_from_file_location, the one way the engine loads its
+    organs) is answered by the module name it asks for, the file name of its request, from those held
+    bytes, compiled into a fresh module object whose __file__ is the installed path of that name. There is
+    no path lookup, so aliases, links and resolved paths cannot make one name's bytes serve another; a
+    name not held is the named stop ImportError. Nothing is written to or loaded from disk, so the digests
+    recorded are of exactly the code that runs, and a later change on disk is neither run nor recorded by
+    a decision of this snapshot. The structural validator (arch.py) is loaded once here and reused for
+    every contract."""
+
+    def __init__(self, installed=None):
+        installed = Path(os.path.realpath(str(installed or Path(__file__).resolve().parent)))
+        self._installed, self._id = installed, uuid.uuid4().hex
+        # The empty module name (a file named '.py') is never held, so no request can be answered with it.
+        self._bodies = {path.name[:-3]: _read_engine_file(path) for path in sorted(installed.glob('*.py')) if path.name[:-3]}
+        self._keys, self._executed = [], {}
+        _weakref.finalize(self, _forget_lines, self._keys)
+        util = _types.ModuleType('importlib.util')
+        util.__dict__.update({k: v for k, v in vars(importlib.util).items() if not k.startswith('__')})
+        util.spec_from_file_location = self._spec
+        package = _types.ModuleType('importlib')
+        package.__dict__.update({k: v for k, v in vars(importlib).items() if not k.startswith('__')})
+        package.util = util
+        self._importlib = package
+        self.builtins = dict(vars(builtins))
+        self.builtins['__import__'] = self._import
+        spec = self._named('eligibility_validator_snapshot', 'validate')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.validate, self.arch = module, module.entry_validator()
+
+    @property
+    def identity(self):
+        """Every held module this snapshot has executed, in the order it ran, keyed by its module name: its role
+        label (None when it has none), its installed path and the digest of the bytes it ran from."""
+        return {held: {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),
+                       'digest': digest}
+                for held, digest in self._executed.items()}
+
+    def source_key(self, held):
+        """The file name this snapshot's code of `held` is compiled and cached under, unique to it."""
+        return '<veldo validator snapshot %s: %s>' % (self._id, self._installed / (held + '.py'))
+
+    def _import(self, name, globals=None, locals=None, fromlist=(), level=0):
+        if level == 0 and name in ('importlib', 'importlib.util'):
+            return self._importlib.util if name == 'importlib.util' and fromlist else self._importlib
+        return builtins.__import__(name, globals, locals, fromlist, level)
+
+    def _named(self, name, held):
+        """The spec of the held engine module `held`, executed from its held bytes; ImportError if not held."""
+        if held not in self._bodies:
+            raise ImportError('the validator snapshot holds no engine module named %r' % (held,))
+        spec = importlib.util.spec_from_loader(name, _MemoryLoader(self, held), origin=str(self._installed / (held + '.py')))
+        spec.has_location = True
+        return spec
+
+    def _spec(self, name, location=None, *args, **kwargs):
+        """spec_from_file_location for the snapshot's modules: the request names an engine module by its
+        file name, and that NAME is answered from the held bytes. The rest of the path is never looked up."""
+        file_name = os.path.basename(str(location)) if location is not None else ''
+        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')
+
+    def contract(self, workspace, required):
+        """(ContractLoad, digest of the bytes the loader parsed) through validate.py's public entry_contract."""
+        return self.validate.entry_contract(workspace, required, arch=self.arch)
+
+
+def _artifact_identity(path, parsed):
+    """{path, type, digest} of the architecture artifact that was judged. The digest is the loader's,
+    of the very bytes it parsed (None when nothing was read and parsed); the file is never read here."""
+    kind = ('absent' if not os.path.lexists(path) else 'symlink' if os.path.islink(path)
+            else 'directory' if os.path.isdir(path) else 'regular' if os.path.isfile(path) else 'other')
+    return {'path': str(path), 'type': kind, 'digest': parsed}
+
+
 class Gate:
     """One domain's shared eligibility over a real control store connection. Read-only."""
 
-    def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None):
+    def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None,
+                 workspace=None):
         self.store, self.conn = store, conn
+        # The workspace whose architecture every decision judges (VELDO-0053). A store-only Gate (no
+        # workspace) cannot look at a file, so its architecture predicate always refuses
+        # (missing_evidence:architecture/workspace): the default argument is never a pass.
+        self.workspace = str(workspace) if workspace is not None else None
+        self._validator = None
         self.domain_uuid, self.repository_uuid = domain_uuid, repository_uuid
         self.authority_generation = authority_generation
         self.observe = observe or (lambda event: None)
@@ -478,6 +663,7 @@ class Gate:
             inputs['decisions'] = self._collection('decision', lambda d: unit in (d.get('blocks') or []))
             inputs['blockers'] = self._collection('blocker', lambda d: d.get('unit') == unit)
             inputs['approvals'] = self._collection('approval', lambda d: d.get('unit') == unit)
+            inputs['architecture'] = self._entity('architecture:' + self.repository_uuid)
             watermark = self.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
         return {k: v for k, v in inputs.items() if v is not None}, watermark
 
@@ -602,6 +788,10 @@ class Gate:
             refusals = self._unit_problems(unit, inputs)
             if not refusals:
                 for name in STATION_PREDICATES[station]:
+                    if name == ARCHITECTURE_PREDICATE:
+                        decision['architecture'] = self.architecture(inputs.get('architecture'))
+                        refusals.extend(decision['architecture']['refusals'])
+                        continue
                     refusals.extend(self._predicate(name, unit, inputs, context))
                     if name in TRANSACTIONAL:
                         decision['pending'].append(name)
@@ -634,9 +824,63 @@ class Gate:
                  'accepted_inputs': {k: v.get('version', v.get('digest')) for k, v in decision['inputs'].items()},
                  'outcome': outcome, 'refusals': list(decision['refusals']),
                  'taxonomy': sorted({taxonomy(c) for c in decision['refusals']})}
+        if decision.get('architecture'):
+            found = decision['architecture']
+            event['architecture'] = {'basis': found['basis'], 'kind': found['kind'],
+                                     'artifact_digest': (found['artifact'] or {}).get('digest'),
+                                     'validator': {module: f['digest'] for module, f in found['validator'].items()}}
+            if found.get('error'):
+                # The durable stop event names the error that stopped the validator (ImportError for a miss).
+                event['architecture']['error'] = found['error']
         self.observations.append(event)
         self.last[decision['unit']] = outcome
         self.observe(event)
+
+    # -- architecture (VELDO-0053) -----------------------------------------------------------------
+
+    def _architecture_validator(self):
+        """The installed validator beside this module, loaded once per Gate (ValidatorSnapshot)."""
+        if self._validator is None:
+            self._validator = ValidatorSnapshot()
+        return self._validator
+
+    def architecture(self, item):
+        """The architecture answer of one decision: {basis, kind, state, required, accepted, artifact,
+        validator, refusals}. `item` is the store's architecture:<repository> entity (version 0 when
+        the authority has accepted none)."""
+        record = self._data(item) if item else None
+        accepted = None
+        if item and item.get('version'):
+            accepted = {'id': item['id'], 'version': item['version'],
+                        'digest': record.get('digest') if isinstance(record, dict) else None}
+        found = {'basis': 'accepted' if accepted else 'policy', 'kind': None, 'state': None, 'required': None,
+                 'accepted': accepted, 'artifact': None, 'validator': {}, 'refusals': []}
+        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'
+                         or not isinstance(record.get('digest'), str) or not record['digest'].startswith('sha256:')):
+            found['refusals'] = ['missing_authority:architecture']
+            return found
+        if self.workspace is None:
+            # No workspace, no file to judge: never a pass, whatever the store says (or does not say).
+            found['basis'] = 'store_only'
+            found['refusals'] = ['missing_evidence:architecture/workspace']
+            return found
+        try:
+            snapshot = self._architecture_validator()
+            load, parsed = snapshot.contract(self.workspace, True if accepted else None)
+            found['validator'] = {module: dict(entry) for module, entry in snapshot.identity.items()}
+        except Exception as error:  # noqa: BLE001 - a validator that cannot answer refuses, never passes
+            found['refusals'] = ['unavailable_service:architecture_validator']
+            found['error'] = type(error).__name__
+            return found
+        found.update(kind=load.kind, state=load.state, required=load.required,
+                     artifact=_artifact_identity(load.path, parsed))
+        if load.refused:
+            found['refusals'] = [ARCHITECTURE_REFUSALS.get(load.kind, 'invalid_input:architecture/' + load.kind)]
+            found['problems'] = list(load.problems)
+        elif accepted and parsed != accepted['digest']:
+            found['kind'] = 'unaccepted_artifact'
+            found['refusals'] = [ARCHITECTURE_REFUSALS['unaccepted_artifact']]
+        return found
 
     def status(self):
         """Metrics: accepted and refused decisions, and the units whose latest decision refused."""

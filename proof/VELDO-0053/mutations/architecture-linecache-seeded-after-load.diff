@@ -1,0 +1,8 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -428 +427,0 @@
+-        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)
+@@ -433 +432,2 @@
+-        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
++        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)  # defect: lines cached only after the module ran
++        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)

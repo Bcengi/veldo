@@ -583,6 +583,15 @@
    "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, a fresh reader process over real receipts and real VELDO-0036 reservation transactions."
   },
   {
+   "name": "60_veldo_0053_architecture",
+   "file": "60_veldo_0053_architecture.py",
+   "requires": [
+    "60_veldo_0053_architecture"
+   ],
+   "regions": "Architecture failure handling at every eligibility entry: contract states, accepted digests and the installed validator",
+   "requires_note": "Uses only shared ROOT and expect. One temporary Git repository that is also the installed .veldo copy and a clone with a stub validator; real SQLite store, real files (chmod denial, a directory, a FIFO), the installed validator as a real process and real VELDO-0036 reservation transactions."
+  },
+  {
    "name": "58_veldo_0046_notifications",
    "file": "58_veldo_0046_notifications.py",
    "requires": [

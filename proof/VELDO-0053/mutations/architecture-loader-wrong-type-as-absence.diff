@@ -1,0 +1,4 @@
+--- a/.veldo/contract_loader.py
++++ b/.veldo/contract_loader.py
+@@ -110,0 +111 @@
++        return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)  # defect

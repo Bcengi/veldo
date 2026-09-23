@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -455 +455 @@
+-        body = handle.read(ENGINE_FILE_LIMIT + 1)
++        body = handle.read()  # defect: the whole file is read before its length is judged

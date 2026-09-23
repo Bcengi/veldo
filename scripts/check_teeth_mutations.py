@@ -899,6 +899,291 @@ def cases():
            '            if current["eligible"]:\n                boundary = self._decide_calls(',
            '            if current["eligible"] and cycle == 1:  # defect\n                boundary = self._decide_calls(',
            'eligibility/launch-decides-its-calls')
+    # VELDO-0053: architecture at every eligibility entry. Each declared falsifier, a second and
+    # different defect of its row, and a driven defect for every other row the suite asserts.
+    def architecture(name, module, old, new, rows):
+        add(53, name, '60_veldo_0053_architecture.py', module, old, new, ['architecture/' + r for r in rows])
+
+    IDENTITY = "            found['validator'] = {module: dict(entry) for module, entry in snapshot.identity.items()}"
+    SEAM = "        return self.validate.entry_contract(workspace, required, arch=self.arch)"
+
+    architecture('architecture-malformed-as-optional-absence', 'control_eligibility.py',
+                 "        found.update(kind=load.kind, state=load.state, required=load.required,\n",
+                 "        if load.kind == 'parse_failure':  # defect: a present malformed contract read as optional absence\n"
+                 "            load = load._replace(state='absent', kind='optional_absence', problems=(), required=False)\n"
+                 "        found.update(kind=load.kind, state=load.state, required=load.required,\n",
+                 ['ready-refusal'])
+    loader_parse = ('        kind = "unreadable" if getattr(e, "kind", None) == "unreadable" else "parse_failure"\n'
+                    '        return ContractLoad(CONTRACT_INVALID, kind, arch, None, (str(e),), str(p), req)\n')
+    architecture('architecture-loader-malformed-as-absence', 'contract_loader.py', loader_parse,
+                 loader_parse.replace('        return ContractLoad(CONTRACT_INVALID',
+                                      '        if kind == "parse_failure":  # defect: the shared loader reads malformed as absence\n'
+                                      '            return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)\n'
+                                      '        return ContractLoad(CONTRACT_INVALID'),
+                 ['ready-refusal', 'state-kinds'])
+    architecture('architecture-loader-wrong-type-as-absence', 'contract_loader.py',
+                 '    if not p.is_file():\n        # PRESENT AND NEVER OPENED',
+                 '    if not p.is_file():\n'
+                 '        return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)  # defect\n'
+                 '        # PRESENT AND NEVER OPENED',
+                 ['ready-refusal', 'state-kinds'])
+    architecture('architecture-review-skipped', 'control_eligibility.py',
+                 "                      for s in FLOOR_STATIONS}\n# The refusal each refused architecture kind",
+                 "                      for s in FLOOR_STATIONS}\n"
+                 "STATION_PREDICATES['review'] = tuple(p for p in STATION_PREDICATES['review'] if p != ARCHITECTURE_PREDICATE)"
+                 "  # defect: direct review skips the architecture\n# The refusal each refused architecture kind",
+                 ['forbidden-review-launch'])
+    architecture('architecture-review-decision-skips', 'control_eligibility.py',
+                 "                    if name == ARCHITECTURE_PREDICATE:\n",
+                 "                    if name == ARCHITECTURE_PREDICATE and station == 'review':\n"
+                 "                        continue  # defect: the review decision never asks the architecture\n"
+                 "                    if name == ARCHITECTURE_PREDICATE:\n",
+                 ['forbidden-review-launch'])
+    architecture('architecture-invalid-structure-passes', 'control_eligibility.py',
+                 "        if load.refused:\n            found['refusals']",
+                 "        if load.refused and load.kind != 'invalid_structure':  # defect: only unreadable input refuses\n"
+                 "            found['refusals']",
+                 ['entries-blocked'])
+    architecture('architecture-record-not-required', 'control_eligibility.py',
+                 "snapshot.contract(self.workspace, True if accepted else None)",
+                 "snapshot.contract(self.workspace, None)  # defect: acceptance no longer makes the contract required",
+                 ['entries-blocked', 'substitution'])
+    architecture('architecture-provider-request-unasked', 'control_eligibility.py',
+                 "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', ARCHITECTURE_PREDICATE) + tuple(CC.ENTRY_PREDICATES[s])))",
+                 "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + ((ARCHITECTURE_PREDICATE,) if s != 'provider_request'"
+                 " else ()) + tuple(CC.ENTRY_PREDICATES[s])))",
+                 ['registrations', 'entries-blocked'])
+    architecture('architecture-clone-validator', 'control_eligibility.py',
+                 "            self._validator = ValidatorSnapshot()\n",
+                 "            self._validator = ValidatorSnapshot(os.path.join(self.workspace, '.veldo'))"
+                 "  # defect: the workspace's own validator judges the workspace\n",
+                 ['substitution'])
+    architecture('architecture-accepted-digest-ignored', 'control_eligibility.py',
+                 "        elif accepted and parsed != accepted['digest']:",
+                 "        elif False:  # defect: whatever bytes are at the path are the accepted architecture",
+                 ['substitution'])
+    architecture('architecture-identity-from-workspace', 'control_eligibility.py',
+                 IDENTITY,
+                 "            found['validator'] = {module: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),\n"
+                 "                                           'digest': entry['digest']}\n"
+                 "                                  for module, entry in snapshot.identity.items()}  # defect: names what the workspace carries",
+                 ['substitution'])
+    architecture('architecture-identity-not-recorded', 'control_eligibility.py',
+                 "        if decision.get('architecture'):\n",
+                 "        if False:  # defect: the decision's architecture is not in its observation\n",
+                 ['observations'])
+    architecture('architecture-unaccepted-record-accepted', 'control_eligibility.py',
+                 "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'",
+                 "        if accepted and (not isinstance(record, dict)",
+                 ['record-states'])
+    # Review fix: a Gate with no workspace never passes, record or no record.
+    architecture('architecture-store-only-passes', 'control_eligibility.py',
+                 "            found['basis'] = 'store_only'\n            found['refusals'] = ['missing_evidence:architecture/workspace']\n",
+                 "            found['basis'] = 'store_only'\n"
+                 "            if accepted:  # defect: without a record a store-only Gate passes\n"
+                 "                found['refusals'] = ['missing_evidence:architecture/workspace']\n",
+                 ['store-only-refuses'])
+    architecture('architecture-store-only-reads-cwd', 'control_eligibility.py',
+                 "        self.workspace = str(workspace) if workspace is not None else None\n",
+                 "        self.workspace = str(workspace) if workspace is not None else os.getcwd()  # defect: the process directory\n",
+                 ['store-only-refuses'])
+    # Review fix: the Gate judges only through validate.py's public entry_contract.
+    architecture('architecture-private-seam', 'control_eligibility.py', SEAM,
+                 "        return self.validate._VC.entry_contract(workspace, required, arch=self.arch)  # defect: around the public name",
+                 ['public-seam'])
+    snapshot_load = ("        spec = self._named('eligibility_validator_snapshot', 'validate')\n"
+                     "        module = importlib.util.module_from_spec(spec)\n"
+                     "        spec.loader.exec_module(module)\n"
+                     "        self.validate, self.arch = module, module.entry_validator()\n")
+    architecture('architecture-validate-checks-direct', 'control_eligibility.py', snapshot_load,
+                 snapshot_load.replace("'validate')", "'validate_checks')")
+                 .replace("        self.validate, self.arch = module, module.entry_validator()\n",
+                          "        module.parse_yamlish = module._Y.parse  # defect: around validate.py\n"
+                          "        self.validate, self.arch = module, module._arch_module()\n"),
+                 ['public-seam'])
+    # Review fix: the snapshot runs from the bytes in memory; no copy on disk stands between digest and code.
+    architecture('architecture-snapshot-private-copy', 'control_eligibility.py', snapshot_load,
+                 "        import tempfile  # defect: a private copy on disk, loaded after it is written\n"
+                 "        with tempfile.TemporaryDirectory(prefix='veldo-validator-') as private:\n"
+                 "            engine = Path(private) / '.veldo'\n"
+                 "            engine.mkdir()\n"
+                 "            for held, body in self._bodies.items():\n"
+                 "                (engine / (held + '.py')).write_bytes(body)\n"
+                 "            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))\n"
+                 "            module = importlib.util.module_from_spec(spec)\n"
+                 "            spec.loader.exec_module(module)\n"
+                 "            self.validate, self.arch = module, module.entry_validator()\n",
+                 ['snapshot-in-memory'])
+    architecture('architecture-siblings-from-disk', 'control_eligibility.py',
+                 "        util.spec_from_file_location = self._spec\n",
+                 "        pass  # defect: a sibling loaded by path is read from disk\n",
+                 ['snapshot-in-memory'])
+    # Review fix: the identity is taken once, from the bytes loaded, and every decision records that.
+    architecture('architecture-identity-read-at-decision', 'control_eligibility.py', IDENTITY,
+                 "            found['validator'] = {module: {'path': entry['path'], 'digest': 'sha256:' + hashlib.sha256(\n"
+                 "                Path(entry['path']).read_bytes()).hexdigest()} for module, entry in snapshot.identity.items()}"
+                 "  # defect: the files on disk now, not the bytes that ran",
+                 ['identity-is-what-ran'])
+    architecture('architecture-validator-reexecuted-per-call', 'control_eligibility.py', SEAM,
+                 "        return self.validate.entry_contract(workspace, required, arch=_organ('arch'))"
+                 "  # defect: the structural validator re-executed from disk at every call",
+                 ['identity-is-what-ran'])
+    architecture('architecture-snapshot-per-decision', 'control_eligibility.py',
+                 "        if self._validator is None:\n            self._validator = ValidatorSnapshot()\n",
+                 "        if True:  # defect: a new snapshot for every decision\n            self._validator = ValidatorSnapshot()\n",
+                 ['identity-is-what-ran'])
+    # Review fix: the digest compared is the loader's, of the very bytes it parsed.
+    architecture('architecture-digest-second-read', 'control_eligibility.py',
+                 "        elif accepted and parsed != accepted['digest']:",
+                 "        elif accepted and 'sha256:' + hashlib.sha256(Path(load.path).read_bytes()).hexdigest() != accepted['digest']:"
+                 "  # defect: a second read",
+                 ['validated-is-digested'])
+    reported = ("    if digested is not None:\n        digested(body_digest)\n    problems = []\n"
+                "    arch.validate_contract(data, base, p, lambda _where, msg: (problems.append(msg), 1)[1])\n")
+    architecture('architecture-loader-digest-second-read', 'contract_loader.py', reported,
+                 "    problems = []\n    arch.validate_contract(data, base, p, lambda _where, msg: (problems.append(msg), 1)[1])\n"
+                 "    if digested is not None:\n"
+                 "        digested(arch.read_contract(p, parse)[1])  # defect: the digest of a second read, after validation\n",
+                 ['validated-is-digested'])
+    # Review fix: bytes that are not UTF-8 are a named parse failure with their digest.
+    decode = ('    try:\n        text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()\n'
+              '    except UnicodeDecodeError as e:\n'
+              '        raise ArchContractError("architecture contract is not UTF-8 text: %s" % e, digest=digest)\n')
+    architecture('architecture-decode-outside-refusal', 'arch.py', decode,
+                 '    text = io.TextIOWrapper(io.BytesIO(body), encoding="utf-8").read()  # defect: decoded outside the refusal\n',
+                 ['not-text-refused'])
+    # defect: a lossy decode replaces what is not UTF-8 and parses the rest
+    architecture('architecture-decode-lossy', 'arch.py', 'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8")',
+                 'io.TextIOWrapper(io.BytesIO(body), encoding="utf-8", errors="replace")',
+                 ['not-text-refused'])
+    # Review fix (round 4, the lead's design): the snapshot is keyed by module NAME, never by a path; a name
+    # not held is the named stop ImportError, recorded in the durable stop event.
+    by_name = "        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')\n"
+    architecture('architecture-snapshot-disk-fallback', 'control_eligibility.py', by_name,
+                 "        held = file_name[:-3] if file_name.endswith('.py') else ''\n"
+                 "        if held not in self._bodies:\n"
+                 "            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)  # defect: a miss read from disk\n"
+                 "        return self._named(name, held)\n",
+                 ['snapshot-by-name'])
+    architecture('architecture-snapshot-keyed-by-path', 'control_eligibility.py', by_name,
+                 "        by_path = {}\n"
+                 "        for held in self._bodies:\n"
+                 "            by_path[str(self._installed / (held + '.py'))] = held\n"
+                 "            by_path[os.path.realpath(str(self._installed / (held + '.py')))] = held\n"
+                 "        where = str(location) if location is not None else ''\n"
+                 "        return self._named(name, by_path.get(os.path.abspath(where)) or by_path.get(os.path.realpath(where)) or '')"
+                 "  # defect: keyed by path\n",
+                 ['snapshot-by-name'])
+    architecture('architecture-stop-error-unrecorded', 'control_eligibility.py',
+                 "            if found.get('error'):\n                # The durable stop event",
+                 "            if False:  # defect: the stop event does not name its error\n                # The durable stop event",
+                 ['snapshot-by-name'])
+    # Review fix: the bytes compiled are the bytes digested (a writer lands between the one read and the compile).
+    architecture('architecture-exec-rereads-disk', 'control_eligibility.py',
+                 "exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)",
+                 "exec(compile(Path(module.__spec__.origin).read_bytes(), key, 'exec', dont_inherit=True),"
+                 " module.__dict__)  # defect: compiled from a second read of the disk",
+                 ['snapshot-in-memory'])
+    architecture('architecture-arch-digest-reread', 'control_eligibility.py',
+                 "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()\n",
+                 "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(\n"
+                 "            self.body if self.held != 'arch' else (self.snapshot._installed / 'arch.py').read_bytes()).hexdigest()"
+                 "  # defect: arch.py digested from a second read\n",
+                 ['snapshot-in-memory'])
+    # Review fix: tracebacks and inspect show the code that ran.
+    seed = ("        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True),"
+            " key)\n")
+    architecture('architecture-linecache-unseeded', 'control_eligibility.py', seed,
+                 "        pass  # defect: linecache reads the file on disk by name\n", ['snapshot-source'])
+    architecture('architecture-linecache-mtime-checked', 'control_eligibility.py', seed,
+                 seed.replace("(len(self.body), None,", "(len(self.body), os.stat(module.__spec__.origin).st_mtime,")
+                 .rstrip("\n") + "  # defect: checkcache drops it after an edit\n", ['snapshot-source'])
+    architecture('architecture-get-source-missing', 'control_eligibility.py',
+                 "        return importlib.util.decode_source(self.body)\n",
+                 "        return None  # defect: the loader hands back no source\n", ['snapshot-source'])
+    # Round 4: snapshot lines are kept under a key no other loader uses, unique to each snapshot.
+    architecture('architecture-linecache-keyed-by-path', 'control_eligibility.py',
+                 "        key = self.snapshot.source_key(self.held)\n",
+                 "        key = str(self.snapshot._installed / (self.held + '.py'))  # defect: the installed path, shared\n",
+                 ['snapshot-source'])
+    architecture('architecture-linecache-key-shared', 'control_eligibility.py',
+                 "        return '<veldo validator snapshot %s: %s>' % (self._id, self._installed / (held + '.py'))\n",
+                 "        return '<veldo validator snapshot: %s>' % (self._installed / (held + '.py'))  # defect: one key for every snapshot\n",
+                 ['snapshot-source'])
+    # Round 5: the recorded identity is every held module the snapshot executes, not a fixed list.
+    executed = ("        return {held: {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),\n"
+                "                       'digest': digest}\n"
+                "                for held, digest in self._executed.items()}\n")
+    architecture('architecture-identity-static-five', 'control_eligibility.py', executed,
+                 "        return {name[:-3]: {'module': name[:-3], 'role': role, 'path': str(self._installed / name),\n"
+                 "                            'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}\n"
+                 "                for role, name in VALIDATOR_ROLES}  # defect: the hand-written list of five\n",
+                 ['identity-covers-what-ran'])
+    architecture('architecture-identity-roles-only', 'control_eligibility.py', executed,
+                 executed.replace("for held, digest in self._executed.items()}",
+                                  "for held, digest in self._executed.items() if held in ROLE_LABELS}  # defect: labelled modules only"),
+                 ['identity-covers-what-ran'])
+    # Round 6: the identity is keyed by module name; a file named after a role label takes no other module's place.
+    architecture('architecture-identity-keyed-by-role', 'control_eligibility.py', executed,
+                 executed.replace("        return {held: {'module': held,", "        return {ROLE_LABELS.get(held, held): {'module': held,")
+                 .rstrip("\n") + "  # defect: keyed by role label\n",
+                 ['identity-keyed-by-module'])
+    architecture('architecture-identity-role-named-dropped', 'control_eligibility.py', executed,
+                 executed.replace("for held, digest in self._executed.items()}",
+                                  "for held, digest in self._executed.items()\n"
+                                  "                if held not in ROLE_LABELS.values()}  # defect: a module named after a role is left out"),
+                 ['identity-keyed-by-module'])
+    # Round 5: only a non-empty module name is held and only a regular file is read.
+    architecture('architecture-snapshot-holds-empty-name', 'control_eligibility.py',
+                 " for path in sorted(installed.glob('*.py')) if path.name[:-3]}",
+                 " for path in sorted(installed.glob('*.py'))}  # defect: a file named .py is held under the empty name",
+                 ['snapshot-held-names'])
+    architecture('architecture-snapshot-request-any-suffix', 'control_eligibility.py',
+                 "        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')\n",
+                 "        return self._named(name, os.path.splitext(file_name)[0])  # defect: any suffix names a held module\n",
+                 ['snapshot-held-names'])
+    architecture('architecture-snapshot-reads-any-file', 'control_eligibility.py',
+                 "        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):\n",
+                 "        if False:  # defect: a FIFO or other non-regular file is read like a file\n",
+                 ['snapshot-held-names'])
+    architecture('architecture-snapshot-blocking-read', 'control_eligibility.py',
+                 "_read_engine_file(path) for path in sorted(installed.glob('*.py'))",
+                 "path.read_bytes() for path in sorted(installed.glob('*.py'))",
+                 ['snapshot-held-names'])
+    # Round 6: a held file is read up to the stated limit and no further; one over it is the named stop.
+    bounded_read = "        body = handle.read(ENGINE_FILE_LIMIT + 1)\n"
+    over_limit = "    if len(body) > ENGINE_FILE_LIMIT:\n"
+    architecture('architecture-snapshot-read-unbounded', 'control_eligibility.py', bounded_read,
+                 "        body = handle.read()  # defect: the whole file is read before its length is judged\n",
+                 ['snapshot-file-bounded'])
+    architecture('architecture-snapshot-read-limit-short', 'control_eligibility.py', bounded_read,
+                 "        body = handle.read(ENGINE_FILE_LIMIT)  # defect: a longer file is cut to the limit and held\n",
+                 ['snapshot-file-bounded'])
+    architecture('architecture-snapshot-length-unjudged', 'control_eligibility.py', over_limit,
+                 "    if False:  # defect: a file over the limit is held\n",
+                 ['snapshot-file-bounded'])
+    architecture('architecture-snapshot-limit-exclusive', 'control_eligibility.py', over_limit,
+                 "    if len(body) >= ENGINE_FILE_LIMIT:  # defect: a file of exactly the limit is refused\n",
+                 ['snapshot-file-bounded'])
+    # Round 5 pins: __file__ is the installed path of the name, and linecache is seeded before a module runs.
+    origin = "origin=str(self._installed / (held + '.py')))\n"
+    architecture('architecture-snapshot-file-resolved', 'control_eligibility.py', origin,
+                 "origin=os.path.realpath(str(self._installed / (held + '.py'))))  # defect: the link's target\n",
+                 ['snapshot-module-files'])
+    architecture('architecture-snapshot-file-is-key', 'control_eligibility.py', origin,
+                 "origin=self.source_key(held))  # defect: __file__ is the snapshot's cache key, not the installed path\n",
+                 ['snapshot-module-files'])
+    load_block = (seed + "        self.snapshot._keys.append(key)\n"
+                  "        # Recorded before the module runs. A module whose load raises stays in the identity only when the module\n"
+                  "        # loading it catches the error; a raise out of the snapshot refuses the decision with validator {}.\n"
+                  "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()\n"
+                  "        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)\n")
+    architecture('architecture-linecache-seeded-after-load', 'control_eligibility.py', load_block,
+                 load_block.replace(seed, "").rstrip("\n") + "  # defect: lines cached only after the module ran\n" + seed,
+                 ['snapshot-module-files'])
+    architecture('architecture-linecache-seeded-for-roles-only', 'control_eligibility.py', seed,
+                 "        if self.held in ROLE_LABELS:  # defect: only the labelled modules' lines are cached\n    " + seed,
+                 ['snapshot-module-files'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
@@ -1222,7 +1507,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 43, 46, 52, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=sorted({case['finding'] for case in cases()}))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

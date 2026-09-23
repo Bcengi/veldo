@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -427 +427 @@
+-        key = self.snapshot.source_key(self.held)
++        key = str(self.snapshot._installed / (self.held + '.py'))  # defect: the installed path, shared

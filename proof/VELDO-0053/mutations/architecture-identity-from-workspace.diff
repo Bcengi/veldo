@@ -1,0 +1,7 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -870 +870,3 @@
+-            found['validator'] = {module: dict(entry) for module, entry in snapshot.identity.items()}
++            found['validator'] = {module: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),
++                                           'digest': entry['digest']}
++                                  for module, entry in snapshot.identity.items()}  # defect: names what the workspace carries

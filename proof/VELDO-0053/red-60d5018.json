@@ -1,0 +1,70 @@
+{
+ "production_at": "60d5018",
+ "modules": ".veldo/*.py of 60d5018",
+ "fixture_substitution": [
+  "                validator = racing._architecture_validator().arch\n",
+  "                _vc = racing._architecture_validator()\n                validator = _vc._arch_module()\n                _vc._arch_module = lambda: validator\n"
+ ],
+ "failed": [
+  "VELDO-0053 architecture/store-only-refuses",
+  "VELDO-0053 architecture/substitution",
+  "VELDO-0053 architecture/public-seam",
+  "VELDO-0053 architecture/identity-is-what-ran",
+  "VELDO-0053 architecture/snapshot-in-memory",
+  "VELDO-0053 architecture/not-text-refused",
+  "VELDO-0053 architecture/validated-is-digested",
+  "VELDO-0053 architecture/observations"
+ ],
+ "passed": 17,
+ "observed": {
+  "store_only": {
+   "store_only": [],
+   "workspace": [
+    "invalid_input:architecture/parse_failure"
+   ]
+  },
+  "public_seam": {
+   "judgements": 7,
+   "through_public_entry": 0,
+   "refusals": []
+  },
+  "identity_is_what_ran": {
+   "before_change": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "same_gate_after_change": [],
+   "fresh_gate_after_change": [],
+   "recorded_is_loaded": false,
+   "fresh_records_new": false
+  },
+  "validated_is_digested": {
+   "unaccepted_validated": {
+    "refusals": [],
+    "validated_versions": [
+     2
+    ]
+   },
+   "accepted_validated": {
+    "refusals": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "validated_versions": [
+     1
+    ]
+   }
+  },
+  "snapshot_in_memory": {
+   "refusals": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "engine_loads_from_disk": 17,
+   "swapped": 0,
+   "left_on_disk": [],
+   "recorded_is_installed": false
+  },
+  "not_text": [
+   "unavailable_service:architecture_validator"
+  ],
+  "raised": []
+ }
+}

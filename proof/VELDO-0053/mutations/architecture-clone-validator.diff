@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -844 +844 @@
+-            self._validator = ValidatorSnapshot()
++            self._validator = ValidatorSnapshot(os.path.join(self.workspace, '.veldo'))  # defect: the workspace's own validator judges the workspace

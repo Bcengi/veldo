@@ -1,0 +1,8 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -529 +529,4 @@
+-        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')
++        held = file_name[:-3] if file_name.endswith('.py') else ''
++        if held not in self._bodies:
++            return importlib.util.spec_from_file_location(name, location, *args, **kwargs)  # defect: a miss read from disk
++        return self._named(name, held)

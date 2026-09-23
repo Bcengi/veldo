@@ -1,0 +1,17 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -495,4 +495,10 @@
+-        spec = self._named('eligibility_validator_snapshot', 'validate')
+-        module = importlib.util.module_from_spec(spec)
+-        spec.loader.exec_module(module)
+-        self.validate, self.arch = module, module.entry_validator()
++        import tempfile  # defect: a private copy on disk, loaded after it is written
++        with tempfile.TemporaryDirectory(prefix='veldo-validator-') as private:
++            engine = Path(private) / '.veldo'
++            engine.mkdir()
++            for held, body in self._bodies.items():
++                (engine / (held + '.py')).write_bytes(body)
++            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))
++            module = importlib.util.module_from_spec(spec)
++            spec.loader.exec_module(module)
++            self.validate, self.arch = module, module.entry_validator()
