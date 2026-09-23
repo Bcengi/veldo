@@ -236,11 +236,12 @@ def _passable(text):
 
 def _bounded(name, text):
     """Whether a signer or signature is within what may reach ssh-keygen: a signer (a principal, one
-    command-line argument) of at most SIGNER_LIMIT characters with no whitespace or control character,
-    and a signature (an armored block, several lines) of at most SIGNATURE_LIMIT characters. A real
-    armored Ed25519 signature is a few hundred bytes."""
+    command-line argument) of at most SIGNER_LIMIT characters with no ASCII control character, and a
+    signature (an armored block, several lines) of at most SIGNATURE_LIMIT characters. A principal may
+    hold spaces (OpenSSH accepts a quoted one, such as a person's name) and any Unicode; a real armored
+    Ed25519 signature is a few hundred bytes and an RSA-4096 one about 1.6 KB."""
     if name == 'signer':
-        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)
+        return len(text) <= SIGNER_LIMIT and not any(ord(c) < 32 or ord(c) == 127 for c in text)
     return len(text) <= SIGNATURE_LIMIT
 
 

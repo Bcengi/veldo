@@ -817,36 +817,53 @@ def _v54_suite():
                    and texts['VELDO-9514'][2] == [wanted_text['VELDO-9514']])
 
         with region('decisions/verifier-input-bounded'):
-            # What reaches the verifier is bounded: a signer over 256 characters or holding whitespace or a
-            # control character, and a signature over 16 KiB, are invalid_input for the unit; they never
-            # reach ssh-keygen, never read as a verifier outage, never mask the unit's other refusals.
+            # What reaches the verifier is bounded: a signer over 256 characters or holding a control
+            # character, and a signature over 16 KiB, are invalid_input for the unit; they never reach
+            # ssh-keygen, never read as a verifier outage, never mask the unit's other refusals. And a
+            # quoted principal with a space, which OpenSSH accepts, verifies and clears its unit.
             BOUNDED = {'VELDO-9521': ('signer', lambda d: d.update(signer='s' * 257)),
-                       'VELDO-9522': ('signer', lambda d: d.update(signer='veldo settlement')),
                        'VELDO-9523': ('signer', lambda d: d.update(signer='veldo-settlement\x1b')),
                        'VELDO-9524': ('signature', lambda d: d.update(signature=d['signature'] + 'A' * 16385)),
                        'VELDO-9525': ('signer', lambda d: d.update(signer='s' * 200000))}
-            planned('PLAN-9415', sorted(BOUNDED))
+            rsa_public = None
+            EDGES = {'VELDO-9522': ('Settlement Authority', '"Settlement Authority"', 'trusted')}
+            edge_signers = signers.read_text() + ''.join(
+                '%s namespaces="%s" %s %s\n' % (written, DD.SETTLEMENT_NAMESPACE,
+                                                 *(rsa_public if key == 'rsa' else public))
+                for _, written, key in EDGES.values())
+            edge_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY,
+                                settlement_trust=DD.SettlementTrust(edge_signers))
+            planned('PLAN-9415', sorted(BOUNDED) + sorted(EDGES))
             for sid, (field, change) in BOUNDED.items():
                 rid = 'decision:D-' + sid[-4:]
                 decision(rid, 'spec', sid, [sid])
                 settle(rid, after=change)
+            rsa_signature = []
+            for sid, (principal, _, key) in EDGES.items():
+                rid = 'decision:D-' + sid[-4:]
+                decision(rid, 'spec', sid, [sid])
+                made = settle(rid, key=key, after=lambda d, principal=principal: d.update(signer=principal))
+                if key == 'rsa':
+                    rsa_signature.append(len(made['signature']))
             put('admission:VELDO-9525', 'admission', dict(unit='VELDO-9525', state='withdrawn', scope_digest='sha256:scope'))
             bounded = {}
-            for sid in BOUNDED:
+            for sid in list(BOUNDED) + list(EDGES):
                 try:
-                    bounded[sid] = ('ok', gate.decide('build', sid, context=CONTEXT['build'])['refusals'],
-                                    gate.decision_blockers(sid))
+                    bounded[sid] = ('ok', edge_gate.decide('build', sid, context=CONTEXT['build'])['refusals'],
+                                    edge_gate.decision_blockers(sid))
                 except Exception as error:  # noqa: BLE001 - recorded, then asserted
                     bounded[sid] = ('raised', type(error).__name__)
             observed['verifier_input'] = {sid: (v[0], [c[:120] for c in v[1]] if v[0] == 'ok' else v[1])
                                           for sid, v in bounded.items()}
+            observed['rsa_signature_chars'] = rsa_signature
             wanted_bounded = {sid: 'invalid_input:settlement:decision:D-%s:1/%s' % (sid[-4:], field)
                               for sid, (field, _) in BOUNDED.items()}
             check('decisions/verifier-input-bounded',
                    all(bounded[sid] == ('ok', [wanted_bounded[sid]], [wanted_bounded[sid]]) for sid in BOUNDED if sid != 'VELDO-9525')
                    and bounded['VELDO-9525'][0] == 'ok'
                    and set(bounded['VELDO-9525'][1]) == {wanted_bounded['VELDO-9525'], 'missing_authority:admission'}
-                   and bounded['VELDO-9525'][2] == [wanted_bounded['VELDO-9525']])
+                   and bounded['VELDO-9525'][2] == [wanted_bounded['VELDO-9525']]
+                   and all(bounded[sid] == ('ok', [], []) for sid in EDGES))
 
         with region('decisions/deep-blocks-named'):
             # A blocks nested 5000 deep (the store accepts it) is walked without recursion: the unit it

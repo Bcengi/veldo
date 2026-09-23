@@ -1098,12 +1098,14 @@ def cases():
               "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = text.replace(';', ',')\n",
               'unexpected-message')
     # VELDO-0054 review 5, item 1: what reaches the verifier is bounded.
-    decisions('signer-unbounded', 'control_decision_dependency.py',
-              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
-              "        return True\n", 'verifier-input-bounded')
-    decisions('signer-whitespace-allowed', 'control_decision_dependency.py',
-              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
+    bound = "        return len(text) <= SIGNER_LIMIT and not any(ord(c) < 32 or ord(c) == 127 for c in text)\n"
+    decisions('signer-unbounded', 'control_decision_dependency.py', bound, "        return True\n",
+              'verifier-input-bounded')
+    decisions('signer-controls-allowed', 'control_decision_dependency.py', bound,
               "        return len(text) <= SIGNER_LIMIT\n", 'verifier-input-bounded')
+    decisions('signer-whitespace-refused', 'control_decision_dependency.py', bound,
+              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
+              'verifier-input-bounded')
     decisions('signature-unbounded', 'control_decision_dependency.py',
               "    return len(text) <= SIGNATURE_LIMIT\n", "    return True\n", 'verifier-input-bounded')
     # Item 2: an unexpected fault's message is plain, separator-free and always obtainable.
