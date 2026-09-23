@@ -423,6 +423,8 @@ def _unlinked(root, name):
     path = root / name
     if path.is_symlink():
         raise Refused('runtime_unavailable', 'the stage ' + name + ' is a link the adapter did not make')
+    if path.exists() and not path.is_dir():
+        raise Refused('runtime_unavailable', 'the stage ' + name + ' is not a directory')
     path.mkdir(mode=0o700, exist_ok=True)
     if path.is_symlink() or not path.is_dir() or path.resolve() != path:
         raise Refused('runtime_unavailable', 'the stage ' + name + ' does not resolve under the stage root')
@@ -435,6 +437,8 @@ def stage(runtime):
     root = Path(runtime['stage']).resolve()
     if inside_repository(root):
         raise Refused('runtime_unavailable', 'the runtime stage lies inside a repository')
+    if root.exists() and not root.is_dir():
+        raise Refused('runtime_unavailable', 'the stage root is not a directory')
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')
     for name, path in (('runners', runners), ('work', work)):
@@ -444,6 +448,8 @@ def stage(runtime):
     target = runners / (hashlib.sha256(source).hexdigest() + '.py')
     if target.is_symlink():
         raise Refused('runtime_unavailable', 'the staged runner is a link the adapter did not make')
+    if target.exists() and not target.is_file():
+        raise Refused('runtime_unavailable', 'the staged runner is not a file')
     if not target.is_file() or target.read_bytes() != source:
         temporary = runners / ('.staging-' + os.urandom(8).hex())
         descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
@@ -558,8 +564,11 @@ def exchange(runtime, sent, timeout=120):
     problems = runtime_problems(runtime)
     if problems:
         raise Refused('runtime_unavailable', '; '.join(problems))
-    staged, work = stage(runtime)
-    empty = _working_directory(work)
+    try:
+        staged, work = stage(runtime)
+        empty = _working_directory(work)
+    except OSError as error:
+        raise Refused('runtime_unavailable', 'the stage cannot be used: ' + (error.strerror or type(error).__name__)) from error
     # Request and answer travel through anonymous files, not pipes, so a subprocess a node left
     # holding the answer stream cannot keep the exchange open.
     with tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:

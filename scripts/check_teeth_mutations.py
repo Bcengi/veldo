@@ -501,13 +501,29 @@ def cases():
     graph('graph-stage-link-checks-off', 'control_graph.py',
           "    if path.is_symlink():\n"
           "        raise Refused('runtime_unavailable', 'the stage ' + name + ' is a link the adapter did not make')\n"
+          "    if path.exists() and not path.is_dir():\n"
+          "        raise Refused('runtime_unavailable', 'the stage ' + name + ' is not a directory')\n"
           "    path.mkdir(mode=0o700, exist_ok=True)\n"
           "    if path.is_symlink() or not path.is_dir() or path.resolve() != path:\n",
+          "    if path.exists() and not path.is_dir():\n"
+          "        raise Refused('runtime_unavailable', 'the stage ' + name + ' is not a directory')\n"
           "    path.mkdir(mode=0o700, exist_ok=True)\n"
           "    if False:\n", 'authority/stage-links')
     graph('graph-runners-repository-unchecked', 'control_graph.py',
           "    for name, path in (('runners', runners), ('work', work)):\n",
           "    for name, path in (('work', work),):\n", 'authority/stage-links')
+    graph('graph-stage-oserror-unnamed', 'control_graph.py',
+          "    except OSError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
+          "    except FileNotFoundError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
+          'authority/stage-shapes')
+    graph('graph-staged-runner-shape-unchecked', 'control_graph.py',
+          "    if target.exists() and not target.is_file():\n", "    if False:\n", 'authority/stage-shapes')
+    graph('graph-stage-oserror-unnamed', 'control_graph.py',
+          "    except OSError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
+          "    except FileNotFoundError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
+          'authority/stage-shapes')
+    graph('graph-staged-runner-shape-unchecked', 'control_graph.py',
+          "    if target.exists() and not target.is_file():\n", "    if False:\n", 'authority/stage-shapes')
     graph('graph-pyvenv-unchecked', 'control_graph.py',
           '    problems = runtime_problems(runtime)\n    if problems:\n',
           '    problems = runtime_problems(runtime)\n    if False:\n', 'runtime/pyvenv-clean')
