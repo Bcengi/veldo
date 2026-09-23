@@ -28,10 +28,13 @@ only where the source decides it: from a spec variable bound once, or one whose 
 spec call or a `del` standing as a plain statement of a fragment's module body (those run in line
 order). A spec variable rebound anywhere else (in a function, under an if or a loop, by plain
 assignment, through global or nonlocal), or read from another scope while bound more than once,
-depends on control flow or call order and maps no alias. NOT modeled, stated as limits: a star
-import and a write through globals() rebind names this reader cannot see; the corpus has neither. The resolver is judged against CPython's symtable over the
-real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to keep the signal clean
-is right; lowering the BAR by allowlisting the noisy names would not be.
+depends on control flow or call order and maps no alias. The resolver is judged against CPython's
+symtable over the real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to
+keep the signal clean is right; lowering the BAR by allowlisting the noisy names would not be.
+
+NOT MODELED, stated as limits (the corpus has none of them): a star import, a write through
+globals(), locals() or vars(), and exec() without its own namespace rebind names this reader cannot
+see; and private-name mangling (`__M` inside a class compiles to `_K__M`) is not applied.
 
 A module that cannot be imported standalone (one that needs helpers injected by its caller) is
 UNVERIFIABLE, not passed, and is reported as such.
@@ -74,8 +77,8 @@ def _spec_var_of_module_call(node):
 
 MODULE = "<module>"   # the ONE namespace every fragment execs into, in manifest order
 _COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
-_COMPOUND = tuple(getattr(ast, n) for n in ("If", "For", "AsyncFor", "While", "Try", "TryStar", "With",
-                                              "AsyncWith", "Match") if hasattr(ast, n))
+_COMPOUND = tuple(getattr(ast, n) for n in ("If", "For", "AsyncFor", "While", "Try", "TryStar",
+                                              "With", "AsyncWith", "Match") if hasattr(ast, n))
 
 
 class _Scope:
@@ -338,9 +341,9 @@ def references(order, trees, counts):
     walks = walk(trees)
     # WHICH MODULE A SPEC VARIABLE HOLDS is decided from the source only when it is bound once, or
     # when every binding it has is a spec call or a `del` standing as a plain statement of a
-    # fragment's module body: those run in line order, fragment after fragment. Any other rebinding (in a function,
-    # under an if or a loop, by plain assignment, through global or nonlocal) depends on control
-    # flow or call order, and such a variable never maps an alias.
+    # fragment's module body: those run in line order, fragment after fragment. Any other
+    # rebinding (in a function, under an if or a loop, by plain assignment, through global or
+    # nonlocal) depends on control flow or call order, and such a variable never maps an alias.
     straight = collections.Counter((MODULE, a) for w in walks.values() for a, _n in w.straight)
     def decidable(key):
         return counts[key] == 1 or counts[key] == straight[key]
@@ -416,9 +419,9 @@ def symtable_disagreements(sources):
         theirs = {}
         def collect(t):
             for c in t.get_children():
-                kind = {"function": "function", "class": "class"}.get(c.get_type().value
-                                                                     if hasattr(c.get_type(), "value")
-                                                                     else c.get_type())
+                table_type = c.get_type()
+                kind = {"function": "function", "class": "class"}.get(
+                    getattr(table_type, "value", table_type))
                 if kind:
                     theirs.setdefault((kind, c.get_name(), c.get_lineno()), []).append(c)
                 collect(c)
