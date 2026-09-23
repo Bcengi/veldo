@@ -179,6 +179,16 @@ def ruling_of(choice):
     return CHOICE_RULINGS.get(choice)
 
 
+def usable_key(key, principal, now):
+    """The one key rule frame() and the stored-framing check share: a key of this principal with a
+    public key, with no revocation and no retirement recorded on it whatever their dates (a record
+    naming one counts from its own position), and effective by `now`."""
+    return (isinstance(key, dict) and key.get('principal') == principal and _is_str(key.get('public_key'))
+            and key.get('revoked_at') is None and key.get('retired_at') is None
+            and (key.get('effective_at') is None
+                 or (type(key['effective_at']) in (int, float) and key['effective_at'] <= now)))
+
+
 def _fold(text):
     return ' '.join(str(text).split()).casefold()
 
@@ -699,8 +709,7 @@ class Presenter:
         # the framing's journal position. A time field any caller writes (the publication row's
         # committed_at is the caller's to choose) decides nothing.
         key = self._as_of(data.get('key_id'), 'verification_key', written[0])
-        if (key is None or key.get('principal') != principal or not _is_str(key.get('public_key'))
-                or key.get('revoked_at') is not None or key.get('retired_at') is not None):
+        if not usable_key(key, principal, self.clock()):
             return False
         ledger = self._as_of(REVOCATION_LEDGER, 'revocation_ledger', written[0]) or {}
         if principal in (ledger.get('revoked') or {}):
@@ -744,7 +753,11 @@ class Presenter:
             request = self.inbox_request(command['alias'])
             principal, now = command['principal'], self.clock()
             state = self.membership.authority_state(self.store, self.conn)
-            key = self.AC.active_key(state['keyring'], principal, now)
+            # The same rule the stored-framing check applies, so the two never disagree.
+            key = next((k for k in state['keyring'] if usable_key(k, principal, now)), None)
+            revoked = (state['entities'].get(REVOCATION_LEDGER, {}).get('data') or {}).get('revoked') or {}
+            if principal in revoked:
+                raise Refused('not_authorized', 'the revocation ledger names the requester')
             if not key or not self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],
                                                          self.AC.allowed_signers_line(principal, key['public_key']),
                                                          principal)[0]:

@@ -90,7 +90,7 @@ def _v65_checks(base):
                                   'projection/one-message-per-version', 'framing/key-by-store-order',
                                   'projection/notice-superseded', 'projection/silent-from-store',
                                   'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
-                                  'presentation/notice-kind-fixed')}
+                                  'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -118,7 +118,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'grouped', 'stranger', 'telegram-edge',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'grouped', 'stranger', 'telegram-edge',
                 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
@@ -158,6 +158,7 @@ def _v65_checks(base):
                'grouped': dict(principal_type='person', roles=[], scope=['project-a']),
                'pm3': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm4': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm5': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1064,6 +1065,35 @@ def _v65_checks(base):
                     refused_code = exc.code
                 check(kind_row, 'a presentation naming %s as the notice it supersedes is refused and leaves it unchanged' % label,
                       held_before is not None and refused_code is not None and entity(target) == held_before)
+
+        # Review 3 item 4: frame() and the stored-framing check apply one key rule
+        agree = 'framing/frame-and-presenter-agree'
+        with section(agree):
+            for alias in ('Z-1', 'Z-2', 'Z-3', 'Z-4', 'Z-5'):
+                command('pm5', 'open', alias, assignment=content())
+            later = _v65_time.time() + 3600
+            for alias, field, label in (('Z-1', 'revoked_at', 'a revocation dated in the future'),
+                                        ('Z-2', 'retired_at', 'a retirement dated in the future'),
+                                        ('Z-3', 'effective_at', 'a key not yet effective')):
+                key = dict(principal='pm5', public_key=public['pm5'], effective_at=0)
+                key[field] = later
+                fixture('key-pm5', 'verification_key', key)
+                zid = I.assignment_id(ids['repository_uuid'], alias)
+                check(agree, 'frame() refuses a key with %s' % label,
+                      reason(frame('pm5', alias, 1, 'Low: a wrong choice costs one review cycle.')) == ('refused', 'not_authorized'))
+                direct_frame('pm5', alias, 1, 'Low: a wrong choice costs one review cycle.')
+                check(agree, 'the presenter refuses the same framing written directly, with %s' % label,
+                      reason(presenter.present(zid)) == ('refused', 'missing_framing'))
+            fixture('key-pm5', 'verification_key', dict(principal='pm5', public_key=public['pm5'], effective_at=0))
+            z4 = I.assignment_id(ids['repository_uuid'], 'Z-4')
+            check(agree, 'control: with a usable key frame() accepts and the presenter presents',
+                  reason(frame('pm5', 'Z-4', 1, 'Low: a wrong choice costs one review cycle.')) == ('accepted', None)
+                  and reason(presenter.present(z4)) == ('published', None))
+            ledger_now = (entity('authority:revocations') or {}).get('data') or {'revocation_version': 0, 'revoked': {}}
+            fixture('authority:revocations', 'revocation_ledger',
+                    dict(ledger_now, revoked=dict(ledger_now.get('revoked') or {}, pm5={'at': later, 'reason': 'test', 'by': 'authority'})))
+            check(agree, 'frame() refuses a principal the revocation ledger names, as the presenter does',
+                  reason(frame('pm5', 'Z-5', 1, 'Low: a wrong choice costs one review cycle.')) == ('refused', 'not_authorized'))
     finally:
         server.shutdown()
         server.server_close()
