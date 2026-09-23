@@ -563,17 +563,19 @@ def cases():
                  "        if row[0] != hint['command_id']:", 'fabricated-event')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
-    def scope(name, old, new):
-        add(25, name, '61_scope_covers.py', 'control_membership.py', old, new,
-            ['membership/scope-covers-named-string'])
+    def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
+        add(25, name, '61_scope_covers.py', 'control_membership.py', old, new, list(rows))
         result[-1]['siblings'] = True
 
     scope('scope-string-inner-as-empty',
-          '    if isinstance(inner, str) and inner != "*":\n        i = {inner}\n',
-          '    if isinstance(inner, str) and inner != "*":\n        i = set()\n')
-    scope('scope-malformed-inner-as-empty',
-          '    else:\n        return False\n    if o is None:',
-          '    else:\n        i = set()\n    if o is None:')
+          '    if isinstance(scope, str):\n        return {scope}\n',
+          '    if isinstance(scope, str):\n        return set()\n')
+    scope('scope-malformed-as-empty',
+          '    if o is _MALFORMED or i is _MALFORMED:\n        return False\n',
+          '    if o is _MALFORMED or i is _MALFORMED:\n        o = set() if o is _MALFORMED else o\n        i = set() if i is _MALFORMED else i\n')
+    scope('scope-star-list-not-universal',
+          '        return None if "*" in scope else set(scope)\n',
+          '        return set(scope)\n', ('membership/scope-forms-agree',))
     return result
 
 

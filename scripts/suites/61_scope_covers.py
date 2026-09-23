@@ -22,3 +22,10 @@ expect('VELDO-0025 membership/scope-covers-named-string: a named scope covers a 
        and _sc_cm.scope_covers("*", "repo-1") and _sc_cm.scope_covers(["repo-1", "PROJ-A"], "repo-1")
        and not _sc_cm.scope_covers(["X"], 5) and not _sc_cm.scope_covers(["X"], ["X", 3])
        and not _sc_cm.scope_covers(["X"], None) and not _sc_cm.scope_covers(["X"], "*"))
+expect('VELDO-0025 membership/scope-forms-agree: a list naming "*" is universal as either argument, and a '
+       'string is one named scope as either argument, so a member enrolled with scope "repo-1" covers repo-1',
+       _sc_cm.scope_covers(["*"], "repo-1") and _sc_cm.scope_covers(["*"], ["*"]) and _sc_cm.scope_covers("*", ["*"])
+       and not _sc_cm.scope_covers(["repo-1"], ["*"]) and _sc_cm.scope_covers("repo-1", "repo-1")
+       and not _sc_cm.scope_covers("repo-1", "repo-2") and not _sc_cm.scope_covers({"x": 1}, "repo-1")
+       and not _sc_cm.scope_covers(None, "repo-1"))
+
