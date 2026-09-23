@@ -120,3 +120,24 @@ no concurrency discount was applied. This is incremental suite cost, not total g
 duration, which includes the existing corpus.
 
 The proof does not assert an independent review verdict.
+
+## Review fixes, 2026-09-23
+
+Baseline: `a284cd0c873abce8eb977279a25ac71ad5cbcc68`. All three supplied
+capsules reproduced. Before changing production code, the suite performed their
+scenarios and completed with three false assertions, not exceptions. The exact
+rows, exit status, capsule script digests and outputs are retained in
+`review-20260923/baseline.json`, `baseline-suite.log` and `baseline-capsules.json`.
+These targeted runs demonstrate regression detection; only the canonical gate
+below establishes completion.
+
+R1: `reservations/partial-final-retained` reserves five seconds, reports one
+partial second, supplies an empty final timeout, and attempts a four-second retry.
+It also covers cancellation, unspecified outcome and a partial observation above
+the reservation. Final settlement now uses only totals supplied in that final
+report; missing totals retain the conservative charge and unknown state.
+`reservation-final-reuses-partial` reintroduces the finding;
+`reservation-final-forgets-reservation` independently discards missing wall usage.
+Both produce the named false row. `review-20260923/R1-green.log` and
+`R1-mutations.jsonl` record the green control and all 16 rejected mutations;
+`review-20260923/mutations/` holds exact applied diffs.

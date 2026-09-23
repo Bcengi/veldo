@@ -248,10 +248,11 @@ class Reservations:
                 value.update(charge=dict.fromkeys(USAGE, 0), unknown=[], state='settled')
             elif p['final']:
                 for unit in ('invocations', 'wall_seconds'):
-                    if unit in value['observed']:
-                        value['charge'][unit] = value['observed'][unit]
+                    # Only this final report can establish a conclusive total.
+                    if unit in p['usage']:
+                        value['charge'][unit] = p['usage'][unit]
                 value['state'] = 'settled' if not value['unknown'] and all(
-                    u in value['observed'] for u in ('invocations', 'wall_seconds')) else 'unknown'
+                    u in p['usage'] for u in ('invocations', 'wall_seconds')) else 'unknown'
         elif action == 'window':
             if not current:
                 raise Refused('missing_ceiling:account')

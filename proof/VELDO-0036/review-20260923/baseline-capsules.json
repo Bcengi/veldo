@@ -1,0 +1,23 @@
+{
+  "commit": "a284cd0c873abce8eb977279a25ac71ad5cbcc68",
+  "results": [
+    {
+      "finding": "R1",
+      "returncode": 0,
+      "stdout": "{\"charge_after_timeout\": 1, \"retry_admitted\": true}\nDEFECT: missing final usage freed 4 seconds and admitted a retry\n",
+      "script_sha256": "9d06787eba9e63a97fca924c14e8ffe205f781f5532d8d8fdd53fb774ff8da21"
+    },
+    {
+      "finding": "R2",
+      "returncode": 0,
+      "stdout": "{\"report_error\": \"missing_authority\", \"stops\": [], \"worker_alive_at_deadline\": true}\nDEFECT: refused deadline report bypassed stop and left worker alive\n",
+      "script_sha256": "0a0125b9dd67babc2d5171650da11f3e6e409452045c87c170ebe42f21860969"
+    },
+    {
+      "finding": "R3",
+      "returncode": 0,
+      "stdout": "{\"scope\": \"account\", \"cap\": 1, \"observed_wall_seconds\": 2, \"stop_required\": false, \"stops\": []}\n{\"scope\": \"project\", \"cap\": 1, \"observed_wall_seconds\": 2, \"stop_required\": false, \"stops\": []}\n{\"scope\": \"unit\", \"cap\": 1, \"observed_wall_seconds\": 2, \"stop_required\": false, \"stops\": []}\nDEFECT: active invocation ignores lowered wall-time caps in all three scopes\n",
+      "script_sha256": "6f30bb7168096289838203ffba82121196ccb84a8d0fe372ff9d9b7e51b7ab94"
+    }
+  ]
+}

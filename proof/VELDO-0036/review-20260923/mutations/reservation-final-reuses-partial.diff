@@ -1,0 +1,7 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -252,2 +252,2 @@
+-                    if unit in p['usage']:
+-                        value['charge'][unit] = p['usage'][unit]
++                    if unit in value['observed']:
++                        value['charge'][unit] = value['observed'][unit]

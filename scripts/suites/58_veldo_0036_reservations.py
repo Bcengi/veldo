@@ -267,6 +267,19 @@ def _v36_suite():
                 unknown_ok &= service.status()['unknown'] == 1
             expect('VELDO-0036 reservations/unknown-retained', unknown_ok)
 
+            # R1: a partial observation is not a conclusive final usage total.
+            partial_final_ok = True
+            for outcome in ('timeout', 'cancelled', None):
+                for partial in (1, 7):
+                    service, _ = fixture({'wall_seconds': 5})
+                    worker(service)
+                    call(service)
+                    service.report('partial', 'call', 1, {'wall_seconds': partial}, now=4)
+                    service.report('final', 'call', 2, {}, final=True, outcome=outcome, now=8)
+                    partial_final_ok &= service.balances('account', 'account')['wall_seconds'] == max(5, partial)
+                    partial_final_ok &= refusal(lambda: call(service, 'retry', 'retry', 4)) == 'usage_cap:account:wall_seconds'
+            expect('VELDO-0036 reservations/partial-final-retained', partial_final_ok)
+
             # AC4: a REAL exited parent and its still-live descendant. Become the temporary
             # subreaper so we can reap that orphan ourselves; no process or zombie is leaked.
             libc = ctypes.CDLL(None, use_errno=True)

@@ -283,6 +283,14 @@ def cases():
         add(36, name, '58_veldo_0036_reservations.py', module, old, new,
             ['reservations/' + row])
 
+    reservation('reservation-final-reuses-partial', 'control_reservations.py',
+                "if unit in p['usage']:\n                        value['charge'][unit] = p['usage'][unit]",
+                "if unit in value['observed']:\n                        value['charge'][unit] = value['observed'][unit]",
+                'partial-final-retained')
+    reservation('reservation-final-forgets-reservation', 'control_reservations.py',
+                "            elif p['final']:",
+                "            elif p['final']:\n                value['charge']['wall_seconds'] = p['usage'].get('wall_seconds', 0)",
+                'partial-final-retained')
     reservation('reservation-extra-slot', 'control_reservations.py',
                 "if balance[unit] + wanted.get(unit, 0) > cap:",
                 "if balance[unit] + wanted.get(unit, 0) > cap + 1:", 'ceilings')
