@@ -24,10 +24,20 @@ ROOT = Path(__file__).resolve().parent.parent
 DRIVERS = ('check_teeth_mutations.py', 'check_review_mutations.py')
 SCHEMA = 'veldo.mutation-result/v1'
 FIXTURE_VERSION = 1
+# The combined cap scales with the registered inventory: each case costs roughly 0.8 s on the
+# qualification host (116 cases measured at 91.8 s on 2026-09-23), so a fixed cap would turn red for
+# growth alone. BUDGET is the floor; budget_for() is the cap actually enforced.
 BUDGET = 120
+PER_CASE_SECONDS = 2.0
 WORKER_BUDGET = 120
+
 PARALLEL = 8
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
+
+
+def budget_for(count):
+    """The combined cap for a registered inventory of `count` cases, never below BUDGET."""
+    return max(BUDGET, PER_CASE_SECONDS * count)
 
 
 class Refused(Exception):
@@ -300,10 +310,15 @@ def run_stage(root=ROOT):
         raise Refused('mutation_budget_exceeded', 'combined deadline')
 
     signal.signal(signal.SIGALRM, timeout)
+    # Enumeration itself runs under the floor; the full cap is armed once the count is known.
     signal.setitimer(signal.ITIMER_REAL, BUDGET)
     try:
         cases = inventory(root)
         receipt['registered'] = len(cases)
+        budget = budget_for(len(cases))
+        receipt['budget_seconds'] = budget
+        workers.deadline = started + budget
+        signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
         for driver in DRIVERS:
             own = [c for c in cases if c['driver'] == driver]
             receipt['drivers'][driver] = {'inventory_digest': digest(own), 'registered': len(own),
@@ -372,8 +387,11 @@ def run_stage(root=ROOT):
         receipt['detail'] = str(error)
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
-        workers.cleanup()
-        signal.signal(signal.SIGALRM, previous)
+        try:
+            workers.cleanup()
+        finally:
+            # Restore the caller's handler even when cleanup itself fails.
+            signal.signal(signal.SIGALRM, previous)
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]

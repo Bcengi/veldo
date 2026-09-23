@@ -93,6 +93,15 @@ _FILES = [
     # VELDO-0029's enrollment binding, which control_document reads to bind a checkout to the
     # repository it is enrolled as.
     ".veldo/control_enrollment.py",
+    # VELDO-0031: authority claim receiver and caller, not loaded by validators.
+    ".veldo/control_claim.py",
+    ".veldo/control_claim_client.py",
+    ".veldo/control_client.py",
+    # VELDO-0046: ordinary committed-event delivery; no validator loads this module.
+    ".veldo/control_notify.py",
+    # VELDO-0064: the assignment inbox and its Telegram projection; no validator loads them.
+    ".veldo/control_assignment.py",
+    ".veldo/control_channel_projection.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.

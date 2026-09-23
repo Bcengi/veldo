@@ -1,0 +1,31 @@
+{
+  "production_commit": "5cf94c3a64d3aa1e6c47bae2cb9a90e9ea0d4357",
+  "suite_sha256": "d954409a1b0438acf98cb49058879ceb5fa9a364d7a0b9431a4aedd0171919cb",
+  "observations": [
+    [
+      "VELDO-0031 review claims/review-r1",
+      false
+    ],
+    [
+      "VELDO-0031 review claims/review-r2",
+      false
+    ],
+    [
+      "VELDO-0031 review claims/review-r3",
+      false
+    ],
+    [
+      "VELDO-0031 review claims/review-r4",
+      false
+    ],
+    [
+      "VELDO-0031 review claims/review-r5",
+      false
+    ],
+    [
+      "VELDO-0031 review claims/review-r6",
+      false
+    ]
+  ],
+  "details": "  review R1: AssertionError(['AttributeError', 'AttributeError', 'invalid_input', 'invalid_input', 'TypeError', 'TypeError', 'TypeError', 'TypeError', 'UnicodeEncodeError', 'not_authorized', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused', 'RoutingRefused'])\n  review R2: AssertionError([('READY', 'PRIORITIZED', 'use', 'ownership_uncertain'), ('READY', 'PRIORITIZED', 'inspect', 'owned'), ('READY', 'PRIORITIZED', 'claim', 'claimed'), ('READY', 'PRIORITIZED', 'renew', 'ownership_uncertain'), ('READY', 'PRIORITIZED', 'release', 'release')])\n  review R3: AssertionError(('unanswerable', ['finalize']))\n  review R4: AssertionError()\n  review R5: AssertionError(('renew', {'ok': False, 'reason': 'ownership_uncertain'}))\n  review R6: AssertionError(['claim_client_claim', 'claim_client_claim'])\n"
+}

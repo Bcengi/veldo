@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -295 +295 @@
+-            held = self._held_claims(entities, principal)
++            held = [c for c in self._held_claims(entities, principal) if c[1].get('unit_id') == content.get('unit_id')]

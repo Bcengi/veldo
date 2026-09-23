@@ -1,0 +1,11 @@
+{
+  "suite_runs_seconds": [
+    4.929541168035939,
+    4.5299483018461615
+  ],
+  "mutation_stage_seconds": 14.722175881965086,
+  "gate_added_workload_seconds": 24.181665351847187,
+  "mutations": 18,
+  "workers": 30,
+  "measurement": "isolated added workload including snapshot overhead; full gate remains unfiltered"
+}

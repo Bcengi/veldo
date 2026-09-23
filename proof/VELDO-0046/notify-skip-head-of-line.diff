@@ -1,0 +1,4 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -191 +190,0 @@
+-            blocked |= owed

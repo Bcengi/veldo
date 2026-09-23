@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -588 +588 @@
+-        key = self._answer_key(state, data, row, inputs)
++        key = self.AC.active_key(state['keyring'], data['owner'], now)

@@ -1,0 +1,16 @@
+{
+  "commit": "5afb4515f61686def15d5e0a9f87263ed7efec10",
+  "result": "stopped after confirmed shape failures; incomplete, not gate evidence",
+  "full_log_sha256": "696587962c116f01bc87877d76747e504922caf3e8251c384d54d33872b8e68e",
+  "failure": "scripts/check_teeth_mutations.py missing from spec footprint; authorized registry path now declared",
+  "failed_rows": [
+    "SELFTEST FAIL: WARP-1102 AC5 dogfood: over the real change set, footprint-versus-diff passes (this spec's footprint covers every path it touches)",
+    "SELFTEST FAIL: WARP-1102 AC6 RJ1: the current change under evaluation yields NO shape-gate problems (green safe, the enforcement did not break our own build)"
+  ],
+  "lifecycle_followup": {
+    "result": "unit passed; gate stopped during integration for canonical lifecycle correction",
+    "unit": "selftest: 5681 passed, 0 failed",
+    "full_log_sha256": "893ea0bc5666393ba1e8b9297405f09b66b61d7b829d6ec5848b6300a1c17cb5",
+    "correction": "Use existing READY/CLAIMED and PRIORITIZED/ACTIVE lifecycle names; allow current protected use through running and landing phases. Final clean gate rerun required."
+  }
+}

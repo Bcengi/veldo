@@ -1,0 +1,5 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -202 +202 @@
+-        return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))
++        return 0.0

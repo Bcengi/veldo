@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -60 +60 @@
+-    if live == 'stale' and action in ('renew', 'release'):
++    if False:

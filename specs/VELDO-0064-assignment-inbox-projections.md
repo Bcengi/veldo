@@ -29,12 +29,16 @@ footprint:
   - "engine/.veldo/control_channel_projection*.py"
   - ".veldo/control_channel_projection*.py"
   - "packs/*/.veldo/control_channel_projection*.py"
+  - "engine/.veldo/control_claim.py"
+  - ".veldo/control_claim.py"
+  - "packs/*/.veldo/control_claim.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0064_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0064-assignment-inbox-projections.md"
   - "specs/index.md"
   - "proof/VELDO-0064/*"
@@ -115,6 +119,15 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Open question for the owner (review r2, 2026-09-23). This item does not say what becomes of the
+blocked unit when its assignment is declined or canceled, or when the owner's answer no longer
+admits (for example, a key revoked from before the answer was accepted). Such a unit stays
+parked: no Release 1 command claims it, resumes it or returns it to the backlog. The inbox lists
+every parked unit with its assignment and why it is parked (`parked_units`, and `parked` and
+`parked_by_reason` in its metrics), so none is invisible, but the implementation decides
+nothing about it. Whether a decline or cancel should release the unit, re-open it for another
+holder, retire it, or wait for a new assignment is the owner's decision.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: the owner narrowed this work under
@@ -125,3 +138,14 @@ channels moved to Release 4. Jira-specific projection work is dropped. Telegram 
 release of waiting workers remain. The criteria, declared evidence universe, Context and Notes
 above now carry only the retained function. No specification status or historical proof was
 changed.
+
+2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 64 of the existing teeth mutation driver. The
+criteria, status and risk are unchanged.
+
+2026-09-23, review r1: the claim organ (`control_claim.py`, VELDO-0031) was added to the
+footprint because the parked state is part of this item's contract: a unit whose claim was given
+up for a pending person assignment must not be claimable until that assignment admits the
+blocked work. The change is made through the claim organ's own transition, as a `park` release
+and a `resume` claim that only the inbox's store transaction reaches, and the VELDO-0031 suites
+and finding-31 mutations stay green. The criteria, status and risk are unchanged.
