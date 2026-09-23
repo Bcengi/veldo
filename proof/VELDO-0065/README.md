@@ -455,7 +455,7 @@ or row cases red at `9319783` by their own assertions, then green.
 | --- | --- | --- | --- | --- | --- |
 | 1 (q1, q2, q3, q6, blocking) | "A new presentation is coming" was sent where none would come (an unframed revision, a framing that no longer counts), and messages went to an owner whose membership or chat enrollment no longer held | One order for every message back: nothing at all for an owner no longer current (`owner_not_current`); a recorded answer is told "already answered: <ruling>" first; a new presentation is promised only when nothing refuses and only a bound field changed, otherwise the neutral "no longer current" | `answer/stale-current-told` (rewritten: it had asserted the promise for the framer-revoked case), `answer/owner-not-current-silent`, `answer/redelivered-after-closed` (its control now expects "already answered") | `stale-neutral-not-told`, `owner-enrollment-unchecked`, `owner-membership-unchecked`, `answered-told-only-while-pending` (plus the ones removed below) | `b570c09` |
 | 2 (q7) | An out-of-scope edge re-sending the recorded answer learned `already_answered` | The edge scope check runs before the redelivery check | `answer/closed-tell-after-edge-scope` | `redelivery-before-edge-scope` | `20e0f15` |
-| 3 (q4, q5) | A ledger whose `revoked` was a number raised a TypeError that took `publish()` down; a list or string was read as a set | frame() and the presenter refuse any `revoked` that is not a mapping | `framing/ledger-read-fails-closed` | `frame-ledger-any-shape` | `7cc42f5` |
+| 3 (q4, q5) | A ledger whose `revoked` was a number raised a TypeError that took `publish()` down; a list or string was read as a set | Any `revoked` that is not a mapping is refused: frame() refuses the framing as `not_authorized`, and the presenter refuses publishing with `missing_framing` (the stored framing no longer counts) | `framing/ledger-read-fails-closed` | `frame-ledger-any-shape` | `7cc42f5` |
 | 4 | The docstring named four colons | It names the five characters it splits at, U+2A74 DOUBLE COLON EQUAL included | none (documentation) | none | `4ac1e92` |
 | 5 | The mutation stage cost too much | 14 redundant mutations removed (below) | none | none | `47b1a11` |
 
@@ -499,15 +499,45 @@ is red there.
 presentation only where one then comes, answers "already answered" first and sends nothing to a
 revoked owner; q2 sends nothing to an unenrolled chat and one message per inbound message; q3 sends
 nothing for a closed request whose owner or enrollment was revoked; q4 and q5 refuse every ledger
-shape by name; q7 refuses the out-of-scope edge as `not_authorized`. q6 prints its `BUG` line
+shape by name (frame() as `not_authorized`, the presenter as `missing_framing`); q7 refuses the out-of-scope edge as `not_authorized`. q6 prints its `BUG` line
 whenever anything is sent after an unframed revision; what is sent there is now the neutral "no
 longer current", not a promise, so that line no longer describes a defect.
+
+## Seventh review fix, 2026-09-23
+
+A seventh review found one blocker in normal use: an owner revoked through the revocation ledger
+(`authority:revocations`, the ledger `is_revoked` in the revocation organ treats as ending a
+principal's authority) still got replies and had an answer accepted, because the owner-current check
+and `bindings()` read only the membership's `revoked_at` and the chat enrollment. Both now also read
+the ledger through one reader, `_ledger_revokes`, the way frame() and the stored-framing check read
+it: any entry naming the owner counts, and a ledger of another kind, one that does not match its
+digest or whose `revoked` is not a mapping fails closed. A reply from such an owner is refused
+`owner_not_current` with nothing sent, exactly like a membership revocation, and a new request of
+that owner is not presented (`missing_authority`). `bindings()` pins the ledger version it read, so a
+revocation landing before the commit refuses it.
+
+| Gap at 3183845 | Row | Mutations | Commit |
+| --- | --- | --- | --- |
+| A ledger-revoked owner (membership and enrollment untouched) was told the valid choices for a nonsense reply, had a valid answer accepted, was told a closed request is no longer open, and had a new request presented | `answer/owner-ledger-revoked-silent` (with an additive control: the ledger restored, a request of the same owner is presented and a reply told the valid choices) | `owner-ledger-unread` (the owner-current check skips the ledger), `ledger-owner-not-looked-up` (the ledger read but the owner not looked up), `bindings-ledger-unread` (`bindings()` skips the ledger) | `3a3d483` |
+
+`owner-membership-unchecked` now anchors on the ledger check that follows the membership check; the
+mutation itself is unchanged and still reds `answer/owner-not-current-silent` (`b280ffd`).
+
+**Red at 3183845.** `python3 -B proof/VELDO-0065/drive.py --red 3183845` wrote `red-at-3183845.json`:
+only the new row fails, by five of its own assertions (the three replies, the recorded answer and
+the presentation), with no section raising; its control is green there.
+
+**Mutations.** `python3 scripts/check_teeth_mutations.py --finding 65 --jobs 4` rejected all 87
+(`{"mutations_rejected": 87, "green_suites": {"62_veldo_0065_presentations.py": 67}}`), each of the
+three new ones red on `answer/owner-ledger-revoked-silent` alone, by assertion, in 3 min 3 s at a
+load average of about 5 to 7. `mutations.json` was not regenerated this round (the serial `drive.py`
+run); it still lists the 84 of the sixth round.
 
 ## Measurements
 
 The suite runs in about 7.5 to 9 s at the host's current load (7.60, 8.04 and 9.17 s measured at a
-load average of 12 to 17 on 20 cores), 40 rows; on a quiet host it ran in about 6 s last round.
-Finding 65 now has 84 mutations (98 before the redundancy cut). With the merged driver,
+load average of 12 to 17 on 20 cores; 7.3 to 7.6 s this round), 41 rows; on a quiet host it ran in
+about 6 s. Finding 65 now has 87 mutations (84 after the sixth round's redundancy cut). With the merged driver,
 `python3 -B scripts/check_teeth_mutations.py --finding 65 --jobs 8` took 1 min 43 s
 (`{"mutations_rejected": 84, ...}`); `drive.py`, which runs every case serially with a baseline and
 a no-op per module, took 13 min 7 s. New stage estimate: the gate's mutation stage runs 88 suite

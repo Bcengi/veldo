@@ -1201,8 +1201,8 @@ class Presenter:
             # The recorded answer itself delivered again: it needs no reply, whatever has happened to
             # the request since, so this comes before every message back.
             raise Refused('already_answered', 'this is the recorded answer, delivered again')
-        # Nothing at all goes to an owner who is no longer a current member or whose chat enrollment
-        # no longer holds, whatever the reply says.
+        # Nothing at all goes to an owner who is no longer a current member, whom the revocation
+        # ledger revokes, or whose chat enrollment no longer holds, whatever the reply says.
         if not self._owner_current(receipt):
             raise Refused('owner_not_current', 'the owner or the owner\'s chat enrollment is no longer current')
         if recorded is not None:

@@ -192,7 +192,14 @@ unchanged.
 2026-09-23, review r6: a sixth review left one blocker and four items, each fixed test first,
 recorded in the proof README: messages back follow one order (nothing to an owner no longer current,
 "already answered" first, a new presentation promised only when one will come); the edge scope check
-precedes the redelivery check; a ledger of the wrong shape is a named refusal; the split docstring
+precedes the redelivery check; a ledger of the wrong shape is refused by name (frame() as not_authorized, the presenter refusing to publish with missing_framing); the split docstring
 names its characters. To reduce the gate cost, 14 redundant finding-65 mutations were
 removed (each one's failing checks contain another kept mutation's, seven of them an equal set), keeping at least two
 per row; the list and reason are in the proof README. The criteria, status and risk are unchanged.
+
+2026-09-23, review r7: a seventh review found that an owner revoked through the revocation ledger
+still got replies and had an answer accepted. The owner-current check and the presentation bindings
+now read the ledger as frame() does, failing closed: such an owner is refused owner_not_current with
+nothing sent, and a new request of that owner is not presented. Fixed test first with its own row
+and three registered mutations, recorded in the proof README. The criteria, status and risk are
+unchanged.

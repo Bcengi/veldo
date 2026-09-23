@@ -1,0 +1,194 @@
+{
+ "commit": "31838455e776549e834b1d962b985778a5f2c72c",
+ "details": [
+  "VELDO-0065 answer/owner-ledger-revoked-silent detail: a pending nonsense reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+  "VELDO-0065 answer/owner-ledger-revoked-silent detail: a pending valid answer reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+  "VELDO-0065 answer/owner-ledger-revoked-silent detail: a closed request reply after the ledger revoked the owner is refused owner_not_current and nothing is sent",
+  "VELDO-0065 answer/owner-ledger-revoked-silent detail: the valid answer is not recorded",
+  "VELDO-0065 answer/owner-ledger-revoked-silent detail: a request of the ledger-revoked owner is not presented, and nothing is sent"
+ ],
+ "failed_rows": [
+  "VELDO-0065 answer/owner-ledger-revoked-silent"
+ ],
+ "modules": {
+  "control_channel_presentation.py": {
+   "changed": [],
+   "sha256": "b25ac6e21a0847c6dde4b4009df900377a58c5efb4239dfb600ba1ceee1f102e"
+  },
+  "control_channel_projection.py": {
+   "changed": [],
+   "sha256": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0065 install/assets",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/receipt-binds-shown-content",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/revision-identity",
+   true
+  ],
+  [
+   "VELDO-0065 answer/current-presentation-only",
+   true
+  ],
+  [
+   "VELDO-0065 answer/ruling-and-rationale",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/visible-supersession",
+   true
+  ],
+  [
+   "VELDO-0065 answer/unseen-refused",
+   true
+  ],
+  [
+   "VELDO-0065 answer/settle-consumes-answer",
+   true
+  ],
+  [
+   "VELDO-0065 framing/requester-only",
+   true
+  ],
+  [
+   "VELDO-0065 framing/stored-framing-reverified",
+   true
+  ],
+  [
+   "VELDO-0065 answer/not-before-publication",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/private-chat-only",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/replacement-without-reply-target",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/reply-link-verified",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/long-brief-split",
+   true
+  ],
+  [
+   "VELDO-0065 projection/one-message-per-version",
+   true
+  ],
+  [
+   "VELDO-0065 framing/key-by-store-order",
+   true
+  ],
+  [
+   "VELDO-0065 projection/notice-superseded",
+   true
+  ],
+  [
+   "VELDO-0065 projection/silent-from-store",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/refused-part-sent-again",
+   true
+  ],
+  [
+   "VELDO-0065 answer/choice-matching-and-feedback",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/notice-kind-fixed",
+   true
+  ],
+  [
+   "VELDO-0065 framing/frame-and-presenter-agree",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/retry-after-bounded",
+   true
+  ],
+  [
+   "VELDO-0065 answer/choice-normalization",
+   true
+  ],
+  [
+   "VELDO-0065 answer/after-answered-reply",
+   true
+  ],
+  [
+   "VELDO-0065 answer/tell-once-per-message",
+   true
+  ],
+  [
+   "VELDO-0065 projection/in-flight-notice-superseded",
+   true
+  ],
+  [
+   "VELDO-0065 framing/ledger-read-fails-closed",
+   true
+  ],
+  [
+   "VELDO-0065 presentation/retry-after-capped",
+   true
+  ],
+  [
+   "VELDO-0065 answer/reply-nfkc-before-split",
+   true
+  ],
+  [
+   "VELDO-0065 answer/redelivered-answer-silent",
+   true
+  ],
+  [
+   "VELDO-0065 answer/reply-after-closed",
+   true
+  ],
+  [
+   "VELDO-0065 projection/notices-per-version",
+   true
+  ],
+  [
+   "VELDO-0065 projection/pending-notice-reconciled-after-replacement",
+   true
+  ],
+  [
+   "VELDO-0065 answer/redelivered-after-closed",
+   true
+  ],
+  [
+   "VELDO-0065 answer/closed-tell-after-edge-scope",
+   true
+  ],
+  [
+   "VELDO-0065 answer/rationale-original-text",
+   true
+  ],
+  [
+   "VELDO-0065 answer/stale-current-told",
+   true
+  ],
+  [
+   "VELDO-0065 answer/owner-not-current-silent",
+   true
+  ],
+  [
+   "VELDO-0065 answer/owner-ledger-revoked-silent",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.545,
+ "spec_id": "VELDO-0065",
+ "suite": "scripts/suites/62_veldo_0065_presentations.py"
+}
