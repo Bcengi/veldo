@@ -1,0 +1,120 @@
+--- a/review/h.py
++++ b/review/h.py
+@@ -3 +3 @@
+-M = Path('/tmp/rv0037/.veldo')
++M = Path('/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo')
+@@ -18,0 +19,4 @@
++    # ADAPTED: attach maps the repository to an accepted Git repository, enabling names an accepted
++    # revision, and the publisher root is a clone of that repository.
++    origin = make_repository(root / 'accepted-origin', b'repository\n')
++    (root / 'repos.json').write_text(json.dumps({'repository': str(origin)}))
+@@ -20,2 +24,4 @@
+-    svc = al.attach(st, conn, 'domain', ['repository'])
+-    pub_root = root / 'checkout'; pub_root.mkdir()
++    svc = al.attach(st, conn, 'domain', {'repository': str(origin)})
++    accept(conn, signing, 'repository', origin)
++    pub_root = root / 'checkout'
++    subprocess.run(['git', 'clone', '-q', str(origin), str(pub_root)], check=True, capture_output=True)
+@@ -22,0 +29,11 @@
++def make_repository(path, readme):
++    path.mkdir(); (path / 'README.md').write_bytes(readme)
++    g = lambda *a: subprocess.run(['git', '-C', str(path), *a], check=True, capture_output=True)
++    g('init', '-q'); g('add', '.'); g('-c', 'user.name=x', '-c', 'user.email=x@x', 'commit', '-qm', 'accepted')
++    return path
++def accept(conn, signing, repository, origin):
++    head = subprocess.run(['git', '-C', str(origin), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout.strip()
++    st.execute(conn, {'command_id': 'accept-' + repository, 'principal': 'op', 'operation': 'upsert_entity',
++        'nonce': 'accept-%s/n' % repository, 'artifact_digests': [], 'expected_versions': {'revision/' + repository: 0},
++        'parameters': {'entity_id': 'revision/' + repository, 'kind': 'accepted_revision', 'data': {
++            'domain_uuid': 'domain', 'repository_uuid': repository, 'commit': head, 'documents': {}, 'statuses': {}}}}, **signing)
+@@ -25 +42,2 @@
+-        'kind': kind, 'prefix': prefix, 'width': 4, 'path_template': template, 'first': first}, **signing)
++        'kind': kind, 'prefix': prefix, 'width': 4, 'path_template': template, 'first': first,
++        'revision_id': 'revision/repository'}, **signing)
+@@ -31 +49 @@
+-    except (st.StoreRefused, al.SN.Refused) as e: return None, e
++    except (st.StoreRefused, al.SN.Refused, doc.SN.Refused) as e: return None, e  # ADAPTED: control_document loads its own snapshot module
+--- a/review/r1_symlink_parent.py
++++ b/review/r1_symlink_parent.py
+@@ -2 +2 @@
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<review>'); from h import *
+--- a/review/r2_path_collision.py
++++ b/review/r2_path_collision.py
+@@ -2 +2 @@
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<review>'); from h import *
+@@ -8 +8 @@
+-b = svc.allocate(req('b', 'm2', 'plan', None, b'plan bytes\n'), **sg)
++b, eb0 = attempt(lambda: svc.allocate(req('b', 'm2', 'plan', None, b'plan bytes\n'), **sg)); b = b or {'alias': None, 'path': None}  # ADAPTED
+@@ -11 +11 @@
+-pb, eb = attempt(lambda: pub.publish('repository', b['alias'], 1, 'p', **sg))
++pb, eb = attempt(lambda: pub.publish('repository', b['alias'], 1, 'p', **sg)) if b['alias'] else (None, eb0)  # ADAPTED
+--- a/review/r3_first_below_history.py
++++ b/review/r3_first_below_history.py
+@@ -3 +3 @@
+-import sys, subprocess; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, subprocess; sys.path.insert(0, '<review>'); from h import *
+@@ -11,0 +12,6 @@
++# ADAPTED: the accepted revision must name the reviewer's history commit, and a refused first=1 is
++# followed by an enable that lets the transition derive the first number.
++conn.close(); conn = st.open_store(root / 'r3.sqlite3'); svc = al.attach(st, conn, 'domain', {'repository': str(repo)})
++accept(conn, sg, 'repository', repo)
++_, err = attempt(lambda: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=1))
++if err: enable(svc, sg, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None, rid='enable-derived')
+--- a/review/r4_record_without_bytes.py
++++ b/review/r4_record_without_bytes.py
+@@ -3 +3 @@
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<review>'); from h import *
+--- a/review/r5_exact_bytes.py
++++ b/review/r5_exact_bytes.py
+@@ -2 +2 @@
+-import sys, os, stat; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, os, stat; sys.path.insert(0, '<review>'); from h import *
+--- a/review/r6_generic_upsert.py
++++ b/review/r6_generic_upsert.py
+@@ -3 +3 @@
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<review>'); from h import *
+--- a/review/r7_cross_repository.py
++++ b/review/r7_cross_repository.py
+@@ -3 +3 @@
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, subprocess; sys.path.insert(0, '<review>'); from h import *
+@@ -6,2 +6,5 @@
+-svc = al.attach(st, conn2, 'domain', ['repository', 'other'])
+-checkout_of_repository = root / 'repository-checkout'; checkout_of_repository.mkdir()
++origins = {r: make_repository(root / (r + '-origin'), r.encode()) for r in ('repository', 'other')}  # ADAPTED
++svc = al.attach(st, conn2, 'domain', {r: str(p) for r, p in origins.items()})
++for r, p in origins.items(): accept(conn2, sg, r, p)
++checkout_of_repository = root / 'repository-checkout'
++subprocess.run(['git', 'clone', '-q', str(origins['repository']), str(checkout_of_repository)], check=True, capture_output=True)
+@@ -11 +14 @@
+-                     'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md', 'first': 1}, **sg)
++                     'prefix': 'VELDO', 'width': 4, 'path_template': 'specs/{alias}-{slug}.md', 'first': 1, 'revision_id': 'revision/' + repo}, **sg)
+--- a/review/s1_parallel.py
++++ b/review/s1_parallel.py
+@@ -2 +2 @@
+-import sys, subprocess, json; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, subprocess, json; sys.path.insert(0, '<review>'); from h import *
+@@ -7 +7 @@
+-import sys, json; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys, json; sys.path.insert(0, '<review>'); from h import *
+@@ -12 +12 @@
+-conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', ['repository'])
++conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', json.loads((root / 'repos.json').read_text()))  # ADAPTED
+@@ -26 +26 @@
+-conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', ['repository'])
++conn = st.open_store(root / 'control.sqlite3'); svc = al.attach(st, conn, 'domain', json.loads((root / 'repos.json').read_text()))  # ADAPTED
+--- a/review/s2_case_prefix.py
++++ b/review/s2_case_prefix.py
+@@ -3 +3 @@
+-import sys; sys.path.insert(0, '/tmp/rv0037/review'); from h import *
++import sys; sys.path.insert(0, '<review>'); from h import *
+@@ -8 +8 @@
+-b = svc.allocate(req('b', 'm2', 'plan', 'x', b'B\n'), **sg)
++b, eb = attempt(lambda: svc.allocate(req('b', 'm2', 'plan', 'x', b'B\n'), **sg)); b = b or {'path': None}  # ADAPTED
+@@ -10 +10 @@
+-if a['path'].lower() == b['path'].lower() and a['path'] != b['path']:
++if b['path'] and a['path'].lower() == b['path'].lower() and a['path'] != b['path']:  # ADAPTED: None when refused

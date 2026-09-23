@@ -23,7 +23,14 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
+  - "packs/*/.veldo/control_store.py"
+  - "engine/.veldo/control_readset.py"
+  - ".veldo/control_readset.py"
+  - "packs/*/.veldo/control_readset.py"
   - "scripts/suites/*_veldo_0037_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0037-specification-alias-publication.md"
@@ -108,6 +115,38 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Stated limits of store-enforced ownership, not claims. Enforcement lives in
+`control_store.execute` under a same-account threat model, so raw SQL on the store file, a copy of
+the store module from before the rule, and deleting the `entity_owners` table all write owned
+entities; so does code that deliberately compiles a function under the declared module's file name
+or patches the owning module's globals in its own process. The declarations and the repository
+bindings are not in the journal, so a store rebuilt from its journal carries neither (Release 2
+recovery). A declaration names one module file and its bytes, so an owning service attaches only
+from that copy as it was when it first declared: an upgraded module, or the same module from
+another checkout's copy, is refused `ownership_conflict`, and Release 1 has no re-declaration path.
+
+The first-number floor does not depend on Git keeping a commit. When `accept_revision` first
+accepts a commit it records, in the same transaction and keyed by the domain, repository and commit
+id, the commit's root commits and every digit-bearing path named by the commits reachable from it
+and from no commit already recorded for that repository, a root commit counting as the creation of
+its tree (an `accepted_carriers` entity, immutable and owned by `accept_revision`). Enabling applies
+the kind's carrier pattern to the union of every record of the repository, and reads a named
+revision's root commits from its record, so a branch deleted, pruned or force-pushed after
+acceptance lowers nothing, and storage grows with the history, not with its square. A revision
+accepted before records existed is read from the bound repository while it holds the commit and
+refused `accepted_revision_unavailable` at enabling once it does not, never skipped. What
+acceptance reads from Git does not follow repository configuration: every option that
+configuration could change about which paths the history names is passed explicitly
+(`--diff-merges=separate`, `--root`, `--no-renames` and the rest), so `log.diffMerges=off` cannot
+hide a path only a merge adds. A shallow bound repository is refused `shallow_repository`, since
+its history is incomplete. Stated limit, not a claim: grafts (`.git/info/grafts`), which Git still
+reads and the shared Git boundary does not disable, can hide history under the same-account threat
+model, and a record made under one names only the history the graft shows. What clears one: none
+is needed, because none exists outside test stores (`accept_revision` and its record were both
+introduced on this branch, and every revision `accept_revision` writes now carries its record);
+one written around the commands, by raw SQL, is the stated same-account limit above, and Release 1
+has no operator path to retire an accepted revision.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
@@ -117,3 +156,43 @@ concurrency/restart matrices and AC3 interrupted materialization moved to Releas
 counter/source mapping, version checks and exact published bytes remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-23 implementation: register the AC1-AC3 negative controls in the existing
+`scripts/check_teeth_mutations.py` driver as finding 37 (the authorized footprint exception, also
+listed in the machine-readable footprint), with two distinct mutations per named criterion row
+and fresh unmutated controls. The allocation commands register on the existing store connection
+as 0035's read sets do; the store, its schema and the snapshot modules are consumed unchanged.
+No eligibility, project-manager, landing or remote publication behavior is implemented here.
+
+2026-09-23 second independent review: entity ownership moves into the store, so the footprint
+now also names `control_store.py` (VELDO-0023) and `control_readset.py` (VELDO-0035) in all three
+copies. The guard that refused generic writes of alias and document entities lived on the one
+connection the allocation authority attached to, so another connection, or a read set enabled after
+attach, could rewind the counter and rewrite an immutable version. Each service now declares which
+commands write the entity kinds and id prefixes it owns; the declaration is persisted with the store
+and `control_store.execute` enforces it on every connection whatever was registered where or in what
+order. Accepted revisions and snapshots (VELDO-0035) are declared owned the same way. The store's
+existing behavior for undeclared entities, its domain tables and its command registry are unchanged.
+
+2026-09-23 third independent check: ownership named only a command, so a connection registering
+its own transition as `enable_artifact_kind` or `accept_revision` passed it; each declaration now
+records the owning module's file and digest, and `execute` runs an owned command only when its
+registered transition, and every function its closure holds, is that file's code with those bytes
+(`foreign_transition` otherwise), and no declaration may name one of the store's generic commands.
+An accepted revision could name a commit the allocation authority's repository lacks, after which
+every enabling refused; the first service to attach now binds each repository UUID to its accepted
+repository in the store (`repository_binding_conflict` for another), `accept_revision` refuses
+`unenrolled_commit` for a commit the bound repository does not hold at acceptance time, and the
+floor counts only accepted commits the bound repository holds. No revision recorded before this
+fix exists outside test stores: `accept_revision` was introduced on this branch, and a store
+holding accepted revisions written by generic commands already refuses both attaches
+`ownership_conflict`, so no operator clearing path is needed.
+
+2026-09-23 recorded numbers: the floor skipped an accepted commit the bound repository no longer
+held, so a branch deleted and pruned after acceptance lowered the next first number and could issue
+a held number again. `accept_revision` now records each accepted commit's carrier paths in the
+store and the floor reads that record; an unrecorded revision whose commit is gone refuses
+`accepted_revision_unavailable` instead of being skipped. Each record then held the whole
+history; it now holds only what its commit adds over every recorded commit, and the floor reads the
+union of the records. A fourth check then found merge paths read through
+`log.diffMerges`, now explicit, and a shallow bound repository accepted, now refused.

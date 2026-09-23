@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -256 +256 @@
+-def _meet(first, second, directories=True):
++def _meet(first, second, directories=False):

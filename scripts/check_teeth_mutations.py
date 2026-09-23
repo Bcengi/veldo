@@ -410,6 +410,216 @@ def cases():
     snapshots('snapshot-accept-noncommit-id', 'control_snapshot.py',
               '    if result.returncode or result.stdout.decode().strip() != commit:',
               '    if False:', 'status-only-commit')
+    # VELDO-0037: each declared falsifier and a distinct second mutation turn the same named
+    # row red; the gate additionally drives an unchanged copy. Two further rows get one each.
+    def aliases(name, module, old, new, row):
+        add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row])
+
+    aliases('alias-checkout-maximum', 'control_alias.py',
+            "        number = kind['next']\n",
+            "        number = 1 + maximum([p.relative_to(request['workspace']).as_posix()"
+            " for p in Path(request['workspace']).rglob('*')], kind)\n", 'aliases/stale-checkouts')
+    aliases('alias-counter-not-advanced', 'control_alias.py',
+            'dict(kind, next=number + 1)', 'dict(kind, next=number)', 'aliases/stale-checkouts')
+    aliases('document-ignore-digest', 'control_alias.py',
+            "        if current['digest'] != p['expected_digest']:", '        if False:',
+            'documents/stale-overwrite')
+    aliases('document-current-version', 'control_alias.py',
+            "            expected = request['expected_version']\n", '            expected = head_version\n',
+            'documents/stale-overwrite')
+    aliases('publication-altered-bytes', 'control_document.py',
+            '                    output.write(body)\n                    output.flush()\n'
+            '                    os.fsync(output.fileno())\n'
+            '                observed = SN.digest(_read_at(parent, temporary, path))\n',
+            "                    output.write(body + b'.')\n                    output.flush()\n"
+            '                    os.fsync(output.fileno())\n                observed = digest\n',
+            'publication/accepted-documents')
+    aliases('publication-normalized-newlines', 'control_document.py',
+            '                output.write(body)\n',
+            "                output.write(body.replace(b'\\r\\n', b'\\n'))\n", 'publication/accepted-documents')
+    aliases('reader-trusts-record', 'control_document.py',
+            '    observed = SN.digest(body)\n', "    observed = obligation['observed_digest']\n",
+            'publication/tampered-refused')
+    # Review defects: every row gets its reintroducing mutation and a second, distinct one.
+    aliases('publication-follow-parent-symlink', 'control_document.py',
+            "_DIRECTORY = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, 'O_CLOEXEC', 0)",
+            "_DIRECTORY = os.O_RDONLY | os.O_DIRECTORY | getattr(os, 'O_CLOEXEC', 0)",
+            'publication/no-symlink-escape')
+    aliases('reader-follows-links', 'control_document.py',
+            "        body = read_exact(os.path.realpath(root), data['path'])\n",
+            "        body = (Path(root) / data['path']).read_bytes()\n", 'publication/no-symlink-escape')
+    aliases('alias-overlap-unchecked', 'control_alias.py',
+            '            if _meet(_items(data), _items(other)):', '            if False:', 'aliases/one-path-per-kind')
+    aliases('alias-overlap-ignores-directories', 'control_alias.py',
+            'def _meet(first, second, directories=True):', 'def _meet(first, second, directories=False):',
+            'aliases/one-path-per-kind')
+    aliases('alias-trusts-first-number', 'control_alias.py',
+            '        elif first < floor:', '        elif False:', 'aliases/historical-floor')
+    # Since the recorded-numbers fix the history is read once, at acceptance, by
+    # control_readset.carrier_paths; this is the same defect at the code that now reads it: the
+    # commit's tree listed instead of its history.
+    aliases('alias-floor-ignores-history', 'control_readset.py',
+            "    result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',\n"
+            "                                  '--ignore-missing', '--stdin', commit, '--'],",
+            "    result = SN._git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],",
+            'aliases/historical-floor')
+    aliases('alias-owners-undeclared', 'control_alias.py',
+            '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)', '    pass',
+            'aliases/generic-writes-refused')
+    aliases('store-owner-by-new-kind-only', 'control_store.py',
+            '                hit = value in kinds if selector == "kind" else eid.startswith(value)',
+            '                hit = selector == "kind" and value == new["kind"]', 'aliases/generic-writes-refused')
+    aliases('publisher-any-repository', 'control_document.py',
+            '            if repository != self.repository:', '            if False:', 'publication/bound-to-repository')
+    aliases('reader-any-checkout', 'control_document.py',
+            '    if enrolled_repository(root, store_file(conn), domain_uuid, verify, host_identity) != repository:',
+            '    if False:', 'publication/bound-to-repository')
+    aliases('record-trusts-supplied-digest', 'control_alias.py',
+            "            visible = publisher.visible_digest(data['path'])", "            visible = p['observed_digest']",
+            'publication/recorded-only-by-publisher')
+    aliases('record-missing-file-accepted', 'control_alias.py',
+            "        if visible is None:\n            self._refuse('missing_publication', '%s is not in the bound checkout' % data['path'])",
+            "        if visible is None:\n            visible = data['digest']", 'publication/recorded-only-by-publisher')
+    aliases('alias-prefix-case-sensitive', 'control_alias.py',
+            "            if other['prefix'].casefold() == data['prefix'].casefold():",
+            "            if other['prefix'] == data['prefix']:", 'aliases/case-insensitive-names')
+    aliases('alias-paths-case-sensitive', 'control_alias.py',
+            '    return [(frozenset(character), False) for character in text.casefold()]',
+            '    return [(frozenset(character), False) for character in text]', 'aliases/case-insensitive-names')
+    aliases('alias-reserved-unchecked', 'control_alias.py',
+            '        problem = _reserved_problem(data)\n', '        problem = None\n', 'aliases/reserved-directories')
+    aliases('alias-reserved-literal-only', 'control_alias.py',
+            '            if _meet(items, _literal(name), directories=False):', '            if component == name:',
+            'aliases/reserved-directories')
+    aliases('alias-skip-unit-id', 'control_alias.py',
+            "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
+            'aliases/invalid-unit-id')
+    # Second review (2026-09-23): each row's reintroducing mutation, then a second, distinct one.
+    # The history walk no longer narrows by a pathspec (it records every path holding a digit), so
+    # the case-sensitive pathspec this replaced has no code left; the carrier pattern's case is
+    # what now decides whether Specs/ counts for specs/.
+    aliases('alias-floor-carrier-case-sensitive', 'control_alias.py',
+            '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.DOTALL)',
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-slug-grammar', 'control_alias.py',
+            "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'",
+            "    regex += '([0-9]+)(?![0-9])-[a-z0-9]+(?:-[a-z0-9]+)*[.][a-z]+'", 'aliases/floor-counts-every-carrier')
+    aliases('store-owners-only-where-registered', 'control_store.py',
+            '        owners = entity_owners(conn)\n', '        owners = entity_owners(conn) if conn.command_registry else []\n',
+            'aliases/owned-on-every-connection')
+    aliases('store-owners-unchecked', 'control_store.py',
+            '                if hit and command["operation"] not in commands:', '                if False:',
+            'aliases/owned-on-every-connection')
+    aliases('store-owners-skip-registered-transitions', 'control_store.py',
+            '        owners = entity_owners(conn)\n',
+            '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
+            'aliases/owned-whatever-registration-order')
+    aliases('alias-floor-named-revision-only', 'control_alias.py',
+            "        union = [path for record in records.values() for path in record['paths']]\n",
+            "        union = list((records.get(accepted['commit']) or {}).get('paths', []))\n",
+            'aliases/floor-from-every-accepted-revision')
+    aliases('revision-regression-allowed', 'control_readset.py',
+            "                if not _descends(repo, data['commit'], commit):", '                if False:',
+            'aliases/floor-from-every-accepted-revision')
+    aliases('publisher-infers-root-commits', 'control_document.py',
+            '        repository = enrolled_repository(self.root, store_file(service.conn), service.domain_uuid, verify, host_identity)\n',
+            '        repository = next((r for r, roots in service.identities.items() if roots == AL.root_commits(self.root)), None)\n',
+            'publication/bound-by-enrollment')
+    aliases('binding-signature-unchecked', 'control_document.py',
+            '        problems = EN.verify_binding(root, binding, verify, host_identity, domain_uuid=domain_uuid)',
+            '        problems = EN.verify_binding(root, binding, lambda message, signature: True, host_identity, domain_uuid=domain_uuid)',
+            'publication/bound-by-enrollment')
+    aliases('readset-snapshots-undeclared', 'control_readset.py',
+            '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)\n', '',
+            'aliases/owned-whatever-registration-order')
+    # Third review (2026-09-23): each row's reintroducing mutation, then distinct second ones.
+    aliases('revision-any-repository', 'control_readset.py',
+            '            if bound is None or not _holds(bound, commit):', '            if False:',
+            'aliases/revision-in-enrolled-repository')
+    aliases('enable-reads-unbound-repository', 'control_alias.py',
+            '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
+            'aliases/revision-in-enrolled-repository')
+    aliases('repository-binding-unchecked', 'control_store.py',
+            '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
+    aliases('store-owner-by-name', 'control_store.py',
+            '        if origin is not None:', '        if False:', 'aliases/owned-by-code-not-name')
+    aliases('store-owner-ignores-digest', 'control_store.py',
+            '    if module_digest(module) != digest:', '    if False:', 'aliases/owned-by-code-not-name')
+    aliases('store-owner-outer-code-only', 'control_store.py',
+            '        for cell in function.__closure__ or ():', '        for cell in ():', 'aliases/owned-by-code-not-name')
+    aliases('owners-may-name-generic-commands', 'control_store.py',
+            '            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))', '            builtin = []',
+            'aliases/owned-by-code-not-name')
+    # Recorded numbers (2026-09-23): the floor reads what accept_revision recorded, and a revision
+    # recorded before that rule whose commit is gone is refused by name, never skipped.
+    aliases('floor-rederives-ignoring-record', 'control_alias.py',
+            '            if commit in records:\n                continue\n', '', 'aliases/floor-from-recorded-numbers')
+    aliases('legacy-lost-commit-skipped', 'control_alias.py',
+            "            else:\n                self._refuse('accepted_revision_unavailable',",
+            "            elif False:\n                self._refuse('accepted_revision_unavailable',", 'aliases/floor-from-recorded-numbers')
+    aliases('acceptance-records-no-paths', 'control_readset.py',
+            "'paths': carrier_paths(bound, commit, base)}}", "'paths': []}}",
+            'aliases/floor-from-recorded-numbers')
+    # Incremental records (2026-09-23): each record holds what its commit adds over every recorded
+    # commit, and the floor reads the union of every record.
+    aliases('floor-reads-current-records-only', 'control_alias.py',
+            "        union = [path for record in records.values() for path in record['paths']]\n",
+            "        union = [path for commit in commits if commit in records for path in records[commit]['paths']]\n",
+            'aliases/records-hold-only-what-a-commit-adds')
+    aliases('increment-against-head', 'control_readset.py',
+            '                base = sorted(carrier_records(conn, self.domain_uuid, repository))',
+            "                base = ['HEAD']", 'aliases/records-hold-only-what-a-commit-adds')
+    aliases('named-revision-reads-git', 'control_alias.py',
+            "        if named is not None:\n            roots = named['root_commits']",
+            "        if False:\n            roots = named['root_commits']", 'aliases/records-hold-only-what-a-commit-adds')
+    # Fourth check (2026-09-23): what acceptance reads does not follow repository configuration, an
+    # increment after a lost recorded commit, and a shallow bound repository refused.
+    aliases('history-merges-by-config', 'control_readset.py',
+            "HISTORY_OPTIONS = ('--diff-merges=separate', '--root',", "HISTORY_OPTIONS = ('-m', '--root',",
+            'aliases/history-read-whatever-repository-config')
+    aliases('history-root-by-config', 'control_readset.py',
+            "'--diff-merges=separate', '--root', '--no-renames',", "'--diff-merges=separate', '--no-renames',",
+            'aliases/history-read-whatever-repository-config')
+    aliases('increment-without-ignore-missing', 'control_readset.py',
+            "'--ignore-missing', '--stdin', commit, '--'],", "'--stdin', commit, '--'],",
+            'aliases/increment-after-a-lost-record')
+    aliases('increment-ignores-recorded-base', 'control_readset.py',
+            '                base = sorted(carrier_records(conn, self.domain_uuid, repository))', '                base = []',
+            'aliases/increment-after-a-lost-record')
+    aliases('shallow-accepted', 'control_readset.py',
+            '    _require_complete_history(repo)\n', '', 'aliases/shallow-repository-refused')
+    aliases('shallow-check-reads-bare', 'control_readset.py',
+            "'rev-parse', '--is-shallow-repository'],", "'rev-parse', '--is-bare-repository'],",
+            'aliases/shallow-repository-refused')
+    # Fifth check (2026-09-23): a newline below the number, a gitlink under ignored submodules, and
+    # a signed history under log.showSignature.
+    aliases('alias-floor-carrier-single-line', 'control_alias.py',
+            '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.IGNORECASE)',
+            'aliases/floor-counts-every-carrier')
+    # Sixth check (2026-09-23): a newline at every other carrier position the pattern reads.
+    aliases('alias-floor-component-single-line', 'control_alias.py',
+            "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'", "    regex += '([0-9]+)(?![0-9])[^/\\n]*(?:/.*)?'",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-prefix-single-line', 'control_alias.py',
+            "        regex += '[^/]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'",
+            "        regex += '[^/\\n]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-slug-directory-single-line', 'control_alias.py',
+            "    return ''.join('[^/]*' if part == '{slug}' else re.escape(part)",
+            "    return ''.join('[^/\\n]*' if part == '{slug}' else re.escape(part)",
+            'aliases/floor-counts-every-carrier')
+    aliases('history-submodules-by-config', 'control_readset.py',
+            "'--no-relative', '--ignore-submodules=none',", "'--no-relative',",
+            'aliases/gitlink-carrier-whatever-submodule-config')
+    aliases('history-ignores-all-submodules', 'control_readset.py',
+            "'--ignore-submodules=none',", "'--ignore-submodules=all',",
+            'aliases/gitlink-carrier-whatever-submodule-config')
+    aliases('history-signatures-by-config', 'control_readset.py',
+            "'--no-notes', '--no-show-signature')", "'--no-notes')",
+            'aliases/signed-history-whatever-signature-config')
+    aliases('history-shows-signatures', 'control_readset.py',
+            "'--no-notes', '--no-show-signature')", "'--no-notes', '--show-signature')",
+            'aliases/signed-history-whatever-signature-config')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
@@ -1009,7 +1219,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 52, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 37, 46, 52, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

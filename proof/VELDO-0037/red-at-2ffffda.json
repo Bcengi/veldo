@@ -1,0 +1,209 @@
+{
+  "completed": true,
+  "control_rows_green": {
+    "aliases/increment-after-a-lost-record": true
+  },
+  "defect_observations": {
+    "accept-after-lost-record": {
+      "accept-after-loss": null,
+      "enable": null,
+      "next": 12,
+      "record": [
+        "specs/VELDO-0011-next.md"
+      ],
+      "side": null,
+      "side-lost": true
+    },
+    "configuration-independent": {
+      "enable": null,
+      "next": 31,
+      "oracle-next": 91,
+      "record": [
+        "specs/VELDO-0030-root.md"
+      ]
+    },
+    "shallow-repository": {
+      "deepened-accept": null,
+      "enable": "wrong_repository",
+      "next": null,
+      "oracle-next": 81,
+      "shallow-accept": null,
+      "shallow-record": true
+    }
+  },
+  "defect_rows_red": {
+    "aliases/history-read-whatever-repository-config": true,
+    "aliases/shallow-repository-refused": true
+  },
+  "failed_rows": [
+    "aliases/history-read-whatever-repository-config",
+    "aliases/shallow-repository-refused"
+  ],
+  "module_sha256": {
+    "control_alias.py": "7e33cc4f158ea676dbb778266fc1fad5c97a877fa3625476235b16bdb5d4de97",
+    "control_readset.py": "49bbade8eef735a5711e64a836fdbc12fedd02c9717e1b9e5e252941b95d077a",
+    "control_store.py": "4c5229e50d0bef76063ac6dacff3a7532443d34508137ff738aa4e5cb251dd76"
+  },
+  "reviewed_commit": "2ffffda37735c5bca4e46afc72754264fcbcbc3a",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      true
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      true
+    ],
+    [
+      "aliases/owned-by-code-not-name",
+      true
+    ],
+    [
+      "aliases/floor-from-recorded-numbers",
+      true
+    ],
+    [
+      "aliases/records-hold-only-what-a-commit-adds",
+      true
+    ],
+    [
+      "aliases/history-read-whatever-repository-config",
+      false
+    ],
+    [
+      "aliases/increment-after-a-lost-record",
+      true
+    ],
+    [
+      "aliases/shallow-repository-refused",
+      false
+    ]
+  ],
+  "shims": {},
+  "suite_sha256": "b31e6d08f6415957007a5339968bfc795723f09ab9a8f58d961ca803366666b2",
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}

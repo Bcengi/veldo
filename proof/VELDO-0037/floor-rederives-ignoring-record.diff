@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -626,2 +625,0 @@
+-            if commit in records:
+-                continue

@@ -1,0 +1,5 @@
+--- a/.veldo/control_document.py
++++ b/.veldo/control_document.py
+@@ -179 +179 @@
+-        repository = enrolled_repository(self.root, store_file(service.conn), service.domain_uuid, verify, host_identity)
++        repository = next((r for r, roots in service.identities.items() if roots == AL.root_commits(self.root)), None)
