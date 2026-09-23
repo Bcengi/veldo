@@ -1187,6 +1187,17 @@ def cases():
                  "        if binding_mismatches(receipt, current):\n", 'answer/stale-current-told')
     presentation('x-closed-any-refusal', "        if refusal == 'stale_subject':\n", "        if refusal:\n",
                  'answer/stale-current-told')
+    # VELDO-0065 fifth review: the reviewer's uncaught mutants, each now red by a row case.
+    presentation('x-drop-2043', "for c in '_-\\u2010\\u2011\\u2012\\u2043\\u2212'})",
+                 "for c in '_-\\u2010\\u2011\\u2012\\u2212'})", 'answer/reply-nfkc-before-split')
+    presentation('x-membership-pin-later', "                        principal: entry['entity_version'],\n",
+                 "                        principal: (self._entity(principal) or {}).get('version', 0),\n", 'framing/frame-and-presenter-agree')
+    presentation('x-versions-pin-later', "self.membership.VERSIONS_ENTITY: seen.get(self.membership.VERSIONS_ENTITY, {}).get('version', 0),",
+                 "self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0),", 'framing/frame-and-presenter-agree')
+    presentation('x-notice-transition-any-notice', "    if (receipt.get('outcome') != 'published' or notice not in named\n",
+                 "    if (receipt.get('outcome') != 'published'\n", 'projection/pending-notice-reconciled-after-replacement')
+    presentation('x-reconcile-only-in-already-presented', '        self._reconcile_notices(request)\n        refusal, record, versions = self.compose(request)\n',
+                 '        refusal, record, versions = self.compose(request)\n        if record is None: self._reconcile_notices(request)\n', 'projection/pending-notice-reconciled-after-replacement')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

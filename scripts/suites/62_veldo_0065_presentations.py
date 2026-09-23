@@ -138,7 +138,8 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'pm10', 'grouped', 'stranger',
+    for who in ('authority', 'owner', 'pm', 'pm2', 'pm3', 'pm4', 'pm5', 'pm6', 'pm7', 'pm8', 'pm9', 'pm10', 'pm11', 'pm12', 'grouped',
+                'stranger',
                 'telegram-edge',
                 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
@@ -185,6 +186,8 @@ def _v65_checks(base):
                'pm8': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm9': dict(principal_type='service', roles=[], scope=['project-a']),
                'pm10': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm11': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm12': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -1148,7 +1151,8 @@ def _v65_checks(base):
             check(agree, 'a ledger revocation between frame()\'s read and its commit refuses the framing, as the presenter would',
                   raced_frame.get('outcome') == 'refused' and reason(presenter.present(z6)) == ('refused', 'missing_framing'))
             # A revocation inside frame() itself, after its checks and before its pins are read.
-            for who, alias, what in (('pm8', 'Z-8', 'ledger'), ('pm9', 'Z-9', 'key')):
+            for who, alias, what in (('pm8', 'Z-8', 'ledger'), ('pm9', 'Z-9', 'key'), ('pm11', 'Z-11', 'membership'),
+                                     ('pm12', 'Z-12', 'membership versions')):
                 command(who, 'open', alias, assignment=content())
                 zid = I.assignment_id(ids['repository_uuid'], alias)
                 real_brief = presenter.inbox.brief
@@ -1162,16 +1166,24 @@ def _v65_checks(base):
                             fixture('authority:revocations', 'revocation_ledger',
                                     dict(held, revoked=dict(held.get('revoked') or {}, **{who: {'at': later, 'reason': 'test',
                                                                                               'by': 'authority'}})))
-                        else:
+                        elif what == 'key':
                             fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0,
                                                                            revoked_at=later))
+                        elif what == 'membership':
+                            fixture(who, 'membership', dict(members[who], revoked_at=_v65_time.time() - 1, expires_at=None))
+                        else:
+                            held_versions = (entity('authority:versions') or {}).get('data') or {'membership_version': 0,
+                                                                                               'delegation_version': 0}
+                            fixture('authority:versions', 'authority_versions',
+                                    dict(held_versions, membership_version=int(held_versions.get('membership_version', 0)) + 1))
                     return real_brief(rid, *a, **k)
                 presenter.inbox.brief = revoking_brief
                 try:
                     gap_frame = frame(who, alias, 1, 'Low: a wrong choice costs one review cycle.')
                 finally:
                     presenter.inbox.brief = real_brief
-                check(agree, 'a %s revocation after frame()\'s checks and before its commit refuses the framing' % what,
+                label = ('a %s revocation' % what) if what != 'membership versions' else 'a change of the membership versions'
+                check(agree, '%s after frame()\'s checks and before its commit refuses the framing' % label,
                       fired[0] and gap_frame.get('outcome') == 'refused'
                       and reason(presenter.present(zid)) == ('refused', 'missing_framing'))
 
@@ -1388,6 +1400,8 @@ def _v65_checks(base):
                     (('accept', 'reject', 'return_for_elaboration'), 'Return\u2010For\u2011Elaboration: unicode hyphens',
                      'return_for_elaboration'),
                     (('accept', 'reject', 'return_for_elaboration'), 'return\u2012for\u2212elaboration: more dashes',
+                     'return_for_elaboration'),
+                    (('accept', 'reject', 'return_for_elaboration'), 'return\u2043for\u2043elaboration: hyphen bullets',
                      'return_for_elaboration'))):
                 wid = opened('WN-%d' % n, choices=choices)
                 presenter.present(wid)
@@ -1482,7 +1496,8 @@ def _v65_checks(base):
                     return edge64.send(chat, text)
             P.Projection(S, inbox, Flight(), conn, 'authority', journal_sign).project()
             naming, replaced = getattr(Flight, 'naming', {}), getattr(Flight, 'replaced', {})
-            presenter.present(pr)
+            frame('pm', 'PR-1', 1, 'High: a wrong choice costs a release.')
+            composed_run = presenter.present(pr)  # this run composes a new presentation, and still reconciles
             notice_row_now = [n for n in notices_of(pr)]
             check(orphan, 'the presentation named the notice while it was pending and was then replaced',
                   (naming.get('supersedes') or {}).get('notice_state') == 'pending' and reason(replaced) == ('published', None)
@@ -1490,6 +1505,23 @@ def _v65_checks(base):
             check(orphan, 'the notice is marked superseded by the presentation that named it, once its outcome is known',
                   len(notice_row_now) == 1 and notice_row_now[0][1] == 'sent'
                   and notice_row_now[0][2] == naming.get('presentation_id') is not None)
+            check(orphan, 'the marking happened on a run that composed a new presentation',
+                  reason(composed_run) == ('published', None))
+            stray = 'projection:telegram_chat:%s:9' % pr
+            fixture(stray, 'channel_projection', {'assignment_id': pr, 'request_version': 9, 'outcome': 'sent',
+                                                  'enrolled_chat': stranger_chat, 'chat_id': stranger_chat, 'message_id': 777})
+            unnamed_by = presenter.current(pr) or {}
+            refused_mark = None
+            try:
+                S.execute(conn, dict(command_id='mark-unnamed', principal='authority', operation=V.NOTICE_OPERATION,
+                                     parameters=dict(presentation_id=unnamed_by.get('presentation_id'), notice_id=stray),
+                                     expected_versions={unnamed_by.get('presentation_id'): unnamed_by.get('entity_version', 0),
+                                                        stray: (entity(stray) or {}).get('version', 0)},
+                                     artifact_digests=[], nonce='mark-unnamed'), 'authority', journal_sign, 1)
+            except S.StoreRefused as exc:
+                refused_mark = exc.code
+            check(orphan, 'a presentation cannot mark a notice it did not name',
+                  refused_mark is not None and not (entity(stray) or {}).get('data', {}).get('superseded_by'))
 
         # Review 5 item 1: the accepted answer delivered again after the request left pending gets no reply
         after_close = 'answer/redelivered-after-closed'
