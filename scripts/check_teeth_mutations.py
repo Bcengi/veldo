@@ -457,8 +457,8 @@ def cases():
     # control_readset.carrier_paths; this is the same defect at the code that now reads it: the
     # commit's tree listed instead of its history.
     aliases('alias-floor-ignores-history', 'control_readset.py',
-            "    result = SN._git_process.run(['git', '-C', str(repo), 'log', '-m', '--root', '-z', '--no-renames', '--format=',\n"
-            "                                  '--name-only', '--ignore-missing', '--stdin', commit, '--'],",
+            "    result = SN._git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',\n"
+            "                                  '--ignore-missing', '--stdin', commit, '--'],",
             "    result = SN._git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],",
             'aliases/historical-floor')
     aliases('alias-owners-undeclared', 'control_alias.py',
@@ -570,6 +570,25 @@ def cases():
     aliases('named-revision-reads-git', 'control_alias.py',
             "        if named is not None:\n            roots = named['root_commits']",
             "        if False:\n            roots = named['root_commits']", 'aliases/records-hold-only-what-a-commit-adds')
+    # Fourth check (2026-09-23): what acceptance reads does not follow repository configuration, an
+    # increment after a lost recorded commit, and a shallow bound repository refused.
+    aliases('history-merges-by-config', 'control_readset.py',
+            "HISTORY_OPTIONS = ('--diff-merges=separate', '--root',", "HISTORY_OPTIONS = ('-m', '--root',",
+            'aliases/history-read-whatever-repository-config')
+    aliases('history-root-by-config', 'control_readset.py',
+            "'--diff-merges=separate', '--root', '--no-renames',", "'--diff-merges=separate', '--no-renames',",
+            'aliases/history-read-whatever-repository-config')
+    aliases('increment-without-ignore-missing', 'control_readset.py',
+            "'--ignore-missing', '--stdin', commit, '--'],", "'--stdin', commit, '--'],",
+            'aliases/increment-after-a-lost-record')
+    aliases('increment-ignores-recorded-base', 'control_readset.py',
+            '                base = sorted(carrier_records(conn, self.domain_uuid, repository))', '                base = []',
+            'aliases/increment-after-a-lost-record')
+    aliases('shallow-accepted', 'control_readset.py',
+            '    _require_complete_history(repo)\n', '', 'aliases/shallow-repository-refused')
+    aliases('shallow-check-reads-bare', 'control_readset.py',
+            "'rev-parse', '--is-shallow-repository'],", "'rev-parse', '--is-bare-repository'],",
+            'aliases/shallow-repository-refused')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
