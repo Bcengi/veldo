@@ -91,7 +91,7 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'unseen_presentation': 'missing_evidence', 'evidence_mismatch': 'missing_evidence',
             'answer_before_publication': 'invalid_input',
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
-            'invalid_enrollment': 'missing_evidence',
+            'invalid_enrollment': 'missing_evidence', 'group_chat': 'missing_evidence',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
             'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
@@ -494,6 +494,10 @@ class Presenter:
             return 'no_enrolled_chat', None, versions
         if self.P.enrollment_problems(enrollment['kind'], enrollment['data'], c['owner']):
             return 'invalid_enrollment', None, versions
+        if enrollment['data']['chat_id'] < 0:
+            # Release 1 presents only in a person's private chat (a positive Telegram chat id, the
+            # user's own id). Attributing a reply in a group chat to its sender is VELDO-0066's.
+            return 'group_chat', None, versions
         versions[eid] = enrollment['version']
         content = {k: c.get(k) for k in REQUEST_FIELDS}
         rulings = [ruling_of(choice) for choice in c['choices']]
@@ -844,15 +848,18 @@ class Presenter:
 
     def metrics(self):
         """Accepted and refused operations, pending entries not presented as current authority
-        requires, and receipts whose outcome is unknown or anomalous."""
-        pending = 0
+        requires, why each such entry is not presented, and receipts whose outcome is unknown or
+        anomalous."""
+        pending, unpresented = 0, {}
         for entry in self.inbox.index()['entries']:
             if entry['category'] != 'pending' or self.answer_record(entry['id'], entry['request_version'], entry['owner']):
                 continue
             refusal, record, _ = self.compose(entry['id'])
             if refusal or record is not None:
                 pending += 1
+            if refusal:
+                unpresented[refusal] = unpresented.get(refusal, 0) + 1
         rows = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (RECEIPT_KIND,))]
-        return dict(self.counts, pending=pending,
+        return dict(self.counts, pending=pending, unpresented_by_reason=unpresented,
                     unknown=sum(1 for r in rows if r.get('outcome') in ('pending', 'unknown_outcome')),
                     anomalies=sum(1 for r in rows if r.get('outcome') == 'anomaly'))

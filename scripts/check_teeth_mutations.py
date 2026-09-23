@@ -776,6 +776,12 @@ def cases():
                  "", 'answer/not-before-publication')
     presentation('answer-time-same-second-refused', "        if ev['platform_timestamp'] < receipt['published_at']:\n",
                  "        if ev['platform_timestamp'] <= receipt['published_at']:\n", 'answer/not-before-publication')
+    # VELDO-0065 review r9: a decision is presented only in a person's private chat.
+    presentation('group-chat-presented', "        if enrollment['data']['chat_id'] < 0:\n",
+                 "        if False:\n", 'presentation/private-chat-only')
+    presentation('unpresented-reason-not-counted',
+                 "                unpresented[refusal] = unpresented.get(refusal, 0) + 1\n", "                pass\n",
+                 'presentation/private-chat-only')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

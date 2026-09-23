@@ -74,7 +74,8 @@ def _v65_checks(base):
                                   'presentation/revision-identity', 'answer/current-presentation-only',
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
                                   'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
-                                  'framing/stored-framing-reverified', 'answer/not-before-publication')}
+                                  'framing/stored-framing-reverified', 'answer/not-before-publication',
+                                  'presentation/private-chat-only')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -102,7 +103,7 @@ def _v65_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'pm', 'pm2', 'stranger', 'telegram-edge', 'telegram-edge-other'):
+    for who in ('authority', 'owner', 'pm', 'pm2', 'grouped', 'stranger', 'telegram-edge', 'telegram-edge-other'):
         _v65_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v65-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -138,6 +139,7 @@ def _v65_checks(base):
                'pm': dict(principal_type='service', roles=[], scope=['project-a']),
                'stranger': dict(principal_type='person', roles=[], scope=['project-a']),
                'pm2': dict(principal_type='service', roles=[], scope=['project-a']),
+               'grouped': dict(principal_type='person', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
@@ -149,7 +151,8 @@ def _v65_checks(base):
     fixture('key-telegram-edge-other', 'verification_key',
             dict(principal='telegram-edge', public_key=public['telegram-edge-other'], effective_at=0))
     owner_chat, stranger_chat = 5550001, 5550002
-    for who, chat in (('owner', owner_chat), ('stranger', stranger_chat)):
+    group_chat = -1001234567890
+    for who, chat in (('owner', owner_chat), ('stranger', stranger_chat), ('grouped', group_chat)):
         # The enrollment id is spelled here, not taken from the module under test.
         fixture('channel-enrollment:telegram_chat:' + who, 'channel_enrollment',
                 dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who, chat_id=chat,
@@ -179,8 +182,8 @@ def _v65_checks(base):
                                                 risk_statement=risk, command_id='f-%d' % counter[0],
                                                 nonce='fn-%d' % counter[0])))
 
-    def content(brief='Choose how the example specification proceeds.', choices=('accept', 'reject')):
-        return dict(kind='decision', owner='owner', scope=['project-a'], deadline='2026-10-01T17:00:00Z',
+    def content(brief='Choose how the example specification proceeds.', choices=('accept', 'reject'), owner='owner'):
+        return dict(kind='decision', owner=owner, scope=['project-a'], deadline='2026-10-01T17:00:00Z',
                     budget={'owner_minutes': 15}, brief=brief, choices=list(choices),
                     subject={'kind': 'specification', 'ref': 'specs/EXAMPLE.md', 'digest': 'sha256:' + '1' * 64})
 
@@ -710,6 +713,17 @@ def _v65_checks(base):
             same_result = presenter.answer(edge_signed(same))
             check(order, 'control: an answer in the same second as the publication settles',
                   reason(same_result) == ('accepted', None) and answered(o1, 1) is not None)
+
+        # Review r9: Release 1 presents a decision only in a person's private chat
+        private = 'presentation/private-chat-only'
+        with section(private):
+            g1 = opened('G-1', owner='grouped')
+            asked = len(api['requests'])
+            check(private, 'a decision whose owner is enrolled in a group chat is refused by name and not sent',
+                  reason(presenter.present(g1)) == ('refused', 'group_chat') and len(api['requests']) == asked
+                  and not presenter.receipts(g1))
+            check(private, 'the refusal is visible in the presentation metrics',
+                  (presenter.metrics().get('unpresented_by_reason') or {}).get('group_chat') == 1)
     finally:
         server.shutdown()
         server.server_close()
