@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -749 +749 @@
+-        if self._validator is None:
++        if True:  # defect: a new snapshot for every decision

@@ -1,6 +1,7 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -760 +760,2 @@
--            found['validator'] = {role: _file_identity(path) for role, path in sorted(ran.items())}
-+            found['validator'] = {role: _file_identity(os.path.join(self.workspace, '.veldo', os.path.basename(path)))
-+                                  for role, path in sorted(ran.items())}  # defect: names what the workspace carries
+@@ -776 +776,3 @@
+-            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}
++            found['validator'] = {role: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),
++                                         'digest': entry['digest']}
++                                  for role, entry in snapshot.identity.items()}  # defect: names what the workspace carries

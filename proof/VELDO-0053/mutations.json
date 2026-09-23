@@ -1,9 +1,9 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 53 --diff-dir proof/VELDO-0053/mutations",
  "summary": {
-  "mutations_rejected": 14,
+  "mutations_rejected": 22,
   "green_suites": {
-   "60_veldo_0053_architecture.py": 39
+   "60_veldo_0053_architecture.py": 47
   }
  },
  "mutations": [
@@ -15,8 +15,9 @@
    ],
    "declared_falsifier_of": "AC1",
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
+    "architecture/store-only-refuses",
     "architecture/ready-refusal"
    ],
    "diff": "mutations/architecture-malformed-as-optional-absence.diff"
@@ -30,8 +31,9 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
+    "architecture/store-only-refuses",
     "architecture/state-kinds",
     "architecture/ready-refusal"
    ],
@@ -46,7 +48,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
     "architecture/state-kinds",
     "architecture/ready-refusal"
@@ -61,14 +63,18 @@
    ],
    "declared_falsifier_of": "AC2",
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
+    "architecture/store-only-refuses",
     "architecture/ready-refusal",
     "architecture/registrations",
     "architecture/entries-blocked",
     "architecture/forbidden-review-launch",
     "architecture/substitution",
     "architecture/record-states",
+    "architecture/public-seam",
+    "architecture/identity-is-what-ran",
+    "architecture/validated-is-digested",
     "architecture/observations"
    ],
    "diff": "mutations/architecture-review-skipped.diff"
@@ -81,13 +87,17 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
+    "architecture/store-only-refuses",
     "architecture/ready-refusal",
     "architecture/entries-blocked",
     "architecture/forbidden-review-launch",
     "architecture/substitution",
     "architecture/record-states",
+    "architecture/public-seam",
+    "architecture/identity-is-what-ran",
+    "architecture/validated-is-digested",
     "architecture/observations"
    ],
    "diff": "mutations/architecture-review-decision-skips.diff"
@@ -100,12 +110,13 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
     "architecture/ready-refusal",
     "architecture/entries-blocked",
     "architecture/forbidden-review-launch",
-    "architecture/substitution"
+    "architecture/substitution",
+    "architecture/identity-is-what-ran"
    ],
    "diff": "mutations/architecture-invalid-structure-passes.diff"
   },
@@ -118,7 +129,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
     "architecture/ready-refusal",
     "architecture/entries-blocked",
@@ -136,13 +147,17 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
+    "architecture/store-only-refuses",
     "architecture/ready-refusal",
     "architecture/registrations",
     "architecture/entries-blocked",
     "architecture/substitution",
     "architecture/record-states",
+    "architecture/public-seam",
+    "architecture/identity-is-what-ran",
+    "architecture/validated-is-digested",
     "architecture/observations"
    ],
    "diff": "mutations/architecture-provider-request-unasked.diff"
@@ -155,9 +170,10 @@
    ],
    "declared_falsifier_of": "AC3",
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
-    "architecture/substitution"
+    "architecture/substitution",
+    "architecture/public-seam"
    ],
    "diff": "mutations/architecture-clone-validator.diff"
   },
@@ -169,9 +185,10 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
-    "architecture/substitution"
+    "architecture/substitution",
+    "architecture/validated-is-digested"
    ],
    "diff": "mutations/architecture-accepted-digest-ignored.diff"
   },
@@ -183,7 +200,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
     "architecture/substitution"
    ],
@@ -197,7 +214,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
     "architecture/observations"
    ],
@@ -211,7 +228,7 @@
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
     "architecture/record-states"
    ],
@@ -221,15 +238,130 @@
    "mutation": "architecture-store-only-passes",
    "module": ".veldo/control_eligibility.py",
    "target_rows": [
-    "architecture/record-states"
+    "architecture/store-only-refuses"
    ],
    "declared_falsifier_of": null,
    "baseline": "green",
-   "assertions": 39,
+   "assertions": 47,
    "red_rows": [
-    "architecture/record-states"
+    "architecture/store-only-refuses"
    ],
    "diff": "mutations/architecture-store-only-passes.diff"
+  },
+  {
+   "mutation": "architecture-store-only-reads-cwd",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/store-only-refuses"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/store-only-refuses",
+    "architecture/record-states"
+   ],
+   "diff": "mutations/architecture-store-only-reads-cwd.diff"
+  },
+  {
+   "mutation": "architecture-private-seam",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/public-seam"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/public-seam"
+   ],
+   "diff": "mutations/architecture-private-seam.diff"
+  },
+  {
+   "mutation": "architecture-validate-checks-direct",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/public-seam"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/public-seam"
+   ],
+   "diff": "mutations/architecture-validate-checks-direct.diff"
+  },
+  {
+   "mutation": "architecture-identity-read-at-decision",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/identity-is-what-ran"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/identity-is-what-ran"
+   ],
+   "diff": "mutations/architecture-identity-read-at-decision.diff"
+  },
+  {
+   "mutation": "architecture-validator-reexecuted-per-call",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/identity-is-what-ran"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/identity-is-what-ran",
+    "architecture/validated-is-digested"
+   ],
+   "diff": "mutations/architecture-validator-reexecuted-per-call.diff"
+  },
+  {
+   "mutation": "architecture-snapshot-per-decision",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/identity-is-what-ran"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/identity-is-what-ran",
+    "architecture/validated-is-digested"
+   ],
+   "diff": "mutations/architecture-snapshot-per-decision.diff"
+  },
+  {
+   "mutation": "architecture-digest-second-read",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/validated-is-digested"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/validated-is-digested"
+   ],
+   "diff": "mutations/architecture-digest-second-read.diff"
+  },
+  {
+   "mutation": "architecture-loader-digest-second-read",
+   "module": ".veldo/contract_loader.py",
+   "target_rows": [
+    "architecture/validated-is-digested"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "architecture/validated-is-digested"
+   ],
+   "diff": "mutations/architecture-loader-digest-second-read.diff"
   }
  ]
 }

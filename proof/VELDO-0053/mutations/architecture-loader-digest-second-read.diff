@@ -1,0 +1,8 @@
+--- a/.veldo/contract_loader.py
++++ b/.veldo/contract_loader.py
+@@ -125,2 +124,0 @@
+-    if digested is not None:
+-        digested(body_digest)
+@@ -128,0 +127,2 @@
++    if digested is not None:
++        digested(arch.read_contract(p, parse)[1])  # defect: the digest of a second read, after validation

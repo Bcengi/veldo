@@ -1,9 +1,10 @@
 # VELDO-0053 proof
 
 Architecture failure handling at every eligibility entry, Release 1 stage 1 of PLAN-0019 revision 3
-(W38). Branch `build-veldo-0053`, built on main acd877c. Specification status, policy and every other
-specification are unchanged; the specification gained one footprint line and a History line for the
-mutation driver.
+(W38). Branch `build-veldo-0053`, built on main acd877c and merged with main at 07c7557. Specification
+status, policy and every other specification are unchanged; the specification gained footprint lines,
+each with a History line: the mutation driver, and for the 2026-09-23 review fixes suite 60_0052,
+validate.py, contract_loader.py and arch.py (and their engine copies).
 
 ## What landed
 
@@ -15,38 +16,43 @@ admission. Because VELDO-0052's registrations all decide through the one `Gate`,
 review and publication, and `CallHandle.invoke`) now refuses by name when the architecture refuses. No
 entry module changed.
 
-**The installed validator.** The Gate loads `validate.py` from its own directory, the installed engine,
-never the copy a workspace carries, and asks its `validate_checks.entry_contract` for the workspace's
-`.veldo/architecture.yaml`. That entry runs VELDO-0016's one tri-state loader with the installed
-structural validator and parser, and returns the source file of each function that judged the contract.
-The decision records those files (resolved path and digest) and the artifact it judged (path, file
-type, digest; only a regular file is opened, so a FIFO is never read).
+**The installed validator, loaded once.** Each Gate builds one `ValidatorSnapshot` of the engine
+installed beside it, never the copy a workspace carries: every module is read once, written to a private
+directory only this process reaches, executed from there, and the copy is removed. The snapshot keeps one
+structural validator (arch.py) instance for every contract and asks validate.py's PUBLIC `entry_contract`
+(re-exported on validate.py, with `entry_validator`), which runs VELDO-0016's one tri-state loader. Every
+decision records the snapshot's identity, the installed path and the digest of the bytes loaded for
+validate.py, validate_checks.py, contract_loader.py, arch.py and yamlish.py, never a fresh read of the
+files on disk; and the artifact it judged (path, file type, and the loader's digest).
 
 **The accepted artifact.** The authority's record `architecture:<repository>` (state `accepted`, the
 sha256 digest of the accepted bytes) makes the contract required whatever the workspace's own policy
 says, and the workspace file must be exactly those bytes. Without a record the repository's policy flag
 decides absence, as VELDO-0016's loader always has. The record is a normal consumed input, so a
-re-acceptance after selection is `stale_input:architecture` through VELDO-0052's tickets.
+re-acceptance after selection is `stale_input:architecture` through VELDO-0052's tickets. The digest
+compared with the record is the loader's own: `arch.read_contract` reads the file once, as bytes, and the
+loader hands the digest of the very bytes it parsed to its caller (`digested`), so a writer landing
+between the read and the comparison cannot make the Gate pass bytes it did not validate.
 
 **Named refusals.** `missing_evidence:architecture/required_absence`,
 `invalid_input:architecture/unreadable`, `invalid_input:architecture/parse_failure`,
 `invalid_input:architecture/invalid_structure`, `missing_authority:architecture/unaccepted_artifact`,
 `missing_authority:architecture` (a record not accepted or naming no sha256 digest),
-`missing_evidence:architecture/workspace` (a store-only Gate facing an accepted record) and
+`missing_evidence:architecture/workspace` (any Gate built with no workspace, record or no record) and
 `unavailable_service:architecture_validator` (a validator that raises). None maps to unknown or
 success. `enrolled_gate` passes the workspace it verified, so every production Gate judges a file.
 
 ## Criteria, rows and driven mutations
 
-Suite `scripts/suites/60_veldo_0053_architecture.py`, 13 rows: 8 assertions and 5 `ran/` rows, one per
+Suite `scripts/suites/60_veldo_0053_architecture.py`, 21 rows: 12 assertions and 9 `ran/` rows, one per
 region, which stay green under every mutation, so each red row below failed its assertion with its region
 completing. A temporary Git repository is both the workspace and the installed `.veldo`; a second tree is
 a clone with its own `.veldo` whose `arch.py` is a success stub that writes a marker file when loaded.
 One unit passes every other predicate at every station, so each refusal is the architecture's.
 
-All 14 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
+All 22 mutations are registered as finding 53 in `scripts/check_teeth_mutations.py`, applied to a
 temporary copy, and each turned its named rows red while the unmutated copy (the driver's baseline run
-of the same suite) was green with 39 assertions (`mutations.json`, each diff in `mutations/`).
+of the same suite) was green with 47 assertions (`mutations.json`, each diff in `mutations/`).
 
 **AC1, valid, absent and invalid contracts.** Rows `architecture/state-kinds` and
 `architecture/ready-refusal`. Nine real-file states: valid, optional absent, required absent (policy
@@ -57,8 +63,7 @@ table written in the suite, and runs the installed validator as a real process (
 every present state: exit 0 only for valid. `ready-refusal` drives the ready transition
 (`check_ready`) and all seven station decisions under the policy, then again under an accepted record
 naming the bytes present: valid and optional absence proceed, everything else refuses with the kind's
-named code, and under an accepted record absence is required absence. A store-only Gate with no record
-proceeds.
+named code, and under an accepted record absence is required absence.
 - Declared falsifier `architecture-malformed-as-optional-absence` (the Gate reads a present malformed
   contract as optional absence): red `ready-refusal`.
 - Second mutations `architecture-loader-malformed-as-absence` and
@@ -107,35 +112,98 @@ installed validator digests; architecture refusals keep the invalid input, missi
 authority taxonomy; counts of accepted and refused). Driven by `architecture-unaccepted-record-accepted`,
 `architecture-store-only-passes` and `architecture-identity-not-recorded`.
 
+## 2026-09-23 review: four fixes, each test first
+
+A fresh review of 20221fa..60d5018 found no reachable production defect but four weaknesses, each
+reproduced by its own script. Each got a row first, red by a failed assertion over 60d5018's modules,
+then the fix, then two registered mutations of that row (the driver's baseline run is the unmutated
+control). One commit per item: 7c70d53, 759d9a8, 7633020, 879532f.
+
+**Recorded red at 60d5018.** `red.py 60d5018` runs the current suite with its ROOT pointed at an export of
+60d5018's whole `.veldo`. One fixture line reaches the snapshot's single structural validator instance,
+which 60d5018 did not have (it re-executed arch.py at every call); for 60d5018 it is replaced by a line
+that pins one instance on 60d5018's validate_checks so the injected writer runs, and the record names it.
+Result in `red-60d5018.json`: the four new rows fail by assertion with every region completing (no `ran/`
+row red), and so do `substitution` and `observations`, whose expected identity now includes validate.py.
+The observations show each defect: the store-only Gate passed a required malformed contract; the public
+entry saw 0 of 7 judgements; the same Gate passed after arch.py changed on disk and recorded the new
+file's digest; the Gate passed validated unaccepted bytes and refused validated accepted ones.
+
+**Item 2, a Gate with no workspace never passes.** Row `architecture/store-only-refuses`: no record, a
+policy that requires the contract and a malformed file only a workspace Gate can see; the store-only Gate
+refuses `missing_evidence:architecture/workspace` at every station, the workspace Gate refuses
+`parse_failure`. Suite 60_0052's two Gates (its main one and the fresh reader process) are given the
+workspace they read; it stays at 80 of 80 and `--finding 52` at 47 of 47. Mutations
+`architecture-store-only-passes` (reintroduced: only a record makes it refuse) and
+`architecture-store-only-reads-cwd` (a missing workspace becomes the process directory).
+
+**Item 5, the public seam.** Row `architecture/public-seam`: an installed copy whose validate.py wraps its
+public `entry_contract` with a counter; a Gate loaded from it proceeds at all seven stations and every
+judgement went through that name. Mutations `architecture-private-seam` (reintroduced: validate.py's
+private validate_checks instance) and `architecture-validate-checks-direct` (validate_checks.py loaded
+around validate.py).
+
+**Item 1, the identity is what ran.** Row `architecture/identity-is-what-ran`: a Gate judges an accepted,
+structurally invalid contract; the installed contract_loader.py and arch.py are then replaced on disk
+(other loader bytes, and a validator that passes everything). The same Gate keeps refusing with the code
+it loaded and keeps recording the digests of the bytes loaded, for all five files; a Gate built after the
+change proceeds and records the new digests, which shows the change is real. Mutations
+`architecture-identity-read-at-decision` (reintroduced: digests read from disk at each decision),
+`architecture-validator-reexecuted-per-call` (reintroduced: arch.py executed from disk at every call) and
+`architecture-snapshot-per-decision`.
+
+**Item 3, the digest of the bytes validated.** Row `architecture/validated-is-digested`: a writer lands
+while the contract is being validated. Validated unaccepted bytes (version 2) are refused and recorded by
+their own digest although the file then holds the accepted bytes; validated accepted bytes (version 1)
+proceed although the file then changed. Mutations `architecture-digest-second-read` (reintroduced: the
+Gate digests the file again) and `architecture-loader-digest-second-read` (the loader reports the digest
+of a second read after validation). VELDO-0016's own loader rows and in-suite mutation anchors are
+unchanged (suite 29 at 325 of 325).
+
+## Open items
+
+- **(a) No writer for `architecture:<repository>` exists yet.** Nothing on main writes the accepted
+  record; the suite writes the plain entity through the real store. Until a writer exists, every real
+  repository has no record, so whether its contract is required still comes from the workspace's own
+  policy file, which the workspace controls. R50 (a candidate cannot weaken the enforcement that
+  authorizes it) is therefore NOT met in production until the writer exists; the enforcement against a
+  record is built and proven here, the record's production source is not.
+- **(b) The record format needs a written schema.** The Gate reads `{state: accepted, digest: sha256:...}`
+  and refuses anything else by name, but the format is defined only by this reader. It must be defined by
+  a written schema that the future writer is checked against, so the writer and this reader are not
+  matched only to each other.
+- **(c) The loader registry row for VELDO-0016.** `policy_contract.LOADER_ADAPTERS` is outside this
+  footprint and suite 29 pins its 17 rows, so `validate_checks.entry_contract` (reached through
+  validate.py) has no row of its own and suite 29's loader matrix does not drive it; this suite drives it
+  instead. The registry scan stays exact because the loader call lives in `validate_checks.py`, a module
+  the registry covers, and `control_eligibility.py` calls no loader name. A row for the new entry is owed
+  to VELDO-0016's registry.
+
 ## Narrowest seams, stated
 
-- **The accepted architecture record.** Nothing on main writes `architecture:<repository>`; the owner's
-  acceptance of a contract revision is not built. The suite writes the plain entity through the real
-  store, as VELDO-0052's suite writes admission and plan records.
-- **Reaching the installed entry.** `validate.py`'s re-export list is VELDO-0016's and outside this
-  footprint, so the Gate calls `entry_contract` on `validate.py`'s own `validate_checks` instance (its one
-  parser bound) rather than on a new re-exported name.
-- **The loader registry.** `policy_contract.LOADER_ADAPTERS` is outside this footprint and suite 29 pins
-  its 17 rows, so the new entry adds no row. The loader call lives in `validate_checks.py`, a module the
-  registry already covers, and `control_eligibility.py` calls no loader name, so the registry scan stays
-  exact. A row for `validate_checks.entry_contract` is a follow-up for VELDO-0016's registry.
+- **The accepted architecture record.** See open items (a) and (b).
+- **The loader registry.** See open item (c).
+- **Digest of a parse failure.** A contract that is read but does not parse is refused by name with no
+  artifact digest recorded: VELDO-0016's suite anchors its own mutations on that return line, so the
+  digest is handed to the caller through `digested` before it, and the refusal itself is unchanged.
 - Not isolated: the executor's `_decide_calls` registration is always preceded by its station decision,
   which asks the same predicate first, so its driver shows the refusal of that earlier decision. Under
   `architecture-review-skipped` the executor's review still refuses at its provider-request boundary;
   the dispatcher's direct review is the launch the declared falsifier turns red.
-- Release 2, not added: a race between the bytes validated and the bytes digested, and concurrent
-  architecture inputs. Running the suite as root cannot deny a read, so `state-kinds` would red there
-  rather than pass without the denial.
+- Release 2, not added: concurrent architecture inputs and racing revision qualification. Running the
+  suite as root cannot deny a read, so `state-kinds` would red there rather than pass without the denial.
 
 ## Cost and verification
 
-Suite 60_veldo_0053 runs in about 1.3 s (`observations.json`, `suite_seconds`), including seven
-installed-validator processes run in sequence. `--finding 53` drives 14 mutations in 38 s here (28 suite
-runs), about 5 s of wall time in the gate's 8-worker mutation stage. Targeted checks on this branch:
-`python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (13 rows, 39 assertions with the
-shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (14 rejected),
-`--finding 52` (47 rejected, unchanged by the new predicate), suites 60_veldo_0052, 29_veldo_0016,
-08, 17 and 21 green, `python3 .veldo/validate.py all` (exit 0), `bash scripts/check_generated.sh` and
-`bash scripts/check_template_sync.sh` (pass). The full gate is run by the lead.
+Suite 60_veldo_0053 runs in about 1.2 s (`observations.json`, `suite_seconds`), including seven
+installed-validator processes run in sequence; a validator snapshot costs about 23 ms once per Gate and a
+judgement about 0.7 ms. `--finding 53` drives 22 mutations in 68 s here (44 suite runs), about 9 s of wall
+time in the gate's 8-worker mutation stage. Targeted checks on this branch after the review fixes:
+`python3 -B scripts/selftest.py --suite 60_veldo_0053_architecture` (21 rows, 47 assertions with the
+shared preamble, 0 failed), `python3 -B scripts/check_teeth_mutations.py --finding 53` (22 rejected, no
+`ran/` row red), `--finding 52` (47 rejected, suite 60_0052 at 80 of 80), the whole
+`python3 -B scripts/selftest.py` (5850 passed, 0 failed; not the gate), `python3 .veldo/validate.py all`
+(exit 0), `bash scripts/check_generated.sh` and `bash scripts/check_template_sync.sh` (pass). The full
+gate is run by the lead.
 
-`drive.py` regenerates `observations.json` from one run of the suite.
+`red.py 60d5018` regenerates `red-60d5018.json`. `drive.py` regenerates `observations.json` from one run of the suite.

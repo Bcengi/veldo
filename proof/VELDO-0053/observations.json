@@ -18,28 +18,29 @@
      "unit": 1
     },
     "architecture": {
-     "artifact_digest": null,
+     "artifact_digest": "sha256:8e683a54ff26b719b18360de2ff38d3599d81a0b03c301e9da79ae08d9ddc9d3",
      "basis": "policy",
-     "kind": "required_absence",
+     "kind": "parse_failure",
      "validator": {
-      "entry": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
-      "loader": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "entry": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
+      "entry_point": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "loader": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
-      "validator": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e"
+      "validator": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862"
      }
     },
-    "decision_id": "8a1853e6-2c72-4737-b711-7648876d37df",
+    "decision_id": "315582ce-a218-40e8-ace6-ad74567f555d",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "selection",
     "outcome": "refused",
     "refusals": [
-     "missing_evidence:architecture/required_absence"
+     "invalid_input:architecture/parse_failure"
     ],
     "repository_uuid": "repository-53",
     "schema": "veldo.control_eligibility/v1",
     "taxonomy": [
-     "missing_evidence"
+     "invalid_input"
     ],
     "unit": "VELDO-9301",
     "watermark": 8
@@ -59,28 +60,29 @@
      "unit": 1
     },
     "architecture": {
-     "artifact_digest": null,
+     "artifact_digest": "sha256:8e683a54ff26b719b18360de2ff38d3599d81a0b03c301e9da79ae08d9ddc9d3",
      "basis": "policy",
-     "kind": "required_absence",
+     "kind": "parse_failure",
      "validator": {
-      "entry": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
-      "loader": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "entry": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
+      "entry_point": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "loader": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
-      "validator": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e"
+      "validator": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862"
      }
     },
-    "decision_id": "3270d59c-f7b9-499d-afde-aede0b8d126a",
+    "decision_id": "0e339cb7-79f9-4c06-a450-c1037cfaab70",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "claim",
     "outcome": "refused",
     "refusals": [
-     "missing_evidence:architecture/required_absence"
+     "invalid_input:architecture/parse_failure"
     ],
     "repository_uuid": "repository-53",
     "schema": "veldo.control_eligibility/v1",
     "taxonomy": [
-     "missing_evidence"
+     "invalid_input"
     ],
     "unit": "VELDO-9301",
     "watermark": 8
@@ -266,10 +268,26 @@
   "gate_status": {
    "accepted": 71,
    "pending": [],
-   "refused": 146
+   "refused": 153
+  },
+  "identity_is_what_ran": {
+   "before_change": [
+    "invalid_input:architecture/invalid_structure"
+   ],
+   "fresh_gate_after_change": [],
+   "fresh_records_new": true,
+   "recorded_is_loaded": true,
+   "same_gate_after_change": [
+    "invalid_input:architecture/invalid_structure"
+   ]
   },
   "permission_denied": {
    "unreadable": true
+  },
+  "public_seam": {
+   "judgements": 7,
+   "refusals": [],
+   "through_public_entry": 7
   },
   "raised": [],
   "ready_errors": {
@@ -355,6 +373,14 @@
     ]
    }
   },
+  "store_only": {
+   "store_only": [
+    "missing_evidence:architecture/workspace"
+   ],
+   "workspace": [
+    "invalid_input:architecture/parse_failure"
+   ]
+  },
   "substitution": {
    "accepted_invalid": {
     "artifact": {
@@ -368,11 +394,15 @@
     "reviews": [],
     "validator": {
      "entry": {
-      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "digest": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
       "path": "installed:.veldo/validate_checks.py"
      },
+     "entry_point": {
+      "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "path": "installed:.veldo/validate.py"
+     },
      "loader": {
-      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
      },
      "parser": {
@@ -380,7 +410,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -397,11 +427,15 @@
     ],
     "validator": {
      "entry": {
-      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "digest": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
       "path": "installed:.veldo/validate_checks.py"
      },
+     "entry_point": {
+      "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "path": "installed:.veldo/validate.py"
+     },
      "loader": {
-      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
      },
      "parser": {
@@ -409,7 +443,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -426,11 +460,15 @@
     "reviews": [],
     "validator": {
      "entry": {
-      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "digest": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
       "path": "installed:.veldo/validate_checks.py"
      },
+     "entry_point": {
+      "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "path": "installed:.veldo/validate.py"
+     },
      "loader": {
-      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
      },
      "parser": {
@@ -438,7 +476,7 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
       "path": "installed:.veldo/arch.py"
      }
     }
@@ -455,11 +493,15 @@
     "reviews": [],
     "validator": {
      "entry": {
-      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "digest": "sha256:480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37",
       "path": "installed:.veldo/validate_checks.py"
      },
+     "entry_point": {
+      "digest": "sha256:6cfd79c980f07175b7b853b37dcdb5ef6a7752160eb87f7e2307074bb78de89c",
+      "path": "installed:.veldo/validate.py"
+     },
      "loader": {
-      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "digest": "sha256:4d7999d469b754d753e045f6a779ad93e42fe01368999398502905d55fe368f6",
       "path": "installed:.veldo/contract_loader.py"
      },
      "parser": {
@@ -467,10 +509,26 @@
       "path": "installed:.veldo/yamlish.py"
      },
      "validator": {
-      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "digest": "sha256:4c96cd3691153c55d63f2716fa2eea1d341d968b14f08fed422ca4a7686c4862",
       "path": "installed:.veldo/arch.py"
      }
     }
+   }
+  },
+  "validated_is_digested": {
+   "accepted_validated": {
+    "refusals": [],
+    "validated_versions": [
+     1
+    ]
+   },
+   "unaccepted_validated": {
+    "refusals": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "validated_versions": [
+     2
+    ]
    }
   },
   "validator_process_exit": {
@@ -483,8 +541,12 @@
    "wrong_type_fifo": 1
   }
  },
- "passed": 13,
+ "passed": 21,
  "rows": [
+  [
+   "VELDO-0053 architecture/store-only-refuses",
+   true
+  ],
   [
    "VELDO-0053 architecture/state-kinds",
    true
@@ -514,7 +576,23 @@
    true
   ],
   [
+   "VELDO-0053 architecture/public-seam",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/identity-is-what-ran",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/validated-is-digested",
+   true
+  ],
+  [
    "VELDO-0053 architecture/observations",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/store-only-refuses",
    true
   ],
   [
@@ -534,10 +612,22 @@
    true
   ],
   [
+   "VELDO-0053 ran/architecture/public-seam",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/identity-is-what-ran",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/validated-is-digested",
+   true
+  ],
+  [
    "VELDO-0053 ran/architecture/observations",
    true
   ]
  ],
  "suite": "60_veldo_0053_architecture.py",
- "suite_seconds": 1.283
+ "suite_seconds": 1.173
 }

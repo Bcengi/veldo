@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -776 +776,2 @@
+-            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}
++            found['validator'] = {role: {'path': entry['path'], 'digest': 'sha256:' + hashlib.sha256(
++                Path(entry['path']).read_bytes()).hexdigest()} for role, entry in snapshot.identity.items()}  # defect: the files on disk now, not the bytes that ran

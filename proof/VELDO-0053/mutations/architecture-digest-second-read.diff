@@ -2,4 +2,4 @@
 +++ b/.veldo/control_eligibility.py
 @@ -786 +786 @@
 -        elif accepted and parsed != accepted['digest']:
-+        elif False:  # defect: whatever bytes are at the path are the accepted architecture
++        elif accepted and 'sha256:' + hashlib.sha256(Path(load.path).read_bytes()).hexdigest() != accepted['digest']:  # defect: a second read
