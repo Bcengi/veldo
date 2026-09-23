@@ -101,7 +101,7 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
             'invalid_enrollment': 'missing_evidence', 'group_chat': 'missing_evidence',
             'presentation_too_long': 'invalid_input', 'incomplete_parts': 'unknown_outcome',
-            'retry_after': 'unavailable_service',
+            'retry_after': 'unavailable_service', 'unmatched_choice': 'invalid_input',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
             'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
@@ -174,6 +174,16 @@ def answer_command_id(chat, message):
 
 def ruling_of(choice):
     return CHOICE_RULINGS.get(choice)
+
+
+def _fold(text):
+    return ' '.join(str(text).split()).casefold()
+
+
+def offered_choice(typed, choices):
+    """The offered choice a typed word names, whatever the phone did to its case and spacing
+    ("Accept", "ACCEPT", " accept "), or None."""
+    return next((c for c in choices if _fold(c) == _fold(typed)), None)
 
 
 def _words(text):
@@ -907,8 +917,9 @@ class Presenter:
         receipt = self.receipt_for_message(chat.get('id'), reply.get('message_id'))
         if receipt is None:
             raise Refused('unknown_presentation', 'the reply addresses no published presentation')
-        choice, _, rationale = (message.get('text') or '').partition(':')
-        choice = choice.strip()
+        typed, _, rationale = (message.get('text') or '').partition(':')
+        choice = offered_choice(typed, receipt['choices'])
+        choice = typed.strip() if choice is None else choice
         return dict(self.ids, schema=ANSWER_SCHEMA, channel=CHANNEL,
                     assertion_kind=self.assignment.KINDS.get(receipt['request']['kind']),
                     authority_scope=list(receipt['request']['scope']),
@@ -920,6 +931,16 @@ class Presenter:
                     attribution={'platform_message_id': message.get('message_id'), 'sender_id': sender.get('id'),
                                  'platform_timestamp': message.get('date'), 'chat_id': chat.get('id'),
                                  'reply_to_message_id': reply.get('message_id')})
+
+    def _tell(self, ev, receipt, what):
+        """A short plain reply to the owner's own message when it cannot count as an answer, so a
+        reply is never met with silence. It grants nothing and records nothing."""
+        text = ('%s Reply to the presentation with one of: %s, then a colon and your reason, for example '
+                '"%s: <your reason>".' % (what, ' | '.join(receipt['choices']), receipt['choices'][0]))
+        sent = self._send(ev['chat_id'], text, ev['platform_message_id'])
+        self.observations.append(dict(self.ids, operation='tell_owner', channel=CHANNEL, request_id=receipt['request_id'],
+                                      accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',
+                                      reason=sent['refusal'], error_class=None))
 
     def _edge_key(self, state, edge, now):
         wanted = self.AC.CHANNELS[CHANNEL]['edge_key_id']
@@ -994,11 +1015,15 @@ class Presenter:
             raise Refused('not_authorized', 'the edge scope does not cover the request')
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.
-        if (a.get('choice') not in receipt['choices'] or a.get('ruling') != ruling_of(a.get('choice'))
+        if a.get('choice') not in receipt['choices']:
+            self._tell(ev, receipt, 'That reply did not match a choice.')
+            raise Refused('unmatched_choice', 'the reply names no offered choice')
+        if (a.get('ruling') != ruling_of(a.get('choice'))
                 or a.get('assertion_kind') != self.assignment.KINDS.get(receipt['request']['kind'])
                 or a.get('authority_scope') != list(receipt['request']['scope'])):
             raise Refused('invalid_input', 'the choice is not offered, or its ruling, kind or scope is not the contract\'s')
         if not _is_str(a.get('rationale')):
+            self._tell(ev, receipt, 'That reply had no reason.')
             raise Refused('missing_rationale', 'an answer records its rationale')
         aid = answer_id(request, receipt['request_version'], receipt['owner'])
         if self._entity(aid) is not None:

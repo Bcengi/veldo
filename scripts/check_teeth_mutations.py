@@ -1050,6 +1050,11 @@ def cases():
                  'presentation/refused-part-sent-again')
     presentation('retry-after-ignored', "                and self.clock() < existing['retry_not_before']):\n",
                  "                and False):\n", 'presentation/refused-part-sent-again')
+    # VELDO-0065 second review n5: choices match whatever case and spacing; a reply is never met with silence.
+    presentation('choice-match-case-sensitive', "    return ' '.join(str(text).split()).casefold()\n",
+                 "    return ' '.join(str(text).split())\n", 'answer/choice-matching-and-feedback')
+    presentation('owner-not-told', "        sent = self._send(ev['chat_id'], text, ev['platform_message_id'])\n",
+                 "        sent = {'platform': None, 'refusal': None}\n", 'answer/choice-matching-and-feedback')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

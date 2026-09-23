@@ -89,7 +89,7 @@ def _v65_checks(base):
                                   'presentation/reply-link-verified', 'presentation/long-brief-split',
                                   'projection/one-message-per-version', 'framing/key-by-store-order',
                                   'projection/notice-superseded', 'projection/silent-from-store',
-                                  'presentation/refused-part-sent-again')}
+                                  'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -612,7 +612,7 @@ def _v65_checks(base):
             k1_r = presenter.current(k1) or {}
             for text, why, label in (('accept', 'missing_rationale', 'a ruling with no rationale'),
                                      ('accept:    ', 'missing_rationale', 'a blank rationale'),
-                                     ('maybe: not sure', 'invalid_input', 'an unoffered ruling')):
+                                     ('maybe: not sure', 'unmatched_choice', 'an unoffered ruling')):
                 check(rul, '%s is refused' % label, reason(answer(owner_reply(k1_r, text))) == ('refused', why))
             message = owner_reply(k1_r, 'reject: tampered later')
             tampered = edge_signed(presenter.canonical_answer(message, 'telegram-edge'))
@@ -992,6 +992,32 @@ def _v65_checks(base):
                   reason(answer(owner_reply(dict(f2_r, message_id=(f2_r.get('message_ids') or [None])[0]),
                                             'accept: read both parts'))) == ('accepted', None))
 
+        # Review 2 n5: choices match whatever the phone did to case and spacing; no reply meets silence
+        match_row = 'answer/choice-matching-and-feedback'
+        with section(match_row):
+            for n, text in enumerate(('Accept: looks right', 'ACCEPT: looks right', 'accept : looks right',
+                                      '  Accept   :  looks right')):
+                mid = opened('CM-%d' % n)
+                presenter.present(mid)
+                result = answer(owner_reply(presenter.current(mid) or {}, text))
+                recorded = answered(mid, 1) or {}
+                check(match_row, '%r is the offered choice accept' % text,
+                      reason(result) == ('accepted', None) and recorded.get('choice') == 'accept'
+                      and recorded.get('ruling') == 'approve' and recorded.get('rationale') == 'looks right')
+            wrong = opened('CM-W')
+            presenter.present(wrong)
+            wrong_r = presenter.current(wrong) or {}
+            for text, why in (('accept - looks right', 'unmatched_choice'), ('maybe: not sure', 'unmatched_choice'),
+                              ('accept', 'missing_rationale')):
+                asked = len(api['requests'])
+                message = owner_reply(wrong_r, text)
+                result = answer(message)
+                told = api['requests'][asked:]
+                check(match_row, '%r is refused as %s and the owner is told the valid choices' % (text, why),
+                      reason(result) == ('refused', why) and len(told) == 1 and told[0][0] == owner_chat
+                      and told[0][2] == message['message_id'] and 'accept | reject' in told[0][1])
+            check(match_row, 'control: the refused replies answered nothing, and a matching one then does',
+                  answered(wrong, 1) is None and reason(answer(owner_reply(wrong_r, 'Reject: not now'))) == ('accepted', None))
     finally:
         server.shutdown()
         server.server_close()
