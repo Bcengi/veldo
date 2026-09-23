@@ -56,3 +56,14 @@ GATE: GREEN (a62f954bb9b0d5cc47c36d5c08f7ee5df85a6fc7)
 ```
 
 The gate byproducts were restored before committing this final evidence note. This records the branch verification, not an independent review or the reviewer's merged-tree stamp. Nothing was pushed.
+
+## 2026-09-23: the combined cap scales with the inventory
+
+The fixed 120 second cap was about to fail on growth alone (116 cases measured at 91.8 seconds, about
+0.8 seconds per case). The cap is now max(120, 2 x registered cases) seconds, recorded as
+budget_seconds; the per-worker bound stays 120 seconds. New row
+`gate/mutation-budget-scales-with-inventory` drives the real run_stage over synthetic inventories of 10,
+116 and 300 cases and checks the recorded cap (120, 232, 600), the enforced worker deadline and the armed
+SIGALRM. Driven by hand, because the mutation registry cannot mutate scripts/: control green; mutants
+`return BUDGET` (fixed cap), `workers.deadline = started + BUDGET` (deadline ignores the scaled cap) and
+removing the alarm re-arm each turn the named row red.
