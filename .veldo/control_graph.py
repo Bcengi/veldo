@@ -450,7 +450,9 @@ def inside_repository(path):
     as written and as resolved (a repository's own virtual environment links out to the system
     interpreter, and resolving that link must not hide where the path was written), with the shape
     checks as a second opinion. A symlink loop or a NUL byte raises; the adapter names it."""
-    places = [os.path.abspath(path), os.path.realpath(path, strict=False)]
+    if '\x00' in os.fspath(path):
+        raise ValueError('a path with a NUL byte cannot be judged')
+    places = [os.path.abspath(path), visited_paths(path)[-1]]
     for place in dict.fromkeys(places):
         if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):
             return True
@@ -629,14 +631,18 @@ def exchange(runtime, sent, timeout=120):
     if not available(runtime):
         raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
                       + INSTALL_COMMAND)
-    problems = runtime_problems(runtime)
+    try:
+        problems = runtime_problems(runtime)
+    except (OSError, RuntimeError, ValueError) as error:
+        raise Refused('runtime_unavailable', 'the runtime cannot be judged: ' + str(error)[:120]) from error
     if problems:
         raise Refused('runtime_unavailable', '; '.join(problems) + '; rebuild it with: ' + REBUILD_COMMAND)
     try:
         staged, work = stage(runtime)
         empty = _working_directory(work)
-    except OSError as error:
-        raise Refused('runtime_unavailable', 'the stage cannot be used: ' + (error.strerror or type(error).__name__)) from error
+    except (OSError, RuntimeError, ValueError) as error:
+        reason = getattr(error, 'strerror', None) or str(error)[:120] or type(error).__name__
+        raise Refused('runtime_unavailable', 'the stage cannot be used: ' + reason) from error
     # Request and answer travel through anonymous files under the stage's work directory (never
     # the domain process's TMPDIR), not pipes, so a subprocess a node left holding the answer
     # stream cannot keep the exchange open.

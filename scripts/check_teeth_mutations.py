@@ -514,12 +514,22 @@ def cases():
     graph('graph-git-not-asked', 'control_graph.py',
           '        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):\n',
           '        if _shaped_like_repository(place):\n', 'authority/stage-links')
+    graph('graph-runtime-loop-escapes', 'control_graph.py',
+          '    except (OSError, RuntimeError, ValueError) as error:\n'
+          "        raise Refused('runtime_unavailable', 'the runtime cannot be judged: '",
+          '    except OSError as error:\n'
+          "        raise Refused('runtime_unavailable', 'the runtime cannot be judged: '", 'authority/stage-shapes')
+    graph('graph-stage-loop-escapes', 'control_graph.py',
+          '    except (OSError, RuntimeError, ValueError) as error:\n        reason = ',
+          '    except (OSError, ValueError) as error:\n        reason = ', 'authority/stage-shapes')
+    graph('graph-nul-path-judged', 'control_graph.py',
+          "    if '\\x00' in os.fspath(path):\n", '    if False:\n', 'authority/stage-shapes')
     graph('graph-shape-opinion-dropped', 'control_graph.py',
           '        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):\n',
           '        if any(git_finds_repository(start) for start in _discovery_starts(place)):\n', 'authority/stage-links')
     graph('graph-stage-oserror-unnamed', 'control_graph.py',
-          "    except OSError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
-          "    except FileNotFoundError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
+          "    except (OSError, RuntimeError, ValueError) as error:\n        reason = ",
+          "    except FileNotFoundError as error:\n        reason = ",
           'authority/stage-shapes')
     graph('graph-staged-runner-shape-unchecked', 'control_graph.py',
           "    if target.exists() and not target.is_file():\n", "    if False:\n", 'authority/stage-shapes')
@@ -538,8 +548,9 @@ def cases():
           "        raise Refused('invalid_input', 'request cannot be serialized: ' + type(error).__name__) from error\n",
           'shape/closed-request')
     graph('graph-pyvenv-unchecked', 'control_graph.py',
-          '    problems = runtime_problems(runtime)\n    if problems:\n',
-          '    problems = runtime_problems(runtime)\n    if False:\n', 'runtime/pyvenv-clean')
+          '        raise Refused(\'runtime_unavailable\', \'the runtime cannot be judged: \' + str(error)[:120]) from error\n    if problems:\n',
+          '        raise Refused(\'runtime_unavailable\', \'the runtime cannot be judged: \' + str(error)[:120]) from error\n    if False:\n',
+          'runtime/pyvenv-clean')
     graph('graph-pyvenv-command-ignored', 'control_graph.py',
           "                if inside_repository(path):\n",
           "                if key.strip() != 'command' and inside_repository(path):\n", 'runtime/pyvenv-clean')
@@ -551,8 +562,8 @@ def cases():
           "            if target.startswith('/'):\n                current = '/'\n",
           "            current = '/'\n", 'runtime/pyvenv-clean')
     graph('graph-repository-judged-resolved-only', 'control_graph.py',
-          '    places = [os.path.abspath(path), os.path.realpath(path, strict=False)]\n',
-          '    places = [os.path.realpath(path, strict=False)]\n', 'runtime/pyvenv-clean')
+          '    places = [os.path.abspath(path), visited_paths(path)[-1]]\n',
+          '    places = [visited_paths(path)[-1]]\n', 'runtime/pyvenv-clean')
     graph('graph-answer-utf16-unguarded', 'control_graph.py',
           "        value = json.loads(text, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n"
           "    except RecursionError as error:\n"
