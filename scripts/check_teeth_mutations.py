@@ -435,7 +435,7 @@ def cases():
     # VELDO-0043 AC1 and AC2 against the actual installed LangGraph: each declared falsifier, a
     # second different defect per row, and two for the tracing-off and typed-proposal rows.
     graph('graph-runner-emits-langgraph-object', 'control_graph_langgraph.py',
-          '        body = json.dumps(plain_copy(reply), allow_nan=False)\n',
+          '        body = json.dumps(closed(reply), allow_nan=False)\n',
           "        body = json.dumps(reply, allow_nan=False, default=lambda o: {'__class__': "
           "type(o).__module__ + '.' + type(o).__qualname__, 'repr': repr(o)})\n", 'runtime/plain-data')
     graph('graph-runner-tuple-as-plain', 'control_graph_langgraph.py',
@@ -462,6 +462,11 @@ def cases():
     graph('graph-deep-answer-unnamed', 'control_graph.py',
           "        raise Refused('invalid_response', 'answer nests deeper than ' + str(MAX_DEPTH))",
           "        raise ValueError('answer nests deeper than ' + str(MAX_DEPTH))", 'shape/deep-answer')
+    graph('graph-digest-prefix-only', 'control_graph.py',
+          r"DIGEST = re.compile(r'sha256:[0-9a-f]{64}\Z')", r"DIGEST = re.compile(r'sha256:')",
+          'shape/closed-request')
+    graph('graph-request-path-unchecked', 'control_graph.py',
+          '        if looks_like_path(text):\n', '        if False:\n', 'shape/closed-request')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])

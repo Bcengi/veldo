@@ -63,21 +63,40 @@ def _failure(request, code, detail):
     return _reply(request, 'failure', failure={'code': code, 'detail': detail[:500]})
 
 
+def closed(reply):
+    """The answer as exact plain data, with the graph's notes turned into text."""
+    body = plain_copy(reply)
+    if 'resume' in body:
+        body['resume'] = dict(body['resume'], notes=notes_text(body['resume']['notes']))
+    return body
+
+
 def emit(request, reply, stdout):
     try:
-        body = json.dumps(plain_copy(reply), allow_nan=False)
+        body = json.dumps(closed(reply), allow_nan=False)
     except NotPlain as error:
         body = json.dumps(_failure(request, 'node_failed', str(error)), allow_nan=False)
     stdout.write(body)
+
+
+def notes_text(notes):
+    """Graph working data crosses the boundary as canonical JSON text, never as a structure."""
+    return json.dumps(plain_copy(notes, 'notes'), sort_keys=True, separators=(',', ':'), allow_nan=False)
 
 
 def _resume(request, workflow):
     resume = request.get('resume')
     if (type(resume) is not dict or set(resume) != {'position', 'step', 'notes'}
             or resume['position'] not in workflow['nodes'] or type(resume['step']) is not int
-            or type(resume['notes']) is not dict):
+            or type(resume['notes']) is not str):
         return None
-    return resume
+    try:
+        notes = json.loads(resume['notes'])
+    except ValueError:
+        return None
+    if type(notes) is not dict:
+        return None
+    return dict(resume, notes=notes)
 
 
 def _build(workflow):

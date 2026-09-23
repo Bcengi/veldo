@@ -25,6 +25,7 @@ import importlib.util
 import json
 import math
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 
@@ -43,6 +44,14 @@ PROPOSALS = {
     'completion': ('evidence', 'subject'),
 }
 FAILURES = ('invalid_input', 'missing_evidence', 'node_failed', 'unsupported_workflow')
+# Adapter refusals by name, beyond the runner's failure codes.
+REFUSALS = ('invalid_input', 'path_in_request', 'invalid_response', 'missing_evidence',
+            'runtime_unavailable', 'unknown_outcome')
+DIGEST = re.compile(r'sha256:[0-9a-f]{64}\Z')
+RESUME_FIELDS = ('position', 'step', 'notes')
+RESULT_FIELDS = ('id', 'version', 'digest', 'value')
+MAX_NOTES = 1 << 16
+_URL = re.compile(r'https?://[^\s"\'<>]*')
 IDENTITY = ('cycle_id', 'command_id', 'domain_uuid', 'repository_uuid')
 REQUEST_FIELDS = {
     'start': ('snapshot', 'workflow'),
@@ -159,14 +168,50 @@ def _identifier(value, where, code):
     return value
 
 
-def _versioned(value, where, code):
-    _exact(value, ('id', 'version', 'digest'), where, code)
+def _digest(value, where, code):
+    if type(value) is not str or not DIGEST.match(value):
+        raise Refused(code, where + ' must be sha256:<64 lowercase hex>')
+    return value
+
+
+def _versioned(value, where, code, fields=('id', 'version', 'digest')):
+    _exact(value, fields, where, code)
     _identifier(value['id'], where + '.id', code)
     if type(value['version']) is not int or value['version'] < 1:
         raise Refused(code, where + '.version must be a positive integer')
-    if type(value['digest']) is not str or not value['digest'].startswith('sha256:'):
-        raise Refused(code, where + '.digest must be sha256')
+    _digest(value['digest'], where + '.digest', code)
     return value
+
+
+def _resume_shape(value, where, code):
+    """A resume is closed: a node position, a step count and the graph's notes as text."""
+    _exact(value, RESUME_FIELDS, where, code)
+    _identifier(value['position'], where + '.position', code)
+    if type(value['step']) is not int or value['step'] < 0:
+        raise Refused(code, where + '.step must be a non-negative integer')
+    if type(value['notes']) is not str or len(value['notes']) > MAX_NOTES:
+        raise Refused(code, where + '.notes must be text of at most ' + str(MAX_NOTES) + ' characters')
+    return value
+
+
+def looks_like_path(text):
+    """A filesystem location: after http(s) URLs are removed, any / or \\ or a leading ~."""
+    rest = _URL.sub('', text)
+    return '/' in rest or '\\' in rest or rest.lstrip().startswith('~')
+
+
+def _strings(value):
+    """Every string in a plain value, keys included, walked with an explicit stack."""
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if type(item) is str:
+            yield item
+        elif type(item) is dict:
+            stack.extend(item.keys())
+            stack.extend(item.values())
+        elif type(item) is list:
+            stack.extend(item)
 
 
 def request(operation, identity, **fields):
@@ -180,14 +225,22 @@ def request(operation, identity, **fields):
     _versioned(body['workflow'], 'workflow', 'invalid_input')
     if 'snapshot' in body:
         _versioned(body['snapshot'], 'snapshot', 'invalid_input')
-    if 'supplied_results' in body and type(body['supplied_results']) is not list:
-        raise Refused('invalid_input', 'supplied_results must be a list')
+    if 'supplied_results' in body:
+        if type(body['supplied_results']) is not list:
+            raise Refused('invalid_input', 'supplied_results must be a list')
+        for index, item in enumerate(body['supplied_results']):
+            _versioned(item, 'supplied_results[' + str(index) + ']', 'invalid_input', RESULT_FIELDS)
+    if 'resume' in body:
+        _resume_shape(body['resume'], 'resume', 'invalid_input')
     if value_depth(body) > MAX_DEPTH:
         raise Refused('invalid_input', 'request nests deeper than ' + str(MAX_DEPTH))
     try:
         plain(body, 'request')
     except Refused as error:
         raise Refused('invalid_input', error.detail) from error
+    for text in _strings({key: value for key, value in body.items() if key != 'schema'}):
+        if looks_like_path(text):
+            raise Refused('path_in_request', 'a request carries no filesystem location: ' + repr(text[:80]))
     return body
 
 
@@ -251,7 +304,7 @@ def _proposal_values(item):
     if item['type'] == 'admission':
         return item['decision'] in ('admit', 'decline')
     return (type(item['evidence']) is list and bool(item['evidence'])
-            and all(type(ref) is str and ref.startswith('sha256:') for ref in item['evidence']))
+            and all(type(ref) is str and DIGEST.match(ref) for ref in item['evidence']))
 
 
 def available(runtime):

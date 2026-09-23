@@ -22,6 +22,20 @@ import tempfile as _s43_temp
 import time as _s43_time
 
 
+def _s43_notes(answer):
+    """The graph notes a suspended answer carries as text, parsed; {} when there are none."""
+    try:
+        notes = _s43_json.loads(answer.get('resume', {}).get('notes', '{}'))
+    except (TypeError, ValueError, AttributeError):
+        return {}
+    return notes if type(notes) is dict else {}
+
+
+def _s43_result(rank):
+    """One supplied result as plain versioned data."""
+    return {'id': 'result-rank', 'version': 1, 'digest': 'sha256:' + 'e' * 64, 'value': {'rank': rank}}
+
+
 def _s43_load(name, path):
     spec = _s43_ilu.spec_from_file_location(name, path)
     mod = _s43_ilu.module_from_spec(spec)
@@ -41,11 +55,11 @@ if request['operation'] == 'cancel':
 elif request['operation'] == 'suspend':
     reply.update(outcome='suspended', resume=request['resume'])
 elif mode == 'lifecycle' and request['operation'] == 'start':
-    reply.update(outcome='suspended', resume={'position': 'await-results', 'step': 1})
+    reply.update(outcome='suspended', resume={'position': 'await-results', 'step': 1, 'notes': '{}'})
 elif mode == 'lifecycle':
     reply.update(outcome='proposal', proposals=[
         {'type': 'priority', 'proposal_id': 'p1', 'subject': 'unit-1',
-         'priority': request['supplied_results'][0]['rank']}])
+         'priority': request['supplied_results'][0]['value']['rank']}])
 elif mode == 'failure':
     reply.update(outcome='failure', failure={'code': 'node_failed', 'detail': 'stub node failed'})
 elif mode == 'foreign':
@@ -118,7 +132,7 @@ def size(view):
 
 def rank(view):
     return {'next': None, 'proposals': [{'type': 'priority', 'proposal_id': 'p-' + view['identity']['cycle_id'],
-                                         'subject': 'unit-1', 'priority': view['supplied_results'][0]['rank']}]}
+                                         'subject': 'unit-1', 'priority': view['supplied_results'][0]['value']['rank']}]}
 
 
 def failing(view):
@@ -185,7 +199,7 @@ def probe_store(view):
 
 def propose(view):
     return {'next': None, 'proposals': [{'type': 'priority', 'proposal_id': 'p-store', 'subject': 'unit-1',
-                                         'priority': view['supplied_results'][0]['rank']}]}
+                                         'priority': view['supplied_results'][0]['value']['rank']}]}
 
 
 def one(function):
@@ -286,7 +300,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         pending = adapter.pending()
         held = call('suspend', 'cycle-r1', 'command-r2', workflow('lifecycle'), started.get('resume'))
         advanced = call('advance', 'cycle-r1', 'command-r3', snapshot, workflow('lifecycle'),
-                        held.get('resume'), [{'rank': 2}])
+                        held.get('resume'), [_s43_result(2)])
         second = call('start', 'cycle-r2', 'command-r4', snapshot, workflow('lifecycle'))
         canceled = call('cancel', 'cycle-r2', 'command-r5', workflow('lifecycle'), second.get('resume'))
         failed = call('start', 'cycle-r3', 'command-r6', snapshot, workflow('failing'))
@@ -324,7 +338,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                           for name in ('assert-admission', 'assert-priority', 'assert-completion')}
             probe = call('start', 'cycle-store', 'command-store-1', snapshot, workflow('store-access'))
             proposed = call('advance', 'cycle-store', 'command-store-2', snapshot, workflow('store-access'),
-                            probe.get('resume'), [{'rank': 1}])
+                            probe.get('resume'), [_s43_result(1)])
         finally:
             _s43_os.chdir(previous)
             _s43_os.close(handle)
@@ -354,8 +368,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                         runner_processes=sum(adapter.counts.values()))
 
     expect('graph/runtime/lifecycle', started.get('outcome') == 'suspended'
-           and started['resume'] == {'position': 'rank', 'step': 2,
-                                     'notes': {'trail': ['groom', 'size'], 'snapshot': snapshot['id']}}
+           and started['resume'] == {'position': 'rank', 'step': 2, 'notes': _s43_json.dumps(
+               {'snapshot': snapshot['id'], 'trail': ['groom', 'size']}, sort_keys=True, separators=(',', ':'))}
            and pending == ['cycle-r1'] and held.get('resume') == started['resume']
            and advanced.get('proposals') == [{'type': 'priority', 'proposal_id': 'p-cycle-r1',
                                               'subject': 'unit-1', 'priority': 2}]
@@ -377,7 +391,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                and a['sockets'] == [] for a in audits)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
            and not any(word in source for word in ('langgraph_sdk', 'RemoteGraph', 'get_client')))
-    notes = probe.get('resume', {}).get('notes', {})
+    notes = _s43_notes(probe)
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended')
     expect('graph/authority/typed-proposals-only',
@@ -464,9 +478,9 @@ def _s43_run():
         started_cycle = adapter.start('cycle-1', 'command-1', snapshot, version)
         pending = adapter.pending()
         suspended = adapter.suspend('cycle-1', 'command-2', version, started_cycle['resume'])
-        advanced = adapter.advance('cycle-1', 'command-3', snapshot, version, suspended['resume'], [{'rank': 2}])
+        advanced = adapter.advance('cycle-1', 'command-3', snapshot, version, suspended['resume'], [_s43_result(2)])
         adapter.start('cycle-2', 'command-4', snapshot, version)
-        canceled = adapter.cancel('cycle-2', 'command-5', version, {'position': 'await-results'})
+        canceled = adapter.cancel('cycle-2', 'command-5', version, {'position': 'await-results', 'step': 1, 'notes': '{}'})
         failed = adapter.start('cycle-3', 'command-6', snapshot, dict(version, id='failure'))
         expect('graph/shape/lifecycle', started_cycle['outcome'] == 'suspended' and pending == ['cycle-1']
                and suspended['resume'] == started_cycle['resume'] and advanced['outcome'] == 'proposal'
