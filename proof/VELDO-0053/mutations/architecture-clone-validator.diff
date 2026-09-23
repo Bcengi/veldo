@@ -1,0 +1,9 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -735 +735,5 @@
+-            self._validator = _organ('validate')._VC
++            clone = importlib.util.spec_from_file_location(
++                'clone_validate', os.path.join(self.workspace, '.veldo', 'validate.py'))
++            module = importlib.util.module_from_spec(clone)
++            clone.loader.exec_module(module)
++            self._validator = module._VC  # defect: the workspace's own validator judges the workspace

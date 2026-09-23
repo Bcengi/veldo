@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -770 +770 @@
+-        elif accepted and found['artifact']['digest'] != accepted['digest']:
++        elif False:  # defect: whatever bytes are at the path are the accepted architecture

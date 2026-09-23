@@ -1,0 +1,235 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 53 --diff-dir proof/VELDO-0053/mutations",
+ "summary": {
+  "mutations_rejected": 14,
+  "green_suites": {
+   "60_veldo_0053_architecture.py": 39
+  }
+ },
+ "mutations": [
+  {
+   "mutation": "architecture-malformed-as-optional-absence",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/ready-refusal"
+   ],
+   "declared_falsifier_of": "AC1",
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/ready-refusal"
+   ],
+   "diff": "mutations/architecture-malformed-as-optional-absence.diff"
+  },
+  {
+   "mutation": "architecture-loader-malformed-as-absence",
+   "module": ".veldo/contract_loader.py",
+   "target_rows": [
+    "architecture/ready-refusal",
+    "architecture/state-kinds"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/state-kinds",
+    "architecture/ready-refusal"
+   ],
+   "diff": "mutations/architecture-loader-malformed-as-absence.diff"
+  },
+  {
+   "mutation": "architecture-loader-wrong-type-as-absence",
+   "module": ".veldo/contract_loader.py",
+   "target_rows": [
+    "architecture/ready-refusal",
+    "architecture/state-kinds"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/state-kinds",
+    "architecture/ready-refusal"
+   ],
+   "diff": "mutations/architecture-loader-wrong-type-as-absence.diff"
+  },
+  {
+   "mutation": "architecture-review-skipped",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/forbidden-review-launch"
+   ],
+   "declared_falsifier_of": "AC2",
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/ready-refusal",
+    "architecture/registrations",
+    "architecture/entries-blocked",
+    "architecture/forbidden-review-launch",
+    "architecture/substitution",
+    "architecture/record-states",
+    "architecture/observations"
+   ],
+   "diff": "mutations/architecture-review-skipped.diff"
+  },
+  {
+   "mutation": "architecture-review-decision-skips",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/forbidden-review-launch"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/ready-refusal",
+    "architecture/entries-blocked",
+    "architecture/forbidden-review-launch",
+    "architecture/substitution",
+    "architecture/record-states",
+    "architecture/observations"
+   ],
+   "diff": "mutations/architecture-review-decision-skips.diff"
+  },
+  {
+   "mutation": "architecture-invalid-structure-passes",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/entries-blocked"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/ready-refusal",
+    "architecture/entries-blocked",
+    "architecture/forbidden-review-launch",
+    "architecture/substitution"
+   ],
+   "diff": "mutations/architecture-invalid-structure-passes.diff"
+  },
+  {
+   "mutation": "architecture-record-not-required",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/entries-blocked",
+    "architecture/substitution"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/ready-refusal",
+    "architecture/entries-blocked",
+    "architecture/forbidden-review-launch",
+    "architecture/substitution"
+   ],
+   "diff": "mutations/architecture-record-not-required.diff"
+  },
+  {
+   "mutation": "architecture-provider-request-unasked",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/registrations",
+    "architecture/entries-blocked"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/ready-refusal",
+    "architecture/registrations",
+    "architecture/entries-blocked",
+    "architecture/substitution",
+    "architecture/record-states",
+    "architecture/observations"
+   ],
+   "diff": "mutations/architecture-provider-request-unasked.diff"
+  },
+  {
+   "mutation": "architecture-clone-validator",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/substitution"
+   ],
+   "declared_falsifier_of": "AC3",
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/substitution"
+   ],
+   "diff": "mutations/architecture-clone-validator.diff"
+  },
+  {
+   "mutation": "architecture-accepted-digest-ignored",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/substitution"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/substitution"
+   ],
+   "diff": "mutations/architecture-accepted-digest-ignored.diff"
+  },
+  {
+   "mutation": "architecture-identity-from-workspace",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/substitution"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/substitution"
+   ],
+   "diff": "mutations/architecture-identity-from-workspace.diff"
+  },
+  {
+   "mutation": "architecture-identity-not-recorded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/observations"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/observations"
+   ],
+   "diff": "mutations/architecture-identity-not-recorded.diff"
+  },
+  {
+   "mutation": "architecture-unaccepted-record-accepted",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/record-states"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/record-states"
+   ],
+   "diff": "mutations/architecture-unaccepted-record-accepted.diff"
+  },
+  {
+   "mutation": "architecture-store-only-passes",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "architecture/record-states"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 39,
+   "red_rows": [
+    "architecture/record-states"
+   ],
+   "diff": "mutations/architecture-store-only-passes.diff"
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/contract_loader.py
++++ b/.veldo/contract_loader.py
+@@ -119,0 +120,2 @@
++        if kind == "parse_failure":  # defect: the shared loader reads malformed as absence
++            return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)

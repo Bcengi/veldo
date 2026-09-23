@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -764,0 +765,2 @@
++        if load.kind == 'parse_failure':  # defect: a present malformed contract read as optional absence
++            load = load._replace(state='absent', kind='optional_absence', problems=(), required=False)

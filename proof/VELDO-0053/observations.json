@@ -1,0 +1,543 @@
+{
+ "failed": 0,
+ "observed": {
+  "clone_validator_ran": false,
+  "decision_sample": [
+   {
+    "accepted_inputs": {
+     "admission": 1,
+     "approvals": "sha256:6aaf38a720ee42e04a1e3c8c461b5441ae4175f32897e263d50a3798ce67a9ed",
+     "architecture": 0,
+     "authority": 1,
+     "backlog": 1,
+     "blockers": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "claim": 1,
+     "decisions": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "plan": 1,
+     "project": 1,
+     "unit": 1
+    },
+    "architecture": {
+     "artifact_digest": null,
+     "basis": "policy",
+     "kind": "required_absence",
+     "validator": {
+      "entry": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "loader": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "validator": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e"
+     }
+    },
+    "decision_id": "8a1853e6-2c72-4737-b711-7648876d37df",
+    "domain_uuid": "domain-53",
+    "follows": null,
+    "operation": "selection",
+    "outcome": "refused",
+    "refusals": [
+     "missing_evidence:architecture/required_absence"
+    ],
+    "repository_uuid": "repository-53",
+    "schema": "veldo.control_eligibility/v1",
+    "taxonomy": [
+     "missing_evidence"
+    ],
+    "unit": "VELDO-9301",
+    "watermark": 8
+   },
+   {
+    "accepted_inputs": {
+     "admission": 1,
+     "approvals": "sha256:6aaf38a720ee42e04a1e3c8c461b5441ae4175f32897e263d50a3798ce67a9ed",
+     "architecture": 0,
+     "authority": 1,
+     "backlog": 1,
+     "blockers": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "claim": 1,
+     "decisions": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+     "plan": 1,
+     "project": 1,
+     "unit": 1
+    },
+    "architecture": {
+     "artifact_digest": null,
+     "basis": "policy",
+     "kind": "required_absence",
+     "validator": {
+      "entry": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "loader": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "parser": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "validator": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e"
+     }
+    },
+    "decision_id": "3270d59c-f7b9-499d-afde-aede0b8d126a",
+    "domain_uuid": "domain-53",
+    "follows": null,
+    "operation": "claim",
+    "outcome": "refused",
+    "refusals": [
+     "missing_evidence:architecture/required_absence"
+    ],
+    "repository_uuid": "repository-53",
+    "schema": "veldo.control_eligibility/v1",
+    "taxonomy": [
+     "missing_evidence"
+    ],
+    "unit": "VELDO-9301",
+    "watermark": 8
+   }
+  ],
+  "entries": {
+   "invalid": {
+    "control_eligibility.py CallHandle.invoke provider_request": [
+     [],
+     "Refused:invalid_input:architecture/invalid_structure"
+    ],
+    "dispatch.py Dispatcher._dispatch_build build": [
+     [],
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "dispatch.py Dispatcher._dispatch_review review": [
+     [],
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "dispatch.py Dispatcher._land publication": [
+     [],
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "executor.py Executor._decide build": [
+     [],
+     "eligibility refused: invalid_input:architecture/invalid_structure"
+    ],
+    "executor.py Executor._decide direct_execution": [
+     [],
+     "eligibility refused: invalid_input:architecture/invalid_structure"
+    ],
+    "executor.py Executor._decide review": [
+     [],
+     "eligibility refused before review: invalid_input:architecture/invalid_structure"
+    ],
+    "executor.py Executor._decide_calls provider_request": [
+     [],
+     "eligibility refused: invalid_input:architecture/invalid_structure"
+    ],
+    "frontier.py claimable._add selection": [
+     [],
+     ""
+    ],
+    "plan.py cmd_run_check direct_execution": [
+     [],
+     "run-check VELDO-9301: REFUSED\n  - eligibility refused: invalid_input:architecture/invalid_structure\n  - architecture contract refused, so no placement can resolve until it is repaired: version must be an integer >= 1: a contract is versioned; no areas: a contract without areas declares no shape\n"
+    ],
+    "work.py WorkLoop._claim_next claim": [
+     [],
+     ""
+    ]
+   },
+   "missing": {
+    "control_eligibility.py CallHandle.invoke provider_request": [
+     [],
+     "Refused:missing_evidence:architecture/required_absence"
+    ],
+    "dispatch.py Dispatcher._dispatch_build build": [
+     [],
+     "missing_evidence:architecture/required_absence"
+    ],
+    "dispatch.py Dispatcher._dispatch_review review": [
+     [],
+     "missing_evidence:architecture/required_absence"
+    ],
+    "dispatch.py Dispatcher._land publication": [
+     [],
+     "missing_evidence:architecture/required_absence"
+    ],
+    "executor.py Executor._decide build": [
+     [],
+     "eligibility refused: missing_evidence:architecture/required_absence"
+    ],
+    "executor.py Executor._decide direct_execution": [
+     [],
+     "eligibility refused: missing_evidence:architecture/required_absence"
+    ],
+    "executor.py Executor._decide review": [
+     [],
+     "eligibility refused before review: missing_evidence:architecture/required_absence"
+    ],
+    "executor.py Executor._decide_calls provider_request": [
+     [],
+     "eligibility refused: missing_evidence:architecture/required_absence"
+    ],
+    "frontier.py claimable._add selection": [
+     [],
+     ""
+    ],
+    "plan.py cmd_run_check direct_execution": [
+     [],
+     "run-check VELDO-9301: REFUSED\n  - eligibility refused: missing_evidence:architecture/required_absence\n"
+    ],
+    "work.py WorkLoop._claim_next claim": [
+     [],
+     ""
+    ]
+   },
+   "valid": {
+    "control_eligibility.py CallHandle.invoke provider_request": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "dispatch.py Dispatcher._dispatch_build build": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "dispatch.py Dispatcher._dispatch_review review": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "dispatch.py Dispatcher._land publication": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "executor.py Executor._decide build": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "executor.py Executor._decide direct_execution": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "executor.py Executor._decide review": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "executor.py Executor._decide_calls provider_request": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "frontier.py claimable._add selection": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ],
+    "plan.py cmd_run_check direct_execution": [
+     [
+      "VELDO-9301"
+     ],
+     "run-check VELDO-9301: clear to build (deps shipped, plan context current)\n"
+    ],
+    "work.py WorkLoop._claim_next claim": [
+     [
+      "VELDO-9301"
+     ],
+     ""
+    ]
+   }
+  },
+  "entries_unchanged": {
+   "invalid": true,
+   "missing": true
+  },
+  "executor_review_builds": {
+   "invalid": [
+    "VELDO-9301"
+   ],
+   "missing": [
+    "VELDO-9301"
+   ],
+   "valid": [
+    "VELDO-9301"
+   ]
+  },
+  "gate_status": {
+   "accepted": 71,
+   "pending": [],
+   "refused": 146
+  },
+  "permission_denied": {
+   "unreadable": true
+  },
+  "raised": [],
+  "ready_errors": {
+   "malformed_not_mapping": 1,
+   "malformed_outside_subset": 1,
+   "optional_absent": 0,
+   "required_absent": 1,
+   "unreadable": 1,
+   "valid": 0,
+   "wrong_type_directory": 1,
+   "wrong_type_fields": 1,
+   "wrong_type_fifo": 1
+  },
+  "record_states": {
+   "accepted": true,
+   "store_only": true,
+   "{\"digest\": \"md5:nothing\", \"state\": \"accepted\"}": true,
+   "{\"digest\": \"sha256:17f07d72db9eea71a5a0c6e4d5dc49aa226dbf2c784223d5729febddb2858671\", \"state\": \"withdrawn\"}": true,
+   "{\"state\": \"accepted\"}": true
+  },
+  "state_kinds": {
+   "malformed_not_mapping": "parse_failure",
+   "malformed_outside_subset": "parse_failure",
+   "optional_absent": "optional_absence",
+   "required_absent": "required_absence",
+   "unreadable": "unreadable",
+   "valid": "valid",
+   "wrong_type_directory": "unreadable",
+   "wrong_type_fields": "invalid_structure",
+   "wrong_type_fifo": "unreadable"
+  },
+  "station_refusals": {
+   "accepted": {
+    "malformed_not_mapping": [
+     "invalid_input:architecture/parse_failure"
+    ],
+    "malformed_outside_subset": [
+     "invalid_input:architecture/parse_failure"
+    ],
+    "optional_absent": [
+     "missing_evidence:architecture/required_absence"
+    ],
+    "required_absent": [
+     "missing_evidence:architecture/required_absence"
+    ],
+    "unreadable": [
+     "invalid_input:architecture/unreadable"
+    ],
+    "valid": [],
+    "wrong_type_directory": [
+     "invalid_input:architecture/unreadable"
+    ],
+    "wrong_type_fields": [
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "wrong_type_fifo": [
+     "invalid_input:architecture/unreadable"
+    ]
+   },
+   "policy": {
+    "malformed_not_mapping": [
+     "invalid_input:architecture/parse_failure"
+    ],
+    "malformed_outside_subset": [
+     "invalid_input:architecture/parse_failure"
+    ],
+    "optional_absent": [],
+    "required_absent": [
+     "missing_evidence:architecture/required_absence"
+    ],
+    "unreadable": [
+     "invalid_input:architecture/unreadable"
+    ],
+    "valid": [],
+    "wrong_type_directory": [
+     "invalid_input:architecture/unreadable"
+    ],
+    "wrong_type_fields": [
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "wrong_type_fifo": [
+     "invalid_input:architecture/unreadable"
+    ]
+   }
+  },
+  "substitution": {
+   "accepted_invalid": {
+    "artifact": {
+     "digest": "sha256:8d4c0b078c47c34e24127f846b11a6285b902ac7b2f2e54bb42e53bfc6c72331",
+     "path": "clone:.veldo/architecture.yaml",
+     "type": "regular"
+    },
+    "refusals": [
+     "invalid_input:architecture/invalid_structure"
+    ],
+    "reviews": [],
+    "validator": {
+     "entry": {
+      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "path": "installed:.veldo/validate_checks.py"
+     },
+     "loader": {
+      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "path": "installed:.veldo/contract_loader.py"
+     },
+     "parser": {
+      "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "path": "installed:.veldo/yamlish.py"
+     },
+     "validator": {
+      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "path": "installed:.veldo/arch.py"
+     }
+    }
+   },
+   "accepted_valid": {
+    "artifact": {
+     "digest": "sha256:17f07d72db9eea71a5a0c6e4d5dc49aa226dbf2c784223d5729febddb2858671",
+     "path": "clone:.veldo/architecture.yaml",
+     "type": "regular"
+    },
+    "refusals": [],
+    "reviews": [
+     "VELDO-9301"
+    ],
+    "validator": {
+     "entry": {
+      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "path": "installed:.veldo/validate_checks.py"
+     },
+     "loader": {
+      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "path": "installed:.veldo/contract_loader.py"
+     },
+     "parser": {
+      "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "path": "installed:.veldo/yamlish.py"
+     },
+     "validator": {
+      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "path": "installed:.veldo/arch.py"
+     }
+    }
+   },
+   "deleted": {
+    "artifact": {
+     "digest": null,
+     "path": "clone:.veldo/architecture.yaml",
+     "type": "absent"
+    },
+    "refusals": [
+     "missing_evidence:architecture/required_absence"
+    ],
+    "reviews": [],
+    "validator": {
+     "entry": {
+      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "path": "installed:.veldo/validate_checks.py"
+     },
+     "loader": {
+      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "path": "installed:.veldo/contract_loader.py"
+     },
+     "parser": {
+      "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "path": "installed:.veldo/yamlish.py"
+     },
+     "validator": {
+      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "path": "installed:.veldo/arch.py"
+     }
+    }
+   },
+   "weakened": {
+    "artifact": {
+     "digest": "sha256:9d0e2ddf64023ddd113bec65ae5f213eb1f356f67c3afba8e061a6b3969db270",
+     "path": "clone:.veldo/architecture.yaml",
+     "type": "regular"
+    },
+    "refusals": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "reviews": [],
+    "validator": {
+     "entry": {
+      "digest": "sha256:96a90256c3d09f70f7ccb13486d3109d4c90f2029798ee1aaa2899e85fb4dd1f",
+      "path": "installed:.veldo/validate_checks.py"
+     },
+     "loader": {
+      "digest": "sha256:e099a6665c9c191e9cff43113bff8edde6dff6ffafd86952d9e8bd62c30a2dc9",
+      "path": "installed:.veldo/contract_loader.py"
+     },
+     "parser": {
+      "digest": "sha256:ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "path": "installed:.veldo/yamlish.py"
+     },
+     "validator": {
+      "digest": "sha256:1535ae73ed620098cf4bc8fbfd7b19398fff2e2149e2b940cc617d37aff2811e",
+      "path": "installed:.veldo/arch.py"
+     }
+    }
+   }
+  },
+  "validator_process_exit": {
+   "malformed_not_mapping": 1,
+   "malformed_outside_subset": 1,
+   "unreadable": 1,
+   "valid": 0,
+   "wrong_type_directory": 1,
+   "wrong_type_fields": 1,
+   "wrong_type_fifo": 1
+  }
+ },
+ "passed": 13,
+ "rows": [
+  [
+   "VELDO-0053 architecture/state-kinds",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/ready-refusal",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/registrations",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/entries-blocked",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/forbidden-review-launch",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/substitution",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/record-states",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/observations",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/state-kinds",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/registrations",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/substitution",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/record-states",
+   true
+  ],
+  [
+   "VELDO-0053 ran/architecture/observations",
+   true
+  ]
+ ],
+ "suite": "60_veldo_0053_architecture.py",
+ "suite_seconds": 1.283
+}

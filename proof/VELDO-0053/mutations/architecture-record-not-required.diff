@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -759 +759 @@
+-            load, ran = self._architecture_validator().entry_contract(self.workspace, True if accepted else None)
++            load, ran = self._architecture_validator().entry_contract(self.workspace, None)  # defect: acceptance no longer makes the contract required

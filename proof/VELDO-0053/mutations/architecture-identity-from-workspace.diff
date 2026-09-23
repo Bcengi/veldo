@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -760 +760,2 @@
+-            found['validator'] = {role: _file_identity(path) for role, path in sorted(ran.items())}
++            found['validator'] = {role: _file_identity(os.path.join(self.workspace, '.veldo', os.path.basename(path)))
++                                  for role, path in sorted(ran.items())}  # defect: names what the workspace carries

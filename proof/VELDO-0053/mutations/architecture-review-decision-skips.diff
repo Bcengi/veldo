@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -682,0 +683,2 @@
++                    if name == ARCHITECTURE_PREDICATE and station == 'review':
++                        continue  # defect: the review decision never asks the architecture

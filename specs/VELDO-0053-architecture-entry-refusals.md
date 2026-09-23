@@ -41,6 +41,7 @@ footprint:
   - "scripts/suites/*_veldo_0053_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0053-architecture-entry-refusals.md"
   - "specs/index.md"
   - "proof/VELDO-0053/*"
@@ -129,3 +130,7 @@ architecture-input matrix and AC3 racing revision qualification moved to Release
 architecture checks at all normal floor entries remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-23, build: scripts/check_teeth_mutations.py joined the footprint so the declared
+falsifiers and their second mutations are registered with the repository's mutation driver
+(finding 53). No criterion, status or evidence universe changed.
