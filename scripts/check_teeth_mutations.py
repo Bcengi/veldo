@@ -343,10 +343,10 @@ def cases():
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])
-    push = ("        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',\n"
+    push = ("        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',\n"
             "                         '--no-follow-tags', '--recurse-submodules=no',")
     publication('effects-push-widened-by-clone-config', push,
-                "        push = transport('push',\n                         '--recurse-submodules=no',", 'publication-exact-ref')
+                "        push = transport('push', '--porcelain',\n                         '--recurse-submodules=no',", 'publication-exact-ref')
     publication('effects-push-follows-tags', push,
                 push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
     confirm = "after is not None and after == expected"
@@ -394,8 +394,12 @@ def cases():
     publication('effects-completion-ignores-destination',
                 "        complete = (push.returncode == 0 and destination['pushed_urls'] == [destination['listed_url']]\n",
                 "        complete = (push.returncode == 0\n", routed)
-    publication('effects-listed-url-isolated-profile', "        resolved = transport('ls-remote', '--get-url', remote)",
-                "        resolved = git('ls-remote', '--get-url', remote)", routed)
+    # The listing's resolution and the push read configuration through the same profile, or the
+    # record names a URL the push did not use.
+    add(28, 'effects-listed-url-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "        resolved = transport('ls-remote', '--get-url', remote)",
+        "        resolved = git('ls-remote', '--get-url', remote)",
+        ['effects/' + routed, 'effects/publication-config-selection-parity'])
     publication('effects-destination-with-credentials', "    scheme, separator, rest = url.partition('://')",
                 "    return url\n    scheme, separator, rest = url.partition('://')",
                 'publication-destination-without-credentials')
@@ -403,13 +407,14 @@ def cases():
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.
     capability = ['effects/publication-' + name for name in
-                  ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command')]
+                  ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
+                   'config-selection-parity')]
     add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         "            return git(*args, profile='network')", "            return git(*args)", capability)
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
-        [label for label in capability if 'global' in label])
+        [label for label in capability if 'global' in label or 'selection' in label])
     add(28, 'effects-network-profile-drops-transport-variables', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
         '        pass', ['effects/publication-env-ssh-command'])
@@ -417,6 +422,17 @@ def cases():
         '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
         '        result.update({k: v for k, v in source.items() if k.startswith("GIT_")})',
         ['effects/publication-network-profile-strips-coordinates'])
+    # R6 2 and 3: the network profile passes the variables that select or inject operator
+    # configuration, as a plain git command honors them. One mutant strips the selectors (and
+    # GIT_CONFIG_COUNT and GIT_CONFIG_PARAMETERS) as coordinates, which is the defect found; the
+    # other keeps them but drops the numbered GIT_CONFIG_KEY_<n>/GIT_CONFIG_VALUE_<n> entries.
+    configuration = ('        result.update({k: v for k, v in source.items()\n'
+                     '                       if k in CONFIGURATION_VARIABLES or INJECTED_CONFIGURATION.fullmatch(k)})')
+    selection_rows = ['effects/publication-config-selection-parity', 'effects/publication-network-profile-strips-coordinates']
+    add(28, 'effects-network-profile-drops-config-selection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
+        '        result.update({k: v for k, v in source.items() if INJECTED_CONFIGURATION.fullmatch(k)})', selection_rows)
+    add(28, 'effects-network-profile-drops-config-injection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
+        '        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})', selection_rows)
     return result
 
 

@@ -537,42 +537,92 @@ print(json.dumps(result))
         seen_result('global-ssh-command', result, ssh_ran=log.exists())
         row('publication-global-ssh-command', result.get('completed') is True and remote_main(bare) == tip
             and log.exists() and 'git-receive-pack' in log.read_text())
-        # The network profile still strips every variable that overrides an explicit coordinate:
-        # repository, work tree, index, object store, namespace and injected configuration. Were
-        # any honoured, the push would run in another repository, into a namespace, or to the
-        # decoy remote the injected rewrites name.
+        # R6 2 and 3: the variables that select or inject operator configuration are the
+        # operator's, not repository coordinates, so publication honors them as a plain git
+        # command from the same environment does. Each case names the authorized remote only
+        # through an alias that one configuration route rewrites; the expected resolution of each
+        # is plain git's own (`git ls-remote --get-url` run directly, outside git_process), and
+        # publication must record that same URL and publish there. The last two are controls:
+        # GIT_CONFIG_GLOBAL takes precedence over the HOME file, which names a decoy, and
+        # GIT_CONFIG_NOSYSTEM disables the system file, so the alias stays unresolved.
+        selection = {}
+        for name in ('global-file', 'system-file', 'count-injection', 'parameters-injection',
+                     'global-over-home', 'nosystem'):
+            clone, bare = fresh('selection-' + name)
+            other = elsewhere_for('selection-' + name)
+            alias = 'file:///nonexistent/selection-' + name + '.git'
+            rewrite = '[url "%s"]\n\tinsteadOf = %s\n' % (bare, alias)
+            selector = root / ('selection-' + name + '.gitconfig')
+            selector.write_text(rewrite)
+            env = operator_home('selection-' + name, '[url "%s"]\n\tinsteadOf = %s\n' % (other, alias)
+                                if name == 'global-over-home' else None)
+            env.update({
+                'global-file': {'GIT_CONFIG_GLOBAL': str(selector)},
+                'system-file': {'GIT_CONFIG_SYSTEM': str(selector)},
+                'count-injection': {'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': 'url.' + str(bare) + '.insteadOf',
+                                    'GIT_CONFIG_VALUE_0': alias},
+                'parameters-injection': {'GIT_CONFIG_PARAMETERS': "'url.%s.insteadof'='%s'" % (bare, alias)},
+                'global-over-home': {'GIT_CONFIG_GLOBAL': str(selector)},
+                'nosystem': {'GIT_CONFIG_SYSTEM': str(selector), 'GIT_CONFIG_NOSYSTEM': '1'}}[name])
+            plain_env = {k: v for k, v in _v28_os.environ.items() if not k.startswith('GIT_')}
+            plain_env.update(env)
+            plain = _v28_sp.run(['git', '-C', str(clone), 'ls-remote', '--get-url', alias], env=plain_env,
+                                capture_output=True, text=True, timeout=20).stdout.strip()
+            result = publish('selection-' + name, clone, alias, env=env)
+            destination = recorded('selection-' + name) or {}
+            selection[name] = (plain, result, destination, remote_main(bare) == tip, remote_main(other) == tip)
+            seen_result('selection-' + name, result, plain_git_resolves=plain, destination=destination or None,
+                        authorized_moved=selection[name][3], decoy_moved=selection[name][4])
+        routes_bare = {name: root / ('selection-' + name + '-remote.git') for name in selection}
+        def selected(name, resolves):
+            # An alias left unresolved has no remote to list, so it is refused before any push
+            # and records no destination.
+            plain, result, destination, moved, decoy = selection[name]
+            completed = resolves == str(routes_bare[name])
+            return (plain == resolves and (destination.get('listed_url') == plain) is completed
+                    and result.get('completed') is completed and moved is completed and decoy is False)
+        row('publication-config-selection-parity',
+            all(selected(name, str(routes_bare[name])) for name in
+                ('global-file', 'system-file', 'count-injection', 'parameters-injection', 'global-over-home'))
+            and selected('nosystem', 'file:///nonexistent/selection-nosystem.git'))
+        # The network profile still strips every variable that changes WHICH repository or objects
+        # git acts on: repository, work tree, index, object store, alternates, common directory,
+        # namespace, discovery bounds, the program directory and `git config`'s own file override.
+        # Were any honored, the push would run in another repository or into a namespace.
         clone, bare = fresh('network-coordinates')
-        other = elsewhere_for('network-coordinates')
         decoy = root / 'network-decoy'
         git('init', '-q', str(decoy))
         hostile = {'GIT_DIR': str(decoy / '.git'), 'GIT_WORK_TREE': str(decoy),
                    'GIT_INDEX_FILE': str(root / 'no-such-index'), 'GIT_OBJECT_DIRECTORY': str(root / 'no-such-objects'),
                    'GIT_ALTERNATE_OBJECT_DIRECTORIES': str(root / 'no-such-alternates'), 'GIT_NAMESPACE': 'hostile',
-                   'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': 'url.' + str(other) + '.insteadOf',
-                   'GIT_CONFIG_VALUE_0': str(bare),
-                   'GIT_CONFIG_PARAMETERS': "'url.%s.pushinsteadof'='%s'" % (other, bare),
-                   'GIT_CONFIG_GLOBAL': str(root / 'no-such-global'), 'GIT_CONFIG_SYSTEM': str(root / 'no-such-system'),
-                   'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG': str(root / 'no-such-config'),
-                   'GIT_COMMON_DIR': str(decoy / '.git'), 'GIT_EXEC_PATH': str(root / 'no-such-exec-path')}
+                   'GIT_COMMON_DIR': str(decoy / '.git'), 'GIT_CEILING_DIRECTORIES': str(clone),
+                   'GIT_DISCOVERY_ACROSS_FILESYSTEM': '1', 'GIT_CONFIG': str(root / 'no-such-config'),
+                   'GIT_EXEC_PATH': str(root / 'no-such-exec-path')}
         result = publish('network-coordinates', clone, str(bare), env=hostile)
         namespaced = git('-C', str(bare), 'for-each-ref', 'refs/namespaces')
         transport = {'GIT_SSH_COMMAND': 'ssh-cmd', 'GIT_SSH': 'ssh-bin', 'GIT_ASKPASS': 'askpass',
                      'SSH_ASKPASS': 'ssh-askpass', 'SSH_AUTH_SOCK': 'agent.sock', 'GIT_TERMINAL_PROMPT': '1',
                      'HTTPS_PROXY': 'proxy', 'http_proxy': 'proxy', 'NO_PROXY': 'local'}
+        configuration = {'GIT_CONFIG_GLOBAL': 'global.cfg', 'GIT_CONFIG_SYSTEM': 'system.cfg', 'GIT_CONFIG_NOSYSTEM': '1',
+                         'GIT_CONFIG_COUNT': '2', 'GIT_CONFIG_KEY_0': 'k.a', 'GIT_CONFIG_VALUE_0': 'a',
+                         'GIT_CONFIG_KEY_1': 'k.b', 'GIT_CONFIG_VALUE_1': 'b', 'GIT_CONFIG_PARAMETERS': "'k.c'='c'"}
         try:
-            network = G.clean_env(dict(hostile, **transport), profile='network')
+            network = G.clean_env(dict(hostile, **transport, **configuration), profile='network')
         except TypeError:
             network = None
-        isolated = G.clean_env(dict(hostile, **transport))
-        seen_result('network-coordinates', result, elsewhere_moved=remote_main(other) == tip, namespaced=namespaced,
+        isolated = G.clean_env(dict(hostile, **transport, **configuration))
+        seen_result('network-coordinates', result, namespaced=namespaced,
                     network_profile_kept=None if network is None else sorted(k for k in hostile if k in network))
         row('publication-network-profile-strips-coordinates', result.get('completed') is True
-            and remote_main(bare) == tip and remote_main(other) == old and namespaced == ''
+            and remote_main(bare) == tip and namespaced == ''
             and network is not None and not any(k in network for k in hostile)
-            and all(network.get(k) == v for k, v in transport.items())
-            and isolated.get('GIT_CONFIG_GLOBAL') == _v28_os.devnull and 'GIT_SSH_COMMAND' not in isolated)
+            and all(network.get(k) == v for k, v in dict(transport, **configuration).items())
+            and isolated.get('GIT_CONFIG_GLOBAL') == _v28_os.devnull and isolated.get('GIT_CONFIG_NOSYSTEM') == '1'
+            and isolated.get('GIT_CONFIG_SYSTEM') == _v28_os.devnull
+            and not any(k in isolated for k in configuration if k not in ('GIT_CONFIG_GLOBAL', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_NOSYSTEM'))
+            and 'GIT_SSH_COMMAND' not in isolated)
         for name in ('push-options', 'records-resolved-destination', 'destination-without-credentials', 'global-insteadof', 'global-credential-helper',
-                     'env-ssh-command', 'global-ssh-command', 'network-profile-strips-coordinates'):
+                     'env-ssh-command', 'global-ssh-command', 'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'
