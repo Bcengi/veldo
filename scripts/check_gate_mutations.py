@@ -88,7 +88,7 @@ def fixed_env(home, binpath='/usr/bin:/bin'):
             'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_TERMINAL_PROMPT': '0'}
 
 
-def command(args, env):
+def command(args, env, with_stderr=False):
     """Even setup subprocesses belong to an owned, bounded process group."""
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             env=env, start_new_session=True)
@@ -96,7 +96,7 @@ def command(args, env):
         out, err = proc.communicate(timeout=WORKER_BUDGET)
         if proc.returncode:
             raise subprocess.CalledProcessError(proc.returncode, args, out, err)
-        return out
+        return (out, err) if with_stderr else out
     except subprocess.TimeoutExpired as error:
         raise Refused('mutation_budget_exceeded', 'setup subprocess') from error
     finally:
@@ -120,10 +120,10 @@ sys.exit(result.returncode)
 """
 
 
-def git_bytes(root, *args):
+def git_bytes(root, *args, with_stderr=False):
     return command([sys.executable, '-B', '-s', '-c', GIT_BRIDGE,
                     str(ROOT / '.veldo/git_process.py'), '-C', str(root), *args],
-                   fixed_env('/nonexistent'))
+                   fixed_env('/nonexistent'), with_stderr=with_stderr)
 
 
 def git(root, *args):
@@ -141,7 +141,13 @@ def read_inputs(root):
     list of directories left out the front door bin/veldo, and a row that runs it passed in the
     checkout and failed in every baseline in the snapshot. Names are read as raw bytes (NUL
     separated, decoded with the file system encoding), so no name is trimmed or undecodable."""
-    listed = git_bytes(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard')
+    listed, warned = git_bytes(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard',
+                               with_stderr=True)
+    if warned.strip():
+        # Git lists what it could read and only WARNS about a directory it could not open, so a
+        # warning means files are missing from the listing: never a quietly smaller closure.
+        raise Refused('driver_error', 'incomplete input listing: '
+                      + warned.decode(errors='replace').strip().splitlines()[0])
     files = {}
     top = os.path.realpath(root)
     for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
@@ -151,8 +157,12 @@ def read_inputs(root):
             raise Refused('driver_error', 'nested repository in the input closure: ' + rel)
         if rel in OUTPUTS or '__pycache__' in Path(rel).parts:
             continue
-        if path.is_symlink() or (os.path.lexists(path)
-                                 and os.path.realpath(path) != os.path.join(top, rel)):
+        try:
+            linked = path.is_symlink() or (os.path.lexists(path)
+                                           and os.path.realpath(path) != os.path.join(top, rel))
+        except OSError as error:
+            raise Refused('driver_error', 'unreadable input: ' + rel) from error
+        if linked:
             # A link as the file, or as ANY directory above it, would copy a file the checkout
             # only points at.
             raise Refused('driver_error', 'symlink input: ' + rel)
