@@ -437,6 +437,9 @@ def stage(runtime):
         raise Refused('runtime_unavailable', 'the runtime stage lies inside a repository')
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')
+    for name, path in (('runners', runners), ('work', work)):
+        if inside_repository(path):
+            raise Refused('runtime_unavailable', 'the stage ' + name + ' lies inside a repository')
     source = Path(runtime['runner']).read_bytes()
     target = runners / (hashlib.sha256(source).hexdigest() + '.py')
     if target.is_symlink():
@@ -510,6 +513,7 @@ def _working_directory(work):
     path = Path(tempfile.mkdtemp(prefix='veldo-graph-', dir=work))
     resolved = path.resolve()
     if resolved.parent != work.resolve() or inside_repository(resolved):
+        _remove(path)
         raise Refused('runtime_unavailable', 'the child working directory does not resolve outside every repository')
     return resolved
 

@@ -651,10 +651,10 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and 'langgraph.types.Command' in foreign[0]['failure']['detail']
            and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
            and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
-           and len(responses) == 18 and all(_s43_exact_plain(r) for r in responses))
+           and len(responses) == 19 and all(_s43_exact_plain(r) for r in responses))
     source = (repo / '.veldo/control_graph_langgraph.py').read_text()
     present = [a for a in audits if a]
-    expect('graph/runtime/tracing-off', len(present) == 18 and all(
+    expect('graph/runtime/tracing-off', len(present) == 19 and all(
                a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
                and a['sockets'] == [] for a in present)
            and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
