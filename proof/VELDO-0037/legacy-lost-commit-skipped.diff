@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -640 +640 @@
+@@ -628 +628 @@
 -            else:
 +            elif False:

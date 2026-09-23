@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -636 +636 @@
--            if paths is not None:
-+            if False:
+@@ -624,2 +623,0 @@
+-            if commit in records:
+-                continue

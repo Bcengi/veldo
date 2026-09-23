@@ -109,6 +109,27 @@
       "first-2-deleted": "below_accepted_history",
       "unaccepted-revision": "missing_authority"
     },
+    "incremental-records": {
+      "descendant-bounded": true,
+      "descendant-paths": [
+        "specs/VELDO-0004-descendant.md"
+      ],
+      "enable-naming-lost": null,
+      "first-paths": [
+        "specs/VELDO-0002-base.md"
+      ],
+      "next": 10,
+      "side-lost": true,
+      "side-paths": [
+        [
+          "specs/VELDO-0009-first-side.md"
+        ],
+        [
+          "specs/VELDO-0005-second-side.md"
+        ]
+      ],
+      "union-equals-whole-history": true
+    },
     "overlap": {
       "directory-of": "invalid_registration",
       "disjoint": null,
@@ -212,7 +233,7 @@
       "reader_parent_link": "unsafe_path"
     }
   },
-  "elapsed_seconds": 4.50735759595409,
+  "elapsed_seconds": 4.924058645032346,
   "pending": [
     [
       "other",
@@ -491,7 +512,47 @@
     [
       "aliases/floor-from-recorded-numbers",
       true
+    ],
+    [
+      "aliases/records-hold-only-what-a-commit-adds",
+      true
     ]
+  ],
+  "veldo-history-floors": {
+    "DEC decisions/{alias}-{slug}.md": [
+      1,
+      1
+    ],
+    "N docs/{number}-{slug}.md": [
+      1,
+      1
+    ],
+    "PLAN plans/{alias}-{slug}.md": [
+      21,
+      21
+    ],
+    "VELDO proof/{alias}/README.md": [
+      124,
+      124
+    ],
+    "VELDO specs/{alias}-{slug}.md": [
+      133,
+      133
+    ],
+    "WARP specs/{alias}-{slug}.md": [
+      1712,
+      1712
+    ],
+    "X {alias}.md": [
+      1,
+      1
+    ]
+  },
+  "veldo-history-record-paths": [
+    932,
+    138,
+    229,
+    496
   ],
   "verification": "Diagnostic observations; only bash scripts/verify.sh verifies the change."
 }

@@ -2,4 +2,4 @@
 +++ b/.veldo/control_alias.py
 @@ -622 +622 @@
 -        union = [path for record in records.values() for path in record['paths']]
-+        union = list((records.get(accepted['commit']) or {}).get('paths', []))
++        union = [path for commit in commits if commit in records for path in records[commit]['paths']]

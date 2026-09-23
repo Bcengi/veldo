@@ -1,5 +1,5 @@
 --- a/.veldo/control_readset.py
 +++ b/.veldo/control_readset.py
-@@ -323 +323 @@
+@@ -352 +352 @@
 -                if not _descends(repo, data['commit'], commit):
 +                if False:

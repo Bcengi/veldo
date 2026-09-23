@@ -1,5 +1,5 @@
 --- a/.veldo/control_readset.py
 +++ b/.veldo/control_readset.py
-@@ -336 +336 @@
--                    'paths': carrier_paths(bound, commit)}}
-+                    'paths': []}}
+@@ -366 +366 @@
+-                    'root_commits': root_commits(bound, commit), 'paths': carrier_paths(bound, commit, base)}}
++                    'root_commits': root_commits(bound, commit), 'paths': []}}
