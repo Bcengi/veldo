@@ -407,10 +407,13 @@ def available(runtime):
 
 
 def inside_repository(path):
-    """Whether a directory lies inside a Git working tree or Git directory."""
-    path = Path(path).resolve()
-    return any((parent / '.git').exists() or parent.name == '.git' or (parent / 'HEAD').is_file()
-               and (parent / 'objects').is_dir() for parent in (path, *path.parents))
+    """Whether a path lies inside a Git working tree or Git directory, judged both as written and
+    as resolved: a repository's own virtual environment links out to the system interpreter, and
+    resolving that link must not hide where the path was written."""
+    def within(path):
+        return any((parent / '.git').exists() or parent.name == '.git' or (parent / 'HEAD').is_file()
+                   and (parent / 'objects').is_dir() for parent in (path, *path.parents))
+    return within(Path(os.path.abspath(path))) or within(Path(path).resolve())
 
 
 def _unlinked(root, name):

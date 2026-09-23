@@ -512,6 +512,9 @@ def cases():
           "                if token.startswith('/') and inside_repository(token):\n",
           "                if token.startswith('/') and key.strip() != 'command' and inside_repository(token):\n",
           'runtime/pyvenv-clean')
+    graph('graph-repository-judged-resolved-only', 'control_graph.py',
+          '    return within(Path(os.path.abspath(path))) or within(Path(path).resolve())\n',
+          '    return within(Path(path).resolve())\n', 'runtime/pyvenv-clean')
     graph('graph-answer-utf16-unguarded', 'control_graph.py',
           "        value = json.loads(text, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n"
           "    except RecursionError as error:\n"
