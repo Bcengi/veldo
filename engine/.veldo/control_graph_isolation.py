@@ -14,6 +14,11 @@ command does two things against that repository's own installed modules:
      packages, no user site, no environment path) and an import finder that refuses, and records,
      any module that is neither standard library nor an installed sibling.
 
+The graph runner control_graph_langgraph.py IS the execution environment: it is launched as a
+separate process under the locked runtime's interpreter, never imported. A module that merely
+names it (the adapter's launch target) records it as a launch target and does not follow it; any
+import of it, or any load of it by path that a run exercises, is still refused.
+
 An entry passes only when both are clean, the run finishes without an uncaught exception and its
 exit code is one of that entry's ordinary verdict codes. The graph probe then requires graph start
 to report runtime_unavailable, never success, in the same isolated child. An entry whose module
@@ -28,6 +33,7 @@ import sys
 import tempfile
 
 HERE = Path(__file__).resolve().parent
+EXECUTION_ENVIRONMENT = frozenset({'control_graph_langgraph.py'})
 # id, installed module, ordinary argv, ordinary verdict exit codes.
 ENTRIES = (
     ('validator', 'validate.py', ('all',), (0,)),
@@ -79,7 +85,7 @@ def _allowed(name, siblings):
 
 def closure(veldo, module):
     """Every non-standard, non-sibling import reachable from one installed module."""
-    siblings, seen, todo, violations = _siblings(veldo), set(), [module], []
+    siblings, seen, todo, violations, launched = _siblings(veldo), set(), [module], [], set()
     while todo:
         name = todo.pop()
         if name in seen:
@@ -99,13 +105,18 @@ def closure(veldo, module):
                 names = [node.args[0].value]
             elif (isinstance(node, ast.Constant) and isinstance(node.value, str)
                   and node.value.endswith('.py') and node.value[:-3] in siblings):
-                todo.append(node.value)
+                if node.value in EXECUTION_ENVIRONMENT:
+                    launched.add(node.value)
+                else:
+                    todo.append(node.value)
             for imported in names:
-                if imported.partition('.')[0] in siblings:
+                if imported.partition('.')[0] + '.py' in EXECUTION_ENVIRONMENT:
+                    violations.append({'module': name, 'import': imported})
+                elif imported.partition('.')[0] in siblings:
                     todo.append(imported.partition('.')[0] + '.py')
                 elif not _allowed(imported, siblings):
                     violations.append({'module': name, 'import': imported})
-    return {'modules': sorted(seen), 'violations': violations}
+    return {'modules': sorted(seen), 'violations': violations, 'launch_targets': sorted(launched)}
 
 
 def run_entry(root, entry, argv, timeout=60):
@@ -144,12 +155,14 @@ def check(root):
 
 
 def probe_graph():
-    """Graph start with no runtime supplied: the only acceptable answer is runtime_unavailable."""
+    """Graph start with the execution environment absent (resolution over an empty account home):
+    the only acceptable answer is runtime_unavailable."""
     import importlib.util
     spec = importlib.util.spec_from_file_location('isolated_control_graph', HERE / 'control_graph.py')
     graph = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(graph)
-    adapter = graph.Adapter(None, 'isolated-domain', 'isolated-repository')
+    with tempfile.TemporaryDirectory(prefix='veldo-no-runtime-') as empty:
+        adapter = graph.Adapter.installed('isolated-domain', 'isolated-repository', home=empty)
     version = {'id': 'probe', 'version': 1, 'digest': 'sha256:' + '0' * 64}
     try:
         adapter.start('probe-cycle', 'probe-command', version, version)

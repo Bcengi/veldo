@@ -10,11 +10,18 @@ identities, versions and digests but no filesystem location. Its response is ref
 is exactly one of the plain versioned shapes below. Typed proposals are data for separately
 authorized commands; this module holds no store and commits nothing.
 
-The runtime is supplied explicitly as {'python': interpreter, 'runner': runner file}. None, or
-an interpreter that is not present, is the named refusal runtime_unavailable. Installing,
-pinning and locating the runtime belongs to VELDO-0045; Release 1 is nonpersistent, so a
-suspended cycle's resume data is returned to the caller and never stored by the runtime.
+The runtime is {'python': interpreter, 'runner': runner file}. Adapter.installed() resolves the
+locked LangGraph runtime: the virtual environment at <account home>/.local/share/veldo/langgraph/
+<lock digest>/ (control_graph_lock.py; the home comes from the password database, never $HOME)
+and the sibling runner control_graph_langgraph.py, launched as a child of that interpreter. None,
+or an interpreter that is not present, is the named refusal runtime_unavailable, whose detail
+names the install command. Release 1 is nonpersistent, so a suspended cycle's resume data is
+returned to the caller and never stored by the runtime.
+
+The child's environment turns LangSmith tracing off by construction: the fixed ENVIRONMENT sets
+every tracing switch langsmith reads to false, and nothing is inherited from the caller.
 """
+import importlib.util
 import json
 import math
 from pathlib import Path
@@ -50,7 +57,21 @@ RESPONSE_FIELDS = {
     'canceled': (),
 }
 ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
-               'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONNOUSERSITE': '1'}
+               'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONNOUSERSITE': '1',
+               'LANGSMITH_TRACING': 'false', 'LANGSMITH_TRACING_V2': 'false',
+               'LANGCHAIN_TRACING': 'false', 'LANGCHAIN_TRACING_V2': 'false'}
+HERE = Path(__file__).resolve().parent
+INSTALL_COMMAND = 'python3 .veldo/control_graph_install.py'
+RUNNER = 'control_graph_langgraph.py'
+
+
+def resolve_runtime(home=None):
+    """The locked runtime for this account, or None when it is not installed."""
+    spec = importlib.util.spec_from_file_location('veldo_control_graph_lock', HERE / 'control_graph_lock.py')
+    lock = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(lock)
+    runtime = {'python': str(lock.runtime_directory(home) / 'bin' / 'python'), 'runner': str(HERE / RUNNER)}
+    return runtime if available(runtime) else None
 
 
 class Refused(Exception):
@@ -160,14 +181,27 @@ def response(sent, raw):
             _exact(item, ('type', 'proposal_id') + PROPOSALS[kind], where, 'invalid_response')
             _identifier(item['proposal_id'], where + '.proposal_id', 'invalid_response')
             _identifier(item['subject'], where + '.subject', 'invalid_response')
+            if not _proposal_values(item):
+                raise Refused('invalid_response', where + ': ' + kind + ' value has the wrong type')
             if item['proposal_id'] in seen:
                 raise Refused('invalid_response', where + ': duplicate proposal_id')
             seen.add(item['proposal_id'])
+    if outcome == 'suspended' and type(value['resume']) is not dict:
+        raise Refused('invalid_response', 'resume must be an object')
     if outcome == 'failure':
         failure = _exact(value['failure'], ('code', 'detail'), 'failure', 'invalid_response')
         if failure['code'] not in FAILURES or type(failure['detail']) is not str:
             raise Refused('invalid_response', 'failure must carry a named code')
     return value
+
+
+def _proposal_values(item):
+    if item['type'] == 'priority':
+        return type(item['priority']) is int and item['priority'] >= 0
+    if item['type'] == 'admission':
+        return item['decision'] in ('admit', 'decline')
+    return (type(item['evidence']) is list and bool(item['evidence'])
+            and all(type(ref) is str and ref.startswith('sha256:') for ref in item['evidence']))
 
 
 def available(runtime):
@@ -178,7 +212,8 @@ def available(runtime):
 def exchange(runtime, sent, timeout=120):
     """One request, one response, one child process with nothing inherited."""
     if not available(runtime):
-        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation')
+        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
+                      + INSTALL_COMMAND)
     with tempfile.TemporaryDirectory(prefix='veldo-graph-') as empty:
         try:
             proc = subprocess.run([runtime['python'], '-I', '-B', runtime['runner']],
@@ -195,6 +230,11 @@ def exchange(runtime, sent, timeout=120):
 
 class Adapter:
     """Lifecycle operations over one domain and repository, with counts and observations."""
+
+    @classmethod
+    def installed(cls, domain_uuid, repository_uuid, home=None, timeout=120):
+        """An adapter over the locked runtime this account has installed (None if absent)."""
+        return cls(resolve_runtime(home), domain_uuid, repository_uuid, timeout)
 
     def __init__(self, runtime, domain_uuid, repository_uuid, timeout=120):
         self.runtime, self.timeout = runtime, timeout
