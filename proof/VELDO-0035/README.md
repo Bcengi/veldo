@@ -84,10 +84,12 @@ engineering-review, budget and exact-tree publication obligations at their exist
 
 ## Gate cost and evidence size
 
-`timing.json` measures 6.44 seconds for the registered suite and 22.91 seconds for its six added
-mutation cases using the unchanged gate scheduler, including frozen-copy setup, fresh baselines
-and no-op controls (ten worker invocations). Combined added workload: **29.35 seconds**, below the
-60-second limit. This isolated workload measurement does not replace the full gate.
+`timing.json` measures 6.90 seconds per registered suite run. The green gate runs it
+twice (unit and first-use integration). Its six added mutation cases take 22.48 seconds
+through the unchanged gate scheduler, including frozen-copy setup, fresh baselines and no-op
+controls (ten worker invocations). Added workload from these measured components: **36.28 seconds**,
+below the 60-second limit. This accounts for both suite runs; it is not a whole-gate before/after
+differential and does not replace full verification.
 
 Proof is readable JSON, Markdown, Python and six small unified diffs. It contains no private keys,
 credential-shaped fixture output, binary/encoded blobs, bytecode, or full gate logs.

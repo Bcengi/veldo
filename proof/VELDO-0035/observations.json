@@ -390,7 +390,7 @@
       "observed_digest": "sha256:7b5b790a9fefe7383e48dcce3e09198e00f59c0e42bb09b57d28b17982513c76"
     }
   ],
-  "elapsed_seconds": 6.437505890149623,
+  "elapsed_seconds": 6.899461235851049,
   "rows": [
     [
       "snapshots/registration-inventory",
