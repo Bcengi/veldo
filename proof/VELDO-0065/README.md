@@ -457,12 +457,14 @@ or row cases red at `9319783` by their own assertions, then green.
 | 2 (q7) | An out-of-scope edge re-sending the recorded answer learned `already_answered` | The edge scope check runs before the redelivery check | `answer/closed-tell-after-edge-scope` | `redelivery-before-edge-scope` | `20e0f15` |
 | 3 (q4, q5) | A ledger whose `revoked` was a number raised a TypeError that took `publish()` down; a list or string was read as a set | frame() and the presenter refuse any `revoked` that is not a mapping | `framing/ledger-read-fails-closed` | `frame-ledger-any-shape` | `7cc42f5` |
 | 4 | The docstring named four colons | It names the five characters it splits at, U+2A74 DOUBLE COLON EQUAL included | none (documentation) | none | `4ac1e92` |
-| 5 | The mutation stage cost too much | 14 strictly redundant mutations removed (below) | none | none | `47b1a11` |
+| 5 | The mutation stage cost too much | 14 redundant mutations removed (below) | none | none | `47b1a11` |
 
 **The removed mutations.** Every finding-65 mutation was run once on the current code
-(`redundant-mutations.json` records the result). A mutation is strictly redundant when another kept
+(`redundant-mutations.json` records the result). A mutation is redundant when another kept
 mutation's set of failing checks is a subset of its own: every check that catches the other also
-catches it, so it adds no teeth. They were removed greedily, most failing checks first, and never
+catches it, so it adds no teeth. For seven of the 14 the other's set is a strict subset; for the
+other seven (the rows reading "2 of 2", "3 of 3" and "1 of 1") the two sets are equal, so the pair
+were duplicates and one was kept. They were removed greedily, most failing checks first, and never
 when that would leave a row with fewer than two mutations naming it; `notice-not-marked-superseded`
 is kept by the lead's instruction. 84 of 98 remain, every one of the 39 criterion rows named by at
 least two.

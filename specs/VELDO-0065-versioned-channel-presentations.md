@@ -193,6 +193,6 @@ unchanged.
 recorded in the proof README: messages back follow one order (nothing to an owner no longer current,
 "already answered" first, a new presentation promised only when one will come); the edge scope check
 precedes the redelivery check; a ledger of the wrong shape is a named refusal; the split docstring
-names its characters. To reduce the gate cost, 14 strictly redundant finding-65 mutations were
-removed (each one's failing checks strictly contain another kept mutation's), keeping at least two
+names its characters. To reduce the gate cost, 14 redundant finding-65 mutations were
+removed (each one's failing checks contain another kept mutation's, seven of them an equal set), keeping at least two
 per row; the list and reason are in the proof README. The criteria, status and risk are unchanged.
