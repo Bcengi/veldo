@@ -10,6 +10,20 @@
         "signing-ignore-personal-content",
         "signing-ignore-personal-ruling"
       ]
+    },
+    "F-02": {
+      "row": "signing/rotation-requires-rebound-delegation",
+      "baseline_command": "python3 -B scripts/check_teeth_mutations.py --worker signing-ignore-personal-content --mutant /tmp/veldo-0027-review/original-control_signer.py",
+      "baseline_module": "git show 68ea1f3:.veldo/control_signer.py (unaltered temporary copy)",
+      "red_failed_rows": [
+        "VELDO-0027 signing/personal-content-binding",
+        "VELDO-0027 signing/rotation-requires-rebound-delegation"
+      ],
+      "green": "75 suite rows passed; targeted development check only",
+      "mutations": [
+        "signing-ignore-selected-key-binding",
+        "signing-retired-key-inherits-grant"
+      ]
     }
   }
 }

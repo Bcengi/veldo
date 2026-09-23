@@ -163,6 +163,8 @@ def _payload(state, request, channel, now):
                                    AC.allowed_signers_line(payload['principal'], key['public_key']), payload['principal'])
         if not ok:
             raise K.Refused('missing-attribution')
+    if payload.get('edge_key_id') != request['edge_key_id']:
+        raise K.Refused('delegation-refused')
     envelope = {'principal': payload.get('principal'), 'delegation_id': request.get('delegation_id'),
                 'delegation_version': request.get('delegation_version')}
     requirement = {'scope': payload.get('authority_scope'), 'boundary': 'decision_settlement',

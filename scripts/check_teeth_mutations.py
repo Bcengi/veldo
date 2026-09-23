@@ -217,6 +217,12 @@ def cases():
             "               for field in ()):", 'personal-content-binding')
     signing('signing-ignore-personal-ruling', 'control_signer.py', content,
             "               for field in ('presentation_id',)):", 'personal-content-binding')
+    binding = "    if payload.get('edge_key_id') != request['edge_key_id']:"
+    signing('signing-ignore-selected-key-binding', 'control_signer.py', binding,
+            "    if False:", 'rotation-requires-rebound-delegation')
+    signing('signing-retired-key-inherits-grant', 'control_signer.py', binding,
+            "    if payload.get('edge_key_id') != request['edge_key_id'] and K.active(K.entries(state)[payload['edge_key_id']], now):",
+            'rotation-requires-rebound-delegation')
     return result
 
 

@@ -46,7 +46,7 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
     _v27_keydir = _v27_root / 'private'
     _v27_keydir.mkdir()
     _v27_public = {}
-    for _v27_name in ('owner', 'edge-telegram', 'edge-jira', 'edge-cli', 'evidence', 'rotated', 'branch', 'tg-auth', 'jira-auth', 'cli-auth', 'ev-auth', 'race-key', 'race-next', 'kill-rotated', 'clock-key'):
+    for _v27_name in ('owner', 'edge-telegram', 'edge-jira', 'edge-cli', 'evidence', 'rotated', 'branch', 'tg-auth', 'jira-auth', 'cli-auth', 'ev-auth', 'race-key', 'race-next', 'kill-rotated', 'clock-key', 'tg-rotated', 'tg-new-auth'):
         _v27_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'test', '-f', str(_v27_keydir / _v27_name)],
                     check=True, capture_output=True, timeout=10)
         _v27_public[_v27_name] = ' '.join((_v27_keydir / (_v27_name + '.pub')).read_text().split()[:2])
@@ -430,6 +430,31 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
     _v27_clock_child.communicate(timeout=10)
     _v27_expect('signing/transition-clock', _v27_clock_child.returncode == 0 and
                  _v27_keys.entries(_v27_state())['clock-key']['effective_at'] >= _v27_lock_release)
+
+    # F-02: new signing AND connection keys cannot inherit the retired key's grant.
+    _v27_rotation_request = _v27_source('telegram_chat', 'decision_answer')
+    _v27_rotation_control = _v27_call(_v27_rotation_request)
+    _v27_admin('rotate_signing_key', dict(key_id='tg-rotated', channel='telegram_chat',
+        public_key=_v27_public['tg-rotated'], connection_public_key=_v27_public['tg-new-auth']))
+    _v27_channels['telegram_chat'] = ('tg-rotated', 'tg-new-auth')
+    _v27_rotation_request['edge_key_id'] = 'tg-rotated'
+    _v27_rotation_refused = _v27_call(_v27_rotation_request)
+    _v27_old_grant = next(d for d in _v27_state()['delegations'] if d['id'] == 'delegation-telegram_chat')
+    _v27_expect('signing/rotation-requires-rebound-delegation',
+        _v27_rotation_control['accepted'] and _v27_keys.verify(_v27_state(), _v27_rotation_control)
+        and _v27_old_grant['edge_key_id'] == _v27_rotation_request['payload']['edge_key_id'] == 'edge-telegram'
+        and not _v27_keys.active(_v27_keys.entries(_v27_state())['edge-telegram'], _v27_time.time())
+        and not _v27_rotation_refused['accepted'] and _v27_rotation_refused.get('refusal') == 'delegation-refused')
+    # Updating only the source key still cannot change the grant's bound key.
+    _v27_new_source = _v27_source('telegram_chat', 'decision_answer')
+    _v27_expect('signing/rotation-source-only-refused',
+        _v27_call(_v27_new_source).get('refusal') == 'delegation-refused')
+    _v27_admin('supersede_delegation', dict(_v27_old_grant, id='delegation-rebound',
+        supersedes='delegation-telegram_chat', edge_key_id='tg-rotated'))
+    _v27_new_source.update(delegation_id='delegation-rebound', delegation_version=_v27_state()['delegation_version'])
+    _v27_rebound = _v27_call(_v27_new_source)
+    _v27_expect('signing/rotation-rebound-control',
+        _v27_rebound['accepted'] and _v27_keys.verify(_v27_state(), _v27_rebound, fresh=True))
 
     # Observation apparatus inspects the production child PIDs after joining and
     # the entire disposable run for listener/socket/pid artifacts and private bytes.
