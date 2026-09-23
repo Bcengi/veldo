@@ -818,7 +818,7 @@ def _s43_run():
             'authorization.py': ROOT / ".veldo" / "authorization.py",
             'control_graph_langgraph.py': ROOT / ".veldo" / "control_graph_langgraph.py",
             'control_graph_lock.py': ROOT / '.veldo/control_graph_lock.py',
-            'control_graph_install.py': ROOT / '.veldo/control_graph_install.py',
+            'control_graph_install.py': ROOT / ".veldo" / "control_graph_install.py",
             'two_key.py': ROOT / '.veldo/two_key.py',
             'request.py': ROOT / '.veldo/request.py',
         }.items():
@@ -1102,6 +1102,31 @@ def _s43_run():
         expect('graph/authority/stage-shapes', all(
             shapes[name][0] == 'runtime_unavailable' and shapes[name][1].startswith(reason)
             and shapes[name][2] is True and shapes[name][3] == 'runtime_unavailable' for name, reason in reasons.items()))
+
+        # The installer's --rebuild swap: the new runtime goes in, the old one leaves only after;
+        # a failed second rename puts the old runtime back.
+        swaps = {}
+        try:
+            installer = _s43_load('s43_install', repo / '.veldo/control_graph_install.py')
+            for case in ('swapped', 'restored'):
+                target, building = root / ('rebuild-' + case) / 'runtime', root / ('rebuild-' + case) / 'building'
+                target.mkdir(parents=True)
+                (target / 'which').write_text('old')
+                if case == 'swapped':
+                    building.mkdir()
+                    (building / 'which').write_text('new')
+                try:
+                    installer.swap_in(building, target)
+                    outcome = 'swapped'
+                except OSError:
+                    outcome = 'refused'
+                swaps[case] = [outcome, (target / 'which').read_text() if (target / 'which').is_file() else None,
+                               sorted(p.name for p in target.parent.iterdir())]
+        except Exception as error:  # recorded as a wrong answer, never raised
+            swaps['error'] = type(error).__name__
+        observations['rebuild_swap'] = swaps
+        expect('graph/runtime/rebuild-swap', swaps == {'swapped': ['swapped', 'new', ['runtime']],
+                                                       'restored': ['refused', 'old', ['runtime']]})
 
         # The child runs in its own session and its whole process group is killed on the deadline
         # and on every exit path: nothing a node started outlives the exchange.
