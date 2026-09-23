@@ -63,7 +63,8 @@ non_goals:
       operator.
   - id: NG3
     text: >
-      Amended 2026-09-22 by owner Telegram 28857: the prohibition on a new management console
+      Amended 2026-09-22 by owner Telegram 28857: "we definitly will need some form of UI, otherwise we'll be flying blind"
+      Ruling applied: the prohibition on a new management console
       is removed. Veldo's own phone and desktop UI is in Release 1. Unverified Jira board
       changes, modifications to published prose and client-engagement material remain excluded.
 
@@ -85,7 +86,8 @@ constraints:
   - id: C3
     text: >
       The 2026-09-17 D1-D4 rulings on VEL-18 remain historical decisions. Amended 2026-09-22 by
-      owner Telegram 28848: Release 1 accepts local committed authority results; off-host
+      owner Telegram 28848: "Claude code and langgraph can't be out. All of the recovery and robustness is definitly for later. Actually functionality for actual running dark factory can't be cut out. All sorts of durability, scalibility, all sorts of different machines, etc etc are definitly for later"
+      Ruling applied: Release 1 accepts local committed authority results; off-host
       acknowledgement before mutation success, dispatch or dependent publication moves to Release 2.
       Remote Git confirmation still precedes source completion. Linux authority, isolated clones and
       C13 attachments remain. The Mac worker is added by 28852; it is not a replica or replacement
@@ -98,7 +100,8 @@ constraints:
       domain history remains valid when checkpoints are removed.
   - id: C5
     text: >
-      Amended 2026-09-22 by owner Telegram 28848: install and qualify only the assets needed by the
+      Amended 2026-09-22 by owner Telegram 28848: "Claude code and langgraph can't be out. All of the recovery and robustness is definitly for later. Actually functionality for actual running dark factory can't be cut out. All sorts of durability, scalibility, all sorts of different machines, etc etc are definitly for later"
+      Ruling applied: install and qualify only the assets needed by the
       running journey, including a compatible isolated pinned, hashed and licensed LangGraph
       runtime. The full distribution inventory and every-pack qualification move to Release 4. R35
       stdlib_only_enforcement remains for validators, authorization, gate imports, journal replay
@@ -133,7 +136,8 @@ constraints:
       allocation is implemented later under R73.
   - id: C10
     text: >
-      Amended 2026-09-22 by owner Telegram 28848: VELDO-0032, VELDO-0033 and VELDO-0034 clock
+      Amended 2026-09-22 by owner Telegram 28848: "Claude code and langgraph can't be out. All of the recovery and robustness is definitly for later. Actually functionality for actual running dark factory can't be cut out. All sorts of durability, scalibility, all sorts of different machines, etc etc are definitly for later"
+      Ruling applied: VELDO-0032, VELDO-0033 and VELDO-0034 clock
       reporting, refusal propagation and display qualification move to Release 2, removing the
       B-before-C prerequisite. Preserve VELDO-0015's existing detector and stand-down. Release 1
       callers must surface a named uncertainty stop and never reinterpret it as contention or
@@ -148,7 +152,8 @@ constraints:
       qualification are Release 2. Source landing does not activate a service or channel.
   - id: C12
     text: >
-      Amended 2026-09-22 by owner Telegram 28852: Release 1 qualifies this Linux box and a Mac
+      Amended 2026-09-22 by owner Telegram 28852: "Actually we need multi machine suport, since we need to run on Mac too, ios app can't be built on pc"
+      Ruling applied: Release 1 qualifies this Linux box and a Mac
       worker host. Authority stays on Linux; Mac workers use the built VELDO-0108 authenticated SSH
       relay. macOS and iOS requirements route only to a qualified Mac. Linux uses systemd/cgroup v2;
       the Mac has its own simple launch, cap, stop and exit profile without cgroups. Cloud and other
@@ -169,7 +174,8 @@ constraints:
       are later; neither worker engine nor the LangGraph step runtime (R34) may be cut.
   - id: C15
     text: >
-      Owner Telegram 28859, 2026-09-22: each role's versioned capability configuration defines
+      Owner Telegram 28859, 2026-09-22: "No such thing as read only. You will have agents and mcps, so whatever is configured that is what's available to an agent. Do not reduce what's currently possible!"
+      Ruling applied: each role's versioned capability configuration defines
       exactly the MCP servers and tools handed to its worker. The factory must not silently remove,
       replace or add capabilities available in that configuration. Unsupported handoff refuses
       visibly; no factory-specific Jira channel is needed. Existing scope, credential custody and
@@ -1239,7 +1245,8 @@ already recorded evidence. A release assignment does not undo code or change a s
 ## Revision history and dependency basis
 
 2026-09-22: revision 3 replaces package completion barriers with release-scoped functional edges,
-amends C3/C5/C7/C10/C11/C12/NG3 and adds C14-C17 under the owner rulings quoted there. It preserves
+amends C3/C5/C7/C10/C11/C12/NG3 and adds C14-C17 under the owner rulings quoted in C3, C5, C10, C12, NG3 and C15, and the
+dated owner decisions recorded in C7 and C14-C17. It preserves
 C13's commit-pinned, named, read-only attachments. The analyses `ask-20260922-213601.md` sections 1-4
 and `ask-20260922-212450.md` in the owner's research/codex-reviews directory supply the trim and
 consumption basis; the later Mac, UI/API and no-Jira decisions override their narrower suggestions.
