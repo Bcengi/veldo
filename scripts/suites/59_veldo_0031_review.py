@@ -151,7 +151,7 @@ class Fixture:
 
 def review_r1(f):
     bad = [{'command': 'not-a-mapping'}, {'command': ['x']}, [], None]
-    for signature in (5, [], {}, None):
+    for signature in (5, [], {}, None, '\ud800', '\u00e9'):
         packet = f.packet('worker-a', 'inspect')
         packet['signature'] = signature
         bad.append(packet)
@@ -164,7 +164,9 @@ def review_r1(f):
     f.start_server()
     client = f.client(1)
     assert client.claim('unit', 'worker-b')[0]
-    for packet in bad:
+    # IPC.send rejects lone surrogates while encoding, before reaching the receiver.
+    wire_bad = [p for p in bad if not isinstance(p, dict) or p.get('signature') != '\ud800']
+    for packet in wire_bad:
         try:
             r = f.IPC.send(str(f.repos[0]), packet, f.E, f.verify,
                            lambda m: f.sign('worker-a', m), 'test-host', timeout=.3)
@@ -173,7 +175,7 @@ def review_r1(f):
             answers.append(type(exc).__name__)
     alive = f.server.is_alive()
     holder = client.holder('unit') if alive else None
-    assert answers == ['malformed_request'] * (2 * len(bad)), answers
+    assert answers == ['malformed_request'] * (len(bad) + len(wire_bad)), answers
     assert alive and holder == 'worker-b'
     assert f.receiver.counts['refused'] == len(bad)
     assert all(r['reason'] == 'malformed_request' for r in f.receiver.observations)

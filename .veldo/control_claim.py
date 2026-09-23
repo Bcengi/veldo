@@ -65,7 +65,7 @@ def ownership(data, unit, backlog, action='inspect'):
         except (TypeError, ValueError):
             return 'ownership_uncertain'
         return 'owned'
-    return 'owned' if live == 'live' else 'ownership_uncertain' 
+    return 'owned' if live == 'live' else 'ownership_uncertain'
 
 
 def transition(params, before):
@@ -139,8 +139,9 @@ class Receiver:
 
     def _apply(self, packet, command, observation):
         if (not isinstance(packet, dict) or not isinstance(packet.get('command'), dict)
-                or not isinstance(packet.get('signature'), str)):
-            raise S.StoreRefused('malformed_request', 'command must be a mapping and signature a string')
+                or not isinstance(packet.get('signature'), str)
+                or not packet['signature'].isascii()):
+            raise S.StoreRefused('malformed_request', 'command must be a mapping and signature an ASCII string')
         validate_alias(command.get('unit_id'))
         required = {'operation', 'unit_id', 'principal', 'command_id', 'nonce', 'generation', 'capabilities', *self.ids}
         if (not required <= command.keys() or command['operation'] not in OPERATIONS
