@@ -138,7 +138,7 @@ result.update(status=p['payload'].get('outcome','completed'),evidence={'observed
 if p['payload'].get('misbind'):
     result['dispatch_id']='foreign-dispatch'
 if 'refusal' in p['payload']:
-    result['refusal']=p['payload']['refusal']
+    result['refusal']=p['payload']['refusal'][::-1]
 print(json.dumps(result))
 ''')
         repo, remote = root / 'source', root / 'remote.git'
@@ -261,7 +261,8 @@ print(json.dumps(result))
                 and wrong.get('completed') is False and wrong.get('stop') == 'effect-outcome-unknown')
             # A receiver that ran and then reports refused may already have acted: only the
             # executor's own refusal, before any receiver runs, is conclusive, and the receiver's
-            # text is neither returned to the worker nor stored.
+            # text (the contract's marker reversed, so it appears nowhere else) is neither
+            # returned to the worker nor stored.
             r, _, _, _ = setup(kind, 'receiver-refused', payload={'outcome': 'refused', 'refusal': 'RECEIVERTEXT'})
             before = len(calls(kind + '-good'))
             answer = call(r)
@@ -270,7 +271,7 @@ print(json.dumps(result))
             row('receiver-refused-is-unknown/' + kind, len(calls(kind + '-good')) == before + 1
                 and answer.get('accepted') is True and result.get('status') == 'unknown'
                 and result.get('completed') is False and result.get('stop') == 'effect-outcome-unknown'
-                and 'RECEIVERTEXT' not in _v28_json.dumps(answer) and 'RECEIVERTEXT' not in _v28_json.dumps(stored))
+                and 'TXETREVIECER' not in _v28_json.dumps(answer) and 'TXETREVIECER' not in _v28_json.dumps(stored))
             expect('VELDO-0028 effects/receiver-refused-is-unknown/' + kind, checks['receiver-refused-is-unknown/' + kind])
             # Current authority and evidence must fail before receiver invocation.
             r, _, c, p = setup(kind, 'authority')
