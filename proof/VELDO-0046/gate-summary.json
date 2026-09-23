@@ -1,0 +1,15 @@
+{
+  "command": "bash scripts/verify.sh",
+  "commit": "f66710cd1124e356731e359b5cb81a883f9cff0d",
+  "started_clean": true,
+  "exit_code": 0,
+  "log_sha256": "a109b0b96f9f006bea07c6561e71349b8de764a30afa36a3b1432e62f2160dde",
+  "summary_lines": [
+    "VELDO-0046 suite seconds: 0.325",
+    "selftest: 5681 passed, 0 failed",
+    "   mutated(spend_recorded) run: 5681 passed, 0 failed (320s)",
+    "mutations: passed registered=90 executed=90 rejected=90 workers=120 elapsed=61.698s",
+    "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
+    "GATE: GREEN (f66710cd1124e356731e359b5cb81a883f9cff0d)"
+  ]
+}
