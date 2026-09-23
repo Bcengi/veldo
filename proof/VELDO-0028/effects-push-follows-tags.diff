@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -135 +135 @@
+@@ -207 +207 @@
 -                         '--no-follow-tags', '--recurse-submodules=no',
 +                         '--follow-tags', '--recurse-submodules=no',

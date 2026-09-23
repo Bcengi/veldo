@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -185 +185 @@
+-        for url in pushed:
++        for url in pushed[:1]:

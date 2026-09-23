@@ -683,3 +683,129 @@ lines remain, each the decided behavior:
 - 3e: unknown, with the first destination at the tip and the AGit server not at the tip, as
   required. The probe prints BUG only because it looks for the bare path while the configured
   pushurl, and so git's resolution and the record, is the `file://` form of the same repository.
+
+## Review round R8 (fresh review of 3e80d7b..9774c65)
+
+A fresh review reproduced two real defects with its own probes (harness `h7.py` on the R6 harness,
+`p1_resolution.py`, `p1b_named_listing.py`, `p3_tip.py`, `p4_scrub_unit.py`) and named rules no row
+pinned. Each item was built test first and committed on its own; `origin/main` was merged first
+(`884c160`, one list conflict in the mutation registry's finding choices, kept both sides).
+
+**B1, the push ran when a destination could not be listed or was not at the old tip (`75d7c97`).**
+R7 dropped the pre-push old-tip check: a destination whose listing failed was pushed anyway, a
+fan-out with a stale second destination moved the first one, and a ref creation landed but never
+read completed. Nothing is pushed now unless every resolved destination's first listing succeeded
+and shows the authorized ref at the expected old state: the old tip, or absent when the all-zero id
+names a creation (pushed with an empty lease, completed when the ref was absent before and holds
+the tip after at every destination). Otherwise the receiver refuses `stale-subject` before any push.
+A refusal raised inside the receiver used to reach the caller as an unknown outcome; it now reaches
+it as that named refusal (`accepted: false`, `refusal`), the effect is recorded `refused` with no
+stop owed, VELDO-0026's in-flight effect is reconciled as `stopped`, and a replay returns the same
+refusal. The `fan-out-stale` and `fan-out-unreachable` routes and the parity row's unresolved alias
+now expect the refusal with nothing pushed. Rows `effects/publication-refused-when-not-at-old-tip`
+(a stale single destination, one whose listing fails, a fan-out whose second destination is stale),
+`effects/publication-refusal-reaches-caller` and `effects/publication-ref-creation`. Mutations:
+`effects-push-without-old-tip-check`, `effects-old-tip-checked-at-first-destination`,
+`effects-unlisted-destination-pushed`, `effects-receiver-refusal-as-unknown`,
+`effects-replayed-refusal-reads-accepted`, `effects-refusal-owes-a-stop`,
+`effects-refusal-left-in-flight`, `effects-creation-expects-zero-id`,
+`effects-creation-over-existing-ref`. The VELDO-0026 reconcile anchor of two R3 mutations now
+carries the refused branch, with the same meaning.
+
+**B2, a destination could be listed somewhere the push never went (`2d01465`).** `git ls-remote`
+resolves a destination URL again through the whole remote lookup: a remote section named by its
+file URL, a legacy `remotes/` file of that name (a relative pushurl that is also a nickname), a
+further `url.*.insteadOf`. With a server that reports success without updating, the probe read
+completed. Before pushing, every destination must now resolve to itself under `git ls-remote
+--get-url` (configuration only, no network), or the publication is refused `rerouted-destination`.
+The spec's insteadOf-chain limit is replaced by that rule, and the Notes now state that the record
+names URLs, not the repository a transport reaches (receivepack and uploadpack commands, SSH
+commands, remote helpers, proxies, HTTP redirects). Git ignores a section named by a plain path,
+so only the URL-named form reroutes. Row `effects/publication-destination-listed-as-resolved`;
+mutations `effects-destination-listing-unchecked` and `effects-destination-listing-first-only`.
+
+**Time limits (`84e04f8`).** Every git call was bounded by a fixed 20 seconds and the supervisor's
+`call()` by a fixed 50, so a slow multi-destination push was killed after acceptance.
+`r8-slow-push.txt` shows it at `9774c65` in real time: three destinations taking 8 seconds each, the
+push killed at 20 seconds with two of the three moved. Each git step is now bounded by the
+receiver's `git_step_seconds` (default 20) and the push by that bound for each destination; the
+supervisor waits by no fixed total but by `accept_seconds` (default 30) and then by the window the
+executor announces before each stage (resolution, then four steps per destination). Row
+`effects/publication-call-covers-every-destination`: six destinations that each take a second, with
+1.5-second steps and a 2-second acceptance window, complete. It is green at `9774c65`, because the
+fixed limits there exceed anything a suite row can wait for; its two mutations
+(`effects-push-timeout-not-scaled`, `effects-call-window-not-extended`) drive it, and the real-time
+reproduction is the red evidence.
+
+**Scrub (`6fa0e89`).** `user:password@host:path` and `ssh:user@host:path` kept the credential and an
+`ext::` command kept its text. Recorded URLs are now over-scrubbed whenever they do not parse into a
+well-formed host: an scp-style address loses everything up to the last `@` before its first `/` and
+must then start with a well-formed host, `ext::` keeps no command text, and a scheme URL whose
+authority is not a well-formed host and port, or whose path holds an `@`, is recorded
+`<unparsed>`, which also closes the unencoded `/`, `?` and `#` password limit. A URL with no path
+already lost its query and fragment; the row pins it. Row `effects/publication-scrub-malformed-address`
+(an `ext::` publication end to end, and a table of shapes with well-formed controls; git itself
+reads `user:password@host:path` as the host `user`, so that shape is scrubbed directly). Mutations
+`effects-scrub-scp-user-at-first-colon`, `effects-scrub-ext-command-kept`,
+`effects-scrub-malformed-host-kept`, `effects-scrub-at-in-path-kept`; two scrub mutations re-anchored.
+
+**Rules pinned by rows of their own (`4b29b11`).**
+`effects/publication-requires-clean-push-exit` (a pre-push hook publishes the tip itself and fails
+the push: the destination is at the tip and the effect is still unknown; mutations
+`effects-completion-ignores-exit-status`, `effects-completion-ignores-hook-failure`).
+`effects/publication-line-break-refused` (a line break in the receiver URL and in a configured
+pushurl, each passing the report's shape check and reaching only its own guard; mutations
+`effects-remote-line-break-accepted`, `effects-newline-config-accepted`).
+`effects/publication-resolution-output-checked` (a wrapper ahead of git on PATH reshapes `git remote
+show`: its exit status, the header, the Fetch line, no Push lines, an unrecognized line; or fails
+the configuration read; each is refused with nothing pushed, and an unchanged control completes;
+mutations `effects-show-exit-unchecked`, `effects-header-unchecked`, `effects-fetch-line-unchecked`,
+`effects-empty-resolution-accepted`, `effects-head-line-unchecked`,
+`effects-config-exit-unchecked`). `effects/publication-resolution-in-c-locale` (the wrapper
+translates the report as gettext would unless the effective locale is C or POSIX, and the operator's
+locale is German; this host has no git translations installed, so the wrapper stands in for them;
+mutations `effects-resolution-locale-not-forced`, `effects-resolution-messages-locale-only`).
+Removing `LANGUAGE` from the report's environment was dropped as redundant: gettext ignores it in
+the C locale.
+
+**Red at `9774c65`, green now.** `r8-red-at-9774c65.json` records suite 58 at `4b29b11` run over a
+copy of the tree with `control_effect_executor.py`, `control_effects.py` and `git_process.py` from
+`9774c65`. The suite ran every row: 40 passed and 9 failed, each by assertion, none by an exception.
+Seven of the ten R8 rows fail there: refused-when-not-at-old-tip, refusal-reaches-caller,
+ref-creation, destination-listed-as-resolved, scrub-malformed-address, line-break-refused (the
+guards existed, but their refusal reached the caller as an unknown outcome) and
+resolution-output-checked (the same). The two rewritten rows (records-resolved-destination,
+config-selection-parity) fail because they now expect the named refusal. Three R8 rows pass
+there: requires-clean-push-exit and resolution-in-c-locale pin rules `9774c65` already kept, and
+call-covers-every-destination is red only in real time (`r8-slow-push.txt`). Every other row
+passes. On this branch all 49 named rows are green (75 assertions). The suite takes 32.3 to 48.8
+seconds on its own over four runs on a host with load average 9 to 21 from other work, against
+19.3 to 21.5 in R7: the slow fan-out row alone waits six seconds, and the new rows add about thirty
+executor calls.
+
+`python3 -B scripts/check_teeth_mutations.py --finding 28` rejects all 78 finding-28 mutations with a
+green baseline (75 assertions). Wall time: 10 minutes 12 seconds with the parallel driver from
+`origin/main` (`--jobs 6`, after the merge `a98df35`), and 92 minutes 23 seconds with the serial
+driver before that merge, both under the same load. All 78 exact diffs are in this directory: 28
+new, 34 regenerated because their line offsets or anchors moved, none retired. The merge's one
+conflict was in the diff writer: `origin/main` wrote each diff with the case's main replacement
+only, which drops a mutation's further `also` edits; the merged writer keeps `mutate()`, so a
+multi-edit mutation's diff shows every edit. `mutations.json`, `gate-mutations.json`,
+`gate-summary.json` and the `manifest.json` hashes still describe `65294a7` until the lead's gate
+run is stamped.
+
+**The review's probes against this branch.** `r8-probes-at-4b29b11.txt` is the re-run of
+`p1_resolution.py`, `p1b_named_listing.py`, `p3_tip.py`, `p2_scrub.py` and `p4_scrub_unit.py`,
+unchanged, from a copy pointed at this worktree. Every p1, p1b, p2 and p4 case is ok. Both B2 cases
+the review reproduced, and the insteadOf chains, are refused `rerouted-destination`. p4 keeps one
+`stated` line, a file URL's query, which git takes as a literal path. p3's B1 cases are ok (the
+creation completes; the unlisted and stale destinations are refused, nothing pushed). Three p3 BUG
+lines remain, and each is a conservative false negative now stated as a limit in the spec Notes: a
+server that makes a side ref as a consequence of the push, an authorized ref that is itself a
+symbolic ref on the remote, and protocol v0. Each lands and ends unknown, never completed wrongly.
+Making them complete would mean guessing which remote changes are the push's own, which the rule
+"exactly the authorized change" does not allow.
+
+**Commits.** `884c160` (merge), `75d7c97` (B1), `2d01465` (B2), `84e04f8` (time limits), `6fa0e89`
+(scrub), `4b29b11` (pinned rules), `d7af896` (spec limits and History), `a98df35` (merge of the
+parallel driver), then this proof.

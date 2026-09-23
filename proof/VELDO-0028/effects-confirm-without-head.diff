@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -81 +81 @@
+@@ -134 +134 @@
 -            listed = transport('ls-remote', '--symref', url)
 +            listed = transport('ls-remote', '--refs', url)

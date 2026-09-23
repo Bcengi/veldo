@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -322 +322 @@
+-                deadline = time.monotonic() + answer['window_seconds']
++                pass

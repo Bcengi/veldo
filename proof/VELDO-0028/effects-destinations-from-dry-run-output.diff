@@ -1,6 +1,6 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -116,5 +116,2 @@
+@@ -169,5 +169,2 @@
 -        pushed = []
 -        for line in lines[1:]:
 -            if not line.startswith('  Push  URL: '):
@@ -8,6 +8,6 @@
 -            pushed.append(line[len('  Push  URL: '):])
 +        pushed = [line[len('To '):] for line in transport('push', '--dry-run', '--porcelain', remote,
 +                  payload['commit'] + ':' + ref).stdout.splitlines() if line.startswith('To ')]
-@@ -122 +119 @@
+@@ -175 +172 @@
 -                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
 +                or False):

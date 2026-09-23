@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -105 +105 @@
+@@ -158 +158 @@
 -        if '\n' in remote:
 +        if '\n' in remote or not (Path(remote).exists() or '://' in remote):

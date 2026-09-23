@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -156 +156 @@
+@@ -228 +228 @@
 -                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}
 +                       'destinations': [{'url': url, 'outcome': outcome}

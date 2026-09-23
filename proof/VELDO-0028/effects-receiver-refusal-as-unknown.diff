@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -275 +275 @@
+-            observation = dict(accepted, status='refused', refusal=error.code, evidence=None)
++            observation = dict(accepted, status='unknown', evidence=None)

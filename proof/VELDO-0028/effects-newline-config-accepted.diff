@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -109 +109 @@
+@@ -162 +162 @@
 -        if urls.returncode not in (0, 1) or any('\n' in entry.partition('\n')[2]
 +        if False and any('\n' in entry.partition('\n')[2]

@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -209 +209 @@
+-                         remote, payload['commit'] + ':' + ref, steps=len(pushed))
++                         remote, payload['commit'] + ':' + ref)

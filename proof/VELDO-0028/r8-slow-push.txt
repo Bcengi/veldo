@@ -1,0 +1,9 @@
+A publication to three destinations whose pre-receive hooks each take 8 s, driven through
+control_effect_executor.receive with each tree's default limits (no git_step_seconds), from the script
+slow_push.py in the builder's scratch directory. 9774c65 bounded the push by a fixed 20 s; the fix bounds it
+by 20 s per destination.
+
+  at 9774c65:
+  {"raised": "TimeoutExpired", "seconds": 20.0, "destinations_moved": [true, true, false]}
+  at 84e04f8 (the time-limit change):
+  {"status": "completed", "destinations": ["at-tip", "at-tip", "at-tip"], "seconds": 24.1, "destinations_moved": [true, true, true]}

@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -57 +57 @@
--            return url[:i].rpartition('@')[2] + url[i:]
-+            return url[:i].partition('@')[2] + url[i:]
+@@ -99 +99 @@
+-    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]
++    rest = url[url.find('@', 0, len(url) if slash < 0 else slash) + 1:]

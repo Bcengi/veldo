@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -154 +154 @@
--            outcomes.append('at-tip' if state.get(ref) == payload['old_tip'] and after == expected else 'not-at-tip')
-+            outcomes.append('at-tip' if state.get(ref) == payload['old_tip'] and after.get(ref) == payload['commit'] else 'not-at-tip')
+@@ -226 +226 @@
+-            outcomes.append('at-tip' if after == expected else 'not-at-tip')
++            outcomes.append('at-tip' if after.get(ref) == payload['commit'] else 'not-at-tip')
