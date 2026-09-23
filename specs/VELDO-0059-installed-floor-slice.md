@@ -77,12 +77,13 @@ acceptance_criteria:
       Move trunk before the protected-path approval rejects; the unchanged-ref journey must fail.
   - id: AC3
     text: >
-      Claim: Current dependency, authority and pre-call spending predicates apply through every
+      Claim: Current dependency, authority and pre-invocation subscription usage predicates apply through every
       installed station. Set and completeness: Enumerate enabled floor entries from 0052
       registrations; change dependency or authority after selection and before review/publication,
-      and submit an excessive or unknown request maximum for build, review and PM calls. Observe
-      named refusal, zero forbidden provider calls/launches/publications and retained unknown charge
-      exposure. Compare actual entry coverage to RJ3; no resource-exhaustion, checkpoint or recovery
+      and exhaust the applicable subscription usage allowance for build, review and PM invocations.
+      Also withhold usage so remaining allowance cannot be bounded conservatively under 0036/0062.
+      Observe named refusal, zero forbidden launches/publications and retained unknown usage
+      reservations. Compare actual entry coverage to RJ3; no resource-exhaustion, checkpoint or recovery
       matrix is required. Falsifier: Cache publication eligibility across a committed authority
       change; the stale-publication journey must fail.
     falsified_by: >
@@ -141,7 +142,7 @@ every asset this journey actually installs. Derive executable check registration
 criterion's declared set; retain the actual observations and each driven negative-control diff
 and failing row. Real stores, files, processes, Git and signatures are required where named.
 Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
-Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+Current authorization, independent engineering review, pre-invocation subscription usage caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History

@@ -70,10 +70,12 @@ acceptance_criteria:
       Reset unchanged-proposal count on each continuation; the repetition-limit check must fail.
   - id: AC3
     text: >
-      Claim: Every elaboration billable call reserves its enforceable maximum before sending. Set
-      and completeness: Enumerate initial, retry and follow-on paths using qualified provider
-      pricing/limit profiles; observe calls with fitting, excessive and unknown maxima after settled
-      charges and outstanding exposure. Refused calls never reach the provider. Falsifier: Raise the
+      Claim: Every elaboration subscription CLI invocation checks and reserves usage allowance
+      before launch. Set and completeness: Enumerate initial, retry and follow-on paths using
+      0036/0062 invocation/time caps, CLI-reported tokens/messages and exposed rate-limit windows;
+      observe available, exhausted and unbounded unknown remaining allowance after recorded usage
+      and outstanding reservations. Refusals launch nothing and workers stop at their caps.
+      No price or per-request monetary maximum is required. Falsifier: Raise the
       budget after a pre-call refusal; the exhausted-budget stop check must fail.
     falsified_by: >
       Raise the budget after a pre-call refusal; the exhausted-budget stop check must fail.
@@ -103,15 +105,15 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 Elaboration creates requirements and specifications, dependencies and authentic owner
 questions; it never admits its output. Bound cycles, tokens, elapsed time and unchanged
-proposals in Veldo. 0062 supplies actual qualified provider maxima and live accounting for
-both engines.
+proposals in Veldo. 0062 supplies qualified subscription usage controls and live accounting for
+both engines, with conservative treatment of unknown usage.
 
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
 and failing row. Real stores, files, processes, Git and signatures are required where named.
 Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
-Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+Current authorization, independent engineering review, pre-invocation subscription usage caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History

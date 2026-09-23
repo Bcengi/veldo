@@ -89,10 +89,11 @@ acceptance_criteria:
       must fail.
   - id: AC4
     text: >
-      Claim: Every build and review billable call retains pre-call caps and unknown exposure. Set
+      Claim: Every build and review subscription CLI invocation checks usage caps before launch
+      and retains unknown usage conservatively. Set
       and completeness: Enumerate initial, retry and follow-on adapter paths for both stations; use
       real reservation transactions and an observed receiver to refuse a request exceeding remaining
-      account/project/unit funds before any call. Falsifier: Bypass the reservation predicate for
+      account/project/unit usage allowance under 0036/0062 before any invocation. Falsifier: Bypass the reservation predicate for
       review follow-on calls; the forbidden-call observation must fail.
     falsified_by: >
       Bypass the reservation predicate for review follow-on calls; the forbidden-call observation
@@ -131,7 +132,7 @@ every asset this journey actually installs. Derive executable check registration
 criterion's declared set; retain the actual observations and each driven negative-control diff
 and failing row. Real stores, files, processes, Git and signatures are required where named.
 Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
-Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+Current authorization, independent engineering review, pre-invocation subscription usage caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
