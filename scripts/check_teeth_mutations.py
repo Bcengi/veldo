@@ -872,9 +872,10 @@ def cases():
                  " module.__dict__)  # defect: compiled from a second read of the disk",
                  ['snapshot-in-memory'])
     architecture('architecture-arch-digest-reread', 'control_eligibility.py',
-                 "'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}",
-                 "'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]] if name != 'arch.py' else (installed / name).read_bytes())"
-                 ".hexdigest()}  # defect: arch.py digested from a second read",
+                 "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()\n",
+                 "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(\n"
+                 "            self.body if self.held != 'arch' else (self.snapshot._installed / 'arch.py').read_bytes()).hexdigest()"
+                 "  # defect: arch.py digested from a second read\n",
                  ['snapshot-in-memory'])
     # Review fix: tracebacks and inspect show the code that ran.
     seed = ("        linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True),"
@@ -896,6 +897,18 @@ def cases():
                  "        return '<veldo validator snapshot %s: %s>' % (self._id, self._installed / (held + '.py'))\n",
                  "        return '<veldo validator snapshot: %s>' % (self._installed / (held + '.py'))  # defect: one key for every snapshot\n",
                  ['snapshot-source'])
+    # Round 5: the recorded identity is every held module the snapshot executes, not a fixed list.
+    executed = ("        return {ROLE_LABELS.get(held, held): {'module': held, 'path': str(self._installed / (held + '.py')), 'digest': digest}\n"
+                "                for held, digest in self._executed.items()}\n")
+    architecture('architecture-identity-static-five', 'control_eligibility.py', executed,
+                 "        return {role: {'module': name[:-3], 'path': str(self._installed / name),\n"
+                 "                       'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}\n"
+                 "                for role, name in VALIDATOR_ROLES}  # defect: the hand-written list of five\n",
+                 ['identity-covers-what-ran'])
+    architecture('architecture-identity-roles-only', 'control_eligibility.py', executed,
+                 executed.replace("for held, digest in self._executed.items()}",
+                                  "for held, digest in self._executed.items() if held in ROLE_LABELS}  # defect: labelled modules only"),
+                 ['identity-covers-what-ran'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

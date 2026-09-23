@@ -221,11 +221,54 @@ def _v53_suite():
                         check(label, False)
 
         gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
-        # The code every judgement must come from: the installed files, by resolved path and digest.
-        installed = {role: os.path.realpath(str(mods / name)) for role, name in (
-            ('entry_point', 'validate.py'), ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'), ('validator', 'arch.py'),
-            ('parser', 'yamlish.py'))}
-        installed_digests = {role: sha(Path(path).read_bytes()) for role, path in installed.items()}
+        # The code every judgement must come from: the installed engine's files, by resolved path and digest,
+        # each under its role label when it has one and under its module name otherwise. The five validator
+        # roles are always among what a snapshot runs; whatever else it runs is recorded too.
+        LABELS = {'validate': 'entry_point', 'validate_checks': 'entry', 'contract_loader': 'loader',
+                  'arch': 'validator', 'yamlish': 'parser'}
+        installed = {LABELS.get(p_.name[:-3], p_.name[:-3]): os.path.realpath(str(p_)) for p_ in mods.glob('*.py')}
+        installed_digests = {label: sha(Path(path).read_bytes()) for label, path in installed.items()}
+
+        def pristine(recorded, table=None):
+            # Every validator role is recorded and every recorded digest is the one in `table`.
+            table = installed_digests if table is None else table
+            return set(LABELS.values()) <= set(recorded) and all(table.get(k) == d for k, d in recorded.items())
+
+        # Separately installed engines for the snapshot rows: a copy of the installed engine (or a per-file link
+        # farm into `links_into`), and a Gate of it judging every station.
+        real_read = Path.read_bytes
+
+        def engine_copy(where, links_into=None, leave_out=()):
+            where.mkdir(parents=True)
+            for source in sorted(mods.glob('*.py')):
+                if source.name in leave_out:
+                    continue
+                if links_into is not None and source.name != 'control_eligibility.py':
+                    shutil.copyfile(source, links_into / source.name)
+                    (where / source.name).symlink_to(links_into / source.name)
+                else:
+                    shutil.copyfile(source, where / source.name)
+            return where
+
+        def judge(engine, tag, writer=None, events=None):
+            # One separately installed engine's Gate at every station; `writer` wraps its one read of each file.
+            engine_el = load('v53_%s_eligibility' % tag, engine / 'control_eligibility.py')
+            judging = engine_el.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base),
+                                     observe=(events.append if events is not None else None))
+            if writer is not None:
+                Path.read_bytes = writer
+            try:
+                decided = stations(judging)
+            finally:
+                Path.read_bytes = real_read
+            arch_file = None
+            try:
+                arch_file = judging._architecture_validator().arch.__file__
+            except Exception:  # noqa: BLE001 - a snapshot that could not load has no module to name
+                pass
+            recorded = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
+                        for d in decided.values()]
+            return decided, recorded, arch_file
 
         with region('architecture/store-only-refuses'):
             # A Gate built with no workspace (the constructor's default) cannot look at any file, so it
@@ -604,8 +647,8 @@ def _v53_suite():
                 present = text.encode() if text is not None else None
                 substitution_ok &= outcome(decisions, code)
                 substitution_ok &= reviewer.reviews == ([] if code else [SID]) and got[0] == 'ok'
-                substitution_ok &= {r: v.get('path') for r, v in validator.items()} == installed
-                substitution_ok &= {r: v.get('digest') for r, v in validator.items()} == installed_digests
+                substitution_ok &= all(v.get('path') == installed.get(r) for r, v in validator.items())
+                substitution_ok &= pristine({r: v.get('digest') for r, v in validator.items()})
                 substitution_ok &= artifact.get('path') == str(clone / '.veldo' / 'architecture.yaml')
                 substitution_ok &= artifact.get('digest') == (sha(present) if present is not None else None)
                 substitution_ok &= found.get('basis') == 'accepted' and (found.get('accepted') or {}).get('digest') == digest
@@ -686,12 +729,12 @@ def _v53_suite():
                 'before_change': sorted({c for d in first.values() for c in d['refusals']}),
                 'same_gate_after_change': sorted({c for d in second.values() for c in d['refusals']}),
                 'fresh_gate_after_change': sorted({c for d in fresh.values() for c in d['refusals']}),
-                'recorded_is_loaded': all(r == installed_digests for r in recorded),
-                'fresh_records_new': all(r == changed for r in fresh_recorded)}
+                'recorded_is_loaded': all(pristine(r) for r in recorded),
+                'fresh_records_new': all(pristine(r, changed) for r in fresh_recorded)}
             check('architecture/identity-is-what-ran',
                    outcome(first, CODES['invalid_structure']) and outcome(second, CODES['invalid_structure'])
-                   and all(r == installed_digests for r in recorded)
-                   and changed != installed_digests and outcome(fresh, None) and all(r == changed for r in fresh_recorded))
+                   and all(pristine(r) for r in recorded)
+                   and changed != installed_digests and outcome(fresh, None) and all(pristine(r, changed) for r in fresh_recorded))
             reset('valid')
 
         with region('architecture/snapshot-in-memory'):
@@ -776,18 +819,18 @@ def _v53_suite():
             observed['snapshot_in_memory'] = {
                 'refusals': sorted({r for d in raced.values() for r in d['refusals']}),
                 'engine_loads_from_disk': len(loads), 'swapped': len(swaps), 'left_on_disk': left_on_disk,
-                'recorded_is_installed': all(r == installed_digests for r in recorded),
+                'recorded_is_installed': all(pristine(r) for r in recorded),
                 'writes_after_the_one_read': len(rewritten),
                 'link_farm': {'refusals': sorted({r for d in farm_raced.values() for r in d['refusals']}),
                               'recorded_arch_is_bytes_read': all(g_ == sha(farm_arch) for g_ in farm_digests)},
                 'rewritten_after_read': {'refusals': sorted({r for d in read_raced.values() for r in d['refusals']}),
-                                         'recorded_is_bytes_read': all(r == installed_digests for r in read_recorded)}}
+                                         'recorded_is_bytes_read': all(pristine(r) for r in read_recorded)}}
             check('architecture/snapshot-in-memory',
                    outcome(raced, CODES['invalid_structure']) and loads == [] and swaps == [] and left_on_disk == []
-                   and all(r == installed_digests for r in recorded)
+                   and all(pristine(r) for r in recorded)
                    and outcome(farm_raced, CODES['invalid_structure']) and len(rewritten) == 2
                    and all(g_ == sha(farm_arch) for g_ in farm_digests)
-                   and outcome(read_raced, CODES['invalid_structure']) and all(r == installed_digests for r in read_recorded))
+                   and outcome(read_raced, CODES['invalid_structure']) and all(pristine(r) for r in read_recorded))
 
         with region('architecture/snapshot-by-name'):
             # The snapshot holds each engine module by NAME, read once by its installed name, and answers every
@@ -795,39 +838,8 @@ def _v53_suite():
             # name's bytes serve another. Four fixtures, each a separate installed engine judging an accepted,
             # structurally invalid contract (which only the real structural validator refuses).
             put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
-            by_name, real_read = {}, Path.read_bytes
+            by_name = {}
             pass_all = b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n'
-
-            def engine_copy(where, links_into=None, leave_out=()):
-                where.mkdir(parents=True)
-                for source in sorted(mods.glob('*.py')):
-                    if source.name in leave_out:
-                        continue
-                    if links_into is not None and source.name != 'control_eligibility.py':
-                        shutil.copyfile(source, links_into / source.name)
-                        (where / source.name).symlink_to(links_into / source.name)
-                    else:
-                        shutil.copyfile(source, where / source.name)
-                return where
-
-            def judge(engine, tag, writer=None, events=None):
-                engine_el = load('v53_%s_eligibility' % tag, engine / 'control_eligibility.py')
-                judging = engine_el.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base),
-                                         observe=(events.append if events is not None else None))
-                if writer is not None:
-                    Path.read_bytes = writer
-                try:
-                    decided = stations(judging)
-                finally:
-                    Path.read_bytes = real_read
-                arch_file = None
-                try:
-                    arch_file = judging._architecture_validator().arch.__file__
-                except Exception:  # noqa: BLE001 - a snapshot that could not load has no module to name
-                    pass
-                recorded = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
-                            for d in decided.values()]
-                return decided, recorded, arch_file
 
             original = (mods / 'arch.py').read_bytes()
             # 1. Collision: right after arch.py's one read the writer makes it pass everything, and before a
@@ -892,6 +904,40 @@ def _v53_suite():
             reset('valid')
             observed['snapshot_by_name'] = by_name
             check('architecture/snapshot-by-name', all(by_name.values()) and len(by_name) == 4)
+
+        with region('architecture/identity-covers-what-ran'):
+            # The recorded identity is built from what the snapshot actually executes: every held module it
+            # runs, by name, with the digest of its bytes, not a fixed list of five. An engine whose tracker.py
+            # (or verdict_corpus.py) gained a line runs that module, so the decision records the new bytes; and
+            # a tracker.py that answers arch.py's open() of the contract with a valid one passes the invalid
+            # contract, which the decision must then record, not the pristine digests.
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+
+            def recorded_of(decided):
+                return [{k: v.get('digest') for k, v in ((d.get('architecture') or {}).get('validator') or {}).items()}
+                        for d in decided.values()]
+
+            covers = {}
+            for module in ('tracker', 'verdict_corpus'):
+                engine = engine_copy(top / ('covers-' + module) / '.veldo')
+                with open(str(engine / (module + '.py')), 'a') as handle:
+                    handle.write('\n# appended by the identity fixture\n')
+                decided, _, _ = judge(engine, 'covers_' + module)
+                wanted = sha((engine / (module + '.py')).read_bytes())
+                covers[module] = (outcome(decided, CODES['invalid_structure'])
+                                  and all(r.get(module) == wanted and r.get(module) != installed_digests.get(module)
+                                          for r in recorded_of(decided)))
+            hooked = engine_copy(top / 'covers-hook' / '.veldo')
+            with open(str(hooked / 'tracker.py'), 'a') as handle:
+                handle.write('\n\nimport io as _fixture_io\n_fixture_open = __builtins__["open"]\n'
+                             '__builtins__["open"] = lambda p, *a, **k: _fixture_io.BytesIO(%r) '
+                             'if str(p).endswith("architecture.yaml") else _fixture_open(p, *a, **k)\n' % VALID.encode())
+            decided, _, _ = judge(hooked, 'covers_hook')
+            hook_digest = sha((hooked / 'tracker.py').read_bytes())
+            covers['hooked_tracker_recorded'] = all(r.get('tracker') == hook_digest for r in recorded_of(decided))
+            reset('valid')
+            observed['identity_covers_what_ran'] = covers
+            check('architecture/identity-covers-what-ran', all(covers.values()) and len(covers) == 3)
 
         with region('architecture/snapshot-source'):
             # Tracebacks and inspect show the code that ran, and ONLY the snapshot's code: its lines are kept
@@ -1019,7 +1065,7 @@ def _v53_suite():
             refused_arch = [e for e in gate.observations if any('architecture' in r for r in e['refusals'])]
             obs_ok &= len(refused_arch) > 0 and all(
                 set(e['taxonomy']) <= {'invalid_input', 'missing_evidence', 'missing_authority'} for e in refused_arch)
-            obs_ok &= all(e['architecture']['validator'] == installed_digests for e in judged
+            obs_ok &= all(pristine(e['architecture']['validator']) for e in judged
                           if e['architecture']['basis'] != 'store_only' and e['architecture']['validator'])
             status = gate.status()
             obs_ok &= status['accepted'] > 0 and status['refused'] > 0

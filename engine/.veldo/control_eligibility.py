@@ -395,6 +395,9 @@ def _definition(label, data):
 # The installed files whose code judges an architecture, by the role each plays.
 VALIDATOR_ROLES = (('entry_point', 'validate.py'), ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'),
                    ('validator', 'arch.py'), ('parser', 'yamlish.py'))
+# Labels only: the recorded identity is whatever the snapshot executes, each module under its role label
+# when it has one and under its module name otherwise.
+ROLE_LABELS = {name[:-3]: role for role, name in VALIDATOR_ROLES}
 
 
 class _MemoryLoader:
@@ -421,6 +424,8 @@ class _MemoryLoader:
         key = self.snapshot.source_key(self.held)
         linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)
         self.snapshot._keys.append(key)
+        # Recorded before the module runs, so a module that fails during its own load is still in the identity.
+        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()
         exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
 
 
@@ -446,7 +451,7 @@ class ValidatorSnapshot:
         installed = Path(os.path.realpath(str(installed or Path(__file__).resolve().parent)))
         self._installed, self._id = installed, uuid.uuid4().hex
         self._bodies = {path.name[:-3]: path.read_bytes() for path in sorted(installed.glob('*.py'))}
-        self._keys = []
+        self._keys, self._executed = [], {}
         _weakref.finalize(self, _forget_lines, self._keys)
         util = _types.ModuleType('importlib.util')
         util.__dict__.update({k: v for k, v in vars(importlib.util).items() if not k.startswith('__')})
@@ -461,9 +466,13 @@ class ValidatorSnapshot:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         self.validate, self.arch = module, module.entry_validator()
-        self.identity = {role: {'path': str(installed / name),
-                                'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}
-                         for role, name in VALIDATOR_ROLES}
+
+    @property
+    def identity(self):
+        """Every held module this snapshot has executed, in the order it ran: under its role label when it has
+        one, else its module name, with its installed path and the digest of the bytes it ran from."""
+        return {ROLE_LABELS.get(held, held): {'module': held, 'path': str(self._installed / (held + '.py')), 'digest': digest}
+                for held, digest in self._executed.items()}
 
     def source_key(self, held):
         """The file name this snapshot's code of `held` is compiled and cached under, unique to it."""
