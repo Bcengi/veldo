@@ -39,6 +39,8 @@ import re
 import shutil
 import subprocess
 import tempfile
+import unicodedata
+import urllib.parse
 
 SCHEMA = 'veldo.graph/v1'
 OPERATIONS = ('start', 'advance', 'suspend', 'cancel')
@@ -62,7 +64,10 @@ DIGEST = re.compile(r'sha256:[0-9a-f]{64}\Z')
 RESUME_FIELDS = ('position', 'step', 'notes')
 RESULT_FIELDS = ('id', 'version', 'digest', 'value')
 MAX_NOTES = 1 << 16
-_URL = re.compile(r'https?://[^\s"\'<>]*')
+MAX_REQUEST_BYTES = 1 << 20
+# Every character that renders as a path separator, besides the two ASCII ones.
+SEPARATORS = ('/', '\\', '\u2044', '\u2215', '\u2216', '\u29f5', '\u29f8', '\u29f9', '\ufe68',
+              '\uff0f', '\uff3c')
 IDENTITY = ('cycle_id', 'command_id', 'domain_uuid', 'repository_uuid')
 REQUEST_FIELDS = {
     'start': ('snapshot', 'workflow'),
@@ -155,20 +160,6 @@ def text_depth(raw, limit=MAX_DEPTH):
     return deepest
 
 
-def value_depth(value, limit=MAX_DEPTH):
-    """Deepest list/dict nesting of a Python value, walked with an explicit stack."""
-    deepest, stack = 0, [(value, 1)]
-    while stack:
-        item, depth = stack.pop()
-        if type(item) in (list, dict):
-            if depth > deepest:
-                deepest = depth
-                if deepest > limit:
-                    return deepest
-            stack.extend((child, depth + 1) for child in (item.values() if type(item) is dict else item))
-    return deepest
-
-
 def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True,
                       allow_nan=False).encode()
@@ -200,7 +191,8 @@ def _exact(value, fields, where, code):
 
 
 def _identifier(value, where, code):
-    if type(value) is not str or not value or len(value) > 200 or '/' in value or '\\' in value:
+    if (type(value) is not str or not value or len(value) > 200 or '/' in value or '\\' in value
+            or '..' in value or any(ord(char) < 32 or ord(char) == 127 for char in value)):
         raise Refused(code, where + ': invalid identifier')
     return value
 
@@ -232,23 +224,69 @@ def _resume_shape(value, where, code):
 
 
 def looks_like_path(text):
-    """A filesystem location: after http(s) URLs are removed, any / or \\ or a leading ~."""
-    rest = _URL.sub('', text)
-    return '/' in rest or '\\' in rest or rest.lstrip().startswith('~')
+    """A filesystem location in any form: a path separator (ASCII, look-alike or compatibility
+    form), a percent-encoded one, or a leading ~. No URL exemption here."""
+    folded = unicodedata.normalize('NFKC', text).lower()
+    return (any(separator in folded for separator in SEPARATORS) or '%2f' in folded or '%5c' in folded
+            or folded.lstrip().startswith('~'))
+
+
+def is_url(text):
+    """An http(s) URL with a non-empty host and no whitespace or control characters."""
+    if any(char.isspace() or ord(char) < 32 for char in text):
+        return False
+    try:
+        parts = urllib.parse.urlsplit(text)
+        return parts.scheme in ('http', 'https') and bool(parts.hostname)
+    except ValueError:
+        return False
+
+
+def url_field(key):
+    """A declared URL field: a key named url or ending in _url."""
+    return type(key) is str and (key == 'url' or key.endswith('_url'))
+
+
+def value_bounds(value, depth_limit=MAX_DEPTH, size_limit=MAX_REQUEST_BYTES):
+    """(deepest nesting, approximate JSON bytes) of a Python value, walked with an explicit stack;
+    stops as soon as either passes its limit, so a huge or self-referential value costs little."""
+    deepest, size, stack = 0, 0, [(value, 1)]
+    while stack:
+        item, depth = stack.pop()
+        kind = type(item)
+        if kind is str:
+            size += (len(item) if len(item) > size_limit else len(item.encode('utf-8', 'surrogatepass'))) + 2
+        elif kind is list or kind is dict:
+            deepest = max(deepest, depth)
+            if deepest > depth_limit:
+                return deepest, size
+            size += 2 + len(item)
+            if kind is dict:
+                for key, child in item.items():
+                    size += len(key) + 3 if type(key) is str else 8
+                    stack.append((child, depth + 1))
+            else:
+                stack.extend((child, depth + 1) for child in item)
+        else:
+            size += 8
+        if size > size_limit:
+            return deepest, size
+    return deepest, size
 
 
 def _strings(value):
-    """Every string in a plain value, keys included, walked with an explicit stack."""
-    stack = [value]
+    """(string, declared URL field) for every string in a plain value, keys included, walked with
+    an explicit stack."""
+    stack = [(value, False)]
     while stack:
-        item = stack.pop()
+        item, declared = stack.pop()
         if type(item) is str:
-            yield item
+            yield item, declared
         elif type(item) is dict:
-            stack.extend(item.keys())
-            stack.extend(item.values())
+            stack.extend((key, False) for key in item)
+            stack.extend((child, url_field(key)) for key, child in item.items())
         elif type(item) is list:
-            stack.extend(item)
+            stack.extend((child, False) for child in item)
 
 
 def request(operation, identity, **fields):
@@ -269,15 +307,22 @@ def request(operation, identity, **fields):
             _versioned(item, 'supplied_results[' + str(index) + ']', 'invalid_input', RESULT_FIELDS)
     if 'resume' in body:
         _resume_shape(body['resume'], 'resume', 'invalid_input')
-    if value_depth(body) > MAX_DEPTH:
+    deepest, size = value_bounds(body)
+    if deepest > MAX_DEPTH:
         raise Refused('invalid_input', 'request nests deeper than ' + str(MAX_DEPTH))
+    if size > MAX_REQUEST_BYTES:
+        raise Refused('invalid_input', 'request is larger than ' + str(MAX_REQUEST_BYTES) + ' bytes')
     try:
         plain(body, 'request')
     except Refused as error:
         raise Refused('invalid_input', error.detail) from error
-    for text in _strings({key: value for key, value in body.items() if key != 'schema'}):
+    for text, declared in _strings({key: value for key, value in body.items() if key != 'schema'}):
+        if declared and is_url(text):
+            continue
         if looks_like_path(text):
             raise Refused('path_in_request', 'a request carries no filesystem location: ' + repr(text[:80]))
+    if len(canonical(body)) > MAX_REQUEST_BYTES:
+        raise Refused('invalid_input', 'request is larger than ' + str(MAX_REQUEST_BYTES) + ' bytes')
     return body
 
 
