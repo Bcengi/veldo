@@ -1,5 +1,5 @@
---- a/.veldo/fix_validation_record.py
-+++ b/.veldo/fix_validation_record.py
-@@ -262 +262 @@
--        block[START_KEY] = str(block[START_KEY])
-+        block[START_KEY] = str(block[START_KEY]).split('#', 1)[0]
+--- a/.veldo/yamlish.py
++++ b/.veldo/yamlish.py
+@@ -81 +81 @@
+-                return ''.join(out)
++                return ''.join(out).split('#', 1)[0]

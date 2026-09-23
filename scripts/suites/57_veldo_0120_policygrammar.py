@@ -22,6 +22,8 @@ _p_oracle = _p_load('oracle', _p_fixture / 'yaml_oracle.py')
 _p_consumer = _p_load('consumer', _p_fixture / 'policy_agreement.py')
 _p_paths = {'repository': ROOT / ".veldo" / "fix_validation_record.py",
             'engine': ROOT / "engine" / ".veldo" / "fix_validation_record.py"}
+_p_syntax_paths = {'repository': ROOT / ".veldo" / "yamlish.py",
+                   'engine': ROOT / "engine" / ".veldo" / "yamlish.py"}
 _p_cases = list(_p_consumer.cases(_p_grammar))
 _p_expected = _p_consumer.expected_ids(_p_grammar)
 _p_cap = _p_oracle.capability()
@@ -51,7 +53,9 @@ with _p_temp.TemporaryDirectory(prefix='policy-readers-') as _p_directory:
         # The mutation driver supplies one changed module. Keep its real sibling
         # imports alongside it without ever modifying either shipped reader.
         _p_copy = _p_Path(_p_directory) / _p_name
-        _p_shutil.copytree(ROOT / '.veldo', _p_copy, ignore=_p_shutil.ignore_patterns('__pycache__'))
+        _p_base = ROOT / ('.veldo' if _p_name == 'repository' else 'engine/.veldo')
+        _p_shutil.copytree(_p_base, _p_copy, ignore=_p_shutil.ignore_patterns('__pycache__'))
+        (_p_copy / 'yamlish.py').write_bytes(_p_syntax_paths[_p_name].read_bytes())
         (_p_copy / 'fix_validation_record.py').write_bytes(_p_path.read_bytes())
         _p_readers[_p_name] = _p_load(_p_name, _p_copy / 'fix_validation_record.py')
     _p_result = _p_consumer.run(_p_cases, _p_expected, _p_readers, _p_oracle, _p_cap)

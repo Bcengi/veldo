@@ -176,9 +176,9 @@ def cases():
         if fixture:
             result[-1]['fixture'] = True
 
-    policy('policy-strip-quoted-hash', 'fix_validation_record.py',
-           '        block[START_KEY] = str(block[START_KEY])',
-           "        block[START_KEY] = str(block[START_KEY]).split('#', 1)[0]",
+    policy('policy-strip-quoted-hash', 'yamlish.py',
+           "                return ''.join(out)",
+           "                return ''.join(out).split('#', 1)[0]",
            'generated-settings-agree')
     policy('policy-coerce-leading-zero', 'fix_validation_record.py',
            '        block[START_KEY] = str(block[START_KEY])',

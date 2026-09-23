@@ -8,16 +8,16 @@
         "worker_seconds": 0.0
       },
       "check_teeth_mutations.py": {
-        "inventory_digest": "e941200b530af5f7957252cd50838ca1db705306a85b6c86597c7df3243d590c",
+        "inventory_digest": "99689d7c3db509cbb6f594fec1d7d0d836431d2772b4952cfa90279f6a3e1987",
         "registered": 6,
-        "wall_seconds": 11.738526568049565,
-        "worker_seconds": 35.80799565091729
+        "wall_seconds": 11.707179707940668,
+        "worker_seconds": 35.02107536862604
       }
     },
-    "elapsed": 12.293548439163715,
+    "elapsed": 12.302912816172466,
     "executed": 6,
     "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
-    "input_digest": "312b50431b78775518b57962fcd8f863232886b6bc6006890070c732eeac27fa",
+    "input_digest": "87ff4b055ef97ffdbd6674d821e3780677fe4ff18c2f1d2c3f12733b1a4f943f",
     "invalid_results": [],
     "registered": 6,
     "rejected": 6,
@@ -185,16 +185,16 @@
           "driver": "check_teeth_mutations.py",
           "finding": 120,
           "identity": "check_teeth_mutations.py:policy-strip-quoted-hash",
-          "module": "fix_validation_record.py",
+          "module": "yamlish.py",
           "name": "policy-strip-quoted-hash",
-          "new": "        block[START_KEY] = str(block[START_KEY]).split('#', 1)[0]",
-          "old": "        block[START_KEY] = str(block[START_KEY])",
+          "new": "                return ''.join(out).split('#', 1)[0]",
+          "old": "                return ''.join(out)",
           "rows": [
             "policyread/generated-settings-agree"
           ],
           "suite": "57_veldo_0120_policygrammar.py"
         },
-        "elapsed": 5.982453394914046,
+        "elapsed": 5.827631768072024,
         "fixture_version": 1,
         "mutant": {
           "count": 29,
@@ -357,7 +357,7 @@
             ]
           }
         },
-        "new_digest": "1cfe12299d24e69b47ec5588eb9ed38d4b40ff5d74c4cc34e6a9ca1a98a5878f",
+        "new_digest": "ff3f6799926aa9197e4555c0fa53c5d2e646fa16bf7671585f01487035068137",
         "noop": {
           "count": 29,
           "failed_rows": [],
@@ -516,7 +516,7 @@
             ]
           }
         },
-        "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+        "old_digest": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
         "replacement_count": 1,
         "schema": "veldo.mutation-result/v1"
       },
@@ -692,7 +692,7 @@
           ],
           "suite": "57_veldo_0120_policygrammar.py"
         },
-        "elapsed": 6.022051970008761,
+        "elapsed": 5.867776148021221,
         "fixture_version": 1,
         "mutant": {
           "count": 29,
@@ -1190,7 +1190,7 @@
           ],
           "suite": "57_veldo_0120_policygrammar.py"
         },
-        "elapsed": 5.981542365159839,
+        "elapsed": 5.8472206618171185,
         "fixture_version": 1,
         "mutant": {
           "count": 29,
@@ -1688,7 +1688,7 @@
           ],
           "suite": "57_veldo_0120_policygrammar.py"
         },
-        "elapsed": 5.920807271962985,
+        "elapsed": 5.826586484909058,
         "fixture_version": 1,
         "mutant": {
           "count": 29,
@@ -2187,7 +2187,7 @@
           ],
           "suite": "57_veldo_0120_policygrammar.py"
         },
-        "elapsed": 5.9607891358900815,
+        "elapsed": 5.826107062865049,
         "fixture_version": 1,
         "mutant": {
           "count": 29,
@@ -2685,7 +2685,7 @@
           ],
           "suite": "57_veldo_0120_policygrammar.py"
         },
-        "elapsed": 5.940351512981579,
+        "elapsed": 5.825753242941573,
         "fixture_version": 1,
         "mutant": {
           "count": 29,
@@ -3014,9 +3014,9 @@
     "schema": "veldo.mutation-stage/v1",
     "status": "passed",
     "surviving_workers": 0,
-    "worker_invocations": 10
+    "worker_invocations": 12
   },
-  "conservative_added_gate_seconds": 22.881681656930596,
+  "conservative_added_gate_seconds": 23.195793791906908,
   "method": "two unit executions (unit and first-use integration), plus isolated added mutations including setup",
-  "unit_seconds": 5.2940666088834405
+  "unit_seconds": 5.446440487867221
 }

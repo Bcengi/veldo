@@ -1,0 +1,13 @@
+{
+  "command": "bash scripts/verify.sh",
+  "commit": "6e58f92",
+  "tree_at_start": "clean",
+  "exit_code": 143,
+  "status": "interrupted_after_failure",
+  "failures": [
+    "WARP-1102 AC5 dogfood",
+    "WARP-1102 AC6 RJ1"
+  ],
+  "cause": "The two owner-authorized extensions were documented in prose but missing from the machine-readable footprint.",
+  "resolution": "Added exactly scripts/check_teeth_mutations.py and scripts/fixtures/* to the declared footprint; direct shape gate passes. Canonical gate must be rerun."
+}
