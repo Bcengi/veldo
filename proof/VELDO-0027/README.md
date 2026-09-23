@@ -5,9 +5,20 @@ channel nor installs an operating-system custody boundary. Owner landing approva
 including protection of `.veldo/keys/allowed_signers`, remains separate. Policy is
 unchanged. No production credential or private key is committed.
 
-The canonical gate result and measured added time will be recorded after the clean
-implementation commit is verified. Targeted executions below are development checks,
-not a substitute for that gate.
+The canonical gate passed from a clean tree at `838cfebdc0084294b63850e18d68e9e1c7afec0c`:
+
+```text
+selftest: 5651 passed, 0 failed
+mutations: passed registered=66 executed=66 rejected=66 workers=88 elapsed=32.968s
+catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (838cfebdc0084294b63850e18d68e9e1c7afec0c)
+```
+
+Baseline gate: 620.031 seconds. Implementation gate: 638.375 seconds. Measured increase:
+**18.344 seconds**, within the 60-second limit. The mutation stage changed from
+23.779 to 32.968 seconds. See `timing.json` and `gate-summary.json`. Raw logs remain
+outside git; `gate.log` contains only safe result lines. The two gate byproducts
+are restored before the evidence commit and are never included in these commits.
 
 ## Implementation and authority boundary
 
@@ -166,7 +177,6 @@ Completeness assertion: `signing/universe`.
 | [signing-text-substitutes-identity](signing-text-substitutes-identity.diff) | `signing/text-only` |
 | [signing-branch-projection-authority](signing-branch-projection-authority.diff) | `signing/branch-key` |
 | [signing-branch-preflight-bypass](signing-branch-preflight-bypass.diff) | `signing/branch-key` |
-
 | [signing-prelock-clock](signing-prelock-clock.diff) | `signing/transition-clock` |
 | [signing-truncated-clock](signing-truncated-clock.diff) | `signing/transition-clock` |
 

@@ -1,0 +1,174 @@
+{
+  "command": "bash scripts/verify.sh",
+  "seconds": 638.374762582127,
+  "raw_log_sha256": "762437fc72e5c62358e968bc5bb27861b884d89197c3d68e636a91cf8882303d",
+  "summary": [
+    "selftest: 5651 passed, 0 failed",
+    "mutations: passed registered=66 executed=66 rejected=66 workers=88 elapsed=32.968s",
+    "catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared",
+    "GATE: GREEN (838cfebdc0084294b63850e18d68e9e1c7afec0c)"
+  ],
+  "mutation_stage": {
+    "schema": "veldo.mutation-stage/v1",
+    "registered": 66,
+    "executed": 66,
+    "rejected": 66,
+    "elapsed": 32.968073659809306,
+    "input_digest": "700d271fff798b7e4f3b175a6821923ebfaee45ba6c7e580ab8a1cfa922a6b94",
+    "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
+    "invalid_results": [],
+    "drivers": {
+      "check_review_mutations.py": {
+        "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
+        "registered": 5,
+        "wall_seconds": 5.455611123004928,
+        "worker_seconds": 9.181380056776106
+      },
+      "check_teeth_mutations.py": {
+        "inventory_digest": "29cecddd00fc66cacbbf93ab36237df4d5e4a0024cf3b7fc96cf978e03b477c7",
+        "registered": 61,
+        "wall_seconds": 31.2146282910835,
+        "worker_seconds": 155.68577023409307
+      }
+    },
+    "signing_cases": [
+      {
+        "case": "signing-prelock-clock",
+        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
+        "new_digest": "a5177eac97c8c772e5bb0bc91eec3a503e37375d01e943d09ac62689c088f3a5",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/transition-clock"
+        ]
+      },
+      {
+        "case": "signing-truncated-clock",
+        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
+        "new_digest": "37b881f64fc35a1d9cc821d2ee6e5951ea4098f7c8287c1ded3eba8808d35b2f",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/rotation",
+          "VELDO-0027 signing/retirement",
+          "VELDO-0027 signing/revocation",
+          "VELDO-0027 signing/rotation-race",
+          "VELDO-0027 signing/kill-after-rotation",
+          "VELDO-0027 signing/kill-after-retire_signing_key",
+          "VELDO-0027 signing/kill-after-revoke_signing_key",
+          "VELDO-0027 signing/transition-clock"
+        ]
+      },
+      {
+        "case": "signing-remove-channel-restriction",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "48c4d84a34f7377e98b38ceeef0446169c1047ae0e2e50c89c3d3fb94f81e489",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection",
+          "VELDO-0027 signing/key-comes-from-the-channel"
+        ]
+      },
+      {
+        "case": "signing-permit-foreign-channel",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "3466e5a7cafb5d4a8553c422b5e50ad942c00b8c22be256d3d265463705b2e02",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection"
+        ]
+      },
+      {
+        "case": "signing-request-channel",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "3ac5611b16432ca7044f61146da8a7f97cfd1e549241cd2a66ab633a5dceb0e3",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection"
+        ]
+      },
+      {
+        "case": "signing-request-key-channel",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "5a70e765810bd4de752f5f5c429ca7ca212eef3c5ff81d38eefb92429cc1fd8f",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/cross-channel",
+          "VELDO-0027 signing/channel-comes-from-the-connection"
+        ]
+      },
+      {
+        "case": "signing-request-key",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "79b786586157b09ae5eb59267cdd6b3767d747c18261a683d618f5b72de85cb5",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/key-comes-from-the-channel"
+        ]
+      },
+      {
+        "case": "signing-ignore-key-crosscheck",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "78bd881bab4e9bf95d329e4ce98a964ab065493f6ca091c764243c645c53ed08",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/key-comes-from-the-channel"
+        ]
+      },
+      {
+        "case": "signing-text-without-identity",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "8541a304e6b5f29ad19d24009e073f8acc0195909aa7be98e810c08591a7447b",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/attribution/platform_message_id",
+          "VELDO-0027 signing/attribution/sender_id",
+          "VELDO-0027 signing/attribution/platform_timestamp",
+          "VELDO-0027 signing/text-only"
+        ]
+      },
+      {
+        "case": "signing-text-substitutes-identity",
+        "old_digest": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+        "new_digest": "2ac366143f2ac92a5f765f4c0f29c44140e8f8670e7c7d013e5119833e2b4640",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/text-only"
+        ]
+      },
+      {
+        "case": "signing-branch-projection-authority",
+        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
+        "new_digest": "cead401a94142db62dbc16db237c203a0b654f66701b50fa32ed59c177396767",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/branch-key"
+        ]
+      },
+      {
+        "case": "signing-branch-preflight-bypass",
+        "old_digest": "fb45b121a4f79feadaca2133bfbaba59b7efdbc8b465d0ce0ed28f76a7daf606",
+        "new_digest": "f57ac8602f23d09fbe3b72bac310391307cfaffa49e27ad189676db8e6828c83",
+        "baseline_failed": [],
+        "noop_failed": [],
+        "mutant_failed": [
+          "VELDO-0027 signing/branch-key"
+        ]
+      }
+    ]
+  },
+  "raw_log_committed": false,
+  "reason": "Raw gate output includes pre-existing credential-shaped negative fixtures; retain digest and regenerate command only."
+}

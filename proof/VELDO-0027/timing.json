@@ -1,0 +1,12 @@
+{
+  "baseline_seconds": 620.0309318101499,
+  "implementation_seconds": 638.374762582127,
+  "added_wall_seconds": 18.343830771977082,
+  "limit_seconds": 60,
+  "within_limit": true,
+  "baseline_mutation_seconds": 23.779322966001928,
+  "implementation_mutation_seconds": 32.968073659809306,
+  "added_mutation_seconds": 9.188750693807378,
+  "method": "Same checkout, clean pre-change and clean implementation commits; monotonic wall clock around bash scripts/verify.sh. No gate stage disabled.",
+  "note": "Serial targeted mutation-driver time is not added gate time; the canonical mutation stage shares controls and runs workers concurrently."
+}
