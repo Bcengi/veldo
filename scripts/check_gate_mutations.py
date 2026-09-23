@@ -32,15 +32,31 @@ PER_CASE_SECONDS = 2.0        # measured at REFERENCE_WORKERS workers
 REFERENCE_WORKERS = 8
 WORKER_BUDGET = 120
 
-def _quota_cpus():
-    """The CPUs a cgroup v2 quota (cpu.max) allows this process, or None when there is no quota."""
+def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
+    """The CPUs a cgroup v2 quota allows this process: the smallest cpu.max quota on the process's
+    OWN cgroup or any parent up to the mount (a quota set on a host scope or slice sits there, not
+    at the mount root), or None when none applies. cgroup v1 is not read (stated limit)."""
     try:
-        quota, period = open('/sys/fs/cgroup/cpu.max').read().split()[:2]
-        if quota != 'max' and int(period) > 0:
-            return max(1, -(-int(quota) // int(period)))
-    except (OSError, ValueError):
-        pass
-    return None
+        with open(membership) as handle:
+            own = next((line.split('::', 1)[1].strip() for line in handle if line.startswith('0::')), None)
+    except OSError:
+        own = None
+    if own is None:
+        return None
+    best, path = None, os.path.normpath(os.path.join(root, own.lstrip('/')))
+    top = os.path.normpath(root)
+    while True:
+        try:
+            with open(os.path.join(path, 'cpu.max')) as handle:
+                quota, period = handle.read().split()[:2]
+            if quota != 'max' and int(period) > 0:
+                cpus = max(1, -(-int(quota) // int(period)))
+                best = cpus if best is None else min(best, cpus)
+        except (OSError, ValueError):
+            pass
+        if path == top or not path.startswith(top):
+            return best
+        path = os.path.dirname(path)
 
 
 def worker_count(cpus=None):
@@ -65,9 +81,11 @@ OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 def budget_for(count, workers=REFERENCE_WORKERS):
     """The combined cap for a registered inventory of `count` cases run by `workers` workers at
-    once, never below BUDGET. The per-case figure was measured at REFERENCE_WORKERS, and wall time
-    scales inversely with the workers running, so fewer workers get proportionally more time."""
-    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, workers))
+    once, never below BUDGET. The per-case figure was measured at REFERENCE_WORKERS. Fewer workers
+    get proportionally more time; MORE workers get no less than the reference figure, because the
+    measured speedup past REFERENCE_WORKERS is well below linear (8 -> 16 was about 1.5x), so the
+    extra workers buy margin instead of a tighter cap."""
+    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
 
 
 class Refused(Exception):

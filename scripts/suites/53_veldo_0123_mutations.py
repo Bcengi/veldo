@@ -339,11 +339,11 @@ if 'expect' in globals():
                       for n, (left, alarm) in zip((10, 116, 300), _m123_seen)]
     expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: run_stage records, enforces as the '
            'worker deadline, and arms as the alarm a cap of the floor or 2 s per registered case, '
-           'whichever is larger, scaled to the workers the stage runs (at 8 workers: 10 -> 120, 116 -> 232, '
-           '300 -> 600; half that per case at 16, four times at 2)',
+           'whichever is larger, scaled to the workers the stage runs (at 8 or more workers: 10 -> 120, 116 -> 232, '
+           '300 -> 600; four times that per case at 2, never less than the 8-worker figure at 16)',
            _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced)
            and [_m123_budget.budget_for(n, 8) for n in (10, 116, 300)] == [120, 232.0, 600.0]
-           and [_m123_budget.budget_for(300, w) for w in (2, 16)] == [2400.0, 300.0])
+           and [_m123_budget.budget_for(300, w) for w in (2, 16)] == [2400.0, 600.0])
 
     # THE INPUT CLOSURE IS THE WORKING TREE, not a hand list of directories. The snapshot workers run
     # in holds only what read_inputs returns, so a suite row reading anything outside it (the front
@@ -613,6 +613,9 @@ if 'expect' in globals():
         _m123_peak[0] = max(_m123_peak[0], len(_m123_live))
         return proc
 
+    # Drive at a count that is not the host's own, so a literal equal to the host count cannot pass.
+    _m123_saved_parallel = _m123_gate.PARALLEL
+    _m123_gate.PARALLEL = 3
     _m123_jobs = {'j%d' % i: {'case': {'driver': 'synthetic'}, 'mode': 'baseline'}
                   for i in range(_m123_gate.PARALLEL + 4)}
     _m123_gate.subprocess.Popen = _m123_fake_popen
@@ -624,9 +627,26 @@ if 'expect' in globals():
         _m123_done = {'raised': repr(_m123_error)}
     finally:
         _m123_gate.subprocess.Popen = _m123_real_popen
+    _m123_driven_parallel = _m123_gate.PARALLEL
+    _m123_gate.PARALLEL = _m123_saved_parallel
+    # The quota: a temporary cgroup tree where the process's own cgroup is two levels below a slice
+    # carrying a 2-CPU quota and its own cgroup carries a 3-CPU one: the smallest (2) applies; with
+    # no quota anywhere, none; a cgroup outside the tree is not read.
+    with _m123_tmp.TemporaryDirectory(prefix='m123-cgroup-') as _m123_cg:
+        _m123_cgp = _m123_Path(_m123_cg)
+        (_m123_cgp / 'user.slice/app.scope').mkdir(parents=True)
+        (_m123_cgp / 'cpu.max').write_text('max 100000\n')
+        (_m123_cgp / 'user.slice/cpu.max').write_text('200000 100000\n')
+        (_m123_cgp / 'user.slice/app.scope/cpu.max').write_text('250000 100000\n')
+        (_m123_cgp / 'self-cgroup').write_text('0::/user.slice/app.scope\n')
+        (_m123_cgp / 'none-cgroup').write_text('0::/\n')
+        (_m123_cgp / 'v1-cgroup').write_text('4:cpu,cpuacct:/user.slice\n')
+        _m123_quotas = [_m123_gate._quota_cpus(str(_m123_cgp), str(_m123_cgp / n))
+                        for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup')]
     expect('VELDO-0123 gate/workers-follow-the-host: the mutation stage runs as many workers as the CPUs it '
            'may use (its affinity set, bounded by a cgroup quota), never fewer than 2 or more than 16: a '
            'child pinned to 1 or 4 CPUs computes 2 or 4, and Workers.run really runs exactly that many at once',
            [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
            and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, n)) for n in _m123_affinity))
-           and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_gate.PARALLEL)
+           and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_driven_parallel == 3
+           and _m123_quotas == [2, None, None])
