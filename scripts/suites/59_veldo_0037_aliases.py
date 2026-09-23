@@ -84,6 +84,7 @@ def _s37_run():
             'control_alias.py': ROOT / ".veldo" / "control_alias.py",
             'control_document.py': ROOT / ".veldo" / "control_document.py",
             'control_snapshot.py': ROOT / '.veldo/control_snapshot.py',
+            'control_readset.py': ROOT / ".veldo" / "control_readset.py",
             'control_store.py': ROOT / ".veldo" / "control_store.py",
             'claim.py': ROOT / '.veldo/claim.py',
             'git_process.py': ROOT / '.veldo/git_process.py',
@@ -93,6 +94,7 @@ def _s37_run():
         al = _s37_load('s37_alias', modules / 'control_alias.py')
         doc = _s37_load('s37_document', modules / 'control_document.py')
         claim = _s37_load('s37_claim', modules / 'claim.py')
+        rs = _s37_load('s37_readset', modules / 'control_readset.py')
         git = al._git_process
 
         def g(repo, *args):
@@ -102,7 +104,7 @@ def _s37_run():
         def attempt(call):
             try:
                 return call(), None
-            except (st.StoreRefused, al.SN.Refused, doc.SN.Refused) as error:
+            except (st.StoreRefused, al.SN.Refused, doc.SN.Refused, rs.SN.Refused) as error:
                 return None, error
 
         def code(error):
@@ -504,9 +506,6 @@ def _s37_run():
                 env.origins[repository] = origin
             env.db = env.base / 'control.sqlite3'
             env.conn = st.open_store(env.db)
-            if before_attach is not None:
-                before_attach(env)
-            env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             for repository, origin in env.origins.items():
                 env.revisions[repository] = 'revision/' + repository
                 st.execute(env.conn, {'command_id': 'seed-' + repository, 'principal': 'operator',
@@ -517,6 +516,9 @@ def _s37_run():
                                                               'documents': {}, 'statuses': {}}},
                                       'expected_versions': {'revision/' + repository: 0}, 'artifact_digests': []},
                            **signing)
+            if before_attach is not None:
+                before_attach(env)
+            env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             return env
 
         def checkout_of(env, repository='repository', name=None):
@@ -843,6 +845,64 @@ def _s37_run():
                'retire-reservation': 'entity_owned', 'opened-before-attach': 'entity_owned', 'unrelated': None,
                'counter': 3, 'version-content': 'connection 1\n', 'next': 'VELDO-0003'})
         env.conn.close()
+
+        # 11. Registration order decides nothing. A read set enabled for the store's generic
+        # upsert_entity after the allocation authority attached, or before it, cannot move the
+        # counter through an accepted snapshot, while an unowned entity still moves; and nobody
+        # but accept_snapshot writes a snapshot (VELDO-0035's own kind), which a generic write
+        # from a connection with nothing registered could otherwise forge.
+        order = {}
+        for label in ('readset-after-attach', 'readset-before-attach'):
+            readers = {}
+
+            def readset(env):
+                readers['reader'], readers['attach'] = attempt(
+                    lambda: rs.attach(st, env.conn, env.origins['repository'], 'domain', 'repository'))
+                _, readers['enable'] = attempt(lambda: readers['reader'].enable('upsert_entity', {
+                    'revision': 'revision/repository', 'entities': {'target': '$entity_id'}, 'collections': {}}))
+
+            env = fresh('order-' + label, before_attach=readset if label == 'readset-before-attach' else None)
+            if label == 'readset-after-attach':
+                readset(env)
+            enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+            for index in (1, 2, 3):
+                allocate(env, 'order-%d' % index, 'specification', 'order-%d' % index, b'order %d\n' % index)
+            counter_id = al.kind_id('repository', 'specification')
+            counter_version, kind_now = env.service.current(counter_id)
+            outcomes = {'registered': (code(readers.get('attach')), code(readers.get('enable')))}
+            for name, identity, entity_kind, data, version in [
+                    ('counter', counter_id, 'artifact_kind', dict(kind_now or {}, next=1), counter_version),
+                    ('unowned', 'note/order', 'note', {'text': 'moves'}, 0)]:
+                arguments = {'entity_id': identity, 'kind': entity_kind, 'data': data}
+                snapshot_id = 'snapshot-' + name
+
+                def command(operation, parameters, versions, suffix):
+                    return {'command_id': 'order-%s-%s' % (name, suffix), 'principal': 'anyone', 'operation': operation,
+                            'parameters': parameters, 'expected_versions': versions, 'artifact_digests': [],
+                            'nonce': 'order-%s-%s/nonce' % (name, suffix)}
+
+                _, accepted = attempt(lambda: readers['reader'].execute(command('accept_snapshot', {
+                    'snapshot_id': snapshot_id, 'operation': 'upsert_entity', 'arguments': arguments},
+                    {snapshot_id: 0}, 'accept'), **signing))
+                _, consumed = attempt(lambda: readers['reader'].execute(command('upsert_entity', dict(
+                    arguments, snapshot_id=snapshot_id), {snapshot_id: 1, identity: version}, 'consume'), **signing))
+                outcomes[name] = (code(accepted), code(consumed))
+            plain = st.open_store(env.db)
+            _, forged = attempt(lambda: st.execute(plain, {'command_id': 'order-forge', 'principal': 'anyone',
+                'operation': 'upsert_entity', 'parameters': {'entity_id': 'snapshot-forged', 'kind': 'control_snapshot',
+                'data': {'schema': rs.SN.SCHEMA, 'snapshot_id': 'snapshot-forged', 'operation': 'upsert_entity',
+                         'domain_uuid': 'domain', 'repository_uuid': 'repository'}},
+                'nonce': 'order-forge/nonce', 'expected_versions': {'snapshot-forged': 0}, 'artifact_digests': []}, **signing))
+            plain.close()
+            outcomes['forged-snapshot'] = code(forged)
+            outcomes['counter-after'] = (env.service.current(counter_id)[1] or {}).get('next')
+            order[label] = outcomes
+            env.conn.close()
+        defects['registration-order'] = order
+        expect('aliases/owned-whatever-registration-order', order == {label: {
+               'registered': (None, None), 'counter': (None, 'entity_owned'), 'unowned': (None, None),
+               'forged-snapshot': 'entity_owned', 'counter-after': 4}
+               for label in ('readset-after-attach', 'readset-before-attach')})
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

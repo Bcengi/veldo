@@ -506,6 +506,13 @@ def cases():
     aliases('store-owners-unchecked', 'control_store.py',
             '                if hit and command["operation"] not in commands:', '                if False:',
             'aliases/owned-on-every-connection')
+    aliases('store-owners-skip-registered-transitions', 'control_store.py',
+            '        owners = entity_owners(conn)\n',
+            '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
+            'aliases/owned-whatever-registration-order')
+    aliases('readset-snapshots-undeclared', 'control_readset.py',
+            '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)\n', '',
+            'aliases/owned-whatever-registration-order')
     return result
 
 

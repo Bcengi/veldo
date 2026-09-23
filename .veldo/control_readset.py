@@ -6,6 +6,10 @@ members. A reference beginning '$' resolves from command arguments. Every comman
 consumes its accepted revision, that revision's document inventory, and status entities.
 Only control_store.execute writes. Its BEGIN IMMEDIATE encloses both validation and transition.
 Registrations are connection-local; direct store calls on that connection use the same guard.
+What a command may WRITE is not: attach declares in the store (control_store.declare_owners) that
+only accept_snapshot writes a control_snapshot, so no generic command on any connection to that
+store forges an accepted snapshot, and the ownership another service declared binds a read-set
+command exactly as it binds that command unregistered, whichever registered first.
 Authentication and business authorization remain the registering service's responsibility.
 """
 import copy
@@ -22,6 +26,8 @@ def _snapshots():
 
 
 SN = _snapshots()
+OWNER = 'VELDO-0035 accepted snapshots'
+SNAPSHOT_KINDS = {'control_snapshot': ('accept_snapshot',)}
 
 
 class ReadSets:
@@ -200,6 +206,7 @@ def attach(store, conn, repo, domain_uuid, repository_uuid):
     if 'accept_snapshot' in conn.command_registry:
         raise SN.Refused('invalid_registration', 'connection already has a snapshot authority')
     reader = ReadSets(store, conn, repo, domain_uuid, repository_uuid)
+    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS)
     conn.command_registry['accept_snapshot'] = {
         'transaction_transition': reader.accept, 'writes': ('entities', 'journal', 'commands', 'nonces'),
         'read_set': 'enabled operation declaration plus accepted revision projections'}
