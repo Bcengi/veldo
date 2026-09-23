@@ -186,6 +186,44 @@ print(json.dumps(result))
         landed = call(r)
         actual = git('ls-remote', str(remote), 'refs/heads/main').split()[0]
         row('real-publication', landed.get('result', {}).get('completed') is True and actual == tip and call(r) == landed)
+        # R2: the trusted clone's own configuration widens an ordinary push (followTags with
+        # an annotated tag on the tip, push.default=matching with another branch), and a
+        # remote hook changes a second ref. Publication sends exactly the authorized ref, and
+        # completion is claimed only when that ref is the one remote change.
+        def remote_refs(path):
+            listed = git('ls-remote', '--refs', str(path))
+            return {name: sha for sha, name in (line.split('\t', 1) for line in listed.splitlines())}
+        published = {}
+        for name in ('exact-ref', 'side-effect'):
+            clone, bare = root / (name + '-source'), root / (name + '-remote.git')
+            git('clone', '-q', '--no-local', str(repo), str(clone))
+            git('init', '-q', '--bare', str(bare))
+            git('-C', str(clone), 'push', '-q', str(bare), old + ':refs/heads/main')
+            git('-C', str(clone), 'config', 'push.followTags', 'true')
+            git('-C', str(clone), 'config', 'push.default', 'matching')
+            git('-C', str(clone), 'branch', 'unauthorized-branch', tip)
+            git('-C', str(clone), 'tag', '-a', 'release-not-authorized', '-m', 'not in the contract', tip)
+            if name == 'side-effect':
+                hook = bare / 'hooks' / 'post-receive'
+                hook.write_text('#!/bin/sh\ngit update-ref refs/tags/receiver-side-effect ' + old + '\n')
+                hook.chmod(0o755)
+            config['receivers']['git-' + name] = {'kind': 'publication', 'repository': str(clone),
+                                                   'remote': str(bare), 'ref': 'refs/heads/main'}
+            config_path.write_text(_v28_json.dumps(config))
+            r, _, _, _ = setup('publication', name, target='git-' + name,
+                                payload={'commit': tip, 'tree': tree, 'old_tip': old})
+            widened = (git('-C', str(clone), 'config', 'push.followTags') == 'true'
+                and git('-C', str(clone), 'cat-file', '-t', 'release-not-authorized') == 'tag')
+            published[name] = (widened, call(r).get('result', {}), remote_refs(bare))
+        widened, result, refs = published['exact-ref']
+        row('publication-exact-ref', widened and result.get('completed') is True
+            and result.get('status') == 'completed' and refs == {'refs/heads/main': tip})
+        widened, result, refs = published['side-effect']
+        row('publication-confirms-one-change', widened and result.get('completed') is False
+            and result.get('status') == 'unknown' and result.get('stop') == 'effect-outcome-unknown'
+            and refs == {'refs/heads/main': tip, 'refs/tags/receiver-side-effect': old})
+        for name in ('publication-exact-ref', 'publication-confirms-one-change'):
+            expect('VELDO-0028 effects/' + name, checks[name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'
             and credential.read_text() not in _v28_json.dumps(observations)

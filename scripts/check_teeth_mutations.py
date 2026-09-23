@@ -306,6 +306,17 @@ def cases():
            "    if False:", 'revocation-committed')
     effect('effects-revocation-preflight-only', revocation,
            "    if not consume and R.is_revoked(S, conn, principal, now):", 'revocation-before-transaction')
+    def publication(name, old, new, criterion):
+        add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
+            ['effects/' + criterion])
+    publication('effects-push-widened-by-clone-config', "        push = git('send-pack', ",
+                "        push = git('push', ", 'publication-exact-ref')
+    confirm = "after is not None and after == dict(before, **{ref: payload['commit']})"
+    publication('effects-confirm-authorized-ref-only', confirm,
+                "after is not None and after.get(ref) == payload['commit']", 'publication-confirms-one-change')
+    publication('effects-confirm-ignores-new-refs', confirm,
+                "after is not None and all(after.get(k) == v for k, v in dict(before, **{ref: payload['commit']}).items())",
+                'publication-confirms-one-change')
     return result
 
 

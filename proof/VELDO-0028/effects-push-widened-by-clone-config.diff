@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -48 +48 @@
+-        push = git('send-pack', '--force-with-lease=' + ref + ':' + payload['old_tip'],
++        push = git('push', '--force-with-lease=' + ref + ':' + payload['old_tip'],

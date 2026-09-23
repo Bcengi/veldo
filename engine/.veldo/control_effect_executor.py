@@ -31,16 +31,25 @@ def receive(config, contract, accepted):
         repo, remote, ref = receiver['repository'], receiver['remote'], receiver['ref']
         def git(*args):
             return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True, timeout=20)
+        def remote_refs():
+            listed = git('ls-remote', '--refs', remote)
+            if listed.returncode:
+                return None
+            return {name: sha for sha, name in (line.split('\t', 1) for line in listed.stdout.splitlines())}
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
-        observed = git('ls-remote', remote, ref)
-        if observed.returncode or observed.stdout.split()[0:1] != [payload['old_tip']]:
+        before = remote_refs()
+        if before is None or before.get(ref) != payload['old_tip']:
             raise E.Refused('stale-subject')
-        push = git('push', '--force-with-lease=' + ref + ':' + payload['old_tip'],
+        # send-pack sends exactly the named refspec to the configured URL: it never consults
+        # push.followTags, push.default, remote.*.push, remote.*.mirror, remote.*.pushurl,
+        # submodule recursion or pre-push hooks. A remote NAME is not a URL to it and fails.
+        push = git('send-pack', '--force-with-lease=' + ref + ':' + payload['old_tip'],
                    remote, payload['commit'] + ':' + ref)
-        confirm = git('ls-remote', remote, ref)
-        complete = push.returncode == 0 and confirm.returncode == 0 and confirm.stdout.split()[0:1] == [payload['commit']]
+        # Completion is exactly one remote change: the authorized ref moved to the commit.
+        after = remote_refs()
+        complete = push.returncode == 0 and after is not None and after == dict(before, **{ref: payload['commit']})
         return dict(binding, status='completed' if complete else 'unknown',
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)
     # Only a service-selected adapter sees reusable authentication, on stdin. Its stdout

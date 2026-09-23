@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -52 +52 @@
+-        complete = push.returncode == 0 and after is not None and after == dict(before, **{ref: payload['commit']})
++        complete = push.returncode == 0 and after is not None and after.get(ref) == payload['commit']
