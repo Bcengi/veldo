@@ -42,6 +42,8 @@ class _V65BotApi(_v65_http.BaseHTTPRequestHandler):
             return self._answer(404, {'ok': False, 'error_code': 404, 'description': 'Not Found'})
         if st['mode'] == 'refuse':
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: chat not found'})
+        if len(body.get('text', '').encode('utf-16-le')) // 2 > 4096:  # the documented Bot API text limit
+            return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: message is too long'})
         chat = body.get('chat_id')
         reply = (body.get('reply_parameters') or {}).get('message_id')
         if reply is not None and (chat, reply) not in st['messages']:
@@ -78,7 +80,7 @@ def _v65_checks(base):
                                   'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
                                   'framing/stored-framing-reverified', 'answer/not-before-publication',
                                   'presentation/private-chat-only', 'presentation/replacement-without-reply-target',
-                                  'presentation/reply-link-verified')}
+                                  'presentation/reply-link-verified', 'presentation/long-brief-split')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -202,8 +204,8 @@ def _v65_checks(base):
 
     def owner_reply(receipt, text, sender=owner_chat, chat=None, is_bot=False, reply_to=None):
         """A message the owner sends in reply, as the platform holds and delivers it."""
-        chat = receipt['chat_id'] if chat is None else chat
-        reply_to = receipt['message_id'] if reply_to is None else reply_to
+        chat = receipt.get('chat_id') if chat is None else chat
+        reply_to = receipt.get('message_id') if reply_to is None else reply_to
         api['next'] += 1
         date = 1790000000 + api['next']
         api['messages'][(chat, api['next'])] = {'text': text, 'date': date, 'reply_to': reply_to, 'from_bot': is_bot}
@@ -215,7 +217,10 @@ def _v65_checks(base):
         return {'assertion': assertion, 'signature': sign_as(key, S.canonical_bytes(assertion))}
 
     def answer(message, change=None, key='telegram-edge', drop=()):
-        assertion = presenter.canonical_answer(message, 'telegram-edge')
+        try:
+            assertion = presenter.canonical_answer(message, 'telegram-edge')
+        except V.Refused as exc:  # the edge turns nothing into an answer, which is itself a refusal
+            return {'outcome': 'refused', 'reason': exc.code}
         assertion.update(change or {})
         for field in drop:
             assertion.pop(field, None)
@@ -325,8 +330,9 @@ def _v65_checks(base):
                   r1.get('subject_digests') == [stored['subject']]
                   and 'Subject: specification specs/EXAMPLE.md %s' % stored['subject']['digest'] in lines)
             check(shown, 'R72 rendered brief bytes are the bytes the platform holds',
-                  held.get('text') is not None and r1.get('rendered', '').encode('utf-8') == text.encode('utf-8')
-                  and r1.get('brief_digest') == 'sha256:' + _v65_hashlib.sha256(text.encode('utf-8')).hexdigest()
+                  held.get('text') is not None and r1.get('rendered') == [text]
+                  and r1.get('brief_digest') == 'sha256:' + _v65_hashlib.sha256(_v65_json.dumps(
+                      [text], sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')).hexdigest()
                   and stored['brief'] in text)
             check(shown, 'R72 risk statement is the signed framing and is shown',
                   r1.get('risk_statement') == risk and 'Risk (stated by pm): ' + risk in lines
@@ -349,7 +355,7 @@ def _v65_checks(base):
                   V.receipt_problems(r1, platform(r1.get('chat_id'), r1.get('message_id'))) == [])
             bindings = {'request_id': d1 + 'x', 'request_version': 2, 'request_digest': 'sha256:' + '0' * 64,
                         'subject_digests': [dict(stored['subject'], digest='sha256:' + '2' * 64)],
-                        'rendered': text + ' ', 'risk_statement': 'None.', 'authority_statement': 'Anyone answers.',
+                        'rendered': [text + ' '], 'risk_statement': 'None.', 'authority_statement': 'Anyone answers.',
                         'choices': ['accept'], 'channel': 'jira', 'chat_id': stranger_chat,
                         'message_id': (r1.get('message_id') or 0) + 1000, 'published_at': (r1.get('published_at') or 0) + 1,
                         'brief_digest': 'sha256:' + '3' * 64, 'presentation_id': 'presentation:telegram_chat:other'}
@@ -768,6 +774,43 @@ def _v65_checks(base):
                       V.receipt_problems(altered, held_link) != [])
             check(link, 'a receipt whose platform message replies to another message does not verify',
                   V.receipt_problems(linked, dict(held_link or {}, reply_to=(r1.get('message_id') or 0) + 1)) != [])
+
+        # Review r4: a presentation longer than one Telegram message is split, never truncated
+        long_row = 'presentation/long-brief-split'
+        with section(long_row):
+            sentence = ('The specification \U0001F680 needs a decision on the parser \U0001F680 the store migration '
+                        '\U0001F680 and the rollout order.')
+            brief = ' '.join('%s (%d)' % (sentence, n) for n in range(110))
+            l1 = opened('L-1', brief=brief)
+            asked = len(api['requests'])
+            published = presenter.present(l1)
+            l1_r = presenter.current(l1) or {}
+            ids_sent = list(l1_r.get('message_ids') or [])
+            parts = [(api['messages'].get((owner_chat, m)) or {}).get('text', '') for m in ids_sent]
+            check(long_row, 'a presentation longer than one message is published as consecutive messages',
+                  reason(published) == ('published', None) and len(ids_sent) >= 3 and len(api['requests']) == asked + len(ids_sent)
+                  and ids_sent == sorted(ids_sent) and l1_r.get('message_id') == ids_sent[-1])
+            check(long_row, 'every part fits the platform limit',
+                  parts and all(0 < len(p.encode('utf-16-le')) // 2 <= 4096 for p in parts))
+            check(long_row, 'only the last part carries the choices and how to answer',
+                  parts and all(('Choices: accept | reject' in p.split('\n')) == (i == len(parts) - 1)
+                                and ('Answer by replying' in p) == (i == len(parts) - 1) for i, p in enumerate(parts)))
+            body = ' '.join(' '.join(' '.join(p.split('\n')[1:]) for p in parts).split())
+            check(long_row, 'the whole brief is shown in order, across the parts',
+                  len(parts) > 1 and ' '.join(brief.split()) in body)
+            check(long_row, 'no part links elsewhere', not any('http' in p for p in parts))
+            check(long_row, 'the receipt binds every part\'s message and bytes',
+                  l1_r.get('rendered') == parts and V.receipt_problems(l1_r, [platform(owner_chat, m) for m in ids_sent]) == [])
+            altered = _v65_copy.deepcopy(l1_r)
+            altered['message_ids'] = ids_sent[:1] + [(ids_sent[-1] if ids_sent else 0) + 1000] + ids_sent[2:]
+            check(long_row, 'a receipt with one part\'s message changed does not verify',
+                  V.receipt_problems(altered, [platform(owner_chat, m) for m in altered['message_ids']]) != [])
+            first_part = dict(l1_r, message_id=ids_sent[0] if ids_sent else None)
+            check(long_row, 'an answer to the first part names the same presentation and settles',
+                  reason(answer(owner_reply(first_part, 'accept: read every part'))) == ('accepted', None)
+                  and (answered(l1, 1) or {}).get('presentation_id') == l1_r.get('presentation_id'))
+            check(long_row, 'control: a short presentation is one message',
+                  (presenter.receipt(r1.get('presentation_id', '')) or {}).get('message_ids') == [r1.get('message_id')])
     finally:
         server.shutdown()
         server.server_close()

@@ -710,13 +710,13 @@ def cases():
                  "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
                  "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
     presentation('render-omits-risk',
-                 "              'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
+                 "             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
                  'presentation/receipt-binds-shown-content')
     presentation('framing-signature-unchecked',
                  "                or not self._framing_signed(request, framing, state, c)):\n",
                  "                or False):\n", 'presentation/receipt-binds-shown-content')
-    presentation('published-at-from-clock', "published_at=platform['date'], platform_text=platform['text'],",
-                 "published_at=int(time.time()), platform_text=platform['text'],",
+    presentation('published-at-from-clock', "published_at=parts[-1]['date'], platform_texts=",
+                 "published_at=int(time.time()), platform_texts=",
                  'presentation/receipt-binds-shown-content')
     presentation('presentation-key-without-digest',
                  "    return 'presentation:%s:%s:%d:%s' % (CHANNEL, request_id, request_version, digest.split(':', 1)[-1])\n",
@@ -792,8 +792,13 @@ def cases():
                  "    if replied not in (receipt['reply_to'], None) or receipt.get('reply_linked') is not record_linked(receipt, replied):\n",
                  "    if False:\n", 'presentation/reply-link-verified')
     presentation('receipt-platform-reply-unchecked',
-                 "        if platform.get('reply_to') != receipt.get('reply_to_message_id'):\n", "        if False:\n",
+                 "        if h.get('reply_to') != (receipt.get('reply_to_message_id') if i == 0 else None):\n", "        if False:\n",
                  'presentation/reply-link-verified')
+    # VELDO-0065 review r4: a presentation longer than one Telegram message is split, never truncated.
+    presentation('part-length-in-characters', "    return len(text.encode('utf-16-le')) // 2\n",
+                 "    return len(text)\n", 'presentation/long-brief-split')
+    presentation('answer-only-to-last-part', "ev['reply_to_message_id'] not in receipt['message_ids']):",
+                 "ev['reply_to_message_id'] != receipt['message_id']):", 'presentation/long-brief-split')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

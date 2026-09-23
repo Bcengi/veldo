@@ -67,8 +67,12 @@ FRAME_OPERATION = 'presentation_frame'
 ANSWER_OPERATION = 'presentation_answer'
 CHANNEL = 'telegram_chat'
 OUTCOMES = ('pending', 'published', 'anomaly', 'refused', 'unknown_outcome')
-ANOMALIES = ('presentation_mismatch', 'chat_mismatch', 'supersession_mismatch')
+ANOMALIES = ('presentation_mismatch', 'chat_mismatch', 'supersession_mismatch', 'incomplete_parts')
 RETRYABLE = ('refused',)
+# Telegram's sendMessage text limit, counted as the platform counts it: UTF-16 code units.
+MESSAGE_LIMIT = 4096
+# Room kept in each part of a split presentation for its `Part k of n` line.
+PART_LINE_ROOM = 64
 # The accepted content of a request, in the request digest beside its identity and version.
 REQUEST_FIELDS = ('kind', 'owner', 'scope', 'deadline', 'budget', 'brief', 'choices', 'subject', 'unit_id',
                   'requested_by')
@@ -92,6 +96,7 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'answer_before_publication': 'invalid_input',
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
             'invalid_enrollment': 'missing_evidence', 'group_chat': 'missing_evidence',
+            'presentation_too_long': 'invalid_input', 'incomplete_parts': 'unknown_outcome',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
             'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
@@ -179,38 +184,78 @@ def authority_statement(request_id, request_version, owner, entry):
             'and settles request %s version %d once.' % (owner, roles, scope, request_id, request_version))
 
 
+def utf16_units(text):
+    """The length Telegram's text limit counts: UTF-16 code units."""
+    return len(text.encode('utf-16-le')) // 2
+
+
+def _chunks(text, room):
+    """`text` cut into pieces of at most `room` UTF-16 units, at whitespace where there is any in
+    reach. Only the whitespace at a cut is dropped: nothing is truncated."""
+    pieces = []
+    while utf16_units(text) > room:
+        used, cut = 0, 0
+        for i, ch in enumerate(text):
+            used += utf16_units(ch)
+            if used > room:
+                break
+            cut = i + 1
+        space = max(text.rfind(' ', 0, cut), text.rfind('\n', 0, cut))
+        at = space if space > 0 else cut
+        pieces.append(text[:at].rstrip())
+        text = text[at:].lstrip()
+    pieces.append(text)
+    return pieces
+
+
 def render(record):
-    """The exact bytes shown, from the receipt's own bound fields: plain text, no markup."""
+    """The exact bytes shown, as the list of Telegram messages that show them, from the receipt's
+    own bound fields: plain text, no markup. A presentation that fits one message is one message.
+    A longer one is consecutive messages, each within the platform limit and numbered, the whole
+    brief in order across them, and the last carrying the choices and how to answer. Nothing is
+    truncated or replaced by a link: the owner reads decisions on Telegram and cannot open links
+    there. Raises ValueError when the choices and answer instruction alone do not fit one part."""
     c = record['request']
     budget = ', '.join('%s=%s' % (unit, c['budget'][unit]) for unit in sorted(c['budget']))
-    lines = ['Veldo needs your %s' % c['kind'].replace('_', ' '),
-             'Request: %s' % record['request_id'],
-             'Request version: %d' % record['request_version'],
-             'Request digest: %s' % record['request_digest'],
-             'Presentation version: %d' % record['presentation_version']]
+    head = ['Veldo needs your %s' % c['kind'].replace('_', ' '),
+            'Request: %s' % record['request_id'],
+            'Request version: %d' % record['request_version'],
+            'Request digest: %s' % record['request_digest'],
+            'Presentation version: %d' % record['presentation_version']]
     prior = record.get('supersedes')
     if prior:
-        lines.append('Supersedes: presentation version %s, message %s. Only this message can be answered.'
-                     % (prior['presentation_version'], prior['message_id']))
-    lines += ['Owner: %s' % c['owner'],
-              'Scope: %s' % ', '.join(c['scope']),
-              'Deadline: %s' % c['deadline'],
-              'Budget: %s' % budget,
-              'Subject: %s' % '; '.join('%s %s %s' % (s['kind'], s['ref'], s['digest']) for s in record['subject_digests']),
-              'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),
-              'Authority: %s' % record['authority_statement'],
-              'Choices: %s' % ' | '.join(record['choices']),
-              '',
-              _words(c['brief']),
-              '',
-              'Answer by replying to this message: <choice>: <your reason>']
-    return '\n'.join(line.rstrip() for line in lines)
+        head.append('Supersedes: presentation version %s, message %s. Only this message can be answered.'
+                    % (prior['presentation_version'], prior['message_id']))
+    head += ['Owner: %s' % c['owner'],
+             'Scope: %s' % ', '.join(c['scope']),
+             'Deadline: %s' % c['deadline'],
+             'Budget: %s' % budget,
+             'Subject: %s' % '; '.join('%s %s %s' % (s['kind'], s['ref'], s['digest']) for s in record['subject_digests']),
+             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),
+             'Authority: %s' % record['authority_statement']]
+    body = '\n'.join(line.rstrip() for line in head + ['', _words(c['brief'])])
+    tail = '\n'.join(['Choices: %s' % ' | '.join(record['choices']),
+                      'Answer by replying to this message: <choice>: <your reason>'])
+    whole = body + '\n\n' + tail
+    if utf16_units(whole) <= MESSAGE_LIMIT:
+        return [whole]
+    room = MESSAGE_LIMIT - PART_LINE_ROOM
+    if utf16_units(tail) > room:
+        raise ValueError('presentation_too_long')
+    pieces = _chunks(body, room)
+    if utf16_units(pieces[-1] + '\n\n' + tail) <= room:
+        pieces[-1] = pieces[-1] + '\n\n' + tail
+    else:
+        pieces.append(tail)
+    return ['Part %d of %d, presentation version %d\n%s' % (i + 1, len(pieces), record['presentation_version'], piece)
+            for i, piece in enumerate(pieces)]
 
 
 def receipt_problems(receipt, platform=None, retrieved=True):
     """Why a receipt does not bind what the owner was shown, by name. Every bound field is recomputed
     from the receipt's own request snapshot; `platform` is what the platform returns for the
-    receipt's (chat, message): {'text', 'date'}, or None when it has nothing there. With
+    receipt's messages, one {'text', 'date', 'reply_to'} per part in order, None for a part the
+    platform does not hold (a single-message receipt may pass its one mapping or None). With
     `retrieved` false the receipt is checked on its own, without the platform."""
     if not isinstance(receipt, dict):
         return ['a receipt is a mapping']
@@ -231,7 +276,7 @@ def receipt_problems(receipt, platform=None, retrieved=True):
             problems.append('rulings are not the contract rulings of the choices')
         if receipt['rendered'] != render(receipt):
             problems.append('rendered bytes are not the rendering of the bound fields')
-        if receipt['brief_digest'] != bytes_digest(receipt['rendered'].encode('utf-8')):
+        if receipt['brief_digest'] != bytes_digest(_canonical(receipt['rendered'])):
             problems.append('presentation digest is not the digest of the rendered bytes')
         if receipt['presentation_id'] != presentation_id(receipt['request_id'], receipt['request_version'], receipt['brief_digest']):
             problems.append('presentation id is not the key of request, version and presentation digest')
@@ -244,25 +289,29 @@ def receipt_problems(receipt, platform=None, retrieved=True):
         return problems
     if receipt['outcome'] != 'published':
         return problems
-    if (type(receipt.get('chat_id')) is not int or type(receipt.get('message_id')) is not int
-            or receipt['external_id'] != '%s:%s' % (receipt.get('chat_id'), receipt.get('message_id'))):
-        problems.append('external identity is not the platform chat and message')
-    if receipt.get('platform_text') != receipt['rendered']:
+    ids = receipt.get('message_ids')
+    if (type(receipt.get('chat_id')) is not int or not isinstance(ids, list) or len(ids) != len(receipt['rendered'])
+            or not all(type(m) is int for m in ids) or receipt.get('message_id') != ids[-1]
+            or receipt['external_id'] != '%s:%s' % (receipt.get('chat_id'), ','.join(str(m) for m in ids))):
+        problems.append('external identity is not the platform chat and every part\'s message')
+    if receipt.get('platform_texts') != receipt['rendered']:
         problems.append('the platform text is not the rendered bytes')
     replied = receipt.get('reply_to_message_id')
     if replied not in (receipt['reply_to'], None) or receipt.get('reply_linked') is not record_linked(receipt, replied):
         problems.append('the reply link is not the one that was sent')
     if not retrieved:
         return problems
-    if platform is None:
-        problems.append('the platform holds no message at the recorded chat and message')
-    else:
-        if platform.get('text') != receipt['rendered']:
-            problems.append('the platform message is not the rendered bytes')
-        if platform.get('date') != receipt['published_at']:
-            problems.append('publication time is not the platform date')
-        if platform.get('reply_to') != receipt.get('reply_to_message_id'):
-            problems.append('the platform message replies to another message than the receipt records')
+    held = [platform] if platform is None or isinstance(platform, dict) else list(platform)
+    if len(held) != len(receipt['rendered']) or any(h is None for h in held):
+        problems.append('the platform does not hold every part at the recorded chat and messages')
+        return problems
+    for i, (h, text) in enumerate(zip(held, receipt['rendered'])):
+        if h.get('text') != text:
+            problems.append('the platform message of part %d is not its rendered bytes' % (i + 1))
+        if h.get('reply_to') != (receipt.get('reply_to_message_id') if i == 0 else None):
+            problems.append('the platform message of part %d replies to another message than the receipt records' % (i + 1))
+    if held[-1].get('date') != receipt['published_at']:
+        problems.append('publication time is not the platform date of the last part')
     return problems
 
 
@@ -322,15 +371,18 @@ def record_linked(record, replied):
     return record['reply_to'] is not None and replied == record['reply_to']
 
 
-def _anomalies(record, platform):
+def _anomalies(record, parts):
     found = []
-    if platform['text'] != record['rendered']:
+    if len(parts) != len(record['rendered']):
+        found.append('incomplete_parts')
+    if any(p['text'] != text for p, text in zip(parts, record['rendered'])):
         found.append('presentation_mismatch')
-    if platform['chat_id'] != record['enrolled_chat']:
+    if any(p['chat_id'] != record['enrolled_chat'] for p in parts):
         found.append('chat_mismatch')
     # The platform may send a replacement without its reply target (the superseded message is gone);
     # a reply to any other message, or a reply nobody asked for, is not the supersession link.
-    if platform['reply_to_message_id'] not in (record['reply_to'], None):
+    if parts[0]['reply_to_message_id'] not in (record['reply_to'], None) or any(
+            p['reply_to_message_id'] is not None for p in parts[1:]):
         found.append('supersession_mismatch')
     return found
 
@@ -350,32 +402,38 @@ def _record_transition(params, before):
         if current is not None and current.get('outcome') not in RETRYABLE:
             raise ValueError('a receipt is immutable; only a definite refusal is attempted again')
         data = dict(record, attempt=current['attempt'] + 1 if current else 1, outcome='pending', chat_id=None,
-                    message_id=None, external_id=None, published_at=None, platform_text=None,
+                    message_id=None, message_ids=[], external_id=None, published_at=None, platform_texts=[],
                     reply_to_message_id=None, reply_linked=None, refusal=None, anomalies=[])
         return {pid: {'kind': RECEIPT_KIND, 'data': data}}
     if current is None or current.get('outcome') != 'pending' or current.get('attempt') != params.get('attempt'):
         raise ValueError('a completion finishes the pending attempt it names')
-    platform, refusal = params.get('platform'), params.get('refusal')
-    data = dict(current)
-    changes = {}
-    if refusal is not None:
-        if not isinstance(refusal, str) or platform is not None:
-            raise ValueError('a refusal names its code and carries no platform answer')
-        data.update(outcome='refused', refusal=refusal)
-    elif platform is None:
-        data.update(outcome='unknown_outcome')
-    else:
+    parts, refusal = params.get('parts'), params.get('refusal')
+    if not isinstance(parts, list) or len(parts) > len(current['rendered']) or not (refusal is None or isinstance(refusal, str)):
+        raise ValueError('a completion carries the parts the platform published and the refusal of the next one')
+    for platform in parts:
         if (not isinstance(platform, dict) or set(platform) != set(PLATFORM_FIELDS)
                 or not all(type(platform[k]) is int for k in ('chat_id', 'message_id', 'date'))
                 or not isinstance(platform['text'], str)
                 or not (platform['reply_to_message_id'] is None or type(platform['reply_to_message_id']) is int)):
             raise ValueError('a platform answer carries its chat, message, date, text and reply')
-        found = _anomalies(data, platform)
-        data.update(outcome='anomaly' if found else 'published', chat_id=platform['chat_id'],
-                    message_id=platform['message_id'], external_id='%d:%d' % (platform['chat_id'], platform['message_id']),
-                    published_at=platform['date'], platform_text=platform['text'],
-                    reply_to_message_id=platform['reply_to_message_id'],
-                    reply_linked=record_linked(data, platform['reply_to_message_id']), anomalies=found)
+    data = dict(current)
+    changes = {}
+    if not parts and refusal is not None:
+        data.update(outcome='refused', refusal=refusal)
+    elif not parts:
+        data.update(outcome='unknown_outcome')
+    else:
+        # Every part the platform published is kept; a presentation missing a part is an anomaly,
+        # never published and never sent again.
+        found = _anomalies(data, parts)
+        ids = [p['message_id'] for p in parts]
+        data.update(outcome='anomaly' if found else 'published', chat_id=parts[0]['chat_id'],
+                    message_id=ids[-1], message_ids=ids,
+                    external_id='%d:%s' % (parts[0]['chat_id'], ','.join(str(m) for m in ids)),
+                    published_at=parts[-1]['date'], platform_texts=[p['text'] for p in parts],
+                    reply_to_message_id=parts[0]['reply_to_message_id'],
+                    reply_linked=record_linked(data, parts[0]['reply_to_message_id']), anomalies=found,
+                    refusal=refusal if found else None)
     if data['outcome'] == 'published':
         head = before.get(hid, {}).get('data') or {}
         prior = (data['supersedes'] or {}).get('presentation_id')
@@ -466,7 +524,7 @@ class Presenter:
     def receipt_for_message(self, chat, message):
         for (text,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (RECEIPT_KIND,)):
             data = json.loads(text)
-            if data.get('outcome') == 'published' and data.get('chat_id') == chat and data.get('message_id') == message:
+            if data.get('outcome') == 'published' and data.get('chat_id') == chat and message in (data.get('message_ids') or []):
                 return data
         return None
 
@@ -677,6 +735,17 @@ class Presenter:
             return {'platform': None, 'refusal': None}
         return {'platform': sent, 'refusal': None}
 
+    def _send_parts(self, chat, parts, reply_to):
+        """Send the parts in order; the first carries the reply link. Stops at the first part the
+        platform did not confirm: the completion keeps the parts published before it."""
+        published = []
+        for i, text in enumerate(parts):
+            sent = self._send(chat, text, reply_to if i == 0 else None)
+            if sent['platform'] is None:
+                return {'parts': published, 'refusal': sent['refusal']}
+            published.append(sent['platform'])
+        return {'parts': published, 'refusal': None}
+
     def compose(self, request):
         """(refusal, record, versions): the presentation current authority requires now. The
         record is None when the current presentation still binds current authority."""
@@ -696,8 +765,11 @@ class Presenter:
                                     'presentation_version': prior['presentation_version'],
                                     'chat_id': prior['chat_id'], 'message_id': prior['message_id']}
             record['reply_to'] = prior['message_id'] if prior['chat_id'] == b['enrolled_chat'] else None
-        record['rendered'] = render(record)
-        record['brief_digest'] = bytes_digest(record['rendered'].encode('utf-8'))
+        try:
+            record['rendered'] = render(record)
+        except ValueError:
+            return 'presentation_too_long', None, versions
+        record['brief_digest'] = bytes_digest(_canonical(record['rendered']))
         record['presentation_id'] = presentation_id(request, b['request_version'], record['brief_digest'])
         return None, record, versions
 
@@ -724,7 +796,7 @@ class Presenter:
         except self.store.StoreRefused as exc:
             return self._observe('publish', request, versions, 'refused', exc.code, presentation_id=pid)
         intent = self.receipt(pid)
-        completion = self._send(record['enrolled_chat'], record['rendered'], record['reply_to'])
+        completion = self._send_parts(record['enrolled_chat'], record['rendered'], record['reply_to'])
         try:
             self._commit(RECORD_OPERATION, dict(phase='complete', presentation_id=pid, head_id=hid,
                                                 attempt=intent['attempt'], **completion),
@@ -824,7 +896,7 @@ class Presenter:
             raise Refused('unknown_presentation', 'the named receipt does not bind its own shown bytes')
         ev = a.get('attribution') if isinstance(a.get('attribution'), dict) else {}
         if (not all(type(ev.get(f)) is int for f in ATTRIBUTION_FIELDS)
-                or ev['chat_id'] != receipt['chat_id'] or ev['reply_to_message_id'] != receipt['message_id']):
+                or ev['chat_id'] != receipt['chat_id'] or ev['reply_to_message_id'] not in receipt['message_ids']):
             raise Refused('evidence_mismatch', 'the platform evidence does not reply to the named presentation message')
         if ev['platform_timestamp'] < receipt['published_at']:
             raise Refused('answer_before_publication', 'the platform dates the answer before the presentation it answers')
