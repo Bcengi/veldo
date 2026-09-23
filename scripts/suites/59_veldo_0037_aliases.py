@@ -11,6 +11,7 @@ import importlib.util as _s37_ilu
 import json as _s37_json
 from pathlib import Path as _s37_Path
 import shutil as _s37_shutil
+import sqlite3 as _s37_sqlite
 import subprocess as _s37_sp
 import sys as _s37_sys
 import tempfile as _s37_temp
@@ -1308,6 +1309,101 @@ def _s37_run():
                'legacy-lost-enable': 'accepted_revision_unavailable', 'legacy-lost-names-commit': True,
                'decision-enabled': False})
         env.conn.close()
+
+        # 17. Each accepted commit's record holds only what it adds: the digit-bearing paths named by
+        # commits reachable from it and from no commit already recorded for the repository, and the
+        # floor reads the union of every record. (b) A descendant's record is what the descendant
+        # added and nothing more. (c) Ancestors lost after they were recorded change nothing, and
+        # enabling can name a revision whose own commit is gone, from its record. (a) Over Veldo's
+        # own history, recorded in several acceptances, the union gives exactly the floor the whole
+        # history gives, for seven templates.
+        env = fresh('incremental', {'repository': [{'specs/VELDO-0002-base.md': b'# base\n'}]})
+        origin = env.origins['repository']
+        main_line = g(origin, 'rev-parse', '--abbrev-ref', 'HEAD')
+        base_commit = g(origin, 'rev-parse', 'HEAD')
+        increments = {}
+
+        def carrier_record(connection, commit):
+            for (raw,) in connection.execute("SELECT data FROM entities WHERE kind='accepted_carriers'"):
+                data = _s37_json.loads(raw)
+                if data.get('commit') == commit:
+                    return data
+            return None
+
+        def commit_on(repository, branch, path, body, start=None):
+            g(repository, 'checkout', '-q', *(['-b', branch, start] if start else [branch]))
+            (repository / path).parent.mkdir(parents=True, exist_ok=True)
+            (repository / path).write_bytes(body)
+            g(repository, 'add', '-A')
+            g(repository, 'commit', '-qm', 'Add ' + path)
+            made = g(repository, 'rev-parse', 'HEAD')
+            g(repository, 'checkout', '-q', main_line)
+            return made
+
+        increments['first-paths'] = (carrier_record(env.conn, base_commit) or {}).get('paths')
+        descendant = commit_on(origin, main_line, 'specs/VELDO-0004-descendant.md', b'# descendant\n')
+        env.accepting.accept('revision/repository', 'repository', descendant, 'operator', **signing)
+        record = carrier_record(env.conn, descendant) or {}
+        increments['descendant-paths'] = record.get('paths')
+        increments['descendant-bounded'] = len(_s37_json.dumps(record, sort_keys=True)) <= 512
+        first_side = commit_on(origin, 'side', 'specs/VELDO-0009-first-side.md', b'# side 1\n', start=base_commit)
+        env.accepting.accept('revision/side', 'repository', first_side, 'operator', **signing)
+        g(origin, 'checkout', '-q', 'side')
+        second_side = commit_on(origin, 'side', 'specs/VELDO-0005-second-side.md', b'# side 2\n')
+        env.accepting.accept('revision/side', 'repository', second_side, 'operator', **signing)
+        increments['side-paths'] = [(carrier_record(env.conn, commit) or {}).get('paths') for commit in (first_side, second_side)]
+        g(origin, 'branch', '-D', 'side')
+        g(origin, 'reflog', 'expire', '--expire=now', '--all')
+        g(origin, 'gc', '-q', '--prune=now')
+        increments['side-lost'] = all(_s37_sp.run(['git', '-C', str(origin), 'cat-file', '-e', commit + '^{commit}'],
+                                                  capture_output=True).returncode for commit in (first_side, second_side))
+        env.revisions['repository'] = 'revision/side'
+        _, error = enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md', first=None)
+        increments['enable-naming-lost'] = code(error)
+        increments['next'] = (env.service.current(al.kind_id('repository', 'specification'))[1] or {}).get('next')
+        env.conn.close()
+        # (a) Veldo's own history, accepted at four points of its first-parent line.
+        history = root / 'veldo-history'
+        g(root, 'clone', '-q', str(ROOT), str(history))
+        line = g(history, 'rev-list', '--first-parent', '--reverse', 'HEAD').split()
+        points = [line[len(line) // 4], line[len(line) // 2], line[3 * len(line) // 4], line[-1]]
+        veldo_db = root / 'veldo-history.sqlite3'
+        veldo = st.open_store(veldo_db)
+        veldo_revisions = rs.attach_revisions(st, veldo, 'domain', {'repository': str(history)})
+        sizes = []
+        for point in points:
+            veldo_revisions.accept('revision/veldo', 'repository', point, 'operator', **signing)
+            sizes.append(len((carrier_record(veldo, point) or {}).get('paths') or []))
+        observations['veldo-history-record-paths'] = sizes
+        templates = [('specification', 'VELDO', 'specs/{alias}-{slug}.md'), ('plan', 'PLAN', 'plans/{alias}-{slug}.md'),
+                     ('warp', 'WARP', 'specs/{alias}-{slug}.md'), ('decision', 'DEC', 'decisions/{alias}-{slug}.md'),
+                     ('bare', 'X', '{alias}.md'), ('numbered', 'N', 'docs/{number}-{slug}.md'),
+                     ('proof', 'VELDO', 'proof/{alias}/README.md')]
+        floors = {}
+        for index, (kind, prefix, template) in enumerate(templates):
+            whole = al.accepted_maximum(history, points[-1], {'prefix': prefix, 'width': 4, 'path_template': template})
+            copy_path = root / ('veldo-history-%d.sqlite3' % index)
+            target = _s37_sqlite.connect(copy_path)
+            veldo.backup(target)
+            target.close()
+            copy = st.open_store(copy_path)
+            service = al.attach(st, copy, 'domain', {'repository': str(history)})
+            serial[0] += 1
+            _, error = attempt(lambda: service.enable_kind({'request_id': 'enable-%d' % serial[0], 'principal': 'operator',
+                'repository_uuid': 'repository', 'kind': kind, 'prefix': prefix, 'width': 4, 'path_template': template,
+                'revision_id': 'revision/veldo'}, **signing))
+            enabled = (service.current(al.kind_id('repository', kind))[1] or {}).get('next')
+            floors[prefix + ' ' + template] = [whole + 1, enabled if error is None else code(error)]
+            copy.close()
+        veldo.close()
+        observations['veldo-history-floors'] = floors
+        increments['union-equals-whole-history'] = len(floors) == 7 and all(a == b for a, b in floors.values())
+        defects['incremental-records'] = increments
+        expect('aliases/records-hold-only-what-a-commit-adds', increments == {
+               'first-paths': ['specs/VELDO-0002-base.md'], 'descendant-paths': ['specs/VELDO-0004-descendant.md'],
+               'descendant-bounded': True,
+               'side-paths': [['specs/VELDO-0009-first-side.md'], ['specs/VELDO-0005-second-side.md']],
+               'side-lost': True, 'enable-naming-lost': None, 'next': 10, 'union-equals-whole-history': True})
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 
