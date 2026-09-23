@@ -510,6 +510,12 @@ def cases():
           "                if token.startswith('/') and inside_repository(token):\n",
           "                if token.startswith('/') and key.strip() != 'command' and inside_repository(token):\n",
           'runtime/pyvenv-clean')
+    graph('graph-answer-utf16-unguarded', 'control_graph.py',
+          "        value = json.loads(text, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n"
+          "    except RecursionError as error:\n"
+          "        raise Refused('invalid_response', 'answer nests too deeply to parse') from error\n",
+          "        value = json.loads(raw, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n",
+          'shape/deep-answer')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])

@@ -286,10 +286,18 @@ def response(sent, raw):
     raw = raw.encode() if type(raw) is str else bytes(raw)
     if len(raw) > MAX_ANSWER_BYTES:
         raise Refused('invalid_response', 'answer is larger than ' + str(MAX_ANSWER_BYTES) + ' bytes')
+    try:
+        # Strictly UTF-8 and parsed as text: json.loads(bytes) would also accept UTF-16 and UTF-32,
+        # which the byte-level depth scan cannot follow.
+        text = raw.decode('utf-8')
+    except UnicodeDecodeError as error:
+        raise Refused('invalid_response', 'answer is not UTF-8') from error
     if text_depth(raw) > MAX_DEPTH:
         raise Refused('invalid_response', 'answer nests deeper than ' + str(MAX_DEPTH))
     try:
-        value = json.loads(raw, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))
+        value = json.loads(text, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))
+    except RecursionError as error:
+        raise Refused('invalid_response', 'answer nests too deeply to parse') from error
     except ValueError as error:
         raise Refused('invalid_response', 'not one JSON document') from error
     plain(value, 'response')
