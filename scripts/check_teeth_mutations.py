@@ -1178,8 +1178,8 @@ def cases():
     presentation('owner-enrollment-unchecked', "        return (enrollment is not None\n", "        return True or (enrollment is not None\n",
                  'answer/owner-not-current-silent')
     presentation('owner-membership-unchecked',
-                 "        if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'\n                or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):\n            return False\n        enrollment",
-                 "        if False:\n            return False\n        enrollment", 'answer/owner-not-current-silent')
+                 "        if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'\n                or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):\n            return False\n        if self._ledger_revokes",
+                 "        if False:\n            return False\n        if self._ledger_revokes", 'answer/owner-not-current-silent')
     presentation('answered-told-only-while-pending', "        if recorded is not None:\n",
                  "        if recorded is not None and self.inbox.brief(request).get('category') == 'pending':\n",
                  'answer/redelivered-after-closed')
