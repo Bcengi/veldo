@@ -582,6 +582,11 @@ def _v64_checks(base):
         check(routed, 'the refused owners stay refused and nothing is sent', len(api['requests']) == asked
               and again[o_reviewer].get('reason') == 'no_enrolled_chat' and again[o_auditor].get('reason') == 'invalid_enrollment')
         check(routed, 'the refused owners stay visible as unprojected work', projection.metrics()['pending'] == 2)
+        try:
+            P.TelegramEdge('http://127.0.0.1:%d' % server.server_address[1], api['token'], 5550001)
+            check(routed, 'an edge given one configured chat is refused', False)
+        except TypeError:
+            check(routed, 'an edge given one configured chat is refused', True)
         # --- a message the platform placed in another chat is a named anomaly, never sent -------
         chat_row = 'projection/returned-chat-checked'
         command('pm', 'open', 'P-chat', assignment=content('decision'))

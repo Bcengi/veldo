@@ -126,9 +126,10 @@ def render(brief):
 class TelegramEdge:
     """The Bot API sendMessage call. `base_url` is the Bot API origin; `token` comes from the
     caller's secret custody. The edge has no chat of its own: each send names the chat enrolled
-    for the owner of what it sends."""
+    for the owner of what it sends. `timeout` is keyword-only, so a caller still passing one
+    configured chat fails loudly instead of setting a timeout."""
 
-    def __init__(self, base_url, token, timeout=10):
+    def __init__(self, base_url, token, *, timeout=10):
         if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
             raise EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
         if not isinstance(token, str) or not token:

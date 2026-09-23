@@ -627,8 +627,8 @@ def cases():
           "RETRYABLE = ('refused',)", "RETRYABLE = ('refused', 'pending')", 'projection/intent-before-send')
     inbox('projection-send-before-intent', 'control_channel_projection.py',
           "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n"
-          "            completion = self._send(text)\n",
-          "            completion = self._send(text)\n"
+          "            completion = self._send(enrollment['chat'], text)\n",
+          "            completion = self._send(enrollment['chat'], text)\n"
           "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n",
           'projection/intent-before-send')
     # VELDO-0064 review r4: a differing echoed text keeps the returned identity as an anomaly.
