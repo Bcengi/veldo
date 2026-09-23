@@ -4,6 +4,30 @@
 
 **Later ruling and precedence.** Dmitry, 2026-09-16 22:38: "jira was old decision. It should be where the input surface is, not just jira. If we are doing it via chat, it should be via chat as long as decision is made." R36, R38, R41, R60, and R72 below apply this ruling and are marked [REVISED]. Every enrolled input surface is a decision surface; the authority settles once, and every channel is a proxy. This supersedes PLAN-0016's prohibition on chat decisions and any tracker-only or ticket-only answer requirement retained elsewhere in this v2 text, including R03, R07, R12, R18, R37, R51, R53, R61, R65, R71, and R74. Tracker-specific delivery and activation requirements continue to govern the tracker adapter; they do not make it a prerequisite for another independently enrolled and qualified channel. Lifecycle spellings use US English, including `CANCELED`.
 
+**Revision 3 scope amendment, 2026-09-22.** The owner's Telegram rulings 28848, 28852,
+28857 and 28859 supersede earlier delivery timing below. PLAN-0019 revision 3 assigns all work to
+four releases. Release 1 contains the complete running journey, both Claude Code and Codex,
+LangGraph as the step runtime, Linux authority plus a Mac worker through the built SSH relay,
+Telegram and authenticated API intake, and a phone/desktop UI. Recovery and durability are Release 2,
+governance depth Release 3, scale and broader installation/hosts/channels Release 4. Existing
+historical proof is not re-certified. Dated applicability notes identify the affected clauses;
+unchanged domain boundaries remain controlling within the selected functional scope.
+
+New work is triggered only by a Telegram message or authenticated API call (28857), never a Jira
+watcher. Message text may be arbitrary; agents can read a referenced Jira ticket through exactly
+the MCP servers/tools their versioned role configuration supplies (28859). No special Jira channel
+is built, including W57. Earlier tracker-required wording in R03/R07/R12/R18/R37/R51/R53/R61/R65/R71/R74
+is superseded by this shared intake and settlement path. Additional channels require a later choice.
+
+The UI stack is the owner's 2026-09-22 decision after comparison: React + TypeScript + Vite,
+shadcn/ui including its AI chat parts, TanStack Table, React Flow and Monaco. No Chinese-origin
+dependency anywhere and no library with free and paid tiers; exact direct/transitive versions and
+licenses must satisfy that ruling before implementation selection. Every screen works excellently
+on phone and desktop. Bcengi's products remain on Vue. The authenticated API supports state reads,
+messages and version-bound decision answers. A versioned workflow definition stored in Veldo is
+executed by LangGraph; its UI canvas only edits data. The UI requirement is Telegram 28857:
+"otherwise we'll be flying blind".
+
 **R01. Purpose and governing boundary. [REVISED]**
 
 Veldo shall coordinate projects from proposed objectives through requirements, admission, engineering execution, and accepted outcomes. The project manager reasons and proposes. Deterministic Veldo services authenticate, authorize, validate, persist, schedule, and publish. An agent response, conversation, graph checkpoint, tracker transition, or process exit shall never independently authorize work or establish completion.
@@ -168,6 +192,8 @@ Limits on cycles, tokens, elapsed time, and repeated unchanged proposals prevent
 
 **R20. One authority across clones. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* The Linux authority remains the sole store. Mac workers use R20 SSH relay/VELDO-0108. The new authenticated UI/caller API is a Release 1 ingress service forwarding to that same authority; the earlier no-network-application-server sentence excludes a second worker authority, not the API explicitly authorized by 28857.
+
 Each enrolled repository belongs to one coordination domain with one designated authority store and active authority process. Enrollment binds repository UUID, domain UUID, store UUID, host identity, and authority generation. Every participating clone and worktree routes mutations to that authority.
 
 Separate clones may coordinate the same project when enrolled against those identities. Local clients use authenticated IPC; remote clients use an authenticated SSH command relay to that IPC endpoint. No separate network application server is introduced. An unreachable authority makes mutation and execution admission unavailable.
@@ -177,6 +203,8 @@ One authority instance does not serve several repositories in this design. One i
 Cross-domain work is unsupported. R75 specifies service installation, startup, restart, and absent-service behavior.
 
 **R21. Authoritative storage and checkpoint placement. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* Release 1 uses a nonpersistent LangGraph runtime with no checkpoint database connection. VELDO-0044 and all persistent checkpoint SQL restrictions, contention and restoration qualification apply when introduced in Release 2. Accepted snapshots and domain history remain Veldo-owned.
 
 The authority uses one local SQLite database at `<git-common-dir>/veldo/control/control.sqlite3`, on a filesystem qualified for locking and durability. Network-mounted SQLite storage is unsupported.
 
@@ -198,6 +226,8 @@ The journal includes sequence number, previous-record digest, authority generati
 
 **R23. Publication and durable backup. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Telegram 28848 amends D2/C3: off-host export acknowledgement before mutation success, dispatch or dependent publication is Release 2. Release 1 may acknowledge local committed results, retaining signed local evidence. Source landing still requires exact remote Git confirmation; this does not claim host-loss durability. The export backlog/reconciliation/status obligations below are Release 2.
+
 A committed transaction produces a signed immutable export containing its journal record and newly referenced artifacts. Exports are published in order to a dedicated protected Git ref in the existing repository remote. This is an audit and recovery replica, not a second writable authority or message queue.
 
 Mutation success, external dispatch, and dependent publication are withheld until the corresponding export has an off-host durable acknowledgement. Failure leaves a committed transaction visibly pending publication. Recovery retries the same export identity. A lost acknowledgement is reconciled against the exact remote ref and export digest.
@@ -207,6 +237,8 @@ The status surface shall show the last durable sequence, local committed sequenc
 Installation must establish the remote's durability and protected-ref access contract. A local bare remote proves protocol behavior in tests, not survival of authority-machine loss.
 
 **R24. Leadership and fencing. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* Release 1 retains one local service lock preventing two schedulers. Replacement generations, two-second fencing, stalled leader and old-effect recovery qualification move to Release 2; an uncertain instance remains stopped.
 
 Startup acquires an exclusive OS lock on a stable store lock file before opening a scheduling session. The file is never deleted to steal leadership. A second process cannot schedule.
 
@@ -302,6 +334,8 @@ This guarantees one active logical dispatch and prevents blind redispatch. It do
 
 **R34. LangGraph boundary. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Telegram 28848 retains actual LangGraph in Release 1. Its interface remains replaceable and uses Veldo identities; persistent checkpoint replay/recovery and replacement-equivalence matrices below are Release 2. A simple per-project serialized cycle with one bounded pending-input follow-up is required now.
+
 LangGraph is adopted now as a replaceable execution adapter over Veldo-owned snapshots, cycle identities, supplied results, and typed proposals. The interface supports starting, advancing, suspending, canceling, and returning a proposal or failure.
 
 Checkpoints may hold graph position, conversation state, and artifact references. They cannot establish admission, priority, assignment, completion, authorization, or dispatch identity. Replayed nodes reuse Veldo command IDs.
@@ -309,6 +343,8 @@ Checkpoints may hold graph position, conversation state, and artifact references
 A checkpoint ahead of authoritative state cannot authorize its apparent progress. A checkpoint behind it receives committed results through replay. Conflicting checkpoint content is discarded or quarantined. No LangGraph server or hosted control plane is used.
 
 **R35. Dependency installation and replacement. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* C5 is amended by 28848: Release 1 installs a compatible isolated pinned runtime and every asset required by its journey. Full inventory/every-pack qualification moves to Release 4; persistent SQLite checkpoint support moves to Release 2. No gate or authorization import acquires a LangGraph dependency.
 
 Package B owns the LangGraph adapter and packaging boundary before Package C's skeleton uses them. The installer carries a tested, pinned execution runtime, SQLite checkpoint support, and complete transitive dependency lock with hashes and licenses. Installation uses an isolated environment.
 
@@ -368,6 +404,8 @@ Settlement of a decision record must update the exact dependency bindings in R71
 
 **R41. Andon and decision surfaces. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Release 1 includes ordinary progress, stops and completion projected from journal events to Telegram and the UI. A notice grants no authority. Lost-send, reconnect and interrupted-decision recovery below are Release 2; Jira projections are not required or built.
+
 Any authenticated agent or service may request `AWAITING_AUTHORITY`. Veldo records the request even when its author cannot resolve the issue. Only the designated authority or a signed automatic recovery policy may resume the unit.
 
 Every enrolled input surface is a decision surface under the kernel's master-and-proxies principle. A person may answer through the enrolled channel where the request is presented, including Telegram chat, Jira, signed CLI, or email when enrolled. Every answer binds the presentation the person saw. Veldo records one authoritative settlement with originating-channel attribution; projections and notifications are proxies, never second records. A notification without an attributable, presentation-bound answer grants no authority. Projection creation stores each channel's external identifier and correlation durably. Lost acknowledgement triggers lookup, never blind duplicate creation.
@@ -384,7 +422,9 @@ Unsupported output, missing terminal records, and malformed or absent usage fail
 
 **R43. Process lifetime and descendant containment. [REVISED]**
 
-Production autonomous workers require Linux, systemd, and cgroup v2. Other hosts, including a Mac, refuse activation until an equivalent adapter passes the same contract. Dmitry's ruling of 2026-09-17 makes host profiles plural by requirement: the factory must run in the cloud and on several kinds of workstation, each profile qualified against this same contract, with remote workers reaching the authority through R20's relay.
+*2026-09-22 revision 3 applicability:* Telegram 28852 amends the Linux-only sentence below: Release 1 qualifies this Linux box with systemd/cgroup v2 and a separate simple macOS worker profile without cgroups. Both provide actual launch, configured caps, stop and OS exit detection. Aggregate exhaustion, escape and authority-loss recovery matrices move to Release 2. Cloud and other hosts move to Release 4.
+
+The Linux worker profile uses systemd and cgroup v2. The Mac worker profile qualifies its own launch, cap, stop and exit contract without cgroups before activation. Dmitry's ruling of 2026-09-17 makes host profiles plural by requirement: the factory must run in the cloud and on several kinds of workstation, each profile qualified against this same contract, with remote workers reaching the authority through R20's relay.
 
 Each dispatch has a dedicated containment group and trusted wrapper. Forking, new sessions, and grandchildren cannot escape it. Worker credentials and namespaces cannot modify containment controls, reach the authority's service manager, or signal authority processes.
 
@@ -395,6 +435,8 @@ Systemd supervises the authority and its runner lifecycle. On authority death, c
 Exit detection uses OS notifications. Process identity includes boot identity and start identity. A reused PID cannot revive a prior invocation. The provider-neutral implementation exists before crash qualification.
 
 **R44. Liveness and stopping. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* Ordinary independent liveness, bounded stop escalation, OS exit and retirement after actual termination remain Release 1 functions on Linux and Mac. Leadership timing, stopped-orchestrator and checkpoint-writer recovery matrices below move to Release 2.
 
 The trusted wrapper emits a heartbeat every ten seconds, independent of model output. A thirty-second missed-heartbeat deadline marks liveness uncertain and closes effect permissions. Claim renewal cannot depend on a blocking engine call returning.
 
@@ -448,6 +490,8 @@ The existing lander checks out configurable `self.trunk`, defaulting to `main`; 
 
 **R49. Publication and completion. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* The C3 amendment permits locally committed completion records after confirmed exact source landing in Release 1. Replication acknowledgement and lost-ack recovery below are Release 2. An unknown publication remains stopped; it cannot be retried blindly or declared complete.
+
 Immediately before publication, the lander rechecks claim and authority generations, admission, plan and release scope, decisions, dependencies, approvals, candidate identity, and expected remote trunk tip.
 
 Publication is a fast-forward compare-and-swap against that exact tip. A changed tip requires a new candidate and fresh applicable checks. The remote integration must enforce the expected-old-tip condition; an unconstrained push is insufficient.
@@ -467,6 +511,8 @@ Changes to gate, policy, authorization, runner, and receipt machinery follow pro
 Denied authorization records identity, operation, unit, contract digest, and reason. Failure to durably record a denial leaves the operation denied and stops dispatch.
 
 **R51. Required floor repairs. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* The repair list below is now release-scoped by PLAN-0019 revision 3. Clock items and recovery move to Release 2; decision tripwires/full regression consumers move to Release 3; Jira intake/projection repairs are dropped. Release 1 retains ordinary snapshot, eligibility, architecture-entry and exact decision-binding consumers, not whole historical package barriers.
 
 The following allocation is binding; later packages cannot hide missing prerequisites behind wrappers.
 
@@ -494,6 +540,8 @@ Historical records are imported as historical evidence. Migration fabricates no 
 
 **R53. Module and API boundaries. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Every journey asset needs a disposition in Release 1; the full distribution inventory moves to Release 4 under amended C5. Ordinary decisions use Telegram or authenticated UI/API, not required tracker tickets. Models receive exactly the configured role MCP/tool surface through the worker adapter, subject to the accepted execution scope.
+
 Implementation belongs in canonical `engine/` and follows byte-identical synchronization and pack rules. New modules separate domain contracts, storage and replay, authorization, scheduling, execution adapters, supervision, and floor integration.
 
 The domain layer accepts plain versioned data and returns transitions or named refusals. It imports neither LangGraph nor worker engines. Only the store commits transitions, the runner launches engines, the lander publishes source, and the Evidence Service signs trusted observations.
@@ -512,6 +560,8 @@ Accepted document bytes and operational lifecycle are authoritative in the store
 
 **R55. Delivery order and specification discipline. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* The A-H labels below remain feature groupings, not completion barriers. The release/stage DAG in PLAN-0019 revision 3 replaces the prior package ordering. Narrowed criteria define their actual declared test universe; historical broad matrices are explicitly allocated to later releases, never claimed passed by the narrower proof.
+
 Packages A through H form an implementation DAG. They are planning groupings, not units. Each concern receives its own new `VELDO` specification through R73's allocation procedure. Existing `WARP` identities remain unchanged.
 
 Every implementation specification has three or four acceptance criteria in R10's form. Proof enumerates the applicable schemas, transitions, boundaries, or adapters and establishes that the tested universe matches them. Removing a failure case cannot silently reduce completeness.
@@ -519,6 +569,8 @@ Every implementation specification has three or four acceptance criteria in R10'
 A package is complete only when its required specifications have proof, independent review, and a green gate with the required landing receipts.
 
 **R56. Package A: ratified boundaries and executable contracts. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* The existing A contracts remain foundation evidence. VELDO-0015 is preserved, but 0032-0034 follow-ups move to Release 2 under amended C10. Required Release 1 callers still expose uncertainty as a named stop.
 
 A precedes runtime implementation. Separate specifications establish decision records and effective policy amendments, entity and lifecycle schemas, release and behavior-floor integration, combined graph rules, signing and authority contracts, completion predicates, and Section 2 admission semantics.
 
@@ -528,6 +580,8 @@ VELDO-0015's existing implementation is inspected as a prerequisite; its report 
 
 **R57. Package B: durable control foundation. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Only the Release 1 delivery functions in the plan are prerequisites now. Local service exclusion and real authenticated request-to-store application are included. Off-host acknowledgement, generations, recovery commands, checkpoint persistence, crash/replay matrices and full inventory below belong to Releases 2 or 4 as assigned in the plan.
+
 Depending on A, B implements atomic journaled commands, signed replication, authenticated membership and delegation, revocation, protected signing and effects, explicit routing, fenced claims, complete read-set validation, durable capacity and spend reservations, atomic identifier allocation, and recovery commands.
 
 The provider-neutral runner implements real launch records, process supervision, containment, exit detection, stopping, and safe retirement. Only model responses are faked. LangGraph's adapter boundary, checkpoint isolation, runtime lock, and pack inventory also begin here.
@@ -535,6 +589,8 @@ The provider-neutral runner implements real launch records, process supervision,
 Tests race real processes, kill them at durable boundaries, corrupt signatures, replay commands, replace clone paths, and restore replicas. Effect-resolution commands exist before their crash tests. Required outcomes include one winner, stale-generation rejection, no acknowledged success lacking required replication, and explicit uncertainty without repeated effects.
 
 **R58. Package C: first end-to-end floor slice. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* VELDO-0059 is now Release 1 stage 6, after delivery, Mac/relay, Telegram decisions, projects/LangGraph and UI/API. It starts with a Telegram or authenticated API objective and ends with journal completion plus Telegram/UI reporting, including owner questions/admission, published backlog/specs, versioned specialists, both live worker engines and host profiles, proof, external gate, independent review and exact tested-tree landing. Deterministic fixtures supplement real adapter/channel qualification. There is no persistent checkpointer requirement. Lost-ack/recovery matrices below move to Release 2; the old fake-model-only slice is insufficient to close the MVP.
 
 Depending on A and B, C connects one admitted specification through real claim, isolated clone, construction, canonical gate, proof files, independent review assignment, policy, candidate landing, remote confirmation, and completion receipt.
 
@@ -546,6 +602,8 @@ Recorded authorization fixtures may test policy consumption; they do not certify
 
 **R59. Package D: production runner and governor. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Both real engines are in Release 1 per 28848; each has a qualified configuration on Linux and Mac with credential separation, normal lifecycle, artifacts, live accounting and enforceable pre-call maxima. Broad versions/auth modes, exhaustion/escape and recovery/governor matrices below are Releases 2 and 4. No provider qualification is inferred from fake cost.
+
 Depending on C, D qualifies Claude Code and Codex against the existing provider-neutral lifecycle, credential boundary, and accounting.
 
 Its universe includes every supported version and host profile, normal and signal exit, hangs, escaped-descendant attempts, orphan recovery, malformed output, missing usage, exhausted budget, scope change, and revocation. Escaping containment, retaining authority after fencing, or unmeasured spend enabling unrestricted concurrency is a falsifier.
@@ -553,6 +611,8 @@ Its universe includes every supported version and host profile, normal and signa
 Live qualification records actual behavior and costs. Fake-provider success cannot certify production adapters.
 
 **R60. Package E: enrolled-channel work and decisions. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* Release 1 qualifies Telegram first, then authenticated UI/API answers to the same requests. Canonical actor evidence, actual presentation bytes, current authorization and at most one atomic settlement remain mandatory. Cross-channel recovery, rotation and interrupted flows move to Release 2; additional channels to Release 4. Jira-specific activation and PLAN-0016 projection work are dropped, not dependencies of this journey.
 
 Depending on C, E implements the assignment inbox and projections on enrolled input surfaces, versioned presentations on every channel, canonical actor attribution, restricted channel-edge signing, atomic settlement, decision binding, and repaired PLAN-0016 projection. Telegram chat, Jira, signed CLI, and email when enrolled are decision surfaces under the same master-and-proxies contract. The tracker has no first-answer precedence.
 
@@ -564,6 +624,8 @@ Live ingress and external mutations activate per channel only after separate req
 
 **R61. Package F: projects, objectives, grooming, and dependencies. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Release 1 retains owner/charter/budget, objective acceptance, ordinary prioritized admitted backlog, grooming on Telegram or UI/API and specification decomposition/publication. Advanced policy work classes, quarantine, standing/emergency admission, release-execution ownership, tripwires and project-wide invalidation are Release 3. Generated dependencies still enter the shared current eligibility service.
+
 Depending on E, F implements ownership, objective acceptance, backlog lifecycle, tracker grooming, Section 2 work classes, quarantine, standing occurrences, decomposition, release-execution binding, and dependency invalidation.
 
 Proof establishes that objective acceptance does not admit a later feature, failed reproduction routes a defect to grooming without lowering severity, a combined cycle blocks authorization, and prerequisite withdrawal removes readiness. Concurrent elaboration must produce distinct identifiers and one artifact per source revision.
@@ -572,6 +634,8 @@ An authorized reader can trace outcome, request, release or plan contribution, s
 
 **R62. Package G: project-manager execution and configurable teams. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* Actual LangGraph PM execution and typed authorized proposals are Release 1. Team policy consumes retained engineering review in VELDO-0049, not the whole VELDO-0070 adversarial-decision workflow. One serialized project cycle and a bounded follow-up on pending inputs are retained from 0093; checkpoint recovery, repeated/replacement graph and exhaustive concurrency matrices below move to Release 2.
+
 Depending on D and F, G implements project-manager graphs, team configuration, specialist selection, bounded elaboration, proposal validation, and per-project serialization.
 
 Proof covers concurrent input, complete-read-set staleness, repeated graph execution, missing specialists, attempted escalation, exhausted budgets, and checkpoint loss or disagreement. A deterministic replacement adapter must produce identical Veldo transitions for identical authorized proposals.
@@ -579,6 +643,8 @@ Proof covers concurrent input, complete-read-set staleness, repeated graph execu
 Deleting all checkpoints leaves admission, dispatch history, decisions, and completion unchanged. No checkpoint may cause a committed effect to repeat.
 
 **R63. Package H: installation, migration, and operational qualification. [REVISED]**
+
+*2026-09-22 revision 3 applicability:* Every-pack installation, adopters, migration and rollback below are Release 4; robustness/operational recovery including the decisive combined crash is Release 2. None is a prerequisite for the installed Release 1 full journey.
 
 Packaging begins in B and is exercised in C. H depends on all earlier packages and closes full adoption and recovery proof.
 
@@ -590,9 +656,11 @@ Source-tree tests alone cannot establish release readiness.
 
 **R64. Deliberate exclusions and remaining facts to establish. [REVISED]**
 
+*2026-09-22 revision 3 applicability:* The management-console exclusion is removed by Telegram 28857. Veldo now includes its own authenticated API and the specified phone/desktop UI. Jira intake is dropped by 28857/28859. All other exclusions in this clause remain. Exact versions and installation facts still need observed qualification, not assumptions.
+
 This plan introduces no Kafka, Redis, Temporal, Kubernetes, second database within a coordination domain, microservice decomposition, LangGraph server, automatic host failover, or cross-repository execution transaction.
 
-It does not authorize customer charging, production deployment, telecom operations, or integration with another operator. It does not design a new management console, prescribe unverified Jira board changes, modify published prose, or incorporate material from client engagements.
+It does not authorize customer charging, production deployment, telecom operations, or integration with another operator. It includes the Veldo UI and authenticated API. It does not prescribe unverified Jira board changes, modify published prose, or incorporate material from client engagements.
 
 Remaining installation facts are the workstation's qualified containment and helper configuration, protected remote durability and access controls, exact engine and dependency versions, safe provider authentication separation, quarantine scanner qualification, and a permitted tracker notification transport. Their implementation specifications and observed tests settle them.
 
@@ -666,6 +734,8 @@ Rejected items retain preparation receipts and rejection reasons and consume no 
 
 **R70. Authoritative snapshots and executable eligibility.**
 
+*2026-09-22 revision 3 applicability:* Release 1 retains accepted revision-bound snapshots, ordinary materialization and current transactional input checks including generated dependency edges. Crash-safe pointer switching, exhaustive concurrent negative-read/restart and full reverse-invalidation qualification below are later scope, principally Releases 2 and 3. Unsupported governing obligations stop work.
+
 An action reads an immutable snapshot identified by domain, repository, accepted source commit, journal sequence, published watermark, and the versions and digests of every input. This includes specifications, plans, releases, decisions, floors, policy, membership, admission, graph, roster, reservations, and relevant receipts.
 
 Commands declare a complete read set, including collection or graph versions for predicates such as absence of blockers. Checking only the project version is insufficient. The transaction rejects changed inputs and newly inserted conflicting records. A shared eligibility service produces named decisions from this snapshot.
@@ -679,6 +749,8 @@ Attempt finished means the runner's process attempt ended with trusted exit and 
 These facts are stored as signed receipts and replicated under R23. Invalidation appends a superseding or impact record; it never rewrites the historical observation.
 
 **R71. Decision bindings, independent review, and tripwires.**
+
+*2026-09-22 revision 3 applicability:* Release 1 binds a normal authenticated owner settlement to the exact decision framing and subject consumed by plan/spec eligibility. Tripwires, expiry/reopening, reverse invalidation and adversarial decision-review depth below are Release 3, with their crash matrices in Release 2. Existing independent engineering review remains mandatory.
 
 A governing decision binds exact subject digests and explicit affected projects, release executions, plans, backlog items, specifications, and contracts. Existing inline `open_decisions` entries become references to these records. Unresolved references block.
 
@@ -724,6 +796,8 @@ Compensation is a new contracted effect with its own identity, authorization, an
 
 **R75. Authority deployment, startup, and routing.**
 
+*2026-09-22 revision 3 applicability:* Authority stays on this Linux box in Release 1 (28852); Mac workers use the relay. Explicit install/start/stop and one local scheduler remain. Unexpected exits leave work stopped; automatic recovery/restart is Release 2. The old optional read-only status listener is separate from the newly authorized authenticated read/message/decision API used by the UI (28857).
+
 The authority runs on a designated qualified Linux host, a workstation or a cloud host, as a systemd service under an operations-controlled account; by Dmitry's 2026-09-17 ruling (plan constraint C12) the host is chosen for reachability, and once several boxes work on a repository the always-on host is the right one. One instance serves one coordination domain. Operations installs a versioned unit, fixed executable path, protected configuration, runtime socket permissions, and the constrained runner helper.
 
 An authorized installation step enables the instance after host qualification and enrollment. Systemd starts it according to that activation and restarts unexpected exits only through the recovery startup path. Repeated failures leave it stopped with a durable diagnostic. An explicit operations stop remains stopped until authorized restart. Running while logged out requires separately established systemd user-service persistence.
@@ -735,6 +809,8 @@ Every API call carries domain and repository identity plus explicit artifact or 
 The status listener, when enabled, is read-only and validates loopback binding at the actual socket boundary, including direct API calls. Remote inspection uses the authenticated relay. The current default-host argument is not sufficient enforcement.
 
 **R76. Exact landing evidence and completion publication.**
+
+*2026-09-22 revision 3 applicability:* C3/Telegram 28848 moves replicated receipt acknowledgement and lost-publication-ack recovery to Release 2. Release 1 still requires complete contextual proof, independent review, current approval, exact-old-tip remote confirmation and post-gate tree equality before locally recording completion. Unknown publication stops; neither a successful build nor a UI event manufactures a landing receipt.
 
 Landing names an implementation commit, proof artifact or evidence commit, reviewed source and proof digests, old remote trunk tip, integrated candidate commit, exact tested tree, gate invocation, and final publication receipt.
 
