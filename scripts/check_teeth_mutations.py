@@ -408,6 +408,38 @@ def cases():
     snapshots('snapshot-accept-noncommit-id', 'control_snapshot.py',
               '    if result.returncode or result.stdout.decode().strip() != commit:',
               '    if False:', 'status-only-commit')
+    # VELDO-0037: each declared falsifier and a distinct second mutation turn the same named
+    # row red; the gate additionally drives an unchanged copy. Two further rows get one each.
+    def aliases(name, module, old, new, row):
+        add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row])
+
+    aliases('alias-checkout-maximum', 'control_alias.py',
+            "        number = kind['next']\n",
+            "        number = 1 + maximum([p.relative_to(request['workspace']).as_posix()"
+            " for p in Path(request['workspace']).rglob('*')], kind)\n", 'aliases/stale-checkouts')
+    aliases('alias-counter-not-advanced', 'control_alias.py',
+            'dict(kind, next=number + 1)', 'dict(kind, next=number)', 'aliases/stale-checkouts')
+    aliases('document-ignore-digest', 'control_alias.py',
+            "        if current['digest'] != p['expected_digest']:", '        if False:',
+            'documents/stale-overwrite')
+    aliases('document-current-version', 'control_alias.py',
+            "            expected = request['expected_version']\n", '            expected = head_version\n',
+            'documents/stale-overwrite')
+    aliases('publication-altered-bytes', 'control_document.py',
+            '                output.write(body)\n                output.flush()\n'
+            '                os.fsync(output.fileno())\n            observed = SN.digest(temporary.read_bytes())\n',
+            "                output.write(body + b'.')\n                output.flush()\n"
+            '                os.fsync(output.fileno())\n            observed = digest\n',
+            'publication/accepted-documents')
+    aliases('publication-normalized-newlines', 'control_document.py',
+            '                output.write(body)\n',
+            "                output.write(body.replace(b'\\r\\n', b'\\n'))\n", 'publication/accepted-documents')
+    aliases('reader-trusts-record', 'control_document.py',
+            '    observed = SN.digest(body)\n', "    observed = obligation['observed_digest']\n",
+            'publication/tampered-refused')
+    aliases('alias-skip-unit-id', 'control_alias.py',
+            "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
+            'aliases/invalid-unit-id')
     return result
 
 
@@ -478,7 +510,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 36, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 36, 37, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
