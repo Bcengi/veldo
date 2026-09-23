@@ -11,14 +11,16 @@ Targeted verification actually run on this branch:
 
 ```text
 python3 -B scripts/selftest.py --suite 59_veldo_0037_aliases
-  59_veldo_0037_aliases   34 passed   3.88s
-  selftest (PARTIAL, 1 of 67 suites): 60 passed, 0 failed
+  59_veldo_0037_aliases   35 passed   4.22s
+  selftest (PARTIAL, 1 of 72 suites): 61 passed, 0 failed
 python3 -B scripts/check_teeth_mutations.py --finding 37
-  {"mutations_rejected": 42, "green_suites": {"59_veldo_0037_aliases.py": 60}}
+  {"mutations_rejected": 44, "green_suites": {"59_veldo_0037_aliases.py": 61}}
 python3 .veldo/validate.py all        exit 0
 bash scripts/check_generated.sh       generated: pass
-python3 -B proof/VELDO-0037/red_at_9930b32.py
-  the two third-check rows, and only they, fail against 9930b32's modules
+python3 -B proof/VELDO-0037/red_at_f84f2d2.py
+  the recorded-numbers row and row 14, and only they, fail against f84f2d2's modules
+python3 -B proof/VELDO-0037/red_at_9930b32.py   (recorded before the recorded-numbers fix; see below)
+  the two third-check rows, and only they, failed against 9930b32's modules
 python3 -B proof/VELDO-0037/red_at_9421af6.py   (recorded before the third check; see below)
   the five second-review rows (and the renamed-code row) failed against 9421af6's modules
 python3 -B proof/VELDO-0037/red_at_adfb89a.py   (recorded before the second review; see below)
@@ -64,7 +66,7 @@ revisions gained their own command in `control_readset.py`, both added to the fo
 
 ## Criteria and observed rows
 
-Suite `scripts/suites/59_veldo_0037_aliases.py`, 34 rows (19 below, 15 in the three review sections). It uses a real SQLite store, a real Git
+Suite `scripts/suites/59_veldo_0037_aliases.py`, 35 rows (19 below, 16 in the review sections). It uses a real SQLite store, a real Git
 origin and three clones (two requester workspaces and the authority's publication checkout), real
 Ed25519 journal signatures through `ssh-keygen`, separate allocation processes and separate
 read-only reader processes. `observations.json` retains every row and the suite's observations.
@@ -314,7 +316,8 @@ modules the fixes changed (`control_alias.py`, `control_store.py`, `control_read
 9930b32 and every other module from this tree. The suite completes and exactly the two new rows
 fail. No shims were needed: both rows call only entry points 9930b32 has, and the one new keyword
 (`declare_owners(module=...)`) is caught as `TypeError` inside the row and recorded as its value.
-Re-run on f84f2d2, it writes a byte-identical record. `red_at_9421af6.py` no longer runs against the
+Re-run on f84f2d2, it wrote a byte-identical record (the recorded-numbers row changed the suite
+afterwards, so it now stands as history too). `red_at_9421af6.py` no longer runs against the
 final suite (row 14 registers `Revisions.transition` directly, which its shim does not have), so its
 record stands as history, like `red_at_adfb89a.py`'s.
 
@@ -336,20 +339,18 @@ recorded without the repository check exists only in this branch's test stores. 
 accepted revisions written by generic commands before any declaration already refuses both
 attaches `ownership_conflict`, and after a declaration such a write is refused `entity_owned`. And
 if one exists anyway, it no longer poisons anything: the floor skips a commit the bound repository
-does not hold.
+does not hold. (Superseded by the recorded-numbers fix, last section: such a revision is now refused
+by name at enabling instead of skipped.)
 
-**Open finding for the lead (found while checking this proof, not fixed here).** That skip does not
+**Found while checking this proof, then fixed (see Recorded numbers, the last section).** That skip did not
 tell a revision nobody could have accepted from one `accept_revision` rightly accepted whose commit
 the bound repository later lost (a deleted branch and `gc`, or a force push). Builder probe
 `q7_lost_commit` accepts a revision on a side commit holding `specs/VELDO-0009-side.md`, deletes the
-branch and prunes it, then enables the kind: on this tree enabling commits with `next = 1` and
+branch and prunes it, then enables the kind: at f84f2d2 enabling commits with `next = 1` and
 `floor_commits` naming only the main commit, so VELDO-0009 can be issued a second time and nothing
 fails. At 9930b32 the same probe refused `invalid_input` (`accepted commit must identify an
 existing commit`), which failed closed. The brief asked that a revision the floor could not have
-accepted never poison it; the fix also drops revisions it did accept. Closing this needs a design
-choice (for example refuse by name when an accepted commit is gone, and skip only revisions no
-command wrote, or pin every accepted commit with a ref in the bound repository), so it is left to
-the lead rather than decided in a proof pass.
+accepted never poison it; the fix also dropped revisions it did accept. The lead chose the design.
 
 **Stated limits, not claims** (also in the specification's Notes and the store's docstring).
 Enforcement lives in `control_store.execute` under a same-account threat model, so raw SQL on the
@@ -370,7 +371,8 @@ and no rebinding path exists.
 `__file__`); `entity_owners` rows carry `module` and `module_digest`. New refusals:
 `repository_binding_conflict` (`invalid_input`), `foreign_transition` (`missing_authority`), and
 `unenrolled_commit` from `accept_revision`. A kind's `floor_commits` now lists only the accepted
-commits the bound repository holds. `control_store.py` imports nothing new, since VELDO-0023's AC3
+commits the bound repository holds (superseded: since the recorded-numbers fix it lists every
+accepted commit). `control_store.py` imports nothing new, since VELDO-0023's AC3
 row pins its imports. Every control-store suite is green after the change (`36`, `37`, `38`, `39`,
 `46`, `56`, `58_veldo_0035`, `58_veldo_0036`, `59`, each re-run on f84f2d2 with `--suite`), and
 `check_teeth_mutations.py --finding 35` still rejects all 12 of VELDO-0035's mutants. `56_veldo_0027_signing`'s
@@ -381,7 +383,8 @@ row reads only VELDO-0027's own signer processes.
 
 ### Re-running the third check's scripts
 
-`review3-rerun.txt` is the output of every script against the final modules (f84f2d2), with each
+`review3-rerun.txt` is the output of every script against the modules after the recorded-numbers
+fix (6c60f11; the same run against f84f2d2 differed only in the two lines named below), with each
 script's exit status, and `review3-rerun.diff` every change made to them, generated against the
 reviewer's originals: (a) every path to the reviewer's scratch directory, including the one the `p5`
 child process imports its harness from, now names one scratch directory (`<probe>`) whose harness
@@ -393,13 +396,13 @@ and insert four-column owner rows, so they stop at that call as written (exit 1)
 refusal and then register `accept_revision`'s own code without attach, which is what the transition
 check answers. `p3a` keeps the reviewer's BUG condition (enabling afterwards refuses) with a shorter
 message and drops the reviewer's two recovery attempts (retire, move back), since nothing is left to
-recover. `q7_lost_commit` is the builder's probe for the open finding above, not the reviewer's.
+recover. `q7_lost_commit` is the builder's probe for the finding above, not the reviewer's.
 An earlier record of this re-run (replaced) ran `p5`'s child process against the reviewer's old
 modules, because only the parent's import path had been changed.
 
 | Script | Result on the final code |
 |---|---|
-| `p1_generic` | every write the reviewer's BUG conditions name refused (`entity_owned`, `unregistered_inputs`, `invalid_input`); the case-variant and unowned writes, which own nothing, commit; counter unchanged at 1; no BUG line |
+| `p1_generic` | every write the reviewer's BUG conditions name refused (`entity_owned`, `unregistered_inputs`, `invalid_input`); the case-variant and unowned writes, which own nothing, commit; counter unchanged at 1; no BUG line. Since the recorded-numbers fix `accept_revision-new-at-alias-prefix` refuses `stale_version` before ownership is read (the reviewer's command declares no version for the carrier record the transition writes); at f84f2d2 it refused `entity_owned` |
 | `p2_names` | self-registered `enable_artifact_kind` and `accept_revision` refused `foreign_transition`, counter unchanged; no BUG line |
 | `p3`, `p3a` | `p3` stops at its attach to the unrelated repository, refused `repository_binding_conflict`; `p3a` catches that refusal, then direct `accept_revision` of its commit refused `unenrolled_commit`; enabling afterwards commits; no BUG line |
 | `p3b`, `p3ba` | `p3b` stops at its attach to the clone, refused `repository_binding_conflict`; in `p3ba` its unpushed commit refused `unenrolled_commit`; once fetched into the bound repository it is accepted and enabling commits; no BUG line |
@@ -408,7 +411,7 @@ modules, because only the parent's import path had been changed.
 | `p5` | its first case prints the child's declaration refused `malformed_command` (no `module=`), then it stops at the four-column insert |
 | `p5a` | a declaration during an in-flight write of the kind refuses `ownership_conflict`; a write while a declaration is in flight is refused `entity_owned` after it commits; no BUG line |
 | `p6_rawsql_oldcopy` | the 9421af6 store copy and raw SQL both rewind the counter: the one `BUG(limit)` line left, a stated limit; `entity_owners` is not a replay state part |
-| `q7_lost_commit` | enabling after the bound repository lost an accepted commit commits with `next = 1`: the open finding above |
+| `q7_lost_commit` | enabling after the bound repository lost an accepted commit commits with `next = 10` and both commits in `floor_commits`; at f84f2d2 it printed its FINDING line with `next = 1` |
 
 ### Gate cost after the third check
 
@@ -422,3 +425,105 @@ on this tree at 1d80e77 as a measurement, not as verification, while other build
 (`mutation_budget_exceeded`) with 158 registered cases, 42 of them finding 37. The contention means
 this measurement does not say how much of that is this branch, but a serial run may exceed the
 budget too, and the stage's budget, or finding 37's share of it, is the lead's decision.
+(Superseded: after the merge of origin/main the budget scales with the inventory; see the last
+section.)
+
+## Recorded numbers (2026-09-23)
+
+**The lead's decision.** The floor must not depend on Git keeping a commit. `accept_revision`
+records, when it accepts a commit, what the floor needs from that commit, and the floor reads the
+record, so a branch deleted, pruned or force-pushed afterwards changes nothing. A revision recorded
+before this rule, whose commit the bound repository no longer holds, is refused by name at
+enabling, never skipped. Refusing at acceptance a commit the bound repository does not hold stays
+as it was.
+
+**What is recorded, and why it is paths, not numbers.** A kind's numbers depend on its template and
+prefix, and the first revision of a repository is always accepted before any kind can be enabled,
+because enabling names an accepted revision. So acceptance records the Git half of today's
+derivation and enabling does the rest: `control_readset.carrier_paths` lists every path of the
+commit's tree and whole history (`ls-tree -r` and `log -m --no-renames --name-only`, no pathspec)
+that holds a digit, since a carrier always holds its number's digits; `control_alias` applies the
+kind's carrier pattern to that list (`maximum`). The legacy path uses the same function against
+Git, so there is one derivation. Dropping the kind's `:(icase)` pathspec only widens what the walk
+lists, and the carrier pattern filters the same way: over this repository's own history (580
+commits) the old and new derivations give identical floors for seven templates (`VELDO` 132, `WARP`
+1711, `PLAN` 20, `proof/{alias}/README.md` 123, and three that hold nothing).
+
+**Where it is recorded.** In its own entity, not inside the `accepted_revision` record:
+`accepted-carriers/<repository>/<commit>`, kind `accepted_carriers`, holding the domain,
+repository, commit id and paths. It is written by the same `accept_revision` command, in the same
+transaction and journal record as the revision, the first time a commit is accepted, and it is
+immutable after that (a record already there is only checked to belong to that commit). Both the
+kind and the id prefix are declared store-owned by `accept_revision` in `REVISION_KINDS` and the
+new `REVISION_PREFIXES`, by `attach_revisions` and by `control_alias.attach`. Keeping it out of the
+revision record leaves VELDO-0035's accepted-revision shape unchanged, and matters because
+VELDO-0035 snapshots embed the whole revision entity in every snapshot they accept.
+
+**Enabling.** For every accepted commit of the repository: a record present means the kind's floor
+comes from it and Git is not read; no record and the bound repository holds the commit means Git is
+read as before; no record and no commit means `accepted_revision_unavailable` (taxonomy
+`missing_authority`), naming the commit and the bound repository, and nothing is written. The
+`floor_commits` of a kind now list every accepted commit again. One Git read is left in enabling:
+the NAMED revision's root commits are still checked against the enrolled repository, so naming a
+revision whose own commit is gone refuses `wrong_repository` (closed, not open).
+
+**What clears an `accepted_revision_unavailable`: none needed, because none exists outside test
+stores.** `accept_revision` and its record were both introduced on this branch, and every revision
+it writes now carries its record. One written around the commands (raw SQL, as rows 14 and 16 do)
+is the stated same-account limit, and Release 1 has no operator path to retire an accepted revision
+(`retire_entity` is refused `entity_owned`, and moving the revision forward needs its old commit to
+check descent). This is in the specification's Notes.
+
+| Row | At f84f2d2 (recorded RED, `red-at-f84f2d2.json`) | Now |
+|---|---|---|
+| `aliases/floor-from-recorded-numbers` (new, row 16) | the side revision holding VELDO-0009, accepted and then lost to a deleted, pruned branch, dropped out: enabling committed with `next = 1` and allocated VELDO-0001; a raw-SQL legacy revision whose commit was then pruned was skipped, and the decision kind enabled | `next = 10`, VELDO-0010 allocated; the legacy revision is read from Git while held (plan `next = 6`) and, once pruned, enabling refuses `accepted_revision_unavailable` naming the commit, and no decision kind exists |
+| `aliases/revision-in-enrolled-repository` (row 14, expectation changed by this decision) | the raw-SQL revision naming the unrelated repository's commit was skipped and the plan kind enabled beside it | enabling refuses `accepted_revision_unavailable` and no plan kind exists; with that revision removed, the plan kind enables and its `floor_commits` hold the clone's commit and not the foreign one |
+
+`red_at_f84f2d2.py` runs the final suite with `control_alias.py`, `control_store.py` and
+`control_readset.py` from f84f2d2 and everything else from this tree, with no shims; the suite
+completes and exactly those two rows fail.
+
+**Mutations.** 44 finding-37 cases now (`mutations.json`, all rejected, every diff re-derived and
+byte-identical to what `check_teeth_mutations.py --diff-dir` writes). New, each reddening
+`aliases/floor-from-recorded-numbers` by a failed assertion with the baseline and a no-op copy green:
+`floor-rederives-ignoring-record` (enabling ignores the record; the lost recorded commit is then
+refused), `legacy-lost-commit-skipped` (the refusal becomes a skip, reintroducing f84f2d2's
+behavior; it also reds row 14), and `acceptance-records-no-paths` (acceptance records an empty
+list). Changed because the code they mutate moved: `alias-floor-ignores-history` now drops the
+history walk in `carrier_paths`, where the history is read, and still reds only
+`aliases/historical-floor`; `alias-floor-named-revision-only` is re-anchored to the new `commits`
+line. Removed because their code no longer exists: `floor-counts-unheld-revisions` (the skip) and
+`alias-floor-pathspec-case-sensitive` (the pathspec). The second takes a distinct replacement,
+`alias-floor-carrier-case-sensitive` (the carrier pattern loses `re.IGNORECASE`), which reds
+`aliases/floor-counts-every-carrier`.
+
+**Probes.** `q7_lost_commit` now enables with `next = 10` and both commits in `floor_commits`, with
+no FINDING line. Every other line of `review3-rerun.txt` is as before, apart from two traceback
+line numbers and random commit ids, except `p1`'s one noted in the table above; `p6`'s `BUG(limit)` is still the only BUG line.
+
+**Cost of the record, measured.** On this repository's own HEAD (580 commits) `carrier_paths` takes
+29 ms and records 1588 paths, 69 KB of JSON, once per newly accepted commit, in the entity and in
+its journal record. Each record lists the whole history, so a store that accepts every commit of a
+growing repository grows roughly with the square of the history. If that matters, a record could
+hold only what a descendant adds over the commit it moves the revision from, with the floor reading
+every record of the repository; that was not built here.
+
+**Merge, and consequences for callers.** The branch merged origin/main (97b6961) for the scaled
+mutation budget, keeping both sides of the scaffold's runtime assets (`control_enrollment.py` listed
+once), the suite manifest and the mutation registry (findings 25, 31, 46 and 64 beside 37), with
+`requires.json` regenerated by `run_scope.py --emit-requires`. Callers: `accept_revision` writes a
+second entity the first time it accepts a commit, so a command built by hand must declare its
+expected version (the reviewer's `p1` command does not, and is refused `stale_version`); new refusal
+`accepted_revision_unavailable`. Every control-store suite is green on the final code (`36`, `37`,
+`38`, `39`, `46`, `56`, `58_veldo_0035`, `58_veldo_0036`, `59`), so are the suites that read
+`init_scaffold._FILES` (`01`, `03`, `08`, `11`, `12`, `13`, `14`, `26`) after the merge, and
+`check_teeth_mutations.py --finding 35` still rejects all 12.
+
+**Gate cost.** `check_teeth_mutations.py --finding 37` took 556.7 s wall, serial, for 44 cases
+(load average 4.5 to 7 on 20 cores during the run); `drive.py` took 965.6 s and records 722.7 s of
+serial baseline, no-op and mutant runs (`timing.json`). The suite runs in 4.2 to 6.2 s under
+`selftest.py --suite` (6.2 s at load average 12), 4.5 s in process under `drive.py`.
+`check_gate_mutations.py`, run once as a measurement at load average 12.8 to 13.3, passed: 235
+registered, 235 executed and rejected, 303 workers, 196.8 s against its scaled budget of 470 s
+(`budget_for(235)`, 2 s per case).
+
