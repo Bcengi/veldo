@@ -64,7 +64,7 @@ non_goals:
   - id: NG3
     text: >
       Amended 2026-09-22 by owner Telegram 28857: the prohibition on a new management console
-      is removed. Veldo\'s own phone and desktop UI is in Release 1. Unverified Jira board
+      is removed. Veldo's own phone and desktop UI is in Release 1. Unverified Jira board
       changes, modifications to published prose and client-engagement material remain excluded.
 
 constraints:
