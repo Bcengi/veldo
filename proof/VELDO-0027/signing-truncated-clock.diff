@@ -1,0 +1,5 @@
+--- a/.veldo/control_keys.py
++++ b/.veldo/control_keys.py
+@@ -47 +47 @@
+-    at, kid = time.time(), params['key_id']
++    at, kid = int(time.time()), params['key_id']

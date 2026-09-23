@@ -174,6 +174,12 @@ def cases():
     def signing(name, module, old, new, row):
         add(27, name, '56_veldo_0027_signing.py', module, old, new, ['signing/' + row])
 
+    signing('signing-prelock-clock', 'control_keys.py',
+            "    at, kid = time.time(), params['key_id']",
+            "    at, kid = params['admitted_at'], params['key_id']", 'transition-clock')
+    signing('signing-truncated-clock', 'control_keys.py',
+            "    at, kid = time.time(), params['key_id']",
+            "    at, kid = int(time.time()), params['key_id']", 'transition-clock')
     restriction = "        if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:"
     signing('signing-remove-channel-restriction', 'control_signer.py', restriction,
             '        if False:', 'cross-channel')

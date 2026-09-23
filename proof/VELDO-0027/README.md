@@ -107,6 +107,7 @@ is not a claim of syscall-complete operating-system custody enforcement.
 - `signing/kill-after-rotation`
 - `signing/kill-after-retire_signing_key`
 - `signing/kill-after-revoke_signing_key`
+- `signing/transition-clock`
 
 ### AC3
 
@@ -166,8 +167,17 @@ Completeness assertion: `signing/universe`.
 | [signing-branch-projection-authority](signing-branch-projection-authority.diff) | `signing/branch-key` |
 | [signing-branch-preflight-bypass](signing-branch-preflight-bypass.diff) | `signing/branch-key` |
 
-All ten unmutated controls passed. Each row has two distinct defects: removal
+| [signing-prelock-clock](signing-prelock-clock.diff) | `signing/transition-clock` |
+| [signing-truncated-clock](signing-truncated-clock.diff) | `signing/transition-clock` |
+
+All twelve unmutated controls passed. Each row has two distinct defects: removal
 versus conditional bypass, request channel versus request-key channel, request key
 selection versus omitted key cross-check, missing attribution versus text substitution,
 and worker-file authority versus false preflight success. `mutations.json` also records
 any additional assertions each defect turned red. The gate result records its no-op controls.
+
+The two additional lifecycle mutants exercise a serialization defect found during
+implementation review: an effective time taken before the transaction lock can
+invalidate a receipt legitimately signed before that transition. Effective time is
+now sampled inside the transition; a real contending writer and a lock-release
+timestamp test its ordering. The second mutant truncates that timestamp.

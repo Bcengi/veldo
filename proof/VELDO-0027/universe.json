@@ -37,7 +37,8 @@
       "signing/race-new-key",
       "signing/kill-after-rotation",
       "signing/kill-after-retire_signing_key",
-      "signing/kill-after-revoke_signing_key"
+      "signing/kill-after-revoke_signing_key",
+      "signing/transition-clock"
     ],
     "AC3": [
       "signing/attribution/platform_message_id",

@@ -46,7 +46,7 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
     _v27_keydir = _v27_root / 'private'
     _v27_keydir.mkdir()
     _v27_public = {}
-    for _v27_name in ('owner', 'edge-telegram', 'edge-jira', 'edge-cli', 'evidence', 'rotated', 'branch', 'tg-auth', 'jira-auth', 'cli-auth', 'ev-auth', 'race-key', 'race-next', 'kill-rotated'):
+    for _v27_name in ('owner', 'edge-telegram', 'edge-jira', 'edge-cli', 'evidence', 'rotated', 'branch', 'tg-auth', 'jira-auth', 'cli-auth', 'ev-auth', 'race-key', 'race-next', 'kill-rotated', 'clock-key'):
         _v27_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'test', '-f', str(_v27_keydir / _v27_name)],
                     check=True, capture_output=True, timeout=10)
         _v27_public[_v27_name] = ' '.join((_v27_keydir / (_v27_name + '.pub')).read_text().split()[:2])
@@ -401,6 +401,18 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
                      _v27_after_kill.get('refusal') == 'revoked-key' and
                      _v27_keys.verify(_v27_state(), _v27_race_after) and
                      not _v27_keys.verify(_v27_state(), _v27_race_after, fresh=True))
+
+    _v27_clock_child = _v27_transition_child('register_signing_key', {
+        'key_id': 'clock-key', 'channel': 'evidence', 'public_key': _v27_public['clock-key'],
+        'connection_public_key': _v27_public['ev-auth']})
+    _v27_conn.execute('BEGIN IMMEDIATE')
+    _v27_clock_child.stdin.write('go\n'); _v27_clock_child.stdin.flush()
+    _v27_time.sleep(0.15)
+    _v27_lock_release = _v27_time.time()
+    _v27_conn.execute('COMMIT')
+    _v27_clock_child.communicate(timeout=10)
+    _v27_expect('signing/transition-clock', _v27_clock_child.returncode == 0 and
+                 _v27_keys.entries(_v27_state())['clock-key']['effective_at'] >= _v27_lock_release)
 
     # Observation apparatus inspects the production child PIDs after joining and
     # the entire disposable run for listener/socket/pid artifacts and private bytes.

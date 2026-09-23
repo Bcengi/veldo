@@ -1,12 +1,37 @@
 {
   "command": "python3 -B scripts/check_teeth_mutations.py --finding 27 --diff-dir proof/VELDO-0027",
-  "elapsed_seconds": 73.87551796599291,
+  "elapsed_seconds": 94.80879247002304,
   "results": [
+    {
+      "finding": 27,
+      "mutation": "signing-prelock-clock",
+      "baseline": "green",
+      "assertions": 97,
+      "red_rows": [
+        "VELDO-0027 signing/transition-clock"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-truncated-clock",
+      "baseline": "green",
+      "assertions": 97,
+      "red_rows": [
+        "VELDO-0027 signing/rotation",
+        "VELDO-0027 signing/retirement",
+        "VELDO-0027 signing/revocation",
+        "VELDO-0027 signing/rotation-race",
+        "VELDO-0027 signing/kill-after-rotation",
+        "VELDO-0027 signing/kill-after-retire_signing_key",
+        "VELDO-0027 signing/kill-after-revoke_signing_key",
+        "VELDO-0027 signing/transition-clock"
+      ]
+    },
     {
       "finding": 27,
       "mutation": "signing-remove-channel-restriction",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection",
@@ -17,7 +42,7 @@
       "finding": 27,
       "mutation": "signing-permit-foreign-channel",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -27,7 +52,7 @@
       "finding": 27,
       "mutation": "signing-request-channel",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -37,7 +62,7 @@
       "finding": 27,
       "mutation": "signing-request-key-channel",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -47,7 +72,7 @@
       "finding": 27,
       "mutation": "signing-request-key",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/key-comes-from-the-channel"
       ]
@@ -56,7 +81,7 @@
       "finding": 27,
       "mutation": "signing-ignore-key-crosscheck",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/key-comes-from-the-channel"
       ]
@@ -65,7 +90,7 @@
       "finding": 27,
       "mutation": "signing-text-without-identity",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/attribution/platform_message_id",
         "VELDO-0027 signing/attribution/sender_id",
@@ -77,7 +102,7 @@
       "finding": 27,
       "mutation": "signing-text-substitutes-identity",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/text-only"
       ]
@@ -86,7 +111,7 @@
       "finding": 27,
       "mutation": "signing-branch-projection-authority",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/branch-key"
       ]
@@ -95,18 +120,18 @@
       "finding": 27,
       "mutation": "signing-branch-preflight-bypass",
       "baseline": "green",
-      "assertions": 96,
+      "assertions": 97,
       "red_rows": [
         "VELDO-0027 signing/branch-key"
       ]
     },
     {
-      "mutations_rejected": 10,
+      "mutations_rejected": 12,
       "green_suites": {
-        "56_veldo_0027_signing.py": 96
+        "56_veldo_0027_signing.py": 97
       }
     }
   ],
-  "raw_sha256": "61bad5c61464a0a1c9a6ff04cecf1477fed04ee00398494ca6a31cf445fb95ef",
+  "raw_sha256": "b0c53cf5ede12eea71de7492c3ac37ad6c83cdc64ad7d4bfe01958bef64580db",
   "note": "Full gate additionally executes no-op controls and validates exact target observations."
 }

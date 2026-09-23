@@ -42,7 +42,9 @@ def active(key, at):
 
 
 def _transition(params, before, operation, refused):
-    at, kid = params['accepted_at'], params['key_id']
+    # execute invokes this transition only after BEGIN IMMEDIATE: effective time
+    # must follow preceding signatures in that serialization order.
+    at, kid = time.time(), params['key_id']
     old = before.get(kid)
     if operation in ('retire_signing_key', 'revoke_signing_key'):
         if not old or old['kind'] != 'signing_key' or at < old['data']['effective_at']:
@@ -88,7 +90,8 @@ def attach(store):
 def admit(store, conn, envelope, command, signature, authority_ids, journal_signer, projection_path):
     """Person steward signature, current membership, replay protection and snapshot CAS.
 
-    Times are the authority's clock at admission, never a caller's backdated value.
+    Effective times are sampled inside the serialized transition, never from a caller.
+    admitted_at records preflight time only; it cannot retire an earlier signature.
     Projection publication follows commit; readers fail closed until repaired.
     """
     now = time.time()
@@ -107,7 +110,7 @@ def admit(store, conn, envelope, command, signature, authority_ids, journal_sign
         raise Refused('membership-steward-required')
     if not journal_signer:
         raise Refused('journal-signer-required')
-    params = dict(command['parameters'], accepted_at=now)
+    params = dict(command['parameters'], admitted_at=now)
     # Every signing key is in the snapshot: registration cannot miss a concurrent
     # rotation, and the common versions entity serializes all membership changes.
     ids = set(entries(state)) | {params['key_id'], CM.VERSIONS_ENTITY}

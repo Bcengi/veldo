@@ -1,0 +1,17 @@
+{
+  "commit": "a61054ab0f4a0b5c6f100f0df8a89977f83a7681",
+  "command": "bash scripts/verify.sh",
+  "seconds": 620.0309318101499,
+  "exit_code": 0,
+  "raw_log_sha256": "4bdbaa1cc02b2cf81f29b2d9c5d195b37be48767b8bc8c9ff7f41bfcc0766b5f",
+  "gate": "GREEN",
+  "unit_passed": 5580,
+  "unit_failed": 0,
+  "mutations": {
+    "registered": 54,
+    "executed": 54,
+    "rejected": 54,
+    "elapsed": 23.779322966001928,
+    "worker_invocations": 72
+  }
+}
