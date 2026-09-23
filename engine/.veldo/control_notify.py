@@ -6,7 +6,8 @@ other existing commit paths may notify with the returned journal identity AFTER 
 Each handler receives a freshly resolved journal event, not the supplied payload.
 The caller owns the event-loop thread and calls run_once (blocking while quiet).
 Failed handlers and unavailable journal reads remain pending; successful handlers are
-not retried. A retry waits a bounded exponential delay (retry_initial doubling up to
+not retried. Each subscriber receives events in commit order: its later events wait
+behind the one it has not accepted, while other subscribers keep receiving them. A retry waits a bounded exponential delay (retry_initial doubling up to
 retry_cap) on the same condition commits signal, so a failing subscriber never polls
 the store. A handler can act before raising, so handlers must tolerate retries.
 observations is a bounded recent window; metrics() counts every operation.
@@ -43,6 +44,17 @@ class Refused(Exception):
         self.reason = reason
 
 
+class _Pending:
+    """One committed event in commit order and the subscribers still owed it.
+
+    owed is None until the journal is first resolved; due delays a failed resolution.
+    """
+    __slots__ = ('hint', 'owed', 'failures', 'due')
+
+    def __init__(self, hint):
+        self.hint, self.owed, self.failures, self.due = hint, None, 0, 0.0
+
+
 class Delivery:
     def __init__(self, store, path, coordinates, enabled, handlers, *, retry_initial=0.1,
                  retry_cap=30.0, observation_limit=1024, clock=time.monotonic):
@@ -67,6 +79,7 @@ class Delivery:
         self._counts = Counter()
         # Retry pacing: bounded exponential delay, reached by waiting on the same condition.
         self.retry_initial, self.retry_cap, self.clock = retry_initial, retry_cap, clock
+        self._backoff = {}  # consumer -> (consecutive failures, due) for its oldest owed event
         # Observations are a bounded recent window; counts in metrics() stay complete.
         self.observation_limit = observation_limit
         self._observations = deque()
@@ -109,7 +122,7 @@ class Delivery:
         with self._condition:
             if self._closed:
                 return self._observe('notify', event, 'service_unavailable')
-            self._queue.append((event, None, 0, 0.0))
+            self._queue.append(_Pending(event))
             self._condition.notify()
         return self._observe('notify', event, 'queued')
 
@@ -144,8 +157,7 @@ class Delivery:
                     reservations=json.loads(row[5]), effects=json.loads(row[6]),
                     principal=row[7], authority_generation=row[8])
 
-    def _take(self, timeout):
-        deadline = None if timeout is None else self.clock() + timeout
+    def _take(self, deadline):
         with self._condition:
             while True:
                 now = self.clock()
@@ -160,15 +172,34 @@ class Delivery:
                 self._condition.wait(min(bounds) if bounds else None)
 
     def _ready(self, now):
-        # Caller holds the condition. The first entry whose retry delay has passed.
-        work = next((entry for entry in self._queue if entry[3] <= now), None)
-        if work is not None:
-            self._queue.remove(work)
-        return work
+        """Caller holds the condition. The earliest event some subscriber may take now.
+
+        Events are offered in commit order. A subscriber still owed an earlier event is
+        not offered a later one, so its retry stays ahead of its later events; an event
+        not yet resolved may be owed to anyone and holds every subscriber behind it.
+        """
+        everyone = set(self.registrations)
+        blocked = set()
+        for entry in self._queue:
+            owed = everyone if entry.owed is None else entry.owed
+            if entry.due <= now:
+                ready = [consumer for consumer in self.registrations
+                         if consumer in owed and consumer not in blocked
+                         and self._backoff.get(consumer, (0, 0.0))[1] <= now]
+                if ready:
+                    return entry, ready
+            blocked |= owed
+            if blocked >= everyone:
+                break
+        return None
 
     def _retry_waits(self, now):
         # Caller holds the condition. Positive delays until each pending retry falls due.
-        return [entry[3] - now for entry in self._queue if entry[3] > now]
+        dues = [entry.due for entry in self._queue] + [due for _, due in self._backoff.values()]
+        return [due - now for due in dues if due > now]
+
+    def _delay(self, failures):
+        return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))
 
     def run_once(self, timeout=None):
         """Wait for an in-process signal. A timeout is caller-owned, never a DB poll.
@@ -176,52 +207,69 @@ class Delivery:
         One loop owns dispatch. The queue predicate and signal use the same condition:
         an event before waiting stays queued; an event after waiting signals that wait.
         """
-        work = self._take(timeout)
-        if work is None:
-            return None
-        hint, remaining, failures, _ = work
-        try:
-            event = self.resolve(hint)
-        except Refused as exc:
-            # A retry was already resolved once; a first attempt is retained on the same
-            # terms when the store was only unavailable. Other refusals are not events.
-            if remaining is not None or exc.reason == 'service_unavailable':
-                self._retry(hint, remaining, failures)
-            return self._observe('consume', hint, exc.reason)
-        kinds = {value['kind'] for value in event['transition'].values()}
-        if event['reservations']:
-            kinds.add('budget')
+        deadline = None if timeout is None else self.clock() + timeout
+        while True:
+            work = self._take(deadline)
+            if work is None:
+                return None
+            entry, ready = work
+            try:
+                event = self.resolve(entry.hint)
+            except Refused as exc:
+                with self._condition:
+                    # A first attempt is retained exactly like a retry when the store was only
+                    # unavailable. Any other first-attempt refusal is not a committed event.
+                    if entry.owed is None and exc.reason != 'service_unavailable':
+                        self._queue.remove(entry)
+                    else:
+                        entry.failures += 1
+                        entry.due = self.clock() + self._delay(entry.failures)
+                return self._observe('consume', entry.hint, exc.reason)
+            with self._condition:
+                entry.failures, entry.due = 0, 0.0
+                if entry.owed is None:
+                    kinds = {value['kind'] for value in event['transition'].values()}
+                    if event['reservations']:
+                        kinds.add('budget')
+                    entry.owed = {consumer for consumer, subscriptions in self.registrations.items()
+                                  if kinds.intersection(subscriptions)}
+                    if not entry.owed:
+                        self._queue.remove(entry)
+            ready = [consumer for consumer in ready if consumer in entry.owed]
+            if entry.owed and not ready:
+                continue  # resolved for subscribers that are still behind earlier events
+            break
         delivered, failed = [], []
-        owed = [consumer for consumer, subscriptions in self.registrations.items()
-                if kinds.intersection(subscriptions) and (remaining is None or consumer in remaining)]
-        for index, consumer in enumerate(owed):
+        for consumer in ready:
             try:
                 # A handler may mutate its argument; the next handler still sees the journal.
                 self.handlers[consumer](json.loads(json.dumps(event)))
             except BaseException as exc:
+                # The event stays owed to this subscriber, and to any not yet called, even
+                # when an interrupt propagates. Only this subscriber waits out a delay.
                 self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)
                 failed.append(consumer)
+                self._defer(consumer)
                 if not isinstance(exc, Exception):
-                    # An interrupt still propagates, but never discards this event for the
-                    # interrupted subscriber or for subscribers not yet called.
-                    self._retry(hint, failed + owed[index + 1:], failures)
                     raise
                 continue
+            self._accept(entry, consumer)
             delivered.append(consumer)
-        if failed:
-            self._retry(hint, failed, failures)
         return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',
                              delivered, failed=failed)
 
-    def _retry(self, hint, remaining, failures):
+    def _defer(self, consumer):
         # Only internal dispatch state chooses retry recipients; transport cannot skip one.
-        # Append behind other events so a failing subscriber cannot starve queued work.
-        failures += 1
-        delay = min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))
         with self._condition:
-            self._queue.append((hint, None if remaining is None else tuple(remaining),
-                                failures, self.clock() + delay))
-            self._condition.notify()
+            failures = self._backoff.get(consumer, (0, 0.0))[0] + 1
+            self._backoff[consumer] = (failures, self.clock() + self._delay(failures))
+
+    def _accept(self, entry, consumer):
+        with self._condition:
+            entry.owed.discard(consumer)
+            self._backoff.pop(consumer, None)
+            if not entry.owed:
+                self._queue.remove(entry)
 
     def _observe(self, operation, event, outcome, delivered=(), stopped_consumer=None, failed=()):
         # Never log transport text, journal payload, principal or exception messages.

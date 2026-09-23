@@ -288,20 +288,49 @@ def cases():
                  "                return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
                  'subscriber-isolation')
     notification('notify-retry-successful-subscribers',
-                 "self._queue.append((hint, None if remaining is None else tuple(remaining),",
-                 "self._queue.append((hint, None,", 'subscriber-isolation')
+                 "        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',",
+                 "        if failed:\n            entry.owed = None  # defective: forget who accepted\n"
+                 "        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',", 'subscriber-isolation')
     notification('notify-drop-unavailable-first-attempt',
-                 "if remaining is not None or exc.reason == 'service_unavailable':",
-                 "if remaining is not None:", 'first-attempt-retained')
-    notification('notify-drop-undelivered-on-interrupt',
-                 "                    self._retry(hint, failed + owed[index + 1:], failures)\n",
-                 "", 'first-attempt-retained')
+                 "if entry.owed is None and exc.reason != 'service_unavailable':",
+                 "if entry.owed is None:", 'first-attempt-retained')
+    # At-most-once: the subscriber is marked accepted before its callback returns.
+    _dispatch = (
+                 '        for consumer in ready:\n'
+                 '            try:\n'
+                 '                # A handler may mutate its argument; the next handler still sees the journal.\n'
+                 '                self.handlers[consumer](json.loads(json.dumps(event)))\n'
+                 '            except BaseException as exc:\n'
+                 '                # The event stays owed to this subscriber, and to any not yet called, even\n'
+                 '                # when an interrupt propagates. Only this subscriber waits out a delay.\n'
+                 "                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)\n"
+                 '                failed.append(consumer)\n'
+                 '                self._defer(consumer)\n'
+                 '                if not isinstance(exc, Exception):\n'
+                 '                    raise\n'
+                 '                continue\n'
+                 '            self._accept(entry, consumer)\n'
+                 '            delivered.append(consumer)\n')
+    notification('notify-accept-before-callback', _dispatch,
+                 _dispatch.replace('        for consumer in ready:\n',
+                                   '        for consumer in ready:\n            self._accept(entry, consumer)\n')
+                 .replace('            self._accept(entry, consumer)\n            delivered.append(consumer)\n',
+                          '            delivered.append(consumer)\n'),
+                 'first-attempt-retained')
+    notification('notify-requeue-failed-at-tail',
+                 "                self._defer(consumer)\n",
+                 "                self._defer(consumer)\n"
+                 "                with self._condition:\n"
+                 "                    self._queue.remove(entry)\n"
+                 "                    self._queue.append(entry)\n", 'subscriber-order')
+    notification('notify-skip-head-of-line',
+                 "            blocked |= owed\n", "", 'subscriber-order')
     notification('notify-retry-without-backoff',
-                 "delay = min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
-                 "delay = 0.0", 'retry-backoff')
+                 "return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "return 0.0", 'retry-backoff')
     notification('notify-uncapped-backoff',
-                 "delay = min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
-                 "delay = self.retry_initial * 2.0 ** min(failures - 1, 64)", 'retry-backoff')
+                 "return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "return self.retry_initial * 2.0 ** min(failures - 1, 64)", 'retry-backoff')
     notification('notify-retry-not-woken-when-due',
                  "bounds = self._retry_waits(now) + ",
                  "bounds = [] + ", 'retry-backoff')

@@ -349,11 +349,13 @@ def _n46_checks(directory):
         ac5 = ac5 and unavailable_retry is not None and unavailable_retry['outcome'] == 'service_unavailable'
         ac5 = ac5 and loop.metrics()['pending'] > 0
         loop.path = str(path)
-        # Persistent failure rotates behind other committed events instead of starving them.
+        # Persistent failure holds only the failing subscribers' later events behind the
+        # one they have not accepted; a healthy subscriber is not starved by them.
         later = loop.execute(writer, command('settlement'), 'journal', sign, 1)
         loop.run_once(timeout=0)
         loop.run_once(timeout=0)
-        ac5 = ac5 and all(later['command_id'] in attempts[name] for name in enabled)
+        ac5 = ac5 and all((later['command_id'] in attempts[name]) == (name not in failures)
+                          for name in enabled)
         blocked.clear()
         drain(loop)
         ac5 = ac5 and loop.metrics()['pending'] == 0
@@ -502,15 +504,68 @@ def _n46_checks(directory):
                                                 {'settlement': down}, **bad)
         except delivery.Refused as exc:
             ac7 = ac7 and exc.reason == 'invalid_registration'
+    # R1 capsule: each subscriber receives events in commit order. A retry goes ahead
+    # of that subscriber's later events, which wait behind the one it has not accepted,
+    # while a healthy subscriber keeps receiving them during the failing one's delay.
+    ac8 = True
+    for backlog, failures in ((True, 1), (False, 1), (True, 3), (False, 3)):
+        now[0] = 0.0
+        remaining = {'settlement': failures}
+        attempts = {'settlement': [], 'pm': []}
+        received = {'settlement': [], 'pm': []}
+
+        def ordered(name):
+            def receive(event):
+                attempts[name].append(event['watermark'])
+                if remaining.get(name):
+                    remaining[name] -= 1
+                    raise RuntimeError('subscriber down')
+                received[name].append(event['watermark'])
+            return receive
+
+        loop = delivery.Delivery(store, str(path), coords, ('settlement', 'pm'),
+                                 {name: ordered(name) for name in ('settlement', 'pm')})
+        loop.clock = lambda: now[0]
+        marks = [loop.execute(writer, command('settlement'), 'journal', sign, 1)['seq']]
+        if not backlog:
+            loop.run_once(timeout=0)
+        marks += [loop.execute(writer, command('settlement'), 'journal', sign, 1)['seq'] for _ in range(2)]
+        # Without moving the clock, only work that is not waiting on a delay can run.
+        for _ in range(4):
+            loop.run_once(timeout=0)
+        ac8 = ac8 and received == {'settlement': [], 'pm': marks}
+        ac8 = ac8 and attempts['settlement'] == marks[:1] and loop.metrics()['pending'] > 0
+        drain(loop)
+        ac8 = ac8 and received == {'settlement': marks, 'pm': marks}
+        ac8 = ac8 and attempts['settlement'] == marks[:1] * (failures + 1) + marks[1:]
+        ac8 = ac8 and attempts['pm'] == marks and loop.metrics()['pending'] == 0
+        loop.close()
+    # An event whose journal read failed may be owed to anyone, so a later event waits
+    # behind it for every subscriber until it is resolved.
+    now[0] = 0.0
+    flaky, got = Flaky(), {'settlement': [], 'pm': []}
+    loop = delivery.Delivery(flaky, str(path), coords, ('settlement', 'pm'),
+                             {name: got[name].append for name in ('settlement', 'pm')})
+    loop.clock = lambda: now[0]
+    first = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    flaky.failures = 1
+    ac8 = ac8 and loop.run_once(timeout=0)['outcome'] == 'service_unavailable'
+    second = loop.execute(writer, command('settlement'), 'journal', sign, 1)
+    ac8 = ac8 and loop.run_once(timeout=0) is None and got == {'settlement': [], 'pm': []}
+    drain(loop)
+    order = [first['command_id'], second['command_id']]
+    ac8 = ac8 and all([event['command_id'] for event in got[name]] == order for name in got)
+    ac8 = ac8 and loop.metrics()['pending'] == 0
+    loop.close()
     service.close()
     writer.close()
-    return ac1, ac2, ac3, ac4, ac5, ac6, ac7
+    return ac1, ac2, ac3, ac4, ac5, ac6, ac7, ac8
 
 
 _n46_started = _n46_time.monotonic()
 with _n46_tempfile.TemporaryDirectory(prefix='v46-') as _n46_dir:
     _n46_results = _n46_checks(_n46_Path(_n46_dir))
 for _n46_name, _n46_result in zip(('committed-event', 'event-in-the-gap', 'fabricated-event', 'watermark-range', 'subscriber-isolation',
-                                       'first-attempt-retained', 'retry-backoff'), _n46_results):
+                                       'first-attempt-retained', 'retry-backoff', 'subscriber-order'), _n46_results):
     expect('VELDO-0046 notify/' + _n46_name, _n46_result)
 print('VELDO-0046 suite seconds: %.3f' % (_n46_time.monotonic() - _n46_started))
