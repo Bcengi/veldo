@@ -63,11 +63,15 @@ def carrier_records(conn, domain_uuid, repository_uuid):
     return found
 
 
-# Repository-local configuration stays authoritative at the Git boundary, so every option that
-# configuration could change about which paths `git log --name-only` names is passed explicitly:
-# log.diffMerges (off names nothing a merge adds), log.showRoot, diff.renames, diff.relative,
-# diff.ignoreSubmodules, color, notes, an external diff and log.showSignature. -z keeps
-# core.quotePath from quoting names.
+# Repository-local configuration stays authoritative at the Git boundary, so what it could change
+# about which paths `git log --name-only` names is fixed by explicit options. Four are load-bearing
+# on git 2.43, each with a suite row that reds without it: --diff-merges=separate (log.diffMerges=off
+# names nothing a merge adds), --root (log.showRoot=false drops a root commit's paths),
+# --ignore-submodules=none (diff.ignoreSubmodules or submodule.<name>.ignore hide a gitlink) and
+# --no-show-signature (log.showSignature prints signature checks into the output). The other five
+# (--no-renames, --no-relative, --no-ext-diff, --no-color, --no-notes) change nothing that is
+# recorded on git 2.43 under the configurations tried; they are defensive, kept so another Git
+# version or setting cannot change the output. -z keeps core.quotePath from quoting names.
 HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',
                    '--no-ext-diff', '--no-color', '--no-notes', '--no-show-signature')
 
