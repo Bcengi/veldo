@@ -245,10 +245,9 @@ python3 .veldo/control_graph_isolation.py                     isolated enforceme
 The suite takes 5.6-5.8 s (16 rows; 0.77 s before the runtime rows), about 5 s added per run, under
 the 60 s limit. It makes 17 LangGraph runner processes and 17 stub processes. The serial driver
 `--finding 43` takes 277.5 s for 24 cases (48 suite runs), against 8.35 s for 5 cases before this
-work. In the gate's mutation stage (8 workers; after the merge of main, a combined cap of 2 s per
-registered case), finding 43 contributes 24 mutants and 6 controls near 5.7 s each, about 170
-worker seconds. That is about 22 s of wall time at 8 workers, against the 48 s of cap its 24 cases
-add.
+work. The whole gate mutation stage (`check_gate_mutations.py`, 8 workers, cap 2 s per case after the
+merge of main) passed at `0297dba`: 215 cases in 147.5 s against a 430 s cap, under a load average
+of 9 to 12 from other agents. Finding 43's 24 mutants took 143.6 worker seconds.
 
 Runner copies accumulate under `<runtime>/veldo/runners/`, one per distinct runner content (22
 after this work, about 15 KB each). Collecting them is hardening, left for later. Working
