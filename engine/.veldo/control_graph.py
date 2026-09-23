@@ -395,14 +395,66 @@ def available(runtime):
             and Path(runtime['stage']).is_absolute())
 
 
+GIT_ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C', 'LC_ALL': 'C'}
+_GIT = []
+
+
+def _git_boundary():
+    if not _GIT:
+        spec = importlib.util.spec_from_file_location('veldo_git_process_graph', HERE / 'git_process.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _GIT.append(module)
+    return _GIT[0]
+
+
+def git_finds_repository(directory):
+    """Ask Git, through the shared Git boundary under a fixed environment, whether its own
+    discovery from an existing `directory` reaches a repository or a Git directory. Exit 0 is yes;
+    nothing is parsed from Git's messages (a failing Git is left to the shape checks)."""
+    result = _git_boundary().run(['git', '-C', str(directory), '-c', 'safe.directory=*', 'rev-parse',
+                                  '--absolute-git-dir'], env=dict(GIT_ENVIRONMENT), stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+    return result.returncode == 0
+
+
+def _discovery_starts(place):
+    """Where to ask Git from for `place`: its nearest existing directory, then the first directory
+    on every other filesystem above it (Git's discovery stops at a filesystem boundary, a child's
+    Git can be told not to), so every ancestor is covered."""
+    current = place
+    while not os.path.isdir(current):
+        current = os.path.dirname(current)
+    starts, device = [current], os.stat(current).st_dev
+    while os.path.dirname(current) != current:
+        parent = os.path.dirname(current)
+        parent_device = os.stat(parent).st_dev
+        if parent_device != device:
+            starts.append(parent)
+            device = parent_device
+        current = parent
+    return starts
+
+
+def _shaped_like_repository(place):
+    """The second opinion, the shapes judged before Git was asked: a .git entry (even one Git
+    cannot read), a directory named .git, or HEAD with objects/, at `place` or any ancestor."""
+    path = Path(place)
+    return any(os.path.lexists(parent / '.git') or parent.name == '.git'
+               or (parent / 'HEAD').is_file() and (parent / 'objects').is_dir()
+               for parent in (path, *path.parents))
+
+
 def inside_repository(path):
-    """Whether a path lies inside a Git working tree or Git directory, judged both as written and
-    as resolved: a repository's own virtual environment links out to the system interpreter, and
-    resolving that link must not hide where the path was written."""
-    def within(path):
-        return any((parent / '.git').exists() or parent.name == '.git' or (parent / 'HEAD').is_file()
-                   and (parent / 'objects').is_dir() for parent in (path, *path.parents))
-    return within(Path(os.path.abspath(path))) or within(Path(path).resolve())
+    """Whether a path lies inside a Git working tree or Git directory: Git is ASKED, from the path
+    as written and as resolved (a repository's own virtual environment links out to the system
+    interpreter, and resolving that link must not hide where the path was written), with the shape
+    checks as a second opinion. A symlink loop or a NUL byte raises; the adapter names it."""
+    places = [os.path.abspath(path), os.path.realpath(path, strict=False)]
+    for place in dict.fromkeys(places):
+        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):
+            return True
+    return False
 
 
 def _unlinked(root, name):
@@ -433,9 +485,8 @@ def stage(runtime):
         raise Refused('runtime_unavailable', 'the stage root is not a directory')
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     runners, work = _unlinked(root, 'runners'), _unlinked(root, 'work')
-    for name, path in (('runners', runners), ('work', work)):
-        if inside_repository(path):
-            raise Refused('runtime_unavailable', 'the stage ' + name + ' lies inside a repository')
+    if inside_repository(runners):
+        raise Refused('runtime_unavailable', 'the stage runners lies inside a repository')
     source = Path(runtime['runner']).read_bytes()
     target = runners / (hashlib.sha256(source).hexdigest() + '.py')
     if target.is_symlink():

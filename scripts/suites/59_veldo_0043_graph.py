@@ -587,6 +587,11 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                                        workflow('script-dir-probe'))
         if (stage_root / 'runners/.git').exists():
             (stage_root / 'runners/.git').unlink()
+        # A .git entry Git itself cannot read: only the shape check (the second opinion) sees it.
+        (stage_root / 'runners/.git').write_text('not a gitfile\n')
+        links['runners-unreadable-gitfile'] = why('start', 'cycle-after-u', 'command-after-u', snapshot,
+                                                  workflow('script-dir-probe'))
+        (stage_root / 'runners/.git').unlink()
         # A Git directory by Git's own rules (HEAD + refs/ + commondir), planted in runners/, in
         # work/ and at the stage root: the adapter asks Git, so each is refused.
         for place in ('runners', 'work', 'root'):
@@ -742,6 +747,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and links['checkout_written'] == []
            and links['runners-gitfile'] == 'runtime_unavailable: the stage runners lies inside a repository'
            and links['commondir-runners'] == 'runtime_unavailable: the stage runners lies inside a repository'
+           and links['runners-unreadable-gitfile'] == 'runtime_unavailable: the stage runners lies inside a repository'
            and links['commondir-work'] == ('runtime_unavailable: the child working directory does not resolve '
                                            'outside every repository')
            and links['commondir-root'] == 'runtime_unavailable: the runtime stage lies inside a repository'

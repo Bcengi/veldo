@@ -510,8 +510,13 @@ def cases():
           "    path.mkdir(mode=0o700, exist_ok=True)\n"
           "    if False:\n", 'authority/stage-links')
     graph('graph-runners-repository-unchecked', 'control_graph.py',
-          "    for name, path in (('runners', runners), ('work', work)):\n",
-          "    for name, path in (('work', work),):\n", 'authority/stage-links')
+          '    if inside_repository(runners):\n', '    if False:\n', 'authority/stage-links')
+    graph('graph-git-not-asked', 'control_graph.py',
+          '        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):\n',
+          '        if _shaped_like_repository(place):\n', 'authority/stage-links')
+    graph('graph-shape-opinion-dropped', 'control_graph.py',
+          '        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):\n',
+          '        if any(git_finds_repository(start) for start in _discovery_starts(place)):\n', 'authority/stage-links')
     graph('graph-stage-oserror-unnamed', 'control_graph.py',
           "    except OSError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
           "    except FileNotFoundError as error:\n        raise Refused('runtime_unavailable', 'the stage cannot be used: '",
@@ -543,8 +548,8 @@ def cases():
     graph('graph-interpreter-final-hop-only', 'control_graph.py',
           '    for hop in link_chain(python):\n', '    for hop in link_chain(python)[-1:]:\n', 'runtime/pyvenv-clean')
     graph('graph-repository-judged-resolved-only', 'control_graph.py',
-          '    return within(Path(os.path.abspath(path))) or within(Path(path).resolve())\n',
-          '    return within(Path(path).resolve())\n', 'runtime/pyvenv-clean')
+          '    places = [os.path.abspath(path), os.path.realpath(path, strict=False)]\n',
+          '    places = [os.path.realpath(path, strict=False)]\n', 'runtime/pyvenv-clean')
     graph('graph-answer-utf16-unguarded', 'control_graph.py',
           "        value = json.loads(text, parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)))\n"
           "    except RecursionError as error:\n"
