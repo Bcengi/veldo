@@ -1,0 +1,189 @@
+{
+  "completed": true,
+  "defect_observations": {
+    "enrolled-repository": {
+      "allocated": null,
+      "allocation-attach-elsewhere": null,
+      "allocation-direct-elsewhere": "invalid_input",
+      "clone-after-push": null,
+      "clone-attach": null,
+      "clone-unpushed": null,
+      "enable-after": "invalid_input",
+      "enable-beside-raw": "invalid_input",
+      "foreign-attach": null,
+      "foreign-direct": null,
+      "plan-floor-commits": false
+    },
+    "owned-code": {
+      "altered-after-edit": null,
+      "altered-before-edit": null,
+      "altered-restored": null,
+      "counter-after": 1,
+      "declare-generic-command": "no-module-argument",
+      "declared": false,
+      "forged-accept-revision": null,
+      "forged-accept-snapshot": null,
+      "forged-enable": null,
+      "generic-after": null,
+      "genuine-other-connection": "stale_version",
+      "wrapped-foreign-body": null
+    },
+    "owned-code-copy-attach": null
+  },
+  "defect_rows_red": {
+    "aliases/owned-by-code-not-name": true,
+    "aliases/revision-in-enrolled-repository": true
+  },
+  "failed_rows": [
+    "aliases/revision-in-enrolled-repository",
+    "aliases/owned-by-code-not-name"
+  ],
+  "module_sha256": {
+    "control_alias.py": "3b945f56d1d1ed649bdf650e79db6e9f0177f1193fdb61d2e7b07a92258af538",
+    "control_readset.py": "64bfc6f70703ccb474a79b5dd9f3995ee079aae6a6a323a07f94cd02264fd625",
+    "control_store.py": "0654929f3108d2377495752be2b4270ca52202d30becd80c3dfa95ae768698ee"
+  },
+  "renamed_rows_red": {},
+  "reviewed_commit": "9930b32d1b7e881e9c0ab4855dbfbff84ca04abb",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      true
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      false
+    ],
+    [
+      "aliases/owned-by-code-not-name",
+      false
+    ]
+  ],
+  "shims": {},
+  "suite_sha256": "b013f4d156cf53a6ba24bc6118035b14cef0c8ceb5f4c2aea4c47966a3648b15",
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}
