@@ -36,6 +36,7 @@ import os
 import math
 from pathlib import Path
 import re
+import shlex
 import shutil
 import signal
 import subprocess
@@ -462,11 +463,34 @@ def runtime_problems(runtime):
     config = python.parent.parent / 'pyvenv.cfg'
     if config.is_file():
         for line in config.read_text(errors='replace').splitlines():
+            if '=' not in line:
+                continue
             key, _, value = line.partition('=')
-            for token in value.split():
-                if token.startswith('/') and inside_repository(token):
+            for path in config_paths(key.strip(), value):
+                if inside_repository(path):
                     problems.append('pyvenv.cfg ' + key.strip() + ' names a repository path')
     return problems
+
+
+def config_paths(key, value):
+    """Every absolute path one pyvenv.cfg `key = value` line names: the command line split as a
+    shell would split it, plus every run of its space-separated words that starts with `/` (venv
+    writes the command unquoted, so a path with a space spans words); any other value taken
+    whole with surrounding quotes removed."""
+    value = value.strip()
+    if key == 'command':
+        try:
+            words = shlex.split(value)
+        except ValueError:
+            words = []
+        pieces = value.split(' ')
+        words += [' '.join(pieces[start:end]) for start in range(len(pieces)) if pieces[start].startswith('/')
+                  for end in range(start + 1, len(pieces) + 1)]
+    elif len(value) >= 2 and value[0] == value[-1] and value[0] in '"\'':
+        words = [value[1:-1]]
+    else:
+        words = [value]
+    return [word for word in words if word.startswith('/')]
 
 
 def _working_directory(work):
