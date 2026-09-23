@@ -557,6 +557,12 @@ def cases():
     graph('graph-option-values-unjudged', 'control_graph.py',
           "        words += [word.partition('=')[2] for word in words if word.startswith('-') and '=' in word]\n",
           '', 'runtime/pyvenv-clean')
+    graph('graph-rebuild-no-restore', 'control_graph_install.py',
+          '    except OSError:\n        os.rename(retired, target)\n        raise\n', '    except OSError:\n        raise\n',
+          'runtime/rebuild-swap')
+    graph('graph-rebuild-old-left', 'control_graph_install.py',
+          '    if retired.is_symlink() or not retired.is_dir():\n        retired.unlink()\n    else:\n        shutil.rmtree(retired)\n',
+          '', 'runtime/rebuild-swap')
     graph('graph-problems-repeated', 'control_graph.py',
           '    return list(dict.fromkeys(problems))\n', '    return problems\n', 'runtime/pyvenv-clean')
     graph('graph-shape-opinion-dropped', 'control_graph.py',
@@ -574,8 +580,8 @@ def cases():
           "        if any(place == base or base in place.parents for base in (prefix, prefix.resolve())):\n",
           "        if False:\n", 'authority/stage-shapes')
     graph('graph-descriptors-in-parent-tmpdir', 'control_graph.py',
-          'tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:',
-          'tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:', 'authority/no-direct-write')
+          'given, answer = tempfile.TemporaryFile(dir=work), tempfile.TemporaryFile(dir=work)',
+          'given, answer = tempfile.TemporaryFile(), tempfile.TemporaryFile()', 'authority/no-direct-write')
     graph('graph-unserializable-escapes', 'control_graph.py',
           '    except (ValueError, TypeError, OverflowError, RecursionError) as error:\n'
           "        raise Refused('invalid_input', 'request cannot be serialized: ' + type(error).__name__) from error\n",

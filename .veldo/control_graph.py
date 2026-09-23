@@ -648,9 +648,15 @@ def exchange(runtime, sent, timeout=120):
     # Request and answer travel through anonymous files under the stage's work directory (never
     # the domain process's TMPDIR), not pipes, so a subprocess a node left holding the answer
     # stream cannot keep the exchange open.
-    with tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:
+    try:
+        given, answer = tempfile.TemporaryFile(dir=work), tempfile.TemporaryFile(dir=work)
         given.write(canonical(sent))
         given.seek(0)
+    except OSError as error:
+        _remove(empty)
+        raise Refused('runtime_unavailable', 'the request could not be written: '
+                      + (error.strerror or type(error).__name__)) from error
+    with given, answer:
         try:
             proc = subprocess.Popen([runtime['python'], '-I', '-B', str(staged)],
                                     stdin=given, stdout=answer, stderr=subprocess.DEVNULL, cwd=str(empty),

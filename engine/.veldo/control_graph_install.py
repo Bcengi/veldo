@@ -65,6 +65,27 @@ def _environment():
     return env
 
 
+def swap_in(building, target):
+    """Put the runtime built at `building` in place at `target`. An existing runtime is moved aside
+    first and removed only after the new one is in place; if the second rename fails, the old
+    runtime is put back and the error raised."""
+    building, target = Path(building), Path(target)
+    if not (target.exists() or target.is_symlink()):
+        os.rename(building, target)
+        return
+    retired = target.with_name('.retired-' + target.name + '-' + str(os.getpid()))
+    os.rename(target, retired)
+    try:
+        os.rename(building, target)
+    except OSError:
+        os.rename(retired, target)
+        raise
+    if retired.is_symlink() or not retired.is_dir():
+        retired.unlink()
+    else:
+        shutil.rmtree(retired)
+
+
 def install(python=sys.executable, home=None, out=sys.stdout, rebuild=False):
     lock = _lock()
     target = lock.runtime_directory(home)
@@ -89,16 +110,7 @@ def install(python=sys.executable, home=None, out=sys.stdout, rebuild=False):
                            check=True, env=env)
         subprocess.run([str(building / 'bin' / 'python'), '-I', '-B', '-c', 'import langgraph.graph'],
                        check=True, env=env)
-        if target.exists() or target.is_symlink():
-            retired = target.with_name('.retired-' + target.name + '-' + str(os.getpid()))
-            os.rename(target, retired)
-            os.rename(building, target)
-            if retired.is_symlink() or not retired.is_dir():
-                retired.unlink()
-            else:
-                shutil.rmtree(retired)
-        else:
-            os.rename(building, target)
+        swap_in(building, target)
     finally:
         if building.exists():
             shutil.rmtree(building)
