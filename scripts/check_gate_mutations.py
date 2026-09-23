@@ -28,18 +28,34 @@ FIXTURE_VERSION = 1
 # qualification host (116 cases measured at 91.8 s on 2026-09-23), so a fixed cap would turn red for
 # growth alone. BUDGET is the floor; budget_for() is the cap actually enforced.
 BUDGET = 120
-PER_CASE_SECONDS = 2.0
+PER_CASE_SECONDS = 2.0        # measured at REFERENCE_WORKERS workers
+REFERENCE_WORKERS = 8
 WORKER_BUDGET = 120
 
+def _quota_cpus():
+    """The CPUs a cgroup v2 quota (cpu.max) allows this process, or None when there is no quota."""
+    try:
+        quota, period = open('/sys/fs/cgroup/cpu.max').read().split()[:2]
+        if quota != 'max' and int(period) > 0:
+            return max(1, -(-int(quota) // int(period)))
+    except (OSError, ValueError):
+        pass
+    return None
+
+
 def worker_count(cpus=None):
-    """Workers the stage runs at once: the CPUs this process may use, never fewer than 2 or more
-    than 16. A fixed 8 left most of a 20-core host idle while the stage grew with every item, and
-    would oversubscribe a small one; results do not depend on the count, only the wall time."""
+    """Workers the stage runs at once: the CPUs this process may use (its affinity set, bounded by
+    a cgroup CPU quota), never fewer than 2 or more than 16. A fixed 8 left most of a 20-core host
+    idle while the stage grew with every item, and would oversubscribe a small one. Verdicts do not
+    depend on the count; the combined budget scales with it (budget_for)."""
     if cpus is None:
         try:
             cpus = len(os.sched_getaffinity(0))
         except (AttributeError, OSError):
             cpus = os.cpu_count() or 2
+        quota = _quota_cpus()
+        if quota:
+            cpus = min(cpus, quota)
     return max(2, min(16, int(cpus)))
 
 
@@ -47,9 +63,11 @@ PARALLEL = worker_count()
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 
-def budget_for(count):
-    """The combined cap for a registered inventory of `count` cases, never below BUDGET."""
-    return max(BUDGET, PER_CASE_SECONDS * count)
+def budget_for(count, workers=REFERENCE_WORKERS):
+    """The combined cap for a registered inventory of `count` cases run by `workers` workers at
+    once, never below BUDGET. The per-case figure was measured at REFERENCE_WORKERS, and wall time
+    scales inversely with the workers running, so fewer workers get proportionally more time."""
+    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, workers))
 
 
 class Refused(Exception):
@@ -371,7 +389,7 @@ def run_stage(root=ROOT):
     try:
         cases = inventory(root)
         receipt['registered'] = len(cases)
-        budget = budget_for(len(cases))
+        budget = budget_for(len(cases), PARALLEL)
         receipt['budget_seconds'] = budget
         workers.deadline = started + budget
         signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))

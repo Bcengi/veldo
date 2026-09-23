@@ -334,13 +334,16 @@ if 'expect' in globals():
             _m123_caps[_m123_count] = _m123_budget.run_stage(ROOT).get('budget_seconds')
     finally:
         _m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers = _m123_saved
-    _m123_want = {10: 120, 116: 232.0, 300: 600.0}
+    _m123_want = {n: _m123_budget.budget_for(n, _m123_budget.PARALLEL) for n in (10, 116, 300)}
     _m123_enforced = [abs(left - _m123_want[n]) < 5 and abs(alarm - _m123_want[n]) < 5
                       for n, (left, alarm) in zip((10, 116, 300), _m123_seen)]
     expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: run_stage records, enforces as the '
            'worker deadline, and arms as the alarm a cap of the floor or 2 s per registered case, '
-           'whichever is larger (10 -> 120, 116 -> 232, 300 -> 600)',
-           _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced))
+           'whichever is larger, scaled to the workers the stage runs (at 8 workers: 10 -> 120, 116 -> 232, '
+           '300 -> 600; half that per case at 16, four times at 2)',
+           _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced)
+           and [_m123_budget.budget_for(n, 8) for n in (10, 116, 300)] == [120, 232.0, 600.0]
+           and [_m123_budget.budget_for(300, w) for w in (2, 16)] == [2400.0, 300.0])
 
     # THE INPUT CLOSURE IS THE WORKING TREE, not a hand list of directories. The snapshot workers run
     # in holds only what read_inputs returns, so a suite row reading anything outside it (the front
@@ -581,7 +584,49 @@ if 'expect' in globals():
            and _m123_id(_m123_base) != _m123_id({'a/B.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}))
 
     # The stage's parallelism follows the host: the CPUs this process may use, clamped to 2..16.
+    # Driven, not read: a child whose CPU set is narrowed sees that count, and Workers.run really
+    # keeps exactly PARALLEL workers running at once when there are more jobs than that.
+    _m123_affinity = None
+    if hasattr(_m123_os, 'sched_setaffinity'):
+        _m123_cpus = sorted(_m123_os.sched_getaffinity(0))
+        _m123_affinity = {}
+        for _m123_n in (1, 4):
+            if len(_m123_cpus) >= _m123_n:
+                _m123_pick = set(_m123_cpus[:_m123_n])
+                _m123_child = _m123_sp.run(
+                    [_m123_sys.executable, '-B', '-c',
+                     'import importlib.util as u; s = u.spec_from_file_location("g", %r); '
+                     'm = u.module_from_spec(s); s.loader.exec_module(m); print(m.PARALLEL)'
+                     % str(ROOT / 'scripts/check_gate_mutations.py')],
+                    capture_output=True, text=True, timeout=60,
+                    preexec_fn=lambda pick=_m123_pick: _m123_os.sched_setaffinity(0, pick))
+                _m123_affinity[_m123_n] = _m123_child.stdout.strip()
+    _m123_real_popen = _m123_gate.subprocess.Popen
+    _m123_live = []
+    _m123_peak = [0]
+
+    def _m123_fake_popen(args, **kwargs):
+        _m123_live[:] = [p for p in _m123_live if p.poll() is None]
+        proc = _m123_real_popen([_m123_sys.executable, '-c', 'import time; time.sleep(0.3); print("{}")'],
+                                **{k: v for k, v in kwargs.items() if k in ('stdout', 'stderr', 'start_new_session')})
+        _m123_live.append(proc)
+        _m123_peak[0] = max(_m123_peak[0], len(_m123_live))
+        return proc
+
+    _m123_jobs = {'j%d' % i: {'case': {'driver': 'synthetic'}, 'mode': 'baseline'}
+                  for i in range(_m123_gate.PARALLEL + 4)}
+    _m123_gate.subprocess.Popen = _m123_fake_popen
+    try:
+        with _m123_tmp.TemporaryDirectory(prefix='m123-workers-') as _m123_wd:
+            _m123_done = _m123_gate.Workers(_m123_time.monotonic() + 60).run(
+                _m123_jobs, _m123_Path(_m123_wd), ROOT)
+    except Exception as _m123_error:
+        _m123_done = {'raised': repr(_m123_error)}
+    finally:
+        _m123_gate.subprocess.Popen = _m123_real_popen
     expect('VELDO-0123 gate/workers-follow-the-host: the mutation stage runs as many workers as the CPUs it '
-           'may use, never fewer than 2 or more than 16, and the module uses that count',
+           'may use (its affinity set, bounded by a cgroup quota), never fewer than 2 or more than 16: a '
+           'child pinned to 1 or 4 CPUs computes 2 or 4, and Workers.run really runs exactly that many at once',
            [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
-           and _m123_gate.PARALLEL == _m123_gate.worker_count())
+           and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, n)) for n in _m123_affinity))
+           and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_gate.PARALLEL)
