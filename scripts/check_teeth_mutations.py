@@ -561,6 +561,19 @@ def cases():
     notification('notify-trust-invented-event-digest',
                  "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
                  "        if row[0] != hint['command_id']:", 'fabricated-event')
+    # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
+    # such as a repository id was read as the empty set, so every named scope covered it.
+    def scope(name, old, new):
+        add(25, name, '61_scope_covers.py', 'control_membership.py', old, new,
+            ['membership/scope-covers-named-string'])
+        result[-1]['siblings'] = True
+
+    scope('scope-string-inner-as-empty',
+          '    if isinstance(inner, str) and inner != "*":\n        i = {inner}\n',
+          '    if isinstance(inner, str) and inner != "*":\n        i = set()\n')
+    scope('scope-malformed-inner-as-empty',
+          '    else:\n        return False\n    if o is None:',
+          '    else:\n        i = set()\n    if o is None:')
     return result
 
 
@@ -588,6 +601,11 @@ def materialize(case, mode, directory, root=ROOT):
         mutant = destination / ('fixtures' if fixture else case['module'])
         if fixture:
             shutil.copytree(base, mutant, ignore=shutil.ignore_patterns('__pycache__'))
+        elif case.get('siblings') is True:
+            # A module that loads its siblings by its own path (control_membership loads
+            # authority_contract and control_store next to itself) gets a whole .veldo copy.
+            shutil.copytree(base, destination / 'veldo', ignore=shutil.ignore_patterns('__pycache__'))
+            mutant = destination / 'veldo' / case['module']
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(before if mode == 'noop' else before.replace(old, new))
@@ -631,7 +649,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 31, 35, 36, 46, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

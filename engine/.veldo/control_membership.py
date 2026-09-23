@@ -57,8 +57,18 @@ def _scope_set(scope):
 
 def scope_covers(outer, inner):
     """Whether authority scoped `outer` may act on `inner`: "*" covers everything, only "*" covers
-    "*", and a named scope covers a subset of itself."""
-    o, i = _scope_set(outer), _scope_set(inner)
+    "*", and a named scope covers a subset of itself.
+
+    `inner` names what is being acted on. A plain string is one named scope (a repository id, a
+    project), never "nothing": reading it as the empty set made every named scope cover it. Anything
+    that is neither "*", a string nor a list of strings is refused rather than read as empty."""
+    o = _scope_set(outer)
+    if isinstance(inner, str) and inner != "*":
+        i = {inner}
+    elif inner == "*" or (isinstance(inner, (list, tuple)) and all(isinstance(x, str) for x in inner)):
+        i = _scope_set(inner)
+    else:
+        return False
     if o is None:
         return True
     if i is None:
