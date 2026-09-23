@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -949 +949 @@
+@@ -959 +959 @@
 -        return sorted(found, key=lambda n: -n['request_version'])
 +        return sorted(found, key=lambda n: (n['notice_state'] != 'sent', -n['request_version']))

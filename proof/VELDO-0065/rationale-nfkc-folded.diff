@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -228 +228 @@
+-    return text[:cut], text[cut + 1:]
++    return text[:cut], unicodedata.normalize('NFKC', text[cut + 1:])

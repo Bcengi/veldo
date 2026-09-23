@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -821 +821 @@
+-            if ledger is not None and (ledger.get('kind') != 'revocation_ledger' or not isinstance(ledger.get('data'), dict)
++            if ledger is not None and (not isinstance(ledger.get('data'), dict)

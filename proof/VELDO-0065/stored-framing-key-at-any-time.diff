@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -767 +767 @@
+@@ -771 +771 @@
 -        if not usable_key(key, principal, self.clock()):
 +        if key is None:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -815 +815 @@
+@@ -819 +819 @@
 -            key = next((k for k in state['keyring'] if usable_key(k, principal, now)), None)
 +            key = self.AC.active_key(state['keyring'], principal, now)

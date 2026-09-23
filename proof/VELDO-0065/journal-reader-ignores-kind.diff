@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -791 +791 @@
+@@ -795 +795 @@
 -            if (entry.get('kind') != kind or not isinstance(entry.get('data'), dict) or entry.get('digest') != self.store.digest_of(
 +            if (not isinstance(entry.get('data'), dict) or entry.get('digest') != self.store.digest_of(

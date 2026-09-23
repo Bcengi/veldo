@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -843 +843 @@
+@@ -853 +853 @@
 -                        REVOCATION_LEDGER: seen.get(REVOCATION_LEDGER, {}).get('version', 0)}
 +                        }
