@@ -98,7 +98,8 @@ For each declared falsifier, retain the applied diff, require the named row to b
 2026-09-23: The combined cap now scales with the registered inventory: the larger of 120 seconds and
 2 seconds per registered case, recorded in the stage receipt as budget_seconds. Measured on this
 machine: 38 cases took 13.8 seconds on 2026-09-22 and 116 cases took 91.8 seconds on 2026-09-23, about
-0.8 seconds per case, so a fixed 120 second cap would turn the gate red for inventory growth alone as
+0.36 then 0.79 seconds per case (the per-case cost is rising as suites grow, so the 2 second figure is
+about 2.5 times today's rate and must be revisited if it approaches 1.5), so a fixed 120 second cap would turn the gate red for inventory growth alone as
 Release 1 adds cases. The per-worker bound of 120 seconds is unchanged. Row
 gate/mutation-budget-scales-with-inventory drives the real run_stage and checks the recorded cap, the
 enforced worker deadline and the armed alarm; three mutations (fixed cap, deadline ignoring the scaled

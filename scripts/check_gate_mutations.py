@@ -387,8 +387,11 @@ def run_stage(root=ROOT):
         receipt['detail'] = str(error)
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
-        workers.cleanup()
-        signal.signal(signal.SIGALRM, previous)
+        try:
+            workers.cleanup()
+        finally:
+            # Restore the caller's handler even when cleanup itself fails.
+            signal.signal(signal.SIGALRM, previous)
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]
