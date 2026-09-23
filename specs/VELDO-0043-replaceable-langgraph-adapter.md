@@ -149,3 +149,14 @@ cancel execute the compiled graph and the runtime label comes from what ran; the
 launched from a content-addressed copy outside every repository, with the /proc reach recorded
 as the stated limit in Notes. Eleven more finding 43 negative controls are registered. No
 criterion, status or historical proof was changed.
+
+2026-09-23 second review: the stage moved out of the content-addressed runtime into a per-account
+stage directory, and the adapter follows no link it did not make; the runtime is created from the
+resolved base interpreter and a runtime whose pyvenv.cfg names a repository is refused; answers
+decode strictly as UTF-8; the request path check has no URL exemption beyond declared http(s) URL
+fields, identifiers refuse control characters and '..', and requests are bounded at 1 MB; the
+child runs in its own session and its process group is killed on every exit path. The
+graph/authority/proc-limit row's two notes-path mutants were retired because they broke the row's
+observation channel, not the limit; the review's real falsifier (the adapter made non-dumpable)
+replaces them. Verifying every file under the runtime against the lock and RECORD before use is
+an open item for VELDO-0045. No criterion, status or historical proof was changed.

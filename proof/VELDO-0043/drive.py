@@ -66,6 +66,8 @@ for case in [c for c in teeth.cases() if c['finding'] == 43]:
     with tempfile.TemporaryDirectory(prefix='drive-43-') as temporary:
         mutant = teeth.materialize(case, 'mutant', Path(temporary) / case['name'])['mutant']
         red, observed = run(case, mutant)
+    # A mutant may make this process non-dumpable (PR_SET_DUMPABLE is 4); restore it for the next.
+    __import__('ctypes').CDLL(None).prctl(4, 1, 0, 0, 0)
     results.append({'mutation': case['name'], 'module': case['module'], 'target_rows': case['rows'],
                     'red_rows': red, 'target_red': all(row in red for row in case['rows']),
                     'why': why(observed)})
