@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Repository-only mutation gate. Every registered case executes fresh on every invocation.
 
-Workers see a frozen copy of scripts, .veldo and the proof corpus, never gate receipts.
+Workers see a frozen copy of the working tree Git does not ignore, never gate receipts.
 The source tree is read twice to reject races. Git history is cloned at the measured HEAD.
 All children inherit a fixed environment, no user Python site, and disabled bytecode.
 """
@@ -88,7 +88,7 @@ def fixed_env(home, binpath='/usr/bin:/bin'):
             'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_TERMINAL_PROMPT': '0'}
 
 
-def command(args, env):
+def command(args, env, with_stderr=False):
     """Even setup subprocesses belong to an owned, bounded process group."""
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             env=env, start_new_session=True)
@@ -96,7 +96,7 @@ def command(args, env):
         out, err = proc.communicate(timeout=WORKER_BUDGET)
         if proc.returncode:
             raise subprocess.CalledProcessError(proc.returncode, args, out, err)
-        return out
+        return (out, err) if with_stderr else out
     except subprocess.TimeoutExpired as error:
         raise Refused('mutation_budget_exceeded', 'setup subprocess') from error
     finally:
@@ -120,25 +120,69 @@ sys.exit(result.returncode)
 """
 
 
-def git(root, *args):
+def git_bytes(root, *args, with_stderr=False):
     return command([sys.executable, '-B', '-s', '-c', GIT_BRIDGE,
                     str(ROOT / '.veldo/git_process.py'), '-C', str(root), *args],
-                   fixed_env('/nonexistent')).decode().strip()
+                   fixed_env('/nonexistent'), with_stderr=with_stderr)
+
+
+def git(root, *args):
+    return git_bytes(root, *args).decode().strip()
 
 
 def read_inputs(root):
-    """Coarse input closure, including scripts/fixtures and untracked additions/deletions."""
+    """THE INPUT CLOSURE: every file of the working tree Git does not ignore, tracked or untracked,
+    minus deleted files, bytecode caches and the gate's own outputs. Ignore rules are what Git applies
+    to this repository with no global configuration: .gitignore, info/exclude and a core.excludesFile
+    set in the repository's own config (the last two are local to this clone); a user's global ignore
+    file does not apply. An ignored file (local configuration such as
+    .veldo/trackers.json, caches) is machine-local and is NOT an input: the gate judges the
+    repository, not the host. The snapshot the workers run in holds exactly this closure: a hand
+    list of directories left out the front door bin/veldo, and a row that runs it passed in the
+    checkout and failed in every baseline in the snapshot. Names are read as raw bytes (NUL
+    separated, decoded with the file system encoding), so no name is trimmed or undecodable."""
+    listed, warned = git_bytes(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard',
+                               with_stderr=True)
+    if warned.strip():
+        # Git lists what it could read and only WARNS about a directory it could not open, so such
+        # a warning means files are missing from the listing. Any OTHER output (a deprecation
+        # notice, a hint) is refused too, since nobody has shown the listing is whole, but under
+        # its own name so the cause is not misread.
+        lines = warned.decode(errors='replace').strip().splitlines()
+        missing = [line for line in lines if 'could not open directory' in line]
+        kind = 'incomplete input listing' if missing else 'unexpected git output while listing inputs'
+        raise Refused('driver_error', kind + ': ' + (missing or lines)[0])
     files = {}
-    for directory in ('.veldo', 'engine/.veldo', 'scripts', 'proof'):
-        for path in sorted((root / directory).rglob('*')):
-            rel = path.relative_to(root).as_posix()
-            if rel in OUTPUTS or '__pycache__' in path.parts:
-                continue
-            if path.is_symlink():
-                raise Refused('driver_error', 'symlink input: ' + rel)
-            if path.is_file():
+    top = os.path.realpath(root)
+    for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
+        path = root / rel
+        if rel.endswith('/'):
+            # Git lists an untracked nested repository as a directory and never its files.
+            raise Refused('driver_error', 'nested repository in the input closure: ' + rel)
+        if rel in OUTPUTS or '__pycache__' in Path(rel).parts:
+            continue
+        try:
+            linked = path.is_symlink() or (os.path.lexists(path)
+                                           and os.path.realpath(path) != os.path.join(top, rel))
+        except OSError as error:
+            raise Refused('driver_error', 'unreadable input: ' + rel) from error
+        if linked:
+            # A link as the file, or as ANY directory above it, would copy a file the checkout
+            # only points at.
+            raise Refused('driver_error', 'symlink input: ' + rel)
+        if path.is_file():
+            try:
                 files[rel] = (path.stat().st_mode & 0o777, path.read_bytes())
+            except OSError as error:
+                raise Refused('driver_error', 'unreadable input: ' + rel) from error
     return files
+
+
+def inputs_unchanged(root, files, head):
+    """THE RACE CHECK: read the inputs AGAIN and compare with the first read, by content, mode and
+    name, and the commit, so a change during the stage can never pass as the tree that was run."""
+    return (file_identity(read_inputs(root)) == file_identity(files)
+            and git(root, 'rev-parse', 'HEAD') == head)
 
 
 def file_identity(files):
@@ -365,8 +409,7 @@ def run_stage(root=ROOT):
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
             # Reject changes to the checked inputs during execution.
-            if (file_identity(read_inputs(root)) != file_identity(files)
-                    or git(root, 'rev-parse', 'HEAD') != head):
+            if not inputs_unchanged(root, files, head):
                 raise Refused('driver_error', 'inputs changed during stage')
             workers.check()
             if set(results) != {c['identity'] for c in cases}:

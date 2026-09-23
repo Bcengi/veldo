@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -120 +120 @@
+-    return fm.get("lane") == "standalone" and _lane_status(fm, status) == "ready"
++    return fm.get("lane") == "standalone" and fm.get("status") == "ready"

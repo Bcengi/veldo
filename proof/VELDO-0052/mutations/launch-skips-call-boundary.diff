@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -536 +536 @@
+-            if current["eligible"]:
++            if False:  # defect: the builder is entered whatever its calls will be told

@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -600 +600 @@
+-            elif old != new:
++            elif 'members' not in (old or new or {}) and old != new:

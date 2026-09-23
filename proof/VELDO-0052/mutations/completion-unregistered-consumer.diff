@@ -1,0 +1,4 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -110 +109,0 @@
+-    ('work_state.py', 'completion_view'),

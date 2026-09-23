@@ -141,6 +141,8 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
+| VELDO-0133 | Ask what becomes of work whose person assignment is declined, canceled or expired | draft | high | dmitry | required | VELDO-0133-disposition-of-declined-and-canceled-work.md |
+| VELDO-0134 | Accept a repository's architecture contract by a signed owner command | draft | high | dmitry | required | VELDO-0134-architecture-acceptance-record.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 - the keyed bytes and the validated bytes must be the same bytes | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -722,7 +724,7 @@ Open decision D4 blocks: VELDO-0007.
 
 ### PLAN-0019 - Dark Factory project coordination inside Veldo
 
-Status ready, revision 3, owner dmitry. 11/95 work items shipped.
+Status ready, revision 3, owner dmitry. 11/97 work items shipped.
 Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036 (W21).
 
 | Item | Spec | Title | Depends on | State |
@@ -764,6 +766,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W84 | VELDO-0107 | Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates | VELDO-0023, VELDO-0025, VELDO-0029 | waiting: VELDO-0029 |
 | W86 | VELDO-0109 | An unreachable authority stops mutation and admission, and never becomes a local one | VELDO-0107 | waiting: VELDO-0107 |
 | W92 | VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061 | waiting: VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061 |
+| W97 | VELDO-0134 | Accept a repository's architecture contract by a signed owner command | VELDO-0053 | waiting: VELDO-0053 |
 | W85 | VELDO-0108 | Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server | VELDO-0107 | waiting: VELDO-0107 |
 | W87 | VELDO-0124 | Simple macOS worker lifecycle profile | VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062 | waiting: VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062 |
 | W88 | VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124 | waiting: VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124 |
@@ -777,6 +780,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W60 | VELDO-0075 | Andon delivery and authorized resumption through enrolled channels | VELDO-0046, VELDO-0069, VELDO-0073 | waiting: VELDO-0046, VELDO-0069, VELDO-0073 |
 | W89 | VELDO-0126 | One Telegram and API message intake for proposed work | VELDO-0025, VELDO-0035, VELDO-0047 | waiting: VELDO-0035, VELDO-0047 |
 | W91 | VELDO-0128 | Telegram progress and completion from journal events | VELDO-0046, VELDO-0051, VELDO-0073, VELDO-0075 | waiting: VELDO-0046, VELDO-0051, VELDO-0073, VELDO-0075 |
+| W96 | VELDO-0133 | Ask what becomes of work whose person assignment is declined, canceled or expired | VELDO-0064, VELDO-0126 | waiting: VELDO-0064, VELDO-0126 |
 | W22 | VELDO-0037 | Atomic specification alias allocation and document publication | VELDO-0023, VELDO-0035 | waiting: VELDO-0035 |
 | W28 | VELDO-0043 | Replaceable LangGraph execution adapter | VELDO-0035 | waiting: VELDO-0035 |
 | W30 | VELDO-0045 | Pinned isolated runtime, dependency licenses, and distribution inventory | VELDO-0043 | waiting: VELDO-0043 |

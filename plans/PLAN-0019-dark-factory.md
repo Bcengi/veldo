@@ -965,6 +965,22 @@ work:
     order: 14132
     release: 1
     stage: 4
+  - item: W96
+    spec: VELDO-0133
+    title: Ask what becomes of work whose person assignment is declined, canceled or expired
+    feature_refs: [F5]
+    depends_on: [VELDO-0064, VELDO-0126]
+    order: 13133
+    release: 1
+    stage: 3
+  - item: W97
+    spec: VELDO-0134
+    title: Accept a repository's architecture contract by a signed owner command
+    feature_refs: [F3]
+    depends_on: [VELDO-0053]
+    order: 11134
+    release: 1
+    stage: 1
 
 regression:
   journeys:
@@ -1243,6 +1259,8 @@ These are writing-only allocations; no specification status or existing evidence
 | W93 | VELDO-0130 | 1 | 5 |
 | W94 | VELDO-0131 | 1 | 5 |
 | W95 | VELDO-0132 | 1 | 4 |
+| W96 | VELDO-0133 | 1 | 3 |
+| W97 | VELDO-0134 | 1 | 1 |
 
 ## Related baseline and follow-up disposition
 
@@ -1269,3 +1287,13 @@ checks. 0089 consumes retained engineering review, not deferred 0070 adversarial
 ordinary cycle serialization from 0093. Their broader matrices keep their later release allocation.
 Nine new draft specifications, VELDO-0124 through VELDO-0132, fill the host, routing, intake,
 capability, reporting, live wiring, API, UI and workflow-definition concerns in this same graph. The final writing audit lives in proof/plan-0019-rev3/README.md.
+
+2026-09-23: W96 adds VELDO-0133 as a Release 1 stage 3 draft. It answers VELDO-0064's open question
+under owner Telegram 28934 (ask the person who declined or canceled) and 28936 (ask the project
+owner when no person did), and depends on VELDO-0126 for the intake of a free-text disposition.
+
+2026-09-23: W97 adds VELDO-0134 as a Release 1 stage 1 draft. VELDO-0053 reads a store record
+architecture:<repository> that makes the architecture contract required, and nothing wrote it, so
+whether the contract was required still came from the workspace's editable policy (R50). W97 adds
+the signed owner command that is its only writer and the written schema both writer and reader
+are checked against, and depends on VELDO-0053.

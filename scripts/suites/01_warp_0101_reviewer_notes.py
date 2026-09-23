@@ -2717,9 +2717,10 @@ expect("suite attr check ANTI-VACUITY: it is actually reading a large corpus, no
 expect("suite attr check: a module that cannot be imported standalone is UNVERIFIABLE and reported, never counted as passed",
        isinstance(_sac_unver, dict))
 
-# TEETH, over synthetic source so the real corpus is untouched. Four properties in one fixture:
-# a resolvable reference stays clean, a missing one is CAUGHT, a spec temp name reused for two
-# different modules resolves IN ORDER, and an alias rebound elsewhere is excluded as ambiguous.
+# TEETH, over synthetic source so the real corpus is untouched. In one fixture: a resolvable
+# reference stays clean, a missing one is CAUGHT, a spec temp name reused for two different modules
+# resolves IN ORDER, an alias rebound in its own scope by any binding form is excluded as ambiguous,
+# and a same-named variable in another scope is a different variable.
 _SAC_SRC = '''
 _sp = importlib.util.spec_from_file_location("a", ROOT / ".veldo/naming.py")
 UNIQ = importlib.util.module_from_spec(_sp)
@@ -2732,6 +2733,193 @@ SECOND.also_missing("x")
 AMBIG = importlib.util.module_from_spec(_sp)
 AMBIG.definitely_not_there()
 AMBIG = 1
+TUPLED = importlib.util.module_from_spec(_sp)
+TUPLED.bound_elsewhere_by_unpacking()
+OTHER, TUPLED = 1, 2
+for (NESTED, [LISTED, *STARRED]) in []:
+    pass
+LISTED = importlib.util.module_from_spec(_sp)
+LISTED.bound_elsewhere_by_a_loop_target()
+STARRED = importlib.util.module_from_spec(_sp)
+STARRED.bound_elsewhere_by_a_starred_target()
+WITHED = importlib.util.module_from_spec(_sp)
+WITHED.rebound()
+with open(__file__) as WITHED:
+    pass
+IMPORTED = importlib.util.module_from_spec(_sp)
+IMPORTED.rebound()
+import json as IMPORTED
+EXCEPTED = importlib.util.module_from_spec(_sp)
+EXCEPTED.rebound()
+try:
+    pass
+except Exception as EXCEPTED:
+    pass
+WALRUSED = importlib.util.module_from_spec(_sp)
+WALRUSED.rebound()
+(WALRUSED := 1)
+COMPWALRUSED = importlib.util.module_from_spec(_sp)
+COMPWALRUSED.rebound()
+[(COMPWALRUSED := 1) for _ in []]
+DEFFED = importlib.util.module_from_spec(_sp)
+DEFFED.rebound()
+def DEFFED():
+    pass
+CLASSED = importlib.util.module_from_spec(_sp)
+CLASSED.rebound()
+class CLASSED:
+    pass
+ANNOTATED = importlib.util.module_from_spec(_sp)
+ANNOTATED.rebound()
+ANNOTATED: int = 1
+MATCHED = importlib.util.module_from_spec(_sp)
+MATCHED.rebound()
+match 1:
+    case MATCHED:
+        pass
+GLOBALED = importlib.util.module_from_spec(_sp)
+GLOBALED.rebound()
+def rebinds_through_global():
+    global GLOBALED
+    GLOBALED = 1
+COMPREHENDED = importlib.util.module_from_spec(_sp)
+COMPREHENDED.stays_unique()
+[COMPREHENDED for COMPREHENDED in []]
+_spn = importlib.util.spec_from_file_location("n", ROOT / ".veldo/naming.py")
+SCOPED = importlib.util.module_from_spec(_spn)
+SCOPED.contract(1, 2)
+def binds_its_own():
+    _spl = importlib.util.spec_from_file_location("l", ROOT / ".veldo/secret_scan.py")
+    SCOPED = importlib.util.module_from_spec(_spl)
+    SCOPED.scan_text("x")
+    SCOPED.local_gone()
+def reads_the_global():
+    SCOPED.contract(3, 4)
+def takes_it_as_a_parameter(SCOPED):
+    SCOPED.parameter_not_an_alias()
+def generic_reader[SCOPED](x) -> SCOPED:
+    return SCOPED.type_parameter_not_an_alias
+class GenericHolder[SCOPED]:
+    def method(self):
+        return SCOPED.class_type_parameter_not_an_alias
+UNIQ.monkeypatched_but_missing = lambda: None
+DELETED = importlib.util.module_from_spec(_sp)
+DELETED.rebound()
+del DELETED
+RESTED = importlib.util.module_from_spec(_sp)
+RESTED.rebound()
+match {}:
+    case {**RESTED}:
+        pass
+def rebinds_through_nonlocal():
+    NONLOCALED = importlib.util.module_from_spec(_spn)
+    class Middle:
+        NONLOCALED = 1
+        def inner(self):
+            nonlocal NONLOCALED
+            NONLOCALED = 2
+    NONLOCALED.rebound()
+_spo = importlib.util.spec_from_file_location("o1", ROOT / ".veldo/naming.py")
+_spo = importlib.util.spec_from_file_location("o2", ROOT / ".veldo/secret_scan.py")
+def loads_at_call_time():
+    LATE = importlib.util.module_from_spec(_spo)
+    LATE.which_module_depends_on_when_called()
+def rebinds_a_spec_globally():
+    global _spg
+    _spg = importlib.util.spec_from_file_location("g", ROOT / ".veldo/secret_scan.py")
+_spg = importlib.util.spec_from_file_location("g0", ROOT / ".veldo/naming.py")
+GLATE = importlib.util.module_from_spec(_spg)
+GLATE.which_module_depends_on_call_order()
+_spr = importlib.util.spec_from_file_location("r", ROOT / ".veldo/naming.py")
+_spr = _spo
+PLAINED = importlib.util.module_from_spec(_spr)
+PLAINED.rebound_by_plain_assignment()
+if UNIQ:
+    _spi = importlib.util.spec_from_file_location("i1", ROOT / ".veldo/naming.py")
+else:
+    _spi = importlib.util.spec_from_file_location("i2", ROOT / ".veldo/secret_scan.py")
+IFFED = importlib.util.module_from_spec(_spi)
+IFFED.depends_on_the_branch_taken()
+def encloses_a_rebound_spec():
+    _spe = importlib.util.spec_from_file_location("e1", ROOT / ".veldo/naming.py")
+    _spe = importlib.util.spec_from_file_location("e2", ROOT / ".veldo/secret_scan.py")
+    def reads_it_later():
+        ENCLOSED = importlib.util.module_from_spec(_spe)
+        ENCLOSED.depends_on_when_it_is_called()
+def generic_with_default[SCOPED](x=SCOPED.contract):
+    pass
+_spc = importlib.util.spec_from_file_location("c", ROOT / ".veldo/secret_scan.py")
+class Holder:
+    CLASSLEVEL = importlib.util.module_from_spec(_spc)
+    CLASSLEVEL.scan_text("x")
+    FIRST_ITERATOR = [x for x in CLASSLEVEL.scan_text("")]
+    def annotated[T](self) -> CLASSLEVEL.scan_text:
+        return CLASSLEVEL.body_reads_the_global_not_the_class
+    if UNIQ:
+        CONDITIONAL = importlib.util.module_from_spec(_spc)
+    CONDITIONAL.class_body_falls_back_to_the_global_when_the_branch_is_not_taken()
+    try:
+        TRIED = importlib.util.module_from_spec(_spc)
+    except Exception:
+        pass
+    TRIED.class_body_falls_back_after_a_raise()
+    for _ in ():
+        LOOPED = importlib.util.module_from_spec(_spc)
+    LOOPED.class_body_falls_back_when_the_loop_never_runs()
+    while False:
+        WHILED = importlib.util.module_from_spec(_spc)
+    WHILED.class_body_falls_back_when_the_while_never_runs()
+    with open(__file__):
+        WITHBODY = importlib.util.module_from_spec(_spc)
+    WITHBODY.class_body_falls_back_when_the_with_body_raises()
+    match 0:
+        case 1:
+            MATCHBODY = importlib.util.module_from_spec(_spc)
+    MATCHBODY.class_body_falls_back_when_no_case_matches()
+    if not UNIQ:
+        pass
+    else:
+        ELSED = importlib.util.module_from_spec(_spc)
+    ELSED.class_body_falls_back_when_the_else_is_not_taken()
+    try:
+        pass
+    except Exception:
+        EXCEPTBODY = importlib.util.module_from_spec(_spc)
+    EXCEPTBODY.class_body_falls_back_when_nothing_raises()
+    try:
+        pass
+    except* Exception:
+        EXCEPTSTAR = importlib.util.module_from_spec(_spc)
+    EXCEPTSTAR.class_body_falls_back_when_no_group_raises()
+    def method_with_a_generic_helper(self):
+        def helper[T](x) -> CLASSLEVEL.not_the_class_alias_here:
+            pass
+class Bounded[TB: SCOPED.contract]:
+    pass
+_sub = ".veldo"
+_spx = importlib.util.spec_from_file_location("x", ROOT / _sub / "naming.py")
+COMPUTED = importlib.util.module_from_spec(_spx)
+COMPUTED.path_has_a_computed_segment()
+_spf = importlib.util.spec_from_file_location("f", ROOT / f"{_sub}" / "naming.py")
+FSTRINGED = importlib.util.module_from_spec(_spf)
+FSTRINGED.path_has_an_fstring_segment()
+def local_root():
+    ROOT = UNIQ
+    _spl2 = importlib.util.spec_from_file_location("l2", ROOT / ".veldo/naming.py")
+    LOCALROOT = importlib.util.module_from_spec(_spl2)
+    LOCALROOT.root_is_a_local()
+def param_root(ROOT):
+    _spp = importlib.util.spec_from_file_location("p", ROOT / ".veldo/naming.py")
+    PARAMROOT = importlib.util.module_from_spec(_spp)
+    PARAMROOT.root_is_a_parameter()
+    def nested_reads_the_parameter():
+        _spn2 = importlib.util.spec_from_file_location("n2", ROOT / ".veldo/naming.py")
+        NESTEDROOT = importlib.util.module_from_spec(_spn2)
+        NESTEDROOT.root_is_an_enclosing_parameter()
+_spd = importlib.util.spec_from_file_location("d", ROOT / ".veldo/naming.py")
+DELLED = importlib.util.module_from_spec(_spd)
+DELLED.contract(1, 2)
+del _spd
 '''
 import ast as _sac_ast
 
@@ -2743,15 +2931,66 @@ expect("suite attr check TEETH: a reused spec temp name resolves IN LINE ORDER, 
        and _sac_by_alias.get(("SECOND", "scan_text")) == ".veldo/secret_scan.py")
 expect("suite attr check TEETH: an alias REBOUND elsewhere is excluded as ambiguous, which is what keeps the false-positive rate at zero and the check switched on",
        not any(a == "AMBIG" for _f, _l, a, _at, _r in _sac_refs))
+_SAC_REBOUND = ("TUPLED", "LISTED", "STARRED", "WITHED", "IMPORTED", "EXCEPTED", "WALRUSED",
+                "COMPWALRUSED", "DEFFED", "CLASSED", "ANNOTATED", "MATCHED", "GLOBALED")
+expect("suite attr check TEETH: an alias rebound in the SAME SCOPE by ANY binding form Python has (tuple, list and starred unpacking, a loop target, with ... as, import ... as, except ... as, the walrus, a walrus inside a comprehension, def, class, an annotated assignment, a match capture, a global declaration in a function) is ambiguous and excluded. A reader that knew only `X = ...` called such an alias unique and checked it against the wrong module",
+       not any(a in _SAC_REBOUND for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: the forms the first scope-aware cut missed are rebindings too: `del`, a match `**rest` capture, and a `nonlocal` write from a method, which binds the enclosing FUNCTION's name and never the class body's same-named attribute between them",
+       not any(a in ("DELETED", "RESTED", "NONLOCALED") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: an alias whose module depends on WHEN a function runs is not checked. Source line order is execution order only at module level: a function loading from a module spec variable bound more than once, and a spec variable some function rebinds through `global`, each hold whatever the call order made them, so a reader that replays function bodies at their definition line maps the alias to the wrong module",
+       not any(a in ("LATE", "GLATE", "ENCLOSED") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: at module level too, a spec variable rebound under an if/else, or by a plain assignment (which this reader does not follow), maps no alias; and a spec path with a computed segment (a variable, an f-string) or on a ROOT that is a local, a parameter or an enclosing function's parameter is not mapped at all",
+       not any(a in ("PLAINED", "IFFED", "COMPUTED", "FSTRINGED", "LOCALROOT", "PARAMROOT", "NESTEDROOT")
+               for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: a class body that binds an alias only under an if or its else, a try or its except, a for or while loop, a with body or a match case (including except*) reads the GLOBAL when that path is not taken, so such a binding is never the only one and the alias is not checked",
+       not any(a in ("CONDITIONAL", "TRIED", "LOOPED", "WHILED", "WITHBODY", "MATCHBODY", "ELSED",
+                     "EXCEPTBODY", "EXCEPTSTAR") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: a spec variable bound by a straight-line spec call and later deleted by a straight-line del still maps its alias to that module: a del at module level runs in line order and never re-points the variable (real fragments do this)",
+       [(a, at, rel) for _f, _l, a, at, rel in _sac_refs if a == "DELLED"]
+       == [("DELLED", "contract", ".veldo/naming.py")])
+expect("suite attr check TEETH: a class-level alias is seen where Python lets it be seen: in the class body, in the FIRST iterator of a comprehension in that body (evaluated in the class scope), and in the annotation scope of a generic method DIRECTLY in the class (PEP 695), and nowhere else: not in that method's body, and not in the annotation of a generic helper nested inside a method",
+       sorted((at, rel) for _f, _l, a, at, rel in _sac_refs if a == "CLASSLEVEL")
+       == [("scan_text", ".veldo/secret_scan.py")] * 3)
+_sac_scoped = sorted({(at, rel) for _f, _l, a, at, rel in _sac_refs if a == "SCOPED"})
+expect("suite attr check TEETH: a name bound in a FUNCTION is that function's own variable, by Python's scope rules. VELDO-0064's suite unpacked `S, CM, AC = ...` inside a function while another suite bound the global AC to the accounts module; a scope-free reader merged the two and failed six real references. Resolved by scope, the module alias, the function-local alias and a read of the global from another function each map to their own module, a parameter or a PEP 695 type parameter of the same name is not an alias at all (while a default, evaluated outside the type-parameter scope, reads the module alias, and so does a type-parameter bound that names no type parameter), and a comprehension variable does not rebind the module name",
+       _sac_scoped == [("contract", ".veldo/naming.py"), ("local_gone", ".veldo/secret_scan.py"),
+                       ("scan_text", ".veldo/secret_scan.py")]
+       and sum(1 for _f, _l, a, at, _r in _sac_refs if (a, at) == ("SCOPED", "contract")) == 4
+       and any(a == "COMPREHENDED" for _f, _l, a, _at, _r in _sac_refs))
 def _sac_resolves(rel, attr):
-    spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)
-    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    try:
+        spec = importlib.util.spec_from_file_location("sacprobe_" + attr, ROOT / rel)
+        mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    except Exception:                    # a mapping to a path that is not a module is itself wrong
+        return False
     return hasattr(mod, attr)
 
 
 _sac_seeded = sorted((a, at) for _f, _l, a, at, rel in _sac_refs if not _sac_resolves(rel, at))
-expect("suite attr check TEETH: the two SEEDED missing attributes are both caught, and the two real ones are not - the check is neither blind nor hysterical",
-       _sac_seeded == [("SECOND", "also_missing"), ("UNIQ", "no_such_function")])
+expect("suite attr check TEETH: the SEEDED missing attributes are all caught, including one read on a function-local alias and a MONKEYPATCH of a name the module does not have (it replaces nothing, so the test relying on it proves nothing), and the real ones are not - the check is neither blind nor hysterical",
+       _sac_seeded == [("COMPREHENDED", "stays_unique"), ("SCOPED", "local_gone"),
+                       ("SECOND", "also_missing"), ("UNIQ", "monkeypatched_but_missing"),
+                       ("UNIQ", "no_such_function")])
+
+# The resolver is judged against CPython's own reading, not only against the fixture above, which
+# was written by the same hand. Over the real corpus (every suite fragment and every script and
+# engine module), every function and class scope both sides can identify must agree on which names
+# are local, free and global.
+_sac_corpus = {f: (ROOT / "scripts/suites" / f).read_text()
+               for f in [x["file"] for x in json.loads((ROOT / "scripts/suites/manifest.json").read_text())["suites"]]}
+for _sac_dir in ("scripts", ".veldo"):
+    for _sac_p in sorted((ROOT / _sac_dir).glob("*.py")):
+        _sac_corpus[_sac_dir + "/" + _sac_p.name] = _sac_p.read_text()
+_sac_disagree, _sac_compared = SAC.symtable_disagreements(_sac_corpus)
+_sac_rebound_root = {"a.py": 'ROOT = Path(".")\n', "b.py": 'ROOT = ROOT / "engine"\n_spq = importlib.util.spec_from_file_location("q", ROOT / ".veldo/naming.py")\nREROOTED = importlib.util.module_from_spec(_spq)\nREROOTED.contract(1, 2)\n'}
+_sac_rr_trees = {f: _sac_ast.parse(t) for f, t in _sac_rebound_root.items()}
+expect("suite attr check TEETH: a spec path on a module ROOT that a later fragment REBINDS is not mapped: the runtime ROOT then points elsewhere (here engine/), so checking against the repository's .veldo/naming.py would check the wrong module",
+       [r for r in SAC.references(["a.py", "b.py"], _sac_rr_trees, SAC.binding_counts(_sac_rr_trees)) if r[2] == "REROOTED"] == [])
+_sac_generic = SAC.symtable_disagreements({"generic.py": "class G[T]:\n    def m(self):\n        return T\n"})
+expect("suite attr check: the symtable comparison judges a generic class without inventing a disagreement from the compiler's internal .type_params symbol",
+       _sac_generic[0] == [] and _sac_generic[1] >= 2)
+expect("suite attr check: its scope resolution AGREES WITH CPYTHON'S symtable on every function and class scope of the real corpus, and it compared thousands of scopes rather than passing on none",
+       _sac_disagree == [] and _sac_compared > 3000)
 
 # --- init lays every module its own validator loads ---------------------------------------------
 # A REAL DEFECT this caught: wiring the security review dimension into validate_checks left

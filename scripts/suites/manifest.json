@@ -574,6 +574,15 @@
    "regions": "Six independent review regression scenarios for authority claims"
   },
   {
+   "name": "60_veldo_0052_eligibility",
+   "file": "60_veldo_0052_eligibility.py",
+   "requires": [
+    "60_veldo_0052_eligibility"
+   ],
+   "regions": "Shared floor eligibility at every enabled entry, stale tickets, completion readers and pre-call caps",
+   "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, a fresh reader process over real receipts and real VELDO-0036 reservation transactions."
+  },
+  {
    "name": "58_veldo_0046_notifications",
    "file": "58_veldo_0046_notifications.py",
    "requires": [

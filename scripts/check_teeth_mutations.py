@@ -6,11 +6,13 @@ missing rows and process failures are errors, never successful mutation detectio
 """
 import argparse
 import ast
+import concurrent.futures
 import contextlib
 import difflib
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -653,17 +655,235 @@ def cases():
         '                self._hb_error = exc',
         '                self._hb_error = None', ['claims/review-r3'])
     add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
-        '        ledger_root = os.path.dirname(claims_root(root))',
-        "        common = _git_process.check_output(['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()\n        ledger_root = os.path.join(common, 'veldo')", ['claims/review-r4'])
+        '        ledgers = [claims_root(root)]',
+        "        ledgers = [os.path.join(_enrollment_ledger() or os.sep, 'claims')]", ['claims/review-r4'])
     add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
-        "    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):",
-        "    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):", ['claims/review-r4'])
+        "            if enrolled:\n                raise ClaimStopped('authority_required')",
+        "            if enrolled or root:\n                raise ClaimStopped('authority_required')", ['claims/review-r4'])
     add(31, 'review-r5-expiry-revokes-owner', '59_veldo_0031_review.py', 'control_claim.py',
         "    if live == 'stale' and action in ('renew', 'release'):",
         '    if False:', ['claims/review-r5'])
     add(31, 'review-r5-release-ignores-holder', '59_veldo_0031_review.py', 'control_claim.py',
         "    if current.get('holder') != holder:",
         "    if op != 'release' and current.get('holder') != holder:", ['claims/review-r5'])
+    # VELDO-0052: every declared falsifier and a second, different defect for its row, plus a
+    # driven defect for every other row the suite asserts.
+    def floor(name, module, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', module, old, new, ['eligibility/' + row])
+
+    review_gate = ('            decision = gate.decide("review", sid, context=context, ticket=unit.get("eligibility"))\n'
+                   '            if not decision["eligible"]:\n'
+                   '                return self._refused("review", sid, decision, verdict=None, shipped=False, landed=False)\n')
+    floor('eligibility-review-bypass', 'dispatch.py', review_gate,
+          '            pass  # defect: direct review launches without the shared review decision\n',
+          'entry-dispatch-review')
+    floor('eligibility-review-as-provider-request', 'dispatch.py',
+          'gate.decide("review", sid, context=context,', 'gate.decide("provider_request", sid, context=context,',
+          'entry-dispatch-review')
+    floor('eligibility-status-only-recheck', 'control_eligibility.py',
+          '        for label in sorted(set(before) | set(accepted)):',
+          "        for label in ['unit']:  # defect: only the unit's own record, its current status",
+          'stale-input')
+    floor('eligibility-recheck-ignores-collections', 'control_eligibility.py',
+          '            elif old != new:',
+          "            elif 'members' not in (old or new or {}) and old != new:", 'stale-input')
+    floor('eligibility-frontier-bypass', 'frontier.py',
+          '            if not decision["eligible"]:\n                return\n',
+          '            if False:\n                return\n', 'entry-frontier')
+    floor('eligibility-executor-bypass', 'executor.py',
+          '        return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)',
+          '        return dict(gate.decide("direct_execution", sid, context=self.context, ticket=ticket),\n'
+          '                    eligible=True)  # defect: the direct executor ignores every refusal', 'entry-executor')
+    floor('eligibility-plan-bypass', 'plan.py',
+          '        reasons.extend("eligibility refused: %s" % r for r in decision["refusals"])',
+          '        pass  # defect: the direct-execution refusals are dropped', 'entry-plan')
+    floor('eligibility-build-bypass', 'dispatch.py',
+          '            if not decision["eligible"]:\n                return self._refused("build", sid, decision, reviewed=False)',
+          '            if False:\n                return self._refused("build", sid, decision, reviewed=False)',
+          'entry-dispatch-build')
+    floor('eligibility-publication-bypass', 'dispatch.py',
+          '            if not decision["eligible"]:\n                return self._refused("publication",',
+          '            if False:\n                return self._refused("publication",', 'entry-publication')
+    floor('eligibility-work-no-preclaim-decision', 'work.py',
+          '            if gate is not None and not gate.decide("claim", u["spec"], ticket=u.get("eligibility"))["eligible"]:\n'
+          '                continue\n', '', 'entry-work-rechecks')
+    floor('eligibility-work-no-postclaim-recheck', 'work.py',
+          '                if not after["eligible"]:', '                if False:', 'entry-work-rechecks')
+    floor('eligibility-enrolled-default-runs', 'control_eligibility.py',
+          "        raise Stopped('eligibility_required')", '        return None', 'enrolled-entry-stops')
+    floor('eligibility-unregistered-work-entry', 'control_eligibility.py',
+          "    ('work.py', 'WorkLoop._claim_next', 'claim'),\n", '', 'registrations-from-call-sites')
+    floor('eligibility-ignores-scope', 'control_eligibility.py',
+          "            return [] if a.get('scope_digest') == data.get('scope_digest') and a.get('scope_digest') else ['stale_scope']",
+          "            return []", 'named-refusals')
+    floor('eligibility-refusals-not-pending', 'control_eligibility.py',
+          "        self.last[decision['unit']] = outcome", "        self.last[decision['unit']] = 'accepted'",
+          'observations')
+
+    def completion(name, module, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', module, old, new, ['completion/' + row])
+
+    completion('completion-manifest-verdict-landed', 'work_state.py',
+               '        facts = gate.completion(sid) if gate is not None else None',
+               '        facts = (dict(gate.completion(sid), revision_landed=bool(concluded(entry, base, vc=vc, passing=passing)))\n'
+               '                 if gate is not None else None)', 'readers-agree')
+    completion('completion-frontier-reads-status-text', 'frontier.py',
+               '    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))',
+               '    status = _status_map(idx)', 'readers-agree')
+    completion('completion-any-revision-lands', 'control_eligibility.py',
+               "            if CC.fact_problems('revision_landed', r, subject):",
+               "            if CC.fact_problems('revision_landed', r, None):", 'readers-agree')
+    completion('completion-unregistered-consumer', 'control_eligibility.py',
+               "    ('work_state.py', 'completion_view'),\n", '', 'consumers-from-call-sites')
+
+    def calls(name, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', 'control_eligibility.py', old, new, ['reservations/' + row])
+
+    invoke = "                receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,"
+    calls('reservation-review-follow-on-bypass', invoke,
+          "                if self.station == 'review' and boundary == 'follow_on':\n"
+          "                    guard.launch(invocation, configuration)  # defect: no reservation\n"
+          "                    receipt = {'replayed': False}\n"
+          "                else:\n  " + invoke, 'forbidden-call-observation')
+    refused_call = ("                    raise  # a launch failure after its reservation: outcome unknown, exposure retained\n"
+                    "                raise named from error")
+    calls('reservation-refusal-fails-open', refused_call,
+          "                    raise  # a launch failure after its reservation: outcome unknown, exposure retained\n"
+          "                guard.launch(invocation, configuration)  # defect: a refused reservation still launches\n"
+          "                receipt = {'replayed': False}", 'forbidden-call-observation')
+    calls('reservation-retry-bypass', invoke,
+          "                if boundary == 'retry':\n"
+          "                    guard.launch(invocation, configuration)  # defect: retries skip the reservation\n"
+          "                    receipt = {'replayed': False}\n"
+          "                else:\n  " + invoke, 'unknown-usage-retained')
+    # VELDO-0052, the 2026-09-23 review: each reproduced defect reintroduced, and a second, different
+    # mutation for the same row.
+    def review(name, module, old, new, row):
+        add(52, name, '60_veldo_0052_eligibility.py', module, old, new, [row])
+
+    review('enrolled-git-error-reads-unenrolled', 'control_eligibility.py',
+           "        if _claims_a_repository(repo_root):\n            raise Stopped('enrollment_unanswerable') from error\n"
+           "        return False\n",
+           "        return False  # defect: any git error reads as not enrolled\n",
+           'eligibility/enrollment-git-error-stops')
+    review('enrolled-discovery-ignores-ancestors', 'git_process.py',
+           "        parent = os.path.dirname(current)\n        if parent == current:\n            return False\n",
+           "        return False  # defect: discovery looks only at the directory it was given\n",
+           'eligibility/enrollment-git-error-stops')
+    review('standalone-lane-reads-front-matter', 'frontier.py',
+           '    return fm.get("lane") == "standalone" and _lane_status(fm, status) == "ready"',
+           '    return fm.get("lane") == "standalone" and fm.get("status") == "ready"',
+           'completion/landed-units-not-reoffered')
+    review('review-lane-reads-front-matter', 'frontier.py',
+           '        if _lane_status(fm, status) == "review":',
+           '        if fm.get("status") == "review":',
+           'completion/landed-units-not-reoffered')
+    review('status-reader-reads-status-text', 'runstatus.py',
+           '        status_by_id = PL._status(eligibility)',
+           '        status_by_id = PL.spec_status_by_id()',
+           'completion/status-reader-agrees')
+    review('status-reader-drops-the-stop', 'runstatus.py',
+           '    except EL.Stopped as stop:\n        return [], stop.reason',
+           '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
+           'completion/status-reader-agrees')
+    review('dispatch-without-identity', 'control_eligibility.py',
+           '        dispatch = self.open_dispatch(unit, context=context)\n',
+           "        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved\n",
+           'reservations/work-loop-dispatch-identity')
+    review('dispatch-identity-not-reserved', 'control_eligibility.py',
+           "                self._reservations().reserve_worker('worker/' + dispatch, dispatch, self.account, project, unit,\n"
+           "                                                    now=self.clock())",
+           "                pass  # defect: an identity no worker slot was reserved for",
+           'reservations/work-loop-dispatch-identity')
+    review('executor-launches-unreserved', 'executor.py',
+           '            if self.calls is None:\n'
+           '                # The dispatcher stops here in the same situation: nothing launches unreserved.\n'
+           '                raise EL.Stopped("reservation_required")\n',
+           '            if self.calls is None:\n'
+           '                gate = None  # defect: run on with no reservation handle and no later station\n',
+           'eligibility/executor-station-decisions')
+    review('executor-review-skips-review-station', 'executor.py',
+           '            context = dict(self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))\n'
+           '            return gate.decide("review", sid, context=context, ticket=ticket)\n',
+           '            return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)  # defect\n',
+           'eligibility/executor-station-decisions')
+    recheck = '            current = self._decide(gate, sid, launch, decision)\n'
+    review('executor-decides-once', 'executor.py', recheck,
+           '            current = decision if launch == "build" else self._decide(gate, sid, launch, decision)  # defect\n',
+           'eligibility/executor-rechecks-every-launch')
+    review('executor-recheck-without-ticket', 'executor.py', recheck,
+           '            current = self._decide(gate, sid, launch, None)  # defect: the recheck forgets what it consumed\n',
+           'eligibility/executor-rechecks-every-launch')
+    review('entry-gate-not-built', 'control_eligibility.py',
+           '    return enrolled_gate(repo_root, trust, observe=observe)\n',
+           "    raise Stopped('eligibility_required')  # defect: the production entries build no Gate\n",
+           'eligibility/production-entries-build-the-gate')
+    review('entry-gate-unverified-binding', 'control_eligibility.py',
+           "    if problems:\n        raise Stopped('enrollment_refused:' + problems[0][0])\n",
+           "    if False:  # defect: a binding that does not verify still builds a Gate\n"
+           "        raise Stopped('enrollment_refused:' + problems[0][0])\n",
+           'eligibility/production-entries-build-the-gate')
+    # VELDO-0052, the second independent check (r52b): defect g reintroduced, and different defects
+    # of the same row (a returned launch keeps its slot; closing forgets the calls' exposure).
+    review('slot-opened-before-prelaunch-halts', 'dispatch.py',
+           '            if self._calls is None:\n                raise EL.Stopped("reservation_required")\n'
+           '            # The executor launches the build',
+           '            if self._calls is None:\n                raise EL.Stopped("reservation_required")\n'
+           '            self._calls.open_dispatch(sid, context=context)  # defect: reserved before the halts, never retired\n'
+           '            # The executor launches the build',
+           'reservations/dispatch-slot-retired')
+    review('slot-kept-after-launch-returns', 'control_eligibility.py',
+           "            raise\n        self.close_dispatch(dispatch, 'completed')\n",
+           "            raise\n        # defect: a launch that returned normally keeps its worker slot\n",
+           'reservations/dispatch-slot-retired')
+    review('slot-close-zeroes-exposure', 'control_eligibility.py',
+           "                                   final=True, now=self.clock())",
+           "                                   final=True, outcome='not_executed', now=self.clock())  # defect",
+           'reservations/dispatch-slot-retired')
+    # Defect h reintroduced (a signers file inside the workspace vouches for it), then a relative path
+    # accepted, and the containment judged on the unresolved path, so a symlink leads back inside.
+    review('trust-accepts-workspace-signers', 'control_eligibility.py',
+           "        if any(os.path.commonpath([resolved, area]) == area for area in _workspace_areas(workspace)):\n"
+           "            raise Stopped('host_trust_refused:signers_inside_workspace')\n",
+           "        pass  # defect: the workspace's own signers file vouches for the workspace\n",
+           'eligibility/host-trust-outside-workspace')
+    review('trust-accepts-relative-signers', 'control_eligibility.py',
+           "        if not os.path.isabs(enrollment_signers):\n"
+           "            raise Stopped('host_trust_refused:signers_not_absolute')\n",
+           "        pass  # defect: a relative signers path resolves against the process's directory\n",
+           'eligibility/host-trust-outside-workspace')
+    review('trust-judges-unresolved-path', 'control_eligibility.py',
+           "        resolved = os.path.realpath(self.enrollment_signers)\n",
+           "        resolved = os.path.abspath(self.enrollment_signers)  # defect: symlinks not followed\n",
+           'eligibility/host-trust-outside-workspace')
+    # A refusal inside a launch escapes Executor.run again (the defect reintroduced), escapes the
+    # dispatcher's review as an error, or halts without the name of what refused.
+    review('provider-refusal-escapes-run', 'executor.py',
+           '            except EL.Refused as error:\n                codes = "; ".join(',
+           '            except EL.Refused as error:\n                if opened:\n'
+           '                    raise  # defect: a refusal inside the launch escapes run()\n                codes = "; ".join(',
+           'eligibility/provider-refusal-halts')
+    review('provider-refusal-escapes-review', 'dispatch.py',
+           '                    rv = self._reviewer.review(spec, unit, calls=handle) or {}\n',
+           '                    try:\n                        rv = self._reviewer.review(spec, unit, calls=handle) or {}\n'
+           '                    except EL.Refused as inner:\n'
+           '                        raise RuntimeError(inner.code)  # defect: the refusal escapes as an error\n',
+           'eligibility/provider-refusal-halts')
+    review('provider-refusal-halt-unnamed', 'executor.py',
+           '                        else "reservation refused before %s: %s") % (launch, codes)',
+           '                        else "reservation refused before %s: %s") % (launch, "refused")  # defect',
+           'eligibility/provider-refusal-halts')
+    # r52b probe i: a launch entered without the boundary its calls face (reintroduced), or with that
+    # boundary decided for the first cycle only.
+    review('launch-skips-call-boundary', 'executor.py',
+           '            if current["eligible"]:\n                boundary = self._decide_calls(',
+           '            if False:  # defect: the builder is entered whatever its calls will be told\n'
+           '                boundary = self._decide_calls(',
+           'eligibility/launch-decides-its-calls')
+    review('launch-call-boundary-first-cycle-only', 'executor.py',
+           '            if current["eligible"]:\n                boundary = self._decide_calls(',
+           '            if current["eligible"] and cycle == 1:  # defect\n                boundary = self._decide_calls(',
+           'eligibility/launch-decides-its-calls')
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
@@ -987,51 +1207,66 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 37, 46, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 37, 46, 52, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
+    parser.add_argument('--jobs', type=int, default=min(8, os.cpu_count() or 1),
+                        help='mutant runs in parallel (the honest run is once per suite)')
     args = parser.parse_args()
     selected = [c for c in cases() if args.finding is None or c['finding'] == args.finding]
     if args.worker:
         case = next(c for c in selected if c['name'] == args.worker)
         print(json.dumps(worker(case, args.mutant)))
         return
+    def run(case, path=None):
+        command = [sys.executable, __file__, '--worker', case['name']]
+        if path:
+            command += ['--mutant', str(path)]
+        proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        if proc.returncode:
+            raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
+        return json.loads(proc.stdout)
+
+    def targets(observed, case):
+        return {label: [ok for name, ok in observed['observations'] if name.split()[-1] == label]
+                for label in case['rows']}
+
     baselines = {}
     with tempfile.TemporaryDirectory(prefix='teeth-mutants-') as directory:
+        prepared = {}
         for case in selected:
-            prepared = materialize(case, 'mutant', Path(directory) / case['name'])
-            mutant = prepared['mutant']
+            prepared[case['name']] = materialize(case, 'mutant', Path(directory) / case['name'])
             if args.diff_dir:
-                source = prepared['source'].read_text()
+                source = prepared[case['name']]['source'].read_text()
                 changed = source.replace(case['old'], case['new'])
-                relative = str(prepared['source'].relative_to(ROOT))
+                relative = str(prepared[case['name']]['source'].relative_to(ROOT))
                 args.diff_dir.mkdir(parents=True, exist_ok=True)
                 (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
                     source.splitlines(keepends=True), changed.splitlines(keepends=True), n=0,
                     fromfile='a/' + relative, tofile='b/' + relative)))
-
-            def run(path=None):
-                command = [sys.executable, __file__, '--worker', case['name']]
-                if path:
-                    command += ['--mutant', str(path)]
-                proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
-                if proc.returncode:
-                    raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
-                return json.loads(proc.stdout)
-
-            # Keep each case's baseline target observations, not just the suite's exit code.
-            honest = run()
-            broken = run(mutant)
-            assert not honest['failed_rows'], honest
-            assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
-            for label in case['rows']:
-                assert honest['targets'][label] == [True], honest
-                assert broken['targets'][label] == [False], broken
-            baselines[case['suite']] = honest['count']
-            print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
-                              'baseline': 'green', 'assertions': honest['count'],
-                              'red_rows': broken['failed_rows']}), flush=True)
+        # The honest run of a suite does not depend on the mutant, so each suite runs honestly ONCE
+        # and every case of it is judged against that run; the mutant runs are independent and run
+        # in parallel. Each case's own targets are taken from the shared observations.
+        first = {}
+        for case in selected:
+            first.setdefault(case['suite'], case)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+            honest_runs = {suite: pool.submit(run, case) for suite, case in first.items()}
+            broken_runs = {case['name']: pool.submit(run, case, prepared[case['name']]['mutant'])
+                           for case in selected}
+            for case in selected:
+                honest = honest_runs[case['suite']].result()
+                broken = broken_runs[case['name']].result()
+                assert not honest['failed_rows'], honest
+                assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
+                for label in case['rows']:
+                    assert targets(honest, case)[label] == [True], (case['name'], label, honest['failed_rows'])
+                    assert targets(broken, case)[label] == [False], (case['name'], label, broken['failed_rows'])
+                baselines[case['suite']] = honest['count']
+                print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
+                                  'baseline': 'green', 'assertions': honest['count'],
+                                  'red_rows': broken['failed_rows']}), flush=True)
     print(json.dumps({'mutations_rejected': len(selected), 'green_suites': baselines}))
 
 
