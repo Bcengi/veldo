@@ -77,6 +77,7 @@ import linecache
 import os
 from pathlib import Path
 import sqlite3
+import stat
 import subprocess
 import time
 import uuid
@@ -429,6 +430,20 @@ class _MemoryLoader:
         exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
 
 
+def _read_engine_file(path):
+    """The bytes of one engine file, read once. The file is opened without waiting and judged by the open
+    descriptor: only a regular file (after links) is read; a FIFO, a directory or anything else under a
+    '.py' name is the named stop ImportError, never a wait."""
+    try:
+        fd = os.open(str(path), os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
+    except OSError as error:
+        raise ImportError('engine file %s cannot be opened: %s' % (path, error)) from error
+    with os.fdopen(fd, 'rb') as handle:
+        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
+            raise ImportError('engine file %s is not a regular file' % (path,))
+        return handle.read()
+
+
 def _forget_lines(keys):
     for key in keys:
         linecache.cache.pop(key, None)
@@ -450,7 +465,8 @@ class ValidatorSnapshot:
     def __init__(self, installed=None):
         installed = Path(os.path.realpath(str(installed or Path(__file__).resolve().parent)))
         self._installed, self._id = installed, uuid.uuid4().hex
-        self._bodies = {path.name[:-3]: path.read_bytes() for path in sorted(installed.glob('*.py'))}
+        # The empty module name (a file named '.py') is never held, so no request can be answered with it.
+        self._bodies = {path.name[:-3]: _read_engine_file(path) for path in sorted(installed.glob('*.py')) if path.name[:-3]}
         self._keys, self._executed = [], {}
         _weakref.finalize(self, _forget_lines, self._keys)
         util = _types.ModuleType('importlib.util')

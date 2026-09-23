@@ -909,6 +909,23 @@ def cases():
                  executed.replace("for held, digest in self._executed.items()}",
                                   "for held, digest in self._executed.items() if held in ROLE_LABELS}  # defect: labelled modules only"),
                  ['identity-covers-what-ran'])
+    # Round 5: only a non-empty module name is held and only a regular file is read.
+    architecture('architecture-snapshot-holds-empty-name', 'control_eligibility.py',
+                 " for path in sorted(installed.glob('*.py')) if path.name[:-3]}",
+                 " for path in sorted(installed.glob('*.py'))}  # defect: a file named .py is held under the empty name",
+                 ['snapshot-held-names'])
+    architecture('architecture-snapshot-request-any-suffix', 'control_eligibility.py',
+                 "        return self._named(name, file_name[:-3] if file_name.endswith('.py') else '')\n",
+                 "        return self._named(name, os.path.splitext(file_name)[0])  # defect: any suffix names a held module\n",
+                 ['snapshot-held-names'])
+    architecture('architecture-snapshot-reads-any-file', 'control_eligibility.py',
+                 "        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):\n",
+                 "        if False:  # defect: a FIFO or other non-regular file is read like a file\n",
+                 ['snapshot-held-names'])
+    architecture('architecture-snapshot-blocking-read', 'control_eligibility.py',
+                 "_read_engine_file(path) for path in sorted(installed.glob('*.py'))",
+                 "path.read_bytes() for path in sorted(installed.glob('*.py'))",
+                 ['snapshot-held-names'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

@@ -238,6 +238,23 @@ def _v53_suite():
         # farm into `links_into`), and a Gate of it judging every station.
         real_read = Path.read_bytes
 
+        @contextlib.contextmanager
+        def reading(writer, *modules):
+            # A writer around the snapshot's one read of each engine file: the eligibility module's own reader
+            # of engine files where it has one, and Path.read_bytes (which an older snapshot read with).
+            saved = [(m_, m_.__dict__.get('_read_engine_file')) for m_ in modules]
+            for m_, own in saved:
+                if own is not None:
+                    m_._read_engine_file = lambda path_: writer(Path(path_))
+            Path.read_bytes = writer
+            try:
+                yield
+            finally:
+                Path.read_bytes = real_read
+                for m_, own in saved:
+                    if own is not None:
+                        m_._read_engine_file = own
+
         def engine_copy(where, links_into=None, leave_out=()):
             where.mkdir(parents=True)
             for source in sorted(mods.glob('*.py')):
@@ -255,12 +272,8 @@ def _v53_suite():
             engine_el = load('v53_%s_eligibility' % tag, engine / 'control_eligibility.py')
             judging = engine_el.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base),
                                      observe=(events.append if events is not None else None))
-            if writer is not None:
-                Path.read_bytes = writer
-            try:
+            with (reading(writer, engine_el) if writer is not None else contextlib.nullcontext()):
                 decided = stations(judging)
-            finally:
-                Path.read_bytes = real_read
             arch_file = None
             try:
                 arch_file = judging._architecture_validator().arch.__file__
@@ -801,12 +814,15 @@ def _v53_suite():
 
             # The same writer in the window between the one read and the compile, over the regular engine.
             read_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
-            Path.read_bytes, importlib.util.spec_from_file_location = read_then_write, watched_spec
+            importlib.util.spec_from_file_location = watched_spec
+            hooked = reading(read_then_write, farm_EL, EL)
+            hooked.__enter__()
             try:
                 farm_raced = stations(farm_gate)
                 read_raced = stations(read_gate)
             finally:
-                Path.read_bytes, importlib.util.spec_from_file_location = real_read, real_spec
+                hooked.__exit__(None, None, None)
+                importlib.util.spec_from_file_location = real_spec
                 (keep / 'arch.py').write_bytes(farm_arch)
                 (mods / 'arch.py').write_bytes(installed_arch)
             read_recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
@@ -938,6 +954,62 @@ def _v53_suite():
             reset('valid')
             observed['identity_covers_what_ran'] = covers
             check('architecture/identity-covers-what-ran', all(covers.values()) and len(covers) == 3)
+
+        with region('architecture/snapshot-held-names'):
+            # Only a non-empty module name is ever held, and only a regular file is ever read. An engine with a
+            # file named '.py' (whose module name is empty) holds no empty name, so a request whose file name
+            # is not a held module (no '.py', the bare '.py', no location at all) is the named stop and that
+            # file's code never runs; an engine with a FIFO under a '.py' name is a named stop, never a wait.
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+            held_names = {}
+            dotted = engine_copy(top / 'dotpy' / '.veldo')
+            dot_marker = top / 'dotpy-ran'
+            (dotted / '.py').write_text('open(%r, "w").write("ran")\n' % str(dot_marker))
+            dot_el = load('v53_dotpy_eligibility', dotted / 'control_eligibility.py')
+            dot_snapshot = dot_el.ValidatorSnapshot(str(dotted))
+            answered = {}
+            for label, request in (('arch.pyc', 'arch.pyc'), ('engine/arch', str(dotted / 'arch')),
+                                   ('engine/.py', str(dotted / '.py')), ('.py', '.py'), ('no location', None)):
+                try:
+                    spec = dot_snapshot._spec('fixture_request', request) if request is not None else dot_snapshot._spec('fixture_request')
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    answered[label] = 'answered'
+                except Exception as error:  # noqa: BLE001 - recorded by type, asserted below
+                    answered[label] = type(error).__name__
+            decided, _, _ = judge(dotted, 'dotpy_gate')
+            held_names['empty_name'] = (set(answered.values()) == {'ImportError'} and not dot_marker.exists()
+                                        and outcome(decided, CODES['invalid_structure']))
+            piped = engine_copy(top / 'fifo' / '.veldo')
+            os.mkfifo(str(piped / 'zz.py'))
+            # A reader blocked on the FIFO would wait for a writer forever; this helper opens it for writing,
+            # which releases such a reader with an empty read, so a snapshot that reads it cannot hang the suite.
+            import threading
+            stop_helper, unblocked = threading.Event(), []
+
+            def release_readers():
+                while not stop_helper.is_set():
+                    try:
+                        os.close(os.open(str(piped / 'zz.py'), os.O_WRONLY | os.O_NONBLOCK))
+                        unblocked.append(1)
+                    except OSError:
+                        pass
+                    stop_helper.wait(0.02)
+
+            helper = threading.Thread(target=release_readers, daemon=True)
+            helper.start()
+            fifo_events = []
+            try:
+                decided, _, _ = judge(piped, 'fifo_gate', events=fifo_events)
+            finally:
+                stop_helper.set()
+                helper.join(5)
+            held_names['fifo_is_named_stop'] = (
+                outcome(decided, 'unavailable_service:architecture_validator') and not unblocked
+                and all((d.get('architecture') or {}).get('error') == 'ImportError' for d in decided.values()))
+            reset('valid')
+            observed['snapshot_held_names'] = {'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked)}
+            check('architecture/snapshot-held-names', all(held_names.values()) and len(held_names) == 2)
 
         with region('architecture/snapshot-source'):
             # Tracebacks and inspect show the code that ran, and ONLY the snapshot's code: its lines are kept
