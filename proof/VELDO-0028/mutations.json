@@ -1,0 +1,72 @@
+[
+  {
+    "finding": 28,
+    "mutation": "effects-worker-scope",
+    "baseline": "green",
+    "assertions": 32,
+    "red_rows": [
+      "VELDO-0028 effects/scope/provider",
+      "VELDO-0028 effects/nonce/provider",
+      "VELDO-0028 effects/scope/publication",
+      "VELDO-0028 effects/nonce/publication"
+    ]
+  },
+  {
+    "finding": 28,
+    "mutation": "effects-overlong-handle",
+    "baseline": "green",
+    "assertions": 32,
+    "red_rows": [
+      "VELDO-0028 effects/scope/provider",
+      "VELDO-0028 effects/scope/publication"
+    ]
+  },
+  {
+    "finding": 28,
+    "mutation": "effects-second-use-before-consumption",
+    "baseline": "green",
+    "assertions": 32,
+    "red_rows": [
+      "VELDO-0028 effects/nonce/provider",
+      "VELDO-0028 effects/completion/provider",
+      "VELDO-0028 effects/nonce/publication",
+      "VELDO-0028 effects/completion/publication"
+    ]
+  },
+  {
+    "finding": 28,
+    "mutation": "effects-changed-content-replay",
+    "baseline": "green",
+    "assertions": 32,
+    "red_rows": [
+      "VELDO-0028 effects/nonce/provider",
+      "VELDO-0028 effects/nonce/publication"
+    ]
+  },
+  {
+    "finding": 28,
+    "mutation": "effects-acceptance-is-completion",
+    "baseline": "green",
+    "assertions": 32,
+    "red_rows": [
+      "VELDO-0028 effects/completion/provider",
+      "VELDO-0028 effects/completion/publication"
+    ]
+  },
+  {
+    "finding": 28,
+    "mutation": "effects-unbound-result",
+    "baseline": "green",
+    "assertions": 32,
+    "red_rows": [
+      "VELDO-0028 effects/completion/provider",
+      "VELDO-0028 effects/completion/publication"
+    ]
+  },
+  {
+    "mutations_rejected": 6,
+    "green_suites": {
+      "58_veldo_0028_effects.py": 32
+    }
+  }
+]

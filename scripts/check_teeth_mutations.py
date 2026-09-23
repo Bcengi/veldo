@@ -278,6 +278,29 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
+    def effect(name, old, new, criterion):
+        add(28, name, '58_veldo_0028_effects.py', 'control_effects.py', old, new,
+            ['effects/' + criterion + '/' + kind for kind in ('provider', 'publication')])
+    scope = "    if any(request.get(f) != contract[f] for f in BINDINGS):\n        raise Refused('scope-mismatch')"
+    effect('effects-worker-scope', scope,
+           "    contract = dict(contract, **{f: request[f] for f in BINDINGS})\n    entry = dict(entry, data=contract)", 'scope')
+    effect('effects-overlong-handle', "expires_at=min(contract['deadline'] + 900, time.time() + 900)",
+           "expires_at=contract['deadline'] + 901", 'scope')
+    replay = """    if previous:
+        if previous['data']['request_digest'] != SIG.digest(request):
+            raise Refused('request-content-conflict')
+        return previous['data'], False
+    nonce = hid"""
+    effect('effects-second-use-before-consumption', replay,
+           """    if previous and previous['data']['request_digest'] != SIG.digest(request):
+        raise Refused('request-content-conflict')
+    nonce = secrets.token_hex(20) if previous else hid""", 'nonce')
+    effect('effects-changed-content-replay', "        if previous['data']['request_digest'] != SIG.digest(request):",
+           "        if False:", 'nonce')
+    effect('effects-acceptance-is-completion', "    completed = status == 'completed' and bool(observation.get('evidence'))",
+           "    completed = status in ('accepted', 'completed') and bool(observation.get('evidence'))", 'completion')
+    effect('effects-unbound-result', "    matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)",
+           "    matches = isinstance(observation, dict)", 'completion')
     return result
 
 
@@ -348,7 +371,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 28, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
