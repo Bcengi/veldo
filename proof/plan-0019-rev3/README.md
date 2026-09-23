@@ -86,7 +86,7 @@ planning scope; existing implementation status and proof remain separately recor
 | W62 | VELDO-0077 | R1 S4 |
 | W63 | VELDO-0078 | R1 S4 |
 | W64 | VELDO-0079 | R1 S4 |
-| W65 | VELDO-0080 | R3 |
+| W65 | VELDO-0080 | R1 S4 ordinary defects; automatic reproduction/admission R3 |
 | W66 | VELDO-0081 | R3 |
 | W67 | VELDO-0082 | R3 |
 | W68 | VELDO-0083 | R3 |
@@ -182,6 +182,7 @@ caps and landing exactly the tested tree. No persistent checkpointer is required
 | VELDO-0076 | Old AC3 multi-owner transfer and unused AC2 release-execution depth -> Release 3; AC1 concurrent activation and AC2 restart -> Release 2; multiple-channel breadth -> Release 4. Owner, charter, budget, pause and cancellation remain. |
 | VELDO-0077 | Old AC1 full transition and AC2 release-contribution breadth -> Release 3; extra-channel coverage -> Release 4; AC2 replay and AC3 restart -> Release 2; cross-project depth -> Release 3. Exact objective acceptance and evidence-based satisfaction remain. |
 | VELDO-0078 | Old AC1 exhaustive state-pair qualification -> Release 3 with advanced backlog states; AC2 crash/replay races -> Release 2. Priority, approved decomposition, clean blocked resumption and evidence-based DONE remain. |
+| VELDO-0080 | Ordinary bug fixes use normal message, specification, owner admission/priority, build, review and landing in R1. Former AC1 full policy-class matrix and AC2/AC3 trusted automatic reproduction/admission remain R3, with 0082/0083 standing/emergency admission. |
 | VELDO-0079 | Old AC3 concurrent/lost-ack qualification -> Release 2; extra-channel coverage -> Release 4. Jira-specific grooming is dropped. Exact material, owner ruling and distinct admission/priority remain. |
 | VELDO-0085 | Old AC2 multi-clone/concurrent-author and AC3 crash/snapshot recovery matrices -> Release 2. Approved decomposition and actual specification/dependency publication remain. |
 | VELDO-0088 | Old AC3 retry/cancellation/replacement-adapter matrix -> Release 2. Actual PM execution remains; ordinary serialized scheduling and one pending-input follow-up move forward from 0093. |

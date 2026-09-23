@@ -106,8 +106,11 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## Notes
 
 The regular path is proposed/prepared, awaiting grooming, admitted, prioritized, active,
-optionally blocked, and done or canceled. Unsupported advanced work classes remain non-
-executable. Use the existing unit-ID validator and current owner/admission policy.
+optionally blocked, and done or canceled. Ordinary defects (VELDO-0080) are executable in
+Release 1 after normal shaping, owner admission and priority. Trusted automatic defect
+reproduction/admission and standing/emergency policy paths remain non-executable until their
+later-release contracts are qualified. Use the existing unit-ID validator and current
+owner/admission policy.
 
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each

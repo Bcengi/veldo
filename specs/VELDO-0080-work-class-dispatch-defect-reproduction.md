@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0080
-title: Section 2 work-class dispatch and trusted defect reproduction
+title: Ordinary defect dispatch through normal admission
 status: draft
 risk: critical
 owner: dmitry
@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W65
-plan_revision: 1
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0072, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0079]
+plan_revision: 3
+depends_on: [VELDO-0079, VELDO-0126]
 placement: [contracts, engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -52,6 +52,87 @@ observability:
   error_taxonomy: >
     Distinguish unknown class, changed contract, untrusted reproduction, unsupported version,
     cross-repository defect and expired policy.
+acceptance_criteria:
+  - id: AC1
+    text: >
+      Claim: An ordinary "fix this bug" message enters the normal shaping, specification,
+      owner admission and priority path in Release 1. Set and completeness: Submit a defect
+      through Telegram and authenticated API intake, retain its source and severity, and inspect
+      the proposed POLICY_DEFECT item, shaped specification and exact owner decision binding.
+      The label alone grants no execution. Falsifier: Admit a defect from its label without
+      the owner decision; defects/ordinary-admission must fail.
+    falsified_by: >
+      Admit a defect from its label without the owner decision; defects/ordinary-admission
+      must fail.
+  - id: AC2
+    text: >
+      Claim: An admitted and prioritized ordinary defect uses the normal build, proof, gate,
+      independent review and exact-tree landing path. Set and completeness: Drive a real
+      admitted bug-fix unit through those stages and inspect the completion receipt; withhold
+      admission, priority, passing gate or independent review separately and require refusal.
+      Falsifier: Complete a bug fix with its independent review missing;
+      defects/ordinary-completion must fail.
+    falsified_by: >
+      Complete a bug fix with its independent review missing; defects/ordinary-completion
+      must fail.
+  - id: AC3
+    text: >
+      Claim: Ordinary defect handling does not activate automatic reproduction-based admission
+      or standing/emergency policies. Set and completeness: Submit an agent reproduction claim,
+      a standing occurrence and a security emergency without their governing authority;
+      require no automatic executable unit. An ordinary defect may proceed after normal
+      shaping, owner admission and priority without a trusted automatic reproduction service.
+      Preserve severity and return scope-changing restoration to grooming.
+      Falsifier: Treat a model reproduction claim as automatic admission;
+      defects/no-automatic-admission must fail.
+    falsified_by: >
+      Treat a model reproduction claim as automatic admission; defects/no-automatic-admission
+      must fail.
+required_evidence: [unit, integration]
+rollback: >
+  Disable automatic defect admission, retain severity and reproduction evidence, and route
+  affected proposals to current authorized grooming.
+---
+
+## Intent
+
+Take an ordinary bug-fix request from message to spec, build, review and land through the
+same deliberate admission path as other ordinary work.
+
+## Context
+
+W65 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+R08 permits POLICY_DEFECT admission by the admission authority; trusted automatic reproduction
+is a separate later path. Normal owner admission and priority remain mandatory.
+Risk, approval requirements and draft status are unchanged.
+
+## Out of scope
+
+Trusted automatic defect reproduction and admission, the full seven-class policy dispatch
+matrix, quarantine qualification, standing maintenance (VELDO-0082) and security emergency
+admission (VELDO-0083) remain Release 3. Their deferral cannot block ordinary admitted bug fixes.
+
+## Notes
+
+Use VELDO-0126's common Telegram/API intake and VELDO-0079's ordinary grooming/admission path.
+VELDO-0078 supplies priority-controlled execution and VELDO-0052 the ordinary engineering floor.
+A defect label, reproduction assertion or severity never bypasses owner admission or review.
+
+## History
+
+2026-09-22: the owner requires ordinary defect work in Release 1. Dependencies now name its
+actual intake and grooming consumers. The former criteria below remain Release 3 obligations;
+they are not Release 1 prerequisites and have not been implemented or qualified by this edit.
+No status or existing proof changed.
+
+### Deferred Release 3 contract
+
+The full class matrix still requires each class's authority predicates, W67/W68 handlers before
+activation, and qualified quarantine before automatic runtime admission. D1-D4 recovery and
+containment follow-ups retain their plan release assignments. The Admission Service policy
+identity and any additional authority must be enrolled before automatic admission is enabled.
+
+```yaml
 acceptance_criteria:
   - id: AC1
     text: >
@@ -97,24 +178,4 @@ acceptance_criteria:
     falsified_by: >
       Lower severity on an unreproduced security defect before grooming;
       defects/severity-preserved must detect the downgrade.
-required_evidence: [unit, integration]
-rollback: >
-  Disable automatic defect admission, retain severity and reproduction evidence, and route
-  affected proposals to current authorized grooming.
----
-
-## Intent
-
-Dispatch all seven classes under their own admission rules and constrain automatic defects to observed restoration of accepted behavior.
-
-## Context
-
-Package F, W65 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) governs this draft. R08, R61 and R66 prohibit relabeling desired functionality as a defect. Policy evaluation can grant execution, requiring critical risk. Risk is critical; required approval must bind the eventual implementation and proof. This draft records no approval or activation.
-
-## Out of scope
-
-Scanner installation and standing or emergency policy implementation remain W66-W68 concerns.
-
-## Notes
-
-D1/D2 block stored policy evaluations and acknowledgment; D3 blocks trusted reproduction containment and D4 its accepted-source clone path. Dmitry must enroll the Admission Service policy identity and any additional admission, priority, security or operations authority. Failed scanner qualification is an explicit reproduction blocker. The plan orders this before W66 without depending on it: bounded local fixtures can develop dispatch, but automatic runtime admission must stay disabled until W66 qualification. Map and inventory control_admission/control_defect before ready; preserve R66 predicate coverage and actual negative-control diffs.
+```

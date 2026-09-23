@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W44
 plan_revision: 3
-depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
+depends_on: [VELDO-0080, VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
 placement: [distribution, fleet, loop, enforcement, docs]
 protected_paths: []
 footprint:
@@ -123,6 +123,10 @@ The deferred obligations in History are not part of this Release 1 criterion or 
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
+
+Release 1 journey evidence includes an ordinary "fix this bug" message through VELDO-0080:
+shape the spec, obtain normal owner admission and priority, build, prove, independently review
+and land the exact tested tree. No automatic reproduction service is a prerequisite.
 
 This is the Release 1 stage 6 full-journey qualification. Declare the reference installed
 distribution and both actual host profiles before ready. Real Claude Code/Codex and real

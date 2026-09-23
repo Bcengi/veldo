@@ -593,7 +593,7 @@ work:
     spec: VELDO-0059
     title: Installed end-to-end floor slice with fake model and real enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
+    depends_on: [VELDO-0080, VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
     order: 16059
     release: 1
     stage: 6
@@ -754,11 +754,12 @@ work:
     stage: 4
   - item: W65
     spec: VELDO-0080
-    title: Section 2 work-class dispatch and trusted defect reproduction
+    title: Ordinary defect dispatch through normal admission
     feature_refs: [F6]
-    depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0070, VELDO-0071, VELDO-0073, VELDO-0074, VELDO-0075, VELDO-0079]
-    order: 30080
-    release: 3
+    depends_on: [VELDO-0079, VELDO-0126]
+    order: 14080
+    release: 1
+    stage: 4
   - item: W66
     spec: VELDO-0081
     title: Quarantine inspection, taint propagation, and bounded execution
@@ -1093,6 +1094,8 @@ stage may integrate an earlier service without making that service depend on the
 4. **Projects and the LangGraph project manager.** Project/owner/charter and objective acceptance,
    prioritized backlog and published specification decomposition, bounded PM elaboration, versioned
    teams and exact agent/tool/MCP configuration, specialist matching and typed authorized proposals.
+   Ordinary "fix this bug" work (0080) follows message -> spec -> owner admission and priority
+   -> build -> proof/gate/review -> land, without automatic defect reproduction.
    One cycle runs per project, with one bounded follow-up if relevant input arrives during it.
    LangGraph runs a Veldo-owned versioned workflow through a replaceable plain-data interface;
    Release 1 uses no persistent checkpointer. Install all runtime assets this journey needs.
@@ -1117,7 +1120,8 @@ checks and actual IPC-to-store integration are required now without claiming the
 qualification matrices have been proven.
 
 Release 3 adds governance depth: full regression receipt consumers, adversarial decision review
-and tripwires, advanced work classes and quarantine, standing/emergency admission, readmission debt,
+and tripwires, trusted automatic defect reproduction/admission, advanced policy work classes and
+quarantine, standing/emergency admission, readmission debt,
 release-execution ownership and project-wide dependency invalidation. Release 1 consumes exact
 normal decision settlements and existing engineering-review policy. Unsupported governing obligations
 block admission; they are never treated as satisfied because their richer consumer is deferred.
@@ -1205,7 +1209,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W62 | VELDO-0077 | 1 | 4 |
 | W63 | VELDO-0078 | 1 | 4 |
 | W64 | VELDO-0079 | 1 | 4 |
-| W65 | VELDO-0080 | 3 | - |
+| W65 | VELDO-0080 | 1 | 4; automatic reproduction/admission remains R3 |
 | W66 | VELDO-0081 | 3 | - |
 | W67 | VELDO-0082 | 3 | - |
 | W68 | VELDO-0083 | 3 | - |

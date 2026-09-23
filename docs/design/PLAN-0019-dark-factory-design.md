@@ -624,7 +624,7 @@ Live ingress and external mutations activate per channel only after separate req
 
 **R61. Package F: projects, objectives, grooming, and dependencies. [REVISED]**
 
-*2026-09-22 revision 3 applicability:* Release 1 retains owner/charter/budget, objective acceptance, ordinary prioritized admitted backlog, grooming on Telegram or UI/API and specification decomposition/publication. Advanced policy work classes, quarantine, standing/emergency admission, release-execution ownership, tripwires and project-wide invalidation are Release 3. Generated dependencies still enter the shared current eligibility service.
+*2026-09-22 revision 3 applicability:* Release 1 retains owner/charter/budget, objective acceptance, ordinary prioritized admitted backlog, grooming on Telegram or UI/API and specification decomposition/publication. Ordinary defects follow the same message -> spec -> owner admission and priority -> build -> review -> land path in Release 1 (VELDO-0080), without trusted automatic reproduction. Trusted automatic defect reproduction/admission, advanced policy work classes, quarantine, standing/emergency admission, release-execution ownership, tripwires and project-wide invalidation are Release 3. Generated dependencies still enter the shared current eligibility service.
 
 Depending on E, F implements ownership, objective acceptance, backlog lifecycle, tracker grooming, Section 2 work classes, quarantine, standing occurrences, decomposition, release-execution binding, and dependency invalidation.
 
