@@ -28,10 +28,20 @@ only that snapshot uses, and linecache holds its lines under that name with no m
 tracebacks and inspect show the code that ran without leaking into any other loader's traceback. The snapshot keeps one
 structural validator (arch.py) instance for every contract and asks validate.py's PUBLIC `entry_contract`
 (re-exported on validate.py, with `entry_validator`), which runs VELDO-0016's one tri-state loader. Every
-decision records the snapshot's identity: every held module the snapshot has executed, under its role
-label when it has one (entry_point, entry, loader, validator, parser) and its module name otherwise
-(tracker, verdict_corpus, git_process), with its installed path and the digest of the bytes it ran from,
-never a fresh read of the files on disk; and the artifact it judged (path, file type, and the loader's digest).
+decision records the snapshot's identity: every held module the snapshot has executed, keyed by its
+module name (validate, validate_checks, contract_loader, arch, yamlish, tracker, verdict_corpus,
+git_process), with its role label as a field (entry_point, entry, loader, validator, parser; none for the
+rest), its installed path and the digest of the bytes it ran from, never a fresh read of the files on
+disk; and the artifact it judged (path, file type, and the loader's digest). Each held file is read up to
+a stated limit of 1 MiB (`ENGINE_FILE_LIMIT`); a longer one is the named stop ImportError.
+
+**What the recorded identity is worth.** Each digest is of the bytes the snapshot read from the installed
+directory, and is only as trustworthy as that directory: whoever can write the installed engine chooses
+what is read, and the record then names those bytes faithfully. It is a record of what ran, not tamper
+evidence. The record is built inside the Gate's own process by the code it describes, so a held module
+that runs can rewrite the snapshot's record of itself (or of any other module), and nothing in the
+decision can show that it did. Protecting the code that is recorded is the installed directory's job
+(its ownership and permissions), not this record's.
 
 **The accepted artifact.** The authority's record `architecture:<repository>` (state `accepted`, the
 sha256 digest of the accepted bytes) makes the contract required whatever the workspace's own policy
