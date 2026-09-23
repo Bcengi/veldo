@@ -127,17 +127,21 @@ def git(root, *args):
 
 
 def read_inputs(root):
-    """Coarse input closure, including scripts/fixtures and untracked additions/deletions."""
+    """THE INPUT CLOSURE: every file of the working tree Git does not ignore, tracked or untracked,
+    minus deleted files, bytecode caches and the gate's own outputs. The snapshot the workers run in
+    holds exactly this, so it must be everything a suite row can read: a hand list of directories
+    left out the front door bin/veldo, and a row that runs it passed in the checkout and failed in
+    every baseline in the snapshot."""
+    listed = git(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard')
     files = {}
-    for directory in ('.veldo', 'engine/.veldo', 'scripts', 'proof'):
-        for path in sorted((root / directory).rglob('*')):
-            rel = path.relative_to(root).as_posix()
-            if rel in OUTPUTS or '__pycache__' in path.parts:
-                continue
-            if path.is_symlink():
-                raise Refused('driver_error', 'symlink input: ' + rel)
-            if path.is_file():
-                files[rel] = (path.stat().st_mode & 0o777, path.read_bytes())
+    for rel in sorted(set(name for name in listed.split('\0') if name)):
+        path = root / rel
+        if rel in OUTPUTS or '__pycache__' in Path(rel).parts:
+            continue
+        if path.is_symlink():
+            raise Refused('driver_error', 'symlink input: ' + rel)
+        if path.is_file():
+            files[rel] = (path.stat().st_mode & 0o777, path.read_bytes())
     return files
 
 

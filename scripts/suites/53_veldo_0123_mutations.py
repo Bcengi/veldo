@@ -341,3 +341,37 @@ if 'expect' in globals():
            'worker deadline, and arms as the alarm a cap of the floor or 2 s per registered case, '
            'whichever is larger (10 -> 120, 116 -> 232, 300 -> 600)',
            _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced))
+
+    # THE INPUT CLOSURE IS THE WORKING TREE, not a hand list of directories. The snapshot workers run
+    # in holds only what read_inputs returns, so a suite row reading anything outside it (the front
+    # door bin/veldo, a spec, a plan) failed in every baseline there and passed everywhere else:
+    # VELDO-0052's production-entries row made every one of its cases an invalid baseline. Driven
+    # over a real repository: a tracked file outside the old directories, an untracked addition
+    # anywhere, an ignored file, a tracked file deleted in the working tree, and a gate output.
+    _m123_repo = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-closure-'))
+    _m123_genv = {k: v for k, v in _m123_os.environ.items() if not k.startswith('GIT_')}
+    _m123_genv.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')
+
+    def _m123_git(*args):
+        _m123_sp.run(['git', '-C', str(_m123_repo), '-c', 'user.name=Fixture',
+                      '-c', 'user.email=fixture@example.invalid', *args],
+                     check=True, capture_output=True, env=_m123_genv)
+
+    _m123_git('init', '-q')
+    for _m123_rel, _m123_text in (('bin/veldo', 'front door\n'), ('specs/S.md', 'spec\n'),
+                                  ('.veldo/kept.py', 'kept\n'), ('.veldo/last_verify', '{}\n'),
+                                  ('gone.txt', 'deleted later\n'), ('.gitignore', 'ignored.txt\n')):
+        (_m123_repo / _m123_rel).parent.mkdir(parents=True, exist_ok=True)
+        (_m123_repo / _m123_rel).write_text(_m123_text)
+    _m123_git('add', '-A')
+    _m123_git('commit', '-q', '-m', 'fixture')
+    (_m123_repo / 'gone.txt').unlink()
+    (_m123_repo / 'plans').mkdir()
+    (_m123_repo / 'plans/new.md').write_text('untracked addition\n')
+    (_m123_repo / 'ignored.txt').write_text('ignored\n')
+    _m123_closure = sorted(_m123_gate.read_inputs(_m123_repo))
+    expect('VELDO-0123 gate/input-closure-is-the-working-tree: read_inputs returns every tracked and '
+           'untracked file that is not ignored, wherever it lives, without deleted files, ignored files '
+           'or gate outputs, so a row reading bin/veldo, a spec or a plan sees in the snapshot exactly '
+           'what it sees in the checkout',
+           _m123_closure == ['.gitignore', '.veldo/kept.py', 'bin/veldo', 'plans/new.md', 'specs/S.md'])

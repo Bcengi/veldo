@@ -104,3 +104,11 @@ Release 1 adds cases. The per-worker bound of 120 seconds is unchanged. Row
 gate/mutation-budget-scales-with-inventory drives the real run_stage and checks the recorded cap, the
 enforced worker deadline and the armed alarm; three mutations (fixed cap, deadline ignoring the scaled
 cap, alarm not re-armed) each turn it red.
+2026-09-23, input closure: the snapshot the mutation workers run in held only .veldo, engine/.veldo,
+scripts and proof, so a suite row reading anything else (the front door bin/veldo, a spec, a plan)
+failed in every baseline there and passed in the checkout. VELDO-0052's production-entries row did
+exactly that and made the gate red with invalid_baseline for all of its cases. read_inputs now
+returns the working tree Git does not ignore, tracked and untracked, minus deleted files, bytecode
+caches and the gate outputs. Row gate/input-closure-is-the-working-tree drives it over a real
+repository; mutations (directory list restored, untracked additions dropped, ignored files kept)
+each turn it red.
