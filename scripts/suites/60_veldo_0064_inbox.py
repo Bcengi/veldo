@@ -136,7 +136,7 @@ def _v64_checks(base):
         _v64_shutil.copyfile(source, organs / source.name)
     _v64_shutil.copyfile(ROOT / ".veldo" / "control_claim.py", organs / 'control_claim.py')
     claims = _v64_load('v64_claims', organs / 'control_claim.py')
-    S, CM, AC = claims.S, claims.CM, claims.AC
+    S, CM, AUTHC = claims.S, claims.CM, claims.AC
     I = _v64_load('v64_inbox', ROOT / ".veldo" / "control_assignment.py")
     P = _v64_load('v64_projection', ROOT / ".veldo" / "control_channel_projection.py")
 
@@ -151,7 +151,7 @@ def _v64_checks(base):
     journal_signed = []
     sign_plan = []  # pending journal signatures: False makes that one store write fail unsigned
 
-    def sign_as(who, message, namespace=AC.SIGNATURE_NAMESPACE):
+    def sign_as(who, message, namespace=AUTHC.SIGNATURE_NAMESPACE):
         signature = _v64_sp.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys / who), '-n', namespace], input=message,
                                 capture_output=True, check=True, timeout=10).stdout.decode()
         return signature
@@ -233,7 +233,7 @@ def _v64_checks(base):
           set(I.ENABLED_CATEGORIES) == {'pending', 'answered', 'declined', 'canceled'})
     script = base / 'worker.py'
     script.write_text(_V64_WORKER)
-    worker = _v64_sp.Popen([_v64_sys.executable, str(script), str(keys / 'worker-a'), AC.SIGNATURE_NAMESPACE,
+    worker = _v64_sp.Popen([_v64_sys.executable, str(script), str(keys / 'worker-a'), AUTHC.SIGNATURE_NAMESPACE,
                             _v64_json.dumps(ids), 'unit-1', 'W-1', _v64_json.dumps(content('decision', unit='unit-1'))],
                            stdin=_v64_sp.PIPE, stdout=_v64_sp.PIPE, text=True)
     replies = []
@@ -418,9 +418,9 @@ def _v64_checks(base):
         check('inbox/states-and-authority', entry['id'] + ' shows stored owner, scope, deadline and budget',
               (entry['owner'], entry['scope'], entry['deadline'], entry['budget'], entry['request_version'], entry['version'])
               == (data['owner'], data['scope'], data['deadline'], data['budget'], data['request_version'], stored[entry['id']]['version']))
-        member = AC.membership_entry(authority['membership'], entry['owner'])
+        member = AUTHC.membership_entry(authority['membership'], entry['owner'])
         check('inbox/states-and-authority', entry['id'] + ' owner is a current person member',
-              member is not None and member['principal_type'] == 'person' and AC.active_member(member, _v64_time.time())[0])
+              member is not None and member['principal_type'] == 'person' and AUTHC.active_member(member, _v64_time.time())[0])
     pending = [e for e in index['entries'] if e['category'] == 'pending']
     check('inbox/states-and-authority', 'metrics expose pending work', inbox.metrics()['pending'] == len(pending)
           and inbox.metrics()['refused'] >= len(refusals))
@@ -859,11 +859,11 @@ def _v64_checks(base):
     signed_row = 'inbox/admit-verifies-owner-signature'
     stored_answer = entity(t_answer)['data']['answer']
     owner_signers = base / 'owner_signers'
-    owner_signers.write_text('owner namespaces="%s" %s\n' % (AC.SIGNATURE_NAMESPACE, public['owner']))
+    owner_signers.write_text('owner namespaces="%s" %s\n' % (AUTHC.SIGNATURE_NAMESPACE, public['owner']))
     answer_sig = base / 'answer.sig'
     answer_sig.write_text(stored_answer.get('signature') or '')
     answer_verified = _v64_sp.run(['ssh-keygen', '-Y', 'verify', '-f', str(owner_signers), '-I', 'owner', '-n',
-                                   AC.SIGNATURE_NAMESPACE, '-s', str(answer_sig)],
+                                   AUTHC.SIGNATURE_NAMESPACE, '-s', str(answer_sig)],
                                   input=S.canonical_bytes(stored_answer.get('command') or {}), capture_output=True, timeout=10)
     signed_command = stored_answer.get('command') or {}
     check(signed_row, 'the record keeps the owner\'s signed answer, verifiable with ssh-keygen alone',
