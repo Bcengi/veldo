@@ -54,7 +54,7 @@ def suite():
 def mutations():
     started = time.monotonic()
     result = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/check_teeth_mutations.py'),
-                             '--finding', '27', '--diff-dir', str(PROOF)], capture_output=True, text=True, timeout=110)
+                             '--finding', '27', '--diff-dir', str(PROOF)], capture_output=True, text=True, timeout=300)
     if result.returncode:
         raise RuntimeError(result.stderr)
     records = [json.loads(line) for line in result.stdout.splitlines()]

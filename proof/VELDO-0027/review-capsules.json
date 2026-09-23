@@ -1,0 +1,59 @@
+[
+  {
+    "finding": "F-01",
+    "command": "python3 -B .capsule/repro.py",
+    "exit_code": 0,
+    "reproduced": false,
+    "stdout": [
+      "Personal command: reject p1; requested receipt: approve p2",
+      "accepted: False"
+    ],
+    "files": {
+      "fixture.py": "73a4f77d51e87d0f64adb66559fca58104a2dd02e5d557c95d53ce987abe225b",
+      "repro.py": "de928594cbb2cf4d518633fad7872495580c67403aa228121377ddefbb2a7a08"
+    }
+  },
+  {
+    "finding": "F-02",
+    "command": "python3 -B .capsule/repro.py",
+    "exit_code": 0,
+    "reproduced": false,
+    "stdout": [
+      "Delegated key: edge-telegram",
+      "Payload key: edge-telegram",
+      "accepted: False"
+    ],
+    "files": {
+      "fixture.py": "73a4f77d51e87d0f64adb66559fca58104a2dd02e5d557c95d53ce987abe225b",
+      "repro.py": "1e7d9238523bdb4ecad5dd4d555198a33eb0b64497bcaf764c1ed695fb8334d1"
+    }
+  },
+  {
+    "finding": "F-03",
+    "command": "python3 -B .capsule/repro.py",
+    "exit_code": 0,
+    "reproduced": false,
+    "stdout": [
+      "Unauthenticated response: {'accepted': False, 'refusal': 'unauthenticated-channel', 'diagnostic': {'key_id': None, 'assertion_kind': None, 'principal': None, 'delegation_revision': None, 'refusal': 'unauthenticated-channel'}, 'metrics': {'unauthenticated-channel': 1}, 'signer_pid': 2008027}"
+    ],
+    "files": {
+      "fixture.py": "73a4f77d51e87d0f64adb66559fca58104a2dd02e5d557c95d53ce987abe225b",
+      "repro.py": "f27f7db8e886582cc35a01d677546871ee760ca9c015f422fba4191d7d2882a7"
+    }
+  },
+  {
+    "finding": "F-04",
+    "command": "python3 -B .capsule/repro.py",
+    "exit_code": 0,
+    "reproduced": false,
+    "stdout": [
+      "Authority contract accepts personal command: False",
+      "Authority contract refusal: ['envelope expired at 1790123353.932947']",
+      "Protected signer accepts: False"
+    ],
+    "files": {
+      "fixture.py": "73a4f77d51e87d0f64adb66559fca58104a2dd02e5d557c95d53ce987abe225b",
+      "repro.py": "723e25d646a454e6a20a7a7c16a9287cf37049f407f3bb371ab9ed4ef715bb4b"
+    }
+  }
+]

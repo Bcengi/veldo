@@ -1,5 +1,5 @@
 --- a/.veldo/control_keys.py
 +++ b/.veldo/control_keys.py
-@@ -101,0 +102,2 @@
+@@ -102,0 +103,2 @@
 +    if Path(projection_path).read_text() != projection(state):
 +        return {'committed': True}

@@ -1,5 +1,5 @@
 --- a/.veldo/control_signer.py
 +++ b/.veldo/control_signer.py
-@@ -196 +196 @@
+@@ -211 +211 @@
 -        if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:
 +        if request.get('channel') != channel:

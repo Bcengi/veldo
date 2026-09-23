@@ -9,7 +9,8 @@
       "mutations": [
         "signing-ignore-personal-content",
         "signing-ignore-personal-ruling"
-      ]
+      ],
+      "fix_commit": "52c6977c9807f528119ae419cd922ac2d552d9a5"
     },
     "F-02": {
       "row": "signing/rotation-requires-rebound-delegation",
@@ -23,7 +24,8 @@
       "mutations": [
         "signing-ignore-selected-key-binding",
         "signing-retired-key-inherits-grant"
-      ]
+      ],
+      "fix_commit": "3471dd6eb2156ce5a863b54c23da85f85fcbabd6"
     },
     "F-03": {
       "row": "signing/unauthenticated-diagnostic-is-empty",
@@ -38,7 +40,8 @@
       "mutations": [
         "signing-leak-source-before-auth",
         "signing-leak-revision-before-auth"
-      ]
+      ],
+      "fix_commit": "034bbe2ef76ec08c4efc846a8d6a79e35de93a83"
     },
     "F-04": {
       "row": "signing/personal-envelope-expiry",
@@ -54,7 +57,10 @@
       "mutations": [
         "signing-ignore-envelope-problems",
         "signing-ignore-envelope-expiry"
-      ]
+      ],
+      "fix_commit": "c5978e9e83b237ba5981db66865884a502c202b2"
     }
-  }
+  },
+  "baseline_module_sha256": "22c84617377e3e656897425be1f71e3d0640b2f8dfd787adb30ed2ef57b6b2bc",
+  "baseline_note": "The mutation worker observes each expect assertion as a Boolean; RED means the named assertion was False, not an exception or process failure. Original signer bytes were extracted with git show, without switching branches."
 }

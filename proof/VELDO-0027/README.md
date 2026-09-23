@@ -191,3 +191,60 @@ implementation review: an effective time taken before the transaction lock can
 invalidate a receipt legitimately signed before that transition. Effective time is
 now sampled inside the transition; a real contending writer and a lock-release
 timestamp test its ordering. The second mutant truncates that timestamp.
+
+## Review fixes for 68ea1f3 (F-01 through F-04)
+
+Each finding has its own implementation commit and suite 56 regression. Before each
+fix, its new assertion failed against the original signer from `68ea1f3`; after
+its fix, the suite passed. [review-fixes.json](review-fixes.json) records the named
+RED assertions, commands, original module digest, and per-finding green counts.
+These targeted runs are development evidence; full acceptance requires the gate.
+
+| Finding | Required refusal row | Two registered mutations |
+| --- | --- | --- |
+| F-01 | `signing/personal-content-binding` | `signing-ignore-personal-content`, `signing-ignore-personal-ruling` |
+| F-02 | `signing/rotation-requires-rebound-delegation` | `signing-ignore-selected-key-binding`, `signing-retired-key-inherits-grant` |
+| F-03 | `signing/unauthenticated-diagnostic-is-empty` | `signing-leak-source-before-auth`, `signing-leak-revision-before-auth` |
+| F-04 | `signing/personal-envelope-expiry` | `signing-ignore-envelope-problems`, `signing-ignore-envelope-expiry` |
+
+F-01 compares the source's ruling and presentation id to the personally signed
+command parameters. Its row preserves a valid reject/p1 signature while changing
+both claims, then each claim separately; matching reject/p1 remains accepted.
+F-02 requires the payload key to match the selected signing key, then uses the
+existing membership contract to require the delegation's key to match the payload.
+The suite rotates both signing and connection keys, refuses the old source/grant,
+refuses a source-only update, and accepts an explicitly superseded, rebound grant.
+F-03 populates source and delegation diagnostics only after connection authentication;
+known and unknown source ids, with absent or invalid authentication, disclose no
+stored fields. F-04 calls `authority_contract.envelope_problems` with the current
+time and accepted membership/delegation state; expiry logic is not copied. The
+stored source supplies its captured authority coordinates. Reading source evidence
+does not execute the personal command or consume its nonce.
+
+`K.select` now returns `ambiguous-channel-key` when more than one active key exists
+for the channel; `revoked-key` remains the no-active-key case. The spec taxonomy
+and `signing/ambiguous-channel-key` row cover the distinction. Both changed runtime
+modules are byte-identical in `.veldo/` and `engine/.veldo/`.
+
+All four original capsules were copied unmodified to `.capsule/` and replayed from
+the repository root after the fixes. Each completed successfully, retained its valid
+control, refused the attack, and printed no DEFECT marker. The directory was removed.
+[review-capsules.json](review-capsules.json) retains their source digests and readable
+outputs, including F-03's all-null diagnostic fields.
+
+To repeat the original-code RED observations without changing this worktree's code:
+
+```sh
+git show 68ea1f3:.veldo/control_signer.py > /tmp/original-control_signer.py
+python3 -B scripts/check_teeth_mutations.py --worker signing-ignore-personal-content --mutant /tmp/original-control_signer.py
+```
+
+The observer must list all four regression rows in `failed_rows`. The final suite
+also includes the new key-taxonomy test, which uses the current key module.
+No private keys, signatures, or encoded fixtures are retained in this proof.
+
+The final targeted driver passed all 78 suite rows and rejected all 20 signing
+mutations, including both variants for every finding. `mutations.json` records
+the observations and the adjacent `.diff` files retain every applied change.
+The driver timeout was increased to accommodate the eight additional full-suite
+mutation runs; expectations and mutation acceptance rules are unchanged.

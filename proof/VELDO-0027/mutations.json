@@ -1,12 +1,12 @@
 {
   "command": "python3 -B scripts/check_teeth_mutations.py --finding 27 --diff-dir proof/VELDO-0027",
-  "elapsed_seconds": 94.80879247002304,
+  "elapsed_seconds": 191.54772987798788,
   "results": [
     {
       "finding": 27,
       "mutation": "signing-prelock-clock",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/transition-clock"
       ]
@@ -15,7 +15,7 @@
       "finding": 27,
       "mutation": "signing-truncated-clock",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/rotation",
         "VELDO-0027 signing/retirement",
@@ -24,14 +24,15 @@
         "VELDO-0027 signing/kill-after-rotation",
         "VELDO-0027 signing/kill-after-retire_signing_key",
         "VELDO-0027 signing/kill-after-revoke_signing_key",
-        "VELDO-0027 signing/transition-clock"
+        "VELDO-0027 signing/transition-clock",
+        "VELDO-0027 signing/rotation-requires-rebound-delegation"
       ]
     },
     {
       "finding": 27,
       "mutation": "signing-remove-channel-restriction",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection",
@@ -42,7 +43,7 @@
       "finding": 27,
       "mutation": "signing-permit-foreign-channel",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -52,7 +53,7 @@
       "finding": 27,
       "mutation": "signing-request-channel",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -62,7 +63,7 @@
       "finding": 27,
       "mutation": "signing-request-key-channel",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/cross-channel",
         "VELDO-0027 signing/channel-comes-from-the-connection"
@@ -72,7 +73,7 @@
       "finding": 27,
       "mutation": "signing-request-key",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/key-comes-from-the-channel"
       ]
@@ -81,7 +82,7 @@
       "finding": 27,
       "mutation": "signing-ignore-key-crosscheck",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/key-comes-from-the-channel"
       ]
@@ -90,7 +91,7 @@
       "finding": 27,
       "mutation": "signing-text-without-identity",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/attribution/platform_message_id",
         "VELDO-0027 signing/attribution/sender_id",
@@ -102,7 +103,7 @@
       "finding": 27,
       "mutation": "signing-text-substitutes-identity",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/text-only"
       ]
@@ -111,7 +112,7 @@
       "finding": 27,
       "mutation": "signing-branch-projection-authority",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/branch-key"
       ]
@@ -120,18 +121,90 @@
       "finding": 27,
       "mutation": "signing-branch-preflight-bypass",
       "baseline": "green",
-      "assertions": 97,
+      "assertions": 104,
       "red_rows": [
         "VELDO-0027 signing/branch-key"
       ]
     },
     {
-      "mutations_rejected": 12,
+      "finding": 27,
+      "mutation": "signing-ignore-personal-content",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/personal-content-binding"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-ignore-personal-ruling",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/personal-content-binding"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-ignore-selected-key-binding",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/rotation-requires-rebound-delegation"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-retired-key-inherits-grant",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/rotation-requires-rebound-delegation"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-leak-source-before-auth",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-leak-revision-before-auth",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/unauthenticated-diagnostic-is-empty"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-ignore-envelope-problems",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/personal-envelope-expiry"
+      ]
+    },
+    {
+      "finding": 27,
+      "mutation": "signing-ignore-envelope-expiry",
+      "baseline": "green",
+      "assertions": 104,
+      "red_rows": [
+        "VELDO-0027 signing/personal-envelope-expiry"
+      ]
+    },
+    {
+      "mutations_rejected": 20,
       "green_suites": {
-        "56_veldo_0027_signing.py": 97
+        "56_veldo_0027_signing.py": 104
       }
     }
   ],
-  "raw_sha256": "b0c53cf5ede12eea71de7492c3ac37ad6c83cdc64ad7d4bfe01958bef64580db",
+  "raw_sha256": "b8169f5dcecd1b964bdd18dbd1ae263157517032436dc997dcf2c928907a09de",
   "note": "Full gate additionally executes no-op controls and validates exact target observations."
 }
