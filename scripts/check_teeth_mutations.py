@@ -497,7 +497,7 @@ def cases():
     # the case-sensitive pathspec this replaced has no code left; the carrier pattern's case is
     # what now decides whether Specs/ counts for specs/.
     aliases('alias-floor-carrier-case-sensitive', 'control_alias.py',
-            '    return re.compile(regex, re.IGNORECASE)', '    return re.compile(regex)',
+            '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.DOTALL)',
             'aliases/floor-counts-every-carrier')
     aliases('alias-floor-slug-grammar', 'control_alias.py',
             "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'",
@@ -589,6 +589,23 @@ def cases():
     aliases('shallow-check-reads-bare', 'control_readset.py',
             "'rev-parse', '--is-shallow-repository'],", "'rev-parse', '--is-bare-repository'],",
             'aliases/shallow-repository-refused')
+    # Fifth check (2026-09-23): a newline below the number, a gitlink under ignored submodules, and
+    # a signed history under log.showSignature.
+    aliases('alias-floor-carrier-single-line', 'control_alias.py',
+            '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.IGNORECASE)',
+            'aliases/floor-counts-every-carrier')
+    aliases('history-submodules-by-config', 'control_readset.py',
+            "'--no-relative', '--ignore-submodules=none',", "'--no-relative',",
+            'aliases/gitlink-carrier-whatever-submodule-config')
+    aliases('history-ignores-all-submodules', 'control_readset.py',
+            "'--ignore-submodules=none',", "'--ignore-submodules=all',",
+            'aliases/gitlink-carrier-whatever-submodule-config')
+    aliases('history-signatures-by-config', 'control_readset.py',
+            "'--no-notes', '--no-show-signature')", "'--no-notes')",
+            'aliases/signed-history-whatever-signature-config')
+    aliases('history-shows-signatures', 'control_readset.py',
+            "'--no-notes', '--no-show-signature')", "'--no-notes', '--show-signature')",
+            'aliases/signed-history-whatever-signature-config')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
