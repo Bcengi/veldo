@@ -23,9 +23,12 @@ only those are checked. Scope is Python's own: a name bound in a function is tha
 variable, a free name is found in the nearest enclosing function and then the module, and every
 binding form counts (assignment and unpacking, loop and comprehension targets, with ... as, the
 walrus, del, parameters and PEP 695 type parameters, imports, def and class names, except ... as,
-match captures, global and nonlocal writes). An alias whose module depends on WHEN a function runs
-(loaded in a function from a module spec variable bound more than once, or from a spec variable some
-function rebinds) is not checked either. The resolver is judged against CPython's symtable over the
+match captures, global and nonlocal writes). Which module an alias holds is taken from the source
+only where the source decides it: from a spec variable bound once, or one whose every binding is a
+spec call or a `del` standing as a plain statement of a fragment's module body (those run in line
+order). A spec variable rebound anywhere else (in a function, under an if or a loop, by plain
+assignment, through global or nonlocal), or read from another scope while bound more than once,
+depends on control flow or call order and maps no alias. The resolver is judged against CPython's symtable over the
 real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to keep the signal clean
 is right; lowering the BAR by allowlisting the noisy names would not be.
 
