@@ -14,12 +14,29 @@ import secrets
 import select
 import subprocess
 import sys
+import time
 
 import importlib.util
 _spec = importlib.util.spec_from_file_location('effects', Path(__file__).with_name('control_effects.py'))
 E = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(E)
 _git_process = E.organ('git_process')
+
+# Time limits. Every git step of a publication is bounded by the receiver's `git_step_seconds`,
+# and the push by that bound for each destination it reaches. The supervisor never waits by a
+# fixed total: the executor announces, before each stage, how long that stage may take, and
+# the supervisor's limit follows it, so a slow multi-destination push is never killed after
+# acceptance. `accept_seconds` bounds authentication and acceptance, before any announcement.
+GIT_STEP_SECONDS = 20
+ACCEPT_SECONDS = 30
+STORE_MARGIN_SECONDS = 5
+
+
+def _announce_nothing(seconds):
+    pass
+
+
+_announce = _announce_nothing
 
 
 _SCHEME = re.compile(r'[A-Za-z][A-Za-z0-9+.-]*')
@@ -66,15 +83,18 @@ def receive(config, contract, accepted):
     if contract['kind'] == 'publication' and 'argv' not in receiver:
         payload = contract['payload']
         repo, remote, ref = receiver['repository'], receiver['remote'], receiver['ref']
-        def git(*args, profile='isolated', env=None):
+        step = receiver.get('git_step_seconds', GIT_STEP_SECONDS)
+        # Resolution: the tree check, the configuration guard and git's resolution.
+        _announce(3 * step + STORE_MARGIN_SECONDS)
+        def git(*args, profile='isolated', env=None, steps=1):
             # Output is decoded losslessly: a hook, a server or a ref name may emit any bytes.
             return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True,
-                                    errors='surrogateescape', timeout=20, profile=profile, env=env)
-        def transport(*args, env=None):
+                                    errors='surrogateescape', timeout=steps * step, profile=profile, env=env)
+        def transport(*args, env=None, steps=1):
             # What reaches the remote, and every query deciding where it goes, sees what a plain
             # git push from this clone and this operator environment sees: global and system
             # configuration, credential helpers, rewrites, proxies and SSH/askpass variables.
-            return git(*args, profile='network', env=env)
+            return git(*args, profile='network', env=env, steps=steps)
         def remote_refs(url):
             # Every advertised ref of one destination, HEAD and peeled tags included, plus each
             # symbolic ref's target; None when it cannot be listed.
@@ -126,6 +146,9 @@ def receive(config, contract, accepted):
         # remotes/ file of that name, a further url.*.insteadOf). A destination that does not
         # resolve to itself would be listed somewhere the push never went, so it is refused by
         # name before anything is pushed; `--get-url` reads configuration only, no network.
+        # From here each destination takes at most four steps: its self-resolution, its listing
+        # before, its share of the push and its listing after.
+        _announce(4 * step * len(pushed) + STORE_MARGIN_SECONDS)
         for url in pushed:
             itself = transport('ls-remote', '--get-url', '--', url)
             if itself.returncode or itself.stdout != url + '\n':
@@ -150,7 +173,7 @@ def receive(config, contract, accepted):
         push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',
                          '--no-follow-tags', '--recurse-submodules=no',
                          '--force-with-lease=' + ref + ':' + ('' if absent else payload['old_tip']),
-                         remote, payload['commit'] + ':' + ref)
+                         remote, payload['commit'] + ':' + ref, steps=len(pushed))
         # Completion is read from each destination's actual state after the push. A destination
         # is `at-tip` when its advertised state is exactly the state before (checked above to
         # hold the expected old state) with the authorized ref, and any symbolic ref that targets
@@ -178,6 +201,7 @@ def receive(config, contract, accepted):
     # is never returned verbatim; only a bound digest enters the effect observation.
     credential = Path(receiver['credential_file']).read_text()
     packet = dict(binding, credential=credential, payload=contract['payload'])
+    _announce(receiver.get('timeout', 20) + STORE_MARGIN_SECONDS)
     proc = subprocess.run(receiver['argv'], input=json.dumps(packet), capture_output=True,
                           text=True, timeout=receiver.get('timeout', 20),
                           env={'PATH': os.defpath, 'LANG': 'C.UTF-8'})
@@ -231,20 +255,43 @@ def execute(config, request, principal, challenge, signature):
 
 
 def call(config_path, request, principal, connection_key):
-    """Trusted supervisor-side adapter; config_path is never taken from worker JSON."""
+    """Trusted supervisor-side adapter; config_path is never taken from worker JSON.
+
+    The limit follows the executor: `accept_seconds` (configuration) for authentication and
+    acceptance, then each window the executor announces for its next stage."""
+    accept = json.loads(Path(config_path).read_text()).get('accept_seconds', ACCEPT_SECONDS)
     child = subprocess.Popen([sys.executable, '-B', str(Path(__file__).resolve()), str(config_path)],
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    pending = b''
+    def next_message(deadline):
+        nonlocal pending
+        while b'\n' not in pending:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not select.select([child.stdout], [], [], remaining)[0]:
+                raise E.Refused('effect-service-unavailable')
+            chunk = os.read(child.stdout.fileno(), 65536)
+            if not chunk:
+                raise E.Refused('effect-service-unavailable')
+            pending += chunk
+        line, _, pending = pending.partition(b'\n')
+        return json.loads(line)
     try:
-        if not select.select([child.stdout], [], [], 10)[0]:
-            raise E.Refused('effect-service-unavailable')
-        challenge = json.loads(child.stdout.readline())['challenge']
+        challenge = next_message(time.monotonic() + 10)['challenge']
         message = E.SIG.canonical({'challenge': challenge, 'request_digest': E.SIG.digest(request)})
         signature = E.SIG.sign_bytes(connection_key, message, E.NAMESPACE) if connection_key else ''
-        output, _ = child.communicate(json.dumps({'request': request, 'principal': principal,
-                                                'signature': signature}) + '\n', timeout=50)
-        if child.returncode:
+        child.stdin.write((json.dumps({'request': request, 'principal': principal,
+                                       'signature': signature}) + '\n').encode())
+        child.stdin.close()
+        deadline = time.monotonic() + accept
+        while True:
+            answer = next_message(deadline)
+            if isinstance(answer, dict) and set(answer) == {'window_seconds'}:
+                deadline = time.monotonic() + answer['window_seconds']
+                continue
+            break
+        if child.wait(timeout=5):
             raise E.Refused('effect-service-unavailable')
-        return json.loads(output)
+        return answer
     finally:
         if child.poll() is None:
             child.kill()
@@ -252,6 +299,8 @@ def call(config_path, request, principal, connection_key):
 
 
 def main():
+    global _announce
+    _announce = lambda seconds: print(json.dumps({'window_seconds': seconds}), flush=True)
     try:
         config = json.loads(Path(sys.argv[1]).read_text())
         challenge = secrets.token_hex(32)

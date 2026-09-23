@@ -156,6 +156,12 @@ anything else changed). The effect is completed only when the push exited cleanl
 resolved destination is at the tip; otherwise it is unknown. The effect record stores the
 authorized URL and every resolved destination with its outcome.
 
+**Time limits.** Every git step of a publication is bounded by the receiver's `git_step_seconds`
+(default 20) and the push by that bound for each resolved destination. The supervisor waits by no
+fixed total: acceptance is bounded by `accept_seconds` (default 30), and after it the executor
+announces each stage's window (resolution, then four steps for each destination) before starting
+it, so a slow push to many destinations is never killed after acceptance.
+
 **Recorded URLs.** Every recorded URL is scrubbed by parsing it, never taken from git's display:
 `<transport>::<address>` is scrubbed in its address, recursively; a scheme URL loses everything up
 to the last `@` of its authority (which ends at the first `/`, `?` or `#`, as git and RFC 3986 read

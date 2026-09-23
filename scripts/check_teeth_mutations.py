@@ -429,8 +429,8 @@ def cases():
         ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'],
         also=[("        before = [remote_refs(url) for url in pushed]", "        before = [remote_refs(remote) for url in pushed]")])
     # Output read strictly as UTF-8: the push's (a hook's Latin-1 byte) or a listing's (a ref name).
-    publication('effects-push-output-read-strictly', "                         remote, payload['commit'] + ':' + ref)\n",
-                "                         remote, payload['commit'] + ':' + ref)\n        push.stdout.encode('utf-8')\n",
+    publication('effects-push-output-read-strictly', "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n",
+                "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n        push.stdout.encode('utf-8')\n",
                 'publication-non-utf8-output')
     publication('effects-listing-read-strictly', "            if listed.returncode:\n                return None\n",
                 "            listed.stdout.encode('utf-8')\n            if listed.returncode:\n                return None\n",
@@ -488,6 +488,12 @@ def cases():
     publication('effects-destination-listing-first-only', itself,
                 itself.replace('        for url in pushed:\n', '        for url in pushed[:1]:\n'),
                 'publication-destination-listed-as-resolved')
+    # R8 time limits: the push is bounded per destination, and the supervisor's limit follows
+    # the windows the executor announces.
+    publication('effects-push-timeout-not-scaled', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
+                "remote, payload['commit'] + ':' + ref)", 'publication-call-covers-every-destination')
+    publication('effects-call-window-not-extended', "                deadline = time.monotonic() + answer['window_seconds']",
+                "                pass", 'publication-call-covers-every-destination')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.
@@ -495,7 +501,7 @@ def cases():
                   ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
                    'config-selection-parity')]
     add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "            return git(*args, profile='network', env=env)", "            return git(*args, env=env)", capability)
+        "            return git(*args, profile='network', env=env, steps=steps)", "            return git(*args, env=env, steps=steps)", capability)
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',

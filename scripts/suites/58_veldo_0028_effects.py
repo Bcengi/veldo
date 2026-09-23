@@ -825,6 +825,39 @@ print(json.dumps(result))
         row('publication-destination-listed-as-resolved', all(
             answer.get('refusal') == 'rerouted-destination' and answer.get('result', {}).get('status') == 'refused'
             and all(remote_main(b) == old for b in repositories) for answer, repositories in rerouted.values()))
+        # R8 time limits: a slow push to many destinations is never killed after acceptance. Each git
+        # step is bounded by the receiver's git_step_seconds and the push by that bound for each
+        # destination; the supervisor's limit follows the windows the executor announces. Six
+        # destinations each take a second to receive, with 1.5-second steps: the push needs six
+        # seconds (a single step would kill it), and the whole call runs well past the 2-second
+        # acceptance window the supervisor starts from.
+        clone, lbare = fresh('slow-fan-out')
+        slow_url = 'file://' + str(lbare)
+        slow = [lbare] + [elsewhere_for('slow-fan-out-%d' % i) for i in range(5)]
+        for index, bare in enumerate(slow):
+            wait = bare / 'hooks' / 'pre-receive'
+            wait.write_text('#!/bin/sh\ncat >/dev/null\nsleep 1\n')
+            wait.chmod(0o755)
+            git('-C', str(clone), 'config', '--add', 'remote.' + slow_url + '.pushurl', slow_url if index == 0 else str(bare))
+        config['receivers']['git-slow-fan-out'] = {'kind': 'publication', 'repository': str(clone), 'remote': slow_url,
+                                                   'ref': 'refs/heads/main', 'git_step_seconds': 1.5}
+        config_path.write_text(_v28_json.dumps(config))
+        slow_config = private / 'slow-fan-out-config.json'
+        slow_config.write_text(_v28_json.dumps(dict(config, accept_seconds=2)))
+        slow_request, _, _, _ = setup('publication', 'slow-fan-out', target='git-slow-fan-out',
+                                      payload={'commit': tip, 'tree': tree, 'old_tip': old})
+        began = _v28_time.monotonic()
+        try:
+            slow_answer = _v28_executor.call(slow_config, slow_request, 'worker', private / 'worker')
+        except E.Refused as error:
+            slow_answer = {'supervisor_refusal': error.code}
+        slow_seconds = _v28_time.monotonic() - began
+        seen_result('slow-fan-out', slow_answer.get('result', {}), seconds=round(slow_seconds, 1),
+                    supervisor_refusal=slow_answer.get('supervisor_refusal'))
+        row('publication-call-covers-every-destination', slow_answer.get('result', {}).get('completed') is True
+            and slow_seconds > 5 and all(remote_main(bare) == tip for bare in slow)
+            and recorded('slow-fan-out') == {'authorized_url': slow_url, 'destinations': reached(
+                *[(slow_url if index == 0 else str(bare), 'at-tip') for index, bare in enumerate(slow)])})
         # R6 2 and 3: the variables that select or inject operator configuration are the
         # operator's, not repository coordinates, so publication honors them as a plain git
         # command from the same environment does. Each case names the authorized remote only
@@ -915,7 +948,7 @@ print(json.dumps(result))
                      'completion-from-destination-state', 'hook-text-without-newline', 'non-utf8-output', 'fan-out-agit-report',
                      'scrub-scp-user-information', 'scrub-transport-prefix', 'scrub-query-fragment',
                      'refused-when-not-at-old-tip', 'refusal-reaches-caller', 'ref-creation',
-                     'destination-listed-as-resolved',
+                     'destination-listed-as-resolved', 'call-covers-every-destination',
                      'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
