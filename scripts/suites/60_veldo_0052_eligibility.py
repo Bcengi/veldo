@@ -465,10 +465,12 @@ def _v52_suite():
 
         with region('eligibility/entry-executor'):
             # Direct execution of the valid unit reaches its build through a reserved handle: the claim
-            # and the ceilings are what that build's call needs at its provider_request boundary.
-            # Every scenario has its ceilings, so only the station decision can hold one back.
-            claim('VELDO-9106')
+            # and the ceilings are what that build's call needs at its provider_request boundary, which
+            # every launch is decided at before it is entered. Every scenario is claimed and has its
+            # ceilings, so only the station decision can hold back a unit whose defect that boundary
+            # does not ask about (a draft plan, an open decision, an unresolved dependency).
             for sid in SCENARIOS:
+                claim(sid)
                 ceilings('exec-' + sid, sid)
 
             class ExecHooks(Hooks):
@@ -1095,6 +1097,48 @@ def _v52_suite():
                    and review_status == 'review' and receiver[before:] == []
                    and all(r['retired'] for r in reservations._records().values()
                            if r['type'] == 'worker' and r['context']['unit'] in (capped, moved_sid)))
+
+        with region('eligibility/launch-decides-its-calls'):
+            # r52b probe i. Direct execution asks no claim question, but every call a launched builder or
+            # reviewer makes is decided at provider_request, which does. So a launch is first decided at
+            # that boundary too: a claim taken by another holder during review stops cycle 2 BEFORE its
+            # builder is entered, and a unit this run does not hold is never built at all.
+            taken_sid, unheld_sid = 'VELDO-9174', 'VELDO-9175'
+            for s in (taken_sid, unheld_sid):
+                unit(s)
+                spec(s, lane='standalone')
+                reservations.configure('ceiling-unit-' + s, 'unit', s, CEILING, now=tick())
+            claim(taken_sid)
+            held_claim = CLM.claim_id(REPOSITORY, taken_sid)
+
+            class TakenDuringReview(Direct):
+                def review(self, spec_view, proof, calls=None):
+                    self.reviews.append(calls is not None)
+                    current = json.loads(writer.execute('SELECT data FROM entities WHERE id=?', (held_claim,)).fetchone()[0])
+                    put(held_claim, 'claim', dict(current, holder='worker-z', generation=2))
+                    return {'verdict': 'fail'}
+
+            taken, unheld = TakenDuringReview('calls-taken'), Direct('calls-unheld')
+            runs_c = {'taken': observe_effect(lambda: EX.Executor(taken, eligibility=gate, calls=calls, context=ctx_x).run(
+                          taken_sid, max_review_cycles=2)),
+                      'unheld': observe_effect(lambda: EX.Executor(unheld, eligibility=gate, calls=calls, context=ctx_x).run(
+                          unheld_sid, stop_after='proof'))}
+            for s in (taken_sid, unheld_sid):
+                (base / 'specs' / (s + '-fixture.md')).unlink()
+            observed['launch_calls'] = {name: (dict(halted_at=r[1].get('halted_at'), reason=r[1].get('reason'))
+                                               if r[0] == 'ok' else list(r)) for name, r in runs_c.items()}
+            observed['launch_calls'].update(taken_builds=len(taken.builds), unheld_builds=len(unheld.builds))
+
+            def refused_before_build(name, code):
+                kind, result = runs_c[name]
+                return (kind == 'ok' and result.get('halted_at') == EX.ELIGIBILITY_STEP
+                        and (result.get('reason') or '').startswith('eligibility refused before build')
+                        and code in result['reason'])
+
+            check('eligibility/launch-decides-its-calls',
+                   refused_before_build('taken', 'missing_authority:claim') and taken.builds == [(taken_sid, True)]
+                   and taken.reviews == [True]
+                   and refused_before_build('unheld', 'missing_authority:claim') and unheld.builds == [])
 
         with region('completion/landed-units-not-reoffered'):
             # DEFECT f. Every lane asks the one completion reader, never the front matter: a landed unit is

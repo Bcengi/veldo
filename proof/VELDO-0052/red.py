@@ -72,7 +72,7 @@ def main(commit):
                       'observed': {k: v for k, v in (ns.get('_V52_OBSERVED') or {}).items()
                                    if k in ('executor', 'enrollment_git_error', 'status_reader', 'work_loop',
                                             'landed_offers', 'production_entries', 'raised', 'slot_retirement',
-                                            'host_trust', 'provider_refusal')}}, indent=1, default=str))
+                                            'host_trust', 'provider_refusal', 'launch_calls')}}, indent=1, default=str))
 
 
 if __name__ == '__main__':

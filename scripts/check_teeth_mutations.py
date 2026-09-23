@@ -673,6 +673,17 @@ def cases():
            '                        else "reservation refused before %s: %s") % (launch, codes)',
            '                        else "reservation refused before %s: %s") % (launch, "refused")  # defect',
            'eligibility/provider-refusal-halts')
+    # r52b probe i: a launch entered without the boundary its calls face (reintroduced), or with that
+    # boundary decided for the first cycle only.
+    review('launch-skips-call-boundary', 'executor.py',
+           '            if current["eligible"]:\n                boundary = self._decide_calls(',
+           '            if False:  # defect: the builder is entered whatever its calls will be told\n'
+           '                boundary = self._decide_calls(',
+           'eligibility/launch-decides-its-calls')
+    review('launch-call-boundary-first-cycle-only', 'executor.py',
+           '            if current["eligible"]:\n                boundary = self._decide_calls(',
+           '            if current["eligible"] and cycle == 1:  # defect\n                boundary = self._decide_calls(',
+           'eligibility/launch-decides-its-calls')
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

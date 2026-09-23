@@ -95,6 +95,7 @@ REGISTRATIONS = (
     ('executor.py', 'Executor._decide', 'direct_execution'),
     ('executor.py', 'Executor._decide', 'build'),
     ('executor.py', 'Executor._decide', 'review'),
+    ('executor.py', 'Executor._decide_calls', 'provider_request'),
     ('dispatch.py', 'Dispatcher._dispatch_build', 'build'),
     ('dispatch.py', 'Dispatcher._dispatch_review', 'review'),
     ('dispatch.py', 'Dispatcher._land', 'publication'),

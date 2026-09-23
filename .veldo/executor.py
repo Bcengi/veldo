@@ -406,14 +406,24 @@ class Executor:
             return gate.decide("build", sid, context=self.context, ticket=ticket)
         return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)
 
+    def _launch_context(self, launch):
+        return self.context if launch == "build" else dict(
+            self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))
+
+    def _decide_calls(self, gate, sid, launch):
+        """The predicates every call of the launch will be decided by (provider_request), asked before
+        the builder or reviewer is entered. Direct execution asks no claim question, but each of its
+        calls does: a launch whose calls would all be refused is not entered. It carries no ticket:
+        staleness against the last decision is the station recheck's question, and each call asks it
+        again against the station decision as its ticket."""
+        return gate.decide("provider_request", sid, context=self._launch_context(launch))
+
     def _launch(self, sid, launch, decision):
         """The launch's only path to a subscription CLI: the scope of THIS launch (StationCalls.launch),
         which opens its own dispatch, one worker slot, and yields a CallHandle reserved against it,
         then retires that slot when the launched call returns. A second build cycle is a second
         launch with a slot of its own, and the build's slot is free again before the review opens."""
-        context = self.context if launch == "build" else dict(
-            self.context, reviewer=getattr(self.hooks, "reviewer_identity", None))
-        return self.calls.launch(launch, sid, context=context, ticket=decision)
+        return self.calls.launch(launch, sid, context=self._launch_context(launch), ticket=decision)
 
     def run(self, spec_id, max_review_cycles=2, stop_after=None):
         """Drive the spec through the loop. stop_after is a DEFAULTED build-only
@@ -517,11 +527,16 @@ class Executor:
             second build cycle's included, re-decides its station over the COMPLETE current read set
             against the last accepted decision as its ticket, so an input that moved since (a
             withdrawn admission, or one re-accepted with its predicate still true) is refused by name
-            before the effect. Only then is its dispatch opened; it is closed when `call` returns. A
-            refusal inside the launch (a call's usage reservation, or its provider_request decision)
-            is a named halt like every other refusal, never an exception out of run()."""
+            before the effect, and then at the provider_request boundary its calls will face. Only
+            then is its dispatch opened; it is closed when `call` returns. A refusal inside the
+            launch (a call's usage reservation, or its provider_request decision) is a named halt
+            like every other refusal, never an exception out of run()."""
             nonlocal decision
             current = self._decide(gate, sid, launch, decision)
+            if current["eligible"]:
+                boundary = self._decide_calls(gate, sid, launch)
+                if not boundary["eligible"]:
+                    current = dict(current, eligible=False, refusals=boundary["refusals"])
             if not current["eligible"]:
                 reason = "; ".join(current["refusals"])
                 record(ELIGIBILITY_STEP, False, cycle=cycle, launch=launch, reason=reason)
