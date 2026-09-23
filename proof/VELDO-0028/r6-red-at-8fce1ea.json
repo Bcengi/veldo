@@ -1,0 +1,56 @@
+{
+ "description": "Suite 58 at 3dedb09 run with .veldo/control_effect_executor.py taken from 8fce1ea (a copy of the tree, the worktree untouched). The two rows added for the destination defects found while checking the R6 proof fail by assertion; every other row passes. Suite temporary paths are shown as <suite-dir>.",
+ "failed_rows": [
+  "VELDO-0028 effects/publication-destination-as-git-displays",
+  "VELDO-0028 effects/publication-destination-from-push-status"
+ ],
+ "observations": {
+  "displayed-scp-user": {
+   "authorized_moved": true,
+   "completed": false,
+   "destination": {
+    "authorized_url": "deploy@deploy-host:<suite-dir>/displayed-scp-user-remote.git",
+    "listed_url": "deploy@deploy-host:<suite-dir>/displayed-scp-user-remote.git",
+    "pushed_urls": [
+     "deploy-host:<suite-dir>/displayed-scp-user-remote.git"
+    ]
+   },
+   "status": "unknown"
+  },
+  "displayed-ssh-at-in-password": {
+   "authorized_moved": true,
+   "completed": true,
+   "destination": {
+    "authorized_url": "ssh://deploy-host<suite-dir>/displayed-ssh-at-in-password-remote.git",
+    "listed_url": "ssh://deploy-host<suite-dir>/displayed-ssh-at-in-password-remote.git",
+    "pushed_urls": [
+     "ssh://deploy-host<suite-dir>/displayed-ssh-at-in-password-remote.git"
+    ]
+   },
+   "status": "completed"
+  },
+  "hook-stdout": {
+   "completed": false,
+   "destination": {
+    "authorized_url": "<suite-dir>/hook-stdout-remote.git",
+    "listed_url": "<suite-dir>/hook-stdout-remote.git",
+    "pushed_urls": [
+     "file:///hook-stdout-not-a-destination.git",
+     "<suite-dir>/hook-stdout-elsewhere.git",
+     "<suite-dir>/hook-stdout-remote.git"
+    ]
+   },
+   "hook_backed_up": true,
+   "status": "unknown"
+  }
+ },
+ "other_rows_green": true,
+ "rows_red": [
+  "publication-destination-as-git-displays",
+  "publication-destination-from-push-status"
+ ],
+ "summary": [
+  "  58_veldo_0028_effects                           30 passed   15.88s",
+  "selftest (PARTIAL, 1 of 65 suites): 56 passed, 2 failed in 15.88s"
+ ]
+}

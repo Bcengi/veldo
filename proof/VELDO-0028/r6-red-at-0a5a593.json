@@ -1,0 +1,137 @@
+{
+ "description": "Suite 58 at 8fce1ea run with .veldo/control_effect_executor.py, .veldo/git_process.py and .veldo/control_effects.py taken from 0a5a593 (a copy of the tree, the worktree untouched). The three new R6 rows and the rewritten coordinates row fail by assertion; every other row passes.",
+ "failed_rows": [
+  "VELDO-0028 effects/publication-records-resolved-destination",
+  "VELDO-0028 effects/publication-destination-without-credentials",
+  "VELDO-0028 effects/publication-config-selection-parity",
+  "VELDO-0028 effects/publication-network-profile-strips-coordinates"
+ ],
+ "other_rows_green": true,
+ "r6_observations": {
+  "keyed-url": {
+   "completed": true,
+   "destination": null,
+   "status": "completed"
+  },
+  "network-coordinates": {
+   "completed": true,
+   "namespaced": "",
+   "network_profile_kept": [],
+   "status": "completed"
+  },
+  "route-branches-file": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "status": "unknown"
+  },
+  "route-control": {
+   "authorized_moved": true,
+   "completed": true,
+   "decoy_moved": false,
+   "destination": null,
+   "status": "completed"
+  },
+  "route-fan-out-pushurls": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "status": "unknown"
+  },
+  "route-global-include-insteadof": {
+   "authorized_moved": false,
+   "completed": true,
+   "decoy_moved": true,
+   "destination": null,
+   "status": "completed"
+  },
+  "route-insteadof": {
+   "authorized_moved": false,
+   "completed": true,
+   "decoy_moved": true,
+   "destination": null,
+   "status": "completed"
+  },
+  "route-push-instead-of": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "status": "unknown"
+  },
+  "route-remotes-file": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "status": "unknown"
+  },
+  "route-space-section-pushurl": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "status": "unknown"
+  },
+  "selection-count-injection": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "plain_git_resolves": "/tmp/v28-x76ge0je/selection-count-injection-remote.git",
+   "status": "unknown"
+  },
+  "selection-global-file": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "plain_git_resolves": "/tmp/v28-x76ge0je/selection-global-file-remote.git",
+   "status": "unknown"
+  },
+  "selection-global-over-home": {
+   "authorized_moved": false,
+   "completed": true,
+   "decoy_moved": true,
+   "destination": null,
+   "plain_git_resolves": "/tmp/v28-x76ge0je/selection-global-over-home-remote.git",
+   "status": "completed"
+  },
+  "selection-nosystem": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "plain_git_resolves": "file:///nonexistent/selection-nosystem.git",
+   "status": "unknown"
+  },
+  "selection-parameters-injection": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "plain_git_resolves": "/tmp/v28-x76ge0je/selection-parameters-injection-remote.git",
+   "status": "unknown"
+  },
+  "selection-system-file": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": null,
+   "plain_git_resolves": "/tmp/v28-x76ge0je/selection-system-file-remote.git",
+   "status": "unknown"
+  }
+ },
+ "r6_rows_red": [
+  "publication-config-selection-parity",
+  "publication-destination-without-credentials",
+  "publication-network-profile-strips-coordinates",
+  "publication-records-resolved-destination"
+ ],
+ "summary": [
+  "  58_veldo_0028_effects                           26 passed   16.82s",
+  "selftest (PARTIAL, 1 of 65 suites): 52 passed, 4 failed in 16.82s"
+ ]
+}

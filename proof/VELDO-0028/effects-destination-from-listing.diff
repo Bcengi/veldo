@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -120 +120 @@
+-                       'pushed_urls': [anonymous_url(url) for url in pushed]}
++                       'pushed_urls': [anonymous_url(displayed_url(listed))]}

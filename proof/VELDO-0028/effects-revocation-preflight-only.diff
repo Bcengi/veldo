@@ -11,6 +11,6 @@
 @@ -188 +186 @@
 -    transact(conn, 'accept_protected_effect', {'new_ids': [eid, rid, R.LEDGER_ENTITY]}, state, nonce, journal, transition)
 +    transact(conn, 'accept_protected_effect', {'new_ids': [eid]}, state, nonce, journal, transition)
-@@ -210 +208 @@
+@@ -220 +218 @@
 -        if completed:
 +        if False:

@@ -1,5 +1,0 @@
---- a/.veldo/control_effect_executor.py
-+++ b/.veldo/control_effect_executor.py
-@@ -70 +70 @@
--            if key.startswith('url.') and key.endswith('.pushinsteadof') and remote.startswith(value):
-+            if False:

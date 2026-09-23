@@ -366,3 +366,187 @@ unknown, and all four capability cases plus the local-helper control complete.
 **Outside this footprint.** `.veldo/lander.py` (fetch and push) and `.veldo/control_replica.py`
 (ls-remote and push) also run transport operations through `git_process.py`'s isolated profile,
 so they have the same capability loss. They are not changed here.
+
+## Review round R6 (fourth independent check of 0a5a593)
+
+A fourth independent check reproduced three publication problems with its own scripts (a shared
+harness `h.py` plus `t1_insteadof.py`, `t2_home.py` and `t3_parity.py`; `t4_default.py` and
+`t5_misc.py` probe the default profile and further routes). The lead decided how to resolve each;
+both decisions follow the owner's rule that what configured tools can do is never reduced. Each
+was built test first: suite rows red by assertion with the production modules from `0a5a593`,
+then green, with registered finding-28 mutations. One commit per decision, and a third for two
+defects in the new destination record found while this proof was checked (below).
+
+**1, a configured rewrite routes the push elsewhere and the result reads completed (`t1`).** A
+`url.*.insteadOf` in the clone, in the global file or reached through `includeIf` sends the push,
+and the listing that confirms it, to another repository. Decision: operator-configured rewrites
+are the operator's routing and are kept. R5 had added the claim that the push reaches exactly the
+authorized URL, and that claim contradicted the spec's own "URL rewrites behave as configured", so
+it is withdrawn. The push is addressed to the authorized URL, routed by the operator's
+configuration, and the effect record stores where it went: `destination` holds the authorized URL,
+the URL the remote's state is read from (`git ls-remote --get-url`, run through the same profile
+as the push) and every repository the push reached (a porcelain `To <url>` line, counted only when
+git's status line for the authorized refspec follows it). URLs are compared as git itself displays
+them and each recorded URL also loses any user information that display leaves, so a token in an
+authorized `https://user:token@host` URL never reaches the record. Nothing else a receiver returns
+is copied into the record; provider records are unchanged.
+
+The spec's text no longer requires refusing the other routes, so they are treated the same way as
+`insteadOf`, consistently: a `pushInsteadOf`, a remote section named by the URL (its `url` and
+`pushurl`) and a legacy `remotes/` or `branches/` file are no longer refused, and the R5 refusal
+code is removed. What differs between routes is only what can be observed. Completion is claimed
+only when the push reached exactly one repository, the one the listing reads, and the listing there
+shows exactly the authorized change. A route that moves the listing and the push alike (`insteadOf`,
+a legacy file) completes at the routed repository with it recorded. A route that moves only the
+push (a `pushInsteadOf`, a `pushurl`) or reaches several repositories (several `pushurl` values)
+ends unknown with every destination recorded, because the push went somewhere the listing does not
+read.
+
+Rows: `effects/publication-records-resolved-destination` drives eight routes, each with a decoy
+repository holding the old tip so the lease holds wherever the push goes: a control with no routing;
+clone `insteadOf`, global `insteadOf` through `includeIf`, a legacy remotes file and a legacy
+branches file (each completes in the decoy, with the decoy recorded as listed and pushed); a clone
+`pushInsteadOf` and a section with a space in its URL carrying a `pushurl` (each unknown, the decoy
+recorded as pushed); and two `pushurl` values (unknown, both repositories moved, both recorded).
+Each case checks the stored effect record, the returned result and the actual commits in both
+repositories. `effects/publication-destination-without-credentials` publishes over smart HTTP to
+`http://deploy:fixture-secret@127.0.0.1:<port>/...` against the Basic-authentication server: it
+completes and neither the result nor the record contains the secret. At `0a5a593` both rows were red
+by assertion: no destination was recorded, the clone and global `insteadOf` cases completed into the
+decoy, and the legacy-file, `pushInsteadOf`, `pushurl` and fan-out cases were refused inside the
+receiver before pushing (result unknown, neither repository moved). Mutations:
+`effects-destination-not-recorded` (the record drops `destination`; reds both rows),
+`effects-destination-from-listing` (the pushed URLs copied from the listing's resolution),
+`effects-completion-ignores-destination` (completion without the one-repository condition; the
+fan-out case then reads completed), `effects-listed-url-isolated-profile` (the listing's resolution
+read in the isolated profile, so it disagrees with the push) and
+`effects-destination-with-credentials` (the authorized and listed URLs stored as given). The five R5
+redirect-refusal mutations (`effects-remote-name-as-words`, `effects-remote-section-url-key-only`,
+`effects-push-instead-of-allowed`, `effects-legacy-remote-files-allowed`,
+`effects-redirect-check-isolated-profile`) and their diffs are removed with the code they drove.
+`effects-remote-must-exist-verbatim` keeps its meaning on the new `ls-remote --get-url` step.
+
+**2 and 3, configuration selectors were stripped as coordinates (`t2`, `t3`).** The network profile
+stripped `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM` and `GIT_CONFIG_NOSYSTEM` while HOME and
+XDG_CONFIG_HOME still selected the global file, so two ways of naming the same file behaved
+differently, and an operator whose global configuration lives at `GIT_CONFIG_GLOBAL` (a supported
+git location) lost it: `t3`'s plain `git push` reached the authorized remote and publication did
+not. Decision: those variables select operator configuration, not repository coordinates. For parity
+with a plain `git push` from the same environment, the network profile now passes every
+configuration-selection and configuration-injection variable (`GIT_CONFIG_GLOBAL`,
+`GIT_CONFIG_SYSTEM`, `GIT_CONFIG_NOSYSTEM`, `GIT_CONFIG_COUNT` with the numbered
+`GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>`, and `GIT_CONFIG_PARAMETERS`). It still strips every
+other GIT_* variable by prefix, and so every variable that changes which repository or objects git
+acts on (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_OBJECT_DIRECTORY`,
+`GIT_ALTERNATE_OBJECT_DIRECTORIES`, `GIT_COMMON_DIR`, `GIT_NAMESPACE`, `GIT_CEILING_DIRECTORIES`,
+`GIT_DISCOVERY_ACROSS_FILESYSTEM`, `GIT_EXEC_PATH` and the replacement-object switch it pins). The
+profile keeps its strip-by-prefix, add-back-by-name structure rather than naming what to strip, so a
+GIT_* variable nobody has classified is stripped, not passed. `GIT_CONFIG` stays stripped: `git
+push` never reads it, only the `git config` command does, as its one file, so passing it would make
+a configuration query disagree with the push. Our own `-c push.followTags=false -c push.pushOption=`
+still win, because git appends command-line `-c` values after the inherited `GIT_CONFIG_PARAMETERS`
+and reads them after `GIT_CONFIG_COUNT` entries (checked with git 2.43). The push, the listing and
+the listing's URL resolution all read configuration through this one profile, so they agree; the R5
+configuration listing that read it separately is gone. The default `isolated` profile is unchanged:
+`t4_default.py` reports 0 differences from the pre-R5 `clean_env` over 3000 random environments, and
+suite 50 and `scripts/check_git_boundary.py` stay green.
+
+Rows: `effects/publication-config-selection-parity` names the authorized remote only through an
+alias that one configuration route rewrites, and takes the expected resolution from plain git
+itself (`git ls-remote --get-url` run directly, outside `git_process.py`, in the same
+environment). Routes: `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`, `GIT_CONFIG_COUNT` injection,
+`GIT_CONFIG_PARAMETERS` injection and `GIT_CONFIG_GLOBAL` over a HOME file that names a decoy (each
+must record plain git's URL and publish there, decoy untouched), plus the control
+`GIT_CONFIG_NOSYSTEM` with a system file (plain git leaves the alias unresolved, so publication is
+refused before any push). `effects/publication-network-profile-strips-coordinates` now publishes
+with only repository and object selectors set (and `GIT_CONFIG`), and requires the network profile
+to keep every configuration variable and every transport variable and the default profile to keep
+pinning global and system configuration to the null device. At `0a5a593` both rows were red by
+assertion: the four selector and injection routes ended unknown, `GIT_CONFIG_GLOBAL` over HOME
+published into the HOME file's decoy, and the profile dropped the configuration variables.
+Mutations: `effects-network-profile-drops-config-selection` (the selectors, `GIT_CONFIG_COUNT` and
+`GIT_CONFIG_PARAMETERS` stripped again, the defect found) and
+`effects-network-profile-drops-config-injection` (the numbered keys and values dropped). The R5
+mutations `effects-network-profile-without-global-config` and `effects-transport-isolated-profile`
+now also red the parity row.
+
+**Found while checking this proof: the destination record misread git's output.** Two claims in
+`525c69c` were false when this proof was checked against git 2.43. First, git runs the pre-push
+hook with the push's standard output inherited, so a hook's output shares the stream the porcelain
+`To` lines are read from: at `8fce1ea` a hook that mirrors the commit to a backup branch with its
+own porcelain push, and echoes a stray `To` line, added both to `pushed_urls` and turned a correct
+publication unknown. Second, the porcelain `To` line is git's own display of the URL
+(`transport_anonymize_url`), which drops the user of an scp-style address as well as a scheme URL's
+user information, while the listing's resolution was compared after a scrub that left scp-style
+addresses unchanged: an ordinary `deploy@host:path` publication pushed, moved the authorized repository
+and could never read completed. Fix (`57764e1`): a `To` line counts only when git's status line for
+the authorized refspec (`<flag>\t<commit>:<ref>\t<summary>`) follows it, so a hook's text or its own
+push of another refspec is never taken for a destination; the listing's resolution is compared in
+git's display, a port checked against git's own push output over 14 URL shapes (paths with `@`,
+scp-style with one and two `@`, `ssh://` with and without user and password, an `@` inside a
+password, `git+ssh://`, a port, `file://`, bracketed hosts), and each recorded URL is then stripped
+of any user information git's display leaves (for `ssh://deploy:fix@ture-secret@host/...` git
+displays `ssh://ture-secret@host/...`).
+
+Rows: `effects/publication-destination-as-git-displays` publishes through a fake SSH command to
+`deploy@deploy-host:<path>` and to `ssh://deploy:fix@ture-secret@deploy-host<path>`; each must
+complete, move the authorized repository, keep `ture-secret` out of the result and record
+`deploy-host:<path>` and `ssh://deploy-host<path>` as authorized, listed and pushed.
+`effects/publication-destination-from-push-status` gives the clone the mirroring pre-push hook
+above; the backup branch must hold the commit (the hook ran), the publication must complete and the
+record must name only the authorized repository. At `8fce1ea` both rows were red by assertion
+(`r6-red-at-8fce1ea.json`): the scp case ended unknown with the commit in the authorized repository,
+and the hook case recorded three pushed URLs and ended unknown. The `@`-in-password case already
+passed there, because the old scrub stripped to the last `@`; it guards the second layer of the
+fix. Mutations: `effects-scp-url-as-given` (the display leaves scp-style addresses unchanged, the
+defect found), `effects-completion-compares-raw-listing` (the listing compared without git's
+display; also reds the credentials row), `effects-destination-git-display-only` (records keep what
+git's display leaves) for the first row; `effects-pushed-from-every-to-line` (the defect found) and
+`effects-pushed-ignores-refspec` (a `To` line followed by any status line counts) for the second.
+`effects-destination-from-listing`, `effects-completion-ignores-destination` and
+`effects-destination-with-credentials` were re-anchored with the same meaning.
+
+**Commits.** `525c69c` (routing kept and recorded) and `8fce1ea` (configuration selectors), each
+with its rows, its fix, its mutations and the `engine/.veldo` copies, then `57764e1` (destinations
+read from git's status lines and display), `d2453d6` (spec Notes and History) and `3dedb09` (the
+push-status row reads the backup branch unchecked: the first mutation run showed that a mutant
+skipping hooks made the suite raise instead of redding the row). `525c69c` added `--porcelain` to the push, which moved
+the anchor of seven push mutations; they were re-anchored with the same meaning in `8fce1ea`, so
+finding 28's mutation check is not runnable at `525c69c` alone.
+
+**Red before, green now.** `r6-red-at-0a5a593.json` records suite 58 at `8fce1ea` run over a copy
+of the tree with `control_effect_executor.py`, `git_process.py` and `control_effects.py` from
+`0a5a593`: the three new rows and the rewritten coordinates row fail by assertion, none by an
+exception (the suite ran all 30 rows: 26 passed, 4 failed), and every other row passes. This was
+re-derived for this proof with the same result. `r6-red-at-8fce1ea.json` records the same for the
+two destination rows (suite at `3dedb09`, executor from `8fce1ea`: 30 passed, 2 failed). On this
+branch all 32 named rows are green (58 assertions); the suite takes 14.8 to 18.3 seconds on its
+own over three runs at the final code (host load uncontrolled), against 14.4 at `8fce1ea`. `python3 -B scripts/check_teeth_mutations.py --finding 28`
+rejects all 42 finding-28 mutations with a green baseline (58 assertions, about 24 minutes on this
+host). All 42 exact diffs are in this directory: the twelve added this round, the 18 whose line
+offsets moved regenerated, and the five R5 redirect-refusal diffs removed. `mutations.json`,
+`gate-mutations.json`, `gate-summary.json` and the `manifest.json` hashes still describe `65294a7`
+until the lead's gate run is stamped.
+
+**The checker's scripts against this branch.** `r6-scripts-at-57764e1.txt` is the re-run, with one
+print line added to the harness copy so each case shows the destination the record stores; the
+output is the same as at `8fce1ea`. Seven BUG lines remain, each the decided behavior and not a
+defect:
+
+- `t1` local, global and `includeIf` `insteadOf` (three lines): the push is routed to the decoy
+  as configured and reads completed, and the record now shows the decoy as listed and pushed. The
+  script's BUG condition is "completed while the commit is in the decoy", which is exactly the
+  routing the decision keeps. Its `GIT_CONFIG_GLOBAL-selected` case now routes to the decoy too,
+  like HOME; its `HOME-selected` case then reads `stale-subject` only because the script reuses the
+  scene, whose decoy already holds the tip.
+- `t2` HOME and XDG_CONFIG_HOME (two lines): all three selection routes, `GIT_CONFIG_GLOBAL`
+  included, now behave the same, which is the parity the check asked for. The script prints BUG
+  whenever HOME or XDG_CONFIG_HOME moves the push, a condition written for the old asymmetry.
+- `t5` global include `pushInsteadOf` and remote section (two lines): no longer refused, so the
+  push reaches the decoy as configured; both end unknown, never completed, with the decoy recorded
+  as pushed (twice for the section, which the script includes twice). The script's BUG condition
+  is "the decoy moved", written for the withdrawn claim.
+
+`t3` prints no BUG line (publication completes where plain git does), `t4` reports 0 default-profile
+differences, and `t5`'s hook, `core.worktree`/`core.bare` and `GIT_ALLOW_PROTOCOL` cases are
+unchanged.

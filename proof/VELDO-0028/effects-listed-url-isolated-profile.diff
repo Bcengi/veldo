@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -89 +89 @@
+-        resolved = transport('ls-remote', '--get-url', remote)
++        resolved = git('ls-remote', '--get-url', remote)

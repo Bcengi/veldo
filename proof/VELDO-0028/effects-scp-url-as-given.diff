@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -34 +34 @@
+-        return rest if ':' in rest else url
++        return url

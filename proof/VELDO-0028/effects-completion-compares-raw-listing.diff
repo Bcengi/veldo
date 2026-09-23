@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -117 +117 @@
+-        reached = pushed == [displayed_url(listed)]
++        reached = pushed == [listed]

@@ -1,5 +1,5 @@
 --- a/.veldo/control_effect_executor.py
 +++ b/.veldo/control_effect_executor.py
-@@ -96 +96 @@
--        complete = push.returncode == 0 and after is not None and after == expected
-+        complete = push.returncode == 0 and after is not None and all(after.get(k) == v for k, v in expected.items())
+@@ -130 +130 @@
+-                    and after is not None and after == expected)
++                    and after is not None and all(after.get(k) == v for k, v in expected.items()))

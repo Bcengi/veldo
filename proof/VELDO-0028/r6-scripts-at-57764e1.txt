@@ -1,0 +1,45 @@
+Re-run of the fourth checker's scripts (/tmp/rv28/s: h.py, t1_insteadof.py, t2_home.py, t3_parity.py,
+t4_default.py, t5_misc.py) against 57764e1: copies pointed at this worktree's .veldo, with one added print
+line in the harness's report() showing the destination the effect record stores. Each scene's temporary
+directory is shown as <scene>. The output is the same as at 8fce1ea apart from those directories and the
+scenes' commit ids. Every remaining BUG line is explained in README.md, review round R6.
+== t1_insteadof.py
+local: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+BUG: local url.insteadOf: result completed, commit landed in file://<scene>/decoy.git, authorized file://<scene>/auth.git unchanged
+global: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+BUG: global url.insteadOf: result completed, commit landed in file://<scene>/decoy.git, authorized file://<scene>/auth.git unchanged
+global-includeIf: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+BUG: global-includeIf url.insteadOf: result completed, commit landed in file://<scene>/decoy.git, authorized file://<scene>/auth.git unchanged
+  GIT_CONFIG_GLOBAL-selected: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+HOME-selected: status=refused:stale-subject auth_main_is_tip=False decoy_main_is_tip=True
+== t2_home.py
+GIT_CONFIG_GLOBAL: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+HOME: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+BUG: HOME selects the global config file (as GIT_CONFIG_GLOBAL does, which is stripped as a coordinate) and moved the push to the decoy
+XDG_CONFIG_HOME: status=completed auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/decoy.git pushed=['file://<scene>/decoy.git']
+BUG: XDG_CONFIG_HOME selects the global config file (as GIT_CONFIG_GLOBAL does, which is stripped as a coordinate) and moved the push to the decoy
+== t3_parity.py
+plain git push --dry-run rc=0; publication status=completed
+== t4_default.py
+default-profile mismatches: 0
+unknown profile refused
+== t5_misc.py
+global include pushInsteadOf: status=unknown auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/auth.git pushed=['file://<scene>/decoy.git']
+BUG: include pushInsteadOf
+global include remote-section: status=unknown auth_main_is_tip=False decoy_main_is_tip=True
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/auth.git pushed=['file://<scene>/decoy.git', 'file://<scene>/decoy.git']
+BUG: include remote-section
+global core.hooksPath: status=completed auth_main_is_tip=True decoy_main_is_tip=False
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/auth.git pushed=['file://<scene>/auth.git']
+  hook saw: ['b57bc525bb2e653cc8f895280ae9418dc2d0d329 b57bc525bb2e653cc8f895280ae9418dc2d0d329 refs/heads/main e4f8b861f50ee5ec36dac66372dfa2433a91ac2b', 'file://<scene>/auth.git file://<scene>/auth.git', '']
+global core.worktree+bare+safe.directory: status=completed auth_main_is_tip=True decoy_main_is_tip=False
+  recorded destination: authorized=file://<scene>/auth.git listed=file://<scene>/auth.git pushed=['file://<scene>/auth.git']
+GIT_ALLOW_PROTOCOL=https (file blocked): status=refused:stale-subject auth_main_is_tip=False decoy_main_is_tip=False
