@@ -14,7 +14,10 @@ stored. If the intent cannot be written, nothing is sent. If the completion cann
 the intent stays `pending`: its outcome is unknown and it is never sent again automatically,
 by this run or any later one, whatever projector finds it. Only a definite platform refusal
 (`refused`: the platform answered and published nothing) is attempted again, as a new attempt
-of the same record.
+of the same record. The one reply that proves nothing was published is Telegram's own error
+answer: an HTTP 4xx whose body is the Bot API error object (`ok` false, `error_code` equal to
+the status). A 5xx, a gateway or proxy page, a malformed status line or an unreadable body may
+follow a delivered message, so each is `unknown_outcome` and is never sent again automatically.
 
 EACH OWNER'S OWN CHAT. An assignment is sent to the chat enrolled for ITS owner: a
 `channel_enrollment` entity in the control store (`veldo.channel_enrollment/v1`, id
@@ -42,6 +45,7 @@ VELDO-0073. The bot token is supplied by the caller's custody and never logged o
 Standard library only.
 """
 import hashlib
+import http.client
 import json
 import time
 import urllib.error
@@ -146,7 +150,13 @@ class TelegramEdge:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 answer = json.loads(response.read())
         except urllib.error.HTTPError as exc:
-            # The platform answered and refused: nothing was published.
+            # Only Telegram's own error answer proves that nothing was published: a 4xx whose body
+            # is the Bot API error object for that status. A 5xx, a gateway page or any other
+            # reply may follow a delivered message, so its outcome is unknown and never re-sent.
+            if not 400 <= exc.code < 500:
+                raise EdgeRefused('unknown_outcome', 'HTTP %d is not a definite refusal' % exc.code) from None
+            if not telegram_refusal(exc, exc.code):
+                raise EdgeRefused('unknown_outcome', 'HTTP %d without the Bot API error answer' % exc.code) from None
             raise EdgeRefused('channel_refused', 'HTTP %d' % exc.code) from None
         except (urllib.error.URLError, OSError, ValueError):
             raise EdgeRefused('unknown_outcome', 'no readable platform answer') from None
@@ -158,6 +168,16 @@ class TelegramEdge:
             raise EdgeRefused('unknown_outcome', 'platform answer lacks message identity')
         return {'chat_id': chat['id'], 'message_id': result['message_id'], 'date': result['date'],
                 'text': result['text']}
+
+
+def telegram_refusal(reply, status):
+    """Whether an HTTP error reply is the Bot API's own error answer for `status`: a JSON object
+    with `ok` false and `error_code` equal to the status. An unreadable body is not."""
+    try:
+        answer = json.loads(reply.read())
+    except (http.client.HTTPException, OSError, ValueError):
+        return False
+    return isinstance(answer, dict) and answer.get('ok') is False and answer.get('error_code') == status
 
 
 def anomalies(record, platform):

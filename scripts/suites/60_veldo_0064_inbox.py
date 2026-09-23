@@ -66,6 +66,8 @@ class _V64BotApi(_v64_http.BaseHTTPRequestHandler):
             return self._answer(404, {'ok': False, 'error_code': 404, 'description': 'Not Found'})
         if st['mode'] == 'refuse':
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: chat not found'})
+        if st['mode'] == 'limit':
+            return self._answer(429, {'ok': False, 'error_code': 429, 'description': 'Too Many Requests: retry after 1'})
         st['requests'].append((body.get('chat_id'), body.get('text')))
         chat = st['chats'].get(body.get('chat_id'), body.get('chat_id'))
         st['next'] += 1
@@ -77,7 +79,25 @@ class _V64BotApi(_v64_http.BaseHTTPRequestHandler):
         if st['mode'] == 'drop':
             self.close_connection = True
             return  # published, but the answer never reaches the caller
+        # Published, and then an answer that is not Telegram's own refusal reaches the caller.
+        if st['mode'] == 'gateway':
+            return self._raw(502, b'<html>502 Bad Gateway</html>')
+        if st['mode'] == 'telegram5xx':
+            return self._answer(500, {'ok': False, 'error_code': 500, 'description': 'Internal Server Error'})
+        if st['mode'] == 'proxy4xx':
+            return self._raw(403, b'<html>403 Forbidden</html>')
+        if st['mode'] == 'garbage':
+            self.close_connection = True
+            self.wfile.write(b'garbage\r\n\r\n')  # no HTTP status line at all
+            return
         self._answer(200, {'ok': True, 'result': message})
+
+    def _raw(self, code, payload):
+        self.send_response(code)
+        self.send_header('Content-Type', 'text/html')
+        self.send_header('Content-Length', str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
 
     def _answer(self, code, value):
         payload = _v64_json.dumps(value).encode()
@@ -94,7 +114,8 @@ def _v64_checks(base):
                                   'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
                                   'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
                                   'projection/intent-before-send', 'projection/echo-mismatch-kept',
-                                  'projection/owner-enrolled-chat', 'projection/returned-chat-checked')}
+                                  'projection/owner-enrolled-chat', 'projection/returned-chat-checked',
+                                  'projection/only-telegram-refusal-retried')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -605,6 +626,33 @@ def _v64_checks(base):
         later = [r for _ in range(2) for r in projection.project() if r['assignment_id'] == p_chat]
         check(chat_row, 'the misplaced message is never sent again', len(api['requests']) == asked + 1
               and [(r['outcome'], r.get('reason')) for r in later] == [('anomaly', 'chat_mismatch')] * 2)
+        # --- only Telegram's own 4xx refusal proves nothing was published ---------------------
+        retry_row = 'projection/only-telegram-refusal-retried'
+        for mode in ('gateway', 'telegram5xx', 'proxy4xx'):
+            command('pm', 'open', 'P-' + mode, assignment=content('decision'))
+            p_mode = I.assignment_id(ids['repository_uuid'], 'P-' + mode)
+            asked = len(api['requests'])
+            api['mode'] = mode
+            answered_once = [r for r in projection.project() if r['assignment_id'] == p_mode]
+            api['mode'] = 'ok'
+            later = [r for _ in range(2) for r in projection.project() if r['assignment_id'] == p_mode]
+            recorded = projection.record(P.projection_id(p_mode, 1)) or {}
+            check(retry_row, mode + ': a reply after delivery that is not Telegram\'s own refusal is unknown',
+                  [r['outcome'] for r in answered_once] == ['unknown_outcome'] and recorded.get('outcome') == 'unknown_outcome'
+                  and recorded.get('attempt') == 1 and recorded.get('message_id') is None)
+            check(retry_row, mode + ': the message is published once and never sent again',
+                  len(api['requests']) == asked + 1 and [r['outcome'] for r in later] == ['unknown_outcome'] * 2)
+        # Additive control: Telegram's own refusal, a 4xx answer with ok false, is attempted again.
+        command('pm', 'open', 'P-limit', assignment=content('decision'))
+        p_limit = I.assignment_id(ids['repository_uuid'], 'P-limit')
+        asked = len(api['requests'])
+        api['mode'] = 'limit'
+        limited = [r['outcome'] for r in projection.project() if r['assignment_id'] == p_limit]
+        api['mode'] = 'ok'
+        retried = [r['outcome'] for r in projection.project() if r['assignment_id'] == p_limit]
+        check(retry_row, 'control: Telegram\'s own 4xx refusal publishes nothing and is attempted again',
+              limited == ['refused'] and retried == ['sent'] and len(api['requests']) == asked + 1
+              and (projection.record(P.projection_id(p_limit, 1)) or {}).get('attempt') == 2)
         try:
             P.TelegramEdge('http://example.invalid', api['token'])
             check('projection/send-outcomes', 'a plain-HTTP remote origin is refused', False)

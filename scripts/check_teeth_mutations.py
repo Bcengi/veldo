@@ -653,6 +653,17 @@ def cases():
           "", 'projection/returned-chat-checked')
     inbox('projection-record-enrolled-chat', 'control_channel_projection.py',
           "chat_id=platform['chat_id'],", "chat_id=data['enrolled_chat'],", 'projection/returned-chat-checked')
+    # VELDO-0064 review r2-s4: only Telegram's own 4xx error answer is a definite refusal.
+    range_guard = ("            if not 400 <= exc.code < 500:\n"
+                   "                raise EdgeRefused('unknown_outcome', 'HTTP %d is not a definite refusal' % exc.code) from None\n")
+    body_guard = ("            if not telegram_refusal(exc, exc.code):\n"
+                  "                raise EdgeRefused('unknown_outcome', 'HTTP %d without the Bot API error answer' % exc.code) from None\n")
+    inbox('projection-any-http-error-refused', 'control_channel_projection.py', range_guard + body_guard, '',
+          'projection/only-telegram-refusal-retried')
+    inbox('projection-any-4xx-refused', 'control_channel_projection.py', body_guard, '',
+          'projection/only-telegram-refusal-retried')
+    inbox('projection-telegram-5xx-refused', 'control_channel_projection.py', range_guard, '',
+          'projection/only-telegram-refusal-retried')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
