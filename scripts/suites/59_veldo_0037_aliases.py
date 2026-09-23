@@ -691,6 +691,37 @@ def _s37_run():
                and (honest_read or {}).get('body') == b'identical bytes\n'
                and code(other_from_mine) == 'wrong_repository' and code(mine_from_theirs) == 'wrong_repository')
         env.conn.close()
+
+        # 4. A publication is recorded only on the bound publisher's own reading of the exact
+        # accepted bytes at the declared path inside the recording transaction; the digest a
+        # caller supplies (readable by anyone from the store) is never enough.
+        env = fresh('record')
+        checkout = checkout_of(env)
+        enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+        allocate(env, 'record-1', 'specification', 'record', b'accepted bytes\n')
+        declared = checkout / 'specs/VELDO-0001-record.md'
+        accepted_digest = _s37_digest(b'accepted bytes\n')
+
+        def record_on_word():
+            return attempt(lambda: env.service.record_publication('repository', 'VELDO-0001', 1, accepted_digest,
+                                                                  'someone', **signing))[1]
+
+        recording = {'no-publisher': code(record_on_word())}
+        publisher_4, _ = attempt(lambda: doc.Publisher(env.service, checkout))
+        recording['no-file'] = code(record_on_word())
+        declared.parent.mkdir()
+        declared.write_bytes(b'other bytes\n')
+        recording['other-bytes'] = code(record_on_word())
+        still_pending = ('repository', 'VELDO-0001', 1) in env.service.pending()
+        declared.unlink()
+        published, _ = publish_by(publisher_4, 'repository', 'VELDO-0001')
+        honest_read, _ = read_by(env, 'repository', 'VELDO-0001', checkout)
+        recording['published-then'] = bool(published)
+        defects['record-without-bytes'] = recording
+        expect('publication/recorded-only-by-publisher', recording == {
+               'no-publisher': 'missing_authority', 'no-file': 'missing_publication', 'other-bytes': 'publication_mismatch',
+               'published-then': True} and still_pending and (honest_read or {}).get('body') == b'accepted bytes\n')
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 

@@ -133,6 +133,7 @@ class Publisher:
         if len(matches) != 1:
             raise SN.Refused('wrong_repository', '%s is not a checkout of an enrolled repository' % self.root)
         self.repository = matches[0]
+        service.bind_publisher(self)
 
     def visible_digest(self, path):
         """The digest of the bytes a reader of this checkout sees at a declared path, or None."""

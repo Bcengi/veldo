@@ -468,6 +468,12 @@ def cases():
     aliases('reader-any-checkout', 'control_document.py',
             '    if not recorded or AL.checkout_identity(os.path.realpath(root)) != recorded:', '    if False:',
             'publication/bound-to-repository')
+    aliases('record-trusts-supplied-digest', 'control_alias.py',
+            "            visible = publisher.visible_digest(data['path'])", "            visible = p['observed_digest']",
+            'publication/recorded-only-by-publisher')
+    aliases('record-missing-file-accepted', 'control_alias.py',
+            "        if visible is None:\n            self._refuse('missing_publication', '%s is not in the bound checkout' % data['path'])",
+            "        if visible is None:\n            visible = data['digest']", 'publication/recorded-only-by-publisher')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')

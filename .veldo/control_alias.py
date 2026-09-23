@@ -307,6 +307,15 @@ class Allocations:
             raise SN.Refused('invalid_registration', 'every enrolled repository needs its own readable root commits')
         self.counts = {'accepted': 0, 'reused': 0, 'refused': 0}
         self.observations = []
+        self.publishers = {}
+
+    def bind_publisher(self, publisher):
+        """One checkout per repository publishes; recording a publication reads through it."""
+        bound = self.publishers.get(publisher.repository)
+        if bound is not None and bound.root != publisher.root:
+            raise SN.Refused('invalid_registration', 'repository %s already publishes into %s'
+                             % (publisher.repository, bound.root))
+        self.publishers[publisher.repository] = publisher
 
     # -- reads (outside any transaction; transitions reread under the store's lock) ------------
     def current(self, identity):
@@ -480,7 +489,9 @@ class Allocations:
         return self.observe('edit_document', request, work)
 
     def record_publication(self, repository, alias, version, observed, principal, **signing):
-        """Called by the publisher after the bytes are visible; not an independently observed call."""
+        """Called by the publisher after the bytes are visible; not an independently observed call.
+        The transition itself reads the declared path through the bound publisher, so a caller's
+        digest alone records nothing."""
         expected = {publication_id(repository, alias, version): 1}
         if version > 1:
             expected[publication_id(repository, alias, version - 1)] = 2
@@ -635,6 +646,19 @@ class Allocations:
             self._refuse('stale_version', 'already published')
         if p['observed_digest'] != data['digest']:
             self._refuse('publication_mismatch', 'published bytes are %s; accepted %s' % (p['observed_digest'], data['digest']))
+        # The evidence is the bound checkout's own bytes at the declared path, read now, inside
+        # this transaction; the supplied digest is readable by anyone from the store.
+        publisher = self.publishers.get(repository)
+        if publisher is None:
+            self._refuse('missing_authority', 'no publisher is bound to repository %s' % repository)
+        try:
+            visible = publisher.visible_digest(data['path'])
+        except OSError as error:
+            self._refuse('missing_publication', '%s is not readable (%s)' % (data['path'], error.strerror))
+        if visible is None:
+            self._refuse('missing_publication', '%s is not in the bound checkout' % data['path'])
+        if visible != data['digest']:
+            self._refuse('publication_mismatch', 'the bound checkout shows %s; accepted %s' % (visible, data['digest']))
         if p['version'] > 1:
             prior = before.get(publication_id(repository, p['alias'], p['version'] - 1))
             if prior is None or prior['data']['state'] != 'published':
