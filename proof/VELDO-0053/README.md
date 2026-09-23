@@ -43,6 +43,18 @@ that runs can rewrite the snapshot's record of itself (or of any other module), 
 decision can show that it did. Protecting the code that is recorded is the installed directory's job
 (its ownership and permissions), not this record's.
 
+A module is recorded before it runs, so one whose load raises stays in the identity only when the
+module loading it catches the error; a raise that escapes the snapshot refuses the decision
+(`unavailable_service:architecture_validator`) with an empty validator record (`{}`).
+
+**Known cases filed for a later release.** Two cases from the sixth review need a file deliberately
+planted in our own installed engine directory, which is out of this review's scope: an engine file
+named after a role label (parser.py) taking that role's key in the identity, and one very large held
+file (a sparse 1 GiB zz.py) read whole before the first decision. Both are filed for a later release.
+Fixes for both were committed on this branch before the scope changed (b34e367, the identity keyed by
+module name; c9d0205, the 1 MiB read limit) and are kept, not reverted; their rows and mutations are
+registered, but this proof's counts, records and mutation evidence below were not regenerated for them.
+
 **The accepted artifact.** The authority's record `architecture:<repository>` (state `accepted`, the
 sha256 digest of the accepted bytes) makes the contract required whatever the workspace's own policy
 says, and the workspace file must be exactly those bytes. Without a record the repository's policy flag

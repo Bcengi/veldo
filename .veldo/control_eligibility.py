@@ -427,7 +427,8 @@ class _MemoryLoader:
         key = self.snapshot.source_key(self.held)
         linecache.cache[key] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), key)
         self.snapshot._keys.append(key)
-        # Recorded before the module runs, so a module that fails during its own load is still in the identity.
+        # Recorded before the module runs. A module whose load raises stays in the identity only when the module
+        # loading it catches the error; a raise out of the snapshot refuses the decision with validator {}.
         self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()
         exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)
 

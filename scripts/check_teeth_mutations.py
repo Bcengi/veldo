@@ -961,7 +961,8 @@ def cases():
                  "origin=self.source_key(held))  # defect: __file__ is the snapshot's cache key, not the installed path\n",
                  ['snapshot-module-files'])
     load_block = (seed + "        self.snapshot._keys.append(key)\n"
-                  "        # Recorded before the module runs, so a module that fails during its own load is still in the identity.\n"
+                  "        # Recorded before the module runs. A module whose load raises stays in the identity only when the module\n"
+                  "        # loading it catches the error; a raise out of the snapshot refuses the decision with validator {}.\n"
                   "        self.snapshot._executed[self.held] = 'sha256:' + hashlib.sha256(self.body).hexdigest()\n"
                   "        exec(compile(self.body, key, 'exec', dont_inherit=True), module.__dict__)\n")
     architecture('architecture-linecache-seeded-after-load', 'control_eligibility.py', load_block,
