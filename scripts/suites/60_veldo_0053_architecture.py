@@ -789,6 +789,50 @@ def _v53_suite():
                    and all(g_ == sha(farm_arch) for g_ in farm_digests)
                    and outcome(read_raced, CODES['invalid_structure']) and all(r == installed_digests for r in read_recorded))
 
+        with region('architecture/snapshot-source'):
+            # Tracebacks and inspect show the code that ran: after the installed arch.py is edited on disk, a
+            # traceback from the snapshot's structural validator prints the line that raised as it was
+            # loaded, inspect finds the function it names, and the loader hands back the held source.
+            import inspect
+            import linecache
+            import traceback
+            reset('valid')
+            source_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+            stations(source_gate)
+            held = source_gate._architecture_validator().arch
+            ran_text = (mods / 'arch.py').read_text()
+            ran_lines = ran_text.splitlines()
+
+            def raised_line():
+                try:
+                    held.read_contract(None, None)  # Path(None) raises inside read_contract
+                except TypeError:
+                    frames = [f for f in traceback.extract_tb(sys.exc_info()[2]) if f.filename == held.__file__]
+                    return (frames[-1].lineno, frames[-1].line) if frames else (None, None)
+                return (None, None)
+
+            installed_arch = (mods / 'arch.py').read_bytes()
+            try:
+                (mods / 'arch.py').write_bytes(b'# a later edit on disk\n' * 3 + installed_arch)
+                linecache.checkcache()
+                line_no, line = raised_line()
+                try:
+                    first = inspect.getsource(held.read_contract).splitlines()[0]
+                except (OSError, TypeError) as error:
+                    first = repr(error)
+                try:
+                    given = held.__loader__.get_source(held.__name__) if hasattr(held.__loader__, 'get_source') else None
+                except (OSError, ImportError) as error:
+                    given = repr(error)
+            finally:
+                (mods / 'arch.py').write_bytes(installed_arch)
+                linecache.checkcache()
+            observed['snapshot_source'] = {'traceback_line_is_the_line_that_ran': bool(line_no) and line == ran_lines[line_no - 1].strip(),
+                                           'getsource_first_line': first, 'get_source_is_held': given == ran_text}
+            check('architecture/snapshot-source',
+                   bool(line_no) and line == ran_lines[line_no - 1].strip() and first.startswith('def read_contract')
+                   and given == ran_text)
+
         with region('architecture/not-text-refused'):
             # A contract that is not valid UTF-8 is a named parse failure with the digest of the bytes read,
             # never an unanswered validator. The accepted record names those very bytes, so only the

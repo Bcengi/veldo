@@ -859,8 +859,8 @@ def cases():
                  ['snapshot-in-memory'])
     # Review fix: the bytes compiled are the bytes digested (a writer lands between the one read and the compile).
     architecture('architecture-exec-rereads-disk', 'control_eligibility.py',
-                 "exec(compile(self.body, module.__spec__.origin, 'exec', dont_inherit=True), module.__dict__)",
-                 "exec(compile(Path(module.__spec__.origin).read_bytes(), module.__spec__.origin, 'exec', dont_inherit=True),"
+                 "exec(compile(self.body, origin, 'exec', dont_inherit=True), module.__dict__)",
+                 "exec(compile(Path(origin).read_bytes(), origin, 'exec', dont_inherit=True),"
                  " module.__dict__)  # defect: compiled from a second read of the disk",
                  ['snapshot-in-memory'])
     architecture('architecture-arch-digest-reread', 'control_eligibility.py',
@@ -868,6 +868,17 @@ def cases():
                  "'digest': 'sha256:' + hashlib.sha256(bodies[name] if name != 'arch.py' else (installed / name).read_bytes())"
                  ".hexdigest()}  # defect: arch.py digested from a second read",
                  ['snapshot-in-memory'])
+    # Review fix: tracebacks and inspect show the code that ran.
+    seed = ("        linecache.cache[origin] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True),"
+            " origin)\n")
+    architecture('architecture-linecache-unseeded', 'control_eligibility.py', seed,
+                 "        pass  # defect: linecache reads the file on disk by name\n", ['snapshot-source'])
+    architecture('architecture-linecache-mtime-checked', 'control_eligibility.py', seed,
+                 seed.replace("(len(self.body), None,", "(len(self.body), os.stat(origin).st_mtime,")
+                 .rstrip("\n") + "  # defect: checkcache drops it after an edit\n", ['snapshot-source'])
+    architecture('architecture-get-source-missing', 'control_eligibility.py',
+                 "        return importlib.util.decode_source(self.body)\n",
+                 "        return None  # defect: the loader hands back no source\n", ['snapshot-source'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

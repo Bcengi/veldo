@@ -73,6 +73,7 @@ import contextlib
 import hashlib
 import importlib.util
 import json
+import linecache
 import os
 from pathlib import Path
 import sqlite3
@@ -404,11 +405,19 @@ class _MemoryLoader:
     def create_module(self, spec):
         return None
 
+    def get_source(self, fullname):
+        """The source that runs, decoded from the held bytes (inspect and tracebacks ask the loader)."""
+        return importlib.util.decode_source(self.body)
+
     def exec_module(self, module):
         # The module's own `import importlib.util` resolves to the snapshot's, so every sibling it loads
         # by path is executed from the same bytes in memory, never read from disk.
         module.__dict__['__builtins__'] = self.snapshot.builtins
-        exec(compile(self.body, module.__spec__.origin, 'exec', dont_inherit=True), module.__dict__)
+        origin = module.__spec__.origin
+        # Tracebacks and inspect read linecache by file name: seed it with the lines that run, with no
+        # modification time, so checkcache never replaces them with a later edit of the file on disk.
+        linecache.cache[origin] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), origin)
+        exec(compile(self.body, origin, 'exec', dont_inherit=True), module.__dict__)
 
 
 class ValidatorSnapshot:
