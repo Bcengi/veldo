@@ -18,7 +18,10 @@ of the same record.
 
 WHAT THE PLATFORM SAID IS WHAT IS KEPT. The chat identity recorded is the one the platform
 returned, not the configured address (Telegram accepts `@name` and answers with the numeric
-chat id). A response whose echoed text differs from the bytes sent is refused. A transport
+chat id). A platform answer is classified by the store transition that records it, never by
+the caller: when the text the platform stored differs from the bytes sent, the message still
+exists, so its returned identity and stored text are kept and the record is the named anomaly
+`presentation_mismatch` (outcome `anomaly`), not a valid projection and never sent again. A transport
 failure after the request may have reached the platform is recorded as `unknown_outcome` with
 no message identity, so nothing is blindly sent again; looking the message up and recovering an
 unknown or pending record is Release 2 work.
@@ -40,7 +43,9 @@ ENTITY_KIND = 'channel_projection'
 OPERATION = 'channel_projection_record'
 CHANNEL = 'telegram_chat'
 # The outcomes of one record. `pending` is the committed intent before the send completes.
-OUTCOMES = ('pending', 'sent', 'refused', 'unknown_outcome')
+OUTCOMES = ('pending', 'sent', 'anomaly', 'refused', 'unknown_outcome')
+# Named anomalies of a published message that is not a valid projection.
+ANOMALIES = ('presentation_mismatch',)
 # Only a definite refusal, where the platform answered and published nothing, is attempted again.
 RETRYABLE = ('refused',)
 INTENT_FIELDS = ('schema', 'channel', 'assignment_id', 'assignment_version', 'request_version',
@@ -119,6 +124,14 @@ class TelegramEdge:
                 'text': result['text']}
 
 
+def anomalies(record, platform):
+    """The named anomalies of one platform answer against the intent it completes."""
+    found = []
+    if platform['text'].encode('utf-8') != record['presentation'].encode('utf-8'):
+        found.append('presentation_mismatch')
+    return found
+
+
 def _record_transition(params, before):
     """The two registered phases of one record. `intent` creates the record, or starts a new
     attempt of a refused one, as `pending`. `complete` finishes that pending attempt from the
@@ -134,7 +147,7 @@ def _record_transition(params, before):
         if current is not None and current.get('outcome') not in RETRYABLE:
             raise ValueError('only a definite refusal is attempted again')
         data = dict(record, attempt=current['attempt'] + 1 if current else 1, outcome='pending', chat_id=None,
-                    message_id=None, platform_date=None, platform_text=None, refusal=None)
+                    message_id=None, platform_date=None, platform_text=None, refusal=None, anomalies=[])
         return {pid: {'kind': ENTITY_KIND, 'data': data}}
     if current is None or current.get('outcome') != 'pending' or current.get('attempt') != params.get('attempt'):
         raise ValueError('a completion finishes the pending attempt it names')
@@ -151,8 +164,10 @@ def _record_transition(params, before):
                 or not all(type(platform[k]) is int for k in ('chat_id', 'message_id', 'date'))
                 or not isinstance(platform['text'], str)):
             raise ValueError('a platform answer carries its chat, message, date and text')
-        data.update(outcome='sent', chat_id=platform['chat_id'], message_id=platform['message_id'],
-                    platform_date=platform['date'], platform_text=platform['text'])
+        found = anomalies(data, platform)
+        data.update(outcome='anomaly' if found else 'sent', chat_id=platform['chat_id'],
+                    message_id=platform['message_id'], platform_date=platform['date'],
+                    platform_text=platform['text'], anomalies=found)
     return {pid: {'kind': ENTITY_KIND, 'data': data}}
 
 
@@ -213,8 +228,6 @@ class Projection:
             sent = self.edge.send(text)
         except EdgeRefused as exc:
             return {'platform': None, 'refusal': None if exc.code == 'unknown_outcome' else exc.code}
-        if sent['text'].encode('utf-8') != text.encode('utf-8'):
-            return {'platform': None, 'refusal': 'presentation_mismatch'}
         return {'platform': sent, 'refusal': None}
 
     def _project(self, entry):
@@ -223,7 +236,9 @@ class Projection:
         versions = {aid: entry['version']}
         existing = self.record(pid)
         if existing is not None and existing['outcome'] not in RETRYABLE:
-            outcome, reason = SETTLED[existing['outcome']]
+            outcome, reason = SETTLED.get(existing['outcome'], ('anomaly', None))
+            if outcome == 'anomaly':
+                reason = ','.join(existing['anomalies'])
             return self._result(aid, versions, outcome, reason, projection_id=pid)
         brief = self.inbox.brief(aid)
         if not brief['valid'] or brief['version'] != entry['version']:
@@ -247,7 +262,8 @@ class Projection:
             platform = completion['platform'] or {}
             return self._result(aid, versions, 'unknown_outcome', exc.code, projection_id=pid,
                                 platform={k: platform.get(k) for k in ('chat_id', 'message_id', 'date')})
-        return self._result(aid, versions, done['outcome'], done['refusal'], projection_id=pid)
+        reason = ','.join(done['anomalies']) if done['outcome'] == 'anomaly' else done['refusal']
+        return self._result(aid, versions, done['outcome'], reason, projection_id=pid)
 
     def project(self):
         """Attempt each pending entry that has no settled record at its request version; return
@@ -259,4 +275,5 @@ class Projection:
                    for e in self.inbox.index()['entries'] if e['category'] == 'pending'}
         return dict(self.counts,
                     pending=sum(1 for r in records.values() if r is None or r['outcome'] in RETRYABLE),
-                    unknown=sum(1 for r in records.values() if r is not None and r['outcome'] in ('pending', 'unknown_outcome')))
+                    unknown=sum(1 for r in records.values() if r is not None and r['outcome'] in ('pending', 'unknown_outcome')),
+                    anomalies=sum(1 for r in records.values() if r is not None and r['outcome'] == 'anomaly'))

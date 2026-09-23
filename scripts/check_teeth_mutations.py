@@ -633,6 +633,15 @@ def cases():
           "            completion = self._send(text)\n"
           "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n",
           'projection/intent-before-send')
+    # VELDO-0064 review r4: a differing echoed text keeps the returned identity as an anomaly.
+    inbox('projection-mismatch-as-refusal', 'control_channel_projection.py',
+          "        found = anomalies(data, platform)\n",
+          "        if 'presentation_mismatch' in anomalies(data, platform):\n"
+          "            return {pid: {'kind': ENTITY_KIND, 'data': dict(data, outcome='refused', refusal='presentation_mismatch')}}\n"
+          "        found = anomalies(data, platform)\n", 'projection/echo-mismatch-kept')
+    inbox('projection-ignore-echoed-text', 'control_channel_projection.py',
+          "    if platform['text'].encode('utf-8') != record['presentation'].encode('utf-8'):\n        found.append('presentation_mismatch')\n",
+          "", 'projection/echo-mismatch-kept')
     return result
 
 

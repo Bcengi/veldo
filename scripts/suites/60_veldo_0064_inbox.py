@@ -68,9 +68,11 @@ class _V64BotApi(_v64_http.BaseHTTPRequestHandler):
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: chat not found'})
         chat = st['chats'].get(body.get('chat_id'))
         st['next'] += 1
+        # 'normalize': the platform stores and echoes a normalized text (a collapsed blank line).
+        text = body['text'].replace('\n\n', '\n') if st['mode'] == 'normalize' else body['text']
         message = {'message_id': st['next'], 'date': 1790000000 + st['next'],
-                   'chat': {'id': chat, 'type': 'private'}, 'text': body['text']}
-        st['messages'][(chat, st['next'])] = body['text'].encode('utf-8')
+                   'chat': {'id': chat, 'type': 'private'}, 'text': text}
+        st['messages'][(chat, st['next'])] = text.encode('utf-8')
         if st['mode'] == 'drop':
             self.close_connection = True
             return  # published, but the answer never reaches the caller
@@ -90,7 +92,7 @@ def _v64_checks(base):
                                   'projection/correlation', 'projection/send-outcomes', 'inbox/visible-invalid',
                                   'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
                                   'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
-                                  'projection/intent-before-send')}
+                                  'projection/intent-before-send', 'projection/echo-mismatch-kept')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -503,6 +505,30 @@ def _v64_checks(base):
               len(api['messages']) == published + 1
               and [(r['outcome'], r.get('reason')) for r in later] == [('unknown_outcome', 'incomplete_projection')] * 2)
         check(intent_row, 'metrics expose the unknown outcome', projection.metrics().get('unknown', 0) >= 1)
+
+        # --- an echoed text that differs keeps the returned identity as a named anomaly ----------
+        echo_row = 'projection/echo-mismatch-kept'
+        command('pm', 'open', 'P-echo', assignment=content('decision'))
+        p_echo = I.assignment_id(ids['repository_uuid'], 'P-echo')
+        published = len(api['messages'])
+        api['mode'] = 'normalize'
+        echoed = [r for r in projection.project() if r['assignment_id'] == p_echo]
+        api['mode'] = 'ok'
+        anomaly = projection.record(P.projection_id(p_echo, 1)) or {}
+        stored_bytes = api['messages'].get((anomaly.get('chat_id'), anomaly.get('message_id')))
+        check(echo_row, 'the returned identity is kept, recorded as the named anomaly',
+              [(r['outcome'], r.get('reason')) for r in echoed] == [('anomaly', 'presentation_mismatch')]
+              and anomaly.get('outcome') == 'anomaly' and anomaly.get('anomalies') == ['presentation_mismatch']
+              and type(anomaly.get('message_id')) is int and stored_bytes is not None)
+        check(echo_row, 'the record keeps the platform\'s stored text beside the bytes sent',
+              stored_bytes is not None and (anomaly.get('platform_text') or '').encode('utf-8') == stored_bytes
+              and anomaly.get('presentation') != anomaly.get('platform_text')
+              and P.presentation_digest((anomaly.get('presentation') or '').encode('utf-8')) == anomaly.get('presentation_digest'))
+        later = [r for _ in range(2) for r in projection.project() if r['assignment_id'] == p_echo]
+        check(echo_row, 'the anomalous message is never sent again',
+              len(api['messages']) == published + 1
+              and [(r['outcome'], r.get('reason')) for r in later] == [('anomaly', 'presentation_mismatch')] * 2)
+        check(echo_row, 'metrics count the anomaly, not pending work', projection.metrics().get('anomalies', 0) >= 1)
         check('projection/send-outcomes', 'the token is never recorded',
               all(api['token'] not in _v64_json.dumps(o) for o in projection.observations)
               and api['token'] not in _v64_json.dumps(S.materialized_state(conn)['entities']))
