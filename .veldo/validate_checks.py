@@ -319,6 +319,22 @@ def load_contract_state(repo_root=None, required=None, contract_path=None):
     return _CL.load_contract_state(Path(repo_root) if repo_root else ROOT, _arch_module(), parse_yamlish, required=required, contract_path=contract_path)
 
 
+def entry_contract(workspace, required=None):
+    """VELDO-0053: the architecture answer an ELIGIBILITY entry consumes, and the code that gave it.
+
+    The tri-state ContractLoad of the workspace's contract from the ONE loader, run by THIS validator
+    (the one installed beside the eligibility service, never a copy the workspace carries), with the
+    source file of every function that judged it: this entry, the loader, the structural validator
+    and the parser. `required` True is the authority's accepted architecture; None reads the policy
+    flag. The file identities are what actually ran, taken from the code objects, so a caller can
+    record them next to the artifact it judged."""
+    arch = _arch_module()
+    load = _CL.load_contract_state(Path(workspace), arch, parse_yamlish, required=required)
+    ran = {"entry": entry_contract, "loader": _CL.load_contract_state, "validator": arch.validate_contract,
+           "parser": parse_yamlish}
+    return load, {role: fn.__code__.co_filename for role, fn in ran.items()}
+
+
 def load_repo_contract(repo_root=None, required=None):
     """(arch, contract) when VALID, (None, None) when ABSENT AND OPTIONAL (adoption safe); every other state RAISES
     ContractRefused. The one place every consumer obtains the contract; policy_contract.LOADER_ADAPTERS lists them."""

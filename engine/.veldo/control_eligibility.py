@@ -49,11 +49,24 @@ writes on this path are the runner's own reservation commands (StationCalls.open
 dispatch's worker slot, each launch its call, and close_dispatch settles unreported calls as unknown
 and retires the slot, through VELDO-0036's reservation service, which commits through control_store).
 It holds no key, launches nothing itself (StationCalls hands launches to VELDO-0036's InvocationGuard,
-which reserves before launch), and implements no recovery, fencing or clock qualification (Release 2). VELDO-0053's architecture checks and VELDO-0054's exact decision
-consumption attach to the same registrations. Standard library only.
+which reserves before launch), and implements no recovery, fencing or clock qualification (Release 2). VELDO-0054's exact decision
+consumption attaches to the same registrations. Standard library only.
+
+ARCHITECTURE AT EVERY ENTRY (VELDO-0053, R50). Every station asks architecture_accepted. The answer
+comes from the structural validator INSTALLED beside this module (validate.py and its loader, never
+the copy a workspace carries) over the workspace's .veldo/architecture.yaml. The authority's record
+architecture:<repository> (state accepted, digest of the accepted bytes) makes the contract required
+whatever the workspace's policy says, and the workspace file must be exactly those bytes; with no
+record the repository's policy flag decides absence, as VELDO-0016's loader always has. A present
+contract that is unreadable, malformed, of the wrong type or structurally invalid refuses by name
+(invalid_input:architecture/<kind>), a required one that is absent refuses
+(missing_evidence:architecture/required_absence), and bytes the authority did not accept refuse
+(missing_authority:architecture/unaccepted_artifact). Each decision records the artifact it judged and
+the files of the code that judged it (path and digest).
 """
 import collections
 import contextlib
+import hashlib
 import importlib.util
 import json
 import os
@@ -81,8 +94,19 @@ SN = _organ('control_snapshot')
 # contract's set is the floor of each; current admission is added to every station because R52
 # excludes unadmitted work from autonomous dispatch and R69 invalidates admission on scope change.
 FLOOR_STATIONS = ('selection', 'claim', 'direct_execution', 'build', 'review', 'publication', 'provider_request')
-STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + tuple(CC.ENTRY_PREDICATES[s])))
+# VELDO-0053: required architecture is asked at every station too, before the station's own questions.
+ARCHITECTURE_PREDICATE = 'architecture_accepted'
+STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', ARCHITECTURE_PREDICATE) + tuple(CC.ENTRY_PREDICATES[s])))
                       for s in FLOOR_STATIONS}
+# The refusal each refused architecture kind is named by (contract_loader.CONTRACT_KINDS, plus the
+# accepted-digest check this module adds).
+ARCHITECTURE_REFUSALS = {
+    'required_absence': 'missing_evidence:architecture/required_absence',
+    'unreadable': 'invalid_input:architecture/unreadable',
+    'parse_failure': 'invalid_input:architecture/parse_failure',
+    'invalid_structure': 'invalid_input:architecture/invalid_structure',
+    'unaccepted_artifact': 'missing_authority:architecture/unaccepted_artifact',
+}
 # Predicates satisfied only by a store transaction at the call boundary, never by a read.
 TRANSACTIONAL = {'charge_reserved': 'control_reservations.Reservations.reserve_call'}
 
@@ -341,7 +365,7 @@ def enrolled_gate(repo_root, trust, observe=None):
     except (store.StoreRefused, sqlite3.Error, OSError) as error:
         raise Stopped('unavailable_service:store') from error
     return Gate(store, conn, domain_uuid=binding['domain_uuid'], repository_uuid=binding['repository_uuid'],
-                authority_generation=binding['authority_generation'], observe=observe)
+                authority_generation=binding['authority_generation'], observe=observe, workspace=workspace)
 
 
 def entry_gate(repo_root, gate=None, trust=None, observe=None):
@@ -381,11 +405,45 @@ def _definition(label, data):
     return SN.digest(SN.canonical(body))
 
 
+def _digest_file(path):
+    with open(path, 'rb') as handle:
+        return 'sha256:' + hashlib.sha256(handle.read()).hexdigest()
+
+
+def _file_identity(path):
+    """{path, digest} of a file of code that ran (its resolved path and the digest of its bytes)."""
+    resolved = os.path.realpath(path)
+    try:
+        return {'path': resolved, 'digest': _digest_file(resolved)}
+    except OSError:
+        return {'path': resolved, 'digest': None}
+
+
+def _artifact_identity(path):
+    """{path, type, digest} of the architecture artifact that was judged. Only a regular file is
+    opened (a FIFO at the path is never read); a file the worker may not read has no digest."""
+    kind = ('absent' if not os.path.lexists(path) else 'symlink' if os.path.islink(path)
+            else 'directory' if os.path.isdir(path) else 'regular' if os.path.isfile(path) else 'other')
+    digest = None
+    if os.path.isfile(path):
+        try:
+            digest = _digest_file(path)
+        except OSError:
+            digest = None
+    return {'path': str(path), 'type': kind, 'digest': digest}
+
+
 class Gate:
     """One domain's shared eligibility over a real control store connection. Read-only."""
 
-    def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None):
+    def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None,
+                 workspace=None):
         self.store, self.conn = store, conn
+        # The workspace whose architecture every decision judges (VELDO-0053). A store-only Gate (no
+        # workspace) cannot look at a file: it refuses whenever the authority has accepted an
+        # architecture, and otherwise the repository has none the authority knows of.
+        self.workspace = str(workspace) if workspace is not None else None
+        self._validator = None
         self.domain_uuid, self.repository_uuid = domain_uuid, repository_uuid
         self.authority_generation = authority_generation
         self.observe = observe or (lambda event: None)
@@ -497,6 +555,7 @@ class Gate:
             inputs['decisions'] = self._collection('decision', lambda d: unit in (d.get('blocks') or []))
             inputs['blockers'] = self._collection('blocker', lambda d: d.get('unit') == unit)
             inputs['approvals'] = self._collection('approval', lambda d: d.get('unit') == unit)
+            inputs['architecture'] = self._entity('architecture:' + self.repository_uuid)
             watermark = self.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
         return {k: v for k, v in inputs.items() if v is not None}, watermark
 
@@ -621,6 +680,10 @@ class Gate:
             refusals = self._unit_problems(unit, inputs)
             if not refusals:
                 for name in STATION_PREDICATES[station]:
+                    if name == ARCHITECTURE_PREDICATE:
+                        decision['architecture'] = self.architecture(inputs.get('architecture'))
+                        refusals.extend(decision['architecture']['refusals'])
+                        continue
                     refusals.extend(self._predicate(name, unit, inputs, context))
                     if name in TRANSACTIONAL:
                         decision['pending'].append(name)
@@ -653,9 +716,61 @@ class Gate:
                  'accepted_inputs': {k: v.get('version', v.get('digest')) for k, v in decision['inputs'].items()},
                  'outcome': outcome, 'refusals': list(decision['refusals']),
                  'taxonomy': sorted({taxonomy(c) for c in decision['refusals']})}
+        if decision.get('architecture'):
+            found = decision['architecture']
+            event['architecture'] = {'basis': found['basis'], 'kind': found['kind'],
+                                     'artifact_digest': (found['artifact'] or {}).get('digest'),
+                                     'validator': {role: f['digest'] for role, f in found['validator'].items()}}
         self.observations.append(event)
         self.last[decision['unit']] = outcome
         self.observe(event)
+
+    # -- architecture (VELDO-0053) -----------------------------------------------------------------
+
+    def _architecture_validator(self):
+        """The installed validator: validate.py beside this module, loaded once, whose own
+        validate_checks instance (its one parser bound) carries entry_contract. validate.py's
+        re-export list is VELDO-0016's, so the entry is reached on that instance."""
+        if self._validator is None:
+            self._validator = _organ('validate')._VC
+        return self._validator
+
+    def architecture(self, item):
+        """The architecture answer of one decision: {basis, kind, state, required, accepted, artifact,
+        validator, refusals}. `item` is the store's architecture:<repository> entity (version 0 when
+        the authority has accepted none)."""
+        record = self._data(item) if item else None
+        accepted = None
+        if item and item.get('version'):
+            accepted = {'id': item['id'], 'version': item['version'],
+                        'digest': record.get('digest') if isinstance(record, dict) else None}
+        found = {'basis': 'accepted' if accepted else 'policy', 'kind': None, 'state': None, 'required': None,
+                 'accepted': accepted, 'artifact': None, 'validator': {}, 'refusals': []}
+        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'
+                         or not isinstance(record.get('digest'), str) or not record['digest'].startswith('sha256:')):
+            found['refusals'] = ['missing_authority:architecture']
+            return found
+        if self.workspace is None:
+            found['basis'] = 'store_only'
+            if accepted:
+                found['refusals'] = ['missing_evidence:architecture/workspace']
+            return found
+        try:
+            load, ran = self._architecture_validator().entry_contract(self.workspace, True if accepted else None)
+            found['validator'] = {role: _file_identity(path) for role, path in sorted(ran.items())}
+        except Exception as error:  # noqa: BLE001 - a validator that cannot answer refuses, never passes
+            found['refusals'] = ['unavailable_service:architecture_validator']
+            found['error'] = type(error).__name__
+            return found
+        found.update(kind=load.kind, state=load.state, required=load.required,
+                     artifact=_artifact_identity(load.path))
+        if load.refused:
+            found['refusals'] = [ARCHITECTURE_REFUSALS.get(load.kind, 'invalid_input:architecture/' + load.kind)]
+            found['problems'] = list(load.problems)
+        elif accepted and found['artifact']['digest'] != accepted['digest']:
+            found['kind'] = 'unaccepted_artifact'
+            found['refusals'] = [ARCHITECTURE_REFUSALS['unaccepted_artifact']]
+        return found
 
     def status(self):
         """Metrics: accepted and refused decisions, and the units whose latest decision refused."""
