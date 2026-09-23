@@ -202,15 +202,15 @@ The Mac group records reuse of built 0108; its missing profile/routing functions
 
 | ID | Concern | Release/stage |
 |---|---|---|
-| [VELDO-124](../../specs/VELDO-124-macos-worker-profile.md) | Simple macOS worker lifecycle profile | R1 S2 |
-| [VELDO-125](../../specs/VELDO-125-mac-relay-capability-routing.md) | Mac worker dispatch through the relay with host-capability routing | R1 S2 |
-| [VELDO-126](../../specs/VELDO-126-message-objective-intake.md) | One Telegram and API message intake for proposed work | R1 S3 |
-| [VELDO-127](../../specs/VELDO-127-agent-capability-configuration.md) | Versioned per-role MCP server and tool configuration | R1 S4 |
-| [VELDO-128](../../specs/VELDO-128-telegram-journal-reporting.md) | Telegram progress and completion from journal events | R1 S3 |
-| [VELDO-129](../../specs/VELDO-129-live-build-review-adapter-wiring.md) | Real worker adapter wiring for LiveLoop and LiveReviewer | R1 S1 |
-| [VELDO-130](../../specs/VELDO-130-authenticated-factory-api.md) | Authenticated factory state, message and decision API | R1 S5 |
-| [VELDO-131](../../specs/VELDO-131-factory-phone-desktop-ui.md) | Veldo factory UI on phone and desktop | R1 S5 |
-| [VELDO-132](../../specs/VELDO-132-versioned-workflow-definition.md) | Versioned workflow definitions consumed by LangGraph | R1 S4 |
+| [VELDO-0124](../../specs/VELDO-0124-macos-worker-profile.md) | Simple macOS worker lifecycle profile | R1 S2 |
+| [VELDO-0125](../../specs/VELDO-0125-mac-relay-capability-routing.md) | Mac worker dispatch through the relay with host-capability routing | R1 S2 |
+| [VELDO-0126](../../specs/VELDO-0126-message-objective-intake.md) | One Telegram and API message intake for proposed work | R1 S3 |
+| [VELDO-0127](../../specs/VELDO-0127-agent-capability-configuration.md) | Versioned per-role MCP server and tool configuration | R1 S4 |
+| [VELDO-0128](../../specs/VELDO-0128-telegram-journal-reporting.md) | Telegram progress and completion from journal events | R1 S3 |
+| [VELDO-0129](../../specs/VELDO-0129-live-build-review-adapter-wiring.md) | Real worker adapter wiring for LiveLoop and LiveReviewer | R1 S1 |
+| [VELDO-0130](../../specs/VELDO-0130-authenticated-factory-api.md) | Authenticated factory state, message and decision API | R1 S5 |
+| [VELDO-0131](../../specs/VELDO-0131-factory-phone-desktop-ui.md) | Veldo factory UI on phone and desktop | R1 S5 |
+| [VELDO-0132](../../specs/VELDO-0132-versioned-workflow-definition.md) | Versioned workflow definitions consumed by LangGraph | R1 S4 |
 
 Each has one concern and three or four criteria with declared domains, completeness observations
 and falsifiers. The UI defines all requested screens, touch/keyboard tasks and phone/desktop
@@ -236,6 +236,27 @@ Workflow definitions are versioned Veldo data; LangGraph executes them and the c
 C13 is unchanged: exact accepted-commit, contract-named, read-only repository attachments.
 The design was amended only for conflicting scope/timing, channel/host, API/UI and runtime
 rulings, with dated applicability notes preserving the later-release contracts.
+
+## Independent-review corrections
+
+This follow-up starts at `f9155ea` on the same `plan-0019-rev3` branch. Each numbered
+item from the owner's correction brief has a dedicated writing-only commit; item 7 also has
+a follow-up aligning its downstream qualification consumers. The table records
+items 1-9; item 10 is this audit-link and commit-ledger correction. No status, implementation,
+test or historical proof changed. Index generation and full contract validation ran before
+each commit.
+
+| Brief item | Correction | Commit |
+|---|---|---|
+| 1 | Quote owner rulings verbatim and correct the revision-history reference | `787410a11a8467aeff1ac235cda8841a946ba2fc` |
+| 2 | Assign every outcome measure to its release | `1e063a846b4fbd5991c85885619e577b6ec9c116` |
+| 3 | Record built, passing VELDO-0027 hardening at no Release 1 cost | `edd79485778f6e68086ee0897e4c18587cd3da2f` |
+| 4 | Admit ordinary bug fixes in Release 1; defer automatic/standing/emergency admission | `45ad3002be4ac3b2a3361213b67754c695de3218` |
+| 5 | Make VELDO-0127 the sole tool and MCP configuration source | `a8535d051779048737501db780561d465fc3d787` |
+| 6 | Preserve MCP credentials and limit custody checks to model provider credentials | `737cf0badd8f8f541cf005cf852b313d02715c69` |
+| 7 | Replace per-call pricing requirements with subscription usage caps and align build/review/PM consumers | `d1cbb202ca839b1b17ffe790b5c8b9e2204e3d04`, `beee80eb9d85552f5cc6a1ca41d5ebdafa2bdfab` |
+| 8 | Retitle VELDO-0057 and VELDO-0059 for Release 1 and regenerate the index | `e4084dccfcc5baae395e0d8d9338e5f4af545773` |
+| 9 | Select Chart.js with react-chartjs-2 and prohibit shadcn charts/Recharts | `13e05e14a3f974fb519fe08b5b06b20ef7606ad9` |
 
 ## Validation and gate handling
 
