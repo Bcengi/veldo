@@ -18,6 +18,7 @@ def _v134_suite():
     import hashlib
     import hmac
     import importlib.util
+    import io
     import json
     import os
     from pathlib import Path
@@ -308,11 +309,22 @@ def _v134_suite():
         with region('acceptance/first'):
             w = world('first', {'owner': OWNER})
             before = frozen(w)
-            cmd = command()
-            got = drive(w, packet(cmd))
+            # The owner's front door (`veldo architecture accept`) names an abbreviated commit, computes the
+            # digest of the blob there and signs the command with his key.
+            front, code = {}, None
+            if AR is not None:
+                printed = io.StringIO()
+                with contextlib.redirect_stdout(printed):
+                    code = AR.main(['accept', '--repo', str(repo), '--commit', C['lf'][:12], '--principal', 'owner',
+                                    '--key', str(keys / 'owner'), '--domain-uuid', DOMAIN, '--repository-uuid', REPO,
+                                    '--store-uuid', STORE])
+                front = json.loads(printed.getvalue()) if code == 0 else {}
+            cmd = front.get('command') or command()
+            got = drive(w, front if front.get('command') else packet(cmd))
             after = frozen(w)
-            first = dict(result=got.get('reason'), problems=writer_problems(record(w), [('lf', cmd)]))
-            ok = got.get('ok') is True and not first['problems']
+            first = dict(front_door=code, result=got.get('reason'), problems=writer_problems(record(w), [('lf', cmd)]))
+            ok = cmd.get('digest') == D['lf'] and cmd.get('commit') == C['lf'] and cmd.get('replaces') == 0
+            ok &= got.get('ok') is True and not first['problems']
             ok &= after[1] == before[1] + 1 and cmd['nonce'] in after[3] and cmd['nonce'] not in before[3]
             present = judge(w, B['lf'])
             absent = judge(w, None)
