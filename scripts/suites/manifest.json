@@ -608,6 +608,15 @@
    ],
    "regions": "Scope coverage of a plain-string inner scope (repository id)",
    "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
+  },
+  {
+   "name": "62_veldo_0039_dispatch",
+   "file": "62_veldo_0039_dispatch.py",
+   "requires": [
+    "62_veldo_0039_dispatch"
+   ],
+   "regions": "Dispatch contracts before launch, launch results under the original identity and bound observations",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition and real receiver and worker processes. Writes only temporary fixtures."
   }
  ]
 }
