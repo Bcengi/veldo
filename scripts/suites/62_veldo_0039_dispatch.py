@@ -197,6 +197,7 @@ sys.exit(payload.get('code', 0))
         config = base / 'receiver.json'
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
+            'workspace': str(base),
             'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
             'adapters': {'fixture-engine': {'argv': [sys.executable, '-B', str(worker), str(db), str(markers)],
                                             'environment': {'ENGINE_PROFILE': 'configured-profile'}},
@@ -212,7 +213,7 @@ sys.exit(payload.get('code', 0))
                                          'tracker': {'command': 'tracker-mcp', 'args': []}},
                          'tools': ['Read', 'Edit', 'Bash', 'WebFetch'], 'model': 'configured-model'}
         events = []
-        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY)
+        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign, observe=events.append)
         receiving = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='launch-receiver',
@@ -421,7 +422,7 @@ sys.exit(payload.get('code', 0))
                                 barrier.wait(timeout=20)
                                 return original(*args, **kwargs)
                             mine_dispatches.prepare = together
-                            racer = L.Runner(EL.Gate(store, mine_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY),
+                            racer = L.Runner(EL.Gate(store, mine_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base)),
                                              mine_reservations, mine_dispatches,
                                              lambda c: L.invoke(config, c, mine_dispatches, accept_seconds=20),
                                              account=ACCOUNT)

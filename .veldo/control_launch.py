@@ -101,11 +101,11 @@ def process_identity(pid):
 
 def resolve_source(repository_path, revision):
     """The commit and tree `revision` names in a real Git repository."""
-    GP = _organ('git_process')
-    commit = GP.run(['git', '-C', str(repository_path), 'rev-parse', revision + '^{commit}'],
-                    capture_output=True, text=True, timeout=20)
-    tree = GP.run(['git', '-C', str(repository_path), 'rev-parse', revision + '^{tree}'],
-                  capture_output=True, text=True, timeout=20)
+    _git_process = _organ('git_process')
+    commit = _git_process.run(['git', '-C', str(repository_path), 'rev-parse', revision + '^{commit}'],
+                              capture_output=True, text=True, timeout=20)
+    tree = _git_process.run(['git', '-C', str(repository_path), 'rev-parse', revision + '^{tree}'],
+                            capture_output=True, text=True, timeout=20)
     if commit.returncode or tree.returncode:
         raise D.Refused('invalid_input:source', 'the source revision does not resolve')
     return {'commit': commit.stdout.strip(), 'tree': tree.stdout.strip()}
@@ -355,8 +355,11 @@ class Receiver:
         EL = _organ('control_eligibility')
         reader = S.open_store(self.config['store'], mode='r')
         try:
+            # The workspace whose architecture the decision judges (VELDO-0053) is the receiver's configured
+            # repository checkout; without one the Gate is store-only and refuses.
             gate = EL.Gate(S, reader, domain_uuid=self.config['domain'], repository_uuid=self.config['repository'],
-                           authority_generation=self.config.get('authority_generation', 1))
+                           authority_generation=self.config.get('authority_generation', 1),
+                           workspace=self.config.get('workspace'))
             context = dict(contract['input']['context'])
             if contract['claim']:
                 context['generation'] = contract['claim']['generation']

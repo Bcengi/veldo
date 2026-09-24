@@ -2544,6 +2544,10 @@ def cases():
     dispatch('dispatch-remote-stop-needs-signal', 'control_launch.py', remote_stop,
              "        if remote and termination['deadline_stop'] and termination['signal'] is None:\n",
              'remote-stop-holds-unit')
+    # Integration with VELDO-0053: the receiver's recheck judges its configured workspace.
+    dispatch('dispatch-receiver-store-only-gate', 'control_launch.py',
+             "                           workspace=self.config.get('workspace'))",
+             "                           workspace=None)", 'launch-results')
     # AC1, declared: the worker is spawned before the contract is recorded. The fixed code guards it
     # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
     # needs the prepared record), so the defect is both edits.
