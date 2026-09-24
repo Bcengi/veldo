@@ -133,8 +133,9 @@ _FILES = [
     # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_containment.py",
     # VELDO-0042: isolated worker clones at the accepted commit over pinned per-repository object
-    # caches, and the Landlock wrapper that confines a worker's writes to its clone; the lifecycle
-    # base it builds on (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
+    # caches, and the Landlock wrapper that keeps a worker's direct writes off other clones, the store,
+    # the keys, the authority's Git metadata and the caches; the lifecycle base it builds on
+    # (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_clone.py",
     ".veldo/env_provision.py",
     # VELDO-0031: authority claim receiver and caller, not loaded by validators.

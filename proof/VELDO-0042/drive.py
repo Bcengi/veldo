@@ -15,8 +15,21 @@ Nothing in that tree is changed. At 18ecd6f the isolated-clone provisioner did n
 suite's control_clone anchor is pointed at proof/VELDO-0042/prefix/control_clone.py, a stand-in that
 refuses every provision; every other module is the commit's own, byte-identical. Each row then reds by
 its own assertion (the capability is absent, and the commit's init_scaffold installs neither asset).
+At 2f643d0 (the allow-list confinement the review refused) every module is the commit's own.
 
     python3 -B proof/VELDO-0042/drive.py --red 18ecd6f
+    python3 -B proof/VELDO-0042/drive.py --red 2f643d0
+
+With `--observe` it runs the suite once and writes observations.json: every row, the suite's own run
+time and everything the suite observed (what the kernel allowed each probe, what each engine
+requested and wrote, the groups, the chain cost the provisioner recorded).
+
+With `--engines` it measures, with strace, every file operation the kernel refuses the installed
+`claude` and `codex` CLIs when they run confined through the clone adapter in production's layout (a
+home directory holding their state layout and the bound repository, so the home directory is on the
+write chain; the store, keys, clones and caches in a state directory of their own), each pointed at a
+local listener that answers nothing, and writes engine-denials.json. A write-and-rename of a file
+directly in the home directory is measured beside them as the mechanism.
 """
 import ast
 import contextlib
@@ -25,10 +38,16 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import re
+import shutil
+import signal
+import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 
 sys.dont_write_bytecode = True
@@ -58,7 +77,7 @@ def _driver():
     return module
 
 
-def one(paths, root):
+def one(paths, root, observe=False):
     """Run the shared preamble of `root` and the current suite once, in this interpreter."""
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
@@ -79,13 +98,17 @@ def one(paths, root):
         exec(compile(source, SUITE, 'exec'), ns)
     mine = [r for r in rows if r[0].startswith(PREFIX)]
     ran = [r[0] for r in mine if r[0].startswith(PREFIX + 'ran/') and not r[1]]
-    return {'rows': mine, 'failed_rows': [r[0] for r in mine if not r[1]],
-            'regions_that_raised': ran, 'preamble_rows': len(rows) - len(mine)}
+    found = {'rows': mine, 'failed_rows': [r[0] for r in mine if not r[1]],
+             'regions_that_raised': ran, 'preamble_rows': len(rows) - len(mine)}
+    if observe:
+        found.update(observed=ns.get('_V42_OBSERVED'), suite_seconds=round(ns.get('_V42_SECONDS') or 0, 3))
+    return found
 
 
-def run(paths=None, root=None):
+def run(paths=None, root=None, observe=False):
     started = time.monotonic()
-    command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
+    command = [sys.executable, '-B', __file__, '--one-observe' if observe else '--one', json.dumps(paths or {}),
+               str(root or ROOT)]
     proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -122,12 +145,165 @@ def red(commit):
                       'by_assertion': report['by_assertion'], 'written': name}))
 
 
+def observations():
+    """One run of the current suite with everything it observed: observations.json."""
+    observed = run(observe=True)
+    report = dict(schema='veldo.proof-observations/v1', spec_id='VELDO-0042', suite='scripts/suites/' + SUITE,
+                  by_assertion=not observed['regions_that_raised'], **observed)
+    (HERE / 'observations.json').write_text(json.dumps(report, indent=1, sort_keys=True, default=str) + '\n')
+    print(json.dumps({'failed_rows': observed['failed_rows'], 'rows': len(observed['rows']),
+                      'suite_seconds': observed['suite_seconds'], 'written': 'observations.json'}))
+
+
+ENGINE_ARGV = {'claude': ['claude', '-p', 'reply with one word', '--model', 'veldo-unreachable-model'],
+               'codex': ['codex', 'exec', '--skip-git-repo-check', '-m', 'veldo-unreachable-model', 'reply with one word']}
+REFUSED = ('EACCES', 'EPERM', 'EXDEV')
+
+
+def _normal(text, replacements):
+    for old, new in replacements:
+        text = text.replace(old, new)
+    text = re.sub(r'\.tmp\.\d+\.[0-9a-f]+', '.tmp.<pid>.<hex>', text)
+    return re.sub(r'/\d{3,}(?=[./"])', '/<n>', text)
+
+
+def engines():
+    """Measure what the kernel refuses the installed engines when confined in production's layout."""
+    load = _load
+    mods = ROOT / '.veldo'
+    S, CL = load('v42e_store', mods / 'control_store.py'), load('v42e_clone', mods / 'control_clone.py')
+    D, SIG = load('v42e_dispatch', mods / 'control_dispatch.py'), load('v42e_signer', mods / 'control_signer.py')
+    runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
+    strace = shutil.which('strace')
+    report = {'schema': 'veldo.proof-engine-denials/v1', 'spec_id': 'VELDO-0042', 'strace': bool(strace),
+              'layout': {'home': '~ (a temporary HOME holding .claude/, .claude.json, .codex/, .cache/, .config/, '
+                                 '.local/ and projects/source, the bound repository)',
+                         'state': '<state> (authority/ store, keys/, clones/, caches/)'},
+              'engines': {}}
+    with tempfile.TemporaryDirectory(prefix='v42-engines-', dir=runtime if os.path.isdir(runtime) else None) as d:
+        base = Path(d)
+        home, state = base / 'home', base / 'state'
+        for entry in ('.claude', '.codex', '.cache', '.config', '.local/share', '.local/state', 'projects'):
+            (home / entry).mkdir(parents=True)
+        (home / '.claude.json').write_text('{}\n')
+        (home / '.probe').write_text('before\n')
+        keys, logs = state / 'keys', base / 'logs'
+        keys.mkdir(parents=True, mode=0o700)
+        logs.mkdir()
+        subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys / 'journal')], check=True,
+                       capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+        src = home / 'projects' / 'source'
+        _git_process.run(['git', 'init', '-q', str(src)], check=True, capture_output=True)
+        (src / 'a').write_text('accepted\n')
+        _git_process.run(['git', '-C', str(src), 'add', 'a'], check=True, capture_output=True)
+        _git_process.run(['git', '-C', str(src), 'commit', '-q', '-m', 'accepted'], check=True, capture_output=True,
+                         identity=('Fixture', 'fixture@example.invalid'))
+        commit = _git_process.run(['git', '-C', str(src), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+        tree = _git_process.run(['git', '-C', str(src), 'rev-parse', 'HEAD^{tree}'], capture_output=True,
+                                text=True).stdout.strip()
+        writer = S.open_store(str(state / 'authority' / 'control.sqlite3'))
+        sign = lambda data: SIG.sign_bytes(keys / 'journal', data, 'veldo-journal')  # noqa: E731
+        S.bind_repositories(writer, 'domain-42e', {'repository-42e': str(src)})
+        dispatches = D.Dispatches(S, writer, domain='domain-42e', repository='repository-42e', principal='runner',
+                                  signer='runner', sign=sign)
+        clones = CL.Clones(dispatches, clones=str(state / 'clones'), caches=str(state / 'caches'), protected=[str(keys)])
+        dispatch_id = 'dispatch/VELDO-9490/engines'
+        handle = clones.create({'dispatch_id': dispatch_id, 'domain': 'domain-42e', 'repository': 'repository-42e',
+                                'unit': 'VELDO-9490', 'source': {'commit': commit, 'tree': tree},
+                                'input': {'payload': {'attachments': []}}})
+        manifest = json.loads((Path(handle.paths['root']) / 'clone.json').read_text())
+        report['ancestors'] = {k: [_normal(p, [(str(home), '~'), (str(state), '<state>'), (str(base), '<base>'),
+                                              (runtime, '<runtime>')]) for p in v]
+                               for k, v in manifest['ancestors'].items()}
+        replacements = [(str(home), '~'), (manifest['work'], '<clone work>'), (str(state), '<state>'),
+                        (str(base), '<base>'), (runtime, '<runtime>')]
+        rename = [sys.executable, '-B', '-c',
+                  'import os\np = os.path.expanduser("~/.probe")\nopen(p + ".tmp", "w").write("after\\n")\n'
+                  'os.replace(p + ".tmp", p)\n']
+        for name, argv in list(ENGINE_ARGV.items()) + [('home-write-and-rename', rename)]:
+            found = shutil.which(argv[0])
+            if not found or not strace:
+                report['engines'][name] = {'installed': bool(found), 'strace': bool(strace)}
+                continue
+            version = subprocess.run([argv[0], '--version'], capture_output=True, text=True, timeout=30,
+                                     stdin=subprocess.DEVNULL).stdout.strip() if name in ENGINE_ARGV else sys.version.split()[0]
+            seen, listener = [], socket.socket()
+            listener.bind(('127.0.0.1', 0))
+            listener.listen(16)
+
+            def serve(server=listener, lines=seen):
+                while True:
+                    try:
+                        connection, _ = server.accept()
+                    except OSError:
+                        return
+                    with contextlib.suppress(OSError):
+                        connection.settimeout(2)
+                        lines.append(' '.join(connection.recv(4096).split(b'\r\n', 1)[0].decode('latin-1').split(' ')[:2]))
+                    connection.close()
+
+            threading.Thread(target=serve, daemon=True).start()
+            proxy = 'http://127.0.0.1:%d' % listener.getsockname()[1]
+            env = {'PATH': os.environ.get('PATH', os.defpath), 'HOME': str(home), 'LANG': 'C.UTF-8', 'TERM': 'dumb',
+                   'VELDO_DISPATCH_ID': dispatch_id, 'XDG_RUNTIME_DIR': str(logs), 'DISABLE_AUTOUPDATER': '1',
+                   'NO_PROXY': '', 'no_proxy': ''}
+            env.update({k: proxy for k in ('HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy')})
+            trace = logs / (name + '.strace')
+            command = clones.adapter([strace, '-f', '-qq', '--seccomp-bpf', '-e', 'trace=%file', '-e', 'status=failed',
+                                      '-o', str(trace), *argv])
+            before = {str(p) for p in home.rglob('*') if p.is_file()}
+            begun = time.monotonic()
+            proc = subprocess.Popen(command, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT, start_new_session=True)
+            end = begun + 60
+            while proc.poll() is None and time.monotonic() < end:
+                wrote = {str(p) for p in home.rglob('*') if p.is_file()} - before
+                if name == 'codex' and any('/.codex/sessions/' in w for w in wrote) and any(
+                        line.startswith('CONNECT api.openai.com') for line in seen):
+                    break
+                time.sleep(0.1)
+            if proc.poll() is None:
+                os.killpg(proc.pid, signal.SIGKILL)
+            output = proc.communicate()[0].decode(errors='replace')
+            listener.close()
+            wrote = sorted({str(p) for p in home.rglob('*') if p.is_file()} - before)
+            refused = {}
+            for line in (trace.read_text(errors='replace').splitlines() if trace.exists() else []):
+                code = next((c for c in REFUSED if '= -1 ' + c + ' ' in line), None)
+                call = re.match(r'\d+\s+(\w+)\(', line)
+                path = re.findall(r'"([^"]*)"', line)
+                if code and call and path:
+                    key = '%s %s %s' % (call.group(1), _normal(path[0], replacements), code)
+                    refused[key] = refused.get(key, 0) + 1
+            report['engines'][name] = {
+                'installed': True, 'version': version, 'seconds': round(time.monotonic() - begun, 2),
+                'requests': seen[:6], 'reached_network': any(r.startswith('CONNECT ') for r in seen),
+                'state_written': len(wrote), 'state_dirs': sorted({os.path.relpath(w, home).split('/')[0] for w in wrote}),
+                'saved': ({'~/.claude.json rewritten': (home / '.claude.json').read_text().strip() != '{}'}
+                          if name == 'claude' else {'~/.probe replaced': (home / '.probe').read_text().strip() == 'after'}
+                          if name == 'home-write-and-rename' else {}),
+                'permission_denied_in_output': 'permission denied' in output.lower(),
+                'refused': dict(sorted(refused.items()))}
+        writer.close()
+    (HERE / 'engine-denials.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+    print(json.dumps({name: {'refused': list((e.get('refused') or {}).keys()),
+                             'reached_network': e.get('reached_network')} for name, e in report['engines'].items()},
+                     indent=1))
+
+
 def main():
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
         red(sys.argv[2])
         return
-    if len(sys.argv) >= 4 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
+    if len(sys.argv) >= 2 and sys.argv[1] == '--observe':
+        observations()
+        return
+    if len(sys.argv) >= 2 and sys.argv[1] == '--engines':
+        engines()
+        return
+    if len(sys.argv) >= 4 and sys.argv[1] in ('--one', '--one-observe'):
+        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], observe=sys.argv[1] == '--one-observe'),
+                         default=str))
         return
     ctm = _driver()
     cases = [c for c in ctm.cases() if c['finding'] == FINDING]

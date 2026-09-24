@@ -1,8 +1,8 @@
 --- a/.veldo/control_clone.py
 +++ b/.veldo/control_clone.py
-@@ -302 +302 @@
+@@ -483 +483 @@
 -        _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s:%s' % (commit, ref),
 +        _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s' % commit,
-@@ -305 +305 @@
+@@ -486 +486 @@
 -        if seen != commit:
 +        if False:

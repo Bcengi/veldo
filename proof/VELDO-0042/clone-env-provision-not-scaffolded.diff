@@ -1,4 +1,4 @@
 --- a/.veldo/init_scaffold.py
 +++ b/.veldo/init_scaffold.py
-@@ -139 +138,0 @@
+@@ -140 +139,0 @@
 -    ".veldo/env_provision.py",

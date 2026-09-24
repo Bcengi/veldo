@@ -1,0 +1,359 @@
+{
+ "by_assertion": true,
+ "failed_rows": [],
+ "observed": {
+  "accepted_commit": {
+   "a_present": "accepted",
+   "accept": "be0686b67f506beb93889996aa7604b9ffa4ed70",
+   "ancestors": {
+    "read": [
+     "/run/user/1000",
+     "/run/user/1000/v42-vmf3b431",
+     "/run/user/1000/v42-vmf3b431/state"
+    ],
+    "write": [
+     "/run/user/1000",
+     "/run/user/1000/v42-vmf3b431",
+     "/run/user/1000/v42-vmf3b431/home",
+     "/run/user/1000/v42-vmf3b431/home/projects",
+     "/run/user/1000/v42-vmf3b431/home/projects/attachment",
+     "/run/user/1000/v42-vmf3b431/home/projects/source",
+     "/run/user/1000/v42-vmf3b431/home/projects/unnamed",
+     "/run/user/1000/v42-vmf3b431/state"
+    ]
+   },
+   "clone_a_head": "be0686b67f506beb93889996aa7604b9ffa4ed70",
+   "clone_a_tree": "cedf80755b5cabbbaad99ffe92f5c1214156e0dc",
+   "clone_b_head": "be0686b67f506beb93889996aa7604b9ffa4ed70",
+   "distinct_paths": true,
+   "head": "11fa1cabc5df3386a1e3c6709e29d1b911d37909",
+   "later_only_absent": true,
+   "refusal_a": null,
+   "refusal_b": null
+  },
+  "attachment_and_unnamed": {
+   "att_commit": "15070f201f044cef68545bf4e4508274d8e0d2b7",
+   "attachment_cache_refs_write": "refused:13",
+   "attachment_cache_write": "refused:13",
+   "lib_blob": "library",
+   "lib_cache_is_named": true,
+   "lib_ref": "15070f201f044cef68545bf4e4508274d8e0d2b7",
+   "refusal_u": null,
+   "unnamed_reachable_from_a": false
+  },
+  "consumer": {
+   "result": {
+    "cwd": "/run/user/1000/v42-vmf3b431/state/clones/clone-2baf697259084ad8a4d604394d0bdb99/work",
+    "dev_shm_lock": "ok",
+    "home_cache_file": "ok",
+    "identity": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "pid": 2394201,
+     "start": "194883824"
+    },
+    "key_read": "refused:13",
+    "keys": "refused:13",
+    "own_clone": "refused:13",
+    "reads_clone": "accepted",
+    "scratch": "ok",
+    "store": "refused:13",
+    "tmp_file": "ok",
+    "work_git": "refused:13",
+    "work_new_file": "refused:13",
+    "work_tracked_file": "refused:13"
+   },
+   "work_file_landed": false
+  },
+  "installed": {
+   "clone": true,
+   "env": true
+  },
+  "left_loaded": [],
+  "pins_survive_gc": {
+   "accept_after_gc": true,
+   "att_after_gc": true,
+   "head_after_gc_a": "be0686b67f506beb93889996aa7604b9ffa4ed70",
+   "head_after_gc_b": "be0686b67f506beb93889996aa7604b9ffa4ed70"
+  },
+  "protected_targets": {
+   "manifest_protected": {
+    "read": [
+     "/run/user/1000/v42-vmf3b431/state/caches",
+     "/run/user/1000/v42-vmf3b431/state/keys"
+    ],
+    "write": [
+     "/run/user/1000/v42-vmf3b431/home/projects/attachment/.git",
+     "/run/user/1000/v42-vmf3b431/home/projects/source/.git",
+     "/run/user/1000/v42-vmf3b431/home/projects/unnamed/.git",
+     "/run/user/1000/v42-vmf3b431/state/authority",
+     "/run/user/1000/v42-vmf3b431/state/caches",
+     "/run/user/1000/v42-vmf3b431/state/clones",
+     "/run/user/1000/v42-vmf3b431/state/keys"
+    ]
+   },
+   "refusal_u": null,
+   "result": {
+    "attachment_git": "refused:13",
+    "authority_git_config": "refused:13",
+    "authority_git_refs": "refused:13",
+    "caches_root": "refused:13",
+    "clones_root": "refused:13",
+    "cwd": "/run/user/1000/v42-vmf3b431/state/clones/clone-2baf697259084ad8a4d604394d0bdb99/work",
+    "identity": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "pid": 2393911,
+     "start": "194883760"
+    },
+    "key_dir": "refused:13",
+    "key_file": "refused:13",
+    "key_read": "refused:13",
+    "named_attachment_read": "ok:library",
+    "named_cache": "refused:13",
+    "other_clone_manifest": "refused:13",
+    "other_clone_work": "refused:13",
+    "own_clone": "ok",
+    "own_clone_root": "refused:13",
+    "own_entrances": "refused:13",
+    "own_manifest": "refused:13",
+    "reads_clone": "accepted",
+    "scratch": "ok",
+    "store": "refused:13",
+    "store_dir": "refused:13",
+    "unnamed_cache": "refused:13",
+    "unnamed_cache_read": "refused:13",
+    "unnamed_git": "refused:13",
+    "unnamed_through_alternates": "rc:128"
+   },
+   "unnamed_cache_exists": true,
+   "unnamed_object": "state/caches/8c3cdd0c4972ef1c8f8471b864489050.git/objects/56/86e334a1201d56d8086962ecfad5c5b459fa32"
+  },
+  "raised": [],
+  "real_engines": {
+   "claude": {
+    "initialize_failed": false,
+    "installed": true,
+    "output_tail": "hin 200k tokens (the context window it assumes); if the model accepts more, append [1m] to the model name for 1M, or set CLAUDE_CODE_MAX_CONTEXT_TOKENS to its real window; CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1 restores the previous wait-for-the-API behavior.\n[claude-code:unrecognized_model] {\"model\":\"veldo-unreachable-model\",\"query_source\":\"sdk\"}\nNot logged in \u00b7 Please run /login\n",
+    "permission_denied": false,
+    "rc": 1,
+    "refused_by_wrapper": false,
+    "requests": [
+     "CONNECT api.anthropic.com:443",
+     "CONNECT api.anthropic.com:443"
+    ],
+    "scoped": true,
+    "seconds": 0.28,
+    "state_files": 2,
+    "state_written": [
+     ".claude/projects/-run-user-1000-v42-vmf3b431-state-clones-clone-2baf697259084ad8a4d604394d0bdb99-work/f2a28315-ac97-49b5-a999-680f11f7c648.jsonl",
+     ".claude/telemetry/1p_failed_events.f2a28315-ac97-49b5-a999-680f11f7c648.d7a20955-16e3-4700-bc34-735547804f3b.json"
+    ]
+   },
+   "claude_config": {
+    "left_in_home": [],
+    "saved": true
+   },
+   "codex": {
+    "initialize_failed": false,
+    "installed": true,
+    "output_tail": "s to create user namespaces.\nwarning: Model metadata for `veldo-unreachable-model` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\n2026-09-24T11:11:00.287099Z ERROR codex_api::endpoint::responses_websocket: failed to connect to websocket: URL error: Proxy connection failed: HTTP CONNECT response missing status line, url: wss://api.openai.com/v1/responses\n",
+    "permission_denied": false,
+    "rc": -9,
+    "refused_by_wrapper": false,
+    "requests": [
+     "CONNECT github.com:443",
+     "CONNECT chatgpt.com:443",
+     "CONNECT api.openai.com:443",
+     "CONNECT api.openai.com:443",
+     "CONNECT api.github.com:443"
+    ],
+    "scoped": true,
+    "seconds": 0.24,
+    "state_files": 90,
+    "state_written": [
+     ".codex/.sandbox_migration",
+     ".codex/.tmp/plugins.sync.lock",
+     ".codex/goals_1.sqlite",
+     ".codex/goals_1.sqlite-shm",
+     ".codex/goals_1.sqlite-wal",
+     ".codex/installation_id",
+     ".codex/logs_2.sqlite",
+     ".codex/logs_2.sqlite-shm",
+     ".codex/logs_2.sqlite-wal",
+     ".codex/memories_1.sqlite"
+    ]
+   },
+   "everyday": {
+    "cwd": "/run/user/1000/v42-vmf3b431/state/clones/clone-2baf697259084ad8a4d604394d0bdb99/work",
+    "dev_shm_lock": "ok",
+    "home_cache_file": "ok",
+    "identity": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "pid": 2394199,
+     "start": "194883818"
+    },
+    "own_clone": "ok",
+    "reads_clone": "accepted",
+    "scratch": "ok",
+    "tmp_file": "ok",
+    "tmpdir_file": "ok",
+    "var_tmp_file": "ok"
+   }
+  },
+  "retire_after_users_end": {
+   "accept_available_alive": true,
+   "attach_problems": {
+    "consumer": [],
+    "worker": []
+   },
+   "clone_removed": true,
+   "groups_empty": [
+    true,
+    true
+   ],
+   "pins_after": 0,
+   "pins_while_alive": 2,
+   "refused_alive": "clone_in_use",
+   "states_alive": [
+    false,
+    false
+   ]
+  },
+  "retire_waits_for_group": {
+   "attach_problems": [],
+   "child_reads": true,
+   "empty_seconds": 0.102,
+   "group_empty": true,
+   "members_after_worker_exit": 1,
+   "pins_after": 0,
+   "pins_while_populated": 2,
+   "refused_while_populated": "clone_in_use",
+   "retired": "retired",
+   "unknown_group_refused": "clone_in_use",
+   "unknown_group_users": [
+    {
+     "dispatch_id": "dispatch/VELDO-9421/unk",
+     "ended": false,
+     "entrances": 1,
+     "group_unknown": true
+    }
+   ]
+  },
+  "writes_confined": {
+   "landed": {
+    "authority_head_changed": false,
+    "authority_ref": false,
+    "cache": false,
+    "keys": false,
+    "other_clone": false,
+    "store_dir": false
+   },
+   "result": {
+    "authority_git_head": "refused:13",
+    "authority_update_ref": "rc:128",
+    "cache": "refused:13",
+    "cwd": "/run/user/1000/v42-vmf3b431/state/clones/clone-2baf697259084ad8a4d604394d0bdb99/work",
+    "identity": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "pid": 2393908,
+     "start": "194883754"
+    },
+    "keys": "refused:13",
+    "other_clone": "refused:13",
+    "own_clone": "ok",
+    "reads_clone": "accepted",
+    "scratch": "ok",
+    "store": "refused:13",
+    "store_dir": "refused:13"
+   }
+  }
+ },
+ "preamble_rows": 26,
+ "regions_that_raised": [],
+ "rows": [
+  [
+   "VELDO-0042 clone/accepted-commit",
+   true
+  ],
+  [
+   "VELDO-0042 clone/worker-writes-confined",
+   true
+  ],
+  [
+   "VELDO-0042 clone/protected-targets-denied",
+   true
+  ],
+  [
+   "VELDO-0042 clone/real-engines-run-confined",
+   true
+  ],
+  [
+   "VELDO-0042 clone/consumer-confined",
+   true
+  ],
+  [
+   "VELDO-0042 clone/named-attachment-and-unnamed",
+   true
+  ],
+  [
+   "VELDO-0042 clone/pins-survive-gc",
+   true
+  ],
+  [
+   "VELDO-0042 clone/retire-after-users-end",
+   true
+  ],
+  [
+   "VELDO-0042 clone/retire-waits-for-group",
+   true
+  ],
+  [
+   "VELDO-0042 clone/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/accepted-commit",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/worker-writes-confined",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/protected-targets-denied",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/real-engines-run-confined",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/consumer-confined",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/pins-survive-gc",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/retire-after-users-end",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/retire-waits-for-group",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/installed-assets",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-observations/v1",
+ "seconds": 1.567,
+ "spec_id": "VELDO-0042",
+ "suite": "scripts/suites/66_veldo_0042_clones.py",
+ "suite_seconds": 1.484
+}

@@ -2,4 +2,4 @@
 +++ b/.veldo/control_clone.py
 @@ -349 +349 @@
 -    return rules(protected['write'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])
-+    return rules([], [], write, [pin['cache'] for pin in manifest['pins']])
++    return rules(['/'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])

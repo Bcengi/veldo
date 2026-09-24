@@ -663,7 +663,11 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                       and readable(work_b, accept_commit) and clone_head(work_a) == accept_commit)
 
             def identity(pid):
-                stat = Path('/proc/%d/stat' % pid).read_text()
+                """A live process's identity; None once it has gone (a defect that ended it early)."""
+                try:
+                    stat = Path('/proc/%d/stat' % pid).read_text()
+                except OSError:
+                    return None
                 return {'pid': pid, 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
                         'start': stat[stat.rindex(')') + 2:].split()[19]}
 

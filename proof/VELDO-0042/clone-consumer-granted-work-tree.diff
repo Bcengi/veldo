@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -348 +348 @@
+-    write = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])
++    write = [user['scratch'], manifest['work']]

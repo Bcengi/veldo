@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -238 +238 @@
+-    for ancestor in sorted(p for p in chain if not any(_beneath(p, t) for t in targets)):
++    for ancestor in sorted({t.parent for t in targets}):

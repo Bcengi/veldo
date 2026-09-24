@@ -1,4 +1,4 @@
 --- a/.veldo/init_scaffold.py
 +++ b/.veldo/init_scaffold.py
-@@ -138 +137,0 @@
+@@ -139 +138,0 @@
 -    ".veldo/control_clone.py",

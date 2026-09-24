@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -348,0 +349,2 @@
++    if user.get('role') != 'worker':
++        return rules(['/'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])
