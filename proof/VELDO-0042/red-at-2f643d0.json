@@ -1,30 +1,24 @@
 {
  "by_assertion": true,
- "commit": "18ecd6f777583d1629b907b25f69494ca5c18e9e",
- "control_clone_at_commit": "absent",
+ "commit": "2f643d0f1bbb8044676f252686ab3e3aec61f108",
+ "control_clone_at_commit": "present",
  "failed_rows": [
-  "VELDO-0042 clone/accepted-commit",
-  "VELDO-0042 clone/worker-writes-confined",
   "VELDO-0042 clone/protected-targets-denied",
   "VELDO-0042 clone/real-engines-run-confined",
   "VELDO-0042 clone/consumer-confined",
-  "VELDO-0042 clone/named-attachment-and-unnamed",
-  "VELDO-0042 clone/pins-survive-gc",
-  "VELDO-0042 clone/retire-after-users-end",
-  "VELDO-0042 clone/retire-waits-for-group",
-  "VELDO-0042 clone/installed-assets"
+  "VELDO-0042 clone/retire-waits-for-group"
  ],
  "modules": {
   ".veldo/control_clone.py": {
-   "at_commit": null,
+   "at_commit": "9520dcab75ab271a1c3335a22b09ceacd0f8adea5cc6c133a6d0633cf30bf227",
    "now": "e798bbcbf7b69adb7c6fd0f1bab30550639bba817baddbb5b08154ff962d590e"
   },
   ".veldo/env_provision.py": {
-   "at_commit": "7fa171c301949a908ed3d89dc89e3973f4c4d69d3c0138dc10211bb6ab1c0135",
+   "at_commit": "efc127ddbcb326b796a2d514bdd4206e5482ff704d4be13618ffefa2443a232c",
    "now": "efc127ddbcb326b796a2d514bdd4206e5482ff704d4be13618ffefa2443a232c"
   },
   ".veldo/init_scaffold.py": {
-   "at_commit": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3",
+   "at_commit": "eeab6a41edf882a62621b5597d7816b6a71bf93ab8910f05006df81e954070fd",
    "now": "eeab6a41edf882a62621b5597d7816b6a71bf93ab8910f05006df81e954070fd"
   }
  },
@@ -33,11 +27,11 @@
  "rows": [
   [
    "VELDO-0042 clone/accepted-commit",
-   false
+   true
   ],
   [
    "VELDO-0042 clone/worker-writes-confined",
-   false
+   true
   ],
   [
    "VELDO-0042 clone/protected-targets-denied",
@@ -53,15 +47,15 @@
   ],
   [
    "VELDO-0042 clone/named-attachment-and-unnamed",
-   false
+   true
   ],
   [
    "VELDO-0042 clone/pins-survive-gc",
-   false
+   true
   ],
   [
    "VELDO-0042 clone/retire-after-users-end",
-   false
+   true
   ],
   [
    "VELDO-0042 clone/retire-waits-for-group",
@@ -69,7 +63,7 @@
   ],
   [
    "VELDO-0042 clone/installed-assets",
-   false
+   true
   ],
   [
    "VELDO-0042 ran/clone/accepted-commit",
@@ -113,8 +107,8 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.276,
+ "seconds": 1.617,
  "spec_id": "VELDO-0042",
  "suite": "scripts/suites/66_veldo_0042_clones.py",
- "tree": "git archive 18ecd6f777583d1629b907b25f69494ca5c18e9e, unchanged; the current suite run against it with control_clone absent (proof/VELDO-0042/prefix/control_clone.py stands in)"
+ "tree": "git archive 2f643d0f1bbb8044676f252686ab3e3aec61f108, unchanged; the current suite run against it with every module the commit's own"
 }

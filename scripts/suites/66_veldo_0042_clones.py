@@ -339,7 +339,8 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
             command = C.adapter(argv)
             group = None
             if grouped and qualification.get('qualified'):
-                group = CT.Group(PROFILE, qualification, dispatch_id + '/' + tag, tools)
+                # Scope names are global in the user manager: this run's id keeps parallel runs apart.
+                group = CT.Group(PROFILE, qualification, '%s/%s/%s' % (run_id, dispatch_id, tag), tools)
                 made_units.append(group.unit)
                 command = group.command([sys.executable, '-B', '-c', HOLD, str(group.held()['file_bytes']),
                                          json.dumps({'XDG_RUNTIME_DIR': str(engine_run)}), *command])

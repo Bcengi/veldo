@@ -98,7 +98,7 @@ def _sha(path):
 
 def red(commit):
     """Run the current suite once against the whole tree of COMMIT, extracted with git archive; the
-    control_clone anchor points at the prefix stand-in for a module absent at COMMIT."""
+    control_clone anchor points at the prefix stand-in only when the module is absent at COMMIT."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
     prefix = HERE / 'prefix' / 'control_clone.py'
@@ -108,11 +108,13 @@ def red(commit):
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
-        observed = run({'control_clone.py': str(prefix)}, tree)
+        absent = not (tree / '.veldo' / 'control_clone.py').is_file()
+        observed = run({'control_clone.py': str(prefix)} if absent else {}, tree)
+    described = ('with control_clone absent (proof/VELDO-0042/prefix/control_clone.py stands in)' if absent
+                 else 'with every module the commit\'s own')
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0042', suite='scripts/suites/' + SUITE, commit=resolved,
-                  tree='git archive %s, unchanged; the current suite run against it with control_clone absent'
-                       ' (proof/VELDO-0042/prefix/control_clone.py stands in)' % resolved,
-                  control_clone_at_commit='absent', modules=modules,
+                  tree='git archive %s, unchanged; the current suite run against it %s' % (resolved, described),
+                  control_clone_at_commit='absent' if absent else 'present', modules=modules,
                   by_assertion=not observed['regions_that_raised'], **observed)
     name = 'red-at-%s.json' % commit
     (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')

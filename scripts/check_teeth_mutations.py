@@ -2550,14 +2550,48 @@ def cases():
           "        if head != accepted['commit'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():\n",
           "        if head != accepted['tree'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():\n",
           'accepted-commit')
-    # AC1: a worker's direct writes outside its clone are denied. Declared: the Landlock ruleset is
-    # never applied; then the grant is the whole file system.
+    # AC1: a worker's direct writes to another clone, the store, the keys, the authority's Git
+    # metadata and a cache are denied. Declared: the Landlock ruleset is never applied; then the
+    # clone records no protected target, so the whole file system is granted.
+    grants_line = "    return rules(protected['write'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])\n"
     clone('clone-confinement-not-restricted', 'control_clone.py',
           "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
           "        if False:\n", 'worker-writes-confined')
-    clone('clone-grants-everything', 'control_clone.py',
-          "    confine(grants(manifest, user))\n",
-          "    confine([os.path.abspath(os.sep)])\n", 'worker-writes-confined')
+    clone('clone-grants-everything', 'control_clone.py', grants_line,
+          "    return rules([], [], write, [pin['cache'] for pin in manifest['pins']])\n", 'worker-writes-confined')
+    # Every protected target, writes and reads: the read denial has no target, so an unnamed
+    # repository's cache and the keys are readable; the cache root itself is granted back for
+    # reading instead of the named caches; the clone root is granted back instead of the work tree,
+    # so a worker rewrites its own manifest and entrance records.
+    clone('clone-reads-not-denied', 'control_clone.py', grants_line,
+          "    return rules(protected['write'], [], write, [pin['cache'] for pin in manifest['pins']])\n",
+          'protected-targets-denied')
+    clone('clone-cache-root-readable', 'control_clone.py', grants_line,
+          "    return rules(protected['write'], protected['read'], write, [str(Path(manifest['pins'][0]['cache']).parent)])\n",
+          'protected-targets-denied')
+    clone('clone-own-root-writable', 'control_clone.py',
+          "    write = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])\n",
+          "    write = [user['scratch']] + ([manifest['root']] if user.get('role') == 'worker' else [])\n",
+          'protected-targets-denied')
+    # A confined engine keeps every capability outside the protected targets: the confinement is the
+    # allow list again (everything denied but the clone and scratch); then the grant walks only the
+    # protected targets' own parent directories, so the home directory's entries, the temporary
+    # directories and /dev/shm are never granted.
+    clone('clone-confinement-allow-list', 'control_clone.py', grants_line,
+          "    return rules(['/'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])\n",
+          'real-engines-run-confined')
+    clone('clone-chain-walked-one-level', 'control_clone.py',
+          "    for ancestor in sorted(p for p in chain if not any(_beneath(p, t) for t in targets)):\n",
+          "    for ancestor in sorted({t.parent for t in targets}):\n", 'real-engines-run-confined')
+    # A consumer writes none of the clone: it is granted the work tree like a worker; then consumers
+    # get the old allow list and lose their everyday locations.
+    clone('clone-consumer-granted-work-tree', 'control_clone.py',
+          "    write = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])\n",
+          "    write = [user['scratch'], manifest['work']]\n", 'consumer-confined')
+    clone('clone-consumer-allow-list', 'control_clone.py', grants_line,
+          "    if user.get('role') != 'worker':\n"
+          "        return rules(['/'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])\n"
+          + grants_line, 'consumer-confined')
     # AC2 (declared falsifier): a single pooled cache across repositories, so an alternate exposes an
     # unnamed repository's objects to a clone that never named it. Then an attachment is dropped from
     # the clone's alternate, so its named object is not exposed.
@@ -2584,8 +2618,19 @@ def cases():
     clone('clone-release-while-child-reads', 'control_clone.py',
           "        if live:\n", "        if False:\n", 'retire-after-users-end')
     clone('clone-user-ended-ignores-kernel', 'control_clone.py',
-          "        ended = record.get('state') in ENDED and seen['terminated'] and seen['cleaned']\n",
+          "        ended = (record.get('state') in ENDED and seen['terminated'] and seen['cleaned'] and not entered_alive\n"
+          "                 and not unknown)\n",
           "        ended = record.get('state') in ENDED\n", 'retire-after-users-end')
+    # The real VELDO-0040 group path: a user whose own process has exited but whose group still holds
+    # a child reading the clone has ended when its group's emptiness is ignored; then a user entered on
+    # this host whose group was never recorded counts as ended (retirement no longer fails closed).
+    clone('clone-group-emptiness-ignored', 'control_clone.py',
+          "        ended = (record.get('state') in ENDED and seen['terminated'] and seen['cleaned'] and not entered_alive\n",
+          "        ended = (record.get('state') in ENDED and seen['terminated'] and not entered_alive\n",
+          'retire-waits-for-group')
+    clone('clone-unknown-group-ended', 'control_clone.py',
+          "        unknown = bool(here) and (not cgroup or any(e.get('cgroup') != cgroup for e in here))\n",
+          "        unknown = False\n", 'retire-waits-for-group')
     # Installation: each module this change installs is laid down by the scaffold.
     clone('clone-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_clone.py",\n', '',
           'installed-assets')
