@@ -570,12 +570,13 @@ sys.exit(payload.get('code', 0))
                 remote = runner.submit(ur, 'build', **job(release='never-9322', adapter='wrapped-engine', deadline=2))
                 runner.wait(remote)
                 rr = rec(remote.dispatch_id)
-                again = runner.submit(ur, 'build', **job(adapter='wrapped-engine'))
+                again = attempt(lambda: runner.submit(ur, 'build', **job(adapter='wrapped-engine')))
                 observed['remote_stop'] = {'result': remote.result, 'state': rr.get('state'), 'reason': rr.get('reason'),
-                                           'again': [again.result, getattr(again, 'refusal', None)]}
+                                           'again': [again[0], str(again[1])]}
                 check('dispatch/remote-stop-holds-unit',
                       remote.result == 'accepted' and rr.get('state') == 'unknown'
-                      and rr.get('reason') == 'remote_stop_unconfirmed' and again.result == 'refused')
+                      and rr.get('reason') == 'remote_stop_unconfirmed' and again[0] == 'refused'
+                      and 'dispatch_outcome_unknown' in str(again[1]))
 
             with region('dispatch/unknown-never-relaunched'):
                 before = dispatches.version(lost.dispatch_id)
@@ -751,7 +752,7 @@ sys.exit(payload.get('code', 0))
                           'accepted_versions', 'outcome'}
                 refused_events = [e for e in events if e['outcome'] == 'refused']
                 obs_ok = (status['accepted'] > 0 and status['refused'] > 0
-                          and set(status['stopped']) == {lost.dispatch_id, orphaned.dispatch_id}
+                          and set(status['stopped']) == {lost.dispatch_id, orphaned.dispatch_id, remote.dispatch_id}
                           and set(status['pending']) == {prepared_only['dispatch_id'], accepted_only['dispatch_id']}
                           and all(fields <= set(e) for e in events)
                           and all(e.get('refusal') and e.get('taxonomy') for e in refused_events)
