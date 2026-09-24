@@ -134,7 +134,8 @@ MANIFEST_PATH = "proof/%s/manifest.json"
 GATE_COMMAND = ("bash", "scripts/verify.sh")
 POLICY_COMMAND = (".veldo/policy_check.py",)
 # The workspace's own refs: the fixed watermark, and the trunk the repository policy compares the
-# candidate with (it reads origin/HEAD), whatever the caller's trunk and remote are named.
+# candidate with (an ordinary run of it reads origin/HEAD; the installed run is handed the watermark
+# itself), whatever the caller's trunk and remote are named.
 WATERMARK_REF = "refs/veldo/candidate/watermark"
 POLICY_BASE_REF = "refs/remotes/origin/%s"
 POLICY_HEAD_REF = "refs/remotes/origin/HEAD"
@@ -716,10 +717,12 @@ class GitLandOps(LandOps):
         refusals, detail = [], {}
         if self.policy is None:
             # The pre-factory land: the repository's own policy, asked at the candidate, whose range
-            # is exactly watermark..candidate (the workspace's origin/HEAD is the watermark).
-            # VELDO-0058: the INSTALLED policy_check.py, never the one the candidate carries.
+            # is exactly watermark..candidate. VELDO-0058: the INSTALLED policy_check.py, never the one
+            # the candidate carries, and the range base is this land's own recorded watermark, never
+            # the workspace's origin refs, which the candidate's code could move during the gate.
             try:
-                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"])
+                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"],
+                                                                         c["watermark"])
             except Exception as error:  # noqa: BLE001 - a policy that cannot be asked accepts nothing
                 returncode, policy_out = None, type(error).__name__
             if returncode is None:

@@ -16,9 +16,9 @@ and the executor (LiveLoop.gate) go through for that.
   observe_gate      runs the installed verifier in candidate mode, `verify.sh --candidate <root>
                     --sink <dir>`, so every check runs in the candidate while the stamp, the gate
                     event and the review-event reconciliation go to a sink outside it. The state of
-                    the candidate (HEAD, its tree, every index entry, and the bytes of every file in
-                    the work tree, tracked, untracked or ignored, outside .git) is taken before and
-                    after, and must be equal. It returns the observation and writes it, canonical
+                    the candidate (HEAD, its tree, every index entry, every ref and HEAD's symbolic
+                    target, and the bytes of every file in the work tree, tracked, untracked or
+                    ignored, outside .git) is taken before and after, and must be equal. It returns the observation and writes it, canonical
                     JSON, beside the sink: the exact candidate commit and tree, the command, the
                     verifier's digest and origin, the catalog's required checks and each one's
                     captured result, the complete output and its digests, the sink's stamp and gate
@@ -30,8 +30,10 @@ and the executor (LiveLoop.gate) go through for that.
                     in the state it was verified in. Anything else is refused by name; evidence that
                     changes the candidate's bytes needs a new commit and a new verification.
   run_policy        the installed policy_check.py asked about the candidate: the installed module is
-                    loaded by its own path (its siblings come from the installation) and its subject
-                    root is the candidate, in a separate process.
+                    loaded by its own path (its siblings come from the installation), its subject
+                    root is the candidate and its push range is the caller's base (the trunk commit
+                    the candidate was built and gated on) to the candidate, never a range read from
+                    the candidate's own refs, in a separate process.
 
 The final receipt is never required inside its own candidate: the observation lives outside it, and a
 valid candidate is verified and published with no stamp or event added to its tree. Gate process
@@ -48,6 +50,7 @@ import io
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import stat
 import subprocess
 import sys
@@ -122,14 +125,28 @@ def _git(repo, *args, ok=(0,)):
 
 # The exact state of a candidate.
 
+def _refs(root):
+    """Every ref of the repository (its object and, for a symbolic ref, its target) and HEAD's
+    symbolic target. A candidate that moves a ref during the run, such as refs/remotes/origin/main,
+    changes what a reader of those refs concludes about it, so the refs are part of its state."""
+    listed = _git(root, "for-each-ref", "--format=%(refname)%00%(objectname)%00%(symref)").stdout.decode("utf-8", "surrogateescape")
+    refs = {}
+    for line in listed.splitlines():
+        name, _sep, rest = line.partition("\0")
+        refs[name] = rest.split("\0")
+    target = _git(root, "symbolic-ref", "-q", "HEAD", ok=(0, 1)).stdout.decode("utf-8", "surrogateescape").strip()
+    return refs, target or None
+
+
 def state(root):
-    """HEAD, its tree, every index entry and flag, and the bytes of every entry of the work tree
-    outside .git (tracked, untracked and ignored alike, directories and symlinks included). Two
-    states are equal only when all of it is."""
+    """HEAD, its tree, every index entry and flag, every ref and HEAD's symbolic target, and the bytes
+    of every entry of the work tree outside .git (tracked, untracked and ignored alike, directories
+    and symlinks included). Two states are equal only when all of it is."""
     root = Path(root)
     found = _git(root, "rev-parse", "--verify", "--quiet", "HEAD^{commit}", ok=(0, 1)).stdout.decode().strip()
     tree = _git(root, "rev-parse", "--verify", "--quiet", "HEAD^{tree}", ok=(0, 1)).stdout.decode().strip()
     entries = _git(root, "ls-files", "-s", "-v", "-z").stdout
+    refs, head_target = _refs(root)
     files = {}
     for directory, dirs, names in os.walk(str(root)):
         rel_dir = os.path.relpath(directory, str(root))
@@ -153,15 +170,20 @@ def state(root):
                     files[rel] = ["other", stat.S_IFMT(info.st_mode)]
             except OSError as error:
                 files[rel] = ["unreadable", type(error).__name__]
-    body = {"head": found or None, "tree": tree or None, "index": digest(entries), "files": files}
+    body = {"head": found or None, "tree": tree or None, "index": digest(entries), "refs": refs,
+            "head_target": head_target, "files": files}
     return dict(body, digest=digest(canonical(body)))
 
 
 def changes(before, after):
-    """The paths (and index or HEAD) that differ between two states, sorted."""
+    """The paths (and index, HEAD, its symbolic target or a ref) that differ between two states, sorted."""
     named = sorted(p for p in set(before["files"]) | set(after["files"])
                    if before["files"].get(p) != after["files"].get(p))
-    for key in ("head", "tree", "index"):
+    old, new = before.get("refs") or {}, after.get("refs") or {}
+    for ref in sorted(set(old) | set(new), reverse=True):
+        if old.get(ref) != new.get(ref):
+            named.insert(0, ":ref/" + ref)
+    for key in ("head", "tree", "index", "head_target"):
         if before.get(key) != after.get(key):
             named.insert(0, ":" + key)
     return named
@@ -399,9 +421,12 @@ def accept(reference, candidate, commit):
 
 # The installed policy.
 
-def run_policy(installation, candidate, timeout=None):
-    """(exit status, output) of the installed policy_check.py asked about `candidate`, in a separate
-    process started from this module; None as the status when it could not be run."""
+def run_policy(installation, candidate, base, timeout=None):
+    """(exit status, output) of the installed policy_check.py asked about `candidate` over the push
+    range `base`..candidate, in a separate process started from this module; None as the status when
+    it could not be run. `base` is the caller's own record of the trunk commit the candidate was built
+    and gated on (a full commit id), never a ref read from the candidate: the candidate's code ran in
+    the gate and could have moved its refs. A base that is not such a commit is refused there."""
     root, _source = _installation(installation)
     policy = root / POLICY_PATH
     if not policy.is_file():
@@ -411,7 +436,8 @@ def run_policy(installation, candidate, timeout=None):
     refused = _policy_source_refusal(policy, candidate)
     if refused:
         return None, refused
-    command = [sys.executable, "-B", str(Path(__file__).resolve()), "policy", str(policy), _real(candidate)]
+    command = [sys.executable, "-B", str(Path(__file__).resolve()), "policy", str(policy), _real(candidate),
+               base if isinstance(base, str) else ""]
     try:
         run = subprocess.run(command, cwd=_real(candidate), capture_output=True, text=True,
                              stdin=subprocess.DEVNULL, env=gate_env(), timeout=timeout)
@@ -431,12 +457,32 @@ def _policy_source_refusal(policy, candidate):
     return None
 
 
-def _policy_main(policy, candidate):
+_FULL_COMMIT = re.compile(r"[0-9a-f]{40}")
+
+
+def _policy_base_refusal(base, candidate):
+    """The refusal when `base` is not a full 40-hex commit id that exists in the candidate's
+    repository and is an ancestor of its HEAD; None when it can be the push range's base."""
+    if not isinstance(base, str) or not _FULL_COMMIT.fullmatch(base):
+        return "missing_authority:policy_base/invalid"
+    try:
+        if _git(candidate, "cat-file", "-e", base + "^{commit}", ok=(0, 1, 128)).returncode != 0:
+            return "missing_authority:policy_base/absent"
+        if _git(candidate, "merge-base", "--is-ancestor", base, "HEAD", ok=(0, 1)).returncode != 0:
+            return "missing_authority:policy_base/not_ancestor"
+    except Refused as error:
+        return "missing_authority:policy_base/" + error.code
+    return None
+
+
+def _policy_main(policy, candidate, base):
     """Load the installed policy module by its own path, so it and every sibling it loads are the
-    installation's, then point its subject root at the candidate and its policy source at the
-    installation's policy.yaml, and ask it. The candidate is the subject, never the source of the
-    protected list: its own policy.yaml could empty protected_paths (VELDO-0058 AC3)."""
-    refused = _policy_source_refusal(policy, candidate)
+    installation's, then point its subject root at the candidate, its policy source at the
+    installation's policy.yaml and its push range base at `base`, and ask it. The candidate is the
+    subject, never the source of the protected list (its own policy.yaml could empty
+    protected_paths) nor of the range (its code could move its own origin refs to HEAD, emptying a
+    range read from them), VELDO-0058 AC3."""
+    refused = _policy_source_refusal(policy, candidate) or _policy_base_refusal(base, candidate)
     if refused:
         print(refused)
         return 2
@@ -445,11 +491,12 @@ def _policy_main(policy, candidate):
     spec.loader.exec_module(module)
     module.ROOT = Path(candidate)
     module.POLICY = Path(policy).parent / POLICY_SOURCE
+    module.BASE = base
     return module.main()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 4 and sys.argv[1] == "policy":
-        sys.exit(_policy_main(sys.argv[2], sys.argv[3]))
-    print("usage: control_verification.py policy <installed policy_check.py> <candidate root>")
+    if len(sys.argv) == 5 and sys.argv[1] == "policy":
+        sys.exit(_policy_main(sys.argv[2], sys.argv[3], sys.argv[4]))
+    print("usage: control_verification.py policy <installed policy_check.py> <candidate root> <base commit>")
     sys.exit(2)
