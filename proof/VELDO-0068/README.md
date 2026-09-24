@@ -24,8 +24,9 @@ shapes), not the Telegram service.
   attribution, VELDO-0067 edge signature), unchanged. `api_answer` accepts an answer signed by the
   configured API edge under the same presentation rules (current head, current bindings, the owner only).
 - **Settlement.** `settle` reads every accepted answer of the version in acceptance order; the earliest
-  one that still binds the current presentation wins and every other is named on the settlement, never
-  counted. The requirement is policy AND terms (union of roles, larger count and independence), decided
+  one that still binds the current presentation wins and every other answer that read returned is named
+  on the settlement, never counted. An answer accepted after the read and before the commit is not named
+  (see Known limits). The requirement is policy AND terms (union of roles, larger count and independence), decided
   by `authority_contract.authorize` per scope, by distinct principal, with the requester never counted as
   independent. A count above one or an independence above one blocks as `unsupported_quorum`. One
   registered transaction writes the settlement, the effect, the receipt and the assignment moved to
@@ -78,6 +79,10 @@ passed (8 rows, exit 2 as the partial-run marker) and finding 68 rejected all 17
 
 ## Known limits (not filed as tickets)
 
+- Filed for Release 2 (spec History): a settlement names as not counted only the answers it read. An
+  answer accepted on another connection after that read and before the settlement commits takes no
+  effect, is never counted, and a later settlement refuses as `already_settled`, but the settlement does
+  not list it.
 - The answer is accepted evidence in its own transaction (VELDO-0065's, with its own nonce) before the
   settlement transaction. A stop between the two leaves an accepted, unsettled answer, shown as pending
   work by `metrics()`; the next `run()` settles it. Recovery beyond that is Release 2.

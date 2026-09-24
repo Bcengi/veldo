@@ -132,8 +132,10 @@ No automatic recovery, extra channel activation or broader host qualification is
   presentation accepted; an unsupported quorum policy weakening a requirement. The owner's account,
   the store and the signing edge are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); the crash,
-  replica and full cross-channel matrix and restart recovery (Release 2, see History); forged rows in
-  our own store and files planted in the installed directory.
+  replica and full cross-channel matrix and restart recovery (Release 2, see History); an answer
+  accepted on another connection after a settlement reads the answers and before it commits, which
+  takes no effect but is not listed on the settlement as not counted (Release 2, see History); forged
+  rows in our own store and files planted in the installed directory.
 
 ## Notes
 
@@ -187,3 +189,10 @@ that request version ended with no settlement. The command now refuses such a re
 terms is answered exactly as before. The row case is in `settlement/one-transaction`, red at 0617f3d,
 with the finding 68 mutation `inbox-answer-bypasses-settlement`. The criteria, status and risk are
 unchanged.
+
+2026-09-24, review, filed for Release 2: a settlement lists as not counted only the answers it read.
+An answer accepted on another connection after that read and before the settlement commits takes no
+effect, is never counted and is refused as already_settled on a later settlement, but it is not listed
+on the settlement. Listing it (pinning the version's answer set in the terminal transaction) is Release
+2 work. The module's docstring and the proof README now promise only what holds. The criteria, status
+and risk are unchanged.

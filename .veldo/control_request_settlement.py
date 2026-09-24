@@ -31,9 +31,13 @@ UNSUPPORTED quorum policy: it blocks the request by name and is never weakened t
 
 ONE WINNER. The settlement key is the request and its version, as the entity id, the command id and
 the nonce. Every accepted answer of the version is read in acceptance order; the earliest one that
-still binds the current presentation and request wins, and every other is listed on the settlement
-as conflicting or duplicate, never counted twice and never settled. A second settlement of the same
-version, from any surface, is refused and writes nothing; concurrent settlements commit once.
+still binds the current presentation and request wins, and every other answer that read returned is
+listed on the settlement as conflicting or duplicate, never counted twice and never settled. An
+answer accepted on another connection after that read and before the settlement commits is NOT
+listed: the transaction pins the answers it read, not the absence of others. That answer takes no
+effect, is never counted, and settling again refuses as already_settled; listing it is Release 2.
+A second settlement of the same version, from any surface, is refused and writes nothing;
+concurrent settlements commit once.
 
 PUBLISHED STATE. `publish` records the settled requests as statuses of a VELDO-0035 accepted revision
 (`.veldo/settlements/<alias>.json` the settlement, `<alias>.request.json` the terminal request) and
@@ -517,6 +521,8 @@ class Settlement:
         refusal, current, versions = self.presenter.bindings(request)
         if refusal:
             raise Refused('owner_not_current' if refusal == 'missing_authority' else 'stale_presentation', refusal)
+        # The answers read here are the ones listed or counted; one accepted after this read commits
+        # beside the settlement unlisted and takes no effect (see ONE WINNER).
         answers = self.answers(request, version)
         if not answers:
             raise Refused('no_answer', 'no accepted answer at this request version')
