@@ -439,7 +439,7 @@ sys.exit(payload.get('code', 0))
                                                                  ('shipped', 'VELDO-9503'), ('orphan', 'VELDO-9508'))}
                 claims = {name: claim_version(unit) for name, unit in units.items()}
                 started['blocked'] = runner('fast').submit(units['blocked'], 'build', **job(block=2.0))
-                started['missing'] = runner('fast').submit(units['missing'], 'build', **job(block=20))
+                started['missing'] = runner('fast').submit(units['missing'], 'build', **job(block=8))
                 started['shipped'] = runner('shipped').submit(units['shipped'], 'build', **job(block=1.5))
                 started['orphan'] = runner('main').submit(units['orphan'], 'build', **job(hold=30))
 
