@@ -530,7 +530,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                                       'seconds': round(cycle_seconds, 2)}
                 check('workflow/pinned-revision',
                       lambda: (v2.get('ok') or {}).get('version') == 2
-                      and ra.get('binding') == dict(ident1, revision=stored1['revision'], entity_digest=stored1['entity_digest'])
+                      and ra.get('binding') == dict(ident1, revision=stored1.get('revision'), entity_digest=stored1.get('entity_digest'))
                       and ra.get('state') == 'proposed' and within(ra, stored1)
                       and [e[0] for e in ra['trace']] == ['groom', 'owner', 'assign', 'handle']
                       and kinds_a == {'grooming', 'owner_wait', 'assignment', 'result_handling'}
