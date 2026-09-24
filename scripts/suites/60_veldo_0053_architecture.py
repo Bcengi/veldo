@@ -68,11 +68,32 @@ def _v53_suite():
             return hmac.new(key, message, hashlib.sha256).hexdigest()
 
         serial = [0]
+        # VELDO-0134: the store lets only its architecture operation write architecture:<repository>, so
+        # the record reaches the Gate through that operation, registered here on the suite's own
+        # connection with the suite's own transition (VELDO-0134's suite drives the real signed accept
+        # command). Each record is a complete veldo.architecture_record/v1 carrying the state and digest
+        # a row names; a row that names no digest leaves the field out, so the record-states rows face
+        # schema-invalid records. An earlier store with no such operation takes the generic write.
+        ARCHITECTURE_WRITE = getattr(S, 'ARCHITECTURE_OPERATION', 'upsert_entity')
+        writer.command_registry[ARCHITECTURE_WRITE] = {
+            'transition': lambda params, before: {params['entity_id']: {'kind': params['kind'], 'data': params['data']}},
+            'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+        def architecture_record(identity, data):
+            record = dict(schema='veldo.architecture_record/v1', repository_uuid=identity[len('architecture:'):],
+                          state='accepted', contract_version=1,
+                          source=dict(commit='0' * 40, path='.veldo/architecture.yaml'), accepted_by='owner',
+                          command_id='c%d' % serial[0], superseded=[])
+            record.update(data)
+            return record
 
         def put(identity, kind, data):
             serial[0] += 1
             row = writer.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
-            S.execute(writer, dict(command_id='c%d' % serial[0], principal='owner', operation='upsert_entity',
+            operation = ARCHITECTURE_WRITE if identity.startswith('architecture:') else 'upsert_entity'
+            if identity.startswith('architecture:'):
+                data = architecture_record(identity, data)
+            S.execute(writer, dict(command_id='c%d' % serial[0], principal='owner', operation=operation,
                                    nonce='n%d' % serial[0], artifact_digests=[],
                                    expected_versions={identity: row[0] if row else 0},
                                    parameters=dict(entity_id=identity, kind=kind, data=data)),
