@@ -411,8 +411,9 @@ class Receiver:
             self.emit({'event': 'refused', 'refusal': refusal})
             return
         carry = b''
+        remote = adapter.get('identity', 'local') == 'reported'
         try:
-            if adapter.get('identity', 'local') == 'reported':
+            if remote:
                 process, refusal, carry = self._reported(worker, contract)
                 if refusal:
                     worker.wait()
@@ -436,6 +437,13 @@ class Receiver:
             raise
         self.emit({'event': 'running', 'process': process})
         termination = self._reap(worker, contract, carry)
+        if remote and termination['deadline_stop']:
+            # Stopping the local transport at the deadline does not show the remote engine ended: its
+            # outcome is unknown, and the unit and station stay held.
+            self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
+                                    expected_state='running')
+            self.emit({'event': 'unknown'})
+            return
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
         self.emit({'event': 'exited', 'termination': termination})
 
@@ -515,6 +523,13 @@ class Receiver:
                 break
             size += len(chunk)
             hasher.update(chunk)
+        if not stopped:
+            # Closing its output does not end a worker: it is still held to the contract deadline.
+            try:
+                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))
+            except subprocess.TimeoutExpired:
+                stopped = True
+                self._stop(worker)
         code = worker.wait()
         feeder.join(timeout=5)
         worker.stdout.close()
