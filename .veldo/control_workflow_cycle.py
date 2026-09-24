@@ -174,7 +174,8 @@ def _record_transition(conn, params, before):
                               'revision': row['id'], 'entity_digest': row['digest']},
                   'started': {'principal': params['principal'], 'at': now},
                   'state': 'running', 'position': None, 'steps': 0, 'trace': [], 'visits': {}, 'resume': None,
-                  'waiting': None, 'assignment': None, 'received': None, 'result': None, 'proposals': [], 'refusal': None,
+                  'waiting': None, 'assignment': None, 'received': None, 'result': None, 'answered': None,
+                  'proposals': [], 'refusal': None,
                   'refusals': [], 'exchanges': 0}
         return {cid: {'kind': CYCLE_KIND, 'data': record}}
     record = params.get('record')
@@ -470,6 +471,10 @@ class Cycles:
             data = answer['data'] if answer and answer['kind'] == 'admission' else {}
             if data.get('unit') != record['subject'] or data.get('state') not in ANSWERS:
                 return None
+            used = record.get('answered')
+            if used is not None and answer['version'] <= used['version']:
+                # Every visit to an owner wait needs an answer newer than the one this cycle last used.
+                return None
             supplied.append(self._supply('owner_answer', answer, {'state': data['state']}))
         elif kind['input'] == 'worker_result':
             received = record.get('received')
@@ -532,6 +537,10 @@ class Cycles:
             visits[taken['id']] = visits.get(taken['id'], 0) + 1
             record = dict(record, steps=record['steps'] + 1, trace=record['trace'] + [list(last)], visits=visits,
                           position=taken['to'], resume=answer['resume'])
+            if kind['input'] == 'owner_answer':
+                # The answer this visit routed on is spent: the next owner wait asks the owner again.
+                used = next(item for item in supplied if item['id'] == 'owner_answer')
+                record = dict(record, answered={'version': used['version'], 'digest': used['digest']})
             if kind['input'] == 'worker_result':
                 # The result this assignment routed on is the one a result handling step may cite; a later
                 # visit to an assignment waits for its own worker, after its own checks.

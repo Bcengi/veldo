@@ -1,5 +1,5 @@
 --- a/.veldo/control_workflow_cycle.py
 +++ b/.veldo/control_workflow_cycle.py
-@@ -211 +211 @@
+@@ -212 +212 @@
 -    text = WF.canonical(revision['definition']).decode()
 +    text = WF.canonical(dict(revision['definition'], layout=revision['layout'])).decode()  # defect: the layout reaches execution

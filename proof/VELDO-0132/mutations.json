@@ -1,16 +1,16 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 132 --jobs 4",
  "exit": 0,
- "seconds": 117.6,
+ "seconds": 120.1,
  "summary": {
-  "mutations_rejected": 26,
+  "mutations_rejected": 28,
   "green_suites": {
-   "65_veldo_0132_workflow.py": 41
+   "65_veldo_0132_workflow.py": 42
   }
  },
  "control": {
   "suite": "65_veldo_0132_workflow.py",
-  "assertions": 41
+  "assertions": 42
  },
  "every_target_red": true,
  "no_ran_row_red": true,
@@ -44,6 +44,10 @@
   "workflow/actual-langgraph": [
    "workflow-runner-unregistered",
    "workflow-cancel-without-graph"
+  ],
+  "workflow/owner-answer-per-visit": [
+   "workflow-owner-answer-reused",
+   "workflow-owner-answer-not-spent"
   ],
   "workflow/ordinary-authorization": [
    "workflow-role-unchecked",
@@ -173,6 +177,7 @@
     "workflow/canvas-round-trip",
     "workflow/pinned-revision",
     "workflow/actual-langgraph",
+    "workflow/owner-answer-per-visit",
     "workflow/ordinary-authorization",
     "workflow/no-workflow-authority",
     "workflow/observations"
@@ -255,6 +260,7 @@
     "workflow/canvas-round-trip",
     "workflow/pinned-revision",
     "workflow/actual-langgraph",
+    "workflow/owner-answer-per-visit",
     "workflow/ordinary-authorization",
     "workflow/no-workflow-authority",
     "workflow/observations"
@@ -274,6 +280,34 @@
    "target_red": true,
    "ran_rows_red": [],
    "diff": "mutations/workflow-cancel-without-graph.diff"
+  },
+  {
+   "mutation": "workflow-owner-answer-reused",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/owner-answer-per-visit",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/owner-answer-per-visit",
+    "workflow/ordinary-authorization",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-owner-answer-reused.diff"
+  },
+  {
+   "mutation": "workflow-owner-answer-not-spent",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/owner-answer-per-visit",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/owner-answer-per-visit",
+    "workflow/ordinary-authorization",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-owner-answer-not-spent.diff"
   },
   {
    "mutation": "workflow-role-unchecked",
@@ -307,7 +341,8 @@
    "row": "workflow/ordinary-authorization",
    "declared_falsifier_of": null,
    "red_rows": [
-    "workflow/ordinary-authorization"
+    "workflow/ordinary-authorization",
+    "workflow/observations"
    ],
    "target_red": true,
    "ran_rows_red": [],
@@ -319,7 +354,9 @@
    "row": "workflow/ordinary-authorization",
    "declared_falsifier_of": null,
    "red_rows": [
-    "workflow/ordinary-authorization"
+    "workflow/owner-answer-per-visit",
+    "workflow/ordinary-authorization",
+    "workflow/observations"
    ],
    "target_red": true,
    "ran_rows_red": [],

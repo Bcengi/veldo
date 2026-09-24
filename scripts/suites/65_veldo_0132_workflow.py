@@ -523,6 +523,9 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                     admit('VELDO-9608', 'declined')
                     attempt(cycles.advance, 'cycle-loop')
                     loop_passes.append(cycles.record('cycle-loop') or {})
+                # The tight budget: the owner declines again, and the step after that answer is past the budget.
+                admit('VELDO-9606', 'declined')
+                attempt(cycles.advance, 'cycle-tight')
                 cycle_seconds = time.monotonic() - started
                 records = {name: cycles.record(name) or {} for name in (
                     'cycle-a', 'cycle-b', 'cycle-c', 'cycle-blocked', 'cycle-intruder', 'cycle-tight', 'cycle-asserting',

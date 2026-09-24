@@ -3235,6 +3235,14 @@ def cases():
              'actual-langgraph', module=cycle)
     workflow('workflow-cancel-without-graph', "            if record['resume'] is not None:\n",
              '            if False:  # defect: a cycle is canceled without asking the graph\n', 'actual-langgraph', module=cycle)
+    # Review finding: every visit to an owner wait needs an answer newer than the one the cycle last used.
+    workflow('workflow-owner-answer-reused', "            if used is not None and answer['version'] <= used['version']:\n",
+             '            if False:  # defect: an owner wait routes on an answer an earlier visit already used\n',
+             'owner-answer-per-visit', module=cycle)
+    workflow('workflow-owner-answer-not-spent',
+             "                record = dict(record, answered={'version': used['version'], 'digest': used['digest']})\n",
+             '                pass  # defect: the answer a visit routed on is not recorded as spent\n',
+             'owner-answer-per-visit', module=cycle)
     workflow('workflow-role-unchecked', '        problem = self.role_problem(definition, node)\n',
              '        problem = None  # defect: the assignment\'s role is not judged\n', 'ordinary-authorization', module=cycle)
     workflow('workflow-gate-not-asked', "        decision = self.gate.decide(STATION, record['subject'])\n",

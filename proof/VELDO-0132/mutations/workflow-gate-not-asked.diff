@@ -1,5 +1,5 @@
 --- a/.veldo/control_workflow_cycle.py
 +++ b/.veldo/control_workflow_cycle.py
-@@ -368 +368 @@
+@@ -369 +369 @@
 -        decision = self.gate.decide(STATION, record['subject'])
 +        decision = {'eligible': True, 'refusals': [], 'decision_id': None, 'watermark': None}  # defect: the Gate is not asked

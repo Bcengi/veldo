@@ -165,3 +165,9 @@ recorded red before its fix. The status stays ready. Proof: proof/VELDO-0132/.
 2026-09-24, completion by the lead after the builder was cut off by a usage limit: the footprint
 names init_scaffold.py, and the scaffold lays the three workflow modules, so an installed factory has
 them.
+
+2026-09-24, review fix: an owner wait re-read the unit's admission on every visit, so a decline
+loop never let the owner answer again and an owner review after the work was answered by the
+admission given before it. Each cycle now records the answer an owner wait routed on, and the next
+owner wait takes only a newer one. Row workflow/owner-answer-per-visit, red first at 9409888, and two
+mutations.

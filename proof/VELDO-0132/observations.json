@@ -29,6 +29,10 @@
    true
   ],
   [
+   "VELDO-0132 workflow/owner-answer-per-visit",
+   true
+  ],
+  [
    "VELDO-0132 workflow/ordinary-authorization",
    true
   ],
@@ -61,8 +65,8 @@
    true
   ]
  ],
- "suite_seconds": 15.39,
- "cycle_seconds": 15.13,
+ "suite_seconds": 15.58,
+ "cycle_seconds": 15.31,
  "raised": [],
  "condition_errors": null,
  "validation": {
@@ -114,7 +118,7 @@
   "network": [],
   "signed": 1,
   "journal_records": [
-   "workflow/save/549037633a3a0028036ce7ef35e8d7a1"
+   "workflow/save/6b16da56113218631f314da0b3d7f06f"
   ],
   "kinds_written": [
    "workflow_head",
@@ -383,7 +387,7 @@
  },
  "observations": {
   "status": {
-   "accepted": 54,
+   "accepted": 59,
    "refused": 5,
    "pending": [
     {
@@ -404,7 +408,7 @@
     }
    ]
   },
-  "events": 108,
+  "events": 113,
   "refused": 34
  }
 }

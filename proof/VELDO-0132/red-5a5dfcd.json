@@ -16,6 +16,7 @@
   "VELDO-0132 workflow/edit-without-execution",
   "VELDO-0132 workflow/pinned-revision",
   "VELDO-0132 workflow/actual-langgraph",
+  "VELDO-0132 workflow/owner-answer-per-visit",
   "VELDO-0132 workflow/ordinary-authorization",
   "VELDO-0132 workflow/no-workflow-authority",
   "VELDO-0132 workflow/observations"
