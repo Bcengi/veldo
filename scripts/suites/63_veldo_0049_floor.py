@@ -126,7 +126,7 @@ def _v49_suite():
         (work / 'src' / 'README').write_text('fixture sources\n')
         UNITS = {'VELDO-9401': 'standard', 'VELDO-9402': 'standard', 'VELDO-9403': 'standard',
                  'VELDO-9404': 'standard', 'VELDO-9411': 'critical', 'VELDO-9421': 'critical',
-                 'VELDO-9431': 'standard', 'VELDO-9432': 'standard'}
+                 'VELDO-9431': 'standard', 'VELDO-9432': 'standard', 'VELDO-9433': 'standard'}
         spec_files = {}
         for sid, risk in UNITS.items():
             spec_files[sid] = work / 'specs' / ('%s-floor-fixture.md' % sid)
@@ -264,6 +264,8 @@ blob = _git_process.run(['git', '-C', str(work), 'cat-file', 'blob', commit + ':
 body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment['assignment'], 'unit': assignment['unit'],
         'reviewer': principal, 'source': commit, 'proof': 'sha256:' + hashlib.sha256(blob).hexdigest(),
         'verdict': 'pass', 'findings': []}
+if mode == 'notes':
+    body.update(verdict='pass_with_notes', findings=[{'severity': 'note', 'text': 'a clearer name would help'}])
 if mode == 'insecure':
     body['security'] = {'verdict': 'insecure', 'findings': [{'text': 'the token is logged'}]}
 if mode == 'bare-fail':
@@ -291,7 +293,7 @@ sys.stdout.flush()
         adapters = {'builder-engine': {'argv': [sys.executable, '-B', str(builder), str(mods / 'git_process.py'),
                                                 str(work), str(markers)]}}
         for who in REVIEWERS:
-            for mode in ('pass', 'block', 'wrong-source', 'wrong-proof', 'silent', 'insecure', 'bare-fail'):
+            for mode in ('pass', 'block', 'wrong-source', 'wrong-proof', 'silent', 'insecure', 'bare-fail', 'notes'):
                 adapters['%s:%s' % (who, mode)] = {'argv': reviewer_argv(who, who, mode)}
         # The builder claiming a review: its own key, naming the assigned reviewer, and naming itself.
         adapters['builder-as-reviewer-b'] = {'argv': reviewer_argv(BUILDER, 'reviewer-b', 'pass')}
@@ -895,7 +897,16 @@ sys.stdout.flush()
                                   'later': later_pass.get('refusals'), 'landed': later_pass.get('landed'),
                                   'state': rec(unit).get('state')}
                 observed['blocking_verdicts'] = kept
-                check('floor/blocking-verdicts-stay-open', all(
+                # The ordinary case: a standard-tier unit whose one reviewer passes with non-blocking notes is
+                # handed off and landed, with no finding opened.
+                build('VELDO-9433', 'good')
+                g = claim('VELDO-9433', REVIEW_WORKER)
+                noted = review('VELDO-9433', g, 'reviewer-b', 'reviewer-b:notes')
+                observed['pass_with_notes'] = {k: noted.get(k) for k in ('ok', 'landed', 'refusals')}
+                ordinary_ok = (noted.get('ok') is True and noted.get('landed') is True
+                               and (rec('VELDO-9433').get('findings') or {}) == {}
+                               and rec('VELDO-9433').get('state') == 'handoff')
+                check('floor/blocking-verdicts-stay-open', ordinary_ok and all(
                     k['first'] == {'ok': False, 'status': 'returned'} and len(k['opened']) == 1
                     and k['later'] == ['unresolved_finding:' + k['opened'][0]] and k['landed'] is False
                     and k['state'] != 'handoff' for k in kept.values()))
@@ -906,7 +917,7 @@ sys.stdout.flush()
                              if (projections / sid).exists()}
                 observed['projection'] = {'problems': problems, 'published': published}
                 check('floor/authority-to-projection',
-                      problems == [] and set(published) == {'VELDO-9401', 'VELDO-9411', 'VELDO-9421', 'VELDO-9431', 'VELDO-9432'})
+                      problems == [] and set(published) == {'VELDO-9401', 'VELDO-9411', 'VELDO-9421', 'VELDO-9431', 'VELDO-9432', 'VELDO-9433'})
 
             # Tracker drafting and promotion are disabled for enrolled factory work.
             with region('floor/tracker-disabled-when-enrolled'):
@@ -961,7 +972,7 @@ sys.stdout.flush()
                 commands = [e for e in events if e['operation'] != 'publish']
                 refused_events = [e for e in events if e['outcome'] == 'refused']
                 obs_ok = (status['accepted'] > 0 and status['refused'] > 0
-                          and status['handoff'] == ['VELDO-9411', 'VELDO-9421'] and status['pending'] == ['VELDO-9401', 'VELDO-9431', 'VELDO-9432']
+                          and status['handoff'] == ['VELDO-9411', 'VELDO-9421', 'VELDO-9433'] and status['pending'] == ['VELDO-9401', 'VELDO-9431', 'VELDO-9432']
                           and all(fields <= set(e) for e in events)
                           and all({'request', 'accepted_versions'} <= set(e) for e in commands)
                           and all(e.get('refusal') and e.get('taxonomy') for e in refused_events)

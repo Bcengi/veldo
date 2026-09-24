@@ -2775,6 +2775,10 @@ def cases():
           '    if body.get("verdict") not in EX.PASSING_VERDICTS and not blocking:\n',
           '    if False:  # defect: a failing verdict with no listed finding opens nothing\n',
           'blocking-verdicts-stay-open')
+    floor('floor-notes-counted-as-blocking',
+          '    blocking = list(PC.blocking_findings(body))\n',
+          '    blocking = list(PC.blocking_findings(body)) + list(body.get("findings") or [])  # defect: every note blocks\n',
+          'blocking-verdicts-stay-open')
     # AC3, declared: a later pass discards the unresolved finding.
     floor('floor-pass-erases-finding', '    findings = dict(record["findings"])\n',
           '    findings = {} if verdict_passes(body) else dict(record["findings"])  # defect: a pass discards findings\n',
