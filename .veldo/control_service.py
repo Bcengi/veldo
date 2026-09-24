@@ -378,7 +378,9 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     home = os.path.join(root, service)
     unit_dir = os.path.realpath(str(unit_dir or default_unit_dir()))
     unit_path = os.path.join(unit_dir, unit)
-    keys = os.path.realpath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)
+    # Judged as NAMED, never resolved first: a link to a safe directory is refused as a link, because
+    # what it points at can change after this check.
+    keys = os.path.abspath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)
     problems = key_directory_problems(keys, worker_writable() if writable is None else writable)
     if problems:
         raise Refused(problems[0], keys, key_directory_guidance(keys, problems[0]))
@@ -571,6 +573,12 @@ class Service:
         self.principal, self.generation = config['principal'], config['authority_generation']
         self.enrollment_signers = Path(config['enrollment_signers']).read_text()
         self.receivers, self.counts, self.refusals = {}, {'accepted': 0, 'refused': 0}, {}
+        # The counts are the observation log's, so they cover every instance that served this
+        # installation, not only this process.
+        with contextlib.suppress(OSError):
+            for line in Path(config['observations']).read_text().splitlines():
+                with contextlib.suppress(ValueError, KeyError, TypeError):
+                    self._tally(json.loads(line))
 
     def sign(self, data):
         return SIG.sign_bytes(self.config['journal_key'], data, L.JOURNAL_NAMESPACE)
@@ -717,10 +725,13 @@ class Service:
                          'refusal': response.get('reason'), 'taxonomy': taxonomy(response.get('reason')),
                          'watermark': self.watermark()})
 
-    def _count(self, observation):
+    def _tally(self, observation):
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
             self.refusals[observation['refusal']] = self.refusals.get(observation['refusal'], 0) + 1
+
+    def _count(self, observation):
+        self._tally(observation)
         fd = os.open(self.config['observations'], os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
         with os.fdopen(fd, 'a') as handle:
             handle.write(json.dumps(observation, sort_keys=True, default=str) + '\n')
