@@ -67,6 +67,14 @@ def _v45_suite():
                               input=stdin, stdin=None if stdin is not None else subprocess.DEVNULL,
                               capture_output=True, timeout=timeout)
 
+    def read_json(path):
+        """A JSON file's object, or {} when it is absent or not one (a pre-fix tree has no records)."""
+        try:
+            value = json.loads(Path(path).read_text())
+        except (OSError, ValueError):
+            return {}
+        return value if type(value) is dict else {}
+
     def report(proc):
         try:
             value = json.loads(proc.stdout.decode())
@@ -224,8 +232,8 @@ with open(log, 'w') as out:
         # ---- AC1: records against the lock, the registry and the installed metadata
         with region('runtime/records-cover-lock'):
             proc, accepted = cr('check')
-            records = json.loads((installed / '.veldo/runtime/langgraph-records.json').read_text())
-            packages = {canonical(p['name']): p for p in records['packages']}
+            records = read_json(installed / '.veldo/runtime/langgraph-records.json')
+            packages = {canonical(p['name']): p for p in records.get('packages') or []}
             locked = {canonical(row[0]): row for row in lock.PACKAGES}
             spdx = {k: [t for t in re.findall(r'[A-Za-z0-9.+-]+', p['license']['spdx'] or '') if t not in ('AND', 'OR', 'WITH')]
                     for k, p in packages.items()}
@@ -240,12 +248,14 @@ with open(log, 'w') as out:
                 meta = email.parser.Parser().parsestr((info / 'METADATA').read_text(), headersonly=True)
                 metadata[canonical(meta['Name'])] = (meta['Version'], meta.get('License') or None,
                                                      meta.get('License-Expression') or None)
-            agrees = set(metadata) == set(locked) and all(
+            agrees = set(metadata) == set(locked) == set(packages) and all(
                 metadata[k] == (packages[k]['version'], packages[k]['license']['registry_license'],
                                 packages[k]['license']['registry_license_expression']) for k in locked)
 
             def relicense(veldo):
                 path = veldo / 'runtime/langgraph-records.json'
+                if not path.is_file():
+                    return  # a tree without records has nothing to relicense
                 data = json.loads(path.read_text())
                 for entry in data['packages']:
                     if entry['name'] == 'certifi':
@@ -386,7 +396,8 @@ with open(log, 'w') as out:
             proc_wheel, altered = cr('check', home=wheel_home)
             fields = {'schema', 'operation', 'journey', 'lock_digest', 'records_digest', 'runtime', 'packages',
                       'problems', 'outcome', 'taxonomy', 'counts'}
-            records_digest = 'sha256:' + digest(installed / '.veldo/runtime/langgraph-records.json')
+            records_file = installed / '.veldo/runtime/langgraph-records.json'
+            records_digest = 'sha256:' + digest(records_file) if records_file.is_file() else None
             observed['observations'] = {'accepted': {k: (fine or {}).get(k) for k in ('outcome', 'taxonomy', 'counts')},
                                         'absent': {k: (absent or {}).get(k) for k in ('problems', 'taxonomy')},
                                         'altered': {k: (altered or {}).get(k) for k in ('problems', 'taxonomy')}}

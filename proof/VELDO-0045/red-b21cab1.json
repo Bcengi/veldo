@@ -1,0 +1,166 @@
+{
+ "production_at": "b21cab1",
+ "engine_templates_at": "b21cab1",
+ "substituted_modules": {
+  ".veldo/authorization.py": "present",
+  ".veldo/control_runtime.py": "absent at b21cab1",
+  ".veldo/init_scaffold.py": "present"
+ },
+ "failed": [
+  "VELDO-0045 runtime/records-cover-lock",
+  "VELDO-0045 runtime/workload",
+  "VELDO-0045 runtime/altered-hash-refused",
+  "VELDO-0045 runtime/altered-wheel-refused",
+  "VELDO-0045 runtime/omitted-dependency-refused",
+  "VELDO-0045 runtime/observations",
+  "VELDO-0045 journey/assets-installed",
+  "VELDO-0045 journey/omitted-asset-named",
+  "VELDO-0045 enforcement/entries-enumerated",
+  "VELDO-0045 enforcement/no-runtime",
+  "VELDO-0045 enforcement/graph-unavailable"
+ ],
+ "passed": [
+  "VELDO-0045 ran/setup",
+  "VELDO-0045 ran/runtime/records-cover-lock",
+  "VELDO-0045 ran/runtime/workload",
+  "VELDO-0045 ran/runtime/altered-hash-refused",
+  "VELDO-0045 ran/runtime/altered-wheel-refused",
+  "VELDO-0045 ran/runtime/omitted-dependency-refused",
+  "VELDO-0045 ran/runtime/observations",
+  "VELDO-0045 ran/journey/assets-installed",
+  "VELDO-0045 ran/journey/omitted-asset-named",
+  "VELDO-0045 ran/enforcement/entries-enumerated"
+ ],
+ "raised": [],
+ "observed": {
+  "records": {
+   "accepted": null,
+   "problems": null,
+   "covered": false,
+   "installed_metadata_agrees": false,
+   "relicensed": null,
+   "attested": 0
+  },
+  "workload": {
+   "passed": null,
+   "steps": null,
+   "proposals": null,
+   "counts": null,
+   "pending": null,
+   "refused": null
+  },
+  "altered_hash": null,
+  "altered_wheel": {
+   "consistent": {
+    "enforced_exit": 1,
+    "enforced_says": true,
+    "bypassed_exit": 0,
+    "altered_code_installed": true,
+    "check_exit": 2,
+    "problems": null
+   },
+   "genuine": {
+    "enforced_exit": 1,
+    "enforced_says": true,
+    "bypassed_exit": 0,
+    "altered_code_installed": true,
+    "check_exit": 2,
+    "problems": null
+   }
+  },
+  "omitted_dependency": {
+   "uninstalled": {
+    "removed": 0,
+    "pip_check_exit": 1,
+    "pip_check_says": true,
+    "check_exit": 2,
+    "problems": null
+   },
+   "lock_omits": {
+    "check_exit": 2,
+    "problems": null
+   },
+   "root_uninstalled": {
+    "removed": 0,
+    "pip_check_exit": 0,
+    "check_exit": 2,
+    "problems": null
+   },
+   "genuine_pip_check_exit": 0
+  },
+  "observations": {
+   "accepted": {
+    "outcome": null,
+    "taxonomy": null,
+    "counts": null
+   },
+   "absent": {
+    "problems": null,
+    "taxonomy": null
+   },
+   "altered": {
+    "problems": null,
+    "taxonomy": null
+   }
+  },
+  "omitted_asset": {
+   ".veldo/runtime/langgraph-records.json": {
+    "exit": "raised FileNotFoundError",
+    "problems": null,
+    "source_tree_reads": [],
+    "traceback": false
+   },
+   ".veldo/control_graph_lock.py": {
+    "exit": "raised FileNotFoundError",
+    "problems": null,
+    "source_tree_reads": [],
+    "traceback": false
+   }
+  }
+ },
+ "journey": {
+  "exit": 0,
+  "trace_exit": "raised FileNotFoundError",
+  "outcome": null,
+  "reached_installed": [],
+  "declared": []
+ },
+ "enforcement": {
+  "exit": 2,
+  "passed": null,
+  "derived": [
+   [
+    ".veldo/authorization.py",
+    []
+   ],
+   [
+    ".veldo/events.py",
+    [
+     "reconcile-verdicts"
+    ]
+   ],
+   [
+    ".veldo/policy_check.py",
+    []
+   ],
+   [
+    ".veldo/shape_gate.py",
+    []
+   ],
+   [
+    ".veldo/validate.py",
+    [
+     "all"
+    ]
+   ],
+   [
+    ".veldo/version.py",
+    []
+   ],
+   [
+    "scripts/secret_inventory.py",
+    []
+   ]
+  ]
+ }
+}
