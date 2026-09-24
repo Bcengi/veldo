@@ -24,6 +24,7 @@ footprint:
   - "engine/.veldo/dispatch.py"
   - ".veldo/dispatch.py"
   - "scripts/suites/*_veldo_0135_*.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -132,3 +133,7 @@ same question the frontier asks) and hands off without a reviewer when it passes
 review assigned and launched. The work loop's failed set is keyed by unit and station, so a unit whose
 review failed is still rebuilt in the same run. New row offers/finding-path (suite 67 now 5 assertion rows),
 red by assertion at e5b4dad; 16 registered mutations.
+
+2026-09-24: suite 63_veldo_0049_floor joins this footprint because its floor/finding-not-erased row asserted
+the defect above: after the owner resolved the finding it required a third reviewer, reviewer-d, in the
+handoff. The row now requires the handoff on the two passing reviews that stand, with no reviewer launched.

@@ -868,7 +868,10 @@ sys.stdout.flush()
                       and trunk_at_rejection == trunk_before and lands_at_rejection == [(p, c) for p, c in lander.lands if p != U3]
                       and resolved[0] == 'ok'
                       and pass_d.get('ok') is True and pass_d.get('landed') is True
-                      and (final3.get('handoff') or {}).get('reviewers') == ['reviewer-b', 'reviewer-c', 'reviewer-d']
+                      # VELDO-0135: the policy was already met when the owner resolved the finding, so the review
+                      # station hands off on the reviews that stand and launches no reviewer it does not require.
+                      and pass_d.get('launched') == []
+                      and (final3.get('handoff') or {}).get('reviewers') == ['reviewer-b', 'reviewer-c']
                       and trunk_tip() == second_build['tip'] and lander.lands[-1] == (U3, second_build['tip']))
 
                 receipts = writer.execute("SELECT COUNT(*) FROM entities WHERE kind='completion_receipt'").fetchone()[0]
