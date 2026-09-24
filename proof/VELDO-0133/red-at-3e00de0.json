@@ -1,0 +1,192 @@
+{
+ "by_assertion": true,
+ "commit": "3e00de0f5f7a79a211f2527919cc2be3d72ca571",
+ "details": [
+  "VELDO-0133 detail: disposition/set-derived: the inbox asks for exactly the derived reasons; the inbox reports the question states as parked reasons; the arrival kinds are the intake source kinds; the intake command schema is the intake's",
+  "VELDO-0133 detail: disposition/question-opened: c1: exactly one question is open; c1: it offers close, backlog and other; c1: it names the source assignment and request version; c1: it names the blocked unit; c1: it is pending in the inbox; c1: it names how the work ended; c1: the question committed in the decline or cancel's own transaction; c2: exactly one question is open; c2: it offers close, backlog and other; c2: it names the source assignment and request version; c2: it names the blocked unit; c2: it is pending in the inbox; c2: it names how the work ended; c2: the question committed in the decline or cancel's own transaction; c3: exactly one question is open; c3: it offers close, backlog and other; c3: it names the source assignment and request version; c3: it names the blocked unit; c3: it is pending in the inbox; c3: it names how the work ended; c3: the question committed in the decline or cancel's own transaction; c4: exactly one question is open; c4: it offers close, backlog and other; c4: it names the source assignment and request version; c4: it names the blocked unit; c4: it is pending in the inbox; c4: it names how the work ended; c4: the question committed in the decline or cancel's own transaction; c5: exactly one question is open; c5: it offers close, backlog and other; c5: it names the source assignment and request version; c5: it names the blocked unit; c5: it is pending in the inbox; c5: it names how the work ended; c5: the question committed in the decline or cancel's own transaction; c6: the end was accepted; c6: exactly one question is open; c6: it offers close, backlog and other; c6: it names the source assignment and request version; c6: it names the blocked unit; c6: it is pending in the inbox; c6: it names how the work ended; c7: the end was accepted; c7: exactly one question is open; c7: it offers close, backlog and other; c7: it names the source assignment and request version; c7: it names the blocked unit; c7: it is pending in the inbox; c7: it names how the work ended",
+  "VELDO-0133 detail: disposition/addressee: c1: asked alice; c1: why decliner; c2: asked pete; c2: why canceler; c3: asked paula; c3: why canceler; c4: asked olga; c4: why project_owner; c5: asked olga; c5: why project_owner; c6: asked olga; c6: why project_owner; c7: asked olga; c7: why project_owner; n4: asked dora",
+  "VELDO-0133 detail: disposition/no-project-owner: it names no_project_owner and opens no question; ask for expired work in a project with two owners is refused no_project_owner",
+  "VELDO-0133 detail: disposition/projected-to-own-chat: c1: sent; c1: in the chat enrolled for alice; c1: the platform holds it there naming the addressee, choices and source; c2: sent; c2: in the chat enrolled for pete; c2: the platform holds it there naming the addressee, choices and source; c3: sent; c3: in the chat enrolled for paula; c3: the platform holds it there naming the addressee, choices and source; c4: sent; c4: in the chat enrolled for olga; c4: the platform holds it there naming the addressee, choices and source; c5: sent; c5: in the chat enrolled for olga; c5: the platform holds it there naming the addressee, choices and source; c6: sent; c6: in the chat enrolled for olga; c6: the platform holds it there naming the addressee, choices and source; c7: sent; c7: in the chat enrolled for olga; c7: the platform holds it there naming the addressee, choices and source; an addressee with no enrolled chat is refused no_enrolled_chat; and nothing about it is sent to any chat; every message went to the chat of the owner it names",
+  "VELDO-0133 detail: disposition/answer-refusals: c1: a question to answer; c2: a question to answer; c3: a question to answer; c4: a question to answer; c5: a question to answer; c6: a question to answer; c7: a question to answer",
+  "VELDO-0133 detail: disposition/unsigned-instruction: c1: a question to answer; c2: a question to answer; c3: a question to answer; c4: a question to answer; c5: a question to answer; c6: a question to answer; c7: a question to answer",
+  "VELDO-0133 detail: disposition/question-only-answered: c1: a question to answer; c2: a question to answer; c3: a question to answer; c4: a question to answer; c5: a question to answer; c6: a question to answer; c7: a question to answer",
+  "VELDO-0133 detail: disposition/valid-answers-admitted: c1: a question to answer; c2: a question to answer; c3: a question to answer; c4: a question to answer; c5: a question to answer; c6: a question to answer; c7: a question to answer",
+  "VELDO-0133 detail: disposition/revoked-answer-not-disposed: the question to the unenrolled addressee exists",
+  "VELDO-0133 detail: disposition/dispose-close: c2: dispose is accepted; c2: the unit is CANCELED carrying the disposition; c6: dispose is accepted; c6: the unit is CANCELED carrying the disposition; c6: its backlog item, with no other open unit, is CANCELED carrying the disposition",
+  "VELDO-0133 detail: disposition/close-spares-siblings: the closed unit is CANCELED; the recorded disposition says so",
+  "VELDO-0133 detail: disposition/dispose-backlog: c3: dispose is accepted; c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: dispose is accepted; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds",
+  "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+  "VELDO-0133 detail: disposition/dispose-once: c1: dispose before the answer is refused not_answered and changes nothing; c1: a second dispose returns the same proposal and writes nothing; c2: dispose before the answer is refused not_answered and changes nothing; c2: a second dispose is refused stale_subject; c3: dispose before the answer is refused not_answered and changes nothing; c3: a second dispose is refused stale_subject; c4: dispose before the answer is refused not_answered and changes nothing; c4: a second dispose returns the same proposal and writes nothing; c5: dispose before the answer is refused not_answered and changes nothing; c5: a second dispose is refused stale_subject; c6: dispose before the answer is refused not_answered and changes nothing; c6: a second dispose is refused stale_subject; c7: dispose before the answer is refused not_answered and changes nothing; c7: a second dispose returns the same proposal and writes nothing",
+  "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject; ask for closed work is refused",
+  "VELDO-0133 detail: disposition/awaiting-disposition: c1 answered: reads ready_to_dispose; c1 asked_again: reads awaiting_disposition; c1 disposed: reads routed_to_intake; c1 opened: reads awaiting_disposition; c2 answered: reads ready_to_dispose; c2 disposed: reads None; c2 opened: reads awaiting_disposition; c3 answered: reads ready_to_dispose; c3 disposed: reads None; c3 opened: reads awaiting_disposition; c4 answered: reads ready_to_dispose; c4 asked_again: reads awaiting_disposition; c4 disposed: reads routed_to_intake; c4 opened: reads awaiting_disposition; c5 answered: reads ready_to_dispose; c5 disposed: reads None; c5 opened: reads awaiting_disposition; c6 answered: reads ready_to_dispose; c6 disposed: reads None; c6 opened: reads awaiting_disposition; c7 answered: reads ready_to_dispose; c7 asked_again: reads awaiting_disposition; c7 disposed: reads routed_to_intake; c7 opened: reads awaiting_disposition",
+  "VELDO-0133 detail: disposition/walk-holds-nothing: c1 answered: the step was reached; c1 asked_again: the step was reached; c1 disposed: the step was reached; c1 opened: the step was reached; c2 answered: the step was reached; c2 disposed: the step was reached; c2 opened: the step was reached; c3 answered: the step was reached; c3 disposed: the step was reached; c3 opened: the step was reached; c4 answered: the step was reached; c4 asked_again: the step was reached; c4 disposed: the step was reached; c4 opened: the step was reached; c5 answered: the step was reached; c5 disposed: the step was reached; c5 opened: the step was reached; c6 answered: the step was reached; c6 disposed: the step was reached; c6 opened: the step was reached; c7 answered: the step was reached; c7 asked_again: the step was reached; c7 disposed: the step was reached; c7 opened: the step was reached",
+  "VELDO-0133 detail: disposition/observability: each opened question is observed with its source, unit, addressee and why; each dispose is observed with its question and ruling; accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+ ],
+ "failed_rows": [
+  "VELDO-0133 disposition/set-derived",
+  "VELDO-0133 disposition/question-opened",
+  "VELDO-0133 disposition/addressee",
+  "VELDO-0133 disposition/no-project-owner",
+  "VELDO-0133 disposition/projected-to-own-chat",
+  "VELDO-0133 disposition/answer-refusals",
+  "VELDO-0133 disposition/unsigned-instruction",
+  "VELDO-0133 disposition/question-only-answered",
+  "VELDO-0133 disposition/valid-answers-admitted",
+  "VELDO-0133 disposition/revoked-answer-not-disposed",
+  "VELDO-0133 disposition/dispose-close",
+  "VELDO-0133 disposition/close-spares-siblings",
+  "VELDO-0133 disposition/dispose-backlog",
+  "VELDO-0133 disposition/dispose-other",
+  "VELDO-0133 disposition/dispose-once",
+  "VELDO-0133 disposition/ask-again",
+  "VELDO-0133 disposition/awaiting-disposition",
+  "VELDO-0133 disposition/walk-holds-nothing",
+  "VELDO-0133 disposition/observability"
+ ],
+ "modules": {
+  ".veldo/control_assignment.py": {
+   "at_commit": "ad6e5e86a5799d73d26eca8f469af45fdcdc871badaefded4717fd92114a7dfc",
+   "now": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "f6f76e5858aff9276fe322f1273318b1d5b9e2c9133410b427c7b4f54223b87c",
+   "now": "f6f76e5858aff9276fe322f1273318b1d5b9e2c9133410b427c7b4f54223b87c"
+  },
+  ".veldo/control_claim.py": {
+   "at_commit": "8ba60b54fe1f09e583e35bf5e57d13b12ea69c7b3bc4719cdb5319ac9e5d862a",
+   "now": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4",
+   "now": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "52cb67a5ac0d8cfa65c2474291108ff7c4ce7dd7b51826b41a9b855a80853d47",
+   "now": "52cb67a5ac0d8cfa65c2474291108ff7c4ce7dd7b51826b41a9b855a80853d47"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0133 install/assets",
+   true
+  ],
+  [
+   "VELDO-0133 disposition/set-derived",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/question-opened",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/addressee",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/no-project-owner",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/projected-to-own-chat",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/answer-refusals",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/unsigned-instruction",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/question-only-answered",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/valid-answers-admitted",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/revoked-answer-not-disposed",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/dispose-close",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/close-spares-siblings",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/dispose-backlog",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/dispose-other",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/dispose-once",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/ask-again",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/awaiting-disposition",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/walk-holds-nothing",
+   false
+  ],
+  [
+   "VELDO-0133 disposition/observability",
+   false
+  ],
+  [
+   "VELDO-0133 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/question-opened",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/projected-to-own-chat",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/dispose-once",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/answer-refusals",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/dispose-close",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/ask-again",
+   true
+  ],
+  [
+   "VELDO-0133 ran/disposition/observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.394,
+ "spec_id": "VELDO-0133",
+ "suite": "scripts/suites/69_veldo_0133_dispositions.py",
+ "tree": "git archive 3e00de0f5f7a79a211f2527919cc2be3d72ca571, unchanged; the current suite file run against it"
+}

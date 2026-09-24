@@ -388,9 +388,15 @@ sys.exit(4)
                 for case in cases:
                     entry = listed.get(case['unit'])
                     was_held = held(case)
+                    found = questions(case['source'])
+                    latest = (found[-1] if found else {}).get('data') or {}
+                    reached = {'opened': len(found) == 1 and latest.get('state') == 'OFFERED',
+                               'answered': len(found) == 1 and latest.get('state') == 'SUBMITTED',
+                               'disposed': len(found) == 1 and entity('assignment-disposition:' + found[-1]['id']) is not None,
+                               'asked_again': len(found) == 2 and latest.get('state') == 'OFFERED'}.get(step, False)
                     attempt = claim('worker', case['unit'])
                     steps[case['name']][step] = dict(
-                        reason=(entry or {}).get('reason'), listed=entry is not None, entry=entry, claim=attempt,
+                        reason=(entry or {}).get('reason'), listed=entry is not None, entry=entry, claim=attempt, reached=reached,
                         held_before=was_held, waiting=waiting, alive=[c.pid for c in children if c.poll() is None],
                         by_reason=metrics.get('parked_by_reason'),
                         counted=collections.Counter(p.get('reason') for p in listed.values()))
@@ -626,7 +632,7 @@ sys.exit(4)
 
             # --- AC3: dispose applies exactly the admitted answer, once ------------------------------------------
             with region('disposition/dispose-close', 'disposition/close-spares-siblings', 'disposition/dispose-backlog',
-                        'disposition/dispose-other'):
+                        'disposition/dispose-other', 'disposition/dispose-once'):
                 walk('answered', CASES)
                 for case in CASES:
                     q = question(case)
@@ -700,7 +706,7 @@ sys.exit(4)
                     n = case['name']
                     pid = case['disposed'].get('proposal_id')
                     proposal = intake.proposal(pid) if pid else None
-                    arrived = case['answer_body'].get('arrived_on') or {}
+                    arrived = case.get('answer_body', {}).get('arrived_on') or {}
                     source_id = (arrived.get('request_id') if arrived.get('source_kind') == 'api_request' else
                                  '%s:%s:%s' % (arrived.get('bot_id'), arrived.get('chat_id'), arrived.get('message_id')))
                     source = intake.source(arrived.get('source_kind'), source_id) if arrived else None
@@ -775,7 +781,8 @@ sys.exit(4)
                 for case in CASES:
                     for step, seen in sorted(steps[case['name']].items()):
                         free = step == 'disposed' and case['ruling'] in ('close', 'backlog')
-                        parts += [('%s %s: no claim held' % (case['name'], step), seen['held_before'] is False),
+                        parts += [('%s %s: the step was reached' % (case['name'], step), seen['reached'] is True),
+                                  ('%s %s: no claim held' % (case['name'], step), seen['held_before'] is False),
                                   ('%s %s: no worker process alive' % (case['name'], step), seen['alive'] == []),
                                   ('%s %s: nothing waits holding a claim' % (case['name'], step), seen['waiting'] == []),
                                   ('%s %s: a claim is refused as parked until close or backlog' % (case['name'], step),
