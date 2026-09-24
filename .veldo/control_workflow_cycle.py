@@ -261,6 +261,7 @@ class Cycles:
         return dict({'schema': SCHEMA, 'operation': operation, 'domain': self.domain, 'repository': self.repository,
                      'actor': self.principal, 'cycle': (record or {}).get('cycle'), 'subject': (record or {}).get('subject'),
                      'workflow': {k: binding.get(k) for k in ('id', 'version', 'digest')} if binding else None,
+                     'snapshot': (record or {}).get('snapshot'),
                      'record': record_id(self.domain, self.repository, (record or {}).get('cycle') or '-')}, **fields)
 
     def _report(self, event):

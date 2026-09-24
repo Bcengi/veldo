@@ -639,6 +639,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                       lambda: events and all(all(k in e for k in fields) for e in events)
                       and all(e.get('taxonomy') in classes and e.get('refusal') for e in refused_events)
                       and all(e.get('actor') for e in events if e['operation'] in ('save', 'start', 'step', 'wait'))
+                      and all(e.get('snapshot') == snapshot for e in cycle_events if e['operation'] in ('step', 'wait', 'propose'))
                       and {e['operation'] for e in cycle_events} >= {'start', 'step', 'wait', 'propose', 'refuse', 'cancel'}
                       and status['accepted'] == sum(1 for e in cycle_events if e['outcome'] == 'accepted')
                       and status['refused'] == sum(1 for e in cycle_events if e['outcome'] == 'refused')
