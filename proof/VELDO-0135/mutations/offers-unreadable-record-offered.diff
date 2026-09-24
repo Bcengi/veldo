@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -224 +224 @@
+-    if record is None and version:
++    if False:  # defect: a row that is not a floor record reads as no record

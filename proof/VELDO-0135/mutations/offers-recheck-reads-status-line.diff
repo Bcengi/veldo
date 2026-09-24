@@ -1,0 +1,5 @@
+--- a/.veldo/work.py
++++ b/.veldo/work.py
+@@ -125 +125 @@
+-        if entry is not None:
++        if entry is not None and False:  # defect: the recheck reads the status line

@@ -137,6 +137,9 @@ def _v135_suite():
             spec_files[sid] = work / 'specs' / ('%s-offer-fixture.md' % sid)
             spec_files[sid].write_text(spec_text(sid, risk, 'review' if sid == 'VELDO-9507' else 'ready',
                                                  'journey' if sid == JOURNEY else 'floor'))
+        # A ready spec the store has not admitted: no execution unit, so the claim authority names it missing.
+        spec_files['VELDO-9512'] = work / 'specs' / 'VELDO-9512-offer-fixture.md'
+        spec_files['VELDO-9512'].write_text(spec_text('VELDO-9512', 'standard', 'ready', 'floor'))
         spec_originals = {sid: path.read_bytes() for sid, path in spec_files.items()}
         GP.run(['git', 'init', '-q', '-b', 'main', str(work)], check=True, capture_output=True)
         git('add', '-A')
@@ -203,6 +206,9 @@ def _v135_suite():
 
             def request(self, operation, unit, generation=0, capabilities=()):
                 cid = CLM.claim_id(REPOSITORY, unit)
+                if (entity(unit) or {}).get('kind') != 'execution_unit':
+                    # The service refuses a unit it has not accepted, and the client raises that stop by name.
+                    raise CL.ClaimStopped('missing_authority')
                 data = (entity(unit) or {}).get('data') or {}
                 backlog = data.get('backlog_item_uuid')
                 if operation == 'inspect':
@@ -542,7 +548,7 @@ sys.stdout.flush()
                                           [(o['unit']['spec'], o['unit']['kind']) for o in drained]}
                 recheck = [e for e in floor_events('floor_recheck', mark) if e.get('unit') == 'VELDO-9508']
                 # VELDO-9508 was released at its build recheck; built to review by then, it is offered as review.
-                no_reclaim_ok = (claimed == [('VELDO-9501', 'build'), ('VELDO-9502', 'review'), ('VELDO-9503', 'build'),
+                no_reclaim_ok = (not isinstance(drained, tuple) and claimed == [('VELDO-9501', 'build'), ('VELDO-9502', 'review'), ('VELDO-9503', 'build'),
                                              ('VELDO-9508', 'review')]
                                  and all(who == RECORDER for _, _, who in recorder.units)
                                  and all(holder(sid) is None for sid in UNITS)
@@ -579,6 +585,7 @@ sys.stdout.flush()
                       and withheld.get('VELDO-9505') == 'handoff' and withheld.get('VELDO-9506') == 'landed'
                       and withheld.get('VELDO-9507') == 'missing_authority:floor_record'
                       and withheld.get('VELDO-9511') == 'invalid_input:floor_record/kind'
+                      and withheld.get('VELDO-9512') == 'missing_authority:unit'
                       and disposed[0] == 'ok'
                       and after_disposition == dict(now, **{'VELDO-9504': 'review'}))
 

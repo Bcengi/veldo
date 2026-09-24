@@ -1,0 +1,4 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -235,0 +236 @@
++        return dict(entry, station="build", lane="ready")  # defect: an accepted build is offered again

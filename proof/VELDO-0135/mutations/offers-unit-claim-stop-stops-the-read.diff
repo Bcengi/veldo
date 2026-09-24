@@ -1,0 +1,6 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -511,2 +511 @@
+-                if unit_stop.reason not in CLAIM_STOPS:
+-                    raise
++                raise  # defect: one unadmitted unit's claim stop stops the whole frontier read

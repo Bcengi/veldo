@@ -1,0 +1,258 @@
+{
+ "command": "-B scripts/check_teeth_mutations.py --finding 135 --jobs 4 --diff-dir proof/VELDO-0135/mutations",
+ "summary": {
+  "mutations_rejected": 13,
+  "green_suites": {
+   "67_veldo_0135_offers.py": 33
+  },
+  "driver_seconds": 24.5
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations_per_row": {
+  "offers/floor-station": [
+   "offers-status-line-read",
+   "offers-review-line-without-record",
+   "offers-returned-not-rebuilt",
+   "offers-unreadable-record-offered"
+  ],
+  "offers/no-reclaim": [
+   "offers-handoff-claimable",
+   "offers-recheck-reads-status-line",
+   "offers-waiting-finding-offered",
+   "offers-unit-claim-stop-stops-the-read"
+  ],
+  "offers/end-to-end": [
+   "offers-build-again-after-acceptance",
+   "offers-recheck-refuses-review"
+  ],
+  "offers/observations": [
+   "offers-observed-without-version",
+   "offers-withheld-reason-unclassed",
+   "offers-dispatch-not-joined"
+  ]
+ },
+ "unmutated_controls": [
+  {
+   "module": ".veldo/frontier.py",
+   "byte_identical": true,
+   "assertions": 33,
+   "failed_rows": []
+  },
+  {
+   "module": ".veldo/work.py",
+   "byte_identical": true,
+   "assertions": 33,
+   "failed_rows": []
+  }
+ ],
+ "controls_green": true,
+ "mutations": [
+  {
+   "mutation": "offers-status-line-read",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/floor-station"
+   ],
+   "declared_falsifier_of": "AC1",
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/end-to-end",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-status-line-read.diff"
+  },
+  {
+   "mutation": "offers-review-line-without-record",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/floor-station"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/floor-station",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-review-line-without-record.diff"
+  },
+  {
+   "mutation": "offers-returned-not-rebuilt",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/floor-station"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-returned-not-rebuilt.diff"
+  },
+  {
+   "mutation": "offers-unreadable-record-offered",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/floor-station"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-unreadable-record-offered.diff"
+  },
+  {
+   "mutation": "offers-handoff-claimable",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/no-reclaim"
+   ],
+   "declared_falsifier_of": "AC2",
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-handoff-claimable.diff"
+  },
+  {
+   "mutation": "offers-recheck-reads-status-line",
+   "module": ".veldo/work.py",
+   "target_rows": [
+    "offers/no-reclaim"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/end-to-end",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-recheck-reads-status-line.diff"
+  },
+  {
+   "mutation": "offers-waiting-finding-offered",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/no-reclaim"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-waiting-finding-offered.diff"
+  },
+  {
+   "mutation": "offers-unit-claim-stop-stops-the-read",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/no-reclaim"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/end-to-end",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-unit-claim-stop-stops-the-read.diff"
+  },
+  {
+   "mutation": "offers-build-again-after-acceptance",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/end-to-end"
+   ],
+   "declared_falsifier_of": "AC3",
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/floor-station",
+    "offers/end-to-end",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-build-again-after-acceptance.diff"
+  },
+  {
+   "mutation": "offers-recheck-refuses-review",
+   "module": ".veldo/work.py",
+   "target_rows": [
+    "offers/end-to-end"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/no-reclaim",
+    "offers/end-to-end",
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-recheck-refuses-review.diff"
+  },
+  {
+   "mutation": "offers-observed-without-version",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-observed-without-version.diff"
+  },
+  {
+   "mutation": "offers-withheld-reason-unclassed",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "offers/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-withheld-reason-unclassed.diff"
+  },
+  {
+   "mutation": "offers-dispatch-not-joined",
+   "module": ".veldo/work.py",
+   "target_rows": [
+    "offers/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-dispatch-not-joined.diff"
+  }
+ ]
+}

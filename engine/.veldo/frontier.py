@@ -121,6 +121,11 @@ FLOOR_OFFER_SCHEMA = "veldo.frontier_floor/v1"
 # Reasons that name a place a unit waits at, not a fault: the error taxonomy does not classify them.
 FLOOR_HOLDS = ("handoff", "landed", "returned", "claimed", "scope", "status")
 _FLOOR_ORGANS = {}
+# A claim authority's named stop about ONE unit (control_claim_client raises these for its inspect):
+# that unit is withheld by name and never offered. Any other stop (the service unreachable, no route)
+# stops the whole read, so an outage is never reported as an empty queue.
+CLAIM_STOPS = {"missing_authority": "missing_authority:unit", "unanswerable": "clock_uncertain",
+               "ownership_uncertain": "unknown_outcome:ownership_uncertain"}
 
 
 def _floor_authority():
@@ -498,7 +503,14 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
         # enrolled worker's frontier asks it about each unit it would offer, by the unit's name.
         if stop.reason != "explicit_unit_required":
             raise
-        claimed = lambda sid: CL.is_claimed(sid, root=claims_root)  # noqa: E731
+
+        def claimed(sid):
+            try:
+                return CL.is_claimed(sid, root=claims_root)
+            except CL.ClaimStopped as unit_stop:
+                if unit_stop.reason not in CLAIM_STOPS:
+                    raise
+                return CLAIM_STOPS[unit_stop.reason]
     held = {}
     # Load this repository's architecture contract ONCE (adoption safe: (None, None)
     # when absent). The mandatory placement gate below refuses a BUILD unit whose spec
@@ -530,8 +542,9 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
     def _add(sid, plan_id, kind):
         if sid in seen:
             return
-        if claimed(sid):
-            return _hold(sid, "claimed")
+        owned = claimed(sid)
+        if owned:
+            return _hold(sid, owned if isinstance(owned, str) else "claimed")
         fm = idx.get(sid) or {}
         # THE DEPENDENCY GATE, asked once for every offer however the unit was found: a build
         # unit whose spec declares an unshipped prerequisite is never surfaced, and the same

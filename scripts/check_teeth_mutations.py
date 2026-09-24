@@ -3641,6 +3641,56 @@ def cases():
              module='judgment_load.py')
     events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
              module='judgment_load.py')
+    # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
+    # further defects, each against the one suite 67 row it names; anchors are exact text in the
+    # frontier and work loop the suite installs.
+    def offers(name, old, new, row, module='frontier.py'):
+        add(135, name, '67_veldo_0135_offers.py', module, old, new, ['offers/' + row])
+
+    # AC1, declared: every lane reads the lane status from the spec file.
+    offers('offers-status-line-read', '    lanes.update({sid: e["lane"] for sid, e in entries.items()})\n',
+           '    pass  # defect: every lane reads the spec file\'s status line\n', 'floor-station')
+    offers('offers-review-line-without-record',
+           '        if word == "review":\n            # The status line names a station no floor record backs.\n',
+           '        if False:  # defect: a review status line with no floor record behind it is offered\n',
+           'floor-station')
+    offers('offers-returned-not-rebuilt', '        if to == "ready":\n',
+           '        if to == "never":  # defect: a unit returned to ready is not offered to build\n', 'floor-station')
+    offers('offers-unreadable-record-offered', '    if record is None and version:\n',
+           '    if False:  # defect: a row that is not a floor record reads as no record\n', 'floor-station')
+    # AC2, declared: a handed-off unit is claimable.
+    offers('offers-handoff-claimable', '        return _held(entry, "handoff")\n',
+           '        return dict(entry, station="build", lane="ready")  # defect: a handed-off unit is claimable\n',
+           'no-reclaim')
+    offers('offers-recheck-reads-status-line',
+           '        if entry is not None:\n            if entry["station"] == unit.get("kind"):\n',
+           '        if entry is not None and False:  # defect: the recheck reads the status line\n'
+           '            if entry["station"] == unit.get("kind"):\n', 'no-reclaim', module='work.py')
+    offers('offers-waiting-finding-offered',
+           '        if not codes or any(c.startswith("awaiting_reviews") for c in codes):\n',
+           '        if True:  # defect: a unit waiting on an open finding is offered for review\n', 'no-reclaim')
+    offers('offers-unit-claim-stop-stops-the-read',
+           '                if unit_stop.reason not in CLAIM_STOPS:\n                    raise\n',
+           '                raise  # defect: one unadmitted unit\'s claim stop stops the whole frontier read\n',
+           'no-reclaim')
+    # AC3, declared: an enrolled unit is offered as build again after its build is accepted.
+    offers('offers-build-again-after-acceptance', '    if state == "review":\n',
+           '    if state == "review":\n'
+           '        return dict(entry, station="build", lane="ready")  # defect: an accepted build is offered again\n',
+           'end-to-end')
+    offers('offers-recheck-refuses-review', '            if entry["station"] == unit.get("kind"):\n',
+           '            if entry["station"] == "build":  # defect: a review offer never survives its recheck\n',
+           'end-to-end', module='work.py')
+    # Observability: the record version, the reason's class and the dispatch join.
+    offers('offers-observed-without-version',
+           '        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=e["version"],\n',
+           '        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=0,  # defect\n',
+           'observations')
+    offers('offers-withheld-reason-unclassed', '    if reason.split(":", 1)[0] in FLOOR_HOLDS:\n',
+           '    if True:  # defect: every withheld reason is classed as a hold\n', 'observations')
+    offers('offers-dispatch-not-joined', '        if unit.get("floor"):\n            self._observe_dispatch(unit, result)\n',
+           '        if False:  # defect: no dispatch is joined to the offer it came from\n'
+           '            self._observe_dispatch(unit, result)\n', 'observations', module='work.py')
     return result
 
 
