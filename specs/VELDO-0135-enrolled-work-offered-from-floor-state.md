@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0135
 title: Enrolled work is offered from its authoritative floor state, not the spec status line
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -111,3 +111,5 @@ Read the floor record through the authority's read path, never by opening the st
 
 2026-09-24: new draft, from the scoped review of VELDO-0049 (the enrolled journey stalls after build
 acceptance because the frontier and work loop read the spec status line).
+
+2026-09-24: the owner marked this specification ready (Telegram 29041).
