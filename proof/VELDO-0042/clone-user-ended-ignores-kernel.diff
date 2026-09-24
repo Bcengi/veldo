@@ -1,5 +1,5 @@
 --- a/.veldo/control_clone.py
 +++ b/.veldo/control_clone.py
-@@ -503 +503 @@
+@@ -474 +474 @@
 -        ended = record.get('state') in ENDED and seen['terminated'] and seen['cleaned']
 +        ended = record.get('state') in ENDED

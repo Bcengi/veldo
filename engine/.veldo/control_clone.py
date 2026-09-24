@@ -249,8 +249,7 @@ class Clones(EP.EnvProvisioner):
 
     def __init__(self, dispatches, *, clones, caches, protected=(), writable=(), clock=None):
         super().__init__()
-        self.L = _organ('control_launch')
-        self.C, self.D = self.L.C, self.L.D
+        self.C = _organ('control_containment')  # VELDO-0040: a clone user's ending read from the kernel
         self.dispatches, self.store, self.conn = dispatches, dispatches.store, dispatches.conn
         self.domain, self.clock = dispatches.domain, clock or time.time
         self.clones, self.caches = Path(clones).resolve(), Path(caches).resolve()
@@ -267,51 +266,23 @@ class Clones(EP.EnvProvisioner):
         for root in roots:
             root.mkdir(mode=0o700, parents=True, exist_ok=True)
 
-    # What the launch path is configured with.
+    # What the launch path is configured with. VELDO-0129 wires the production adapters' argv to this
+    # `adapter` prefix and composes create/attach/teardown with the VELDO-0039 runner and receiver; the
+    # group the receiver reports is recorded on the clone's user with `record_group` so retirement can
+    # read the clone user's ending through it.
 
     def adapter(self, argv):
         """The argv an adapter's worker is configured with: `enter` over this clone root, then the engine."""
         return [sys.executable, '-B', str(Path(__file__).resolve()), 'enter', str(self.clones), '--', *argv]
 
-    def receiver(self, config, **options):
-        """The receiver callable a control_launch.Runner is built with: provision the dispatch's clone,
-        then hand the prepared contract to the trusted receiver the installed config names."""
-        return lambda contract: self._launch(config, contract, None, options)
-
-    def consumer(self, clone_id, config, **options):
-        """The same for a dispatch that reads an existing clone as a consumer."""
-        return lambda contract: self._launch(config, contract, clone_id, options)
-
-    def _launch(self, config, contract, clone_id, options):
-        try:
-            handle = self.create(contract) if clone_id is None else self.attach(clone_id, contract)
-        except Refused as error:
-            return self._refused(contract, error)
-        except (OSError, subprocess.SubprocessError) as error:
-            return self._refused(contract, Refused('unavailable_service:provisioning', type(error).__name__))
-        launch = self.L.invoke(config, contract, self.dispatches, **options)
-        manifest = self._manifest(handle.env_id)
-        for user in (manifest or {}).get('users', []):
-            if user['dispatch_id'] == contract['dispatch_id']:
-                user['group'] = launch.group
-        if manifest is not None:
-            self._write(manifest)
-        if clone_id is None and launch.result == 'refused':
-            self.teardown(handle)  # nothing ran in it: the clone and its pins go at once
-        return launch
-
-    def _refused(self, contract, error):
-        """A dispatch whose clone could not be provisioned is refused by name before any receiver runs;
-        the returned Launch reads that record, so the runner returns the worker slot."""
-        record = self.dispatches.record(contract.get('dispatch_id')) or {}
-        try:
-            self.dispatches.refuse(contract['dispatch_id'], record.get('contract_digest'), error.code, now=self.clock(),
-                                   expected_state='prepared')
-        except self.D.Refused:
-            pass
-        launch = self.L.Launch(None, contract, self.dispatches, self.clock)
-        launch._settle(lost=False)
-        return launch
+    def record_group(self, dispatch_id, group):
+        """Record the containment group the receiver reported for a clone user, so `user_state` reads its
+        ending through control_containment (VELDO-0040) as well as the process identity."""
+        manifest, _ = find(self.clones, dispatch_id)
+        for user in manifest['users']:
+            if user['dispatch_id'] == dispatch_id:
+                user['group'] = group
+        self._write(manifest)
 
     # Provisioning.
 

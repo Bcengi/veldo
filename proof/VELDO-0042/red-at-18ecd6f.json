@@ -13,7 +13,7 @@
  "modules": {
   ".veldo/control_clone.py": {
    "at_commit": null,
-   "now": "e8c2b2dc338dc75473a76c109090c69d24b2d8205f73c82c5bc423e2e41bc902"
+   "now": "9520dcab75ab271a1c3335a22b09ceacd0f8adea5cc6c133a6d0633cf30bf227"
   },
   ".veldo/env_provision.py": {
    "at_commit": "7fa171c301949a908ed3d89dc89e3973f4c4d69d3c0138dc10211bb6ab1c0135",
@@ -77,7 +77,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.235,
+ "seconds": 0.192,
  "spec_id": "VELDO-0042",
  "suite": "scripts/suites/66_veldo_0042_clones.py",
  "tree": "git archive 18ecd6f777583d1629b907b25f69494ca5c18e9e, unchanged; the current suite run against it with control_clone absent (proof/VELDO-0042/prefix/control_clone.py stands in)"
