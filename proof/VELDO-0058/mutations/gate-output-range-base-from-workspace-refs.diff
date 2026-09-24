@@ -1,0 +1,6 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -725 +725,2 @@
+-                                                                         c["watermark"])
++                                                                         self._commit_of(c["workspace"], POLICY_BASE_REF % self.trunk,
++                                                                                         "missing_evidence:watermark"))  # defect: the base is read from the workspace's refs

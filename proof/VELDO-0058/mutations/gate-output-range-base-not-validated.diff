@@ -1,0 +1,4 @@
+--- a/.veldo/control_verification.py
++++ b/.veldo/control_verification.py
+@@ -463,0 +464 @@
++    return None  # defect: any base is accepted

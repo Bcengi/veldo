@@ -191,3 +191,14 @@ and control_verification sets it to the installation's policy.yaml, refusing as 
 that file is absent or inside the candidate. .veldo/policy_check.py and engine/.veldo/policy_check.py
 join the footprint and protected_paths; their change is its own commit, for the owner's approval.
 Suite 69 gains gate-output/installed-policy-list. No status was changed.
+
+2026-09-24, second review fix (AC3, blocking): the installed policy_check.py computed the push range
+from the candidate workspace's own refs/remotes/origin/HEAD and origin/main, so candidate code running
+in the gate could move origin/main to HEAD, empty the range and land a protected change with no
+approval. The range base is now an explicit input like the policy source: policy_check.py reads every
+range as BASE..HEAD when its BASE is set (unset, the refs decide, as before), and control_verification
+run_policy takes the base and sets it; GitLandOps.finalize passes its own recorded watermark, refused as
+missing_authority unless a full 40-hex commit that exists and is an ancestor of the candidate. The
+policy_check.py change is its own commit, for the owner's approval. As defense in depth the candidate
+state that the gate and acceptance compare now binds every ref and HEAD's symbolic target. Suite 69
+gains gate-output/range-base-from-lander and gate-output/refs-bound. No status was changed.

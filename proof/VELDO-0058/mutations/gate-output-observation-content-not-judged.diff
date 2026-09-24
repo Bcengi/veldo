@@ -1,5 +1,5 @@
 --- a/.veldo/control_verification.py
 +++ b/.veldo/control_verification.py
-@@ -388 +388 @@
+@@ -410 +410 @@
 -    problems = judge(observation)
 +    problems = []  # defect: the observation's content is not judged again at acceptance

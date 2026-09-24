@@ -1,5 +1,5 @@
 --- a/.veldo/policy_check.py
 +++ b/.veldo/policy_check.py
-@@ -77 +77 @@
+@@ -88 +88 @@
 -    policy = _Y.read(policy_source())
 +    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")  # defect: the subject root's policy.yaml decides

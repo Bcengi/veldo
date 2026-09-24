@@ -26,14 +26,17 @@ the same place. Suite 69's seed is made exactly that way (row `sink-refusals` ch
 **control_verification.py** (new, `.veldo` and `engine/.veldo` identical, registered in init_scaffold).
 `installation_at` lays down the trusted verifier and `.veldo/` of a trusted commit from Git objects,
 outside the candidate. `observe_gate` runs that verifier in candidate mode and takes the candidate's
-state (HEAD, tree, every index entry, and every work tree entry's bytes outside `.git`, tracked,
-untracked or ignored) before and after; the observation (written as canonical JSON beside the sink)
+state (HEAD, tree, every index entry, every ref and HEAD's symbolic target, and every work tree
+entry's bytes outside `.git`, tracked, untracked or ignored) before and after; the observation (written as canonical JSON beside the sink)
 binds the commit and tree, the command, the verifier digest and origin, the catalog's required checks
 and each captured result, the whole output and its digests, the sink's stamp, gate event and the events
 reconciliation appended, and post-run equality. `judge` re-derives every reason it is not green.
 `accept` refuses an observation inside the candidate, with a different digest, not green on re-reading,
 for another commit, or for a candidate no longer in the verified state. `run_policy` loads the installed
-`policy_check.py` by its own path in a separate process with its subject root the candidate.
+`policy_check.py` by its own path in a separate process with its subject root the candidate, its
+policy source the installation's `policy.yaml` and its push range base the caller's recorded watermark
+(`policy_check.BASE`), refused as `missing_authority:policy_base/...` unless a full 40-hex commit that
+exists and is an ancestor of the candidate.
 
 **GitLandOps** (`lander.py`): `gate` runs the watermark's verifier (or a named `installation`) through
 `observe_gate`, the observation kept under `observations` or a temporary directory removed with the
@@ -42,7 +45,7 @@ the observation last, before anything is pushed. **LiveLoop** (`executor.py`): `
 of the base commit `resolve` found (or a named `installation`); the observation keeps the VELDO-0050
 shape, so `ProofService.record_observation` and `accept` read it unchanged.
 
-## Rows (suite `69_veldo_0058_gate_output`, 10 rows: 5 assertions and 5 `ran/` rows, about 9 s)
+## Rows (suite `69_veldo_0058_gate_output`, 14 rows: 7 assertions and 7 `ran/` rows)
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
@@ -51,6 +54,8 @@ shape, so `ProofService.record_observation` and `accept` read it unchanged.
 | `gate-output/post-run-mutation` | AC2 | `gate-output-acceptance-skips-tree-equality`, `gate-output-run-equality-not-judged`, `gate-output-observation-content-not-judged` |
 | `gate-output/installed-policy` | AC3 | `gate-output-candidate-policy-launched`, `gate-output-policy-module-from-candidate` |
 | `gate-output/installed-policy-list` | AC3 | `gate-output-policy-source-not-set`, `gate-output-protected-list-from-subject-root` |
+| `gate-output/range-base-from-lander` | AC3 | `gate-output-range-base-ignored`, `gate-output-range-base-not-set`, `gate-output-range-base-from-workspace-refs`, `gate-output-range-base-not-validated` |
+| `gate-output/refs-bound` | AC2 | `gate-output-state-without-refs`, `gate-output-state-without-symref-targets` |
 
 **review-write**: a land (GitLandOps) and an executor gate (LiveLoop) over committed candidates carrying
 a pass verdict: green, the candidate byte-identical before and after, the sink holding the verdict event
@@ -70,12 +75,25 @@ altered is refused; the valid candidate then publishes with no stamp or event ad
 candidate's: a candidate that empties `protected_paths` and adds `auth/login.py` is refused by the
 trunk's list, naming `auth/login.py (protected by auth/**)`, with the trunk unmoved; the same change
 without the edit is refused the same way; an unprotected change then publishes.
+**range-base-from-lander**: the push range is the lander's watermark to the candidate, never a range
+read from the workspace's refs: a candidate adding `auth/login.py` whose check moves the workspace's
+`refs/remotes/origin/main` to HEAD during the gate is refused with the trunk unmoved; the same move made
+after the gate is refused by the installed policy itself, naming `auth/login.py (protected by
+auth/**)`; the protected change without a move is refused; a base that is not a full commit id (`HEAD`,
+a 12-hex prefix), absent, or not an ancestor of the candidate is refused by name; an ordinary change
+publishes. **refs-bound**: a check that moves a ref during the gate refuses it with the moved ref named
+in the observation; a ref moved, added, or a symbolic ref retargeted after the gate is refused at
+acceptance (`stale_subject:candidate/changed_after_gate`) with the trunk unmoved; restored, the same
+candidate publishes.
 
 ## Evidence
 
-`drive.py` wrote `observations.json`; `mutations.py` wrote `mutations.json` and `mutations/` (11
-mutations, every named row red by assertion, three unmutated controls green); `red.py 932d9b0` wrote
+`drive.py` wrote `observations.json`; `mutations.py` wrote `mutations.json` and `mutations/` (17
+mutations, every named row red by assertion, four unmutated controls green); `red.py 932d9b0` wrote
 `red-932d9b0.json`: all four rows red by assertion there, no region raised. `red.py 35be8ff
 control_verification.py policy_check.py` wrote `red-35be8ff.json`: at 35be8ff, the code before the
 policy-source fix, `gate-output/installed-policy-list` is the one red row, by assertion (the emptied
-candidate was pushed), no region raised.
+candidate was pushed), no region raised. `red.py b370581 lander.py control_verification.py
+policy_check.py` wrote `red-b370581.json`: at b370581, the code before the range-base fix,
+`gate-output/range-base-from-lander` and `gate-output/refs-bound` are the two red rows, by assertion
+(each ref-moving candidate was pushed), no region raised.

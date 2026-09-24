@@ -1,0 +1,5 @@
+--- a/.veldo/control_verification.py
++++ b/.veldo/control_verification.py
+@@ -149 +149 @@
+-    refs, head_target = _refs(root)
++    refs, head_target = {}, None  # defect: the refs are not part of the state
