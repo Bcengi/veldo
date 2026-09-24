@@ -24,7 +24,9 @@ not the Telegram service. Enrollment activates no ingress (VELDO-0073).
   that sender, the published presentation the evidence replies to, and a current delegation in every
   dimension. `EdgeSigner` is the edge side: VELDO-0066's `edge_sign` seam, unchanged Acquirer.
 - `.veldo/control_keys_custody.py` (the earlier work in progress, kept as it was): a Landlock wrapper
-  that stops a worker reading beneath a protected key directory. Verified on this host (Landlock ABI 8).
+  that stops a worker STARTED UNDER IT from reading a file beneath a protected key directory directly
+  (open, link, symlink). Verified on this host (Landlock ABI 8). No production launch path puts workers
+  behind it yet (see below).
 - All three in `init_scaffold._FILES` (not validator substrate); engine copies byte-identical.
 
 ## Rows, falsifiers and red record
@@ -75,4 +77,12 @@ serial): 138 s. Red run: 4 s. Both records were regenerated after merging origin
   signer binds the request through the presentation receipt the evidence replies to.
 - The signer checks the actor's membership, not the VELDO-0026 revocation ledger; acceptance reads both.
 - Custody is Linux only (it refuses to start a worker elsewhere), and it does not stop a worker that
-  reaches an unconfined process of the owner's account. Placing the key directory is installation (W32).
+  reaches an unconfined process of the owner's account. The review (2026-09-24) reproduced one such
+  path: a confined worker asks the owner's user service manager (`systemd-run --user`) to read the
+  key, and it does. This kernel's Landlock (ABI 8) has no right over connecting to a named socket, and
+  shell startup files and ssh to this host are further paths of the same kind; only a separate worker
+  account closes them, which the owner ruled out for now (VELDO-0027, Telegram 28578/28580). Filed for
+  Release 2 with the group escape VELDO-0040's review filed.
+- Nothing in production confines workers yet: the adapters' configured argv must start with
+  `confined(argv, [key_directory])` (handed to VELDO-0129, which wires the production adapters), and the
+  key directory must sit outside the home and temporary directories (handed to VELDO-0047).

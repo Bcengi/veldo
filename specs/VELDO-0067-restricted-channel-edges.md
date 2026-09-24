@@ -114,12 +114,14 @@ No automatic recovery, extra channel activation or broader host qualification is
   self-grant, or an enrollment by someone who is not a current member; the edge asked to sign outside
   its purpose (a membership command, arbitrary bytes) or for another channel, actor, request,
   presentation or scope, or after expiry; an answer signed by a retired edge or for a revoked actor;
-  and a worker process trying to read the private edge key. The owner's account outside workers, the
-  protected signing and membership services, and the store are trusted.
+  and a worker process trying to read the private edge key file directly. The owner's account outside
+  workers, the protected signing and membership services, and the store are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); key
   rotation, restart and failover (Release 2); more than one channel (Release 4); Jira enrollment
   (dropped by the owner); activating ingress (VELDO-0073); forged rows in our own store and files
-  planted in the installed directory.
+  planted in the installed directory; a worker reading the key through the owner's own unconfined
+  processes (the user service manager, shell startup files, ssh to this host), which only a separate
+  worker account closes (Release 2: no second operating-system account for now, Telegram 28578/28580).
 
 ## Notes
 
@@ -163,3 +165,9 @@ worker with Landlock so it cannot read the protected key directory. Rows, the re
 and the finding 67 mutations are in `proof/VELDO-0067/`. Every answer runs against a loopback Bot
 API server in the platform's documented shapes, not the Telegram service; enrollment activates no
 ingress (VELDO-0073). The criteria, status and risk are unchanged.
+
+2026-09-24, review: the reviewer reproduced a confined worker reading the key through the owner's
+user service manager. The threat model above now names direct reads, and reads through the owner's own
+unconfined processes are out of review scope with the reason, consistent with VELDO-0027's custody ruling
+(Telegram 28578/28580) and the group escape filed by VELDO-0040's review. Wiring workers behind the wrapper
+is handed to VELDO-0129 and the key directory's placement to VELDO-0047.
