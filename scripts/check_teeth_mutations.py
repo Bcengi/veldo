@@ -4058,7 +4058,8 @@ def cases():
                 'post-run-mutation')
     # AC3, declared: finalize launches the candidate's policy_check.py, a success stub.
     gate_output('gate-output-candidate-policy-launched', 'lander.py',
-                '                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"])\n',
+                '                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"],\n'
+                '                                                                         c["watermark"])\n',
                 '                pc = subprocess.run([sys.executable, "-B", *POLICY_COMMAND], cwd=c["workspace"], capture_output=True,\n'
                 '                                    text=True, stdin=subprocess.DEVNULL)  # defect: the candidate\'s policy decides\n'
                 '                returncode, policy_out = pc.returncode, pc.stdout.strip()\n',
@@ -4083,6 +4084,37 @@ def cases():
                 '    policy = _Y.read(policy_source())\n',
                 '    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")  # defect: the subject root\'s policy.yaml decides\n',
                 'installed-policy-list')
+    # AC3, the range base: the installed policy's push range is computed from the candidate's own
+    # origin refs again, which its code can move to HEAD during the gate, so a protected change lands.
+    gate_output('gate-output-range-base-ignored', 'policy_check.py',
+                '    if BASE is not None:\n        return [str(BASE) + "..HEAD"]\n',
+                '    if False:  # defect: the range is read from the subject\'s refs even when a base is set\n'
+                '        return [str(BASE) + "..HEAD"]\n',
+                'range-base-from-lander')
+    gate_output('gate-output-range-base-not-set', 'control_verification.py',
+                '    module.BASE = base\n',
+                '    pass  # defect: the base is checked but never handed to the policy, so the refs decide\n',
+                'range-base-from-lander')
+    gate_output('gate-output-range-base-from-workspace-refs', 'lander.py',
+                '                                                                         c["watermark"])\n',
+                '                                                                         self._commit_of(c["workspace"], POLICY_BASE_REF % self.trunk,\n'
+                '                                                                                         "missing_evidence:watermark"))'
+                '  # defect: the base is read from the workspace\'s refs\n',
+                'range-base-from-lander')
+    gate_output('gate-output-range-base-not-validated', 'control_verification.py',
+                'def _policy_base_refusal(base, candidate):\n',
+                'def _policy_base_refusal(base, candidate):\n    return None  # defect: any base is accepted\n',
+                'range-base-from-lander')
+    # AC2, the refs: the candidate's state leaves out its refs, so a ref moved during or after the gate
+    # is not noticed; or leaves out a symbolic ref's target, so a retargeted origin/HEAD is not.
+    gate_output('gate-output-state-without-refs', 'control_verification.py',
+                '    refs, head_target = _refs(root)\n',
+                '    refs, head_target = {}, None  # defect: the refs are not part of the state\n',
+                'refs-bound')
+    gate_output('gate-output-state-without-symref-targets', 'control_verification.py',
+                '"--format=%(refname)%00%(objectname)%00%(symref)"',
+                '"--format=%(refname)%00%(objectname)"',
+                'refs-bound')
     return result
 
 
