@@ -126,6 +126,9 @@ _FILES = [
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
     ".veldo/control_launch.py",
+    # VELDO-0040: worker profiles, containment groups, caps and group stop the receiver calls; a
+    # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_containment.py",
     # VELDO-0031: authority claim receiver and caller, not loaded by validators.
     ".veldo/control_claim.py",
     ".veldo/control_claim_client.py",
