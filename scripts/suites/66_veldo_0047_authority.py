@@ -151,13 +151,17 @@ def _v47_suite():
         setup = S.open_store(str(store_path))
         serial = [0]
 
-        def put(identity, kind, data):
+        def version_of(conn, identity):
+            row = conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+            return row[0] if row else 0
+
+        def put(identity, kind, data, conn=None):
+            conn = conn or setup
             serial[0] += 1
-            row = setup.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
-            S.execute(setup, dict(command_id='setup-%d' % serial[0], principal='owner', operation='upsert_entity',
-                                  nonce='setup-%d' % serial[0], artifact_digests=[],
-                                  expected_versions={identity: row[0] if row else 0},
-                                  parameters=dict(entity_id=identity, kind=kind, data=data)), 'owner', journal_sign, 1)
+            S.execute(conn, dict(command_id='setup-%d' % serial[0], principal='owner', operation='upsert_entity',
+                                 nonce='setup-%d' % serial[0], artifact_digests=[],
+                                 expected_versions={identity: version_of(conn, identity)},
+                                 parameters=dict(entity_id=identity, kind=kind, data=data)), 'owner', journal_sign, 1)
 
         for who, kind, scope in (('member', 'person', '*'), ('scoped', 'person', ['elsewhere']),
                                  ('worker', 'agent_run', '*')):
@@ -182,7 +186,26 @@ def _v47_suite():
             return {k: v for k, v in value.items() if v is not None}
 
         PROFILE = profile()
-        ADAPTERS = {'engine': {'argv': [sys.executable, '-B', '-c', 'pass']}}
+        # The engine the installed receiver launches reports where it ran: its pid, its cgroup, the
+        # caps on that cgroup and the dispatch its environment names.
+        markers = base / 'markers'
+        markers.mkdir()
+        marker = markers / 'ran.json'
+        engine = base / 'engine.py'
+        engine.write_text(
+            'import json, os, sys\n'
+            'group = open("/proc/self/cgroup").read().strip().split("::", 1)[-1]\n'
+            'def read(name):\n'
+            '    try:\n'
+            '        return open("/sys/fs/cgroup" + group + "/" + name).read().strip()\n'
+            '    except OSError as error:\n'
+            '        return repr(error)\n'
+            'facts = {"pid": os.getpid(), "cgroup": group, "dispatch": os.environ.get("VELDO_DISPATCH_ID"),\n'
+            '         "memory.max": read("memory.max"), "pids.max": read("pids.max")}\n'
+            'with open(sys.argv[1] + ".part", "w") as out:\n'
+            '    json.dump(facts, out)\n'
+            'os.rename(sys.argv[1] + ".part", sys.argv[1])\n')
+        ADAPTERS = {'engine': {'argv': [sys.executable, '-B', str(engine), str(marker)]}}
 
         class Fake:
             """A runner that records systemctl calls and answers nothing, for installs that must refuse."""
@@ -330,6 +353,9 @@ def _v47_suite():
 
         socket_path = CC.socket_path_for(bind_a)
         report, seconds, children = {}, [], []
+        # What later regions read from earlier ones, so a region that raised leaves them empty, never unbound.
+        recorded, receiver_path, home_dir = {}, base / 'no-receiver.json', base / 'nowhere'
+        launches, connections = [], []
         started_at = time.monotonic()
         precondition = C.qualify(PROFILE)
         if not precondition.get('qualified'):
@@ -367,11 +393,115 @@ def _v47_suite():
                       all(result.get('refused') == code and result.get('left') == [] for result, code in cases.values())
                       and 'sudo install -d -m 0700 -o %s' % user in (absent.get('guidance') or '')
                       and '/var/lib/veldo/keys/' in (absent.get('guidance') or '')
-                      and 'chmod 0700' in (cases['mode'][0].get('guidance') or '')
+                      and 'chmod' not in (cases['mode'][0].get('guidance') or 'chmod')
+                      and '/var/lib/veldo/keys/<service id>' in (cases['mode'][0].get('guidance') or '')
                       and not list(in_temp.iterdir()) and not list(loose.iterdir()) and not list(home.iterdir())
                       and os.path.realpath(pwd.getpwuid(os.getuid()).pw_dir) in writable_for({})
                       and os.path.realpath(str(home)) in writable_for({'HOME': str(home)})
                       and all(os.path.realpath(t) in writable_for({}) for t in ('/tmp', '/var/tmp', tempfile.gettempdir())))
+
+            # AC1: an ABSENT key directory is judged by where it would be before whether it exists, so one
+            # inside a directory workers write into is refused as that, never handed a step to create it
+            with region('authority/key-directory-location-before-existence'):
+                real_home = os.path.realpath(pwd.getpwuid(os.getuid()).pw_dir)
+                located = {
+                    'directly-under-tmp': (os.path.join('/tmp', 'veldo-keys-47-' + run_id), None),
+                    'under-the-home': (os.path.join(real_home, '.veldo-keys-47-' + run_id, 'authority'), None),
+                    'under-a-worker-directory': (str(base / 'work' / 'keys-47'), workers),
+                }
+                results = {name: attempt(key_directory=path, writable=writable)
+                           for name, (path, writable) in located.items()}
+                observed['located'] = {name: dict(result, path=located[name][0]) for name, result in results.items()}
+                check('authority/key-directory-location-before-existence',
+                      all(result.get('refused') == 'invalid_input:key_directory:worker_writable'
+                          and result.get('left') == [] and 'sudo' not in (result.get('guidance') or 'sudo')
+                          and 'install -d' not in (result.get('guidance') or 'install -d')
+                          and '/var/lib/veldo/keys/<service id>' in (result.get('guidance') or '')
+                          for result in results.values())
+                      and not any(os.path.lexists(path) for path, _ in located.values()))
+
+            # AC1: the one-time step for a missing key directory creates only the directories below its
+            # first existing ancestor, and no printed step changes the mode or owner of one that exists.
+            # The steps are run here without sudo, where this account may create them, so what they do is
+            # observed rather than read.
+            with region('authority/key-directory-guidance-changes-no-directory'):
+                user = pwd.getpwuid(os.getuid()).pw_name
+                group = __import__('grp').getgrgid(os.getgid()).gr_name
+                open_to_others = base / 'open-to-others'
+                open_to_others.mkdir()
+                os.chmod(str(open_to_others), 0o755)
+                shared = base / 'shared'
+                shared.mkdir()
+                os.chmod(str(shared), 0o1777)
+                deep_root = base / 'deep'
+                deep_root.mkdir(mode=0o755)
+                os.chmod(str(deep_root), 0o755)
+                created = {'beside': (shared / 'keys', [shared / 'keys']),
+                           'deep': (deep_root / 'veldo' / 'keys' / 'svc',
+                                    [deep_root / 'veldo', deep_root / 'veldo' / 'keys', deep_root / 'veldo' / 'keys' / 'svc'])}
+                guided = {}
+                for name, (path, missing) in created.items():
+                    ancestor = missing[0].parent
+                    before = (os.lstat(str(ancestor)).st_mode, os.lstat(str(ancestor)).st_uid)
+                    result = attempt(key_directory=str(path))
+                    text = result.get('guidance') or ''
+                    steps = [__import__('shlex').split(step) for step in text[text.find('sudo '):].split(' && ')] if 'sudo ' in text else []
+                    named = [Path(step[-1]) for step in steps if step]
+                    existing = [str(n) for n in named if os.path.lexists(str(n))]
+                    safe = bool(steps) and all(step[:3] == ['sudo', 'install', '-d'] and str(Path(step[-1])).startswith(str(base) + '/')
+                                               for step in steps)
+                    runs = []
+                    if safe:
+                        for step in steps:
+                            ran = subprocess.run(step[1:], capture_output=True, text=True, timeout=20, stdin=subprocess.DEVNULL)
+                            runs.append(ran.returncode)
+                    after = (os.lstat(str(ancestor)).st_mode, os.lstat(str(ancestor)).st_uid)
+                    guided[name] = {'refused': result.get('refused'), 'named': [str(n) for n in named],
+                                    'expected': [str(m) for m in missing], 'existing_named': existing, 'runs': runs,
+                                    'ancestor_before': oct(before[0] & 0o7777), 'ancestor_after': oct(after[0] & 0o7777),
+                                    'owner_unchanged': before[1] == after[1], 'key_mode': mode(path),
+                                    'key_owner_is_this_account': os.path.isdir(str(path)) and os.lstat(str(path)).st_uid == os.getuid(),
+                                    'intermediate_modes': [mode(m) for m in missing[:-1]],
+                                    'accepted_after': CS.key_directory_problems(str(path), workers) if os.path.isdir(str(path)) else None,
+                                    'last_step': steps[-1][1:] if steps else None}
+                others = {'mode': attempt(key_directory=str(open_to_others)), 'owner': attempt(key_directory='/usr/share')}
+                guided['others'] = {name: {'refused': result.get('refused'), 'guidance': result.get('guidance')}
+                                    for name, result in others.items()}
+                observed['guided'] = guided
+                check('authority/key-directory-guidance-changes-no-directory',
+                      all(g['refused'] == 'missing_authority:key_directory:absent' and g['named'] == g['expected']
+                          and g['existing_named'] == [] and g['runs'] == [0] * len(g['expected'])
+                          and g['ancestor_before'] == g['ancestor_after'] and g['owner_unchanged']
+                          and g['key_mode'] == '0o700' and g['key_owner_is_this_account']
+                          and g['intermediate_modes'] == ['0o755'] * (len(g['expected']) - 1)
+                          and g['accepted_after'] == [] and g['last_step'][:2] == ['install', '-d']
+                          and g['last_step'][2:8] == ['-m', '0700', '-o', user, '-g', group]
+                          for name, g in guided.items() if name != 'others')
+                      and guided['beside']['ancestor_after'] == '0o1777'
+                      and others['mode'].get('refused') == 'invalid_input:key_directory:mode'
+                      and others['owner'].get('refused') in ('invalid_input:key_directory:owner', 'invalid_input:key_directory:mode')
+                      and all(not any(word in (result.get('guidance') or 'chmod') for word in ('chmod', 'chown', 'install -d'))
+                              and '/var/lib/veldo/keys/<service id>' in (result.get('guidance') or '')
+                              for result in others.values()))
+
+            # AC1: a relative key directory is refused as relative, before anything resolves it against the
+            # working directory, even when it would resolve to a directory the installation would accept
+            with region('authority/key-directory-relative-refused'):
+                resolvable = base / 'relkeys' / 'authority'
+                resolvable.mkdir(parents=True, mode=0o700)
+                os.chmod(str(resolvable), 0o700)
+                relative = {'resolves-to-an-acceptable-directory': os.path.relpath(str(resolvable), os.getcwd()),
+                            'names-nothing': 'veldo-keys-47-' + run_id}
+                refusals = {name: attempt(key_directory=path) for name, path in relative.items()}
+                observed['relative'] = {name: dict(result, path=relative[name],
+                                                   judged_acceptable_absolute=CS.key_directory_problems(str(resolvable), workers))
+                                        for name, result in refusals.items()}
+                check('authority/key-directory-relative-refused',
+                      all(result.get('refused') == 'invalid_input:key_directory:relative' and result.get('left') == []
+                          for result in refusals.values())
+                      and not os.path.isabs(relative['resolves-to-an-acceptable-directory'])
+                      and CS.key_directory_problems(str(resolvable), workers) == [] and not list(resolvable.iterdir())
+                      and not os.path.lexists(os.path.join(os.getcwd(), relative['names-nothing'])))
 
             # The installation itself: one instance, into this run's own unit in the runtime unit directory
             with region('authority/installed-fixed-and-protected'):
@@ -392,11 +522,17 @@ def _v47_suite():
                 unit_file = unit_dir / unit if unit else None
                 unit_lines = unit_file.read_text().splitlines() if unit_file and unit_file.is_file() else []
                 bin_dir = home_dir / 'bin'
-                closure = list(getattr(CS, 'CLOSURE', ()))
+                # What the installer recorded it copied, each file with its digest.
+                recorded = config.get('closure') if isinstance(config.get('closure'), dict) else {}
+                closure = sorted(recorded)
                 entry = {'control_service.py', 'control_launch.py', 'control_keys_custody.py'}
+                # The architecture validator the receiver's recheck runs from its own directory
+                # (control_eligibility.ValidatorSnapshot), by the files the eligibility module declares.
+                validator = {name for _role, name in EL.VALIDATOR_ROLES}
                 installed = sorted(p.name for p in bin_dir.iterdir()) if bin_dir.is_dir() else []
-                copies = bool(closure) and installed == sorted(closure) and all(
+                copies = bool(closure) and installed == closure and all(
                     (bin_dir / n).read_bytes() == (mods / n).read_bytes()
+                    and recorded[n] == 'sha256:' + __import__('hashlib').sha256((bin_dir / n).read_bytes()).hexdigest()
                     and mode(bin_dir / n) == ('0o500' if n in entry else '0o400') for n in closure)
                 executable = str(bin_dir / 'control_service.py')
                 exec_start = '%s -B %s serve %s' % (os.path.realpath(sys.executable), executable, config_path)
@@ -415,13 +551,15 @@ def _v47_suite():
                                                      ('state', home_dir / 'state'), ('keys', keys), ('journal', keys / 'journal'),
                                                      ('socket', socket_path), ('store_dir', store_path.parent))},
                     'closure': len(closure), 'installed': len(installed), 'copies_exact': copies,
+                    'validator_installed': sorted(validator & set(installed)), 'validator_declared': sorted(validator),
                     'cmdline_matches': [c.decode() for c in cmdline] == exec_start.split()}
                 check('authority/installed-fixed-and-protected',
                       bool(unit) and report.get('started') is False
                       and before_start.get('LoadState') == 'loaded' and before_start.get('ActiveState') == 'inactive'
                       and 'ExecStart=' + exec_start in unit_lines and 'Type=notify' in unit_lines
                       and 'Restart=no' in unit_lines and '[Install]' not in unit_lines
-                      and copies and mode(bin_dir) == '0o500' and mode(home_dir) == '0o700'
+                      and copies and entry <= set(installed) and validator <= set(installed)
+                      and mode(bin_dir) == '0o500' and mode(home_dir) == '0o700'
                       and mode(home_dir / 'config') == '0o700' and mode(config_path) == '0o600'
                       and mode(home_dir / 'config' / 'enrollment_signers') == '0o600'
                       and (home_dir / 'config' / 'enrollment_signers').read_bytes() == signers_file.read_bytes()
@@ -443,7 +581,7 @@ def _v47_suite():
                 unqualified = attempt(profile=profile(memory_bytes=None))
                 observed['unqualified_profile'] = unqualified
                 receivers = (report.get('receiver') or {}).get('configs') or {}
-                receiver_path = Path(receivers.get(REPOSITORY) or base / 'no-receiver.json')
+                receiver_path = Path(receivers.get(REPOSITORY) or receiver_path)
                 try:
                     receiver_config = json.loads(receiver_path.read_text())
                 except (OSError, ValueError):
@@ -703,20 +841,146 @@ def _v47_suite():
                       and (counts.get('refusals') or {}).get('not_authorized') == 4
                       and pending.get('claims') == 1)
 
-            # Distribution: the installer's fixed executable and its template are installed assets
+            # AC1 end to end (VELDO-0040's handover): a real launch through the INSTALLED receiver, the
+            # VELDO-0039 Runner invoking it on the configuration the installer wrote, whose worker runs
+            # contained in the profile's slice. The scheduler's side (the Runner's own Gate and the
+            # reservations) runs in this suite; everything past the invocation is the installed program.
+            with region('authority/installed-receiver-launches'):
+                LAUNCH_UNIT, HOLDER, ACCOUNT = 'unit-47-launch', 'builder-47', 'acct-47'
+                CLM = load('v47_claim', mods / 'control_claim.py')
+                RES = load('v47_reservations', mods / 'control_reservations.py')
+                launch_writer = S.open_store(str(store_path))
+                connections.append(launch_writer)
+                launch_reader = S.open_store(str(store_path), mode='r')
+                connections.append(launch_reader)
+                launch_writer.command_registry['claim_operation'] = {
+                    'transition': CLM.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+                for principal in ('runner', 'launch-receiver'):
+                    put(principal, 'membership', dict(principal_type='service', roles=['reservation_service'],
+                                                      scope=[REPOSITORY], revoked_at=None, expires_at=None), conn=launch_writer)
+                put('project:p47', 'project', dict(name='authority-launch'), conn=launch_writer)
+                reservations = RES.Reservations(S, launch_writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
+                                                authorize=lambda conn, command: True, signer='runner', sign=journal_sign)
+                for scope, subject in (('account', ACCOUNT), ('project', 'p47'), ('unit', LAUNCH_UNIT)):
+                    reservations.configure('policy/' + subject, scope, subject,
+                                           dict(capacity=5, invocations=50, wall_seconds=10 ** 5), now=time.time())
+                put(LAUNCH_UNIT, 'execution_unit', dict(state='READY', repository_uuid=REPOSITORY,
+                                                        backlog_item_uuid='backlog:' + LAUNCH_UNIT, requirements=[],
+                                                        eligible_holders=[HOLDER], project='p47',
+                                                        scope_digest='sha256:scope-' + LAUNCH_UNIT, revision=1, depends_on=[]),
+                    conn=launch_writer)
+                put('backlog:' + LAUNCH_UNIT, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY),
+                    conn=launch_writer)
+                put('admission:' + LAUNCH_UNIT, 'admission', dict(unit=LAUNCH_UNIT, state='accepted',
+                                                                  scope_digest='sha256:scope-' + LAUNCH_UNIT), conn=launch_writer)
+                claim_entity = CLM.claim_id(REPOSITORY, LAUNCH_UNIT)
+                S.execute(launch_writer, dict(
+                    command_id='claim-launch-' + run_id, principal=HOLDER, operation='claim_operation',
+                    nonce='claim-launch-' + run_id, artifact_digests=[],
+                    expected_versions={LAUNCH_UNIT: version_of(launch_writer, LAUNCH_UNIT),
+                                       'backlog:' + LAUNCH_UNIT: version_of(launch_writer, 'backlog:' + LAUNCH_UNIT),
+                                       claim_entity: 0},
+                    parameters=dict(action='claim', unit_id=LAUNCH_UNIT, backlog_item_uuid='backlog:' + LAUNCH_UNIT,
+                                    claim_id=claim_entity, holder=HOLDER, generation=0, capabilities=[],
+                                    repository_uuid=REPOSITORY)), HOLDER, journal_sign, 1)
+                receiver_config_path = ((report.get('receiver') or {}).get('configs') or {}).get(REPOSITORY)
+                installed_receiver = (report.get('receiver') or {}).get('executable')
+                IL = load('v47_installed_receiver', installed_receiver)
+                dispatches = IL.D.Dispatches(S, launch_writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
+                                             signer='runner', sign=journal_sign)
+                gate = EL.Gate(S, launch_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(A))
+                runner = IL.Runner(gate, reservations, dispatches,
+                                   lambda contract: IL.invoke(receiver_config_path, contract, dispatches, accept_seconds=20),
+                                   account=ACCOUNT)
+                launch = runner.submit(LAUNCH_UNIT, 'build', holder=HOLDER, source=str(A), revision='HEAD', payload={},
+                                       adapter='engine', configuration={'tools': ['Read'], 'model': 'm'},
+                                       deadline=time.time() + 60)
+                launches.append(launch)
+                result, refusal, group = launch.result, launch.refusal, dict(launch.group or {})
+                record = runner.wait(launch, timeout=30) if result == 'accepted' else (launch.record or {})
+                record = record or {}
+                ran = json.loads(marker.read_text()) if marker.is_file() else {}
+                scope = C.unit_name(launch.dispatch_id)
+                termination = record.get('termination') or {}
+                observed['launch'] = {'receiver': IL.RECEIVER, 'result': result, 'refusal': refusal, 'group': group,
+                                      'state': record.get('state'), 'record_refusal': record.get('refusal'),
+                                      'termination': {k: termination.get(k) for k in ('returncode', 'signal', 'deadline_stop')},
+                                      'process_pid': (record.get('process') or {}).get('pid'), 'worker': ran,
+                                      'scope': scope, 'scope_after': show(scope).get('ActiveState'),
+                                      'retired': [o.get('outcome') for o in runner.observations if o.get('operation') == 'retire']}
+                check('authority/installed-receiver-launches',
+                      IL.RECEIVER == str(home_dir / 'bin' / 'control_launch.py') == installed_receiver
+                      and receiver_config_path == str(receiver_path)
+                      and result == 'accepted' and refusal is None and record.get('state') == 'exited'
+                      and termination.get('returncode') == 0 and termination.get('deadline_stop') is False
+                      and bool(ran) and ran.get('pid') == (record.get('process') or {}).get('pid')
+                      and ran.get('dispatch') == launch.dispatch_id
+                      and ran.get('cgroup', '').endswith('/%s/%s' % (PROFILE['slice'], scope))
+                      and group.get('slice') == PROFILE['slice'] and group.get('unit') == scope
+                      and ran.get('memory.max') == str(PROFILE['memory_bytes']) and ran.get('pids.max') == str(PROFILE['tasks_max'])
+                      and observed['launch']['retired'] == ['retired']
+                      and observed['launch']['scope_after'] in ('inactive', '', None))
+
+            # Distribution: the installer's fixed executable and its template are installed assets. A tree
+            # holding exactly the modules the scaffolder lays down (an adopter's) derives the installer's
+            # whole closure with nothing absent, and finds its default unit directory
             with region('authority/installed-assets'):
                 scaffold = load('v47_scaffold', mods / 'init_scaffold.py')
                 files = set(getattr(scaffold, '_FILES', []))
-                closure = list(getattr(CS, 'CLOSURE', ()))
+                laid = base / 'laid' / '.veldo'
+                (laid / 'services').mkdir(parents=True)
+                for rel in sorted(files):
+                    if rel.startswith('.veldo/') and (rel.endswith('.py') or rel.endswith('.service')) and (mods / rel[len('.veldo/'):]).is_file():
+                        shutil.copyfile(mods / rel[len('.veldo/'):], laid / rel[len('.veldo/'):])
+                adopter = {}
+                try:
+                    LCS = load('v47_laid_service', laid / 'control_service.py')
+                    adopter['closure'] = LCS.closure()
+                    adopter['unit_dir'] = LCS.default_unit_dir()
+                except Exception as error:  # noqa: BLE001 - an adopter's installer that cannot answer is the finding
+                    adopter['error'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+                installed_closure = sorted(recorded)
+                observed['assets'] = {'adopter': dict(adopter, closure=len(adopter.get('closure') or [])),
+                                      'installed': len(installed_closure),
+                                      'not_laid': sorted(n for n in installed_closure if '.veldo/' + n not in files)}
                 check('authority/installed-assets',
                       '.veldo/control_service.py' in files and '.veldo/services/veldo-authority.service' in files
-                      and bool(closure) and all('.veldo/' + name in files for name in closure))
+                      and bool(installed_closure) and all('.veldo/' + name in files for name in installed_closure)
+                      and 'error' not in adopter and adopter.get('closure') == installed_closure
+                      and isinstance(adopter.get('unit_dir'), str) and os.path.isabs(adopter['unit_dir'])
+                      and adopter['unit_dir'].endswith(os.path.join('systemd', 'user')))
         finally:
             for child in children:
                 with contextlib.suppress(Exception):
                     if child.poll() is None:
                         child.kill()
                     child.wait(timeout=5)
+            for launch in launches:
+                with contextlib.suppress(Exception):
+                    if launch.child is not None:
+                        if launch.child.poll() is None:
+                            launch.child.kill()
+                        launch.child.wait(timeout=10)
+                        for pipe in (launch.child.stdin, launch.child.stdout):
+                            if pipe is not None:
+                                pipe.close()
+            # Whatever a defective build left of this run's worker is ended, and this run's slice and
+            # dispatch scopes are stopped and cleared so nothing it made stays loaded.
+            with contextlib.suppress(Exception):
+                facts = json.loads(marker.read_text())
+                if os.path.exists('/proc/%d' % facts['pid']) and str(engine) in Path('/proc/%d/cmdline' % facts['pid']).read_text():
+                    os.kill(facts['pid'], signal.SIGKILL)
+            with contextlib.suppress(Exception):
+                systemctl('stop', PROFILE['slice'])
+            with contextlib.suppress(Exception):
+                scopes = [C.unit_name(launch.dispatch_id) for launch in launches]
+                loaded = [line.split()[0] for line in systemctl('list-units', '--all', '--plain', '--no-legend',
+                                                                *scopes).stdout.splitlines() if line.split()] if scopes else []
+                if loaded:
+                    systemctl('reset-failed', *loaded)
+            for conn in connections:
+                with contextlib.suppress(Exception):
+                    conn.close()
             unit = report.get('unit')
             if unit:
                 with contextlib.suppress(Exception):

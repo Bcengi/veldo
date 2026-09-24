@@ -12,8 +12,10 @@ nothing. For the enrolled workspaces of ONE coordination domain it verifies ever
 under this host's installed trust (control_eligibility.load_host_trust, the HostTrust every enrolled
 entry point uses) and then lays down, under <install root>/<service id>:
 
-  bin/     the FIXED EXECUTABLE: this module and the closure of modules it and the launch receiver
-           load (CLOSURE), copied byte for byte and read-only (0400, the three entry points 0500, the
+  bin/     the FIXED EXECUTABLE: the entry points (this module, the launch receiver and the key
+           custody wrapper), the architecture validator the receiver's recheck runs, and every module
+           these load, derived from the engine at installation (closure()), never listed by hand,
+           copied byte for byte and read-only (0400, the three entry points 0500, the
            directory 0500). The unit runs this copy, never a repository's.
   config/  the PROTECTED CONFIGURATION (0700): service.json (0600), a copy of the enrollment signers
            this host trusted at installation (0600), and one launch receiver configuration per
@@ -59,14 +61,18 @@ coordinates; a repository this instance does not serve is refused. Then, by the 
 
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
-workers never write directly: outside the home and temporary directories. On a host where this
-account can create nothing else, placing it takes one root step, and installation refuses naming
-that step exactly (missing_authority:key_directory:absent). The default is
-/var/lib/veldo/keys/<service id>.
+workers never write directly: outside the home and temporary directories. It is judged as named: a
+relative one is refused as relative, and where it is comes before whether it exists, so one inside a
+worker directory is refused as that even when absent. On a host where this account can create nothing
+else, placing it takes one root step, and installation refuses naming that step exactly
+(missing_authority:key_directory:absent): it creates only the directories missing below the first
+existing ancestor, and no printed step changes the mode or owner of a directory that exists. The
+default is /var/lib/veldo/keys/<service id>.
 
 WHAT IT IS NOT. No automatic restart or recovery (Release 2), no second host profile, remote
 inspection or legacy status listener (Release 4), no network listener. Standard library only.
 """
+import ast
 import contextlib
 import fcntl
 import grp
@@ -77,6 +83,7 @@ import os
 from pathlib import Path
 import pwd
 import re
+import shlex
 import shutil
 import signal
 import socket
@@ -110,16 +117,12 @@ C = L.C
 # (control_claim.Receiver adds claim_operation), so a claim transition is never reachable as one.
 MUTATIONS = tuple(sorted(S.COMMAND_REGISTRY))
 
-# The fixed executable: every module the service and the launch receiver it configures load.
-CLOSURE = ('authority_contract.py', 'claim.py', 'completion_contract.py',
-           'control_channel_attribution.py', 'control_channel_enrollment.py',
-           'control_channel_presentation.py', 'control_channel_projection.py', 'control_claim.py',
-           'control_client.py', 'control_containment.py', 'control_decision_dependency.py',
-           'control_dispatch.py', 'control_eligibility.py', 'control_enrollment.py', 'control_keys.py',
-           'control_keys_custody.py', 'control_launch.py', 'control_membership.py',
-           'control_reservations.py', 'control_service.py', 'control_signer.py',
-           'control_signer_answers.py', 'control_snapshot.py', 'control_store.py', 'git_process.py')
+# The programs an installation runs by path: the service (the unit's ExecStart), the launch receiver
+# with its trusted wrapper, and the key custody wrapper. The rest of the fixed executable is derived
+# from what these and the architecture validator load (closure()), never listed by hand.
 ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')
+# The one way an engine module loads a sibling: importlib.util.spec_from_file_location.
+LOADER = 'spec_from_file_location'
 
 SCHEMA = 'veldo.authority_service/v1'
 UNIT_SCHEMA = 'veldo.authority_unit/v1'
@@ -177,6 +180,169 @@ def _digest(data):
 
 
 # ---------------------------------------------------------------------------------------------
+# The fixed executable: derived at installation from what its programs load
+# ---------------------------------------------------------------------------------------------
+
+def _callee(call):
+    function = call.func
+    return function.id if isinstance(function, ast.Name) else function.attr if isinstance(function, ast.Attribute) else None
+
+
+def _file_names(node, bound):
+    """The '.py' file names an expression names: its string constants (a path's last part), and the
+    constants the names it uses are bound to in its module."""
+    found = set()
+    for part in ast.walk(node):
+        if isinstance(part, ast.Constant) and isinstance(part.value, str):
+            base = os.path.basename(part.value)
+            if base.endswith('.py') and base != '.py' and not any(c.isspace() for c in part.value):
+                found.add(base)
+        elif isinstance(part, ast.Name):
+            found |= bound.get(part.id, set())
+    return found
+
+
+class _Loads:
+    """One engine module, read for the siblings it loads. A load is a LOADER call, whose location names
+    the file, or a call of a LOADER HELPER: a function whose LOADER call builds its location from one of
+    its parameters (control_*'s organ(name), validate_checks' _organ(name, path)), called directly or
+    bound with functools.partial, whose argument for that parameter names the file (a helper that
+    appends '.py' takes the module's name). An import naming a sibling is a load too. A load site whose
+    file no literal names is kept as unresolved."""
+
+    def __init__(self, path):
+        self.name = path.name
+        self.tree = ast.parse(path.read_bytes(), str(path))
+        parents = {child: parent for parent in ast.walk(self.tree) for child in ast.iter_child_nodes(parent)}
+        self.bound = {}
+        for node in ast.walk(self.tree):
+            if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
+                for target in (node.targets if isinstance(node, ast.Assign) else [node.target]):
+                    if isinstance(target, ast.Name):
+                        self.bound.setdefault(target.id, set()).update(_file_names(node.value, {}))
+        self.helpers, self.loads, self.unresolved, self.calls = {}, set(), [], []
+        for call in (node for node in ast.walk(self.tree) if isinstance(node, ast.Call)):
+            if _callee(call) != LOADER:
+                self.calls.append(call)
+                continue
+            where = call.args[1] if len(call.args) > 1 else next(
+                (k.value for k in call.keywords if k.arg == 'location'), None)
+            scope = call
+            while scope in parents and not isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                scope = parents[scope]
+            params = []
+            if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                params = [a.arg for a in scope.args.posonlyargs + scope.args.args + scope.args.kwonlyargs]
+            used = [p for p in params if where is not None
+                    and any(isinstance(n, ast.Name) and n.id == p for n in ast.walk(where))]
+            if used:
+                self.helpers[scope.name] = {'params': params[1:] if params[:1] == ['self'] else params, 'used': used,
+                                            'suffix': any(isinstance(n, ast.Constant) and n.value == '.py'
+                                                          for n in ast.walk(where))}
+                continue
+            named = _file_names(where, self.bound) if where is not None else set()
+            if not named:
+                self.unresolved.append('%s:%d' % (self.name, call.lineno))
+            self.loads |= named
+        self.imports = set()
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Import):
+                self.imports |= {alias.name.partition('.')[0] + '.py' for alias in node.names}
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                self.imports.add(node.module.partition('.')[0] + '.py')
+
+    def resolve(self, helpers):
+        """(files this module loads, unresolved load sites). A helper called by bare name is this
+        module's own; one called as an attribute (E.organ) is any module's helper of that name."""
+        named, unresolved = set(self.loads), list(self.unresolved)
+        for call in self.calls:
+            target, args = call.func, list(call.args)
+            if _callee(call) == 'partial' and args:
+                target, args = args[0], args[1:]
+            if isinstance(target, ast.Name):
+                candidates = [self.helpers[target.id]] if target.id in self.helpers else []
+            elif isinstance(target, ast.Attribute):
+                candidates = helpers.get(target.attr, [])
+            else:
+                candidates = []
+            if not candidates:
+                continue
+            found = set()
+            for helper in candidates:
+                given = dict(zip(helper['params'], args))
+                given.update({k.arg: k.value for k in call.keywords if k.arg})
+                for param in helper['used']:
+                    value = given.get(param)
+                    if value is None:
+                        continue
+                    files = _file_names(value, self.bound)
+                    if not files and helper['suffix'] and isinstance(value, ast.Constant) and isinstance(value.value, str):
+                        files = {value.value + '.py'}
+                    found |= files
+            if not found:
+                unresolved.append('%s:%d' % (self.name, call.lineno))
+            named |= found
+        return named, unresolved
+
+
+def closure():
+    """The fixed executable's modules, derived from the engine directory an installation copies from
+    (install() runs there, so the derivation reads the engine, never the installed copy). The seeds are
+    ENTRY_POINTS and the architecture validator's declared files: the launch receiver's recheck builds
+    a control_eligibility.Gate, whose ValidatorSnapshot loads the validator from ITS OWN directory by
+    module name rather than through a load any source spells, so the validator's files are taken from
+    the declaration of the module that loads them, control_eligibility.VALIDATOR_ROLES. (The
+    scaffold's REQUIRED_SUBSTRATE declares a repository's gate, not what the snapshot loads, and
+    init_scaffold.py is not laid down in an adopter's tree, where this installer runs too.) Then every
+    module a member loads (_Loads), followed to a fixed point. A load naming a module this directory
+    lacks, or a load site whose module no literal names, refuses installation by name, so an
+    installed program is never short of a module it loads and never finds that out when it runs.
+    Returns the sorted file names."""
+    present = {path.name for path in HERE.glob('*.py')}
+    seeds = set(ENTRY_POINTS) | {name for _role, name in EL.VALIDATOR_ROLES}
+    readings = {}
+    while True:
+        # A pass reads with every helper the modules read so far define; a helper first read in this
+        # pass can name more loads, so passes repeat until one reads no new module.
+        helpers = {}
+        for reading in readings.values():
+            for name, helper in reading.helpers.items():
+                helpers.setdefault(name, []).append(helper)
+        known = len(readings)
+        members, loaded_by, absent, unresolved = set(), {}, [], []
+        todo = sorted(seeds, reverse=True)
+        while todo:
+            name = todo.pop()
+            if name in members:
+                continue
+            if name not in present:
+                absent.append('%s (loaded by %s)' % (name, loaded_by.get(name, 'the declared set')))
+                continue
+            members.add(name)
+            if name not in readings:
+                try:
+                    readings[name] = _Loads(HERE / name)
+                except (OSError, SyntaxError, ValueError) as error:
+                    raise Refused('invalid_input:closure:unreadable', '%s: %s' % (name, type(error).__name__))
+            named, sites = readings[name].resolve(helpers)
+            unresolved += sites
+            for dependency in sorted(named | (readings[name].imports & present), reverse=True):
+                if dependency not in members:
+                    loaded_by.setdefault(dependency, name)
+                    todo.append(dependency)
+        if len(readings) > known:
+            continue
+        if absent:
+            raise Refused('invalid_input:closure:absent', '%s holds no %s' % (HERE, ', '.join(sorted(set(absent)))),
+                          'install from a complete engine: python3 .veldo/init_scaffold.py <repository> lays down '
+                          'every module it loads')
+        if unresolved:
+            raise Refused('invalid_input:closure:unresolved', 'no literal names the module loaded at %s'
+                          % ', '.join(sorted(set(unresolved))), 'load the module there by a literal file name')
+        return sorted(members)
+
+
+# ---------------------------------------------------------------------------------------------
 # The key directory: outside every directory a worker writes into directly
 # ---------------------------------------------------------------------------------------------
 
@@ -200,46 +366,73 @@ def _within(path, root):
 
 
 def key_directory_problems(path, writable):
-    """Why `path` may not hold the protected keys, as named codes; [] when it may. It must exist as a
-    real directory of this account that nobody else can enter, and be neither inside nor above any
-    directory in `writable`."""
+    """Why `path` may not hold the protected keys, as named codes, first the one to act on; [] when it
+    may. It must be absolute, as given, before anything resolves it; then its LOCATION is judged
+    before whether it exists (neither inside nor above any directory in `writable`, where no one-time
+    step could make it safe); then it must exist as a real directory of this account that nobody else
+    can enter."""
     text = str(path)
     if not os.path.isabs(text):
         return ['invalid_input:key_directory:relative']
-    try:
-        info = os.lstat(text)
-    except FileNotFoundError:
-        return ['missing_authority:key_directory:absent']
-    except OSError:
-        return ['unavailable_service:key_directory:unreadable']
-    if stat.S_ISLNK(info.st_mode):
-        return ['invalid_input:key_directory:symlink']
-    if not stat.S_ISDIR(info.st_mode):
-        return ['invalid_input:key_directory:not_a_directory']
     problems = []
-    if info.st_uid != os.getuid():
-        problems.append('invalid_input:key_directory:owner')
     real = os.path.realpath(text)
     if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):
         problems.append('invalid_input:key_directory:worker_writable')
+    try:
+        info = os.lstat(text)
+    except FileNotFoundError:
+        return problems + ['missing_authority:key_directory:absent']
+    except OSError:
+        return problems + ['unavailable_service:key_directory:unreadable']
+    if stat.S_ISLNK(info.st_mode):
+        return problems + ['invalid_input:key_directory:symlink']
+    if not stat.S_ISDIR(info.st_mode):
+        return problems + ['invalid_input:key_directory:not_a_directory']
+    if info.st_uid != os.getuid():
+        problems.append('invalid_input:key_directory:owner')
     if stat.S_IMODE(info.st_mode) & 0o077:
         problems.append('invalid_input:key_directory:mode')
     return problems
 
 
+def _missing_below(path):
+    """The directories `path` names that do not exist, outermost first: everything below its first
+    existing ancestor, and nothing at or above it."""
+    missing, current = [], os.path.normpath(str(path))
+    while not os.path.lexists(current):
+        missing.append(current)
+        parent = os.path.dirname(current)
+        if parent == current:
+            break
+        current = parent
+    return list(reversed(missing))
+
+
 def key_directory_guidance(path, code):
+    """What the operator does about `code`. Only a missing key directory is given commands, and they
+    create exactly the directories below its first existing ancestor, each named only while it is
+    missing: no printed command changes the mode or owner of a directory that exists."""
     user = pwd.getpwuid(os.getuid()).pw_name
     group = grp.getgrgid(os.getgid()).gr_name
+    elsewhere = ('choose a new directory outside the home and temporary directories, for example %s/<service id>; '
+                 'installation then prints the one-time root step that creates it, owned by %s'
+                 % (DEFAULT_KEY_ROOT, user))
     if code.endswith(':absent'):
-        return ('create it once as root, outside the home and temporary directories, owned by %s and '
-                'closed to everyone else: sudo install -d -m 0755 %s && sudo install -d -m 0700 -o %s '
-                '-g %s %s' % (user, os.path.dirname(str(path)), user, group, path))
+        missing = _missing_below(path)
+        if not missing:
+            return elsewhere
+        steps = ['sudo install -d -m 0755 %s' % shlex.quote(d) for d in missing[:-1]]
+        steps.append('sudo install -d -m 0700 -o %s -g %s %s' % (shlex.quote(user), shlex.quote(group),
+                                                                 shlex.quote(missing[-1])))
+        return ('create it once as root, owned by %s and closed to everyone else, making only the directories '
+                'that are missing: %s' % (user, ' && '.join(steps)))
     if code.endswith(':mode'):
-        return 'close it to everyone else: chmod 0700 %s' % path
+        return 'it is open to others; a key directory is one of its own, so ' + elsewhere
     if code.endswith(':owner'):
-        return 'it must belong to %s: sudo chown %s:%s %s' % (user, user, group, path)
-    return ('choose a directory outside the home and temporary directories, for example %s/<service id>, '
-            'created once as root and owned by %s' % (DEFAULT_KEY_ROOT, user))
+        return 'it does not belong to %s; a key directory is one of its own, so %s' % (user, elsewhere)
+    if code.endswith(':relative'):
+        return 'name it by its absolute path: ' + elsewhere
+    return elsewhere
 
 
 # ---------------------------------------------------------------------------------------------
@@ -378,9 +571,10 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     home = os.path.join(root, service)
     unit_dir = os.path.realpath(str(unit_dir or default_unit_dir()))
     unit_path = os.path.join(unit_dir, unit)
-    # Judged as NAMED, never resolved first: a link to a safe directory is refused as a link, because
-    # what it points at can change after this check.
-    keys = os.path.abspath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)
+    # Judged as NAMED, never resolved first: a relative directory is refused as relative (it names a
+    # different directory from every working directory), and a link to a safe directory is refused as a
+    # link, because what it points at can change after this check.
+    keys = str(key_directory) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)
     problems = key_directory_problems(keys, worker_writable() if writable is None else writable)
     if problems:
         raise Refused(problems[0], keys, key_directory_guidance(keys, problems[0]))
@@ -415,7 +609,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     values = {'SERVICE': service, 'DOMAIN': first['domain_uuid'], 'STORE': first['store_uuid'],
               'PYTHON': python, 'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}
     text = unit_text(values)
-    closure = {name: (HERE / name).read_bytes() for name in CLOSURE}
+    fixed = {name: (HERE / name).read_bytes() for name in closure()}
 
     created, generated = [], False
     try:
@@ -425,7 +619,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         created.append(home)
         for directory in (bin_dir, config_dir, state_dir):
             os.mkdir(directory, 0o700)
-        for name, data in closure.items():
+        for name, data in fixed.items():
             _write(os.path.join(bin_dir, name), data, 0o500 if name in ENTRY_POINTS else 0o400)
         os.chmod(bin_dir, 0o500)
         if not os.path.lexists(journal):
@@ -452,7 +646,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                   'observations': os.path.join(state_dir, 'observations.jsonl'),
                   'executable': values['EXECUTABLE'], 'python': python,
                   'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
-                  'closure': {name: _digest(data) for name, data in closure.items()},
+                  'closure': {name: _digest(data) for name, data in fixed.items()},
                   'template': _digest(TEMPLATE.read_bytes())}
         _write(config_path, _json(config), 0o600)
         os.makedirs(unit_dir, exist_ok=True)
@@ -472,7 +666,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         raise
     reload_rc, _out, _err = runner.run(['daemon-reload'])
     return {'service': service, 'unit': unit, 'unit_path': unit_path, 'home': home, 'config': config_path,
-            'executable': values['EXECUTABLE'], 'receiver': config['receiver'], 'key_directory': keys,
+            'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
             'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
             'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
             'daemon_reload_rc': reload_rc, 'started': False}
