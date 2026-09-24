@@ -2911,8 +2911,13 @@ def cases():
           '              "implementation": {"commit": commit}, "spec": spec,  # defect: the built commit named as the implementation\n',
           'fresh-reviewer-resolves')
     proof('proof-offered-without-acceptance',
-          '            accepted = self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n',
+          '            accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n'
+          '                        if gate is not None else None)\n',
           '            accepted = None  # defect: the build is offered with its proof never accepted\n',
+          'accepted-before-offer', module='executor.py')
+    proof('proof-unstored-accepted',
+          '        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}\n',
+          '        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted\n',
           'accepted-before-offer', module='executor.py')
     proof('proof-bundle-rewritable',
           '    if before.get(rid) is not None:\n        raise Refused("proof_immutable", rid)\n',

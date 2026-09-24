@@ -1,4 +1,4 @@
 --- a/.veldo/executor.py
 +++ b/.veldo/executor.py
-@@ -726,0 +727 @@
+@@ -721,0 +722 @@
 +                self.hooks.emit("merge.completed", spec=spec.get("id"), commit=build.get("commit"))  # defect: a landing

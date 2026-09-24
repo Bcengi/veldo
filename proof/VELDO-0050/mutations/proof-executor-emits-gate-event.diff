@@ -1,5 +1,5 @@
 --- a/.veldo/executor.py
 +++ b/.veldo/executor.py
-@@ -692,0 +693,2 @@
+@@ -685,0 +686,2 @@
 +            if gate_green:
 +                self.hooks.emit("gate.passed", spec=spec.get("id"), commit=build.get("commit"))  # defect: the gate's own event

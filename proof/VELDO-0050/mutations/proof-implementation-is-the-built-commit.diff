@@ -1,5 +1,5 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -470 +470 @@
+@@ -471 +471 @@
 -              "implementation": {"commit": implementation}, "spec": spec,
 +              "implementation": {"commit": commit}, "spec": spec,  # defect: the built commit named as the implementation

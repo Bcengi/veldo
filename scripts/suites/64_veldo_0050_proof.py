@@ -139,7 +139,7 @@ def _v50_suite():
         (work / 'src').mkdir()
         (work / 'src' / 'README').write_text('fixture sources\n')
         UNITS = {'VELDO-9501': ['unit'], 'VELDO-9502': ['unit', 'integration'], 'VELDO-9503': ['unit'],
-                 'VELDO-9504': ['unit'], 'VELDO-9505': ['unit']}
+                 'VELDO-9504': ['unit'], 'VELDO-9505': ['unit'], 'VELDO-9506': ['unit']}
         spec_files = {}
 
         def spec_text(sid, required, second='The fixture source says so.'):
@@ -364,8 +364,8 @@ sys.stdout.flush()
             (for a direct run) is a real reviewer process that resolves the bundle from the store."""
             reviewer_identity = 'reviewer-c'
 
-            def __init__(self, mode, generation, holder=BUILDER):
-                super().__init__(root=str(work), proofs=proofs)
+            def __init__(self, mode, generation, holder=BUILDER, store=True):
+                super().__init__(root=str(work), proofs=proofs if store else None)
                 self.mode, self.generation, self.holder = mode, generation, holder
                 self.launched, self.commits, self.reviews = [], [], []
 
@@ -429,10 +429,10 @@ sys.stdout.flush()
 
         lander = Lander()
 
-        def build(sid, mode):
+        def build(sid, mode, store=True):
             """One build unit dispatched by the real Dispatcher for its claim holder (build-only)."""
             generation = claim(sid, BUILDER)
-            hooks = BuildLoop(mode, generation)
+            hooks = BuildLoop(mode, generation, store=store)
             disp = DSP.Dispatcher(repo_root=str(work), hooks=hooks, eligibility=gate, calls=calls, worker_id=BUILDER,
                                   authority=floor)
             got = outcome_of(lambda: disp.dispatch(dict(kind='build', spec=sid, holder=BUILDER, generation=generation)))
@@ -533,11 +533,14 @@ sys.stdout.flush()
                                                          observation=record.get('observation'), builder=None))
                 forged = outcome_of(lambda: upsert(bundle_id, 'proof_bundle', dict(record, checks=[])))
                 after = entity(bundle_id) or {}
+                # The same executor with no proof service to store into offers nothing.
+                unstored = build('VELDO-9506', 'good', store=False)
                 owners = {r[1]: r[4] for r in S.entity_owners(writer)}
                 observed['accepted_before_offer'] = {
                     'dispatch': {k: built.get(k) for k in ('ok', 'status', 'halted_at', 'reason')},
                     'proof_step': steps.get('proof'), 'seqs': seqs, 'events': proof_events_logged,
-                    'again': again, 'forged': forged, 'version': after.get('version'), 'owners': owners}
+                    'again': again, 'forged': forged, 'version': after.get('version'), 'owners': owners,
+                    'unstored': {k: unstored.get(k) for k in ('ok', 'halted_at', 'reason')}}
                 check('proof/accepted-before-offer',
                       built.get('ok') is True and built.get('status') == 'review'
                       and (built.get('result') or {}).get('state') == 'built'
@@ -546,6 +549,9 @@ sys.stdout.flush()
                       and [e.get('bundle') for e in proof_events_logged] == [bundle_id]
                       and again == ('refused', 'proof_immutable') and forged == ('refused', 'entity_owned')
                       and after.get('version') == 1 and after.get('digest') == stored.get('digest')
+                      and unstored.get('ok') is False and unstored.get('halted_at') == 'proof'
+                      and 'missing_authority:proof_service' in str(unstored.get('reason'))
+                      and floor.record('VELDO-9506') is None
                       and owners.get('proof_bundle') == owners.get('gate_observation') == os.path.realpath(mods / 'control_proof.py'))
 
                 # The checks: the installed catalog's required items as the gate printed them, read here from

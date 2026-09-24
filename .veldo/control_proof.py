@@ -359,7 +359,8 @@ def contextual(repo, *, unit, commit, base, spec_path, manifest, observation, ob
     if gate_bytes is None:
         return ["missing_authority:catalog/absent"], None
     installed = catalog(gate_bytes.decode("utf-8", "surrogateescape"))
-    if blob(repo, commit, spec_path) is None or digest(blob(repo, commit, spec_path)) != spec["revision"]:
+    built_spec = blob(repo, commit, spec_path)
+    if built_spec is None or digest(built_spec) != spec["revision"]:
         problems.append("stale_subject:spec/changed_by_build")
     if not isinstance(manifest, dict):
         return problems + ["invalid_input:manifest"], None
@@ -566,9 +567,12 @@ class ProofService:
         conn.command_registry[OBSERVE] = {"transaction_transition": _observe_transition, "writes": WRITES}
         conn.command_registry[ACCEPT] = {"transaction_transition": _accept_transition, "writes": WRITES}
 
-    def _run(self, operation, unit, command_id, params, expected):
+    def _run(self, operation, unit, prefix, params, expected):
         params = dict(params, now=self.clock(), principal=self.principal, domain=self.domain,
                       repository=self.repository)
+        # One command per call, named by its complete content: an identical retry is replayed by the
+        # store, and a second acceptance of one unit and commit is refused by the transition.
+        command_id = prefix + digest(canonical(params))[len("sha256:"):][:24]
         command = {"command_id": command_id, "principal": self.principal, "operation": operation,
                    "parameters": params, "expected_versions": expected, "artifact_digests": [],
                    "nonce": command_id + "/nonce"}
@@ -596,7 +600,7 @@ class ProofService:
         """Store what the gate was observed doing; returns {id, digest, seq}, the reference a proof cites."""
         body = dict(observation or {}, domain=self.domain, repository=self.repository)
         oid = observation_id(body)
-        result = self._run(OBSERVE, unit, "proof/observe/" + oid[len("gate-observation:"):],
+        result = self._run(OBSERVE, unit, "proof/observe/%s/" % oid[len("gate-observation:"):],
                            {"observation": body, "observation_id": oid, "unit": unit}, {oid: self._version(oid)})
         row = _entity_row(self.conn, oid)
         return {"id": oid, "digest": row["digest"], "seq": result["seq"]}
@@ -616,8 +620,7 @@ class ProofService:
         expected = {rid: self._version(rid)}
         if _text(reference.get("id")):
             expected[reference["id"]] = self._version(reference["id"])
-        command_id = "proof/accept/%s/%s" % (unit, digest(canonical(params))[len("sha256:"):][:24])
-        result = self._run(ACCEPT, unit, command_id, params, expected)
+        result = self._run(ACCEPT, unit, "proof/accept/%s/" % unit, params, expected)
         row = _entity_row(self.conn, rid)
         return {"bundle": rid, "digest": row["digest"], "seq": result["seq"], "record": row["data"]}
 

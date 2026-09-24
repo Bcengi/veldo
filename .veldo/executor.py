@@ -66,17 +66,20 @@ committed to the spec (or an ADR) before the build is accepted - so a chat answe
 never becomes hidden engineering truth - is a documented PROCEDURE for the agent
 (see the run skill), not code enforced here.
 
-DURABLE CONTEXTUAL PROOF (VELDO-0050). The proof step is assemble, validate (the
-structural contract) and ACCEPT: accept_proof validates the proof against the
-accepted spec revision, the installed gate catalog, the repository's Git objects
-and the gate's recorded observation, and stores it as an immutable accepted bundle
-(control_proof) before the run finishes built or enters review, so a fresh
-reviewer resolves it from the store with no builder memory. LiveLoop.gate observes
-the canonical gate (exit, terminal line, every required catalog check) and records
-the observation; the checks a proof records come only from it, never a default.
-With the floor enabled the executor emits only its own events (proof.recorded,
-review.requested, approval.recorded): a verdict belongs to the review projection
-and the review authority, and nothing here writes a landing or completion record.
+DURABLE CONTEXTUAL PROOF (VELDO-0050). With the floor enabled the proof step is
+assemble, validate (the structural contract) and ACCEPT: accept_proof validates
+the proof against the accepted spec revision, the installed gate catalog, the
+repository's Git objects and the gate's recorded observation, and stores it as an
+immutable accepted bundle (control_proof) before the run finishes built or enters
+review, so a fresh reviewer resolves it from the store with no builder memory.
+LiveLoop.gate observes the canonical gate (exit, terminal line, every required
+catalog check) and records the observation; the checks a proof records come only
+from it, never a default. With the floor enabled the executor emits only its own
+events (proof.recorded, review.requested, approval.recorded): a verdict belongs to
+the review projection and the review authority, and nothing here writes a landing
+or completion record. Without a Gate (the pre-factory loop) no acceptance is
+asked and the events are as before; its assembled proof carries no default check
+either.
 """
 import importlib.util
 import json
@@ -228,10 +231,9 @@ class LiveLoop(LoopSteps):
     review is more dangerous than one that refuses to run.
 
     VELDO-0050: `proofs` is the control_proof.ProofService the proof is accepted into. With one wired,
-    gate() records its observation there and accept_proof() stores the accepted bundle there; in an
-    enrolled repository without one, accept_proof refuses (missing_authority:proof_service). In an
-    unenrolled tree, which keeps no store, the proof is still validated contextually and nothing is
-    stored."""
+    gate() records its observation there and accept_proof() stores the accepted bundle there. The
+    executor asks for acceptance only with the floor enabled, and there accept_proof without a proof
+    service refuses (missing_authority:proof_service); the pre-factory loop is unchanged."""
 
     def __init__(self, root=ROOT, proofs=None):
         self.root = Path(root)
@@ -335,9 +337,9 @@ class LiveLoop(LoopSteps):
         return (errs == 0, errs)
 
     def accept_proof(self, spec, build, gate, proof, context=None):
-        """VELDO-0050: complete contextual validation, then the proof stored as accepted immutable
-        evidence with the wired proof service (the bundle a fresh reviewer resolves from the store
-        alone). The builder is the run's claim holder when the run has one."""
+        """VELDO-0050: complete contextual validation inside the wired proof service's transaction,
+        and the proof stored there as accepted immutable evidence (the bundle a fresh reviewer
+        resolves from the store alone). The builder is the run's claim holder when the run has one."""
         CP = proof_organ()
         sid = (spec or {}).get("id")
         commit = (build or {}).get("commit")
@@ -350,18 +352,9 @@ class LiveLoop(LoopSteps):
             except CP.Refused as error:
                 return {"ok": False, "problems": list(error.codes), "bundle": None}
             return dict(accepted, ok=True, problems=[])
-        EL = _eligibility_organ()
-        try:
-            enrolled = EL.enrolled(self.root)
-        except EL.Stopped as stop:
-            return {"ok": False, "problems": ["unavailable_service:%s" % stop.reason], "bundle": None}
-        if enrolled:
-            return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
-        problems, _record = CP.contextual(self.root, unit=sid, commit=commit, base=spec.get("base"),
-                                          spec_path=spec.get("spec_path"), manifest=proof,
-                                          observation=observation if isinstance(observation, dict) else None,
-                                          builder=builder)
-        return {"ok": not problems, "problems": problems, "bundle": None}
+        # The floor is enabled (the executor asks only then) and no proof service is wired: a proof
+        # that cannot be stored is not accepted.
+        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
 
     def review(self, spec, proof, calls=None):
         raise ExecutorError(
@@ -705,9 +698,11 @@ class Executor:
                 return finish("halted", "proof",
                               "proof did not validate (%s problem(s))" % p_err,
                               None, proof, gate_green, verdict)
-            # VELDO-0050: complete contextual validation, and the proof stored as accepted immutable
-            # evidence, BEFORE the unit is offered as built or for review. A refusal names every problem.
-            accepted = self.hooks.accept_proof(spec, build, g, proof, context=self.context)
+            # VELDO-0050: with the floor enabled, complete contextual validation, and the proof stored as
+            # accepted immutable evidence, BEFORE the unit is offered as built or for review. A refusal
+            # names every problem. The pre-factory loop (no Gate) keeps its structural check alone.
+            accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)
+                        if gate is not None else None)
             if accepted is not None and not accepted.get("ok"):
                 problems = list(accepted.get("problems") or ["unknown_outcome:proof"])
                 record("proof", False, cycle=cycle, errors=p_err, refusals=problems)

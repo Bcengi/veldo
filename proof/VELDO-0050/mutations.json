@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 50 --jobs 4 --diff-dir proof/VELDO-0050/mutations",
  "summary": {
-  "mutations_rejected": 23,
+  "mutations_rejected": 24,
   "green_suites": {
    "64_veldo_0050_proof.py": 40
   },
-  "driver_seconds": 30.2
+  "driver_seconds": 39.5
  },
  "all_targets_red_by_assertion": true,
  "mutations": [
@@ -66,6 +66,21 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/proof-offered-without-acceptance.diff"
+  },
+  {
+   "mutation": "proof-unstored-accepted",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-unstored-accepted.diff"
   },
   {
    "mutation": "proof-bundle-rewritable",

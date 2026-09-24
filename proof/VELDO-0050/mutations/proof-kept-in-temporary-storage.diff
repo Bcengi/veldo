@@ -1,6 +1,6 @@
 --- a/.veldo/executor.py
 +++ b/.veldo/executor.py
-@@ -347,6 +347,4 @@
+@@ -349,6 +349,4 @@
 -            try:
 -                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),
 -                                              manifest=proof, observation=observation, builder=builder)
