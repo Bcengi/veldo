@@ -1,0 +1,9 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -272 +272 @@
+-        request = 'retire/' + dispatch_id
++        request = 'retire/%s/%d' % (dispatch_id, entry['attempts'])  # defect: each attempt a request of its own
+@@ -278,2 +278 @@
+-        if slot is not None and slot.get('retired'):
+-            return self._refused(entry, event, 'already_retired')
++        pass  # defect: a released slot is not looked at before it is released again

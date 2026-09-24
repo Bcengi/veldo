@@ -1,4 +1,4 @@
 --- a/.veldo/init_scaffold.py
 +++ b/.veldo/init_scaffold.py
-@@ -144 +143,0 @@
+@@ -148 +147,0 @@
 -    ".veldo/control_retirement.py",

@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 41 --jobs 4 --diff-dir proof/VELDO-0041/mutations",
  "summary": {
-  "mutations_rejected": 25,
+  "mutations_rejected": 34,
   "green_suites": {
-   "67_veldo_0041_heartbeat.py": 45
+   "67_veldo_0041_heartbeat.py": 49
   },
-  "driver_seconds": 91.1
+  "driver_seconds": 142.8
  },
  "all_targets_red_by_assertion": true,
  "mutations": [
@@ -21,6 +21,8 @@
    "red_rows": [
     "heartbeat/blocked-call-liveness",
     "heartbeat/missing-heartbeat-stop",
+    "heartbeat/channel-not-held",
+    "heartbeat/engine-group-signal",
     "heartbeat/shipped-defaults",
     "retirement/unknown-outcome",
     "retirement/observations"
@@ -39,7 +41,8 @@
    "baseline": "green",
    "red_rows": [
     "heartbeat/blocked-call-liveness",
-    "heartbeat/missing-heartbeat-stop"
+    "heartbeat/missing-heartbeat-stop",
+    "heartbeat/channel-not-held"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -56,6 +59,8 @@
    "red_rows": [
     "heartbeat/blocked-call-liveness",
     "heartbeat/missing-heartbeat-stop",
+    "heartbeat/channel-not-held",
+    "heartbeat/engine-group-signal",
     "retirement/unknown-outcome",
     "retirement/observations"
    ],
@@ -88,7 +93,11 @@
    "baseline": "green",
    "red_rows": [
     "heartbeat/blocked-call-liveness",
-    "heartbeat/missing-heartbeat-stop"
+    "heartbeat/missing-heartbeat-stop",
+    "heartbeat/channel-not-held",
+    "heartbeat/engine-group-signal",
+    "retirement/unknown-outcome",
+    "retirement/observations"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -164,7 +173,9 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
-    "stop/bounded-group-exit"
+    "stop/bounded-group-exit",
+    "retirement/unknown-outcome",
+    "retirement/observations"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -179,8 +190,7 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
-    "stop/bounded-group-exit",
-    "retirement/live-descendant"
+    "stop/bounded-group-exit"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -381,6 +391,152 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/retire-pending-unlisted.diff"
+  },
+  {
+   "mutation": "retire-report-not-subscribed",
+   "module": ".veldo/control_retirement.py",
+   "target_rows": [
+    "retirement/missing-accounting"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/missing-accounting"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-report-not-subscribed.diff"
+  },
+  {
+   "mutation": "retire-retry-releases-twice",
+   "module": ".veldo/control_retirement.py",
+   "target_rows": [
+    "retirement/missing-accounting"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/live-descendant",
+    "retirement/missing-accounting",
+    "retirement/clone-files",
+    "retirement/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-retry-releases-twice.diff"
+  },
+  {
+   "mutation": "retire-clone-removal-not-retried",
+   "module": ".veldo/control_retirement.py",
+   "target_rows": [
+    "retirement/clone-files"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/clone-files"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-clone-removal-not-retried.diff"
+  },
+  {
+   "mutation": "retire-pending-never-retried",
+   "module": ".veldo/control_retirement.py",
+   "target_rows": [
+    "retirement/clone-files"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/live-descendant",
+    "retirement/missing-accounting",
+    "retirement/clone-files",
+    "retirement/unknown-outcome",
+    "retirement/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-pending-never-retried.diff"
+  },
+  {
+   "mutation": "retire-no-sweep-on-wait",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "retirement/live-descendant"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/live-descendant"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-no-sweep-on-wait.diff"
+  },
+  {
+   "mutation": "retire-no-sweep-on-prepare",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "retirement/unknown-outcome"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/unknown-outcome",
+    "retirement/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-no-sweep-on-prepare.diff"
+  },
+  {
+   "mutation": "retire-sweep-retries-unchanged",
+   "module": ".veldo/control_retirement.py",
+   "target_rows": [
+    "retirement/unknown-outcome"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "retirement/live-descendant",
+    "retirement/missing-accounting",
+    "retirement/clone-files",
+    "retirement/unknown-outcome"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/retire-sweep-retries-unchanged.diff"
+  },
+  {
+   "mutation": "heartbeat-shares-engine-session",
+   "module": ".veldo/control_heartbeat.py",
+   "target_rows": [
+    "heartbeat/engine-group-signal"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "heartbeat/engine-group-signal"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/heartbeat-shares-engine-session.diff"
+  },
+  {
+   "mutation": "heartbeat-channel-left-to-engine",
+   "module": ".veldo/control_heartbeat.py",
+   "target_rows": [
+    "heartbeat/channel-not-held"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "heartbeat/channel-not-held"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/heartbeat-channel-left-to-engine.diff"
   },
   {
    "mutation": "heartbeat-not-installed",

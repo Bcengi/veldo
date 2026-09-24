@@ -1,0 +1,6 @@
+--- a/.veldo/control_heartbeat.py
++++ b/.veldo/control_heartbeat.py
+@@ -102,2 +102 @@
+-        os.close(engine)
+-        os.close(fd)
++        os.close(engine)  # defect: the channel stays open into the engine

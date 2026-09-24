@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -126 +126 @@
+-        reservations.observe = observe
++        pass  # defect: the final accounting report is never listened for

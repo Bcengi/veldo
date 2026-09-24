@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -262 +262 @@
+-                        self._retry(other, 'clone_removed')
++                        pass  # defect: the retirements waiting on the removed clone wait on

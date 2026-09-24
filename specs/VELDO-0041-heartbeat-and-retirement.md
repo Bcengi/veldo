@@ -160,3 +160,17 @@ clone files (VELDO-0042's teardown) and the accounting inside VELDO-0036's retir
 the slot once; an unknown outcome keeps its slot, since establishing it is Release 2 recovery. Shipped
 defaults 10, 30, 10 and 5 seconds. Suite 67_veldo_0041_heartbeat, red at e231721, finding 41; proof in
 proof/VELDO-0041/.
+
+2026-09-24, review of 5f53aa3 (branch build-veldo-0041): a refused retirement was kept but never tried
+again in production, so a slot whose obligation completed later was never released. The retirement
+service now keeps each refused retirement pending and retries it when an obligation it waits on is
+completed: at once after its own teardown removes a clone another retirement waits on, and when the
+reservation service it listens to accepts a final accounting report; and on the runner's sweep before
+each preparation and after each wait, which retries only a retirement whose obligations changed or whose
+clone can now be removed. The release is still the one gate, one command identity and one
+`already_retired` refusal. The heartbeat now takes a session and process group of its own, so an engine
+that signals its own group leaves it beating. Suite 67 reaches every release through production paths
+(no row calls the runner's private retirement) and adds heartbeat/channel-not-held and
+heartbeat/engine-group-signal; red records at e231721 and 5f53aa3; finding 41 has 34 mutations.
+Left for later: heartbeat lines forged by a hostile engine, the private `Clones._is_live`, and a refused
+renewal not stopping the worker.

@@ -1,5 +1,5 @@
 --- a/.veldo/control_retirement.py
 +++ b/.veldo/control_retirement.py
-@@ -230 +230 @@
+@@ -379 +379 @@
 -        self.observations.append(dict(event, outcome='refused', refusal=code, taxonomy=taxonomy(code),
 +        self.observations.append(dict(event, outcome='refused', refusal=code, taxonomy=None,

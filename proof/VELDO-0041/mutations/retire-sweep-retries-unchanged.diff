@@ -1,0 +1,6 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -322,2 +322 @@
+-        if seen['open'] != entry['open']:
+-            return True
++        return True  # defect: tried again whether or not anything it waits on changed

@@ -1,5 +1,5 @@
 --- a/.veldo/control_retirement.py
 +++ b/.veldo/control_retirement.py
-@@ -203 +203 @@
+@@ -288 +288 @@
 -            seen = self._observe(dispatch_id, entry)
 +            seen = entry.setdefault('first_seen', self._observe(dispatch_id, entry))  # defect: stale
