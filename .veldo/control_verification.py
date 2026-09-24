@@ -57,6 +57,8 @@ import uuid
 
 GATE_PATH = "scripts/verify.sh"
 POLICY_PATH = ".veldo/policy_check.py"
+# The installation's policy source: the policy.yaml installation_at lays beside the installed module.
+POLICY_SOURCE = "policy.yaml"
 INSTALLED_PATHS = (GATE_PATH, ".veldo")
 # The line an installed verifier carries when it knows candidate mode. A verifier without it would
 # ignore the arguments and verify the directory it lives in, so it is refused, never run.
@@ -406,6 +408,9 @@ def run_policy(installation, candidate, timeout=None):
         return None, "missing_authority:policy/absent"
     if inside(policy, candidate):
         return None, "missing_authority:policy/in_candidate"
+    refused = _policy_source_refusal(policy, candidate)
+    if refused:
+        return None, refused
     command = [sys.executable, "-B", str(Path(__file__).resolve()), "policy", str(policy), _real(candidate)]
     try:
         run = subprocess.run(command, cwd=_real(candidate), capture_output=True, text=True,
@@ -415,13 +420,31 @@ def run_policy(installation, candidate, timeout=None):
     return run.returncode, (run.stdout + run.stderr).strip()
 
 
+def _policy_source_refusal(policy, candidate):
+    """The refusal when the installation's policy.yaml, beside the installed module, is absent or
+    inside the candidate; None when it can be the policy source."""
+    source = Path(policy).parent / POLICY_SOURCE
+    if not source.is_file():
+        return "missing_authority:policy_source/absent"
+    if inside(source, candidate):
+        return "missing_authority:policy_source/in_candidate"
+    return None
+
+
 def _policy_main(policy, candidate):
     """Load the installed policy module by its own path, so it and every sibling it loads are the
-    installation's, then point its subject root at the candidate and ask it."""
+    installation's, then point its subject root at the candidate and its policy source at the
+    installation's policy.yaml, and ask it. The candidate is the subject, never the source of the
+    protected list: its own policy.yaml could empty protected_paths (VELDO-0058 AC3)."""
+    refused = _policy_source_refusal(policy, candidate)
+    if refused:
+        print(refused)
+        return 2
     spec = importlib.util.spec_from_file_location("veldo_installed_policy", policy)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.ROOT = Path(candidate)
+    module.POLICY = Path(policy).parent / POLICY_SOURCE
     return module.main()
 
 
