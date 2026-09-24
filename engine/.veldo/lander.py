@@ -44,13 +44,22 @@ that safe with three guarantees:
      Every Git operation on that path goes through one checked step, so a failed fetch, merge,
      object lookup, index write or commit refuses the candidate by name (the failing operation
      is in the refusal), and missing required evidence refuses it before anything is merged.
-     The gate runs in the candidate and is green only on exit 0 with a terminal GREEN line for
-     the candidate commit. finalize then asks the policy about that exact candidate. For a
+     The gate is the TRUSTED INSTALLATION's, never the candidate's (VELDO-0058): the verifier and
+     the policy of the watermark, laid down from Git objects outside the candidate (or a host's
+     installed directory), run the candidate's checks in candidate mode through
+     control_verification, with the stamp, the gate event and the review-event reconciliation
+     written to a sink outside the candidate and the candidate's whole state required equal after
+     the run. It is green only on exit 0, a terminal GREEN line for the candidate commit, every
+     required check passing, the sink's stamp and gate event, and that equality; the observation
+     is written outside the candidate and finalize accepts it again (same bytes, still green, the
+     candidate still in the state it was verified in) before anything moves, so the final receipt
+     is never required inside the candidate. finalize then asks the policy about that exact
+     candidate. For a
      factory land it is the authority's CandidatePolicy, installed code outside the candidate
      (R50): the accepted proof (VELDO-0050), the review obligations (VELDO-0049) and the
      publication decision over the candidate workspace (VELDO-0052). A pre-factory land with no
-     authority policy wired asks the repository policy (policy_check.py) at the candidate, over
-     exactly watermark..candidate. Only after the policy accepts does anything move: the exact
+     authority policy wired asks the installed repository policy (policy_check.py of the
+     installation, its subject root the candidate), over exactly watermark..candidate. Only after the policy accepts does anything move: the exact
      candidate commit is pushed, fast-forward only. Every refusal leaves the caller's
      refs, HEAD, index and working bytes, and the remote trunk, exactly as they were, and the
      workspace is removed at the end of every land. Local trunk synchronization, exact-tip
@@ -92,6 +101,19 @@ def _load(name, rel):
 
 
 CL = _load("veldo_claim_ld", ".veldo/claim.py")
+_VERIFICATION = []
+
+
+def verification_organ():
+    """VELDO-0058: control_verification beside this file, loaded on first use: the installed gate run
+    against a candidate, its external observation and its acceptance, and the installed policy."""
+    if not _VERIFICATION:
+        spec = importlib.util.spec_from_file_location("veldo_control_verification_ld",
+                                                      Path(__file__).resolve().with_name("control_verification.py"))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _VERIFICATION.append(module)
+    return _VERIFICATION[0]
 
 # The shared APPEND-ONLY files two lands can both touch: a union merge keeps both sides'
 # additions. Everything else that conflicts is a real conflict the lander refuses to guess at.
@@ -304,8 +326,12 @@ class GitLandOps(LandOps):
     trunk       the trunk's branch name, whatever it is; remote the caller's remote for it.
     push        False builds, gates and accepts the candidate but publishes nothing.
     policy      the authority's acceptance, called (unit, candidate) -> {ok, refusals}: for a
-                factory land a CandidatePolicy. With none, the repository policy
-                (policy_check.py at the candidate) decides, as a pre-factory land always has.
+                factory land a CandidatePolicy. With none, the installed repository policy
+                (the installation's policy_check.py, asked about the candidate) decides.
+    installation  a directory holding the trusted scripts/verify.sh and .veldo/ (VELDO-0058); by
+                default the watermark's own, laid down from Git objects outside the candidate.
+    observations  where each land's observation directory (the sink and observation.json) is made;
+                by default the system temporary directory, removed with the workspace.
     identity    (name, email) the candidate's merge and projection commits are made as; by
                 default the caller repository's own configured user.name and user.email.
     workspace_root  where candidate workspaces are made (the system temporary directory).
@@ -314,7 +340,7 @@ class GitLandOps(LandOps):
 
     def __init__(self, repo_root, build_ref, trunk="main", remote="origin", push=True, *,
                  policy=None, identity=None, workspace_root=None, observe=None, domain=None,
-                 repository=None):
+                 repository=None, installation=None, observations=None):
         self.repo_root = str(repo_root)
         self.build_ref = build_ref
         self.trunk = trunk
@@ -326,6 +352,8 @@ class GitLandOps(LandOps):
         self.observe = observe or (lambda event: None)
         self.domain = domain
         self.repository = repository
+        self.installation = str(installation) if installation is not None else None
+        self.observations = str(observations) if observations is not None else None
         self.counts = {"accepted": 0, "refused": 0}
         self.candidate = None
 
@@ -421,6 +449,8 @@ class GitLandOps(LandOps):
         if c and c.get("workspace") and os.path.isdir(c["workspace"]):
             shutil.rmtree(c["workspace"], ignore_errors=True)
             c["discarded"] = not os.path.exists(c["workspace"])
+        if c and c.get("observation_dir") and self.observations is None and os.path.isdir(c["observation_dir"]):
+            shutil.rmtree(c["observation_dir"], ignore_errors=True)
 
     # The stages.
 
@@ -631,25 +661,48 @@ class GitLandOps(LandOps):
         return {"ok": True, "candidate": c["commit"], "tree": c["tree"], "watermark": c["watermark"],
                 "implementation": c["implementation"], "evidence": c["evidence"]}
 
+    def _installed(self, c):
+        """The trusted installation this land verifies with: the host's directory, or the watermark's
+        verifier and policy laid down from Git objects in this land's observation directory."""
+        if c.get("installation") is None:
+            CV = verification_organ()
+            if self.installation is not None:
+                c["installation"] = {"root": self.installation, "source": "directory:" + self.installation}
+            else:
+                c["installation"] = CV.installation_at(c["workspace"], c["watermark"],
+                                                       Path(c["observation_dir"]) / "installed")
+        return c["installation"]
+
     def gate(self):
-        """Run the canonical gate in the candidate: green only on exit 0 and a terminal GREEN line
-        naming the candidate commit."""
+        """Run the installed canonical gate against the candidate in candidate mode (VELDO-0058):
+        green only on exit 0, a terminal GREEN line naming the candidate commit, every required check
+        passing, the stamp and gate event in the external sink, and the candidate unchanged by the
+        run. The observation is written outside the candidate and its reference kept for finalize."""
         c = self.candidate
         if c is None or c.get("state") != "built":
             return self._refuse("gate", CandidateRefused("invalid_input:candidate", "no built candidate"))
+        CV = verification_organ()
         try:
-            r = subprocess.run(list(GATE_COMMAND), cwd=c["workspace"], capture_output=True, text=True,
-                               stdin=subprocess.DEVNULL)
-            exit_code, out = r.returncode, r.stdout
+            c["observation_dir"] = tempfile.mkdtemp(prefix="veldo-observation-", dir=self.observations)
+            installed = self._installed(c)
+            observed, reference = CV.observe_gate(c["workspace"], installed, Path(c["observation_dir"]) / "gate")
+        except CV.Refused as error:
+            c["gate"] = {"exit": None, "terminal": None, "green": False, "refusals": [error.code]}
+            return self._refuse("gate", CandidateRefused(error.code, str(error.detail)))
         except OSError as error:
-            exit_code, out = None, str(error)
-        last = [line for line in out.splitlines() if line.strip()][-1:]
-        terminal = last[0] if last else None
-        green = exit_code == 0 and terminal == "GATE: GREEN (%s)" % c["commit"]
-        c["gate"] = {"exit": exit_code, "terminal": terminal, "green": green}
+            c["gate"] = {"exit": None, "terminal": None, "green": False}
+            return self._refuse("gate", CandidateRefused("unavailable_service:observation", type(error).__name__))
+        exit_code, terminal = observed["exit"], observed["terminal"]
+        last = [line for line in observed["stdout"].splitlines() if line.strip()][-1:]
+        green = observed["green"] is True and exit_code == 0 and terminal == "GATE: GREEN (%s)" % c["commit"]
+        c["gate"] = {"exit": exit_code, "terminal": terminal, "green": green, "observation": reference,
+                     "verifier": observed["gate"], "refusals": observed["refusals"],
+                     "post_run": {k: observed["post_run"][k] for k in ("equal", "changed_count")}}
         if not green:
-            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),
-                                detail_lines=last, exit=exit_code)
+            ran_red = exit_code != 0 or terminal != "GATE: GREEN (%s)" % c["commit"]
+            code = "missing_evidence:gate" if ran_red or not observed["refusals"] else observed["refusals"][0]
+            return self._refuse("gate", CandidateRefused(code, str(terminal)), detail_lines=last, exit=exit_code,
+                                refusals=observed["refusals"])
         c["state"] = "verified"
         self._event("gate", "accepted", terminal=terminal)
         return {"ok": True, "detail": last, "exit": exit_code, "candidate": c["commit"]}
@@ -664,16 +717,15 @@ class GitLandOps(LandOps):
         if self.policy is None:
             # The pre-factory land: the repository's own policy, asked at the candidate, whose range
             # is exactly watermark..candidate (the workspace's origin/HEAD is the watermark).
+            # VELDO-0058: the INSTALLED policy_check.py, never the one the candidate carries.
             try:
-                pc = subprocess.run([sys.executable, "-B", *POLICY_COMMAND], cwd=c["workspace"], capture_output=True,
-                                    text=True, stdin=subprocess.DEVNULL,
-                                    env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
-                policy_out = pc.stdout.strip()
-                if pc.returncode != 0:
-                    refusals.append("missing_authority:repository_policy")
-            except OSError as error:
-                policy_out = str(error)
+                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"])
+            except Exception as error:  # noqa: BLE001 - a policy that cannot be asked accepts nothing
+                returncode, policy_out = None, type(error).__name__
+            if returncode is None:
                 refusals.append("unavailable_service:repository_policy")
+            elif returncode != 0:
+                refusals.append("missing_authority:repository_policy")
             detail["policy_check"] = policy_out
         else:
             # The factory land: the authority's installed services decide (R50), never the policy code
@@ -687,6 +739,12 @@ class GitLandOps(LandOps):
             if verdict.get("ok") is not True and not named:
                 named = ["unknown_outcome:policy"]
             refusals.extend(named)
+        # VELDO-0058: the gate's external observation accepted again, last, before anything moves: the
+        # same bytes outside the candidate, still green, and the candidate still in the state it was
+        # verified in.
+        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"])
+        refusals.extend(accepted)
+        c["acceptance"] = {"refusals": list(accepted)}
         c["policy"] = {"refusals": list(refusals)}
         if refusals:
             error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")

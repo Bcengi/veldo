@@ -74,7 +74,11 @@ immutable accepted bundle (control_proof) before the run finishes built or enter
 review, so a fresh reviewer resolves it from the store with no builder memory.
 LiveLoop.gate observes the canonical gate (exit, terminal line, every required
 catalog check) and records the observation; the checks a proof records come only
-from it, never a default. With the floor enabled the executor emits only its own
+from it, never a default. The gate that runs is the INSTALLED one (VELDO-0058): the
+verifier of the run's base commit (or a named installed directory) runs the
+workspace's checks in candidate mode through control_verification, so the stamp,
+the gate event and the review-event reconciliation go to a sink outside the
+workspace and the workspace must be unchanged by the run. With the floor enabled the executor emits only its own
 events (proof.recorded, review.requested, approval.recorded): a verdict belongs to
 the review projection and the review authority, and nothing here writes a landing
 or completion record. Without a Gate (the pre-factory loop) no acceptance is
@@ -128,6 +132,15 @@ def _eligibility_organ():
 
 
 _PROOF = []
+_VERIFICATION = []
+
+
+def verification_organ():
+    """VELDO-0058: control_verification beside this file, loaded on first use."""
+    if not _VERIFICATION:
+        _VERIFICATION.append(_load_module("veldo_control_verification_exec", ".veldo/control_verification.py"))
+    return _VERIFICATION[0]
+
 
 
 def proof_organ():
@@ -235,9 +248,13 @@ class LiveLoop(LoopSteps):
     executor asks for acceptance only with the floor enabled, and there accept_proof without a proof
     service refuses (missing_authority:proof_service); the pre-factory loop is unchanged."""
 
-    def __init__(self, root=ROOT, proofs=None):
+    def __init__(self, root=ROOT, proofs=None, installation=None):
         self.root = Path(root)
         self.proofs = proofs
+        # VELDO-0058: a directory holding the trusted scripts/verify.sh; by default the verifier of
+        # the base commit resolve() found, laid down from Git objects outside the workspace.
+        self.installation = str(installation) if installation is not None else None
+        self.base = None
 
     def resolve(self, spec_id):
         V = _load_module("veldo_validate_exec", ".veldo/validate.py")
@@ -253,6 +270,7 @@ class LiveLoop(LoopSteps):
         base = CP.head(self.root)
         spec_path = matches[0].relative_to(self.root).as_posix()
         committed = CP.blob(self.root, base, spec_path) if base else None
+        self.base = base
         return {
             "id": fm.get("id", spec_id),
             "status": fm.get("status"),
@@ -284,8 +302,18 @@ class LiveLoop(LoopSteps):
         GREEN line for the commit it ran at and every required catalog item observed passing. The
         observation is recorded with the proof service when one is wired, before any proof names it,
         and handed on (its reference, or the observation itself when no store is kept)."""
-        CP = proof_organ()
-        observed = CP.capture_gate(self.root)
+        CP, CV = proof_organ(), verification_organ()
+        with tempfile.TemporaryDirectory(prefix="veldo-observation-") as directory:
+            try:
+                if self.installation is not None:
+                    installed = {"root": self.installation, "source": "directory:" + self.installation}
+                elif self.base:
+                    installed = CV.installation_at(self.root, self.base, Path(directory) / "installed")
+                else:
+                    raise CV.Refused("missing_authority:verifier", "no base commit and no installed verifier")
+                observed, _reference = CV.observe_gate(self.root, installed, Path(directory) / "gate")
+            except CV.Refused as error:
+                return {"green": False, "detail": "gate not run: %s" % error.code}
         result = {"green": observed["green"], "detail": CP.detail(observed)}
         if self.proofs is None:
             result["observation"] = observed
