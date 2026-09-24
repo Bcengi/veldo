@@ -32,6 +32,8 @@ footprint:
   - "specs/VELDO-0051-journal-event-publication.md"
   - "specs/index.md"
   - "proof/VELDO-0051/*"
+  - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/11_inbound_command_receipt_reconcile.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -135,3 +137,10 @@ projector/two-clone/crash replay and AC3 replica-failure recovery moved to Relea
 repository matrix moved to Release 4. Vocabulary and receipt-derived completion remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-24, build: the footprint names scripts/check_teeth_mutations.py, where this work's
+falsifiers are registered as finding 51, and scripts/suites/11_inbound_command_receipt_reconcile.py,
+whose WARP-1208 row pinned the validator's vocabulary as an exact set. One canonical vocabulary
+necessarily adds the run, request and decision types the emitter already wrote, so that row now
+requires the previously recognised set to be kept (an inclusion), which is the additivity it
+states. No criterion, status or historical proof changed.

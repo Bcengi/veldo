@@ -531,30 +531,24 @@ def check_spec_plan_binding(spec_path, fm, registry):
 
 
 
-EVENT_TYPES = {
-    "plan.created", "plan.approved", "plan.revised", "work.pulled",
-    "spec.ready", "spec.shipped", "spec.blocked",
-    "gate.passed", "gate.failed",
-    "proof.recorded", "review.requested", "verdict.recorded",
-    "approval.recorded",
-    "emergency.push", "emergency.closed",
-    "merge.completed", "index.updated",
-    # The incident lifecycle (PLAN-0012): an incident opens, is diagnosed from
-    # artifacts, a remediation is proposed, and the incident is closed by
-    # reconciliation. The contract that OWNS this vocabulary is .veldo/incident.py
-    # (INCIDENT_EVENT_TYPES) and .veldo/events.py carries it for the emitter; this
-    # is the GATE's recognition of the same four types, which WARP-1201 deferred
-    # to WARP-1208 (the reconciliation that actually emits incident.closed). A
-    # selftest binds all three sets so the emitter, the metric source, and the
-    # gate cannot drift. Recognition only: it refuses nothing that passed before.
-    "incident.opened", "incident.diagnosed", "remedy.proposed", "incident.closed",
-}
+# THE ONE CANONICAL EVENT VOCABULARY (VELDO-0051), the module the emitter (.veldo/events.py) loads
+# too, so the gate recognises exactly what the enabled producers write: the loop's steps, the run
+# milestones, the incident lifecycle (incident.py INCIDENT_EVENT_TYPES) and the request lifecycle
+# (request.py REQUEST_EVENT_TYPES). Before it this module held its own 21-type list against the
+# emitter's 31, and refused a run.done the emitter wrote. EVENT_TYPES and EVENT_SCHEMAS are THIS
+# module's own copies, so a private instance of the validator can be driven without mutating another.
+_evspec = importlib.util.spec_from_file_location("veldo_event_vocabulary",
+                                                 ROOT / ".veldo" / "control_event_vocabulary.py")
+_EVENT_VOCABULARY = importlib.util.module_from_spec(_evspec)
+_evspec.loader.exec_module(_EVENT_VOCABULARY)
+EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES)
+EVENT_SCHEMAS = tuple(_EVENT_VOCABULARY.SCHEMAS)
 
 
 def check_events(path):
     """Every line must be a valid event envelope: JSON, schema, a known type, a timestamp.
     BOTH schema spellings are accepted, because the log is append-only history that keeps the old
-    name. The legacy id is SPLIT so the rename cannot collapse it to a duplicate. Do not rejoin."""
+    name; the canonical vocabulary holds the legacy id SPLIT so the rename cannot collapse it."""
     errs = 0
     p = Path(path)
     if not p.exists():
@@ -568,12 +562,8 @@ def check_events(path):
         except Exception:
             errs += fail(path, f"line {n}: not valid JSON")
             continue
-        if e.get("schema") not in ("veldo.event/v1", "w" "arp.event/v1"):
-            errs += fail(path, f"line {n}: bad or missing schema (want veldo.event/v1)")
-        if e.get("type") not in EVENT_TYPES:
-            errs += fail(path, f"line {n}: unknown event type {e.get('type')!r}")
-        if not e.get("at"):
-            errs += fail(path, f"line {n}: missing at (timestamp)")
+        for problem in _EVENT_VOCABULARY.line_problems(e, EVENT_TYPES, EVENT_SCHEMAS):
+            errs += fail(path, f"line {n}: {problem}")
     return errs
 
 
