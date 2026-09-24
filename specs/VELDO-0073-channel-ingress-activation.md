@@ -38,6 +38,7 @@ footprint:
   - "scripts/suites/*_veldo_0073_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0073-channel-ingress-activation.md"
   - "specs/index.md"
   - "proof/VELDO-0073/*"
@@ -113,6 +114,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: the owner activates the Telegram edge with an explicit, separately authorized activation
+  record bound to the current VELDO-0067 enrollment and to real qualification evidence from the test
+  bot. Only then can the edge send a decision and receive answers. A received update wakes acquisition;
+  the answer is read from the platform's own fields and signed by the restricted signer before the
+  VELDO-0068 settlement takes it. The owner can stop the edge explicitly; pending requests stay pending.
+- Threat model: the edge sending or receiving because a token resolves or because the source landed,
+  without activation; fixture-only or invented qualification evidence accepted as real; a settlement
+  made from a notification payload rather than from acquired platform evidence; an answer from someone
+  who is not the enrolled owner; a stopped edge, a stale key or a stale configuration binding still
+  producing authority. The owner's account, the bot token's custody, the signer and the store are
+  trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); interrupted
+  settlement, retention, reconnect, reordering, restart and rollback qualification (Release 2); other
+  channels (Release 4); a second real person as the unauthorized actor (the owner has none, Telegram
+  29047; the refusal is driven with an update from an unenrolled sender id, as in VELDO-0066); a
+  compromised Telegram account or bot token.
 
 ## Notes
 
