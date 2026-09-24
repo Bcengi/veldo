@@ -36,6 +36,8 @@ CM = organ('control_membership')
 AC = CM.AC
 CL = organ('claim')
 OPERATIONS = ('claim', 'renew', 'release', 'use', 'inspect')
+# Rereads of one command whose pinned versions kept moving; past this the conflict is the answer.
+ATTEMPTS = 16
 
 
 def claim_id(repository, unit):
@@ -147,14 +149,28 @@ class Receiver:
             command = {}
         observation = dict(self.ids, operation=command.get('operation'), unit_id=command.get('unit_id'),
                            command_id=command.get('command_id'), accepted_versions={})
-        try:
-            result = self._apply(packet, command, observation)
-        except S.StoreRefused as exc:
-            result = {'ok': False, 'reason': exc.code}
+        for _ in range(ATTEMPTS):
+            try:
+                result = self._apply(packet, command, observation)
+            except S.StoreRefused as exc:
+                result = {'ok': False, 'reason': exc.code}
+                # stale_version here names the versions THIS receiver read and pinned, not any the
+                # caller sent: another writer moved one between the read and the commit, and nothing
+                # was written. That is contention on the receiver's own read, never an answer about
+                # ownership, so it reads again and decides on the state that is current now (a renew
+                # racing a unit transition was otherwise reported as a lost claim). Any other refusal,
+                # or a stale_version whose pinned versions did not move, is the answer.
+                if exc.code == 'stale_version' and self._pins_moved(observation['accepted_versions']):
+                    continue
+            break
         observation.update(outcome='accepted' if result['ok'] else 'refused', reason=result.get('reason'))
         self.counts[observation['outcome']] += 1
         self.observations.append(observation)
         return result
+
+    def _pins_moved(self, pinned):
+        entities = S.materialized_state(self.conn)['entities']
+        return any(entities.get(eid, {}).get('version', 0) != version for eid, version in pinned.items())
 
     def _apply(self, packet, command, observation):
         if (not isinstance(packet, dict) or not isinstance(packet.get('command'), dict)
