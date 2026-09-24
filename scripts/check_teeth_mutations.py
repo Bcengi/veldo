@@ -2576,8 +2576,14 @@ def cases():
     # AC2: the VELDO-0064 answer command moves a request with settlement terms to SUBMITTED with no
     # settlement, effect or receipt, so a later answer finds it closed.
     settlement('inbox-answer-bypasses-settlement',
-               "                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
                "                if False:  # defect: the inbox answers a request with settlement terms\n",
+               'settlement/one-transaction', module='control_assignment.py')
+    # Review decision: the VELDO-0064 decline command closes a request with terms as DECLINED with no
+    # settlement; a rejection is a ruling the settlement service records with the owner's reasoning.
+    settlement('inbox-decline-bypasses-settlement',
+               "                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:  # defect: decline bypasses settlement\n",
                'settlement/one-transaction', module='control_assignment.py')
     # AC3 (declared falsifier): the request left open after settlement; then an API answer accepted on a
     # settled request.

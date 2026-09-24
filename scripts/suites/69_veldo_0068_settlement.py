@@ -619,6 +619,15 @@ def _v68_checks(base):
                   bypass.get('ok') is False and bypass.get('reason') == 'settlement_required'
                   and unchanged(direct, before_direct) and journal_count() == journal_before
                   and request_data(direct).get('state') in I.PENDING)
+            before_decline, journal_before = snapshot_of(direct), journal_count()
+            declined = inbox.apply(signed_command('owner', dict(ids, operation='decline', alias='OT-direct', principal='owner',
+                                                                command_id=next_id('c'), nonce=next_id('n'),
+                                                                request_version=1, ruling='decline')))
+            check(OT, 'the VELDO-0064 decline command on a request with settlement terms is refused '
+                      '(settlement_required) and writes nothing [observed: %s, %s]' % (declined.get('ok'), declined.get('reason')),
+                  declined.get('ok') is False and declined.get('reason') == 'settlement_required'
+                  and unchanged(direct, before_decline) and journal_count() == journal_before
+                  and request_data(direct).get('state') in I.PENDING)
             reply(direct_receipt, 'accept: settled through the service once the direct answer was refused')
             acquire()
             got_direct = settle(direct)

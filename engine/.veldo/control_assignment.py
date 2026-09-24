@@ -320,10 +320,12 @@ class Inbox:
                 raise Refused('stale_subject', 'command names another request version')
             params['request_version'] = data['request_version']
             if op in ('answer', 'decline'):
-                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:
-                    # The record's version is pinned below, so a revision of the subject is stale.
-                    raise Refused('settlement_required', 'a request with settlement terms is answered through '
-                                  'the settlement service')
+                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:
+                    # A request with settlement terms is answered, or rejected, only through the settlement
+                    # service, whose rejection is a ruling with the owner's reasoning. The record's version is
+                    # pinned below, so a revision of the subject is stale.
+                    raise Refused('settlement_required', 'a request with settlement terms is answered or declined '
+                                  'through the settlement service')
                 self._active(state, principal, now, ('person',), data['scope'])
                 params['ruling'] = command.get('ruling')
                 if op == 'answer':

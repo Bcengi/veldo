@@ -121,3 +121,6 @@ all 18 mutations (exit 0). Finding 64 still rejects all 36 of its mutations with
 - Only the presented owner can answer, so a count above one is unsupported in Release 1 (Release 3).
 - The API answer is verified as a signed request from the configured API edge principal, as VELDO-0126
   does; the VELDO-0130 server itself is not part of this change.
+
+The lead extended the refusal to the VELDO-0064 `decline` command (a rejection is a settlement
+ruling), with a row case and the mutation `inbox-decline-bypasses-settlement`: 19 mutations in all.

@@ -196,3 +196,7 @@ effect, is never counted and is refused as already_settled on a later settlement
 on the settlement. Listing it (pinning the version's answer set in the terminal transaction) is Release
 2 work. The module's docstring and the proof README now promise only what holds. The criteria, status
 and risk are unchanged.
+
+2026-09-24, lead's decision on the fixer's question: the VELDO-0064 decline command also refuses a
+request with settlement terms (settlement_required), because a rejection is a settlement ruling with the owner's
+reasoning; row case in settlement/one-transaction and mutation inbox-decline-bypasses-settlement (19 in all).
