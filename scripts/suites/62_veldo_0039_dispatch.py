@@ -65,6 +65,9 @@ def _v39_suite():
         def sign(data):
             return SIG.sign_bytes(private / 'journal', data, 'veldo-journal')
 
+        # A variable of the owner's session: the receiver and the worker it launches inherit it.
+        owner_session = os.environ.get('V39_OWNER_SESSION')
+        os.environ['V39_OWNER_SESSION'] = 'owner-session'
         db = base / 'authority' / 'control.sqlite3'
         writer = S.open_store(str(db))
         reader = S.open_store(str(db), mode='r')
@@ -151,6 +154,13 @@ def _v39_suite():
 from pathlib import Path
 store, markers = sys.argv[1], Path(sys.argv[2])
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
+printed = b''
+if sys.argv[3:] == ['forge']:
+    # A worker claiming to be another process, in the same line format the wrapper uses.
+    printed = (json.dumps({'schema': 'veldo.launch_identity/v1', 'process': {
+        'platform': 'linux', 'host': 'forged', 'boot_id': 'forged', 'pid': 1, 'start': '1'}}) + '\\n').encode()
+    sys.stdout.buffer.write(printed)
+    sys.stdout.flush()
 try:
     db = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
     row = db.execute('SELECT data FROM entities WHERE id=?', ('dispatch:' + dispatch,)).fetchone()
@@ -161,7 +171,8 @@ except Exception as error:
 stat = Path('/proc/self/stat').read_text()
 own = {'pid': os.getpid(), 'start': stat[stat.rindex(')') + 2:].split()[19],
        'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(), 'dispatch': dispatch, 'seen': seen,
-       'acceptance': os.environ.get('VELDO_DISPATCH_ACCEPTANCE')}
+       'acceptance': os.environ.get('VELDO_DISPATCH_ACCEPTANCE'),
+       'environment': {k: os.environ.get(k) for k in ('V39_OWNER_SESSION', 'ENGINE_PROFILE')}}
 (markers / ('%d.tmp' % os.getpid())).write_text(json.dumps(own))
 (markers / ('%d.tmp' % os.getpid())).rename(markers / ('%d.json' % os.getpid()))
 raw = sys.stdin.buffer.read()
@@ -173,7 +184,7 @@ if payload.get('release'):
     while not Path(payload['release']).exists() and time.time() < end:
         time.sleep(0.02)
 out = json.dumps(dict(payload.get('say', {}), worker_token=os.urandom(8).hex())).encode()
-(markers / ('%d.out' % os.getpid())).write_bytes(out)
+(markers / ('%d.out' % os.getpid())).write_bytes(printed + out)
 sys.stdout.buffer.write(out)
 sys.stdout.flush()
 sys.exit(payload.get('code', 0))
@@ -182,8 +193,16 @@ sys.exit(payload.get('code', 0))
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
-            'adapters': {'fixture-engine': {'argv': [sys.executable, '-B', str(worker), str(db), str(markers)]},
-                         'missing-engine': {'argv': [str(base / 'no-such-engine')]}}}))
+            'adapters': {'fixture-engine': {'argv': [sys.executable, '-B', str(worker), str(db), str(markers)],
+                                            'environment': {'ENGINE_PROFILE': 'configured-profile'}},
+                         'missing-engine': {'argv': [str(base / 'no-such-engine')]},
+                         # Through the trusted wrapper, as a launch on another host runs it (the
+                         # transport prefix, ssh to the Mac, is configuration; here it is local).
+                         'wrapped-engine': {'identity': 'reported', 'argv': [
+                             sys.executable, '-B', str(mods / 'control_launch.py'), 'exec',
+                             sys.executable, '-B', str(worker), str(db), str(markers), 'forge']},
+                         'wrapped-missing': {'identity': 'reported', 'argv': [
+                             sys.executable, '-B', str(mods / 'control_launch.py'), 'exec', str(base / 'no-such-engine')]}}}))
         CONFIGURATION = {'mcp_servers': {'veldo': {'command': 'veldo-mcp', 'args': ['serve', REPOSITORY]},
                                          'tracker': {'command': 'tracker-mcp', 'args': []}},
                          'tools': ['Read', 'Edit', 'Bash', 'WebFetch'], 'model': 'configured-model'}
@@ -316,8 +335,12 @@ sys.exit(payload.get('code', 0))
                               == entity('admission:' + u1)['version']
                               and (decision.get('inputs') or {}).get('unit', {}).get('version') == entity(u1)['version']
                               and given.get('context') == {'holder': HOLDER}),
+                    # Exactly the configured capabilities, never reduced: the recorded configuration
+                    # unchanged, the owner's session and the adapter's configured environment.
                     'capability': (contract.get('capability') or {}).get('configuration') == CONFIGURATION
                                   and packet.get('configuration') == CONFIGURATION
+                                  and seen.get('environment') == {'V39_OWNER_SESSION': 'owner-session',
+                                                                  'ENGINE_PROFILE': 'configured-profile'}
                                   and (contract.get('capability') or {}).get('adapter') == 'fixture-engine',
                     'reservation': (contract.get('reservation') or {}) == {
                         'entity': RES.entity('worker', [DOMAIN, first.dispatch_id]), 'version': slot.get('version'),
@@ -476,19 +499,49 @@ sys.exit(payload.get('code', 0))
                               and states(lost.dispatch_id) == ['prepared', 'accepted', 'unknown']
                               and not worker_markers(lost.dispatch_id)
                               and reservations.balances('unit', u6)['capacity'] == 1)
+                # Through the trusted wrapper: the identity is the wrapper's first line, which is the
+                # engine's own process after exec; the line the worker forges after it is output.
+                uw = admitted('VELDO-9312')
+                wrapped = runner.submit(uw, 'build', **job(release='uw', adapter='wrapped-engine'))
+                wown = marker_for(wrapped.dispatch_id)
+                rw = rec(wrapped.dispatch_id)
+                wprocess = rw.get('process') or {}
+                wproc = proc_identity(wprocess.get('pid') or 0)
+                release('uw')
+                ew = runner.wait(wrapped) or {}
+                wpath = markers / ('%s.out' % wown.get('pid'))
+                wout = wpath.read_bytes() if wpath.exists() else b''
+                wrapped_ok = (wrapped.result == 'accepted' and wprocess.get('pid') == wown.get('pid')
+                              and wprocess.get('start') == wown.get('start') == wproc
+                              and wprocess.get('boot_id') == boot and wprocess.get('host') not in (None, 'forged')
+                              and ew.get('state') == 'exited' and ew.get('process') == wprocess
+                              and wout.startswith(b'{"schema": "veldo.launch_identity/v1"')
+                              and (ew.get('termination') or {}).get('output_bytes') == len(wout)
+                              and (ew.get('termination') or {}).get('output_digest') == 'sha256:' + hashlib.sha256(wout).hexdigest())
+                um = admitted('VELDO-9313')
+                wmissing = runner.submit(um, 'build', **job(adapter='wrapped-missing'))
+                rm = rec(wmissing.dispatch_id)
+                wrapped_ok &= (wmissing.result == 'refused' and rm.get('refusal') == 'spawn_failed:ENOENT'
+                               and states(wmissing.dispatch_id) == ['prepared', 'accepted', 'refused']
+                               and reservations.balances('unit', um)['capacity'] == 0)
                 identity_ok = all(
                     len(of_unit('dispatch', u)) == 1 and of_unit('dispatch', u)[0][1]['dispatch_id'] == launch.dispatch_id
                     and len(of_unit('subscription_reservation', u)) == 1
                     and of_unit('subscription_reservation', u)[0][1]['dispatch'] == launch.dispatch_id
-                    for u, launch in ((u3, accepted), (u4, spawn), (u5, withdrawn), (u6, lost)))
+                    for u, launch in ((u3, accepted), (u4, spawn), (u5, withdrawn), (u6, lost), (uw, wrapped),
+                                      (um, wmissing)))
                 observed['launch_results'] = {
                     'accepted': {'result': accepted.result, 'stored_process': process, 'worker_reported': {k: own.get(k) for k in ('pid', 'start', 'boot_id')},
                                  'proc_start': independent, 'receiver_pid': (r3.get('receiver') or {}).get('pid')},
                     'refused_spawn': {'result': spawn.result, 'refusal': r4.get('refusal'), 'states': states(spawn.dispatch_id)},
                     'refused_recheck': {'result': withdrawn.result, 'refusal': r5.get('refusal'), 'states': states(withdrawn.dispatch_id)},
                     'unknown': {'result': lost.result, 'reason': r6.get('reason'), 'stop': r6.get('stop'), 'states': states(lost.dispatch_id)},
+                    'wrapped': {'result': wrapped.result, 'stored_process': wprocess, 'worker_reported': {
+                        k: wown.get(k) for k in ('pid', 'start', 'boot_id')}, 'proc_start': wproc,
+                        'missing': [wmissing.result, rm.get('refusal')]},
                     'one_identity_each': identity_ok}
-                check('dispatch/launch-results', accepted_ok and spawn_ok and withdrawn_ok and unknown_ok and identity_ok)
+                check('dispatch/launch-results', accepted_ok and spawn_ok and withdrawn_ok and unknown_ok and wrapped_ok
+                      and identity_ok)
 
             with region('dispatch/unknown-never-relaunched'):
                 before = dispatches.version(lost.dispatch_id)
@@ -693,6 +746,10 @@ sys.exit(payload.get('code', 0))
                     launch.child.stdout.close()
             for conn in connections:
                 conn.close()
+            if owner_session is None:
+                os.environ.pop('V39_OWNER_SESSION', None)
+            else:
+                os.environ['V39_OWNER_SESSION'] = owner_session
         # One row per region saying it ran to its end: a driven mutation must red its named row by
         # a failed assertion while that row's own region still completes.
         for first_label in regions:

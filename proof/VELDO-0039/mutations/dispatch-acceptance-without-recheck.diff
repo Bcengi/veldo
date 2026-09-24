@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -366 +366 @@
+@@ -383 +383 @@
 -            refusal = self._recheck(contract)
 +            refusal = None  # defect: the accepting boundary does not recheck the station decision

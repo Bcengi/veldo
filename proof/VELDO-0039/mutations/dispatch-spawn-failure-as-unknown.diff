@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -384 +384 @@
+@@ -401 +401 @@
 -            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time())
 +            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time())

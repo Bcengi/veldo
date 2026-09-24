@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 39 --jobs 4 --diff-dir proof/VELDO-0039/mutations",
  "summary": {
-  "mutations_rejected": 21,
+  "mutations_rejected": 23,
   "green_suites": {
    "62_veldo_0039_dispatch.py": 44
   },
-  "driver_seconds": 11.3
+  "driver_seconds": 16.2
  },
  "all_targets_red_by_assertion": true,
  "mutations": [
@@ -40,8 +40,7 @@
    "red_rows": [
     "dispatch/contract-before-launch",
     "dispatch/launch-results",
-    "dispatch/unknown-never-relaunched",
-    "dispatch/transitions-from-schema"
+    "dispatch/unknown-never-relaunched"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -165,6 +164,37 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/dispatch-spawn-failure-as-unknown.diff"
+  },
+  {
+   "mutation": "dispatch-identity-from-worker-output",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/launch-results"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/launch-results",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-identity-from-worker-output.diff"
+  },
+  {
+   "mutation": "dispatch-worker-environment-reduced",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/contract-before-launch"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/contract-before-launch"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-worker-environment-reduced.diff"
   },
   {
    "mutation": "dispatch-acceptance-without-recheck",

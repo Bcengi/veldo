@@ -85,8 +85,8 @@
     "result": "accepted",
     "stored_process": {},
     "worker_reported": {
-     "pid": 961068,
-     "start": "191862237",
+     "pid": 1153344,
+     "start": "191895898",
      "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7"
     },
     "proc_start": null,
@@ -107,6 +107,20 @@
     "reason": null,
     "stop": null,
     "states": []
+   },
+   "wrapped": {
+    "result": "accepted",
+    "stored_process": {},
+    "worker_reported": {
+     "pid": null,
+     "start": null,
+     "boot_id": null
+    },
+    "proc_start": null,
+    "missing": [
+     "accepted",
+     null
+    ]
    },
    "one_identity_each": false
   },

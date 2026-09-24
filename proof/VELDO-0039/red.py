@@ -35,7 +35,7 @@ def git(*args):
 def main(commit):
     source = SUITE.read_text()
     new_here = {'control_dispatch.py', 'control_launch.py', 'init_scaffold.py'}
-    listed = git('ls-tree', '--name-only', commit, '.veldo/').decode().split()
+    listed = [line.split('\t', 1)[1] for line in git('ls-tree', commit, '.veldo/').decode().splitlines()]
     at_commit = {Path(p).name for p in listed if p.endswith('.py')}
     current = {p.name for p in (ROOT / '.veldo').glob('*.py')}
     differing = sorted(name for name in (current & at_commit) - new_here

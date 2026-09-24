@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -388 +388 @@
--            process = process_identity(worker.pid)
-+            process = process_identity(os.getpid())  # defect: the receiver's own identity
+@@ -414 +414 @@
+-                process = process_identity(worker.pid)
++                process = process_identity(os.getpid())  # defect: the receiver's own identity

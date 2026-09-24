@@ -1277,6 +1277,18 @@ def cases():
              "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
              "            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time())\n",
              'launch-results')
+    dispatch('dispatch-identity-from-worker-output', 'control_launch.py',
+             "        line, _, carry = pending.partition(b'\\n')\n        message = json.loads(line)\n",
+             "        line, _, carry = pending.partition(b'\\n')\n"
+             "        if b'\\n' in carry or select.select([worker.stdout], [], [], 5)[0]:  # defect: a later line is read\n"
+             "            carry += b'' if b'\\n' in carry else os.read(worker.stdout.fileno(), 65536)\n"
+             "            line, _, carry = carry.partition(b'\\n')\n"
+             "        message = json.loads(line)\n",
+             'launch-results')
+    dispatch('dispatch-worker-environment-reduced', 'control_launch.py',
+             "        environment = dict(os.environ)\n",
+             "        environment = {'PATH': os.environ.get('PATH', os.defpath), 'LANG': 'C.UTF-8'}  # defect\n",
+             'contract-before-launch')
     dispatch('dispatch-acceptance-without-recheck', 'control_launch.py',
              "            refusal = self._recheck(contract)\n",
              "            refusal = None  # defect: the accepting boundary does not recheck the station decision\n",

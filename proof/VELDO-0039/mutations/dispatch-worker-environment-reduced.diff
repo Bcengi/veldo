@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -438 +438 @@
+-        environment = dict(os.environ)
++        environment = {'PATH': os.environ.get('PATH', os.defpath), 'LANG': 'C.UTF-8'}  # defect

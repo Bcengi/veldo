@@ -17,9 +17,10 @@ not only at selection) and records its ACCEPTANCE, its durable launch record, un
 dispatch identity. The acceptance transition itself requires the prepared record and the handed
 contract's digest to match it, so the receiver launches only what the authority committed. Then,
 and only then, it spawns the worker with the adapter's configured argv and exactly the recorded
-configuration (never reduced), reads the spawned process's OS identity and records it (`running`).
-It reaps the worker, killing its session at the contract deadline, and records the termination
-under the same dispatch and process. A worker's output is hashed and counted, never believed.
+configuration (never reduced), in the owner's environment plus the adapter's configured one, reads
+the spawned process's OS identity and records it (`running`). It reaps the worker, killing its
+session at the contract deadline, and records the termination under the same dispatch and process.
+A worker's output is hashed and counted, never believed.
 
 LAUNCH RESULTS, always read from the RECORD, never from a reply alone. accepted: the record says
 running, with the OS identity stored. refused: nothing ran, by name (a receiver check failed before
@@ -31,8 +32,12 @@ keeps its unit and station and is never launched again; a receiver asked to laun
 not prepared refuses and records nothing.
 
 PROCESS IDENTITY. Linux: /proc/<pid>/stat start time (clock ticks since boot) with the boot id.
-macOS: `ps -o lstart=` with kern.boottime. The host is qualified by VELDO-0040 host profiles; this
-reader is what the receiver records.
+macOS: `ps -o lstart=` with kern.boottime. A local adapter's identity is read from the spawned pid.
+An adapter launched through a transport to another host (the Mac, over SSH, since the authority
+and its store stay on this Linux host) sets `identity: reported` and runs the trusted wrapper
+(`control_launch.py exec <argv>`) there: the wrapper's first output line names its own identity
+before it becomes the engine by exec, so the recorded pid and start time are the engine's. The
+receiver, on the authority's host, records it. Host qualification is VELDO-0040's profiles.
 
 WHAT IT IS NOT. No containment of descendants (VELDO-0040), heartbeat or retirement policy
 (VELDO-0041), recovery of an unknown dispatch (Release 2), or model API. Standard library only.
@@ -44,6 +49,7 @@ import json
 import os
 from pathlib import Path
 import select
+import shutil
 import signal
 import socket
 import subprocess
@@ -65,6 +71,7 @@ S = D.S
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
+WRAPPER_SCHEMA = 'veldo.launch_identity/v1'
 
 
 # OS process identity.
@@ -219,6 +226,8 @@ class Launch:
         self.record = None
 
     def _message(self, deadline):
+        if self.child is None:
+            return None
         while b'\n' not in self.pending:
             remaining = deadline - time.monotonic()
             if remaining <= 0 or not select.select([self.child.stdout], [], [], remaining)[0]:
@@ -237,6 +246,8 @@ class Launch:
 
     def _end_receiver(self):
         """Make the receiver's silence conclusive: it is stopped and reaped, so it writes no more."""
+        if self.child is None:
+            return
         if self.child.poll() is None:
             self.child.kill()
         self.child.wait(timeout=10)
@@ -301,8 +312,14 @@ class Launch:
 
 def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, environment=None, clock=None):
     """Hand the prepared contract to the trusted receiver process named by the installed config."""
-    child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)
+    try:
+        child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)
+    except OSError:
+        # No receiver ran, so nothing was launched: a conclusive refusal, never a held unit.
+        launch = Launch(None, contract, dispatches, clock or time.time)
+        launch._settle(lost=True)
+        return launch
     launch = Launch(child, contract, dispatches, clock or time.time)
     try:
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
@@ -384,8 +401,17 @@ class Receiver:
             self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time())
             self.emit({'event': 'refused', 'refusal': refusal})
             return
+        carry = b''
         try:
-            process = process_identity(worker.pid)
+            if adapter.get('identity', 'local') == 'reported':
+                process, refusal, carry = self._reported(worker, contract)
+                if refusal:
+                    worker.wait()
+                    self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time())
+                    self.emit({'event': 'refused', 'refusal': refusal})
+                    return
+            else:
+                process = process_identity(worker.pid)
         except (OSError, ValueError, IndexError, subprocess.SubprocessError):
             self._stop(worker)
             self.dispatches.unknown(dispatch_id, contract_digest, 'process_identity_unreadable', now=time.time())
@@ -398,7 +424,7 @@ class Receiver:
             self._stop(worker)
             raise
         self.emit({'event': 'running', 'process': process})
-        termination = self._reap(worker, contract)
+        termination = self._reap(worker, contract, carry)
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
         self.emit({'event': 'exited', 'termination': termination})
 
@@ -409,12 +435,38 @@ class Receiver:
         digest of the acceptance it launches under. That digest exists only once the acceptance has
         committed, so a worker's birth environment is evidence the acceptance, and the contract it
         accepted, were recorded before the worker existed."""
-        environment = {'PATH': os.environ.get('PATH', os.defpath), 'LANG': 'C.UTF-8'}
+        environment = dict(os.environ)
         environment.update(adapter.get('environment') or {})
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         return subprocess.Popen(list(adapter['argv']), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.DEVNULL, env=environment, start_new_session=True, close_fds=True)
+
+    @staticmethod
+    def _reported(worker, contract):
+        """(process, refusal, carry) from an adapter launched through the trusted wrapper (a remote
+        host reached over the configured transport): the wrapper's FIRST line, written before it
+        became the engine, names the OS identity of the process the engine now is, or the named
+        refusal of an engine that could not be run. Anything after that line is the worker's output
+        (`carry`). A missing, late or malformed line is unreadable, never a guess."""
+        pending, end = b'', min(contract['deadline'], time.time() + ACCEPT_SECONDS)
+        while b'\n' not in pending:
+            remaining = end - time.time()
+            if remaining <= 0 or not select.select([worker.stdout], [], [], remaining)[0]:
+                raise ValueError('no identity line')
+            chunk = os.read(worker.stdout.fileno(), 65536)
+            if not chunk:
+                raise ValueError('no identity line')
+            pending += chunk
+        line, _, carry = pending.partition(b'\n')
+        message = json.loads(line)
+        if not isinstance(message, dict) or message.get('schema') != WRAPPER_SCHEMA:
+            raise ValueError('not an identity line')
+        if D._text(message.get('refused')) and message['refused'].startswith('spawn_failed:'):
+            return None, message['refused'], carry
+        if D._identity_problems(message.get('process')):
+            raise ValueError('malformed identity')
+        return message['process'], None, carry
 
     @staticmethod
     def _stop(worker):
@@ -424,7 +476,7 @@ class Receiver:
             pass
         worker.wait()
 
-    def _reap(self, worker, contract):
+    def _reap(self, worker, contract, carry=b''):
         """Feed the worker its packet, hash what it prints, and reap it by the contract deadline."""
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
@@ -438,7 +490,7 @@ class Receiver:
                 pass
         feeder = threading.Thread(target=feed, daemon=True)
         feeder.start()
-        hasher, size, stopped = hashlib.sha256(), 0, False
+        hasher, size, stopped = hashlib.sha256(carry), len(carry), False
         while True:
             remaining = contract['deadline'] - time.time()
             if remaining <= 0:
@@ -459,7 +511,30 @@ class Receiver:
                 'output_digest': 'sha256:' + hasher.hexdigest(), 'output_bytes': size, 'deadline_stop': stopped}
 
 
+def wrap(argv):
+    """THE TRUSTED WRAPPER (`control_launch.py exec <argv>`), what a launch through a transport runs
+    on the far host (the Mac over SSH, for one). It writes the OS identity of this very process on its
+    first output line and then becomes the engine by exec, so the pid and start time it named are the
+    engine's. An engine that cannot be found is refused by name before anything runs. It opens no
+    store: the receiver on the authority's host records what it reports."""
+    path = shutil.which(argv[0]) if argv else None
+    if not path:
+        sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'refused': 'spawn_failed:ENOENT'}) + '\n')
+        sys.stdout.flush()
+        os._exit(127)
+    sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid())}) + '\n')
+    sys.stdout.flush()
+    try:
+        os.execv(path, argv)
+    except OSError:
+        os._exit(126)
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == 'exec':
+        wrap(sys.argv[2:])
+        return
+
     def emit(message):
         sys.stdout.write(json.dumps(message) + '\n')
         sys.stdout.flush()
