@@ -11,9 +11,9 @@ per-repository catalog is identical in the two). `verify.sh --candidate <root> -
 check in `<root>` and writes the stamp (`last_verify`), the gate event and the review-event
 reconciliation (`events.py reconcile-verdicts --repo-root <root> --log <sink>/events.jsonl`, the sink
 log seeded once from the candidate's committed log) to `<dir>`. A sink that is absent, not a directory,
-not writable, the candidate or inside it (symlinks resolved), or that already holds a symlink where an
-output goes is refused before any check runs, RED, with nothing written anywhere; a final write the sink
-refuses is RED. The file carries the interface line `# veldo-gate-interface: candidate-sink/v1`.
+not writable, the candidate or inside it (symlinks resolved), or that already holds a symlink where the
+event log goes is refused before any check runs, RED, with nothing written anywhere (the stamp is renamed
+into place, which replaces a link rather than following it); a final write the sink refuses is RED. The file carries the interface line `# veldo-gate-interface: candidate-sink/v1`.
 Protected paths: the owner's approval (Telegram 29068 asked, 29069 "Yes verify") is recorded once per
 commit that carries the change: `approval-dmitry.json` for 6984ab9 and `approval-dmitry-2.json` for
 f058090, which only moves the stamp's printf so that suite 14 still reads the stamp's keys from it.
