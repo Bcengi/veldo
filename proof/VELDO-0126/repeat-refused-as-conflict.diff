@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -415 +415 @@
+@@ -419 +419 @@
 -                raise _Repeated(existing['data'])
 +                raise Refused('identity_conflict', key)  # defect: a repeat is refused

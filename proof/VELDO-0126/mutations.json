@@ -79,7 +79,7 @@
     true
    ]
   ],
-  "seconds": 1.203
+  "seconds": 1.206
  },
  "controls_green": true,
  "mutants": [
@@ -89,7 +89,7 @@
     "VELDO-0126 detail: intake/common-command: api proposed; equal proposals; distinct proposals per source; sources retained; both through the one store command",
     "VELDO-0126 detail: intake/unresolved-project-asks: api inbox; no project invented; questions open with every candidate; api question answered in the response",
     "VELDO-0126 detail: intake/plain-objective: prose via api proposed; prose via api text exact; ticket link via api proposed; ticket link via api text exact; incomplete via api proposed; incomplete via api text exact; nothing watches the ticket",
-    "VELDO-0126 detail: intake/follow-up-clarification: api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open",
+    "VELDO-0126 detail: intake/follow-up-clarification: api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
     "VELDO-0126 detail: intake/authenticated-sources-only: unknown principal refused unauthorized:not_current_member; revoked principal refused unauthorized:not_current_member; service principal refused unauthorized:not_a_person; the valid request is taken",
     "VELDO-0126 detail: intake/same-request-same-proposal: api repeat returns the same proposal; changed text refused; changed project refused; the records are unchanged",
     "VELDO-0126 detail: intake/no-admission: proposals were made",
@@ -107,7 +107,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "f02c3624cf414aa6d364e3fb21645b8bc26dafc783445586d58a9558ef7d5777",
+   "mutant_sha256": "0fc2766ef5582c84b567e18bb7035c3afbe6ccdaaafa2888dedf1c3df5fdf3e8",
    "name": "api-into-separate-queue",
    "named_row_red": true,
    "named_rows": [
@@ -188,8 +188,8 @@
      true
     ]
    ],
-   "seconds": 1.2,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.208,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -197,7 +197,7 @@
     "VELDO-0126 detail: intake/common-command: api proposed; one normalized command shape; same text, principal and context; source identities; api provenance; equal proposals; distinct proposals per source; sources retained; both through the one store command",
     "VELDO-0126 detail: intake/unresolved-project-asks: api inbox; no project invented; questions open with every candidate; api question answered in the response",
     "VELDO-0126 detail: intake/plain-objective: prose via api proposed; prose via api text exact; ticket link via api proposed; ticket link via api text exact; incomplete via api proposed; incomplete via api text exact",
-    "VELDO-0126 detail: intake/follow-up-clarification: api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open",
+    "VELDO-0126 detail: intake/follow-up-clarification: api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
     "VELDO-0126 detail: intake/authenticated-sources-only: unknown principal refused unauthorized:not_current_member; revoked principal refused unauthorized:not_current_member; the valid request is taken",
     "VELDO-0126 detail: intake/same-request-same-proposal: api repeat returns the same proposal; changed text refused; changed project refused; the records are unchanged",
     "VELDO-0126 detail: intake/no-admission: proposals were made",
@@ -215,7 +215,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "ab6e967bb18341fc7b1815cd8076dfdd5503d12e96db4e6473435e3756521e77",
+   "mutant_sha256": "3e8ddf62dace1f8b6810fc7121a67936ac17ff309197fa246f81f862ace97374",
    "name": "api-principal-from-edge",
    "named_row_red": true,
    "named_rows": [
@@ -296,14 +296,14 @@
      true
     ]
    ],
-   "seconds": 1.191,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.194,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0126 detail: intake/unresolved-project-asks: telegram inbox; api inbox; no project invented; questions open with every candidate; telegram question sent as a reply; telegram delivery recorded; api question answered in the response; no objective for the unresolved owner",
-    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; a vague follow-up keeps the question open",
+    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; a vague follow-up keeps the question open; telegram follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
     "VELDO-0126 detail: intake/no-admission: intake writes only intake records",
     "VELDO-0126 detail: intake/observations: pending is the store"
    ],
@@ -315,7 +315,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "274fdeb0ee696190165a0c7fa26071f4dc9715ae054cebc48677688609bd550a",
+   "mutant_sha256": "0bcec0727a9428bd2dc6d21478f1ea08e39f72b5596379afa1beefe7ef3aa6b3",
    "name": "unresolved-first-candidate-wins",
    "named_row_red": true,
    "named_rows": [
@@ -396,14 +396,14 @@
      true
     ]
    ],
-   "seconds": 1.187,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.204,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0126 detail: intake/unresolved-project-asks: telegram question sent as a reply; telegram delivery recorded",
-    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; follow-up text kept; inbox proposals resolved",
+    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; follow-up text kept; inbox proposals resolved; telegram follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
     "VELDO-0126 detail: intake/observations: pending is the store"
    ],
    "diff": "proof/VELDO-0126/question-not-sent.diff",
@@ -413,7 +413,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "c1c92ee4e97790db1edc17a13915e00b73cf63ad25bcbacee1563c70cb5ef268",
+   "mutant_sha256": "20cfc0c2cb5dc3685387ce89704d4daf904379326c9d3ec68d13e34cb72877cb",
    "name": "question-not-sent",
    "named_row_red": true,
    "named_rows": [
@@ -494,8 +494,8 @@
      true
     ]
    ],
-   "seconds": 1.192,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.207,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -503,8 +503,8 @@
     "VELDO-0126 detail: intake/common-command: telegram proposed; api proposed; one normalized command shape; same text, principal and context; source identities; telegram provenance; api provenance; equal proposals; distinct proposals per source; sources retained; both through the one store command",
     "VELDO-0126 detail: intake/unresolved-project-asks: telegram inbox; api inbox; no project invented; questions open with every candidate; telegram question sent as a reply; telegram delivery recorded; api question answered in the response",
     "VELDO-0126 detail: intake/plain-objective: prose via telegram proposed; prose via telegram text exact; prose via api proposed; prose via api text exact; incomplete via telegram proposed; incomplete via telegram text exact; incomplete via api proposed; incomplete via api text exact",
-    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open",
-    "VELDO-0126 detail: intake/authenticated-sources-only: unknown principal refused unauthorized:not_current_member; revoked principal refused unauthorized:not_current_member; service principal refused unauthorized:not_a_person; the valid request is taken; forged text never makes the owner the principal",
+    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open; telegram follow-up after resolution lands on the live objective; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
+    "VELDO-0126 detail: intake/authenticated-sources-only: unknown principal refused unauthorized:not_current_member; revoked principal refused unauthorized:not_current_member; service principal refused unauthorized:not_a_person; not a member when sent refused unauthorized:not_member_when_sent; the valid request is taken; forged text never makes the owner the principal; refused before enrollment, taken once a member",
     "VELDO-0126 detail: intake/same-request-same-proposal: telegram repeat returns the same proposal; api repeat returns the same proposal; changed text refused; changed project refused; the records are unchanged",
     "VELDO-0126 detail: intake/no-admission: proposals were made; intake writes only intake records",
     "VELDO-0126 detail: intake/observations: pending is the store"
@@ -521,7 +521,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "d85f62c0626b0c57cb6fb3be04463af99b333b029216ed774b3f17cfa55374e4",
+   "mutant_sha256": "1c49ba7dab217febe680a1926e9726e50de7d06deff1ac022499fd85ae9802f2",
    "name": "ticket-id-required",
    "named_row_red": true,
    "named_rows": [
@@ -602,8 +602,8 @@
      true
     ]
    ],
-   "seconds": 1.194,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.206,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -615,7 +615,7 @@
     "VELDO-0126 intake/plain-objective"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "ee5faa4b370f82d18fb566639bbf81dc9347593f07e8692de008e78bb132a820",
+   "mutant_sha256": "28fbb6ec980a6f6adcb4a88899be46a8f6fad70b93f36b220550f1eedcbddd72",
    "name": "text-trimmed",
    "named_row_red": true,
    "named_rows": [
@@ -696,13 +696,13 @@
      true
     ]
    ],
-   "seconds": 1.209,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.205,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open",
+    "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open; telegram follow-up after resolution lands on the live objective; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
     "VELDO-0126 detail: intake/observations: pending is the store"
    ],
    "diff": "proof/VELDO-0126/follow-up-as-new-objective.diff",
@@ -711,7 +711,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "f8cad90b4f8f12f6d1e73a9b3ee4f26d9125de8fc7f4d0c4da757b4b4e5716ff",
+   "mutant_sha256": "53685f620e85a1e6894a802afcbfb1a059627820ce41254598869b2e6bdff260",
    "name": "follow-up-as-new-objective",
    "named_row_red": true,
    "named_rows": [
@@ -792,8 +792,8 @@
      true
     ]
    ],
-   "seconds": 1.201,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.204,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -805,7 +805,7 @@
     "VELDO-0126 intake/follow-up-clarification"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "73b106ea15b26001edd106b53114558b59362c7d30de940a9981ab360c451bac",
+   "mutant_sha256": "bbdcafb6bb3cb0bb661db7bc80e9d400964e7a66f43243a9b0ca835a68fd02b2",
    "name": "clarification-replaces-objective-text",
    "named_row_red": true,
    "named_rows": [
@@ -886,8 +886,8 @@
      true
     ]
    ],
-   "seconds": 1.203,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.211,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -899,7 +899,7 @@
     "VELDO-0126 intake/authenticated-sources-only"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "4c1e57c93cdf7ad356c9e3d6a0ad4c7dbe594f79b1b742c7ff65dc5a4d737858",
+   "mutant_sha256": "29cbb004aafac50c444bf8d44908dc08465f84e567db63a2b82e7c73c4bb65be",
    "name": "api-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -980,8 +980,8 @@
      true
     ]
    ],
-   "seconds": 1.192,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.194,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -993,7 +993,7 @@
     "VELDO-0126 intake/authenticated-sources-only"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "5c53d3cbda3efed8f850b544b89ff978587cb24824eec82ffca8be2881b8e648",
+   "mutant_sha256": "f89e6570f68f2943abc2b691ab71efff3a19a1bc1fb211ef3f3f0e525c4b8771",
    "name": "unsupported-source-rides-api",
    "named_row_red": true,
    "named_rows": [
@@ -1074,8 +1074,8 @@
      true
     ]
    ],
-   "seconds": 1.197,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.203,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -1091,7 +1091,7 @@
     "VELDO-0126 intake/no-admission"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "5bcbddfb106efedf52e5bc752578697c4eb3c07ece4e353d1c93d1c6ca70acc4",
+   "mutant_sha256": "709001fe2cbf5e35e321c95b661a586bfd4b3c6dfa886bfc5fb25059e9e153ec",
    "name": "accepted-message-creates-unit",
    "named_row_red": true,
    "named_rows": [
@@ -1172,8 +1172,8 @@
      true
     ]
    ],
-   "seconds": 1.196,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.208,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -1187,7 +1187,7 @@
     "VELDO-0126 intake/no-admission"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "2b6de40fab2a0d4964bc7aa0d8425d2fe3d5b1c73e28cf8d85150285dc9e3918",
+   "mutant_sha256": "0346abe7f1b181af26d4d506ebcc1f46b9e0967df4af4c6509a9725cc8c42a99",
    "name": "accepted-message-prioritized",
    "named_row_red": true,
    "named_rows": [
@@ -1268,8 +1268,8 @@
      true
     ]
    ],
-   "seconds": 1.204,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.197,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -1281,7 +1281,7 @@
     "VELDO-0126 intake/same-request-same-proposal"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "8ee5675167f8b16f8bde0eddca971f635b8a887c7e7416d88bddab4c2231e604",
+   "mutant_sha256": "6c3e4ce0e5f4bf6e45f32f03461c82314b7e6e16b07b3f6df3f9b2f72356e92e",
    "name": "changed-content-overwrites",
    "named_row_red": true,
    "named_rows": [
@@ -1362,8 +1362,8 @@
      true
     ]
    ],
-   "seconds": 1.208,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.197,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   },
   {
    "by_assertion": true,
@@ -1375,7 +1375,7 @@
     "VELDO-0126 intake/same-request-same-proposal"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "d56803af7396835f66329d7055d8baa7c7705e193ff06184433c54a41e0a67e0",
+   "mutant_sha256": "151834febc34c7ef6d294370c3e4e61e17bf94f2da826f930fffdc85f93057e6",
    "name": "repeat-refused-as-conflict",
    "named_row_red": true,
    "named_rows": [
@@ -1456,13 +1456,389 @@
      true
     ]
    ],
-   "seconds": 1.212,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.195,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0126 detail: intake/follow-up-clarification: telegram follow-up after resolution lands on the live objective; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged"
+   ],
+   "diff": "proof/VELDO-0126/follow-up-lands-on-retired-inbox.diff",
+   "failed_rows": [
+    "VELDO-0126 intake/follow-up-clarification"
+   ],
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "718b2a136e5958dbef563a76c1b0095e80c8ec4efd71128bea3fc90c0b5761d5",
+   "name": "follow-up-lands-on-retired-inbox",
+   "named_row_red": true,
+   "named_rows": [
+    "intake/follow-up-clarification"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0126 install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 intake/follow-up-clarification",
+     false
+    ],
+    [
+     "VELDO-0126 intake/authenticated-sources-only",
+     true
+    ],
+    [
+     "VELDO-0126 intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 intake/observations",
+     true
+    ],
+    [
+     "VELDO-0126 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/follow-up-clarification",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/authenticated-sources-only",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/observations",
+     true
+    ]
+   ],
+   "seconds": 1.203,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0126 detail: intake/follow-up-clarification: telegram follow-up after resolution lands on the live objective; api follow-up after resolution lands on the live objective"
+   ],
+   "diff": "proof/VELDO-0126/follow-up-to-resolved-refused.diff",
+   "failed_rows": [
+    "VELDO-0126 intake/follow-up-clarification"
+   ],
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "443acc7dcb5d0629fcf9356cc4c7edec507f6ed29379385511f8778626bdf390",
+   "name": "follow-up-to-resolved-refused",
+   "named_row_red": true,
+   "named_rows": [
+    "intake/follow-up-clarification"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0126 install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 intake/follow-up-clarification",
+     false
+    ],
+    [
+     "VELDO-0126 intake/authenticated-sources-only",
+     true
+    ],
+    [
+     "VELDO-0126 intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 intake/observations",
+     true
+    ],
+    [
+     "VELDO-0126 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/follow-up-clarification",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/authenticated-sources-only",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/observations",
+     true
+    ]
+   ],
+   "seconds": 1.215,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0126 detail: intake/authenticated-sources-only: not a member when sent refused unauthorized:not_member_when_sent; refusals wrote nothing"
+   ],
+   "diff": "proof/VELDO-0126/member-checked-only-when-processed.diff",
+   "failed_rows": [
+    "VELDO-0126 intake/authenticated-sources-only"
+   ],
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "506b953a638e6f1ad7e3b8f71cd6234ad2f88a37f985a154d96d6811683db3db",
+   "name": "member-checked-only-when-processed",
+   "named_row_red": true,
+   "named_rows": [
+    "intake/authenticated-sources-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0126 install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 intake/follow-up-clarification",
+     true
+    ],
+    [
+     "VELDO-0126 intake/authenticated-sources-only",
+     false
+    ],
+    [
+     "VELDO-0126 intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 intake/observations",
+     true
+    ],
+    [
+     "VELDO-0126 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/follow-up-clarification",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/authenticated-sources-only",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/observations",
+     true
+    ]
+   ],
+   "seconds": 1.222,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0126 detail: intake/authenticated-sources-only: not a member when sent refused unauthorized:not_member_when_sent; refusals wrote nothing"
+   ],
+   "diff": "proof/VELDO-0126/member-when-sent-read-at-processing-time.diff",
+   "failed_rows": [
+    "VELDO-0126 intake/authenticated-sources-only"
+   ],
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "7ca9c7d29d320db9ea9d1f2bb7c3bf4a23f7d9491e6e18895b5fe0c52c4c9df8",
+   "name": "member-when-sent-read-at-processing-time",
+   "named_row_red": true,
+   "named_rows": [
+    "intake/authenticated-sources-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0126 install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 intake/follow-up-clarification",
+     true
+    ],
+    [
+     "VELDO-0126 intake/authenticated-sources-only",
+     false
+    ],
+    [
+     "VELDO-0126 intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 intake/observations",
+     true
+    ],
+    [
+     "VELDO-0126 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/common-command",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/unresolved-project-asks",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/plain-objective",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/follow-up-clarification",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/authenticated-sources-only",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/same-request-same-proposal",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/no-admission",
+     true
+    ],
+    [
+     "VELDO-0126 ran/intake/observations",
+     true
+    ]
+   ],
+   "seconds": 1.215,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   }
  ],
  "noop": {
   "control_intake.py": {
-   "copy_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea",
+   "copy_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1540,13 +1916,13 @@
      true
     ]
    ],
-   "seconds": 1.197,
-   "source_sha256": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+   "seconds": 1.203,
+   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 126",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 19.186,
+ "serial_seconds": 24.097,
  "spec_id": "VELDO-0126",
  "suite": "scripts/suites/68_veldo_0126_intake.py"
 }

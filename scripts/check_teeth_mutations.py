@@ -3852,6 +3852,22 @@ def cases():
     intake('repeat-refused-as-conflict', "                raise _Repeated(existing['data'])\n",
            "                raise Refused('identity_conflict', key)  # defect: a repeat is refused\n",
            'same-request-same-proposal')
+    # Review of 8607f50: a follow-up to an inbox proposal already resolved lands on the live objective.
+    intake('follow-up-lands-on-retired-inbox',
+           "            if target['data'].get('state') != 'RESOLVED':\n",
+           "            if True:  # defect: a resolved inbox proposal is not followed to its objective\n",
+           'follow-up-clarification')
+    intake('follow-up-to-resolved-refused', "            pid = onward\n",
+           "            raise Refused('stale_version:clarifies', str(pid))  # defect: a follow-up to a resolved inbox is refused\n",
+           'follow-up-clarification')
+    # Authority at both ends: a Telegram sender must have been a member at the message's platform date.
+    intake('member-checked-only-when-processed',
+           "            why = self._member_when_sent(principal, command['provenance'].get('date'))\n",
+           "            why = None  # defect: membership is checked only when the message is processed\n",
+           'authenticated-sources-only')
+    intake('member-when-sent-read-at-processing-time',
+           "self._member_when_sent(principal, command['provenance'].get('date'))",
+           "self._member_when_sent(principal, self.clock())", 'authenticated-sources-only')
     return result
 
 

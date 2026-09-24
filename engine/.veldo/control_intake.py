@@ -18,7 +18,10 @@ presentation (the owner's own earlier message, or a question this module asked).
 presentation belongs to settlement, never to intake. An API request counts only when it is signed by
 the configured API edge principal (the authenticated API of VELDO-0130, a trusted channel edge) with
 its active key in the store's keyring, and the principal it asserts is an active person member. Both
-sources then pass the same person check, the Acquirer's, inside the store transaction.
+sources then pass the same person check, the Acquirer's, inside the store transaction. Authority
+holds at both ends: a Telegram message whose sender was not a member at the message's platform date
+stays refused after the sender is enrolled, read from the effective time of the key the enrollment
+wrote (VELDO-0025 keeps none on the membership entity).
 
 THE TEXT IS KEPT AS WRITTEN. No ticket identifier, command syntax or structure is required, and the
 text is never trimmed or rewritten. A ticket link in the text is data an agent may fetch later with
@@ -32,7 +35,8 @@ sent back as a reply to the owner's message through the VELDO-0065 edge; an API 
 response. A follow-up that clarifies a proposal (a Telegram reply to the original message or to the
 question, or an API request naming the proposal) is kept with its own source. It resolves an inbox
 proposal into a proposed objective when it names one of the question's candidates, and is otherwise
-kept on the proposal it clarifies.
+kept on the proposal it clarifies. A follow-up to an inbox proposal already resolved lands on the
+objective it was resolved to, never on the retired inbox record.
 
 INTAKE PROPOSES AND NOTHING ELSE. It writes only intake sources, proposals (state PROPOSED,
 AWAITING_PROJECT or RESOLVED) and questions: never an execution unit, a backlog item, an admission, a
@@ -417,6 +421,13 @@ class Intake:
         why = self.acquirer._person(principal)
         if why:
             raise Refused('unauthorized:' + why, principal)
+        # Authority holds both when the message was sent and now: a Telegram message sent before its
+        # sender was a member stays refused after the sender is enrolled.
+        # An API request carries no send time of its own; it is authorized as the edge delivers it.
+        if command['source_kind'] == 'telegram_message':
+            why = self._member_when_sent(principal, command['provenance'].get('date'))
+            if why:
+                raise Refused('unauthorized:' + why, principal)
         member = read(principal)
         scope = member['data'].get('scope') if member is not None and member['kind'] == 'membership' else None
         candidates = [p for p in self.projects if self.CM.scope_covers(scope, p)]
@@ -434,12 +445,7 @@ class Intake:
         changes, reads = {}, [principal]
         clarifies = command['clarifies']
         if clarifies is not None:
-            target = read(clarifies)
-            if target is None or target['kind'] != PROPOSAL_KIND:
-                raise Refused('missing_evidence:clarifies', str(clarifies))
-            if target['data'].get('principal') != principal:
-                raise Refused('unauthorized:clarifies', str(clarifies))
-            reads.append(clarifies)
+            live, target = self._live_proposal(clarifies, principal, read, reads)
             data = dict(target['data'])
             data['clarifications'] = list(data.get('clarifications') or []) + [{'source': key, 'text': text}]
             question = read(data['question_id']) if data.get('question_id') else None
@@ -450,15 +456,15 @@ class Intake:
                 resolved = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective', 'state': 'PROPOSED',
                             'domain': self.domain, 'project': chosen, 'principal': principal, 'text': data['text'],
                             'sources': list(data['sources']) + [key], 'clarifications': data['clarifications'],
-                            'question_id': None, 'resolves': clarifies, 'resolved_to': None}
+                            'question_id': None, 'resolves': live, 'resolved_to': None}
                 data.update(state='RESOLVED', resolved_to=pid)
                 changes[pid] = {'kind': PROPOSAL_KIND, 'data': resolved}
                 changes[question['data']['question_id']] = {'kind': QUESTION_KIND, 'data': dict(
                     question['data'], state='answered', answered_by=key, project=chosen)}
                 result = {'outcome': 'resolved', 'proposal_id': pid, 'project': chosen}
             else:
-                result = {'outcome': 'clarification', 'proposal_id': clarifies, 'project': data.get('project')}
-            changes[clarifies] = {'kind': PROPOSAL_KIND, 'data': data}
+                result = {'outcome': 'clarification', 'proposal_id': live, 'project': data.get('project')}
+            changes[live] = {'kind': PROPOSAL_KIND, 'data': data}
         else:
             project = explicit or (named[0] if len(named) == 1 else None) or (candidates[0] if len(candidates) == 1 else None)
             proposal = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective' if project else 'inbox',
@@ -482,6 +488,43 @@ class Intake:
                       result={k: v for k, v in result.items() if k != 'project'})
         changes[key] = {'kind': SOURCE_KIND, 'data': source}
         return changes, reads, result
+
+    def _live_proposal(self, clarifies, principal, read, reads):
+        """(id, entity) of the live proposal a follow-up clarifies. A follow-up names the proposal it
+        answers: for a Telegram reply the one its replied message or question belongs to, for an API
+        request the id it carries. When that is an inbox proposal already RESOLVED, the owner's work
+        now lives on the objective it was resolved to, so the follow-up lands there; each record on
+        the way is the principal's own and is read, so a change to any of them refuses the commit."""
+        pid, seen = clarifies, []
+        while True:
+            target = read(pid)
+            if target is None or target['kind'] != PROPOSAL_KIND:
+                raise Refused('missing_evidence:clarifies', str(pid))
+            if target['data'].get('principal') != principal:
+                raise Refused('unauthorized:clarifies', str(pid))
+            seen.append(pid)
+            reads.append(pid)
+            onward = target['data'].get('resolved_to')
+            if target['data'].get('state') != 'RESOLVED':
+                return pid, target
+            if not _identifier(onward) or onward in seen:
+                raise Refused('missing_evidence:clarifies', 'a resolved proposal names no live proposal: ' + str(pid))
+            pid = onward
+
+    def _member_when_sent(self, principal, sent):
+        """None when `principal` was a member when the message was sent, at `sent`, the platform date
+        of the Telegram message: its membership was not revoked or expired then, and the key its
+        enrollment wrote had taken effect. VELDO-0025 keeps no start time on the membership entity
+        itself; every enrollment (control_membership enroll_principal, and the channel edge
+        enrollment) writes the principal's key in the same transition with `effective_at` set to the
+        time the enrollment took effect, and a re-enrollment revokes the earlier keys at that time."""
+        if type(sent) not in (int, float) or type(sent) is bool:
+            return 'not_member_when_sent'
+        state = self.CM.authority_state(self.store, self.conn)
+        entry = self.AC.membership_entry(state['membership'], principal)
+        if not self.AC.active_member(entry, sent)[0] or self.AC.active_key(state['keyring'], principal, sent) is None:
+            return 'not_member_when_sent'
+        return None
 
     # asking on Telegram
 

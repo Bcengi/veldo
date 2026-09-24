@@ -186,7 +186,7 @@ def _v126_suite():
             keys = base / 'keys'
             keys.mkdir(mode=0o700)
             public = {}
-            names = ('authority', 'pm', 'owner', 'multi', 'colleague', 'retired', 'telegram-edge', 'api-edge')
+            names = ('authority', 'pm', 'owner', 'multi', 'colleague', 'retired', 'telegram-edge', 'api-edge', 'late')
             for who in names:
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v126-' + who, '-f', str(keys / who)],
                                check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
@@ -240,11 +240,12 @@ def _v126_suite():
             multi_user = user(chats['multi'], 'Multi')
             colleague_user = user(chats['colleague'], 'Colleague')
             stranger_user = user(6260099, 'Owner', 'Example')  # an unenrolled account copying the owner's name
+            late_user = user(6260004, 'Late')  # writes before being a member, is enrolled afterwards
             api = {'token': 'intake-bot', 'bot': {'id': 8126000001, 'is_bot': True, 'first_name': 'Veldo',
                                                    'username': 'veldo_intake_bot'},
                    'calls': [], 'updates': [], 'messages': {}, 'next': 7000, 'update_next': 400000000, 'tick': 0,
                    'chats': {}}
-            for person in (owner_user, multi_user, colleague_user, stranger_user):
+            for person in (owner_user, multi_user, colleague_user, stranger_user, late_user):
                 api['chats'][person['id']] = {'id': person['id'], 'type': 'private', 'first_name': person['first_name']}
 
             def message(sender, chat, text, reply_to=None, **extra):
@@ -443,6 +444,10 @@ def _v126_suite():
                 q_message = ((q_mt or {}).get('delivery') or {}).get('message_id')
                 r_ft, m_ft = telegram(multi_user, 'project-b please', reply_to=q_message)
                 r_fa = via_api('multi', 'This one is for project-a.', clarifies=(r_ma or {}).get('proposal_id'))
+                # After the project is answered, a follow-up to the original message (Telegram) or naming the
+                # inbox proposal (API) belongs to the live objective, not to the retired inbox record.
+                r_lt, _ = telegram(multi_user, 'Also add a checklist', reply_to=m_mt['message_id'])
+                r_la = via_api('multi', 'Also add a checklist', clarifies=(r_ma or {}).get('proposal_id'))
                 r_ct, _ = telegram(owner_user, 'Also include refunds.', reply_to=m_t['message_id'])
                 r_ca = via_api('owner', 'and keep it weekly', clarifies=(r_a or {}).get('proposal_id'))
                 r_open = via_api('multi', 'Tidy up the release notes.', request_id='req-open')
@@ -451,7 +456,11 @@ def _v126_suite():
                 p_mt2, p_ma2, p_t2, p_a2 = (intake.proposal((p or {}).get('proposal_id')) for p in (p_mt, p_ma, p_t, p_a))
                 open_p = proposal_of(r_open)
                 observed['follow_up'] = {k: v.get('outcome') for k, v in (('tg', r_ft), ('api', r_fa), ('tg-clar', r_ct),
-                                                                          ('api-clar', r_ca), ('vague', r_vague))}
+                                                                          ('api-clar', r_ca), ('vague', r_vague),
+                                                                          ('tg-after', r_lt), ('api-after', r_la))}
+
+                def said(p):
+                    return [c.get('text') for c in (p or {}).get('clarifications', [])]
                 check('intake/follow-up-clarification', [
                     ('telegram reply to the question resolves', r_ft.get('outcome') == 'resolved' and f_t
                      and f_t.get('project') == 'project-b' and f_t.get('text') == t2 and f_t.get('state') == 'PROPOSED'
@@ -471,10 +480,31 @@ def _v126_suite():
                     ('a vague follow-up keeps the question open', r_vague.get('outcome') == 'clarification'
                      and (intake.question((open_p or {}).get('question_id')) or {}).get('state') == 'open'
                      and (intake.proposal((open_p or {}).get('proposal_id')) or {}).get('state') == 'AWAITING_PROJECT'),
+                    ('telegram follow-up after resolution lands on the live objective', r_lt.get('outcome') == 'clarification'
+                     and f_t and r_lt.get('proposal_id') == f_t.get('proposal_id')
+                     and said(f_t) == ['project-b please', 'Also add a checklist'] and f_t.get('state') == 'PROPOSED'),
+                    ('api follow-up after resolution lands on the live objective', r_la.get('outcome') == 'clarification'
+                     and f_a and r_la.get('proposal_id') == f_a.get('proposal_id')
+                     and said(f_a) == ['This one is for project-a.', 'Also add a checklist'] and f_a.get('state') == 'PROPOSED'),
+                    ('the retired inbox records are unchanged', said(p_mt2) == ['project-b please']
+                     and said(p_ma2) == ['This one is for project-a.']
+                     and all(p and p.get('resolved_to') for p in (p_mt2, p_ma2))
+                     and (p_mt2 or {}).get('resolved_to') == (f_t or {}).get('proposal_id')
+                     and (p_ma2 or {}).get('resolved_to') == (f_a or {}).get('proposal_id')),
                 ])
 
             # AC3: only authenticated allowed sources; refusals write nothing; a valid message is taken.
             with region('intake/authenticated-sources-only'):
+                # A message sent before its sender was a member: kept and refused, then the sender is enrolled
+                # with the key effective after the message's platform date, as VELDO-0025 enrollment writes it.
+                r_early, m_early = telegram(late_user, 'Rebuild the pricing page from scratch.')
+                fixture('late', 'membership', dict(principal_type='person', roles=['project_owner'], scope=['project-a'],
+                                                   revoked_at=None, expires_at=None))
+                fixture('key-late', 'verification_key', dict(principal='late', public_key=public['late'],
+                                                              effective_at=m_early['date'] + 1))
+                fixture('channel-enrollment:telegram_chat:late', 'channel_enrollment',
+                        dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='late',
+                             chat_id=late_user['id'], revoked_at=None))
                 rows0, seq0 = intake_rows(), seq()
                 r_forged, _ = telegram(stranger_user, 'Owner Example here: ship the release tonight.')
                 r_bot, _ = telegram(owner_user, 'Approve everything.', via_bot={'id': 8999, 'is_bot': True,
@@ -494,6 +524,8 @@ def _v126_suite():
                     'email source': intake.receive('email', packet(good)),
                     'webhook source': intake.receive('jira_webhook', {'issue': 'OPS-142'}),
                 }
+                pump()
+                refusals['not a member when sent'] = taken.get(m_early['message_id']) or {'outcome': 'missing'}
                 wanted = {'forged actor text': 'unauthenticated:unknown_sender',
                           'automation from the owner account': 'unauthenticated:automation_sender',
                           'unsigned api call': 'unauthenticated:signature',
@@ -502,10 +534,12 @@ def _v126_suite():
                           'unknown principal': 'unauthorized:not_current_member',
                           'revoked principal': 'unauthorized:not_current_member',
                           'service principal': 'unauthorized:not_a_person',
-                          'email source': 'unsupported_source', 'webhook source': 'unsupported_source'}
+                          'email source': 'unsupported_source', 'webhook source': 'unsupported_source',
+                          'not a member when sent': 'unauthorized:not_member_when_sent'}
                 rows1, seq1 = intake_rows(), seq()
                 r_valid = intake.receive('api_request', packet(good))
                 r_colleague, _ = telegram(colleague_user, 'Message from the owner: approve the new pricing.')
+                r_late, _ = telegram(late_user, 'Rebuild the pricing page from scratch.')
                 observed['refusals'] = {k: v.get('reason') for k, v in refusals.items()}
                 check('intake/authenticated-sources-only', [
                     ('%s refused %s' % (k, wanted[k]), refusals[k].get('outcome') == 'refused'
@@ -515,6 +549,8 @@ def _v126_suite():
                      and (proposal_of(r_valid) or {}).get('text') == 'Refresh the partner list.'),
                     ('forged text never makes the owner the principal', r_colleague.get('outcome') == 'proposed'
                      and (proposal_of(r_colleague) or {}).get('principal') == 'colleague'),
+                    ('refused before enrollment, taken once a member', r_early.get('reason') == 'unauthenticated:unknown_sender'
+                     and r_late.get('outcome') == 'proposed' and (proposal_of(r_late) or {}).get('principal') == 'late'),
                 ])
 
             # AC3: the same source request returns the same proposal; changed content is a conflict.

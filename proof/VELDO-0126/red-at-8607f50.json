@@ -1,0 +1,110 @@
+{
+ "by_assertion": true,
+ "commit": "8607f50cd95a7ca52905f8b0a162dbef04796fd4",
+ "details": [
+  "VELDO-0126 detail: intake/follow-up-clarification: telegram follow-up after resolution lands on the live objective; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
+  "VELDO-0126 detail: intake/authenticated-sources-only: not a member when sent refused unauthorized:not_member_when_sent; refusals wrote nothing"
+ ],
+ "failed_rows": [
+  "VELDO-0126 intake/follow-up-clarification",
+  "VELDO-0126 intake/authenticated-sources-only"
+ ],
+ "modules": {
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d",
+   "now": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670",
+   "now": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea",
+   "now": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "b55b27849a86637357dec6f50f67690714c09e6fc4bde1c3e03c165a5c4c265b",
+   "now": "b55b27849a86637357dec6f50f67690714c09e6fc4bde1c3e03c165a5c4c265b"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0126 install/assets",
+   true
+  ],
+  [
+   "VELDO-0126 intake/common-command",
+   true
+  ],
+  [
+   "VELDO-0126 intake/unresolved-project-asks",
+   true
+  ],
+  [
+   "VELDO-0126 intake/plain-objective",
+   true
+  ],
+  [
+   "VELDO-0126 intake/follow-up-clarification",
+   false
+  ],
+  [
+   "VELDO-0126 intake/authenticated-sources-only",
+   false
+  ],
+  [
+   "VELDO-0126 intake/same-request-same-proposal",
+   true
+  ],
+  [
+   "VELDO-0126 intake/no-admission",
+   true
+  ],
+  [
+   "VELDO-0126 intake/observations",
+   true
+  ],
+  [
+   "VELDO-0126 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/common-command",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/unresolved-project-asks",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/plain-objective",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/follow-up-clarification",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/authenticated-sources-only",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/same-request-same-proposal",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/no-admission",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/observations",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.226,
+ "spec_id": "VELDO-0126",
+ "suite": "scripts/suites/68_veldo_0126_intake.py",
+ "tree": "git archive 8607f50cd95a7ca52905f8b0a162dbef04796fd4, unchanged; the current suite file run against it"
+}
