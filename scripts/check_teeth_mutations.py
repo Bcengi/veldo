@@ -1199,9 +1199,10 @@ def cases():
     floor('eligibility-recheck-ignores-collections', 'control_eligibility.py',
           '            elif old != new:',
           "            elif 'members' not in (old or new or {}) and old != new:", 'stale-input')
+    # Re-anchored 2026-09-24: VELDO-0135 rewrote the frontier; the selection check now holds the unit by name.
     floor('eligibility-frontier-bypass', 'frontier.py',
-          '            if not decision["eligible"]:\n                return\n',
-          '            if False:\n                return\n', 'entry-frontier')
+          '            if not decision["eligible"]:\n                return _hold(sid, decision["refusals"][0], decision["refusals"])\n',
+          '            if False:\n                return _hold(sid, decision["refusals"][0], decision["refusals"])\n', 'entry-frontier')
     floor('eligibility-executor-bypass', 'executor.py',
           '        return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)',
           '        return dict(gate.decide("direct_execution", sid, context=self.context, ticket=ticket),\n'
@@ -1239,9 +1240,15 @@ def cases():
                '        facts = gate.completion(sid) if gate is not None else None',
                '        facts = (dict(gate.completion(sid), revision_landed=bool(concluded(entry, base, vc=vc, passing=passing)))\n'
                '                 if gate is not None else None)', 'readers-agree')
-    completion('completion-frontier-reads-status-text', 'frontier.py',
-               '    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))',
-               '    status = _status_map(idx)', 'readers-agree')
+    # Re-anchored 2026-09-24: VELDO-0135 split the frontier's completion read across its two readers; both read
+    # status text in the defect.
+    add(52, 'completion-frontier-reads-status-text', '60_veldo_0052_eligibility.py', 'frontier.py',
+        '    # VELDO-0052 AC3: with the floor enabled, "shipped" means a landed revision, never status text.\n'
+        '    status = EL.completion_status(gate, _status_map(idx))\n',
+        '    # VELDO-0052 AC3: with the floor enabled, "shipped" means a landed revision, never status text.\n'
+        '    status = _status_map(idx)\n', ['completion/readers-agree'],
+        [('    idx = _spec_index(repo_root)\n    status = EL.completion_status(gate, _status_map(idx))\n',
+          '    idx = _spec_index(repo_root)\n    status = _status_map(idx)\n')])
     completion('completion-any-revision-lands', 'control_eligibility.py',
                "            if CC.fact_problems('revision_landed', r, subject):",
                "            if CC.fact_problems('revision_landed', r, None):", 'readers-agree')
@@ -1474,9 +1481,11 @@ def cases():
                  "        if decision.get('architecture'):\n",
                  "        if False:  # defect: the decision's architecture is not in its observation\n",
                  ['observations'])
+    # VELDO-0134 moved the record check to the schema: the defect now reads any state as accepted there.
     architecture('architecture-unaccepted-record-accepted', 'control_eligibility.py',
-                 "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'",
-                 "        if accepted and (not isinstance(record, dict)",
+                 "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):\n",
+                 "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'),\n"
+                 "                                           dict(record, state='accepted') if isinstance(record, dict) else record):\n",
                  ['record-states'])
     # Review fix: a Gate with no workspace never passes, record or no record.
     architecture('architecture-store-only-passes', 'control_eligibility.py',
@@ -2535,6 +2544,98 @@ def cases():
     edges('custody-not-restricted', 'control_keys_custody.py',
           "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
           "        if False:\n", 'custody/worker-cannot-read-key')
+    # VELDO-0068: each criterion's declared falsifier, and a second, different defect for every named row.
+    def settlement(name, old, new, row, module='control_request_settlement.py', also=()):
+        add(68, name, '69_veldo_0068_settlement.py', module, old, new, [row], also)
+
+    # Installation: the settlement service is laid down by the scaffold and is not validator substrate.
+    settlement('settlement-not-scaffolded', '    ".veldo/control_request_settlement.py",\n', '', 'install/assets',
+               module='init_scaffold.py')
+    settlement('settlement-claimed-as-substrate', 'REQUIRED_SUBSTRATE = [\n',
+               'REQUIRED_SUBSTRATE = [\n    ".veldo/control_request_settlement.py",  # defect: claimed as substrate\n',
+               'install/assets', module='init_scaffold.py')
+    # AC1 (declared falsifier): every chosen option recorded as a generic decided value; then an effect
+    # type that ignores the ruling.
+    settlement('chosen-option-generic',
+               "                      'choice': choice, 'ruling': ruling, 'rationale': winner['rationale'], 'principals': principals,\n",
+               "                      'choice': 'decided', 'ruling': 'decided', 'rationale': winner['rationale'], 'principals': principals,\n",
+               'ruling/offered-choice-and-reasoning',
+               also=[("'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,\n",
+                      "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': 'decided', 'ruling': 'decided',\n")])
+    settlement('effect-type-ignores-ruling', "'type': JOURNEY[touchpoint]['effects'][ruling],",
+               "'type': JOURNEY[touchpoint]['effects']['approve'],", 'ruling/offered-choice-and-reasoning')
+    # AC2: the earliest binding answer wins, and every answer not counted is named on the settlement.
+    settlement('latest-answer-wins', "        winner_id, _, channel, winner = valid[0]\n",
+               "        winner_id, _, channel, winner = valid[-1]  # defect: the latest answer wins\n", 'settlement/one-winner')
+    settlement('conflicting-answer-unrecorded', "        for eid, _ver, other_channel, answer in valid[1:]:\n",
+               "        for eid, _ver, other_channel, answer in []:  # defect: answers not counted are not named\n",
+               'settlement/one-winner')
+    # AC2 (declared falsifier): the receipt inserted by a second command after the terminal transaction;
+    # then a nonce per answer instead of the request version's.
+    settlement('receipt-separate-transaction',
+               "                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},\n", '', 'settlement/one-transaction',
+               also=[("RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,)", "RECEIPT_KIND: (SETTLE, TERMS), TERMS_KIND: (TERMS,)"),
+                     ("kind not in (TERMS_KIND, API_KIND)", "kind not in (TERMS_KIND, API_KIND, RECEIPT_KIND)"),
+                     ("        self._commit(SETTLE, sid, params, expected)\n",
+                      "        self._commit(SETTLE, sid, params, expected)\n"
+                      "        self._commit(TERMS, rec, dict(entity_id=rec, kind=RECEIPT_KIND, data=receipt_data), {rec: 0})  # defect\n")])
+    settlement('settlement-nonce-per-answer', "        self._commit(SETTLE, sid, params, expected)\n",
+               "        self._commit(SETTLE, sid + ':' + winner_id, params, expected)  # defect: one nonce per answer\n",
+               'settlement/one-transaction')
+    # AC2: the VELDO-0064 answer command moves a request with settlement terms to SUBMITTED with no
+    # settlement, effect or receipt, so a later answer finds it closed.
+    settlement('inbox-answer-bypasses-settlement',
+               "                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if False:  # defect: the inbox answers a request with settlement terms\n",
+               'settlement/one-transaction', module='control_assignment.py')
+    # Review decision: the VELDO-0064 decline command closes a request with terms as DECLINED with no
+    # settlement; a rejection is a ruling the settlement service records with the owner's reasoning.
+    settlement('inbox-decline-bypasses-settlement',
+               "                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:  # defect: decline bypasses settlement\n",
+               'settlement/one-transaction', module='control_assignment.py')
+    # AC3 (declared falsifier): the request left open after settlement; then an API answer accepted on a
+    # settled request.
+    settlement('request-left-open',
+               "                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},\n"
+               "                request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}\n",
+               "                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']}}  # defect: the request stays open\n",
+               'terminal/materialized-settlement')
+    settlement('closed-request-answered-by-api',
+               "            if item['data']['state'] not in self.I.PENDING:\n"
+               "                raise Refused('request_closed', 'the request is no longer pending')\n", '',
+               'terminal/materialized-settlement')
+    # AC4 (declared falsifier): request.required_roles ignored when the policy roles pass; then the policy
+    # roles ignored, and the requester counted as independent of itself.
+    settlement('request-roles-ignored',
+               "    roles = sorted(set(policy['roles']) | set(terms.get('required_roles') or []))\n",
+               "    roles = sorted(set(policy['roles']))  # defect: the request's own roles are ignored\n",
+               'authority/roles-and-independence')
+    settlement('policy-roles-ignored',
+               "    roles = sorted(set(policy['roles']) | set(terms.get('required_roles') or []))\n",
+               "    roles = sorted(set(terms.get('required_roles') or []))  # defect: the journey's roles are ignored\n",
+               'authority/roles-and-independence')
+    settlement('requester-separation-ignored', "        if need['min_independence'] >= 1:\n",
+               "        if False:  # defect: the requester may answer its own request\n", 'authority/roles-and-independence')
+    # AC4: the owner and the API edge's signature are checked before an answer is accepted.
+    settlement('api-answer-owner-unchecked',
+               "            if a['principal'] != receipt['owner']:\n"
+               "                raise Refused('not_owner', 'the principal is not the owner the presentation was shown to')\n", '',
+               'authority/owner-and-presentation')
+    settlement('api-edge-signature-unchecked',
+               "        if not verified:\n            raise Refused('not_authorized', 'the signature does not verify')\n",
+               "        if False:  # defect: the signature is not checked\n"
+               "            raise Refused('not_authorized', 'the signature does not verify')\n",
+               'authority/owner-and-presentation')
+    # AC4: an unsupported quorum blocks: the request's count is never weakened to the policy's, and an
+    # independence above one is never taken as supported.
+    settlement('request-quorum-weakened',
+               "    count = max(policy['quorum'].get('count') or 1, wanted.get('count') or 1)\n",
+               "    count = policy['quorum'].get('count') or 1  # defect: the request's count is weakened\n",
+               'authority/unsupported-quorum-blocks')
+    settlement('independence-above-one-accepted', "SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}\n",
+               "SUPPORTED = {'count': (1,), 'min_independence': (0, 1, 2)}  # defect\n",
+               'authority/unsupported-quorum-blocks')
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
     def clone(name, module, old, new, row, also=()):
         add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)
@@ -3628,8 +3729,11 @@ def cases():
             "        'control_keys_custody.py', 'control_launch.py', 'control_membership.py', 'control_reservations.py',\n"
             "        'control_service.py', 'control_signer.py', 'control_signer_answers.py', 'control_snapshot.py',\n"
             "        'control_store.py', 'git_process.py')}\n", 'installed-fixed-and-protected')
-    service('authority-closure-omits-the-validator', 'control_service.py', seeds,
-            "    seeds = set(ENTRY_POINTS)  # defect: the validator the receiver's recheck runs is not installed\n",
+    # Re-aimed 2026-09-24: VELDO-0134 made control_eligibility load control_architecture, which loads the
+    # validator, so the seed alone no longer decides it; the defect is the installed set lacking the validator.
+    service('authority-closure-omits-the-validator', 'control_service.py',
+            '        return sorted(members)\n',
+            "        return sorted(members - {name for _role, name in EL.VALIDATOR_ROLES})  # defect: the validator the receiver's recheck runs is not installed\n",
             'installed-receiver-launches')
     service('authority-closure-ignores-loader-helpers', 'control_service.py',
             "            if not options:\n                continue\n",
@@ -3912,6 +4016,84 @@ def cases():
              module='judgment_load.py')
     events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
              module='judgment_load.py')
+    # VELDO-0136: each criterion's declared falsifier, and at least one different defect per named row.
+    def hints(name, module, old, new, row, also=()):
+        add(136, name, '68_veldo_0136_hints.py', module, old, new, [row], also=also)
+
+    # AC1 (declared falsifier): a plain message, one with no reply reference, is sent nothing. The
+    # decision is the intake pass's, after intake has seen the message (review of VELDO-0136).
+    hints('plain-message-not-hinted', 'control_intake.py',
+          "        if (record.get('outcome') != 'refused' or record.get('reason') not in ORDINARY\n",
+          "        if (record.get('outcome') != 'refused' or record.get('reason') != 'unknown_presentation'  # defect\n",
+          'hint/tells-owner-to-reply')
+    # AC1: the hint names only the first waiting request, so with two waiting one goes unnamed.
+    hints('hint-names-first-only', 'control_channel_presentation.py',
+          "        for r in receipts:\n            line = 'Request:",
+          "        for r in receipts[:1]:\n            line = 'Request:", 'hint/tells-owner-to-reply')
+    # AC2 (declared falsifier): the plain message is recorded as the answer to the waiting request.
+    hints('plain-message-recorded-as-answer', 'control_channel_attribution.py',
+          "        reply = message.get('reply_to_message')\n        if not isinstance(reply, dict):\n",
+          "        reply = message.get('reply_to_message')\n"
+          "        waiting = self.presenter.waiting(known['principal'], fields['chat_id']) if not isinstance(reply, dict) else []\n"
+          "        if waiting:  # defect: a message that replies to nothing answers the waiting request\n"
+          "            part = waiting[0]['platform_parts'][-1]\n"
+          "            reply = {'message_id': part['message_id'], 'chat': {'id': part['chat_id']}, 'date': part['date'],\n"
+          "                     'text': part['text'], 'from': {'id': record['bot_id'], 'is_bot': True}}\n"
+          "            message = dict(message, reply_to_message=reply)\n"
+          "            fields = dict(fields, reply_to_message_id=part['message_id'], reply_chat_id=part['chat_id'],\n"
+          "                          reply_date=part['date'])\n"
+          "        if not isinstance(reply, dict):\n", 'hint/owner-only-never-an-answer')
+    # AC2: the waiting set is every pending presentation, not the sender's own in his own chat, so a
+    # member with nothing waiting is told another owner's requests.
+    hints('hint-to-anyone-waiting', 'control_channel_presentation.py',
+          " or receipt.get('owner') != principal\n"
+          "                    or receipt.get('chat_id') != chat or receipt.get('enrolled_chat') != chat\n",
+          "\n", 'hint/owner-only-never-an-answer')
+    # AC2: the hint is kept as an answer record.
+    hints('hint-kept-as-answer', 'control_channel_presentation.py', "HINT_KIND = 'presentation_hint'\n",
+          "HINT_KIND = 'presentation_answer'\n", 'hint/owner-only-never-an-answer')
+    # AC3 (declared falsifier): a hint on every message. The one-hint rule is held in three places (the
+    # due filter, the expected version 0 of each mark, the transition's create-once), all removed.
+    permissive = (("                         dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')\n",
+                   "                         dict({hid: 0}, **{k: (self._entity(k) or {}).get('version', 0) for k in marks}),\n"
+                   "                         command_id=hid + ':intent')\n"),
+                  ("            if (not isinstance(mark, str) or mark in changes or (before.get(mark) or {}).get('data') is not None\n",
+                   "            if (not isinstance(mark, str) or mark in changes\n"))
+    hints('hint-every-message', 'control_channel_presentation.py',
+          "        due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]\n",
+          "        due = list(waiting)\n", 'hint/once-per-pending-request', also=permissive)
+    # AC3: when a new request is due, the hint names again the requests already hinted.
+    hints('hint-renames-hinted', 'control_channel_presentation.py',
+          "        text, named = self._hint_text(m.get('cause'), due, taken, lead)\n",
+          "        text, named = self._hint_text(m.get('cause'), waiting if due else due, taken, lead)\n",
+          'hint/once-per-pending-request', also=permissive)
+    # Review of VELDO-0136: one decision per owner message, taken after intake has seen it.
+    # New work is told it answers nothing, as if intake had not taken it.
+    hints('new-work-told-answers-nothing', 'control_intake.py',
+          "                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)\n",
+          "                self._hint(payload, None)  # defect: new work is told it answers nothing\n",
+          'hint/new-work-one-reply')
+    # The finding itself: the Acquirer hints when it refuses, before intake has seen the message.
+    hints('hint-before-intake', 'control_channel_attribution.py',
+          "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
+          "        if refusal in NOT_A_REPLY and known['principal'] is not None:  # defect: hinted before intake\n"
+          "            self.presenter.hint_owner(dict(cause=refusal, principal=known['principal'],\n"
+          "                                           chat_id=fields.get('chat_id'), sender_id=fields.get('sender_id'),\n"
+          "                                           message_id=fields.get('message_id'), evidence_id=eid,\n"
+          "                                           update_id=record.get('update_id')))\n"
+          "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
+          'hint/answer-without-reply-one-reply')
+    # Intake's project question and the note go out as two replies.
+    hints('question-and-note-apart', 'control_intake.py',
+          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
+          "        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies\n",
+          'hint/two-projects-one-reply')
+    # A clarification and a Reply to intake's own question are hinted as if intake had not taken them.
+    hints('intake-replies-hinted', 'control_intake.py',
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):\n",
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused', 'clarification',\n"
+          "                                                                         'resolved'):  # defect\n",
+          'hint/intake-replies-not-hinted')
 
     # VELDO-0137: policy_check reads a VELDO-0050 digest-form spec revision. Each case against the one
     # suite 68 row it names.
@@ -4115,6 +4297,213 @@ def cases():
                 '"--format=%(refname)%00%(objectname)%00%(symref)"',
                 '"--format=%(refname)%00%(objectname)"',
                 'refs-bound')
+    # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
+    # further defects, each against the one suite 67 row it names; anchors are exact text in the
+    # frontier and work loop the suite installs.
+    def offers(name, old, new, row, module='frontier.py', also=()):
+        add(135, name, '67_veldo_0135_offers.py', module, old, new, ['offers/' + row], also)
+
+    # AC1, declared: every lane reads the lane status from the spec file.
+    offers('offers-status-line-read', '    lanes.update({sid: e["lane"] for sid, e in entries.items()})\n',
+           '    pass  # defect: every lane reads the spec file\'s status line\n', 'floor-station')
+    offers('offers-review-line-without-record',
+           '        if word == "review":\n            # The status line names a station no floor record backs.\n',
+           '        if False:  # defect: a review status line with no floor record behind it is offered\n',
+           'floor-station')
+    offers('offers-returned-not-rebuilt', '        if to == "ready":\n',
+           '        if to == "never":  # defect: a unit returned to ready is not offered to build\n', 'floor-station')
+    offers('offers-unreadable-record-offered', '    if record is None and version:\n',
+           '    if False:  # defect: a row that is not a floor record reads as no record\n', 'floor-station')
+    # AC2, declared: a handed-off unit is claimable.
+    offers('offers-handoff-claimable', '        return _held(entry, "handoff")\n',
+           '        return dict(entry, station="build", lane="ready")  # defect: a handed-off unit is claimable\n',
+           'no-reclaim')
+    offers('offers-recheck-reads-status-line',
+           '        if entry is not None:\n            if entry["station"] == unit.get("kind"):\n',
+           '        if entry is not None and False:  # defect: the recheck reads the status line\n'
+           '            if entry["station"] == unit.get("kind"):\n', 'no-reclaim', module='work.py')
+    offers('offers-waiting-finding-offered',
+           '        if not codes or any(c.startswith("awaiting_reviews") for c in codes):\n',
+           '        if True:  # defect: a unit waiting on an open finding is offered for review\n', 'no-reclaim')
+    offers('offers-unit-claim-stop-stops-the-read',
+           '                if unit_stop.reason not in CLAIM_STOPS:\n                    raise\n',
+           '                raise  # defect: one unadmitted unit\'s claim stop stops the whole frontier read\n',
+           'no-reclaim')
+    # AC3, declared: an enrolled unit is offered as build again after its build is accepted.
+    offers('offers-build-again-after-acceptance', '    if state == "review":\n',
+           '    if state == "review":\n'
+           '        return dict(entry, station="build", lane="ready")  # defect: an accepted build is offered again\n',
+           'end-to-end')
+    offers('offers-recheck-refuses-review', '            if entry["station"] == unit.get("kind"):\n',
+           '            if entry["station"] == "build":  # defect: a review offer never survives its recheck\n',
+           'end-to-end', module='work.py')
+    # The finding path (review of e5b4dad): with the review policy met and the last finding resolved,
+    # the review station hands off without a reviewer; a review is assigned and launched only when the
+    # handoff rule does not pass. And a failed review bars only its station, not the unit's rebuild.
+    handoff_first = ('        if not floor.handoff_refusals(sid):\n'
+                     '            # The review policy is already met and nothing blocks the handoff (the owner resolved the\n'
+                     '            # last open finding): hand off now. A review the policy does not require is never assigned.\n'
+                     '            return self._hand_off(floor, unit, decision, None, None)\n')
+    assignment_refused = '            return self._floor_refused("review", sid, error, "review_assignment", **refused)\n'
+    offers('offers-review-assigned-before-handoff-rule', handoff_first, '', 'finding-path', module='dispatch.py',
+           also=[(assignment_refused, assignment_refused
+                  + '        # defect: the review is assigned before the handoff rule is checked\n' + handoff_first)])
+    offers('offers-reviewer-launched-before-handoff',
+           '            return self._hand_off(floor, unit, decision, None, None)\n',
+           '            with self._launch("review", unit, context, decision) as handle:  # defect: a reviewer still launches\n'
+           '                self._reviewer.review(dict(self._resolve(sid), status="review"), unit, calls=handle)\n'
+           '            return self._hand_off(floor, unit, decision, None, None)\n', 'finding-path', module='dispatch.py')
+    offers('offers-failed-review-bars-rebuild', '            if (u["spec"], u["kind"]) in self._failed:\n',
+           '            if any(spec == u["spec"] for spec, _ in self._failed):  # defect: a failed station bars the unit\n',
+           'end-to-end', module='work.py')
+    # Observability: the record version, the reason's class and the dispatch join.
+    offers('offers-observed-without-version',
+           '        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=e["version"],\n',
+           '        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=0,  # defect\n',
+           'observations')
+    offers('offers-withheld-reason-unclassed', '    if reason.split(":", 1)[0] in FLOOR_HOLDS:\n',
+           '    if True:  # defect: every withheld reason is classed as a hold\n', 'observations')
+    offers('offers-dispatch-not-joined', '        if unit.get("floor"):\n            self._observe_dispatch(unit, result)\n',
+           '        if False:  # defect: no dispatch is joined to the offer it came from\n'
+           '            self._observe_dispatch(unit, result)\n', 'observations', module='work.py')
+    # VELDO-0134: the architecture record's one writer. Each declared falsifier, a second and different
+    # defect of its row, and more where one row covers several refusals.
+    def acceptance(name, module, old, new, rows, also=()):
+        add(134, name, '68_veldo_0134_acceptance.py', module, old, new, ['acceptance/' + r for r in rows], also)
+
+    AR134 = 'control_architecture.py'
+    acceptance('architecture-agent-run-signs', AR134,
+               "        if entry.get('principal_type') != SIGNER_TYPE:\n",
+               "        if entry.get('principal_type') not in (SIGNER_TYPE, 'agent_run'):  # defect: an agent_run member signs\n",
+               ['signers'])
+    acceptance('architecture-any-role-signs', AR134,
+               "        if SIGNER_ROLE not in (entry.get('roles') or []):\n",
+               "        if not (entry.get('roles') or []):  # defect: any role accepts\n", ['signers'])
+    acceptance('architecture-scope-unchecked', AR134,
+               "        if not self.membership.scope_covers(entry.get('scope'), self.ids['repository_uuid']):\n",
+               "        if False:  # defect: the membership scope is never checked\n", ['signers'])
+    acceptance('architecture-signature-unverified', AR134,
+               "        if not verified:\n            raise Refused('not_authorized:signature'",
+               "        if False:  # defect: the verdict is ignored\n            raise Refused('not_authorized:signature'",
+               ['signature'])
+    acceptance('architecture-revoked-key-verifies', AR134,
+               "        key = self.AC.active_key(state['keyring'], principal, now)\n",
+               "        key = next((k for k in state['keyring'] if k.get('principal') == principal), None)  # defect: revocation ignored\n",
+               ['signature'])
+    acceptance('architecture-digest-unchecked', AR134,
+               "        if entry is not None and entry[2] is not None and raw_digest(entry[2]) != command['digest']:\n",
+               "        if False:  # defect: the stated digest is never compared with the bytes\n", ['evidence'],
+               also=[("        if parsed != digest:\n", "        if False:  # defect\n")])
+    acceptance('architecture-missing-commit-as-absent', AR134,
+               "        raise Refused('missing_evidence:commit', 'no commit %s in the bound repository' % commit)\n",
+               "        return None  # defect: a missing commit reads as a commit with no contract\n", ['evidence'])
+    acceptance('architecture-invalid-structure-accepted', AR134,
+               "        if load.refused:\n",
+               "        if load.refused and load.kind != 'invalid_structure':  # defect: the validator's verdict is ignored\n",
+               ['contract-kinds'])
+    acceptance('architecture-writer-policy-decides', AR134,
+               "                load, parsed = validate.entry_contract(str(root), True, arch=validator)\n",
+               "                load, parsed = validate.entry_contract(str(root), None, arch=validator)  # defect: absence is optional\n",
+               ['contract-kinds'])
+    acceptance('architecture-nonce-not-consumed', AR134,
+               "        if self.conn.execute('SELECT 1 FROM nonces WHERE nonce=?', (command['nonce'],)).fetchone():\n",
+               "        if False:  # defect: the signed nonce is not the one consumed\n", ['replay-and-coordinates'],
+               also=[("                      nonce=command['nonce'])\n",
+                      "                      nonce=command['nonce'] + ':' + command['command_id'])\n")])
+    acceptance('architecture-coordinates-unchecked', AR134,
+               "        if any(command[k] != v for k, v in self.ids.items()):\n",
+               "        if False:  # defect: the command's coordinates are not compared\n", ['replay-and-coordinates'])
+    acceptance('architecture-first-nonce-rewritten', AR134,
+               "                      nonce=command['nonce'])\n",
+               "                      nonce='consumed-' + command['nonce'])  # defect: another nonce is consumed\n", ['first'])
+    acceptance('architecture-gate-policy-decides', 'control_eligibility.py',
+               "            load, parsed = snapshot.contract(self.workspace, True if accepted else None)\n",
+               "            load, parsed = snapshot.contract(self.workspace, None)  # defect: the policy decides under a record\n",
+               ['first', 'worker-inputs'])
+    acceptance('architecture-reader-open-mapping', AR134,
+               "    problems.extend('record carries unknown field %s' % f for f in extra)\n", '', ['schema-oracle'])
+    acceptance('architecture-reader-uppercase-hex', AR134,
+               "_DIGEST = re.compile(r'sha256:[0-9a-f]{64}\\Z')\n",
+               "_DIGEST = re.compile(r'sha256:[0-9a-fA-F]{64}\\Z')  # defect: uppercase hex is a digest\n", ['schema-oracle'])
+    acceptance('architecture-reader-state-and-prefix-only', 'control_eligibility.py',
+               "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):\n",
+               "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'\n"
+               "                         or not str(record.get('digest')).startswith('sha256:')):  # defect: the reader before the schema\n",
+               ['schema-oracle'])
+    acceptance('architecture-writer-accepted-by-command', AR134,
+               "source=source, accepted_by=params['principal'],\n                        command_id",
+               "source=source, accepted_by=params['command_id'],  # defect\n                        command_id",
+               ['writer-schema'])
+    acceptance('architecture-writer-superseded-rewritten', AR134,
+               "superseded=list(prior['superseded']) + [_entry_of(prior)])",
+               "superseded=list(prior['superseded']) + [dict(_entry_of(prior), command_id=params['command_id'])])",
+               ['writer-schema'])
+    RAW = "    return 'sha256:' + hashlib.sha256(body).hexdigest()\n"
+    for name, hashed, row in [
+            ('architecture-digest-normalizes-line-endings', "body.replace(b'\\r\\n', b'\\n')", 'raw-digest-crlf'),
+            ('architecture-digest-universal-newlines',
+             "__import__('io').TextIOWrapper(__import__('io').BytesIO(body), encoding='utf-8', errors='surrogateescape', "
+             "newline=None).read().encode('utf-8', 'surrogateescape')", 'raw-digest-crlf'),
+            ('architecture-digest-adds-final-newline', "body if body.endswith(b'\\n') else body + b'\\n'",
+             'raw-digest-no-final-newline'),
+            ('architecture-digest-one-final-newline', "body.rstrip(b'\\n') + b'\\n'", 'raw-digest-no-final-newline'),
+            ('architecture-digest-strips-bom', "body[3:] if body.startswith(b'\\xef\\xbb\\xbf') else body", 'raw-digest-bom'),
+            ('architecture-digest-decodes-utf8-sig',
+             "body.decode('utf-8-sig', 'surrogateescape').encode('utf-8', 'surrogateescape')", 'raw-digest-bom')]:
+        acceptance(name, AR134, RAW, "    return 'sha256:' + hashlib.sha256(%s).hexdigest()  # defect\n" % hashed, [row])
+    acceptance('architecture-replacement-in-place', AR134,
+               "            data = dict(prior, contract_version=version + 1, digest=params['digest'], source=source, "
+               "accepted_by=params['principal'], command_id=params['command_id'], superseded=list(prior['superseded']) "
+               "+ [_entry_of(prior)])\n",
+               "            data = dict(prior, digest=params['digest'], source=source, accepted_by=params['principal'], "
+               "command_id=params['command_id'])  # defect: the current entry is overwritten in place\n",
+               ['version-history'])
+    acceptance('architecture-superseded-entries-edited', AR134,
+               "superseded=list(prior['superseded']) + [_entry_of(prior)])",
+               "superseded=[dict(e, accepted_by=params['principal'] + '-edited') for e in prior['superseded']] "
+               "+ [_entry_of(prior)])  # defect: earlier entries are rewritten",
+               ['version-history'])
+    acceptance('architecture-current-digest-reaccepted', AR134,
+               "        if current is not None and current['data']['digest'] == command['digest']:\n",
+               "        if False:  # defect: the current bytes are accepted again\n", ['replacement-refusals'])
+    acceptance('architecture-changed-retry-replayed', AR134,
+               "            if signed not in json.loads(prior[0]):\n",
+               "            if False:  # defect: a changed retry is answered as the committed command\n",
+               ['replacement-refusals'])
+    acceptance('architecture-superseded-bytes-accepted', 'control_eligibility.py',
+               "        elif accepted and parsed != accepted['digest']:\n",
+               "        elif accepted and parsed != accepted['digest'] and parsed not in [\n"
+               "                e.get('digest') for e in record.get('superseded', [])]:  # defect: replaced bytes pass\n",
+               ['previous-bytes'])
+    acceptance('architecture-first-version-accepted', 'control_eligibility.py',
+               "                        'digest': record.get('digest') if isinstance(record, dict) else None}\n",
+               "                        'digest': (record.get('superseded') or [record])[0].get('digest')\n"
+               "                        if isinstance(record, dict) else None}  # defect: the first version stays accepted\n",
+               ['previous-bytes'])
+    STORE134 = 'control_store.py'
+    WRITER = '    return operation == ARCHITECTURE_OPERATION\n'
+    acceptance('architecture-generic-upsert-writes', STORE134, WRITER,
+               '    return operation in (ARCHITECTURE_OPERATION, "upsert_entity")  # defect: the generic upsert writes it\n',
+               ['generic-write'])
+    acceptance('architecture-generic-retire-writes', STORE134, WRITER,
+               '    return operation in (ARCHITECTURE_OPERATION, "retire_entity")  # defect: the generic retire writes it\n',
+               ['generic-write'])
+    acceptance('architecture-kind-unowned', STORE134,
+               '    return (isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)) or ARCHITECTURE_KIND in kinds\n',
+               '    return isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)  # defect: the kind is unowned\n',
+               ['generic-write'])
+    acceptance('architecture-later-operation-writes', STORE134,
+               '            if architecture_entity(eid, kinds) and not architecture_writer(command["operation"]):\n',
+               '            if False:  # defect: only a named write parameter is checked\n', ['generic-write'])
+    acceptance('architecture-repository-from-environment', AR134,
+               "        repo = self.store.bound_repository(self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])\n",
+               "        repo = __import__('os').environ.get('VELDO_ARCHITECTURE_REPOSITORY') or self.store.bound_repository(\n"
+               "            self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])  # defect: the environment names it\n",
+               ['worker-inputs'])
+    acceptance('architecture-git-inherits-environment', AR134,
+               "        return _git_process.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)\n",
+               "        return subprocess.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)  # defect\n",
+               ['worker-inputs'])
     return result
 
 

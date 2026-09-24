@@ -57,8 +57,9 @@ comes from the structural validator INSTALLED beside this module (never the copy
 executed once per Gate from one in-memory read of its bytes (ValidatorSnapshot) and asked through validate.py's
 public entry_contract, over the workspace's .veldo/architecture.yaml. A Gate with no workspace always
 refuses (missing_evidence:architecture/workspace). The authority's record
-architecture:<repository> (state accepted, digest of the accepted bytes) makes the contract required
-whatever the workspace's policy says, and the workspace file must be exactly those bytes; with no
+architecture:<repository>, when it is a valid veldo.architecture_record/v1 (VELDO-0134's schema, read
+through control_architecture.record_problems; any other shape refuses missing_authority:architecture),
+makes the contract required whatever the workspace's policy says, and the workspace file must be exactly those bytes; with no
 record the repository's policy flag decides absence, as VELDO-0016's loader always has. A present
 contract that is unreadable, malformed, of the wrong type or structurally invalid refuses by name
 (invalid_input:architecture/<kind>), a required one that is absent refuses
@@ -98,6 +99,8 @@ E = _organ('control_enrollment')
 SN = _organ('control_snapshot')
 # VELDO-0054: exact decision-record dependency evaluation, the decisions_settled predicate's answer.
 DD = _organ('control_decision_dependency')
+# VELDO-0134: the architecture record's schema (veldo.architecture_record/v1), which the reader applies.
+AR = _organ('control_architecture')
 
 # The stations the floor's entries invoke, each with its station-specific predicates. The shipped
 # contract's set is the floor of each; current admission is added to every station because R52
@@ -1040,8 +1043,8 @@ class Gate:
                         'digest': record.get('digest') if isinstance(record, dict) else None}
         found = {'basis': 'accepted' if accepted else 'policy', 'kind': None, 'state': None, 'required': None,
                  'accepted': accepted, 'artifact': None, 'validator': {}, 'refusals': []}
-        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'
-                         or not isinstance(record.get('digest'), str) or not record['digest'].startswith('sha256:')):
+        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):
+            # Exactly the schema-valid records are an acceptance (VELDO-0134); any other shape is none.
             found['refusals'] = ['missing_authority:architecture']
             return found
         if self.workspace is None:

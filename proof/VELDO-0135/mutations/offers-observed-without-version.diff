@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -282 +282 @@
+-        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=e["version"],
++        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=0,  # defect

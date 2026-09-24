@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -539 +539 @@
+-        winner_id, _, channel, winner = valid[0]
++        winner_id, _, channel, winner = valid[-1]  # defect: the latest answer wins

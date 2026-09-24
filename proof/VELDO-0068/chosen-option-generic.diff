@@ -1,0 +1,8 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -556 +556 @@
+-                      'choice': choice, 'ruling': ruling, 'rationale': winner['rationale'], 'principals': principals,
++                      'choice': 'decided', 'ruling': 'decided', 'rationale': winner['rationale'], 'principals': principals,
+@@ -564 +564 @@
+-                  'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,
++                  'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': 'decided', 'ruling': 'decided',

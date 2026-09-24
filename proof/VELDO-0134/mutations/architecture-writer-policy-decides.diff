@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -444 +444 @@
+-                load, parsed = validate.entry_contract(str(root), True, arch=validator)
++                load, parsed = validate.entry_contract(str(root), None, arch=validator)  # defect: absence is optional

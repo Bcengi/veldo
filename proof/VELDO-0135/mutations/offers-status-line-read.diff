@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -248 +248 @@
+-    lanes.update({sid: e["lane"] for sid, e in entries.items()})
++    pass  # defect: every lane reads the spec file's status line

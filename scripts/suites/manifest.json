@@ -797,6 +797,42 @@
    ],
    "regions": "The installed gate verifies a landing candidate from outside it: the stamp, the gate event and the review-event reconciliation written to an external sink with every bad sink refused and the candidate unchanged, an external observation binding the exact candidate and verification that refuses any change during or after the run, and the installed verifier and policy deciding with no receipt in the candidate's tree",
    "requires_note": "Uses only shared ROOT and expect. Real Git (a scaffolded seed whose gate stamp the ordinary landing step committed, a bare remote, the caller's clone and a work clone), the production scripts/verify.sh with a fixture catalog as the installed verifier, GitLandOps and LiveLoop loaded from an installed .veldo copy, and real child processes that change the candidate while the gate runs. Writes only temporary fixtures."
+  },
+  {
+   "name": "67_veldo_0135_offers",
+   "file": "67_veldo_0135_offers.py",
+   "requires": [
+    "67_veldo_0135_offers"
+   ],
+   "regions": "Enrolled work offered from its floor record at every floor state, the work loop's no-reclaim and claim-then-recheck over that record, one enrolled unit through the ordinary loop to landing, unenrolled status-line behavior unchanged, and the offer observations",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition behind the claim client, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+  },
+  {
+   "name": "68_veldo_0136_hints",
+   "file": "68_veldo_0136_hints.py",
+   "requires": [
+    "68_veldo_0136_hints"
+   ],
+   "regions": "The owner told once, per waiting request, to reply to the request message when his attributed message replies to no presentation; the hint never records an answer and reaches only the current enrolled owner",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and a loopback Bot API over HTTP."
+  },
+  {
+   "name": "68_veldo_0134_acceptance",
+   "file": "68_veldo_0134_acceptance.py",
+   "requires": [
+    "68_veldo_0134_acceptance"
+   ],
+   "regions": "The architecture record's one writer: a signed owner accept command over the bytes at a commit, the record schema the writer and the Gate are held to, replacement as a new version, and no other store operation or worker input writing it",
+   "requires_note": "Uses only shared ROOT and expect. Real Git (a repository with a commit per contract state and a decoy repository), real SQLite stores seeded with membership and OpenSSH keys, commands signed through ssh-keygen -Y sign, the installed validator, the VELDO-0053 Gate and the operating system's sha256sum."
+  },
+  {
+   "name": "69_veldo_0068_settlement",
+   "file": "69_veldo_0068_settlement.py",
+   "requires": [
+    "69_veldo_0068_settlement"
+   ],
+   "regions": "One settlement per request version carrying the offered choice, its ruling and the owner's reasoning, the settlement, nonce, typed effect, terminal request state and receipt in one transaction with one winner across Telegram and the authenticated API, terminal state published through an accepted snapshot, and conjunctive journey and request authority with unsupported quorums blocking",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal, possession, edge and API answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, concurrent writers on two connections, a real Git repository with a VELDO-0035 accepted revision and snapshot, and a reader in another process. Writes only temporary fixtures."
   }
  ]
 }

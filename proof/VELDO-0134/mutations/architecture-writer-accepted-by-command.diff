@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -464 +464 @@
+-                        digest=params['digest'], source=source, accepted_by=params['principal'],
++                        digest=params['digest'], source=source, accepted_by=params['command_id'],  # defect

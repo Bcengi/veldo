@@ -38,6 +38,14 @@ proposal into a proposed objective when it names one of the question's candidate
 kept on the proposal it clarifies. A follow-up to an inbox proposal already resolved lands on the
 objective it was resolved to, never on the retired inbox record.
 
+ONE REPLY ABOUT WAITING REQUESTS (VELDO-0136). A Telegram message the Acquirer refused as replying
+to no presentation (NOT_A_REPLY) gets its one decision here, after intake has seen it, and at most one
+bot reply, through the presenter's `hint_owner`: a message intake takes as a clarification or as the
+answer to its own question gets none; one taken as a new proposal while requests of the owner wait
+gets one note that it was taken as new work, not as an answer, naming the waiting requests, merged
+into the project question when intake asks one; the plain hint goes only to a message intake does not
+take. Each waiting request version is named once, and a later pass never decides a message again.
+
 INTAKE PROPOSES AND NOTHING ELSE. It writes only intake sources, proposals (state PROPOSED,
 AWAITING_PROJECT or RESOLVED) and questions: never an execution unit, a backlog item, an admission, a
 priority, a claim, a reservation or an effect. Admission and priority are later owner decisions.
@@ -264,6 +272,11 @@ class Intake:
             result = self._submit(command)
         if source_kind == 'telegram_message' and type(payload) is str:
             result['evidence_id'] = payload
+            # The one decision about what the owner is told, now that intake has seen the message: a
+            # proposal gets the new-work note, a message intake did not take the plain hint; an inbox
+            # proposal's note rides on its question (_ask); a clarification or a resolution gets none.
+            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):
+                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)
         return result
 
     def take_telegram(self):
@@ -526,18 +539,54 @@ class Intake:
             return 'not_member_when_sent'
         return None
 
+    # telling the owner about waiting requests (VELDO-0136)
+
+    def _hint(self, evidence_id, taken, lead=None):
+        """The presenter's one decision about a Telegram message the Acquirer refused as replying to no
+        presentation, from a person it attributed: its recorded decision, taken once when the message
+        was acquired, never a reading made now. `taken` is what intake made of it (None: not taken).
+        A message intake did not take is remembered even when nothing is sent, so a later pass never
+        decides it again. Returns hint_owner's result, or {} when no decision is due."""
+        record = self.acquirer.evidence(evidence_id) if type(evidence_id) is str else None
+        presenter = getattr(self.acquirer, 'presenter', None)
+        if record is None or presenter is None or not hasattr(presenter, 'hint_owner'):
+            return {}
+        fields = record.get('fields') or {}
+        if (record.get('outcome') != 'refused' or record.get('reason') not in ORDINARY
+                or record.get('principal') is None):
+            return {}
+        try:
+            if presenter.hint_decided(fields.get('chat_id'), fields.get('message_id')):
+                return {}
+            return presenter.hint_owner(dict(cause=record['reason'], principal=record['principal'],
+                                             chat_id=fields.get('chat_id'), sender_id=fields.get('sender_id'),
+                                             message_id=fields.get('message_id'), evidence_id=record['evidence_id'],
+                                             update_id=record.get('update_id')),
+                                        taken=taken, lead=lead, remember=taken is None)
+        except Exception:  # noqa: BLE001 - a hint never undoes or blocks what intake recorded
+            return {}
+
     # asking on Telegram
 
     def _ask(self, qid, command):
         """Send an inbox proposal's question to the owner's chat as a reply to the message, and record
-        where the platform put it. A failed send leaves the question open and undelivered, by name."""
+        where the platform put it. When requests of the owner wait, the note that his message was taken
+        as new work is merged into the question and the one message goes through the presenter's hint
+        (VELDO-0136). A failed send leaves the question open and undelivered, by name."""
         where, question = command['provenance'], self.question(qid)
         if self.asker is None:
+            self._hint(where.get('evidence_id'), 'proposed')
             return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
-        try:
-            sent = self.asker.send(where['chat_id'], question['prompt'], reply_to=where['message_id'])
-        except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
-            return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
+        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])
+        if hinted.get('attempted'):
+            sent = hinted.get('delivery')
+            if not isinstance(sent, dict):
+                return self._event('ask', 'refused', hinted.get('reason') or 'unknown_outcome', question_id=qid)
+        else:
+            try:
+                sent = self.asker.send(where['chat_id'], question['prompt'], reply_to=where['message_id'])
+            except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
+                return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
         delivery = {'channel': 'telegram_chat', 'bot_id': where['bot_id'], 'chat_id': sent['chat_id'],
                     'message_id': sent['message_id'], 'date': sent['date']}
         row = self._entity(qid)

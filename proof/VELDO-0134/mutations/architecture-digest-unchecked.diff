@@ -1,0 +1,8 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -405 +405 @@
+-        if entry is not None and entry[2] is not None and raw_digest(entry[2]) != command['digest']:
++        if False:  # defect: the stated digest is never compared with the bytes
+@@ -449 +449 @@
+-        if parsed != digest:
++        if False:  # defect

@@ -158,3 +158,9 @@ lands on the live objective. On the lead's decision, a Telegram message whose se
 at the message's platform date stays refused after the sender is enrolled, read from the effective
 time of the key the VELDO-0025 enrollment writes. Suite 68 keeps 18 rows with two new row cases, red at
 8607f50; finding 126 has 18 mutations (`proof/VELDO-0126/`). The criteria, status and risk are unchanged.
+
+2026-09-24, VELDO-0136 review fix: the Telegram intake pass now makes the one decision about what an
+owner is told about his waiting requests after intake has taken or refused his message (`Intake._hint`,
+through the VELDO-0065 presenter's `hint_owner`); an inbox proposal's question carries that note in the
+same one reply. Intake's own records, criteria, status and risk are unchanged; suite 68 keeps its 18
+rows green and finding 126 its 18 mutations (`proof/VELDO-0126/mutations.json` regenerated).

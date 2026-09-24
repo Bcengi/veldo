@@ -1,0 +1,12 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -231 +231 @@
+-                                                 RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,), API_KIND: (API,)},
++                                                 RECEIPT_KIND: (SETTLE, TERMS), TERMS_KIND: (TERMS,), API_KIND: (API,)},
+@@ -300 +300 @@
+-        if not isinstance(eid, str) or kind not in (TERMS_KIND, API_KIND) or not isinstance(data, dict) or eid in before:
++        if not isinstance(eid, str) or kind not in (TERMS_KIND, API_KIND, RECEIPT_KIND) or not isinstance(data, dict) or eid in before:
+@@ -329 +328,0 @@
+-                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},
+@@ -583,0 +583 @@
++        self._commit(TERMS, rec, dict(entity_id=rec, kind=RECEIPT_KIND, data=receipt_data), {rec: 0})  # defect

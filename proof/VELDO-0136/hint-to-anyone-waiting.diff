@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1180,2 +1180 @@
+-            if (receipt is None or receipt.get('outcome') != 'published' or receipt.get('owner') != principal
+-                    or receipt.get('chat_id') != chat or receipt.get('enrolled_chat') != chat
++            if (receipt is None or receipt.get('outcome') != 'published'

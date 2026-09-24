@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -457 +457 @@
+@@ -470 +470 @@
 -                            'domain': self.domain, 'project': chosen, 'principal': principal, 'text': data['text'],
 +                            'domain': self.domain, 'project': chosen, 'principal': principal, 'text': text,  # defect: the follow-up replaces the objective

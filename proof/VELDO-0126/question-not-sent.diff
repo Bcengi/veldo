@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -397 +397 @@
+@@ -410 +410 @@
 -            self._ask(result['question_id'], command)
 +            pass  # defect: the question is never sent

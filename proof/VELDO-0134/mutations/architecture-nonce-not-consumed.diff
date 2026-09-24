@@ -1,0 +1,8 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -389 +389 @@
+-        if self.conn.execute('SELECT 1 FROM nonces WHERE nonce=?', (command['nonce'],)).fetchone():
++        if False:  # defect: the signed nonce is not the one consumed
+@@ -416 +416 @@
+-                      nonce=command['nonce'])
++                      nonce=command['nonce'] + ':' + command['command_id'])
