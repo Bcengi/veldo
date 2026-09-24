@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -565 +565 @@
+-        for label, home in (('absent', empty), ('hidden', None)):
++        for label, home in (('absent', empty),):  # defect: the hidden runtime is never asked

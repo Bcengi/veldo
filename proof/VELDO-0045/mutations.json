@@ -1,0 +1,384 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 45 --jobs 4 --diff-dir proof/VELDO-0045/mutations",
+ "seconds": 76.9,
+ "summary": {
+  "mutations_rejected": 23,
+  "green_suites": {
+   "62_veldo_0045_runtime.py": 47
+  }
+ },
+ "mutations": [
+  {
+   "mutation": "runtime-content-enforcement-bypassed",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/altered-wheel-refused"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/altered-wheel-refused",
+    "runtime/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-content-enforcement-bypassed.diff",
+   "declared_falsifier_of": "AC1"
+  },
+  {
+   "mutation": "runtime-record-digest-unchecked",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/altered-wheel-refused"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/altered-wheel-refused",
+    "journey/assets-installed"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-record-digest-unchecked.diff"
+  },
+  {
+   "mutation": "runtime-lock-hash-unchecked",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/altered-hash-refused"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/altered-hash-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-lock-hash-unchecked.diff"
+  },
+  {
+   "mutation": "runtime-lock-hash-prefix-only",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/altered-hash-refused"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/altered-hash-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-lock-hash-prefix-only.diff"
+  },
+  {
+   "mutation": "runtime-requirements-ignored",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/omitted-dependency-refused"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/omitted-dependency-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-requirements-ignored.diff"
+  },
+  {
+   "mutation": "runtime-installed-set-unchecked",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/omitted-dependency-refused"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/omitted-dependency-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-installed-set-unchecked.diff"
+  },
+  {
+   "mutation": "runtime-license-unjudged",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/records-cover-lock"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/records-cover-lock"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-license-unjudged.diff"
+  },
+  {
+   "mutation": "runtime-unrecorded-package-passes",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/records-cover-lock"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/records-cover-lock"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-unrecorded-package-passes.diff"
+  },
+  {
+   "mutation": "runtime-qualification-after-entry-point",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/workload"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/workload",
+    "journey/assets-installed"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-qualification-after-entry-point.diff"
+  },
+  {
+   "mutation": "runtime-qualification-without-result",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/workload"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/workload",
+    "journey/assets-installed"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-qualification-without-result.diff"
+  },
+  {
+   "mutation": "runtime-taxonomy-unknown",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/observations"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-taxonomy-unknown.diff"
+  },
+  {
+   "mutation": "runtime-counts-omitted",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "runtime/observations"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-counts-omitted.diff"
+  },
+  {
+   "mutation": "scaffold-omits-runtime-lock",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "journey/assets-installed"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/records-cover-lock",
+    "runtime/workload",
+    "runtime/altered-hash-refused",
+    "runtime/altered-wheel-refused",
+    "runtime/omitted-dependency-refused",
+    "runtime/observations",
+    "journey/assets-installed",
+    "journey/omitted-asset-named",
+    "enforcement/entries-enumerated",
+    "enforcement/no-runtime",
+    "enforcement/graph-unavailable",
+    "ran/runtime/altered-hash-refused",
+    "ran/runtime/omitted-dependency-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/scaffold-omits-runtime-lock.diff",
+   "declared_falsifier_of": "AC2"
+  },
+  {
+   "mutation": "scaffold-omits-runtime-records",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "journey/assets-installed"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "runtime/records-cover-lock",
+    "runtime/workload",
+    "runtime/altered-hash-refused",
+    "runtime/altered-wheel-refused",
+    "runtime/omitted-dependency-refused",
+    "runtime/observations",
+    "journey/assets-installed",
+    "journey/omitted-asset-named",
+    "enforcement/graph-unavailable"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/scaffold-omits-runtime-records.diff"
+  },
+  {
+   "mutation": "runtime-records-source-fallback",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "journey/omitted-asset-named"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "journey/omitted-asset-named"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-records-source-fallback.diff"
+  },
+  {
+   "mutation": "runtime-missing-asset-unnamed",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "journey/omitted-asset-named"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "journey/omitted-asset-named"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-missing-asset-unnamed.diff"
+  },
+  {
+   "mutation": "authorization-imports-langgraph",
+   "module": ".veldo/authorization.py",
+   "target_rows": [
+    "enforcement/no-runtime"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/no-runtime"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authorization-imports-langgraph.diff",
+   "declared_falsifier_of": "AC3"
+  },
+  {
+   "mutation": "authorization-reads-runtime-by-path",
+   "module": ".veldo/authorization.py",
+   "target_rows": [
+    "enforcement/no-runtime"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/no-runtime"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authorization-reads-runtime-by-path.diff"
+  },
+  {
+   "mutation": "enforcement-catalog-unread",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "enforcement/entries-enumerated"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/entries-enumerated"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/enforcement-catalog-unread.diff"
+  },
+  {
+   "mutation": "enforcement-guard-unread",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "enforcement/entries-enumerated"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/entries-enumerated"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/enforcement-guard-unread.diff"
+  },
+  {
+   "mutation": "graph-unavailable-mislabelled",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "enforcement/graph-unavailable"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/graph-unavailable"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/graph-unavailable-mislabelled.diff"
+  },
+  {
+   "mutation": "graph-probe-absent-only",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "enforcement/graph-unavailable"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/graph-unavailable"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/graph-probe-absent-only.diff"
+  },
+  {
+   "mutation": "runtime-hide-not-enforced",
+   "module": ".veldo/control_runtime.py",
+   "target_rows": [
+    "enforcement/graph-unavailable"
+   ],
+   "baseline": "green",
+   "assertions": 47,
+   "red_rows": [
+    "enforcement/graph-unavailable"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/runtime-hide-not-enforced.diff"
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -292 +292 @@
+-            if algorithm != 'sha256' or not target.is_file() or _record_hash(target.read_bytes()) != value:
++            if algorithm != 'sha256' or not target.is_file():  # defect: a file is never hashed against RECORD

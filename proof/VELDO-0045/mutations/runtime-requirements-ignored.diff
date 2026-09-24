@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -360 +360 @@
+-    for requirement in report['requirements']:
++    for requirement in []:  # defect: the installed requirements are never evaluated

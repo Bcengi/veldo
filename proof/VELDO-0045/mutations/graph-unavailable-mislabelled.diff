@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -403 +403 @@
+-        raise graph.Refused('runtime_unavailable', 'the graph runtime is not activated (' + '; '.join(report['problems'][:6])
++        raise graph.Refused('unknown_outcome', 'the graph runtime is not activated (' + '; '.join(report['problems'][:6])

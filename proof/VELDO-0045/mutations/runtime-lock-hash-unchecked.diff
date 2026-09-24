@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -262 +262 @@
+-        if entry.get('sha256') != pinned:
++        if False:  # defect: the lock's artifact hash is never compared with the registry's

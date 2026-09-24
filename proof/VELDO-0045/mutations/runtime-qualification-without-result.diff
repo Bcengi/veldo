@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -426 +426 @@
+-                                             answers['suspend'].get('resume'), supplied)
++                                             answers['suspend'].get('resume'), [])  # defect: the cycle advances without its supplied result

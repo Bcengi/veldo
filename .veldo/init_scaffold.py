@@ -95,6 +95,20 @@ _FILES = [
     ".veldo/control_graph_lock.py",
     ".veldo/control_graph_install.py",
     ".veldo/control_graph_langgraph.py",
+    # VELDO-0045: activation of that runtime against its license and provenance records (laid down
+    # from _RUNTIME_ASSETS below), the qualification workload and the no-runtime enforcement check.
+    # Runtime asset; no validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_runtime.py",
+    # VELDO-0045: the installed authorization entry and every module its two-key path loads, so the
+    # enforcement the runtime must never reach is installed and can be run with the runtime hidden.
+    # authorization.py ships inert (no human_decisions policy block); none is a validator import.
+    ".veldo/authorization.py",
+    ".veldo/two_key.py",
+    ".veldo/action.py",
+    ".veldo/action_executor.py",
+    ".veldo/evidence.py",
+    ".veldo/execution_binding.py",
+    ".veldo/incident.py",
     # VELDO-0037: alias allocation commands and accepted-document publication; runtime assets
     # loaded by the authority, not by the validator, so not REQUIRED_SUBSTRATE.
     ".veldo/control_alias.py",
@@ -246,6 +260,12 @@ _FILES = [
 
 # Directories whose every file is copied (recursively).
 _DIRS = [".veldo/examples"]
+
+# VELDO-0045: non-code runtime assets. The canonical copy is the templates' runtime/ directory
+# (engine/runtime/ here, runtime/ in a composed pack) and it is laid down under the target's .veldo,
+# beside the modules that read it (source, destination). scripts/check_template_sync.sh pairs
+# engine/runtime/<name> with .veldo/runtime/<name> by the same rule.
+_RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]
 
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"
@@ -566,6 +586,13 @@ def scaffold(target, templates=None):
     for rel_dir in _DIRS:
         for rel in _files_in(templates, rel_dir):
             _lay(templates / rel, target / rel, rel, created, skipped)
+
+    # the non-code runtime assets, copied byte for byte under .veldo
+    for src_rel, dst_rel in _RUNTIME_ASSETS:
+        src = templates / src_rel
+        if not src.exists():
+            raise ScaffoldError(f"template missing: {src_rel}")
+        _lay(src, target / dst_rel, dst_rel, created, skipped)
 
     # the derived index reflects the scaffolded specs and starter plan
     _regenerate_index(target)

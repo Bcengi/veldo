@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -224 +224 @@
+-    report['taxonomy'] = sorted({TAXONOMY.get(p.split(':', 1)[0], 'unknown_outcome') for p in report['problems']})
++    report['taxonomy'] = sorted({'unknown_outcome' for p in report['problems']})  # defect: every refusal unclassified

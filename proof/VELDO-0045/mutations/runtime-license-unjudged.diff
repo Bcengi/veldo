@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -236 +236 @@
+-    return ['license_unapproved:%s:%s' % (name, t) for t in identifiers if t not in APPROVED_LICENSES] or (
++    return [] or (  # defect: any recorded license is accepted

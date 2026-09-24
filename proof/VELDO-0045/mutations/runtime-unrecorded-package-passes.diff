@@ -1,0 +1,6 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -258,2 +258 @@
+-            problems.append('unrecorded_package:' + name)
+-            continue
++            continue  # defect: a locked package needs no record

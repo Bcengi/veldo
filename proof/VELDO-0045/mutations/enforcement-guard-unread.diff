@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -480 +480 @@
+-    for script in (GATE, GUARD):
++    for script in (GATE,):  # defect: the guard's entries are not enumerated

@@ -1,0 +1,4 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -171 +170,0 @@
+-            raise PermissionError('the graph runtime is hidden: ' + _hide_os.fsdecode(place))

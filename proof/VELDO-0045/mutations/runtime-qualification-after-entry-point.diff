@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -414 +414 @@
+-    return source.replace(guard, '\n' + QUALIFICATION + guard, 1)
++    return source + '\n' + QUALIFICATION  # defect: registered after the entry point has served

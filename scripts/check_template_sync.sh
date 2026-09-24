@@ -53,6 +53,9 @@ EXCEPTED=0
 UNPAIRED=0
 while IFS= read -r eng; do
   inst="${eng#engine/}"
+  # A non-code runtime asset ships to .veldo/runtime/, the rule init_scaffold's _RUNTIME_ASSETS
+  # lays it down by (VELDO-0045), so that is where this repository's own copy is.
+  case "$eng" in engine/runtime/*) inst=".veldo/${eng#engine/}" ;; esac
   # An engine file with no counterpart is not drift: much of engine/ is what init LAYS DOWN into a
   # fresh repository rather than something this repository runs a copy of.
   [ -f "$inst" ] || { UNPAIRED=$((UNPAIRED + 1)); continue; }

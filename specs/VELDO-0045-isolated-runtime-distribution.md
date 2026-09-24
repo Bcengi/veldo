@@ -33,6 +33,7 @@ footprint:
   - "scripts/check_install_and_run.py"
   - "scripts/check_pack_drift.py"
   - "scripts/check_template_sync.sh"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/verify.sh"
   - "engine/scripts/verify.sh"
   - "packs/*/scripts/verify.sh"
@@ -106,6 +107,19 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the reference installation creates the LangGraph runtime in its own environment from a
+  lock that pins every package with its hash and records its license, runs the adapter workload in it,
+  and installs every asset the journey needs. Validators, authorization and the gate keep working with
+  the runtime absent.
+- Threat model: a package artifact that does not match its pinned hash, a missing dependency or asset,
+  and a runtime import creeping into an enforcement module. The owner's account, the installed engine
+  and the package tooling are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); files planted
+  in our own installed directory; package index outages and install recovery (Release 2); bugs in pip
+  or the Python packaging tools themselves.
+
 ## Notes
 
 Exact Python/LangGraph versions and licenses must come from compatibility qualification.
@@ -131,3 +145,19 @@ Python/profile and AC2 every-pack/full inventory moved to Release 4. Compatible 
 pinned runtime and all journey assets remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-23 implementation: `.veldo/control_runtime.py` (engine copy byte-identical, laid down by
+init_scaffold.py) activates the runtime VELDO-0043 installs, from its lock and its installer and never
+a second copy of either. Activation refuses by name when a journey asset is missing from the
+installation, when the license and provenance records (`engine/runtime/langgraph-records.json`, laid
+at `.veldo/runtime/`, read from PyPI and the PyPI integrity API on 2026-09-23 by
+proof/VELDO-0045/records.py) do not record every locked package with the registry's sha256, an
+approved SPDX license and an approval, when the installed distributions or their files differ from
+the lock, from RECORD or from the genuine wheel's content, and when the runtime's own packaging finds
+an installed requirement that no locked distribution satisfies. The same module runs the qualification
+workload through the production adapter, and enumerates the installation's enforcement entries from
+its gate, its guard and its authorization entry and runs them with the runtime hidden. The scaffolder
+now also installs authorization.py and the six modules its two-key path loads; pack.py's engine globs
+and check_template_sync.sh carry the runtime/ assets. The 23 finding 45 negative controls are
+registered in scripts/check_teeth_mutations.py, which joins the machine-readable footprint as the
+authorized exception VELDO-0043 also used. No criterion, status or historical proof was changed.
