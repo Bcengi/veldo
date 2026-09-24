@@ -788,6 +788,15 @@
    ],
    "regions": "One normalized intake command from a Telegram message and an authenticated API request, proposals only, an inbox proposal and a question when the project is unresolved, text kept as written, follow-up clarification, authenticated allowed sources only and one proposal per source request",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal, edge and API request signatures, the VELDO-0066 Acquirer and VELDO-0065 presentation edge over a loopback Bot API, and a loopback ticket host that records requests. Writes only temporary fixtures."
+  },
+  {
+   "name": "69_veldo_0058_gate_output",
+   "file": "69_veldo_0058_gate_output.py",
+   "requires": [
+    "69_veldo_0058_gate_output"
+   ],
+   "regions": "The installed gate verifies a landing candidate from outside it: the stamp, the gate event and the review-event reconciliation written to an external sink with every bad sink refused and the candidate unchanged, an external observation binding the exact candidate and verification that refuses any change during or after the run, and the installed verifier and policy deciding with no receipt in the candidate's tree",
+   "requires_note": "Uses only shared ROOT and expect. Real Git (a scaffolded seed whose gate stamp the ordinary landing step committed, a bare remote, the caller's clone and a work clone), the production scripts/verify.sh with a fixture catalog as the installed verifier, GitLandOps and LiveLoop loaded from an installed .veldo copy, and real child processes that change the candidate while the gate runs. Writes only temporary fixtures."
   }
  ]
 }

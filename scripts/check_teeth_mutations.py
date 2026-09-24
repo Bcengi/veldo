@@ -4035,7 +4035,9 @@ def materialize(case, mode, directory, root=ROOT):
     if mode not in ('baseline', 'noop', 'mutant'):
         raise ValueError('unknown mutation mode: ' + mode)
     fixture = case.get('fixture') is True
-    base = root / 'scripts/fixtures' if fixture else root / '.veldo'
+    # `dir`: the directory a production module lives in, relative to the root (.veldo by default;
+    # VELDO-0058's gate script lives in scripts).
+    base = root / 'scripts/fixtures' if fixture else root / case.get('dir', '.veldo')
     source = base / case['module']
     before = source.read_bytes()
     old = case['old'].encode()
@@ -4084,7 +4086,7 @@ def worker(case, mutant=None):
                 source = source.replace('ROOT / "scripts" / "fixtures"',
                                         '__import__("pathlib").Path(' + repr(mutant) + ')')
         elif mutant:
-            anchor = 'ROOT / ".veldo" / "' + case['module'] + '"'
+            anchor = 'ROOT / "' + case.get('dir', '.veldo') + '" / "' + case['module'] + '"'
             if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
