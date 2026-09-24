@@ -4069,8 +4069,13 @@ def worker(case, mutant=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
     rows = []
-    ns = {'__file__': str(shared),
-          '__observe__': lambda name, condition: rows.append([name.split(':', 1)[0], bool(condition)])}
+    details = []  # a false row's own words after its colon: what the check saw, kept beside the row
+
+    def observe(name, condition):
+        rows.append([name.split(':', 1)[0], bool(condition)])
+        if not condition and ':' in name:
+            details.append([rows[-1][0], name.split(':', 1)[1].strip()])
+    ns = {'__file__': str(shared), '__observe__': observe}
     tree = ast.parse(shared.read_text(), str(shared))
     for node in tree.body:
         if isinstance(node, ast.FunctionDef) and node.name == 'expect':
@@ -4093,6 +4098,7 @@ def worker(case, mutant=None):
     return {'count': len(rows), 'observations': rows,
             'row_names': [name for name, _ in rows],
             'failed_rows': [name for name, ok in rows if not ok],
+            'failed_details': details,
             'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
                         for label in case['rows']}}
 

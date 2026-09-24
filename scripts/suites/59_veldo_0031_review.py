@@ -209,7 +209,11 @@ def review_r3(f):
     L = load('lander_review', f.mods / 'lander.py')
     cid = f.C.claim_id(f.ids['repository_uuid'], '__land_lock__')
     calls = []
-    before = [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    t0 = time.monotonic()
+    seen_log = []  # every heartbeat the lander's thread made: (seconds, outcome, value)
+    def refs():
+        return [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    before = refs()
     class Ops:
         def sync_main(self): return {'ok': True}
         def reconcile(self, unit): return {'ok': True}
@@ -222,46 +226,57 @@ def review_r3(f):
             for r in (f.repos[0], f.remote):
                 f.git(r, 'update-ref', 'refs/heads/landed', 'HEAD')
             return {'ok': True}
+    def run(lander):
+        try:
+            lander.land()
+        except Exception as exc:
+            return getattr(exc, 'reason', type(exc).__name__), repr(exc)
+        return None, None
+    def saw(phase, reason, raised, lander, **more):
+        return dict(phase=phase, reason=reason, raised=raised, calls=list(calls), refs_before=before,
+                    refs_after=refs(), hb_error=repr(lander._hb_error), heartbeats=list(seen_log),
+                    elapsed=round(time.monotonic() - t0, 3), **more)
     # No heartbeat tick: only the immediately-before-finalize use can stop this land.
-    reason = None
-    try:
-        L.Lander('worker-a', Ops(), claims_root=client, hb_interval=60).land()
-    except Exception as exc:
-        reason = getattr(exc, 'reason', type(exc).__name__)
-    assert reason == 'unanswerable' and not calls, (reason, calls)
-    assert before == [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    lander = L.Lander('worker-a', Ops(), claims_root=client, hb_interval=60)
+    reason, raised = run(lander)
+    assert reason == 'unanswerable' and not calls, saw('no-tick', reason, raised, lander)
+    assert before == refs(), saw('no-tick', reason, raised, lander)
     # A real heartbeat stop must be retained even if ownership recovers before finalize.
     cur = f.entities()[cid]['data']
     f.write(cid, 'claim', dict(cur, heartbeat_at=f.CL._now()))
     assert client.release('__land_lock__', 'worker-a')
     import threading
     seen = threading.Event()
+    seen_at = []
     heartbeat = client.heartbeat
     def observed(*args):
         try:
-            return heartbeat(*args)
-        except Exception:
+            value = heartbeat(*args)
+        except Exception as exc:
+            seen_log.append((round(time.monotonic() - t0, 3), 'raised', repr(exc)))
+            seen_at.append(round(time.monotonic() - t0, 3))
             seen.set()
             raise
+        seen_log.append((round(time.monotonic() - t0, 3), 'returned', value))
+        return value
     client.heartbeat = observed
+    gate_saw = {}
     class HeartbeatOps(Ops):
         def gate(self):
             super().gate()
             # A liveness bound, not a timing claim: it returns the moment the heartbeat observes, and a
             # loaded host (the gate's parallel mutation stage) must not turn a slow thread into a false row.
-            assert seen.wait(30), 'heartbeat did not observe uncertain ownership'
+            gate_saw['seen'] = seen.wait(30)
             lander._hb_thread.join(10)
+            gate_saw['thread_alive'] = lander._hb_thread.is_alive()
+            assert gate_saw['seen'], 'heartbeat did not observe uncertain ownership'
             cur = f.entities()[cid]['data']
             f.write(cid, 'claim', dict(cur, heartbeat_at=f.CL._now()))
             return {'ok': True}
     lander = L.Lander('worker-a', HeartbeatOps(), claims_root=client, hb_interval=.01)
-    reason = None
-    try:
-        lander.land()
-    except Exception as exc:
-        reason = getattr(exc, 'reason', type(exc).__name__)
-    assert reason == 'unanswerable' and not calls, (reason, calls)
-    assert before == [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    reason, raised = run(lander)
+    assert reason == 'unanswerable' and not calls, saw('tick', reason, raised, lander, seen_at=seen_at, gate=gate_saw)
+    assert before == refs(), saw('tick', reason, raised, lander, seen_at=seen_at, gate=gate_saw)
 
 
 def review_r4(f):
@@ -336,6 +351,8 @@ for review_number in range(1, 7):
         review_error = repr(exc)
     finally:
         review_fixture.close()
-    expect('VELDO-0031 review claims/review-r' + str(review_number), review_error is None)
+    # The row's own words after the colon carry what a false row saw, so the mutation workers keep it.
+    expect('VELDO-0031 review claims/review-r' + str(review_number)
+           + ('' if review_error is None else ': ' + review_error), review_error is None)
     if review_error:
         print('  review R%d: %s' % (review_number, review_error))
