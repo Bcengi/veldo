@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -445 +445 @@
+-            if self.push:
++            if False:  # defect: the watermark is the caller's local trunk, never the published one

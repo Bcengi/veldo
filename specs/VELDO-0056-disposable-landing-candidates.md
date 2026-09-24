@@ -20,6 +20,8 @@ footprint:
   - "scripts/suites/*_veldo_0056_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/suites/04_run_status_reader_veldo.py"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0056-disposable-landing-candidates.md"
   - "specs/index.md"
   - "proof/VELDO-0056/*"
@@ -85,6 +87,22 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the lander builds each landing candidate in its own detached workspace, from trunk at a
+  fixed watermark, with the implementation commit, the evidence commit and the accepted projections,
+  and never checks out or moves the caller's trunk, including when another worktree holds trunk and
+  whatever trunk is named. Every Git failure (fetch, merge conflict, object lookup, commit) and any
+  missing required evidence refuses the candidate by name. A red gate, an invalid proof, an unresolved
+  finding or a rejected approval leaves local and remote trunk exactly as they were.
+- Threat model: a candidate built by checking out or moving trunk; a Git failure ignored and the
+  candidate gated anyway; trunk moved before the policy accepts; a candidate missing its evidence or
+  projections. The owner's account, Git and the store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a kill or
+  restart during construction and competing landers (Release 2, see History); publication and
+  completion (VELDO-0057); forged rows in our own store, files planted in the installed directory and
+  resource exhaustion by our own account.
+
 ## Notes
 
 Build the whole candidate, including deterministic accepted projections, before the gate. Git
@@ -108,3 +126,25 @@ SIGKILL/restart and competing-lander matrices moved to Release 2. Whole detached
 checked Git failures and unchanged trunk on refusal remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-24 footprint, before any mutation is registered: two paths are added, each because the
+change cannot be made without it. `scripts/check_teeth_mutations.py` is the registry every
+criterion's negative controls are registered in (finding 56), as VELDO-0049 and VELDO-0050 did.
+`scripts/suites/04_run_status_reader_veldo.py` holds WARP-0704's real-Git lander rows, which
+called `GitLandOps.reconcile` directly in the caller's checkout and read the merge result from the
+caller's own files: with the candidate built in its own workspace those rows now build the
+candidate (sync_main, then reconcile), read the candidate, require the caller untouched, and give
+each build the proof manifest the candidate now requires. Every row keeps its name and its claim.
+
+2026-09-24 implementation: `.veldo/lander.py` (engine copy identical) builds every candidate in a
+dedicated detached workspace, a new repository borrowing the caller's objects through alternates, from
+the published trunk tip fetched once as its fixed watermark; it merges the implementation the proof
+names, then the evidence, then commits the projections derived from the merged tree, and never checks
+out, moves or fetches into the caller's trunk. Every Git step is checked and refuses by name, and missing
+evidence refuses before any merge. The gate runs in the candidate; finalize asks the authority's
+`CandidatePolicy` (VELDO-0050 proof, VELDO-0049 review obligations, VELDO-0052 publication over the
+candidate) or, for a pre-factory land, the repository policy at the candidate, and only then pushes the
+exact candidate. Suite 67 has 11 rows, each assertion row recorded red by assertion at 8995740 and at
+the merged 5ba4a02 (`proof/VELDO-0056/`), with 22 finding-56 mutations. Stated there: `policy_check.py`
+refuses every VELDO-0050 manifest as stale (its digest spec_revision), so a factory land asks the
+authority instead; local trunk synchronization and exact-tip publication stay VELDO-0057's.

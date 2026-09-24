@@ -1,0 +1,426 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 56 --jobs 4 --diff-dir proof/VELDO-0056/mutations",
+ "summary": {
+  "mutations_rejected": 22,
+  "green_suites": {
+   "67_veldo_0056_candidates.py": 37
+  },
+  "driver_seconds": 132.0
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations_per_row": {
+  "candidate/detached-held-trunk": [
+   "candidate-checks-out-trunk",
+   "candidate-checkout-ignores-other-worktrees",
+   "candidate-fetch-into-caller"
+  ],
+  "candidate/whole-candidate": [
+   "candidate-evidence-not-merged",
+   "candidate-projection-skipped",
+   "candidate-watermark-from-caller-trunk"
+  ],
+  "candidate/git-failures-refuse": [
+   "candidate-merge-failure-ignored",
+   "candidate-fetch-failure-ignored",
+   "candidate-missing-evidence-accepted"
+  ],
+  "candidate/every-git-operation-checked": [
+   "candidate-projection-commit-unchecked",
+   "candidate-tree-lookup-unchecked",
+   "candidate-union-stage-read-as-empty"
+  ],
+  "candidate/rejection-leaves-trunk": [
+   "candidate-trunk-moved-before-policy",
+   "candidate-gate-result-ignored",
+   "candidate-policy-refusal-ignored"
+  ],
+  "candidate/named-policy-refusals": [
+   "candidate-proof-not-resolved",
+   "candidate-review-not-read",
+   "candidate-findings-not-counted",
+   "candidate-publication-not-decided"
+  ],
+  "candidate/observations": [
+   "candidate-refusal-not-observed",
+   "candidate-unknown-classified",
+   "candidate-pending-hidden"
+  ]
+ },
+ "every_row_has_two_or_more": true,
+ "unmutated_control": {
+  "module": ".veldo/lander.py",
+  "identical_bytes": true,
+  "rows": 11,
+  "failed_rows": [],
+  "seconds": 21.3
+ },
+ "mutations": [
+  {
+   "mutation": "candidate-checks-out-trunk",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/detached-held-trunk"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/detached-held-trunk",
+    "candidate/git-failures-refuse",
+    "candidate/every-git-operation-checked"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-checks-out-trunk.diff"
+  },
+  {
+   "mutation": "candidate-checkout-ignores-other-worktrees",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/detached-held-trunk"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/detached-held-trunk",
+    "candidate/git-failures-refuse",
+    "candidate/every-git-operation-checked"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-checkout-ignores-other-worktrees.diff"
+  },
+  {
+   "mutation": "candidate-fetch-into-caller",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/detached-held-trunk"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/detached-held-trunk",
+    "candidate/whole-candidate",
+    "candidate/git-failures-refuse",
+    "candidate/every-git-operation-checked",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-fetch-into-caller.diff"
+  },
+  {
+   "mutation": "candidate-evidence-not-merged",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/whole-candidate"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/whole-candidate"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-evidence-not-merged.diff"
+  },
+  {
+   "mutation": "candidate-projection-skipped",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/whole-candidate"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/whole-candidate"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-projection-skipped.diff"
+  },
+  {
+   "mutation": "candidate-watermark-from-caller-trunk",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/whole-candidate"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/detached-held-trunk",
+    "candidate/whole-candidate",
+    "candidate/git-failures-refuse",
+    "candidate/every-git-operation-checked",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-watermark-from-caller-trunk.diff"
+  },
+  {
+   "mutation": "candidate-merge-failure-ignored",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/git-failures-refuse"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/git-failures-refuse",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-merge-failure-ignored.diff"
+  },
+  {
+   "mutation": "candidate-fetch-failure-ignored",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/git-failures-refuse"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/git-failures-refuse",
+    "candidate/every-git-operation-checked",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-fetch-failure-ignored.diff"
+  },
+  {
+   "mutation": "candidate-missing-evidence-accepted",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/git-failures-refuse"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/git-failures-refuse",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-missing-evidence-accepted.diff"
+  },
+  {
+   "mutation": "candidate-projection-commit-unchecked",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/every-git-operation-checked"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/every-git-operation-checked"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-projection-commit-unchecked.diff"
+  },
+  {
+   "mutation": "candidate-tree-lookup-unchecked",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/every-git-operation-checked"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/every-git-operation-checked",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-tree-lookup-unchecked.diff"
+  },
+  {
+   "mutation": "candidate-union-stage-read-as-empty",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/every-git-operation-checked"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/every-git-operation-checked"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-union-stage-read-as-empty.diff"
+  },
+  {
+   "mutation": "candidate-trunk-moved-before-policy",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/rejection-leaves-trunk"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-trunk-moved-before-policy.diff"
+  },
+  {
+   "mutation": "candidate-gate-result-ignored",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/rejection-leaves-trunk"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-gate-result-ignored.diff"
+  },
+  {
+   "mutation": "candidate-policy-refusal-ignored",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/rejection-leaves-trunk"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-policy-refusal-ignored.diff"
+  },
+  {
+   "mutation": "candidate-proof-not-resolved",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/named-policy-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-proof-not-resolved.diff"
+  },
+  {
+   "mutation": "candidate-review-not-read",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/named-policy-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-review-not-read.diff"
+  },
+  {
+   "mutation": "candidate-findings-not-counted",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/named-policy-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/named-policy-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-findings-not-counted.diff"
+  },
+  {
+   "mutation": "candidate-publication-not-decided",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/named-policy-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/rejection-leaves-trunk",
+    "candidate/named-policy-refusals",
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-publication-not-decided.diff"
+  },
+  {
+   "mutation": "candidate-refusal-not-observed",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-refusal-not-observed.diff"
+  },
+  {
+   "mutation": "candidate-unknown-classified",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-unknown-classified.diff"
+  },
+  {
+   "mutation": "candidate-pending-hidden",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "candidate/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "candidate/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/candidate-pending-hidden.diff"
+  }
+ ]
+}

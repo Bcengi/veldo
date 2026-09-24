@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -573 +573 @@
+-                      % (", ".join(sorted(state)), sid, self.candidate["watermark"][:12]), identity=identity)
++                      % (", ".join(sorted(state)), sid, self.candidate["watermark"][:12]), identity=identity, ok=None)  # defect: a failed projection commit is ignored

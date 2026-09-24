@@ -1,0 +1,4 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -440,0 +441 @@
++            self._git(self.repo_root, "checkout", self.trunk, ok=None)  # defect: sync_main checks out the trunk

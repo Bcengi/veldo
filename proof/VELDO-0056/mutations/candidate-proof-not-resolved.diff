@@ -1,0 +1,6 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -741,2 +741 @@
+-            bundle = self.CP.resolve(self.store, self.conn, domain=self.domain, repository=self.repository,
+-                                     unit=sid, commit=candidate["evidence"])
++            bundle = {"implementation": {"commit": candidate.get("implementation")}}  # defect: the proof is not resolved

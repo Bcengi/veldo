@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -650 +650 @@
+-        if not green:
++        if False:  # defect: a red gate is not a refusal

@@ -1,0 +1,8 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -615 +615 @@
+-            self._merge(workspace, evidence, "Land evidence %s of %s" % (evidence[:12], sid), identity, "evidence")
++            pass  # defect: the evidence commit is not merged
+@@ -623 +623 @@
+-            for older, what in ((c["watermark"], "watermark"), (implementation, "implementation"), (evidence, "evidence")):
++            for older, what in ():  # defect: the candidate's ancestry is not verified

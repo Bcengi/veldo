@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -766 +766 @@
+-        decision = gate.decide("publication", sid, context=context)
++        decision = {"decision_id": None, "refusals": []}  # defect: the publication station is not asked
