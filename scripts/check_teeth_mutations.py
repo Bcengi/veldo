@@ -2544,6 +2544,98 @@ def cases():
     edges('custody-not-restricted', 'control_keys_custody.py',
           "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
           "        if False:\n", 'custody/worker-cannot-read-key')
+    # VELDO-0068: each criterion's declared falsifier, and a second, different defect for every named row.
+    def settlement(name, old, new, row, module='control_request_settlement.py', also=()):
+        add(68, name, '69_veldo_0068_settlement.py', module, old, new, [row], also)
+
+    # Installation: the settlement service is laid down by the scaffold and is not validator substrate.
+    settlement('settlement-not-scaffolded', '    ".veldo/control_request_settlement.py",\n', '', 'install/assets',
+               module='init_scaffold.py')
+    settlement('settlement-claimed-as-substrate', 'REQUIRED_SUBSTRATE = [\n',
+               'REQUIRED_SUBSTRATE = [\n    ".veldo/control_request_settlement.py",  # defect: claimed as substrate\n',
+               'install/assets', module='init_scaffold.py')
+    # AC1 (declared falsifier): every chosen option recorded as a generic decided value; then an effect
+    # type that ignores the ruling.
+    settlement('chosen-option-generic',
+               "                      'choice': choice, 'ruling': ruling, 'rationale': winner['rationale'], 'principals': principals,\n",
+               "                      'choice': 'decided', 'ruling': 'decided', 'rationale': winner['rationale'], 'principals': principals,\n",
+               'ruling/offered-choice-and-reasoning',
+               also=[("'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,\n",
+                      "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': 'decided', 'ruling': 'decided',\n")])
+    settlement('effect-type-ignores-ruling', "'type': JOURNEY[touchpoint]['effects'][ruling],",
+               "'type': JOURNEY[touchpoint]['effects']['approve'],", 'ruling/offered-choice-and-reasoning')
+    # AC2: the earliest binding answer wins, and every answer not counted is named on the settlement.
+    settlement('latest-answer-wins', "        winner_id, _, channel, winner = valid[0]\n",
+               "        winner_id, _, channel, winner = valid[-1]  # defect: the latest answer wins\n", 'settlement/one-winner')
+    settlement('conflicting-answer-unrecorded', "        for eid, _ver, other_channel, answer in valid[1:]:\n",
+               "        for eid, _ver, other_channel, answer in []:  # defect: answers not counted are not named\n",
+               'settlement/one-winner')
+    # AC2 (declared falsifier): the receipt inserted by a second command after the terminal transaction;
+    # then a nonce per answer instead of the request version's.
+    settlement('receipt-separate-transaction',
+               "                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},\n", '', 'settlement/one-transaction',
+               also=[("RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,)", "RECEIPT_KIND: (SETTLE, TERMS), TERMS_KIND: (TERMS,)"),
+                     ("kind not in (TERMS_KIND, API_KIND)", "kind not in (TERMS_KIND, API_KIND, RECEIPT_KIND)"),
+                     ("        self._commit(SETTLE, sid, params, expected)\n",
+                      "        self._commit(SETTLE, sid, params, expected)\n"
+                      "        self._commit(TERMS, rec, dict(entity_id=rec, kind=RECEIPT_KIND, data=receipt_data), {rec: 0})  # defect\n")])
+    settlement('settlement-nonce-per-answer', "        self._commit(SETTLE, sid, params, expected)\n",
+               "        self._commit(SETTLE, sid + ':' + winner_id, params, expected)  # defect: one nonce per answer\n",
+               'settlement/one-transaction')
+    # AC2: the VELDO-0064 answer command moves a request with settlement terms to SUBMITTED with no
+    # settlement, effect or receipt, so a later answer finds it closed.
+    settlement('inbox-answer-bypasses-settlement',
+               "                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if False:  # defect: the inbox answers a request with settlement terms\n",
+               'settlement/one-transaction', module='control_assignment.py')
+    # Review decision: the VELDO-0064 decline command closes a request with terms as DECLINED with no
+    # settlement; a rejection is a ruling the settlement service records with the owner's reasoning.
+    settlement('inbox-decline-bypasses-settlement',
+               "                if (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:  # defect: decline bypasses settlement\n",
+               'settlement/one-transaction', module='control_assignment.py')
+    # AC3 (declared falsifier): the request left open after settlement; then an API answer accepted on a
+    # settled request.
+    settlement('request-left-open',
+               "                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},\n"
+               "                request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}\n",
+               "                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']}}  # defect: the request stays open\n",
+               'terminal/materialized-settlement')
+    settlement('closed-request-answered-by-api',
+               "            if item['data']['state'] not in self.I.PENDING:\n"
+               "                raise Refused('request_closed', 'the request is no longer pending')\n", '',
+               'terminal/materialized-settlement')
+    # AC4 (declared falsifier): request.required_roles ignored when the policy roles pass; then the policy
+    # roles ignored, and the requester counted as independent of itself.
+    settlement('request-roles-ignored',
+               "    roles = sorted(set(policy['roles']) | set(terms.get('required_roles') or []))\n",
+               "    roles = sorted(set(policy['roles']))  # defect: the request's own roles are ignored\n",
+               'authority/roles-and-independence')
+    settlement('policy-roles-ignored',
+               "    roles = sorted(set(policy['roles']) | set(terms.get('required_roles') or []))\n",
+               "    roles = sorted(set(terms.get('required_roles') or []))  # defect: the journey's roles are ignored\n",
+               'authority/roles-and-independence')
+    settlement('requester-separation-ignored', "        if need['min_independence'] >= 1:\n",
+               "        if False:  # defect: the requester may answer its own request\n", 'authority/roles-and-independence')
+    # AC4: the owner and the API edge's signature are checked before an answer is accepted.
+    settlement('api-answer-owner-unchecked',
+               "            if a['principal'] != receipt['owner']:\n"
+               "                raise Refused('not_owner', 'the principal is not the owner the presentation was shown to')\n", '',
+               'authority/owner-and-presentation')
+    settlement('api-edge-signature-unchecked',
+               "        if not verified:\n            raise Refused('not_authorized', 'the signature does not verify')\n",
+               "        if False:  # defect: the signature is not checked\n"
+               "            raise Refused('not_authorized', 'the signature does not verify')\n",
+               'authority/owner-and-presentation')
+    # AC4: an unsupported quorum blocks: the request's count is never weakened to the policy's, and an
+    # independence above one is never taken as supported.
+    settlement('request-quorum-weakened',
+               "    count = max(policy['quorum'].get('count') or 1, wanted.get('count') or 1)\n",
+               "    count = policy['quorum'].get('count') or 1  # defect: the request's count is weakened\n",
+               'authority/unsupported-quorum-blocks')
+    settlement('independence-above-one-accepted', "SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}\n",
+               "SUPPORTED = {'count': (1,), 'min_independence': (0, 1, 2)}  # defect\n",
+               'authority/unsupported-quorum-blocks')
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
     def clone(name, module, old, new, row, also=()):
         add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)

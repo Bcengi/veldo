@@ -1,0 +1,6 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -329,2 +329 @@
+-                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},
+-                request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}
++                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']}}  # defect: the request stays open

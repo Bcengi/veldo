@@ -815,6 +815,15 @@
    ],
    "regions": "The architecture record's one writer: a signed owner accept command over the bytes at a commit, the record schema the writer and the Gate are held to, replacement as a new version, and no other store operation or worker input writing it",
    "requires_note": "Uses only shared ROOT and expect. Real Git (a repository with a commit per contract state and a decoy repository), real SQLite stores seeded with membership and OpenSSH keys, commands signed through ssh-keygen -Y sign, the installed validator, the VELDO-0053 Gate and the operating system's sha256sum."
+  },
+  {
+   "name": "69_veldo_0068_settlement",
+   "file": "69_veldo_0068_settlement.py",
+   "requires": [
+    "69_veldo_0068_settlement"
+   ],
+   "regions": "One settlement per request version carrying the offered choice, its ruling and the owner's reasoning, the settlement, nonce, typed effect, terminal request state and receipt in one transaction with one winner across Telegram and the authenticated API, terminal state published through an accepted snapshot, and conjunctive journey and request authority with unsupported quorums blocking",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal, possession, edge and API answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, concurrent writers on two connections, a real Git repository with a VELDO-0035 accepted revision and snapshot, and a reader in another process. Writes only temporary fixtures."
   }
  ]
 }

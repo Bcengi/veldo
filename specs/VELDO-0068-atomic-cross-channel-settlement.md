@@ -29,10 +29,13 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_assignment.py"
+  - ".veldo/control_assignment.py"
   - ".veldo/settlements/*.json"
   - "scripts/suites/*_veldo_0068_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0068-atomic-cross-channel-settlement.md"
   - "specs/index.md"
   - "proof/VELDO-0068/*"
@@ -112,6 +115,28 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an owner answers a presented request (grooming, admission, priority, finding or decision
+  disposition) through a signed Telegram assertion, or later through the authenticated API, which uses
+  the same settlement service. The one SQLite authority records one terminal settlement per request
+  version, carrying the exact offered ruling and the owner's own reasoning, and commits the ruling,
+  the nonce, the typed effects, the terminal request state and the receipt in one transaction. The
+  published request state then reads as terminal with that settlement's receipt and version, and an
+  ordinary later answer changes nothing. Policy requirements and the request's own required roles
+  both apply.
+- Threat model: a chosen option flattened to a generic value; two conflicting answers for one request
+  version both taking effect or leaving a half-written settlement; a receipt written outside the
+  terminal transaction; a request left open after settlement or reapplied from stale YAML; a stronger
+  request role ignored because policy roles pass; the wrong owner, a duplicate principal or a stale
+  presentation accepted; an unsupported quorum policy weakening a requirement. The owner's account,
+  the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); the crash,
+  replica and full cross-channel matrix and restart recovery (Release 2, see History); an answer
+  accepted on another connection after a settlement reads the answers and before it commits, which
+  takes no effect but is not listed on the settlement as not counted (Release 2, see History); forged
+  rows in our own store and files planted in the installed directory.
+
 ## Notes
 
 One SQLite authority owns settlement, terminal request state and typed effects. No
@@ -137,3 +162,47 @@ crash/replica/cross-channel matrix and AC3 restart/materialization recovery move
 atomic terminal state/effects and applicable authority remain, including one Telegram/UI
 conflict check. The criteria, declared evidence universe, Context and Notes above now carry
 only the retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 68 of the existing teeth mutation driver, as
+VELDO-0065, VELDO-0066 and VELDO-0067 registered theirs. The criteria, status and risk are unchanged.
+
+2026-09-24, implementation: `.veldo/control_request_settlement.py` is the one settlement service on the
+control store. The journey's five enabled touchpoints and their role, count and independence predicates
+are its `JOURNEY` configuration; a request names its touchpoint and its own required roles and quorum
+through requester-signed terms bound as the assignment's subject. Telegram answers are the VELDO-0065
+presenter's accepted answers; the authenticated API edge's answers are accepted under the same
+presentation rules. One registered transaction, keyed and nonced by request and version, writes the
+settlement (offered choice, ruling, the owner's reasoning, the signed assertion), the typed effect, the
+receipt and the terminal request state; the earliest binding answer wins and every other is named. The
+requirement is the conjunction of the journey policy and the request's terms, and a count or an
+independence above one blocks as unsupported. Terminal state is published through a VELDO-0035
+accepted revision and snapshot. Rows, the red record at 335d996 and the finding 68 mutations are in
+`proof/VELDO-0068/`. Every Telegram answer runs against a loopback Bot API server, not the Telegram
+service. The criteria, status and risk are unchanged.
+
+2026-09-24, review fix: `.veldo/control_assignment.py` (engine copy byte-identical) was added to the
+footprint. The VELDO-0064 `answer` command moved a presented request that carries settlement terms to
+SUBMITTED with no settlement, typed effect or receipt, and a later answer was then refused as closed, so
+that request version ended with no settlement. The command now refuses such a request as
+`settlement_required`, so the settlement service is the only way it is answered; a request without
+terms is answered exactly as before. The row case is in `settlement/one-transaction`, red at 0617f3d,
+with the finding 68 mutation `inbox-answer-bypasses-settlement`. The criteria, status and risk are
+unchanged.
+
+2026-09-24, review, filed for Release 2: a settlement lists as not counted only the answers it read.
+An answer accepted on another connection after that read and before the settlement commits takes no
+effect, is never counted and is refused as already_settled on a later settlement, but it is not listed
+on the settlement. Listing it (pinning the version's answer set in the terminal transaction) is Release
+2 work. The module's docstring and the proof README now promise only what holds. The criteria, status
+and risk are unchanged.
+
+2026-09-24, lead's decision on the fixer's question: the VELDO-0064 decline command also refuses a
+request with settlement terms (settlement_required), because a rejection is a settlement ruling with the owner's
+reasoning; row case in settlement/one-transaction and mutation inbox-decline-bypasses-settlement (19 in all).
+
+2026-09-24, second critical review: nothing blocking. Filed for a follow-up ticket: the suite takes the
+expected effect names from the module's own JOURNEY, so a ruling mapped to the wrong effect passes (pin the 15
+names independently); published_state's settlement-match check and the settle-time head and binding checks have
+no row that reds them alone; an accepted Telegram answer that lapses when the requester cancels or revises
+before run() settles it is not observed; the published snapshot names the receipt without carrying it.
