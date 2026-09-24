@@ -44,6 +44,14 @@ review_disposition answer is presented and recorded with its ruling in the same 
 to settle (settle today refuses it as not a decision answer); an acknowledgement settles nothing.
 No second settlement record is written here.
 
+HINTS, NEVER ANSWERS (VELDO-0136). When the current enrolled owner's message replies to no
+presentation (he did not press Reply, or replied to another bot message) while requests wait for
+him, `hint_owner` answers it once: how to answer (reply to the request message) and each waiting
+request by its presentation's name. A hint is kept with a mark per request version it names before
+it is sent through the same send path, and the platform's answer is recorded on it; a request
+version already hinted is not named again until it is answered. A hint records no answer: the
+owner's message stays refused exactly as VELDO-0066 decided it.
+
 WHAT IT IS NOT. Not canonical acquisition of updates from the platform (VELDO-0066), edge
 enrollment and delegation (VELDO-0067), settlement, quorum and decision effects (VELDO-0068), or
 interrupted publication and lost-acknowledgement recovery (Release 2). The bot token is supplied
@@ -72,6 +80,14 @@ FRAME_OPERATION = 'presentation_frame'
 ANSWER_OPERATION = 'presentation_answer'
 TELL_OPERATION = 'presentation_tell'
 NOTICE_OPERATION = 'presentation_notice_superseded'
+# VELDO-0136: the one message telling the owner how to answer when his message replies to no
+# presentation, and the mark that a pending request version has had its one hint.
+HINT_SCHEMA = 'veldo.presentation_hint/v1'
+HINTED_SCHEMA = 'veldo.presentation_hinted/v1'
+HINT_KIND = 'presentation_hint'
+HINTED_KIND = 'presentation_hinted'
+HINT_OPERATION = 'presentation_hint'
+HINT_OUTCOMES = ('sent', 'refused', 'unknown_outcome')
 # A notice whose delivery is not confirmed: the first presentation names it, without a reply link.
 NOTICE_UNCONFIRMED = ('pending', 'unknown_outcome')
 CHANNEL = 'telegram_chat'
@@ -185,6 +201,16 @@ def answer_id(request_id, request_version, principal):
 def tell_id(chat, message):
     """The one message back to one inbound owner message, by that message's platform identity."""
     return 'presentation-tell:%s:%d:%d' % (CHANNEL, chat, message)
+
+
+def hint_id(chat, message):
+    """The one hint back to one inbound owner message, by that message's platform identity."""
+    return 'presentation-hint:%s:%d:%d' % (CHANNEL, chat, message)
+
+
+def hinted_id(request_id, request_version, principal):
+    """The mark that one pending request version has had its one hint to its owner."""
+    return 'presentation-hinted:%s:%d:%s' % (request_id, request_version, principal)
 
 
 def answer_command_id(chat, message):
@@ -579,6 +605,40 @@ def _write_new(params, before, kinds):
     return changes
 
 
+def _hint_transition(params, before):
+    """`intent` keeps one hint as `pending` before it is sent, with the mark of every pending request
+    version it names, each created exactly once: a request version already hinted is never hinted
+    again. `complete` records once what the platform answered for that send. A hint is never an answer."""
+    hid, phase = params.get('hint_id'), params.get('phase')
+    if not isinstance(hid, str) or phase not in ('intent', 'complete'):
+        raise ValueError('a hint record names its id and phase')
+    current = (before.get(hid) or {}).get('data')
+    if phase == 'intent':
+        hint, marks = params.get('hint'), params.get('hinted')
+        if (current is not None or not isinstance(hint, dict) or hint.get('hint_id') != hid
+                or hint.get('outcome') != 'pending' or not isinstance(marks, list) or not marks
+                or len(marks) != len(hint.get('requests') or [])):
+            raise ValueError('a hint is kept once, pending, with the mark of each request it names')
+        changes = {hid: {'kind': HINT_KIND, 'data': hint}}
+        for mark, named in zip(marks, hint['requests']):
+            if (not isinstance(mark, str) or mark in changes or (before.get(mark) or {}).get('data') is not None
+                    or mark != hinted_id(named.get('request_id'), named.get('request_version'), hint.get('principal'))):
+                raise ValueError('a pending request version is hinted once')
+            changes[mark] = {'kind': HINTED_KIND, 'data': {
+                'schema': HINTED_SCHEMA, 'channel': CHANNEL, 'request_id': named['request_id'],
+                'request_version': named['request_version'], 'principal': hint['principal'], 'hint_id': hid}}
+        return changes
+    outcome, platform = params.get('outcome'), params.get('platform')
+    if (current is None or current.get('outcome') != 'pending' or outcome not in HINT_OUTCOMES
+            or (outcome == 'sent') is not isinstance(platform, dict)):
+        raise ValueError('a completion finishes the pending hint once, with what the platform answered')
+    if platform is not None and (set(platform) != set(PLATFORM_FIELDS)
+                                 or not all(type(platform[k]) is int for k in ('chat_id', 'message_id', 'date'))):
+        raise ValueError('a platform answer carries its chat, message, date, text and reply')
+    return {hid: {'kind': HINT_KIND, 'data': dict(current, outcome=outcome, platform=platform,
+                                                  refusal=params.get('refusal'))}}
+
+
 class Presenter:
     """Presents one inbox on Telegram, keeps the receipts and decides presentation-bound answers.
 
@@ -618,6 +678,7 @@ class Presenter:
             'transition': guarded(lambda p, b: _notice_transition(p, b, projection.ENTITY_KIND)), 'writes': writes}
         conn.command_registry[TELL_OPERATION] = {
             'transition': guarded(lambda p, b: _write_new(p, b, (('tell', TELL_KIND),))), 'writes': writes}
+        conn.command_registry[HINT_OPERATION] = {'transition': guarded(_hint_transition), 'writes': writes}
 
     # reading
 
@@ -1086,6 +1147,108 @@ class Presenter:
                                       accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',
                                       reason=sent['refusal'], error_class=None))
 
+    # hints: telling the owner to reply to the request message (VELDO-0136)
+
+    def waiting(self, principal, chat):
+        """The requests waiting for `principal`'s answer in `chat`: each request's current confirmed
+        presentation, shown to that owner in that chat, whose request version he has not answered and
+        which still binds current authority (the request pending in the inbox, the owner an active
+        person member covering its scope whom the revocation ledger does not name, enrolled in that
+        very chat). Oldest publication first."""
+        found = []
+        for (text,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (HEAD_KIND,)):
+            receipt = self.receipt(json.loads(text).get('current') or '')
+            if (receipt is None or receipt.get('outcome') != 'published' or receipt.get('owner') != principal
+                    or receipt.get('chat_id') != chat or receipt.get('enrolled_chat') != chat
+                    or self.answer_record(receipt['request_id'], receipt['request_version'], principal)):
+                continue
+            refusal, current, _ = self.bindings(receipt['request_id'])
+            if refusal or binding_mismatches(receipt, current):
+                continue
+            found.append(receipt)
+        return sorted(found, key=lambda r: (r['published_at'], r['request_id']))
+
+    @staticmethod
+    def _hint_text(cause, receipts):
+        """The hint's plain text: why the message counted for nothing, how to answer, and each request
+        named as its presentation names it. None when not even one request fits one message."""
+        first = ('That message replies to a message that is not a request, so it answers nothing.'
+                 if cause == 'unknown_presentation' else 'That message is not a reply to a request, so it answers nothing.')
+        lines = [first, 'To answer, press Reply on the request message itself and write <choice>: <your reason>.',
+                 'Waiting for your answer:']
+        named = []
+        for r in receipts:
+            line = 'Request: %s (version %d), choices %s' % (r['request_id'], r['request_version'], ' | '.join(r['choices']))
+            if utf16_units('\n'.join(lines + [line])) > MESSAGE_LIMIT:
+                break
+            lines.append(line)
+            named.append(r)
+        return ('\n'.join(lines), named) if named else (None, [])
+
+    def hint_owner(self, message):
+        """Tell the owner, once, how to answer, when his attributed message replies to no presentation
+        (`message`: cause, principal, chat_id, sender_id, message_id, evidence_id, update_id, from the
+        VELDO-0066 evidence). The hint names each request waiting for him that has had no hint, is kept
+        with the mark of every request it names before it is sent through the presenter's send path,
+        and its platform answer is recorded. It records no answer and grants nothing; a request already
+        hinted is not named again until its version is answered. Returns the observation's result."""
+        m = message if isinstance(message, dict) else {}
+        chat, principal = m.get('chat_id'), m.get('principal')
+        about = {k: m.get(k) for k in ('cause', 'principal', 'evidence_id', 'update_id', 'chat_id', 'message_id')}
+        if not _is_str(principal) or type(chat) is not int or m.get('sender_id') != chat or type(m.get('message_id')) is not int:
+            return self._observe_hint('refused', 'invalid_input', about)
+        hid = hint_id(chat, m['message_id'])
+        about['hint_id'] = hid
+        if self._entity(hid) is not None:
+            return self._observe_hint('already_told', None, about)
+        waiting = self.waiting(principal, chat)
+        due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]
+        text, named = self._hint_text(m.get('cause'), due)
+        about.update(request_ids=[r['request_id'] for r in (named or waiting)],
+                     presentation_ids=[r['presentation_id'] for r in (named or waiting)])
+        if not waiting:
+            return self._observe_hint('nothing_pending', None, about)
+        if not due:
+            return self._observe_hint('already_hinted', None, about)
+        if not named:
+            return self._observe_hint('refused', 'presentation_too_long', about)
+        marks = [hinted_id(r['request_id'], r['request_version'], principal) for r in named]
+        hint = {'schema': HINT_SCHEMA, 'channel': CHANNEL, 'hint_id': hid, 'principal': principal, 'cause': m.get('cause'),
+                'chat_id': chat, 'message_id': m['message_id'], 'evidence_id': m.get('evidence_id'),
+                'update_id': m.get('update_id'), 'text': text, 'outcome': 'pending', 'platform': None, 'refusal': None,
+                'requests': [{'request_id': r['request_id'], 'request_version': r['request_version'],
+                              'presentation_id': r['presentation_id'], 'presentation_version': r['presentation_version'],
+                              'message_ids': list(r['message_ids'])} for r in named]}
+        try:
+            self._commit(HINT_OPERATION, dict(phase='intent', hint_id=hid, hint=hint, hinted=marks),
+                         dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')
+        except self.store.StoreRefused as exc:
+            return self._observe_hint('refused', exc.code, about)
+        except sqlite3.Error:
+            return self._observe_hint('refused', 'unavailable_service', about)
+        sent = self._send(chat, text, m['message_id'])
+        outcome = 'sent' if sent['platform'] else 'refused' if sent['refusal'] else 'unknown_outcome'
+        try:
+            self._commit(HINT_OPERATION, dict(phase='complete', hint_id=hid, outcome=outcome, platform=sent['platform'],
+                                              refusal=sent['refusal']),
+                         {hid: self._entity(hid)['version']}, command_id=hid + ':complete')
+        except (self.store.StoreRefused, sqlite3.Error):
+            return self._observe_hint('unknown_outcome', 'incomplete_transaction', about)
+        about['hint_message_id'] = (sent['platform'] or {}).get('message_id')
+        if outcome == 'sent':
+            return self._observe_hint('sent', None, about)
+        return self._observe_hint('not_sent', sent['refusal'] or 'unknown_outcome', about)
+
+    def _observe_hint(self, outcome, reason, about):
+        """One observation per owner message that replies to no presentation: its cause (not a reply,
+        or a reply to a message that is not a presentation), the hint and the requests it names, by
+        identity only, never text."""
+        error = (None if reason is None else 'unknown_outcome' if reason == 'unknown_outcome'
+                 else REFUSALS.get(reason, 'unavailable_service'))
+        self.observations.append(dict(self.ids, operation='hint_owner', channel=CHANNEL, accepted_versions={},
+                                      outcome=outcome, reason=reason, error_class=error, **about))
+        return dict(about, outcome=outcome, reason=reason)
+
     def _ledger_revokes(self, state, principal):
         """Whether the revocation ledger in this authority state ends `principal`'s authority: the
         ledger is_revoked in the revocation organ reads. It is read as the stored-framing check and
@@ -1253,8 +1416,8 @@ class Presenter:
 
     def metrics(self):
         """Accepted and refused operations, pending entries not presented as current authority
-        requires, why each such entry is not presented, and receipts whose outcome is unknown or
-        anomalous."""
+        requires, why each such entry is not presented, receipts whose outcome is unknown or
+        anomalous, and hints sent and not sent (VELDO-0136)."""
         pending, unpresented = 0, {}
         for entry in self.inbox.index()['entries']:
             if entry['category'] != 'pending' or self.answer_record(entry['id'], entry['request_version'], entry['owner']):
@@ -1265,6 +1428,8 @@ class Presenter:
             if refusal:
                 unpresented[refusal] = unpresented.get(refusal, 0) + 1
         rows = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (RECEIPT_KIND,))]
+        hints = [json.loads(r[0]).get('outcome') for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (HINT_KIND,))]
         return dict(self.counts, pending=pending, unpresented_by_reason=unpresented,
                     unknown=sum(1 for r in rows if r.get('outcome') in ('pending', 'unknown_outcome')),
-                    anomalies=sum(1 for r in rows if r.get('outcome') == 'anomaly'))
+                    anomalies=sum(1 for r in rows if r.get('outcome') == 'anomaly'),
+                    hints_sent=hints.count('sent'), hints_not_sent=len(hints) - hints.count('sent'))

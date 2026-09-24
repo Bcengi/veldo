@@ -37,7 +37,9 @@ platform message, must name the same presentation, carries the attributed princi
 identity and digest, is signed with the edge's restricted key from the caller's custody, and is
 decided by `Presenter.answer`, which refuses by name everything its own checks refuse and tells the
 owner, once per message, when a reply cannot count. Everything here that is not proven refuses by
-name, and nothing is sent back for it.
+name, and nothing is sent back for it, with one exception: a message from the attributed current
+person that replies to no presentation (NOT_A_REPLY) stays refused, and the presenter's `hint_owner`
+tells him, once per request waiting for him, to reply to the request message (VELDO-0136).
 
 WHAT IT IS NOT. Not live qualification against the Telegram service, not edge enrollment or delegation
 (VELDO-0067), not settlement (VELDO-0068), and not outage or redelivery recovery (Release 2). The bot
@@ -86,6 +88,10 @@ REFUSALS = {'channel_refused': 'unavailable_service', 'unavailable_service': 'un
             'not_a_person': 'missing_authority', 'missing_reply_reference': 'missing_evidence',
             'reply_in_another_chat': 'missing_evidence', 'unknown_presentation': 'missing_evidence',
             'presentation_mismatch': 'missing_evidence', 'not_owner': 'missing_authority'}
+# The refusals of a message from the attributed, current person that replies to no presentation: no
+# reply reference at all, or a reply to a message of this chat that is not a presentation part. The
+# presenter then tells him, once per waiting request, to reply to the request message (VELDO-0136).
+NOT_A_REPLY = ('missing_reply_reference', 'unknown_presentation')
 
 
 def _canonical(value):
@@ -388,14 +394,16 @@ class Acquirer:
 
     def metrics(self):
         """Accepted and refused operations, kept updates not yet decided (the pending work), answers
-        accepted, and refused updates by named reason."""
+        accepted, refused updates by named reason, and of those the messages that replied to no
+        presentation (each hinted by the presenter when a request waits for its sender)."""
         rows = [json.loads(t) for (t,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (EVIDENCE_KIND,))]
         refused = {}
         for r in rows:
             if r.get('outcome') == 'refused':
                 refused[r.get('reason')] = refused.get(r.get('reason'), 0) + 1
         return dict(self.counts, pending=sum(1 for r in rows if r.get('outcome') == 'acquired'),
-                    answered=sum(1 for r in rows if r.get('outcome') == 'answered'), refused_by_reason=refused)
+                    answered=sum(1 for r in rows if r.get('outcome') == 'answered'), refused_by_reason=refused,
+                    not_a_reply=sum(n for reason, n in refused.items() if reason in NOT_A_REPLY))
 
     # acquisition
 
@@ -522,6 +530,8 @@ class Acquirer:
     def _decide(self, record):
         eid, fields = record['evidence_id'], record.get('fields') or {}
         refusal, known = self.attribute(record)
+        # Only attribution's own refusal of a message that replies to no presentation is hinted.
+        not_a_reply = refusal if refusal in NOT_A_REPLY and known['principal'] is not None else None
         answer = None
         if refusal is None:
             signature = self._edge_signature(known['assertion'])
@@ -545,6 +555,11 @@ class Acquirer:
         except (self.store.StoreRefused, sqlite3.Error):
             # The decision was taken but not recorded: its outcome is unknown, never reported as success.
             return self._observe('attribute', 'unknown_outcome', 'incomplete_transaction', versions, **about)
+        if not_a_reply:
+            # After the refusal is recorded, never instead of it: the hint records nothing about the answer.
+            self.presenter.hint_owner(dict(cause=not_a_reply, principal=known['principal'], chat_id=fields.get('chat_id'),
+                                           sender_id=fields.get('sender_id'), message_id=fields.get('message_id'),
+                                           evidence_id=eid, update_id=record.get('update_id')))
         return self._observe('attribute', outcome, refusal, versions, **about)
 
     # verification
