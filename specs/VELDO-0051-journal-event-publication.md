@@ -34,6 +34,12 @@ footprint:
   - "proof/VELDO-0051/*"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/11_inbound_command_receipt_reconcile.py"
+  - "engine/.veldo/spend.py"
+  - ".veldo/spend.py"
+  - "engine/.veldo/judgment_load.py"
+  - ".veldo/judgment_load.py"
+  - "scripts/suites/01_warp_0101_reviewer_notes.py"
+  - "scripts/suites/15_warp_1407_judgment_load.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -157,3 +163,16 @@ falsifier, all rejected, in the normal shell and under the gate's mutation-stage
 scripts/suites/manifest.json gains suite 66, and requires.json is regenerated. Every criterion row
 was recorded red at 8231708. The proof README was written by the lead after the builder was cut off
 by a usage limit. The status stays ready. Proof: proof/VELDO-0051/.
+
+2026-09-24, review fix: this change broke a landed producer. The spend recorder (.veldo/spend.py,
+WARP-0733) wrote each spend record as a hand-emitted spec.shipped, which this work made
+projection-owned, so `spend.py record` exited 1 where it exited 0 at 8231708 and spend actuals
+stopped being recorded. Spend is not completion: the vocabulary now registers spend.recorded,
+owned by spend.py, which writes it under its own producer. The footprint adds exactly the paths
+this fix changes: spend.py and judgment_load.py (the one reader of spend actuals keyed on the event
+type, which now reads spend.recorded and the historical spec.shipped spend lines as the same bulk
+kind) with their engine copies, suite 01, whose injected emitter admitted any type and so masked the
+refusal, and suite 1407, whose drift guard pinned the recorder's old type. No hand path to
+spec.shipped is reopened. Suite 66 adds the spend recorder to the AC1 producer list and a row,
+events/spend-recorded, that runs the real `spend.py record`; finding 51 registers four more
+mutations. No criterion or status changed.
