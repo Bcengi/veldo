@@ -119,3 +119,10 @@ blocking under the scope): the Mac environment is not forwarded over ssh unless 
 time budgets on a slow ssh; the new runner is not yet wired into executor.py and dispatch.py; later
 transitions do not compare the record's own domain and repository; a failed store write leaves a unit
 held; the worker slot is returned only by Runner.wait.
+
+Second check of the fix (fe22963): no blocking findings. It found that the closed-output row also accepted
+a wrong fix that kills a worker the moment it closes its output. The row now also runs a worker that closes
+its output, holds 1 s and exits 4 under a 10 s deadline, and requires `exited` with code 4 and no deadline
+stop; the reviewer's zero-timeout mutant `dispatch-closed-output-killed-at-close` reds it. 29 of 29
+mutations rejected. Filed: a worker that exits cleanly while a child keeps its output open is stopped at
+the deadline, and on a remote adapter that is now recorded unknown; no row decides that case yet.

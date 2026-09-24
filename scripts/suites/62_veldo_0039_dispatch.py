@@ -183,7 +183,7 @@ if payload.get('close_stdout'):
     # A worker that closes its output and keeps running: the receiver must still hold it to its deadline.
     os.close(1)
     time.sleep(payload.get('hold', 0))
-    sys.exit(0)
+    sys.exit(payload.get('code', 0))
 if payload.get('release'):
     end = time.time() + 60
     while not Path(payload['release']).exists() and time.time() < end:
@@ -561,9 +561,24 @@ sys.exit(payload.get('code', 0))
                 term = rc.get('termination') or {}
                 observed['closed_output'] = {'result': closing.result, 'state': rc.get('state'), 'termination': term,
                                              'elapsed': round(elapsed, 2)}
+                # And a worker that closes its output early but finishes before its deadline is not cut short:
+                # its own exit code is recorded, with no deadline stop.
+                un = admitted('VELDO-9323')
+                started = time.time()
+                early = runner.submit(un, 'build', **dict(job(deadline=10), payload={
+                    'task': 'build the unit', 'close_stdout': True, 'hold': 1, 'code': 4}))
+                runner.wait(early)
+                early_elapsed = time.time() - started
+                rn = rec(early.dispatch_id)
+                early_term = rn.get('termination') or {}
+                observed['closed_output_normal'] = {'state': rn.get('state'), 'termination': early_term,
+                                                    'elapsed': round(early_elapsed, 2)}
                 check('dispatch/deadline-after-closed-output',
                       closing.result == 'accepted' and rc.get('state') == 'exited' and term.get('deadline_stop') is True
-                      and term.get('returncode') is None and elapsed < 6)
+                      and term.get('returncode') is None and elapsed < 6
+                      and early.result == 'accepted' and rn.get('state') == 'exited'
+                      and early_term.get('returncode') == 4 and early_term.get('deadline_stop') is False
+                      and early_elapsed >= 1)
                 # Through the wrapper (a remote engine), stopping the local transport at the deadline does not
                 # show the far engine ended: the outcome is unknown and the unit stays held.
                 ur = admitted('VELDO-9322')

@@ -1237,6 +1237,9 @@ def cases():
              "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
              "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()) + 30)\n",
              'deadline-after-closed-output')
+    dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py',
+             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
+             "                worker.wait(timeout=0)\n", 'deadline-after-closed-output')
     # Review of bb72994, B2: a remote deadline stop is unknown and holds the unit.
     remote_stop = "        if remote and termination['deadline_stop']:\n"
     dispatch('dispatch-remote-stop-exits', 'control_launch.py', remote_stop,
