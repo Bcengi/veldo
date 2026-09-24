@@ -1,0 +1,5 @@
+--- a/.veldo/authority_contract.py
++++ b/.veldo/authority_contract.py
+@@ -160,0 +161,2 @@
++    if payload.get("operation") == "enroll_channel_edge":
++        payload["parameters"] = {k: v for k, v in (payload.get("parameters") or {}).items() if k != "public_key"}

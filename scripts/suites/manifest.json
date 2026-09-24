@@ -716,6 +716,15 @@
    ],
    "regions": "Versioned workflow definitions validated as plain data, immutable revisions, canvas save and load without execution, and LangGraph cycles bound to one exact revision acting only through ordinary checks",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a real Git workspace and VELDO-0035 snapshot, the eligibility Gate, the VELDO-0043 adapter on the VELDO-0045 activated LangGraph runtime staged into a temporary directory, and a child process audited for launches and network. Writes only temporary fixtures."
+  },
+  {
+   "name": "65_veldo_0067_edges",
+   "file": "65_veldo_0067_edges.py",
+   "requires": [
+    "65_veldo_0067_edges"
+   ],
+   "regions": "Restricted Telegram edge enrollment under current authority, the protected signer's answer purpose and every delegation dimension, current edge and actor authorization at answer acceptance, and worker key custody",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH envelope, journal, possession and answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, and a real worker process under the Landlock custody wrapper. Writes only temporary fixtures."
   }
  ]
 }

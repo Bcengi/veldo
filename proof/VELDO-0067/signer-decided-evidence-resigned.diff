@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -150 +150 @@
+-    if record.get('outcome') != 'acquired':
++    if False:
