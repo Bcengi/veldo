@@ -444,6 +444,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
 
             # AC2 and AC4: cycles on the actual LangGraph runtime.
             with region('workflow/pinned-revision', 'workflow/actual-langgraph', 'workflow/ordinary-authorization',
+                        'workflow/owner-answer-per-visit',
                         'workflow/no-workflow-authority', 'workflow/observations'):
                 non_workflow_before = {r[0]: (r[1], r[2], r[3]) for r in writer.execute(
                     "SELECT id, kind, version, digest FROM entities WHERE kind NOT IN "
@@ -510,6 +511,18 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 put('proof-bundle:9610', 'proof_bundle', dict(unit='VELDO-9610', domain=DOMAIN, repository=REPOSITORY,
                                                               source={'commit': commit}))
                 r2 = attempt(cycles.advance, 'cycle-rework', {'worker_result': 'proof-bundle:9610'})
+                # Each visit to an owner wait uses an answer newer than the one the cycle last used: the review
+                # after the work waits for the owner instead of routing on the admission given before it.
+                rework_waiting = cycles.record('cycle-rework') or {}
+                admit('VELDO-9610')
+                r3 = attempt(cycles.advance, 'cycle-rework')
+                # The decline loop asks the owner again on every pass: each fresh decline is one more pass, and
+                # the fourth pass is past the loop's bound.
+                loop_passes = [cycles.record('cycle-loop') or {}]
+                for _ in range(3):
+                    admit('VELDO-9608', 'declined')
+                    attempt(cycles.advance, 'cycle-loop')
+                    loop_passes.append(cycles.record('cycle-loop') or {})
                 cycle_seconds = time.monotonic() - started
                 records = {name: cycles.record(name) or {} for name in (
                     'cycle-a', 'cycle-b', 'cycle-c', 'cycle-blocked', 'cycle-intruder', 'cycle-tight', 'cycle-asserting',
@@ -584,6 +597,22 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 named = {name: records[cycle].get('state') == 'refused' and records[cycle].get('refusal') == code
                          and not records[cycle].get('proposals') and not records[cycle].get('waiting')
                          for name, (cycle, code) in wanted.items()}
+                def waiting_at(rec, node, trace):
+                    return bool(rec.get('state') == 'waiting' and (rec.get('waiting') or {}).get('node') == node
+                                and [e[0] for e in rec.get('trace') or []] == trace)
+
+                per_visit = {
+                    'review_waits_for_owner': waiting_at(rework_waiting, 'review', ['groom', 'owner', 'assign']),
+                    'fresh_answer_moves_on': not r3.get('refused') and (records['cycle-rework'].get('trace') or [])[3:4]
+                    == [['review', 'admit', 'assign']],
+                    'loop_asks_each_pass': [waiting_at(loop_passes[i], 'owner', ['groom', 'owner'] * (i + 1) + ['groom'])
+                                            for i in range(3)],
+                    'loop_bound_after_fourth': (loop_passes[3].get('state'), loop_passes[3].get('refusal'))}
+                observed['owner_answer_per_visit'] = per_visit
+                check('workflow/owner-answer-per-visit',
+                      lambda: per_visit['review_waits_for_owner'] and per_visit['fresh_answer_moves_on']
+                      and per_visit['loop_asks_each_pass'] == [True, True, True]
+                      and per_visit['loop_bound_after_fourth'] == ('refused', 'budget_exceeded:loop/t-decline'))
                 rework = records['cycle-rework']
                 revisit = bool(rework.get('state') == 'waiting' and (rework.get('waiting') or {}).get('node') == 'assign'
                                and [e[0] for e in rework.get('trace') or []] == ['groom', 'owner', 'assign', 'review']
