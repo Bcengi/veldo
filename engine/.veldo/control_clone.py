@@ -323,9 +323,11 @@ class Clones(EP.EnvProvisioner):
             _git('init', '-q', '--bare', '--template=', path)
         return path
 
-    def _pin(self, cache, source, commit, clone_id):
-        """Fetch `commit` from `source` into `cache` under this clone's own pin ref."""
-        ref = PIN_PREFIX + clone_id
+    def _pin(self, cache, repository, source, commit, clone_id):
+        """Fetch `commit` from `source` into `cache` under this clone's own pin ref for `repository`.
+        The ref carries the repository so a clone that pins two repositories (its own and an attachment)
+        never collides on one ref, even were a defect to point them at a single cache."""
+        ref = PIN_PREFIX + clone_id + '/' + hashlib.sha256(str(repository).encode()).hexdigest()[:16]
         _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s:%s' % (commit, ref),
              code='stale_input:commit_unavailable')
         seen = _git('-C', cache, 'rev-parse', '--verify', '-q', ref + '^{commit}', check=False).stdout.strip()
@@ -391,16 +393,19 @@ class Clones(EP.EnvProvisioner):
         root.mkdir(mode=0o700)  # exclusive: no path is ever provisioned twice
         work, pins = root / 'work', []
         try:
-            for entry in [accepted] + accepted['attachments']:
-                pins.append(self._pin(self._cache(entry['domain'], entry['repository']), entry['path'],
-                                      entry['commit'], clone_id))
+            commit = accepted['commit']
+            pins.append(self._pin(self._cache(accepted['domain'], accepted['repository']), accepted['repository'],
+                                  accepted['path'], commit, clone_id))
+            for attachment in accepted['attachments']:
+                pins.append(self._pin(self._cache(attachment['domain'], attachment['repository']),
+                                      attachment['repository'], attachment['path'], attachment['commit'], clone_id))
             _git('init', '-q', '--template=', work)
             info = work / '.git' / 'objects' / 'info'
             info.mkdir(parents=True, exist_ok=True)
             (info / 'alternates').write_text(''.join('%s\n' % (Path(p['cache']) / 'objects') for p in pins))
             for attachment in accepted['attachments']:
                 _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], attachment['commit'])
-            _git('-C', work, 'checkout', '-q', '--detach', accepted['commit'])
+            _git('-C', work, 'checkout', '-q', '--detach', commit)
             self._verify(work, accepted)
             scratch = _scratch(root, accepted['dispatch_id'])
             scratch.mkdir(parents=True)

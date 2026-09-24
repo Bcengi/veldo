@@ -716,6 +716,15 @@
    ],
    "regions": "Restricted Telegram edge enrollment under current authority, the protected signer's answer purpose and every delegation dimension, current edge and actor authorization at answer acceptance, and worker key custody",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH envelope, journal, possession and answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, and a real worker process under the Landlock custody wrapper. Writes only temporary fixtures."
+  },
+  {
+   "name": "66_veldo_0042_clones",
+   "file": "66_veldo_0042_clones.py",
+   "requires": [
+    "66_veldo_0042_clones"
+   ],
+   "regions": "Isolated worker clones at the accepted commit, per-repository pinned read-only object caches with named attachments only, worker write confinement to the clone, and pin release only after the clone's workers and consumers end",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, four real Git repositories with per-repository object caches, real git init/fetch/checkout/gc, and real confined worker and consumer processes; no systemd. Writes only temporary fixtures."
   }
  ]
 }

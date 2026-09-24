@@ -2535,6 +2535,63 @@ def cases():
     edges('custody-not-restricted', 'control_keys_custody.py',
           "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
           "        if False:\n", 'custody/worker-cannot-read-key')
+    # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
+    def clone(name, module, old, new, row, also=()):
+        add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)
+
+    # AC1 (declared falsifier): provision from the source repository's current HEAD instead of the
+    # accepted commit; the accepted-source tree comparison then refuses, so no clone stands at the
+    # accepted commit. Then the tree comparison reads the wrong accepted field, refusing a correct clone.
+    clone('clone-provision-from-head', 'control_clone.py',
+          "            commit = accepted['commit']\n",
+          "            commit = _git('-C', accepted['path'], 'rev-parse', 'HEAD', check=False).stdout.strip() or accepted['commit']\n",
+          'accepted-commit')
+    clone('clone-verify-wrong-accepted-field', 'control_clone.py',
+          "        if head != accepted['commit'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():\n",
+          "        if head != accepted['tree'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():\n",
+          'accepted-commit')
+    # AC1: a worker's direct writes outside its clone are denied. Declared: the Landlock ruleset is
+    # never applied; then the grant is the whole file system.
+    clone('clone-confinement-not-restricted', 'control_clone.py',
+          "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
+          "        if False:\n", 'worker-writes-confined')
+    clone('clone-grants-everything', 'control_clone.py',
+          "    confine(grants(manifest, user))\n",
+          "    confine([os.path.abspath(os.sep)])\n", 'worker-writes-confined')
+    # AC2 (declared falsifier): a single pooled cache across repositories, so an alternate exposes an
+    # unnamed repository's objects to a clone that never named it. Then an attachment is dropped from
+    # the clone's alternate, so its named object is not exposed.
+    clone('clone-pooled-cache', 'control_clone.py',
+          "        name = hashlib.sha256(('%s\\n%s' % (domain, repository)).encode()).hexdigest()[:32]\n",
+          "        name = 'pooled'\n", 'named-attachment-and-unnamed')
+    clone('clone-attachment-ref-wrong-commit', 'control_clone.py',
+          "                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], attachment['commit'])\n",
+          "                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], accepted['commit'])\n",
+          'named-attachment-and-unnamed')
+    # AC2: ordinary garbage collection retains the live pinned objects. Declared: the fetch holds no
+    # durable pin ref and the missing-pin guard is off, so gc prunes the objects under a running clone.
+    # Then the fetch names no destination ref at all, which the guard catches before any clone exists.
+    clone('clone-pin-not-held', 'control_clone.py',
+          "        if seen != commit:\n",
+          "        if False:\n", 'pins-survive-gc',
+          also=(["'%s:%s' % (commit, ref),", "'%s' % commit,"],))
+    clone('clone-pin-not-created', 'control_clone.py',
+          "        _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s:%s' % (commit, ref),\n",
+          "        _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s' % commit,\n",
+          'pins-survive-gc')
+    # AC3 (declared falsifier): cleanup releases a clone's pins while a child still reads it. Then a
+    # user's ending is decided from the record alone, ignoring the kernel that says the process lives.
+    clone('clone-release-while-child-reads', 'control_clone.py',
+          "        if live:\n", "        if False:\n", 'retire-after-users-end')
+    clone('clone-user-ended-ignores-kernel', 'control_clone.py',
+          "        ended = record.get('state') in ENDED and seen['terminated'] and seen['cleaned']\n",
+          "        ended = record.get('state') in ENDED\n", 'retire-after-users-end')
+    # Installation: each module this change installs is laid down by the scaffold.
+    clone('clone-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_clone.py",\n', '',
+          'installed-assets')
+    clone('clone-env-provision-not-scaffolded', 'init_scaffold.py', '    ".veldo/env_provision.py",\n', '',
+          'installed-assets')
+
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
