@@ -779,6 +779,15 @@
    ],
    "regions": "policy_check's stale-proof check over digest-form and integer-form spec revisions",
    "requires_note": "Uses only shared ROOT and expect; a temporary Git repository laid from .veldo/ modules, driven through git_process."
+  },
+  {
+   "name": "68_veldo_0126_intake",
+   "file": "68_veldo_0126_intake.py",
+   "requires": [
+    "68_veldo_0126_intake"
+   ],
+   "regions": "One normalized intake command from a Telegram message and an authenticated API request, proposals only, an inbox proposal and a question when the project is unresolved, text kept as written, follow-up clarification, authenticated allowed sources only and one proposal per source request",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal, edge and API request signatures, the VELDO-0066 Acquirer and VELDO-0065 presentation edge over a loopback Bot API, and a loopback ticket host that records requests. Writes only temporary fixtures."
   }
  ]
 }

@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -256 +256 @@
+-        adapter = self._adapters.get(source_kind) if isinstance(source_kind, str) else None
++        adapter = self._adapters.get(source_kind, self._api) if isinstance(source_kind, str) else None
