@@ -761,6 +761,15 @@
    ],
    "regions": "One canonical event vocabulary for every enabled producer and the validator, the journal projection published in order at an explicit watermark, and spec.shipped only from a confirmed landing receipt for its exact unit and dispatch",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a scaffolded Git repository running its own canonical gate and push guard, real publications by the VELDO-0028 effect executor process to bare remotes, the installed emitter CLI, executor hook, review projection and validator in separate processes, and the journal projector. Writes only temporary fixtures."
+  },
+  {
+   "name": "68_veldo_0126_intake",
+   "file": "68_veldo_0126_intake.py",
+   "requires": [
+    "68_veldo_0126_intake"
+   ],
+   "regions": "One normalized intake command from a Telegram message and an authenticated API request, proposals only, an inbox proposal and a question when the project is unresolved, text kept as written, follow-up clarification, authenticated allowed sources only and one proposal per source request",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal, edge and API request signatures, the VELDO-0066 Acquirer and VELDO-0065 presentation edge over a loopback Bot API, and a loopback ticket host that records requests. Writes only temporary fixtures."
   }
  ]
 }
