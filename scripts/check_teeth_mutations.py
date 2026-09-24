@@ -2795,7 +2795,7 @@ def cases():
           '    record["state"] = "completed"  # defect: the handoff establishes completion\n',
           'completion-by-lander-only')
     # Tracker intake stays disabled for enrolled work.
-    floor('floor-tracker-enrollment-unread', '        return self._EL.enrolled(root)\n',
+    floor('floor-tracker-enrollment-unread', '        return self._EL.enrolled(str(root))\n',
           '        return False  # defect: the repository\'s enrollment is not asked\n',
           'tracker-disabled-when-enrolled', module='tracker_bridge.py')
     floor('floor-tracker-write-unguarded',

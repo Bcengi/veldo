@@ -1,0 +1,6 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -983 +983,2 @@
+-    unresolved = sorted(fid for fid, f in record["findings"].items() if not f.get("resolved"))
++    unresolved = sorted(fid for fid, f in record["findings"].items() if not f.get("resolved")
++                        and f.get("attempt") == attempt)  # defect: a rebuild forgets earlier findings

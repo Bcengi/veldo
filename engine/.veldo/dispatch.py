@@ -782,17 +782,8 @@ def copy_record(record):
     return json.loads(json.dumps(record)) if record else None
 
 
-def _accept_build(conn, params, before, record, unit_data):
-    """A build is accepted only with accepted proof at the exact built commit, a green gate, the
-    current claim and its own exited build dispatch."""
-    unit, domain, repository = params["unit"], params["domain"], params["repository"]
-    commit, holder, generation = params.get("commit"), params.get("holder"), params.get("generation")
-    store = _floor_organ("control_store")
-    repo = store.bound_repository(conn, domain, repository)
-    if repo is None:
-        raise FloorRefused("missing_authority:repository", "no accepted repository is bound for this unit")
-    if not _hex(commit) or not _commit_exists(repo, commit):
-        raise FloorRefused("invalid_input:commit", "the built commit is not an exact commit of the repository")
+def _claim_current(before, unit_data, repository, unit, holder, generation):
+    """The claim the build ran under is still owned by `holder` at `generation` (VELDO-0031)."""
     CLM = _floor_organ("control_claim")
     cid = CLM.claim_id(repository, unit)
     claim = (before.get(cid) or {}).get("data") or {}
@@ -804,14 +795,21 @@ def _accept_build(conn, params, before, record, unit_data):
         raise FloorRefused("missing_authority:claim", cid)
     if claim.get("generation") != generation:
         raise FloorRefused("stale_claim", cid)
-    gate = params.get("gate")
-    if not isinstance(gate, dict) or gate.get("green") is not True:
-        raise FloorRefused("missing_evidence:gate", "the gate did not pass on the built commit")
-    builds = _dispatches(conn, domain, repository, unit, "build")
+
+
+def _build_dispatch(conn, params, holder, generation):
+    """The build's own newest VELDO-0039 dispatch, exited cleanly under this claim."""
+    builds = _dispatches(conn, params["domain"], params["repository"], params["unit"], "build")
     build = builds[0] if builds else None
     bound = (build or {}).get("contract", {}).get("claim") or {}
     if not _clean_exit(build) or bound.get("holder") != holder or bound.get("generation") != generation:
         raise FloorRefused("missing_evidence:build_dispatch", "no exited build dispatch under this claim")
+    return build
+
+
+def _accepted_proof(repo, commit, unit):
+    """(path, bytes, implementation commit) of ACCEPTED proof for `unit` at the built commit: read
+    from Git, a valid manifest, naming the built commit or an ancestor with only this proof changed."""
     path = PROOF_PATH % unit
     body = _blob(repo, commit, path)
     if body is None:
@@ -831,6 +829,26 @@ def _accept_build(conn, params, before, record, unit_data):
     if changed is None or any(not p.startswith(evidence) for p in changed):
         raise FloorRefused("stale_proof:changed_after_proof",
                            "the built commit changes more than its proof after the commit the proof names")
+    return path, body, implementation
+
+
+def _accept_build(conn, params, before, record, unit_data):
+    """A build is accepted only with accepted proof at the exact built commit, a green gate, the
+    current claim and its own exited build dispatch."""
+    unit, domain, repository = params["unit"], params["domain"], params["repository"]
+    commit, holder, generation = params.get("commit"), params.get("holder"), params.get("generation")
+    store = _floor_organ("control_store")
+    repo = store.bound_repository(conn, domain, repository)
+    if repo is None:
+        raise FloorRefused("missing_authority:repository", "no accepted repository is bound for this unit")
+    if not _hex(commit) or not _commit_exists(repo, commit):
+        raise FloorRefused("invalid_input:commit", "the built commit is not an exact commit of the repository")
+    _claim_current(before, unit_data, repository, unit, holder, generation)
+    gate = params.get("gate")
+    if not isinstance(gate, dict) or gate.get("green") is not True:
+        raise FloorRefused("missing_evidence:gate", "the gate did not pass on the built commit")
+    build = _build_dispatch(conn, params, holder, generation)
+    path, body, implementation = _accepted_proof(repo, commit, unit)
     record = record or {"schema": FLOOR_SCHEMA, "unit": unit, "domain": domain, "repository": repository,
                         "attempt": 0, "assignments": {}, "reviews": [], "findings": {}, "dispositions": []}
     record.update(state="review", attempt=record["attempt"] + 1,
@@ -867,13 +885,8 @@ def _assign_review(conn, params, before, record, unit_data):
     return record, unit_data
 
 
-def _record_review(conn, params, before, record, unit_data):
-    """The reviewer's own signed receipt, printed by its own review dispatch, bound to the assignment."""
-    assignment = record["assignments"].get(params.get("assignment"))
-    if not assignment or assignment["state"] != "open" or assignment["attempt"] != record["attempt"]:
-        raise FloorRefused("stale_assignment", str(params.get("assignment")))
-    reviewer, payload = assignment["reviewer"], assignment["payload"]
-    receipt = params.get("receipt")
+def _review_receipt(receipt):
+    """(printed bytes, body, signature) of the reviewer's receipt, or the named missing receipt."""
     if not isinstance(receipt, dict) or not _text(receipt.get("dispatch")) or not isinstance(receipt.get("output"), str):
         raise FloorRefused("missing_evidence:review_receipt", "no signed receipt came back from the reviewer")
     printed = receipt["output"].encode()
@@ -884,25 +897,38 @@ def _record_review(conn, params, before, record, unit_data):
         raise FloorRefused("missing_evidence:review_receipt", "the receipt is not a signed review")
     if not isinstance(body, dict):
         raise FloorRefused("missing_evidence:review_receipt", "the receipt is not a signed review")
+    return printed, body, signature
+
+
+def _review_dispatch(conn, params, record, assignment, dispatch_id, printed):
+    """The review dispatch the receipt names: exited cleanly at this unit's review station, launched
+    with exactly the assignment at the assigned commit as the assigned reviewer, and the receipt is
+    exactly what that process printed."""
     D = _floor_organ("control_dispatch")
-    dispatch = (_row(conn, D.record_id(receipt["dispatch"])) or {}).get("data") or {}
+    dispatch = (_row(conn, D.record_id(dispatch_id)) or {}).get("data") or {}
     contract = dispatch.get("contract") or {}
     if (contract.get("station") != "review" or contract.get("unit") != params["unit"]
             or contract.get("domain") != params["domain"] or contract.get("repository") != params["repository"]
             or not _clean_exit(dispatch)):
         raise FloorRefused("missing_evidence:review_dispatch", "the receipt names no exited review dispatch")
-    given = contract.get("input") or {}
+    given, payload = contract.get("input") or {}, assignment["payload"]
     if given.get("payload") != payload:
         # A fresh context: the reviewer was launched with exactly its assignment and nothing else.
         raise FloorRefused("binding_mismatch:review_dispatch/payload", "the reviewer was launched with other input")
     if (contract.get("source") or {}).get("commit") != record["source"]["commit"]:
         raise FloorRefused("binding_mismatch:review_dispatch/source", "the reviewer was launched at another commit")
-    if (given.get("context") or {}).get("reviewer") != reviewer:
+    if (given.get("context") or {}).get("reviewer") != assignment["reviewer"]:
         raise FloorRefused("binding_mismatch:review_dispatch/reviewer", "the dispatch reviewed as another principal")
     if (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):
         raise FloorRefused("binding_mismatch:review_output", "the receipt is not what the review dispatch printed")
     if dispatch.get("process") == (record.get("build") or {}).get("process"):
         raise FloorRefused("reviewer_not_independent:process", "the review ran in the builder's process")
+    return dispatch
+
+
+def _receipt_bound(conn, params, record, reviewer, body, signature):
+    """The receipt answers this assignment, is signed by the assigned independent reviewer, and
+    reviewed exactly the source and proof the authority accepted."""
     if body.get("schema") != RECEIPT_SCHEMA or body.get("assignment") != params["assignment"] \
             or body.get("unit") != params["unit"]:
         raise FloorRefused("binding_mismatch:assignment", "the receipt answers another assignment")
@@ -918,6 +944,18 @@ def _record_review(conn, params, before, record, unit_data):
         raise FloorRefused("binding_mismatch:proof", "the receipt reviewed another proof")
     if body.get("verdict") not in RECEIPT_VERDICTS:
         raise FloorRefused("invalid_input:verdict", str(body.get("verdict")))
+
+
+def _record_review(conn, params, before, record, unit_data):
+    """The reviewer's own signed receipt, printed by its own review dispatch, bound to the assignment."""
+    assignment = record["assignments"].get(params.get("assignment"))
+    if not assignment or assignment["state"] != "open" or assignment["attempt"] != record["attempt"]:
+        raise FloorRefused("stale_assignment", str(params.get("assignment")))
+    reviewer = assignment["reviewer"]
+    receipt = params.get("receipt")
+    printed, body, signature = _review_receipt(receipt)
+    dispatch = _review_dispatch(conn, params, record, assignment, receipt["dispatch"], printed)
+    _receipt_bound(conn, params, record, reviewer, body, signature)
     blocking = PC.blocking_findings(body)
     findings = dict(record["findings"])
     raised = []

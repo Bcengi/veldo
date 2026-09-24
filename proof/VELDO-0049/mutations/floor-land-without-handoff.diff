@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -506 +506 @@
+-            if state != "handoff":
++            if False:  # defect: an enrolled unit lands without its handoff

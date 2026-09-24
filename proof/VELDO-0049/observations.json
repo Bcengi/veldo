@@ -1,0 +1,538 @@
+{
+ "failed": 0,
+ "observed": {
+  "binding": {
+   "builder_process": {
+    "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+    "host": "dmitry-pc",
+    "pid": 342621,
+    "platform": "linux",
+    "start": "192375187"
+   },
+   "refused": {
+    "altered_receipt": "binding_mismatch:review_output",
+    "extra_context": "binding_mismatch:review_dispatch/payload",
+    "launched_elsewhere": "binding_mismatch:review_dispatch/source",
+    "missing_receipt": "missing_evidence:review_receipt",
+    "wrong_proof": "binding_mismatch:proof",
+    "wrong_source": "binding_mismatch:source"
+   },
+   "reviewer_packet_keys": [
+    "assignment",
+    "attempt",
+    "proof",
+    "reviewer",
+    "schema",
+    "source",
+    "unit"
+   ],
+   "reviewer_process": {
+    "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+    "host": "dmitry-pc",
+    "pid": 343032,
+    "platform": "linux",
+    "start": "192375350"
+   },
+   "valid": {
+    "halted_at": "handoff",
+    "ok": false,
+    "reason": "awaiting_reviews:1/2"
+   }
+  },
+  "build_acceptance": {
+   "bad_proof": {
+    "halted_at": "proof",
+    "ok": false,
+    "reason": "proof did not validate (1 problem(s))"
+   },
+   "direct": {
+    "other_holder": [
+     "refused",
+     "missing_authority:claim"
+    ],
+    "red_gate": [
+     "refused",
+     "missing_evidence:gate"
+    ],
+    "source_without_proof": [
+     "refused",
+     "missing_evidence:proof/absent"
+    ],
+    "stale_generation": [
+     "refused",
+     "stale_claim"
+    ]
+   },
+   "direct_invalid_proof": [
+    "refused",
+    "missing_evidence:proof/criterion:AC1"
+   ],
+   "good": {
+    "halted_at": null,
+    "ok": true,
+    "reason": null,
+    "status": "review"
+   },
+   "none_written_for_refused": true,
+   "producer": "builder-a",
+   "record": {
+    "attempt": 1,
+    "builder": "builder-a",
+    "proof": {
+     "digest": "sha256:865c18e89af19aa285725d70f2b1cd4d4735e3f8d44393d71c11e62ae3755014",
+     "path": "proof/VELDO-9401/manifest.json"
+    },
+    "source": {
+     "commit": "d80f8e998cdc527d52e61c11f5370c554adac3b4",
+     "implementation": "8a8e98925046e7bdda29d7e2c48c4608b8a8d7be"
+    },
+    "state": "review"
+   },
+   "red_gate": {
+    "halted_at": "gate",
+    "ok": false,
+    "reason": "red: veldo_9404.py"
+   },
+   "stale_proof": {
+    "halted_at": "build_acceptance",
+    "ok": false,
+    "reason": "stale_proof:changed_after_proof"
+   }
+  },
+  "builders": {
+   "builders": [
+    "builder-a",
+    "builder-e"
+   ],
+   "earlier_builder_review": "reviewer_not_independent",
+   "launched": [],
+   "producer": "builder-e"
+  },
+  "completion": {
+   "facts": {
+    "VELDO-9411": {
+     "artifact_accepted": false,
+     "attempt_finished": false,
+     "objective_satisfied": false,
+     "revision_landed": false
+    },
+    "VELDO-9421": {
+     "artifact_accepted": false,
+     "attempt_finished": false,
+     "objective_satisfied": false,
+     "revision_landed": false
+    }
+   },
+   "receipts": 0,
+   "states": {
+    "VELDO-9411": "handoff",
+    "VELDO-9421": "handoff"
+   },
+   "targets": [
+    "None",
+    "handoff",
+    "review"
+   ]
+  },
+  "event_sample": [
+   {
+    "accepted_versions": {
+     "VELDO-9421": 2,
+     "backlog:VELDO-9421": 2,
+     "claim:repository-49:VELDO-9421": 1,
+     "floor:[\"repository-49\",\"VELDO-9421\"]": 0,
+     "review-policy:repository-49": 1
+    },
+    "domain": "domain-49",
+    "operation": "accept_build",
+    "outcome": "accepted",
+    "repository": "repository-49",
+    "request": "floor/accept_build/VELDO-9421/c55a28916deae84561dbfee1",
+    "schema": "veldo.floor/v1",
+    "state": "review",
+    "unit": "VELDO-9421",
+    "watermark": 213
+   },
+   {
+    "domain": "domain-49",
+    "operation": "publish",
+    "outcome": "accepted",
+    "repository": "repository-49",
+    "schema": "veldo.floor/v1",
+    "snapshot": "floor-projection:repository-49:VELDO-9421:f84080fb44f44b1a95b0b22ff0606241",
+    "unit": "VELDO-9421",
+    "watermark": 215
+   },
+   {
+    "accepted_versions": {
+     "VELDO-9421": 4,
+     "backlog:VELDO-9421": 3,
+     "claim:repository-49:VELDO-9421": 3,
+     "floor:[\"repository-49\",\"VELDO-9421\"]": 1,
+     "review-policy:repository-49": 1
+    },
+    "domain": "domain-49",
+    "operation": "assign_review",
+    "outcome": "accepted",
+    "repository": "repository-49",
+    "request": "floor/assign_review/VELDO-9421/707f600d4789de73758e60ca",
+    "schema": "veldo.floor/v1",
+    "state": "review",
+    "unit": "VELDO-9421",
+    "watermark": 218
+   },
+   {
+    "accepted_versions": {
+     "VELDO-9421": 4,
+     "backlog:VELDO-9421": 3,
+     "claim:repository-49:VELDO-9421": 3,
+     "floor:[\"repository-49\",\"VELDO-9421\"]": 2,
+     "review-policy:repository-49": 1
+    },
+    "domain": "domain-49",
+    "operation": "record_review",
+    "outcome": "accepted",
+    "repository": "repository-49",
+    "request": "floor/record_review/VELDO-9421/c3f9d8ada46297ec31a4e635",
+    "schema": "veldo.floor/v1",
+    "state": "returned",
+    "unit": "VELDO-9421",
+    "watermark": 227
+   },
+   {
+    "domain": "domain-49",
+    "operation": "publish",
+    "outcome": "accepted",
+    "repository": "repository-49",
+    "schema": "veldo.floor/v1",
+    "snapshot": "floor-projection:repository-49:VELDO-9421:67ba6ba885fe4c5bb2b747b6571978e2",
+    "unit": "VELDO-9421",
+    "watermark": 229
+   },
+   {
+    "accepted_versions": {
+     "VELDO-9421": 4,
+     "backlog:VELDO-9421": 3,
+     "claim:repository-49:VELDO-9421": 3,
+     "floor:[\"repository-49\",\"VELDO-9421\"]": 3,
+     "review-policy:repository-49": 1
+    },
+    "domain": "domain-49",
+    "operation": "assign_review",
+    "outcome": "refused",
+    "refusal": "transition_refused:returned:assign_review",
+    "refusals": [
+     "transition_refused:returned:assign_review"
+    ],
+    "repository": "repository-49",
+    "request": "floor/assign_review/VELDO-9421/e00fa1ecb3da6ae3fb4aae6e",
+    "schema": "veldo.floor/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9421"
+   }
+  ],
+  "findings": {
+   "after_disposition": {
+    "landed": true,
+    "ok": true,
+    "status": "handoff"
+   },
+   "blocked": {
+    "ok": false,
+    "status": "returned",
+    "verdict": "fail"
+   },
+   "direct_land": [
+    "ok",
+    {
+     "halted_at": "handoff",
+     "kind": "publication",
+     "landed": false,
+     "ok": false,
+     "reason": "not_handed_off:review",
+     "refusals": [
+      "not_handed_off:review"
+     ],
+     "spec": "VELDO-9421",
+     "state": "refused"
+    }
+   ],
+   "disposition": "ok",
+   "findings": [
+    "VELDO-9421/1/reviewer-b/1/F1"
+   ],
+   "handoff": {
+    "attempt": 2,
+    "policy": {
+     "digest": "sha256:b486b68f5aa5a99540bd12923aac09e34c2c00fe025e6b9fb32e0fa797779b52",
+     "version": 1
+    },
+    "proof": {
+     "digest": "sha256:9c9f32900f987508de456adf12239b1bd7a201686c90bb86244b536daf03607b",
+     "path": "proof/VELDO-9421/manifest.json"
+    },
+    "required": 2,
+    "reviewers": [
+     "reviewer-b",
+     "reviewer-c",
+     "reviewer-d"
+    ],
+    "risk": "critical",
+    "source": {
+     "commit": "e920ac4e52c75fccfc69455e3bca5419dd72a17a",
+     "implementation": "2b22c9cc5b620d2f5d139621fa6e7f0abf8e83a4"
+    }
+   },
+   "pass_after_finding": [
+    "awaiting_reviews:1/2",
+    "unresolved_finding:VELDO-9421/1/reviewer-b/1/F1"
+   ],
+   "pass_on_returned_build": "transition_refused:returned:assign_review",
+   "pass_with_count_met": [
+    "unresolved_finding:VELDO-9421/1/reviewer-b/1/F1"
+   ],
+   "rebuilt": {
+    "ok": true,
+    "status": "review"
+   },
+   "refused_approvals": {
+    "another_reviewer": [
+     "refused",
+     "not_authorized:disposer"
+    ],
+    "builder": [
+     "refused",
+     "not_authorized:disposer"
+    ],
+    "owner_unsigned": [
+     "refused",
+     "not_authorized:disposition_signature"
+    ]
+   },
+   "rejected_ruling": "ok",
+   "trunk_unchanged_on_rejection": true
+  },
+  "independence": {
+   "builder_signing_as_itself": "binding_mismatch:reviewer",
+   "builder_signing_as_reviewer": "not_authorized:review_signature",
+   "direct_self_assignment": [
+    "refused",
+    "reviewer_not_independent"
+   ],
+   "reviews": 0,
+   "station_launched": [],
+   "station_self_review": "reviewer_not_independent"
+  },
+  "policy_count": {
+   "handoff": {
+    "attempt": 1,
+    "policy": {
+     "digest": "sha256:b486b68f5aa5a99540bd12923aac09e34c2c00fe025e6b9fb32e0fa797779b52",
+     "version": 1
+    },
+    "proof": {
+     "digest": "sha256:4d3ff18f49de0455921ce8f8bf76ed138a65f0814b43895071fdc9d0e8471637",
+     "path": "proof/VELDO-9411/manifest.json"
+    },
+    "required": 2,
+    "reviewers": [
+     "reviewer-b",
+     "reviewer-c"
+    ],
+    "risk": "critical",
+    "source": {
+     "commit": "b15edbaeb2bc93f46a9d87c026f98e043f6a25b8",
+     "implementation": "635a72d7c47acbe3773f8905a4fac46ae7925437"
+    }
+   },
+   "journal_reviewers": [
+    "reviewer-b",
+    "reviewer-c"
+   ],
+   "required": 2,
+   "same_principal_again": "duplicate_reviewer",
+   "second_reviewer": {
+    "landed": true,
+    "ok": true,
+    "shipped": false,
+    "status": "handoff"
+   },
+   "signatures_verified": true,
+   "trunk": true
+  },
+  "projection": {
+   "problems": [],
+   "published": {
+    "VELDO-9401": [
+     "000001"
+    ],
+    "VELDO-9411": [
+     "000001",
+     "000011",
+     "000013",
+     "000014"
+    ],
+    "VELDO-9421": [
+     "000001",
+     "000003",
+     "000004",
+     "000006",
+     "000009",
+     "000012",
+     "000013"
+    ]
+   }
+  },
+  "raised": [],
+  "status": {
+   "accepted": 28,
+   "handoff": [
+    "VELDO-9411",
+    "VELDO-9421"
+   ],
+   "pending": [
+    "VELDO-9401"
+   ],
+   "refused": 24,
+   "returned": []
+  },
+  "status_writes": {
+   "enrolled": [
+    "refused",
+    "status_projection_owned"
+   ],
+   "sites": [
+    [
+     "Dispatcher._dispatch_build",
+     "review"
+    ],
+    [
+     "Dispatcher._dispatch_review",
+     "fail_status"
+    ],
+    [
+     "Dispatcher._dispatch_review",
+     "shipped"
+    ]
+   ],
+   "unenrolled_control": [
+    [
+     "ok",
+     true
+    ],
+    true
+   ],
+   "unwired": [
+    "refused",
+    "authority_required"
+   ],
+   "writers": [
+    "Dispatcher._set_status"
+   ]
+  },
+  "tracker": {
+   "control": [
+    [
+     "VELDO-0001.md"
+    ],
+    "ready"
+   ],
+   "direct_promote": [
+    "refused",
+    "tracker_intake_disabled: the repository is enrolled factory work; its work arrives through Telegram or the authenticated API and its lifecycle is the authority's"
+   ],
+   "direct_write": "refused",
+   "drafted": [
+    {
+     "item": "TCK-untracked",
+     "path": "/dev/shm/v49-a1mwz_56/untracked/specs/VELDO-0001.md",
+     "repo": "untracked",
+     "spec_id": "VELDO-0001"
+    }
+   ],
+   "promoted": [
+    {
+     "item": "TCK-untracked",
+     "repo": "untracked",
+     "spec_id": "VELDO-0001"
+    }
+   ],
+   "skipped": {
+    "TCK-tracked": "tracker_intake_disabled"
+   }
+  }
+ },
+ "passed": 17,
+ "rows": [
+  [
+   "VELDO-0049 floor/status-write-sites",
+   true
+  ],
+  [
+   "VELDO-0049 floor/build-acceptance",
+   true
+  ],
+  [
+   "VELDO-0049 floor/review-independence",
+   true
+  ],
+  [
+   "VELDO-0049 floor/review-binding",
+   true
+  ],
+  [
+   "VELDO-0049 floor/review-policy-count",
+   true
+  ],
+  [
+   "VELDO-0049 floor/no-builder-reviews",
+   true
+  ],
+  [
+   "VELDO-0049 floor/finding-not-erased",
+   true
+  ],
+  [
+   "VELDO-0049 floor/completion-by-lander-only",
+   true
+  ],
+  [
+   "VELDO-0049 floor/authority-to-projection",
+   true
+  ],
+  [
+   "VELDO-0049 floor/tracker-disabled-when-enrolled",
+   true
+  ],
+  [
+   "VELDO-0049 floor/observations",
+   true
+  ],
+  [
+   "VELDO-0049 ran/floor/status-write-sites",
+   true
+  ],
+  [
+   "VELDO-0049 ran/floor/review-independence",
+   true
+  ],
+  [
+   "VELDO-0049 ran/floor/finding-not-erased",
+   true
+  ],
+  [
+   "VELDO-0049 ran/floor/authority-to-projection",
+   true
+  ],
+  [
+   "VELDO-0049 ran/floor/tracker-disabled-when-enrolled",
+   true
+  ],
+  [
+   "VELDO-0049 ran/floor/observations",
+   true
+  ]
+ ],
+ "suite": "63_veldo_0049_floor.py",
+ "suite_seconds": 5.034
+}

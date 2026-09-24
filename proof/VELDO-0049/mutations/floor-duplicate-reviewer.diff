@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -856 +856 @@
+-    if any(r["reviewer"] == reviewer and r["attempt"] == attempt for r in record["reviews"]):
++    if False:  # defect: one principal may fill a second review position

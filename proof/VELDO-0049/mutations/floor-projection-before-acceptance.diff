@@ -1,0 +1,7 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -388,0 +389 @@
++        floor.publish(sid)  # defect: published before the authority accepted the build
+@@ -394 +395 @@
+-        projection = floor.publish(sid)
++        projection = {}

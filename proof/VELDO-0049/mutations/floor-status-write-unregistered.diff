@@ -1,0 +1,4 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -138 +137,0 @@
+-    ("Dispatcher._dispatch_review", "shipped"),

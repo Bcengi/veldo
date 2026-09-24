@@ -1,0 +1,6 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -915,2 +915 @@
+-    if body.get("source") != record["source"]["commit"]:
+-        raise FloorRefused("binding_mismatch:source", "the receipt reviewed another commit")
++    pass  # defect: the receipt may review another commit

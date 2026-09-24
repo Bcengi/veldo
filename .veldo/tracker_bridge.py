@@ -350,6 +350,15 @@ class FakeSpecStore(SpecStore):
                           sort_keys=True)
 
 
+def _skip_enrolled(store, repo, iid, result):
+    """VELDO-0049: enrolled factory work is neither drafted nor promoted from the tracker. Its ticket
+    is skipped by name (ENROLLED_SKIP) and nothing is written."""
+    if not store.enrolled(repo):
+        return False
+    result["skipped"][iid] = ENROLLED_SKIP
+    return True
+
+
 def reconcile_drafts(adapter, config, store, owner="unassigned"):
     """Reconcile the tracker's Agent-assigned, repo-tagged tickets into spec DRAFTS and surface each on
     its ticket, idempotently. Pure control logic over the injected adapter seam and SpecStore seam.
@@ -375,9 +384,7 @@ def reconcile_drafts(adapter, config, store, owner="unassigned"):
                                           "the repo tag does not resolve to a known repo)")
             continue
         repo = cand.repo
-        if store.enrolled(repo):
-            # VELDO-0049: enrolled factory work is not drafted from the tracker; nothing is written.
-            result["skipped"][iid] = ENROLLED_SKIP
+        if _skip_enrolled(store, repo, iid, result):
             continue
         result["candidates"] += 1
         source = _source_link(item)
@@ -435,9 +442,7 @@ def reconcile_promotions(adapter, config, store):
                                           "does not resolve to a known repo)")
             continue
         repo = elig.repo
-        if store.enrolled(repo):
-            # VELDO-0049: enrolled factory work is not promoted from the tracker; nothing is written.
-            result["skipped"][iid] = ENROLLED_SKIP
+        if _skip_enrolled(store, repo, iid, result):
             continue
         result["eligible"] += 1
         spec_id = store.spec_id_for_source(repo, _source_link(item))
@@ -469,14 +474,12 @@ class FilesystemSpecStore(SpecStore):
     def _enrolled(self, repo):
         """The repository's own enrollment binding decides (control_eligibility.enrolled): a Git that
         cannot answer where a repository is present is a named stop, never 'not enrolled'."""
-        root = self._roots.get(repo)
-        if not root:
-            raise SpecStoreError("no repo root wired for repo %r" % repo)
+        root = self._specs_dir(repo).parent
         if getattr(self, "_EL", None) is None:
             espec = importlib.util.spec_from_file_location("veldo_eligibility_bridge", _HERE / "control_eligibility.py")
             self._EL = importlib.util.module_from_spec(espec)
             espec.loader.exec_module(self._EL)
-        return self._EL.enrolled(root)
+        return self._EL.enrolled(str(root))
 
     def _validate_mod(self):
         if self._V is None:

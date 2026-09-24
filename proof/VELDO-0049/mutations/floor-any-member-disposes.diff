@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -958 +958 @@
+-    if builder or member is None or (member.get("principal_type") != "person" and by != finding["raised_by"]):
++    if member is None:  # defect: any member, the builder included, disposes a finding

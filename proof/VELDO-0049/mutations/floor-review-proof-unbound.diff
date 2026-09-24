@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -917 +917 @@
+-    if body.get("proof") != record["proof"]["digest"]:
++    if False:  # defect: the receipt may review another proof

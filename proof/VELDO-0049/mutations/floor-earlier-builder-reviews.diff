@@ -1,0 +1,8 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -853 +853 @@
+-    if reviewer in (record.get("builders") or [record["builder"]]):
++    if reviewer == record["builder"]:  # defect: only the latest attempt's builder is refused
+@@ -911 +911 @@
+-    if reviewer in (record.get("builders") or [record["builder"]]):
++    if reviewer == record["builder"]:  # defect: only the latest attempt's builder is refused

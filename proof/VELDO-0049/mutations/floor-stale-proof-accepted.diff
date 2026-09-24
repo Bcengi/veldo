@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -831 +831 @@
+-    if changed is None or any(not p.startswith(evidence) for p in changed):
++    if changed is None:  # defect: what changed after the proof's commit is not read

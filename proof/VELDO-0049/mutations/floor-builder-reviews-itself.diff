@@ -1,0 +1,10 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -853,2 +853 @@
+-    if reviewer in (record.get("builders") or [record["builder"]]):
+-        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")
++    # defect: the builder may be assigned as its own reviewer
+@@ -911,2 +910 @@
+-    if reviewer in (record.get("builders") or [record["builder"]]):
+-        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")
++    # defect: the builder's own receipt is accepted

@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -985 +985 @@
+-    if len(passing) < need:
++    if len(passing) < 1:  # defect: one review hands off whatever the policy requires
