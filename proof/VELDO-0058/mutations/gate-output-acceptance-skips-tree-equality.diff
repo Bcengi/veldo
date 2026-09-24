@@ -1,0 +1,5 @@
+--- a/.veldo/control_verification.py
++++ b/.veldo/control_verification.py
+@@ -451 +451 @@
+-    if now["head"] != commit or now["digest"] != (observation.get("candidate") or {}).get("state"):
++    if False:  # defect: no post-run tree equality at acceptance

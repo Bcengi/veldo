@@ -1,0 +1,5 @@
+--- a/.veldo/control_verification.py
++++ b/.veldo/control_verification.py
+@@ -527 +527 @@
+-    module.POLICY = Path(policy).parent / POLICY_SOURCE
++    pass  # defect: the policy source is left unset, so the candidate's policy.yaml decides

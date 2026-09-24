@@ -1,0 +1,5 @@
+--- a/scripts/verify.sh
++++ b/scripts/verify.sh
+@@ -51 +51 @@
+-    case "$_veldo_sink/" in "$_veldo_root"/*) VELDO_REFUSE="the sink resolves inside the candidate" ;; esac
++    : # defect: a sink that resolves inside the candidate is accepted

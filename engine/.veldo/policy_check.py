@@ -32,6 +32,30 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# The policy SOURCE, an input separate from the SUBJECT root (VELDO-0058 AC3). ROOT is the tree being
+# judged; POLICY is the policy.yaml that says which of its paths are protected. Unset (None) it is the
+# subject root's own .veldo/policy.yaml, resolved at the time of the read, so an ordinary run and a
+# caller that points ROOT elsewhere behave exactly as before. The installed-policy runner
+# (control_verification._policy_main) sets it to the installation's policy.yaml: a candidate judged
+# by its own policy.yaml could empty protected_paths and land a protected change with no approval.
+POLICY = None
+
+
+def policy_source():
+    """The policy.yaml this run reads: POLICY when set, else the subject root's own."""
+    return Path(POLICY) if POLICY is not None else ROOT / ".veldo" / "policy.yaml"
+
+
+# The range BASE, an input separate from the subject's own refs (VELDO-0058 AC3). Unset (None), the
+# base of "what is this push" is computed from the subject root's refs exactly as _range_specs
+# describes, so an ordinary run is unchanged. The installed-policy runner
+# (control_verification._policy_main) sets it to the trunk commit the lander synced and gated against:
+# a candidate whose code runs inside the gate can move its own refs/remotes/origin/main to HEAD, and a
+# range computed from those refs is then empty, so a protected change would land with no approval.
+# When set, every range read is exactly BASE..HEAD, and one that Git cannot answer is an error, never
+# an empty range.
+BASE = None
+
 # The proof-corpus enumeration (WARP-0727): the one owner of what a corpus path is, shared
 # with .veldo/events.py and .veldo/validate.py. A private glob here would be a THIRD spelling
 # of one set, which is the defect that module exists to make unreachable.
@@ -61,7 +85,7 @@ def _verdict_files():
 
 
 def protected_patterns():
-    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")
+    policy = _Y.read(policy_source())
     rows = policy.get("protected_paths", [])
     if not isinstance(rows, list) or any(not isinstance(r, dict) or not isinstance(r.get("path"), str) for r in rows):
         raise ValueError("policy protected_paths must be a list of path mappings")
@@ -83,6 +107,8 @@ def _range_specs():
     guess makes the three agree. The guess stays last, for a repository with no origin at all, but
     it is now the exception rather than the thing that answers whenever tracking is not configured.
     """
+    if BASE is not None:
+        return [str(BASE) + "..HEAD"]
     specs = ["@{upstream}..HEAD"]
     for ref in ("origin/HEAD", "origin/main"):
         r = _git_process.run(["git", "rev-parse", "--verify", "--quiet", ref],
@@ -100,6 +126,8 @@ def changed_files():
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
             return [f for f in r.stdout.splitlines() if f]
+    if BASE is not None:
+        raise RuntimeError("the push range %s..HEAD cannot be read" % BASE)
     return []
 
 
@@ -116,6 +144,8 @@ def push_range_commits():
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
             return [c for c in r.stdout.splitlines() if c]
+    if BASE is not None:
+        raise RuntimeError("the push range %s..HEAD cannot be read" % BASE)
     return []
 
 
