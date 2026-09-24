@@ -76,7 +76,7 @@ ok: pw raw @ twice 'https://<fixture-credential>:<fixture-credential>@x@y@h/r.gi
 ok: pw raw : 'https://<fixture-credential>:<fixture-credential>:PW@h/r.git' -> 'https://h/r.git'
 ok: pw raw [ ] 'https://<fixture-credential>:<fixture-credential>[]@h/r.git' -> 'https://h/r.git'
 ok: pw raw space 'https://<fixture-credential>:<fixture-credential> PW@h/r.git' -> 'https://h/r.git'
-ok: pw raw unicode 'https://<fixture-credential>:<fixture-credential>é@h/r.git' -> 'https://h/r.git'
+ok: pw raw unicode 'https://<fixture-credential>:<fixture-credential>\u00e9@h/r.git' -> 'https://h/r.git'
 ok: pw raw / 'https://<fixture-credential>:<fixture-credential>/PW@h/r.git' -> 'https://<unparsed>'
 ok: pw raw ? 'https://<fixture-credential>:<fixture-credential>?PW@h/r.git' -> 'https://<unparsed>'
 ok: pw raw # 'https://<fixture-credential>:<fixture-credential>#PW@h/r.git' -> 'https://<unparsed>'
