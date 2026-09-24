@@ -1,5 +1,5 @@
 --- a/.veldo/control_verification.py
 +++ b/.veldo/control_verification.py
-@@ -132 +132 @@
+@@ -139 +139 @@
 -    listed = _git(root, "for-each-ref", "--format=%(refname)%00%(objectname)%00%(symref)").stdout.decode("utf-8", "surrogateescape")
 +    listed = _git(root, "for-each-ref", "--format=%(refname)%00%(objectname)").stdout.decode("utf-8", "surrogateescape")

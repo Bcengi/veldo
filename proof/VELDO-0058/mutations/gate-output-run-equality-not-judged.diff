@@ -1,5 +1,5 @@
 --- a/.veldo/control_verification.py
 +++ b/.veldo/control_verification.py
-@@ -320 +320 @@
+@@ -347 +347 @@
 -    if post.get("equal") is not True or post.get("state") != candidate.get("state"):
 +    if False:  # defect: a candidate changed during the run is judged green

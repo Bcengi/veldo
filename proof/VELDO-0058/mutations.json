@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 58 --jobs 4 --diff-dir proof/VELDO-0058/mutations",
  "summary": {
-  "mutations_rejected": 17,
+  "mutations_rejected": 19,
   "green_suites": {
-   "69_veldo_0058_gate_output.py": 40
+   "69_veldo_0058_gate_output.py": 42
   },
-  "driver_seconds": 85.1
+  "driver_seconds": 77.9
  },
  "all_targets_red_by_assertion": true,
  "mutations_per_row": {
@@ -38,38 +38,49 @@
   ],
   "gate-output/refs-bound": [
    "gate-output-state-without-refs",
-   "gate-output-state-without-symref-targets"
+   "gate-output-state-without-symref-targets",
+   "gate-output-land-does-not-bind-refs"
+  ],
+  "gate-output/live-loop-siblings": [
+   "gate-output-live-loop-binds-refs"
   ]
  },
- "every_row_has_two_or_more": true,
+ "every_row_has_two_or_more": false,
  "unmutated_controls": [
   {
    "module": "scripts/verify.sh",
    "identical_bytes": true,
-   "rows": 14,
+   "rows": 16,
    "failed_rows": [],
-   "seconds": 15.0
+   "seconds": 14.8
   },
   {
    "module": ".veldo/control_verification.py",
    "identical_bytes": true,
-   "rows": 14,
+   "rows": 16,
    "failed_rows": [],
-   "seconds": 15.3
+   "seconds": 14.6
   },
   {
    "module": ".veldo/lander.py",
    "identical_bytes": true,
-   "rows": 14,
+   "rows": 16,
    "failed_rows": [],
-   "seconds": 15.4
+   "seconds": 14.6
   },
   {
    "module": ".veldo/policy_check.py",
    "identical_bytes": true,
-   "rows": 14,
+   "rows": 16,
    "failed_rows": [],
-   "seconds": 15.2
+   "seconds": 14.6
+  },
+  {
+   "module": ".veldo/executor.py",
+   "identical_bytes": true,
+   "rows": 16,
+   "failed_rows": [],
+   "seconds": 14.7
   }
  ],
  "mutations": [
@@ -104,6 +115,7 @@
     "gate-output/installed-policy-list",
     "gate-output/range-base-from-lander",
     "gate-output/refs-bound",
+    "gate-output/live-loop-siblings",
     "ran/gate-output/post-run-mutation",
     "ran/gate-output/installed-policy"
    ],
@@ -345,6 +357,36 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/gate-output-state-without-symref-targets.diff"
+  },
+  {
+   "mutation": "gate-output-live-loop-binds-refs",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "gate-output/live-loop-siblings"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/live-loop-siblings"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-live-loop-binds-refs.diff"
+  },
+  {
+   "mutation": "gate-output-land-does-not-bind-refs",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "gate-output/refs-bound"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/refs-bound"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-land-does-not-bind-refs.diff"
   }
  ]
 }

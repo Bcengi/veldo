@@ -97,8 +97,8 @@ byte-identical (HEAD, index and files stay bound: post-run-mutation's LiveLoop c
 
 ## Evidence
 
-`drive.py` wrote `observations.json`; `mutations.py` wrote `mutations.json` and `mutations/` (17
-mutations, every named row red by assertion, four unmutated controls green); `red.py 932d9b0` wrote
+`drive.py` wrote `observations.json`; `mutations.py` wrote `mutations.json` and `mutations/` (19
+mutations, every named row red by assertion, 5 unmutated controls green); `red.py 932d9b0` wrote
 `red-932d9b0.json`: all four rows red by assertion there, no region raised. `red.py 35be8ff
 control_verification.py policy_check.py` wrote `red-35be8ff.json`: at 35be8ff, the code before the
 policy-source fix, `gate-output/installed-policy-list` is the one red row, by assertion (the emptied
@@ -109,5 +109,5 @@ policy_check.py` wrote `red-b370581.json`: at b370581, the code before the range
 control_verification.py` wrote `red-57ec2b2.json`: at 57ec2b2, the code before the explicit ref
 binding, `gate-output/live-loop-siblings` is the one red row, by assertion (the gate was refused as
 `stale_subject:candidate/changed_during_gate`, naming `refs/heads/build/sibling` and the fetched
-remote-tracking refs, though verify.sh printed GREEN), no region raised. `mutations.json` predates the
-two ref-binding mutations; `check_teeth_mutations.py --finding 58` rejects all 19.
+remote-tracking refs, though verify.sh printed GREEN), no region raised. `check_teeth_mutations.py --finding 58`
+rejects all 19.

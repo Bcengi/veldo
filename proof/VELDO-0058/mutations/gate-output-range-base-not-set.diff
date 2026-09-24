@@ -1,5 +1,5 @@
 --- a/.veldo/control_verification.py
 +++ b/.veldo/control_verification.py
-@@ -494 +494 @@
+@@ -528 +528 @@
 -    module.BASE = base
 +    pass  # defect: the base is checked but never handed to the policy, so the refs decide
