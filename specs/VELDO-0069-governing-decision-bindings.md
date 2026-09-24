@@ -158,3 +158,11 @@ unblocking; a later revision's binding supersedes an earlier one. An unsupported
 record or a missing decision signer stops the settlement by name with nothing written. The consumers
 (plan.py, the Gate, control_decision_dependency.py) needed no change. The binding kind is owned by the
 settlement command. Suite `70_veldo_0069_bindings`, mutations in finding 69, proof in proof/VELDO-0069/.
+
+2026-09-24, review fixes: a governing question at a revision above the record's current one, as read and
+pinned in the settling transaction, is refused as `future_revision` (class stale_subject) with nothing
+written; before, it settled and its binding cleared the work once the record reached that revision. Terms
+are not checked against the record. New rows `refusal/future-revision` (red at 5596c04 by assertion) and
+`binding/owner-ruling` (the owner rejects and returns for elaboration; the signed ruling blocks by
+`decision_ruling` at every consumer). Mutations `future-revision-accepted` and `ruling-forced-approve`;
+`binding-choice-generic` re-aimed as `binding-choice-forced-accept` on the ruling row.

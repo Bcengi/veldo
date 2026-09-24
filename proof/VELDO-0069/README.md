@@ -29,6 +29,10 @@ already in `init_scaffold._FILES`). The VELDO-0054 consumers (`plan.py`, `contro
 - **Stops.** A record whose governed subject kind is unsupported (`unsupported_subject`), a question
   naming no recorded governing decision (`missing_decision`) and a service with no decision signer
   (`unavailable_service`) refuse before anything is written: no receipt without its binding.
+- **Future revision.** A question at a revision above the record's current one, as read and pinned in the
+  settling transaction, is refused as `future_revision` (class stale_subject) with nothing written, so a
+  binding never exists for a revision nobody was shown. The terms are not checked against the record:
+  they read no governing record, and settlement is the one place that reads it pinned.
 - **Supersession.** Consumers read only the binding of the record's current revision, so a question at
   a later revision supersedes an earlier binding; one revision is bound once (`already_settled`).
 - **Observability.** The settle observation carries the binding id, the record, whether the binding is
@@ -46,18 +50,25 @@ real Git checkout, and a reader in another process. It also passes in the stage 
 `red-at-25703ef.json`: the current suite against the pre-change tree (`git archive 25703ef`): all seven
 rows red, by assertion (no section raised).
 
-`python3 -B proof/VELDO-0069/drive.py` regenerates `mutations.json` and the diffs: 11 mutants, each reds
+`red-at-5596c04.json`: the current suite against the tree the review read (`git archive 5596c04`):
+`refusal/future-revision` red by assertion, the future question settled and its early binding then cleared
+the work and refused the genuine question as already_settled. `binding/owner-ruling` is green there: that
+tree already signed the owner's ruling, and the row's teeth are `ruling-forced-approve`.
+
+`python3 -B proof/VELDO-0069/drive.py` regenerates `mutations.json` and the diffs: 13 mutants, each reds
 its named row by assertion, baseline and a no-op copy of each of the three mutated modules green.
 Registry: `scripts/check_teeth_mutations.py --finding 69`.
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
-| `binding/one-transaction` | AC1 | `binding-skipped-without-signer`, `binding-choice-generic` |
+| `binding/one-transaction` | AC1 | `binding-skipped-without-signer` |
+| `binding/owner-ruling` | AC1 | `ruling-forced-approve`, `binding-choice-forced-accept` |
 | `eligibility/resolved-request` | AC1 | `receipt-without-binding` |
 | `refusal/wrong-framing` | AC2 | `binding-framing-from-record` |
 | `refusal/wrong-subject` | AC2 | `binding-ignores-subject-digest` |
 | `refusal/wrong-version` | AC2 | `binding-revision-from-record` |
 | `refusal/unsupported-subject-stops` | threat model | `unsupported-subject-bound`, `unsupported-subject-terms-accepted` |
+| `refusal/future-revision` | threat model | `future-revision-accepted` |
 | `consumers/inline-bypass` | AC3 | `inline-status-authority`, `inline-status-authority-at-stations`, `record-status-authority` |
 
 ## Known limits

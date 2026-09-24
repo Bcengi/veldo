@@ -1,5 +1,5 @@
 --- a/.veldo/control_request_settlement.py
 +++ b/.veldo/control_request_settlement.py
-@@ -406 +406 @@
+@@ -409 +409 @@
 -            changes[binding['binding_id']] = {'kind': DECISION_SETTLEMENT_KIND, 'data': binding}
 +            pass  # defect: only the receipt commits, without its governing binding

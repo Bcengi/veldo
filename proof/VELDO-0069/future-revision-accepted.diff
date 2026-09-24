@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -707 +707 @@
+-        if question['revision'] > record['revision']:
++        if False:  # defect: a question above the record's revision is bound
