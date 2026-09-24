@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -898 +898 @@
+@@ -933 +933 @@
 -    if (contract.get("source") or {}).get("commit") != record["source"]["commit"]:
 +    if False:  # defect: the reviewer may be launched at another commit

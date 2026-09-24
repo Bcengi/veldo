@@ -1,6 +1,6 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -487,0 +488,7 @@
+@@ -502,0 +503,7 @@
 +        receipt = "receipt:revision_landed:" + sid  # defect: the dispatcher records the landing itself
 +        floor.store.execute(floor.conn, dict(
 +            command_id="landed/" + sid, principal=floor.principal, operation="upsert_entity",

@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -895 +895 @@
+@@ -930 +930 @@
 -    if given.get("payload") != payload:
 +    if False:  # defect: the reviewer may be launched with more than its assignment

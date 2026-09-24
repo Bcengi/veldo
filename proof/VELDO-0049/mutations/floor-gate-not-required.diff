@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -808 +808 @@
+@@ -863 +863 @@
 -    if not isinstance(gate, dict) or gate.get("green") is not True:
 +    if False:  # defect: the gate's answer is not required

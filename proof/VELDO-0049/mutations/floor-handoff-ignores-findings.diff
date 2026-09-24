@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -987 +987 @@
+@@ -1040 +1040 @@
 -    codes.extend("unresolved_finding:" + fid for fid in unresolved)
 +    codes.extend([])  # defect: an open finding does not block the handoff

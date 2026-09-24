@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 49 --jobs 4 --diff-dir proof/VELDO-0049/mutations",
  "summary": {
-  "mutations_rejected": 31,
+  "mutations_rejected": 33,
   "green_suites": {
-   "63_veldo_0049_floor.py": 43
+   "63_veldo_0049_floor.py": 44
   },
-  "driver_seconds": 42.3
+  "driver_seconds": 50.2
  },
  "all_targets_red_by_assertion": true,
  "mutations": [
@@ -23,6 +23,7 @@
     "floor/build-acceptance",
     "floor/review-independence",
     "floor/review-binding",
+    "floor/land-retry-from-handoff",
     "floor/review-policy-count",
     "floor/no-builder-reviews",
     "floor/finding-not-erased",
@@ -169,6 +170,38 @@
    "diff": "mutations/floor-authority-not-required.diff"
   },
   {
+   "mutation": "floor-rebuild-while-held",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/build-acceptance"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-rebuild-while-held.diff"
+  },
+  {
+   "mutation": "floor-land-retry-reassigns",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/land-retry-from-handoff"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/land-retry-from-handoff",
+    "floor/review-policy-count",
+    "floor/completion-by-lander-only"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-land-retry-reassigns.diff"
+  },
+  {
    "mutation": "floor-builder-reviews-itself",
    "module": ".veldo/dispatch.py",
    "target_rows": [
@@ -304,8 +337,10 @@
    "baseline": "green",
    "red_rows": [
     "floor/review-binding",
+    "floor/land-retry-from-handoff",
     "floor/review-policy-count",
-    "floor/finding-not-erased"
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -453,6 +488,7 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
+    "floor/land-retry-from-handoff",
     "floor/review-policy-count",
     "floor/finding-not-erased",
     "floor/completion-by-lander-only",

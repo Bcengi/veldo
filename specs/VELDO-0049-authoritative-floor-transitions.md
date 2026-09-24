@@ -130,3 +130,16 @@ crash/replay races moved to Release 2; AC3 tracker drafting/promotion integratio
 by 28857/28859. Authoritative transitions and independent review remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-24 implementation: `.veldo/dispatch.py` (with its engine mirror) gains the floor authority,
+one registered store command `floor_transition` (accept_build, assign_review, record_review,
+dispose_finding, handoff), and the Materializer, VELDO-0035's ordinary materialization of each
+record version. In an enrolled repository the dispatcher's status writes refuse and every build,
+review, disposition and handoff goes through the authority. The authority judges the committed
+proof, the gate, the claim, the build's and the reviewer's own VELDO-0039 dispatches, the reviewer's
+signature and the stored review policy. No transition establishes completion. The tracker bridge's
+drafting and promotion skip and refuse enrolled repositories and are not extended. The footprint
+adds `scripts/check_teeth_mutations.py`, the registry of the 33 finding-49 negative controls, as
+VELDO-0031, 0035 and 0039 did. Suite 63 has 18 rows, each assertion row recorded red by assertion at
+0083c85 (`proof/VELDO-0049/`). Deferred and stated there: the frontier and work loop reading the
+projection instead of the spec status line, and projection recovery (Release 2).

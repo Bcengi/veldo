@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -372 +372 @@
+-            if state not in FLOOR_TRANSITIONS["accept_build"][0]:
++            if False:  # defect: a unit the authority holds in review is built again

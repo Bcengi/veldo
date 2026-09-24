@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -913 +913 @@
+@@ -954 +954 @@
 -    if not _signed_by(conn, reviewer, params["now"], body, signature):
 +    if False:  # defect: the receipt's signature is not verified

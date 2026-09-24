@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -990 +990 @@
+@@ -1043 +1043 @@
 -    record["state"] = "handoff"
 +    record["state"] = "completed"  # defect: the handoff establishes completion

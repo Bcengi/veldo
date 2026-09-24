@@ -1,5 +1,5 @@
 --- a/.veldo/tracker_bridge.py
 +++ b/.veldo/tracker_bridge.py
-@@ -479 +479 @@
--        return self._EL.enrolled(root)
+@@ -482 +482 @@
+-        return self._EL.enrolled(str(root))
 +        return False  # defect: the repository's enrollment is not asked

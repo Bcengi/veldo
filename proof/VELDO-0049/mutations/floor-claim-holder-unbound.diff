@@ -1,5 +1,5 @@
 --- a/.veldo/dispatch.py
 +++ b/.veldo/dispatch.py
-@@ -803 +803 @@
+@@ -809 +809 @@
 -    if status != "owned" or not _text(holder) or claim.get("holder") != holder:
 +    if status != "owned":  # defect: any holder may hand a build to review
