@@ -536,10 +536,15 @@ class Activations:
         prior = found['data'] if found else None
         versions[aid] = found['version'] if found else 0
         refusal, bound = bindings(self.S, self.conn, params['owner'], params['edge_key_id'], now)
+        if action == 'stop' and prior:
+            # A stop never waits on current bindings: a retired key or a changed enrollment is exactly
+            # when the owner must still be able to halt the edge. It keeps what the record bound.
+            refusal, bound = None, {field: prior.get(field) for field in BOUND}
         if refusal:
             raise Refused(refusal)
-        versions[bound['enrollment_id']] = bound['enrollment_version']
-        versions[bound['edge_key_id']] = bound['edge_version']
+        if action != 'stop':
+            versions[bound['enrollment_id']] = bound['enrollment_version']
+            versions[bound['edge_key_id']] = bound['edge_version']
         record = dict(bound, schema=ACTIVATION_SCHEMA, channel=CHANNEL, state=STATES[action], origin=params['origin'],
                       platform=platform_of(params['origin']), authorized_by=signer, command_id=command['command_id'],
                       authorized_at=now, expires_at=None, qualification_id=None, qualification_digest=None, bot_id=None)

@@ -495,11 +495,16 @@ def _v73_checks(base):
                   and refused_as(lambda: ing.presenter.edge.send(chat, 'x'), 'stale_key')
                   and calls('bot73', 'sendMessage') == sends and pending(ing, rid6)
                   and pending(ing, rid7) and evidence_of(answer6) is None)
+            halted = A.authorize(ing.activations, 'stop') if ing is not None else {}
+            check(SK, 'a stale edge can still be stopped by the owner, and stays stopped',
+                  halted.get('outcome') == 'accepted' and (ing.activations.current() or {}).get('state') == 'stopped'
+                  and ing.wake({'tick': 8}).get('reason') == 'edge_stopped')
             check(SK, 'no connection beyond the loopback interface was attempted', len(attempts) == before)
             metrics = ing.activations.metrics() if ing is not None else {}
             observed = _v73_json.dumps(ing.gate.observations + ing.activations.observations) if ing is not None else ''
             check(SK, 'metrics and observations: counts, state and pending work, named refusals, no token or text',
-                  metrics.get('accepted', 0) > 0 and metrics.get('refused', 0) > 0 and metrics.get('state') == 'active'
+                  metrics.get('accepted', 0) > 0 and metrics.get('refused', 0) > 0 and metrics.get('state') == 'stopped'
+                  and metrics.get('pending') == ['telegram_chat']
                   and 'stand-in-token' not in observed and 'bot73' not in observed and 'stale enrollment' not in observed
                   and all(o.get('error_class') for o in ing.gate.observations if o.get('outcome') == 'refused'))
     finally:
