@@ -3796,6 +3796,28 @@ def cases():
              module='judgment_load.py')
     events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
              module='judgment_load.py')
+
+    # VELDO-0137: policy_check reads a VELDO-0050 digest-form spec revision. Each case against the one
+    # suite 68 row it names.
+    def policy(name, old, new, row):
+        add(137, name, '68_veldo_0137_policy_revision.py', 'policy_check.py', old, new, ['policy/' + row])
+
+    # AC1, declared: the digest form read as an integer revision again (every factory proof stale).
+    policy('policy-digest-read-as-integer', '        if isinstance(pr, str) and pr.startswith("sha256:"):\n',
+           '        if False:  # defect: a digest-form revision is read with int() and is always stale\n',
+           'digest-revision-current')
+    policy('policy-digest-bound-to-head', '    then = _spec_at(commit, sid)\n',
+           '    then = _spec_at("HEAD", sid)  # defect: the binding is not read at the proof\'s own commit\n',
+           'digest-revision-current')
+    # AC2, declared: a digest naming no committed spec accepted.
+    policy('policy-digest-binding-unchecked',
+           '    if then is None or "sha256:" + hashlib.sha256(then[0]).hexdigest() != pr:\n',
+           '    if then is None:  # defect: the digest is never compared with the committed spec\n',
+           'digest-revision-stale')
+    policy('policy-digest-revision-raise-ignored',
+           '        return int(current.get("revision", 1)) > int(then[1].get("revision", 1))\n',
+           '        return False  # defect: a raised declared revision leaves a digest proof current\n',
+           'digest-revision-stale')
     return result
 
 

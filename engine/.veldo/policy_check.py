@@ -327,9 +327,52 @@ def ready_boundary_violations():
     return bad
 
 
+_COMMIT = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+
+
+def _spec_at(commit, spec_id):
+    """(the spec document's exact bytes, its front matter) as committed at `commit`, or None when
+    that cannot be named for certain: an object id that is not a full commit id, no spec file of
+    that id at the commit, more than one, or a Git refusal."""
+    if not isinstance(commit, str) or not _COMMIT.fullmatch(commit):
+        return None
+    r = _git_process.run(["git", "ls-tree", "--name-only", commit, "specs/"],
+                         capture_output=True, text=True, cwd=ROOT)
+    if r.returncode != 0:
+        return None
+    names = [n for n in r.stdout.splitlines() if n.startswith("specs/%s-" % spec_id) and n.endswith(".md")]
+    if len(names) != 1:
+        return None
+    b = _git_process.run(["git", "show", "%s:%s" % (commit, names[0])], capture_output=True, cwd=ROOT)
+    if b.returncode != 0:
+        return None
+    try:
+        fm = _Y.front_matter(b.stdout.decode("utf-8"), names[0]) or {}
+    except Exception:
+        return None
+    return b.stdout, fm
+
+
+def _digest_revision_stale(sid, pr, commit, current):
+    """VELDO-0137: a VELDO-0050 proof names its accepted revision as 'sha256:' and the digest of the
+    exact spec bytes it was accepted against (control_proof.digest). It is current when the spec
+    committed at the proof's own implementation commit is exactly those bytes (VELDO-0050 refuses a
+    build that changes its spec, so that is the accepted revision) and the spec's declared revision
+    has not been raised since. A later edit that raises nothing, such as a History line at landing,
+    leaves it current. Anything that cannot be named for certain is stale: fail closed."""
+    then = _spec_at(commit, sid)
+    if then is None or "sha256:" + hashlib.sha256(then[0]).hexdigest() != pr:
+        return True
+    try:
+        return int(current.get("revision", 1)) > int(then[1].get("revision", 1))
+    except (ValueError, TypeError):
+        return True
+
+
 def spec_revision_stale():
     """If a spec declares a revision higher than the revision its proof was
-    produced against, the proof is stale and must be re-run."""
+    produced against, the proof is stale and must be re-run. A VELDO-0050 proof's
+    digest-form revision is judged by _digest_revision_stale."""
     stale = []
     for p in _corpus_files(_VC.MANIFEST_PATTERN):
         try:
@@ -341,6 +384,10 @@ def spec_revision_stale():
         if not sid or pr is None:
             continue
         fm = _spec_file_fm(sid)
+        if isinstance(pr, str) and pr.startswith("sha256:"):
+            if _digest_revision_stale(sid, pr, m.get("commit"), fm):
+                stale.append(sid)
+            continue
         try:
             if int(fm.get("revision", 1)) > int(pr):
                 stale.append(sid)

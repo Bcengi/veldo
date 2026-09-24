@@ -752,8 +752,8 @@
    ],
    "regions": "The trusted wrapper's heartbeat while a model call is blocked, in a session of its own and on a channel the engine does not hold, claim renewal on each heartbeat and the missed-heartbeat stop, an accepted stop's bounded escalation over the whole group, and a retirement that follows actual termination, keeps each open obligation, is retried by the runner once an obligation is completed and releases the slot once",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory."
-   },
-   {
+  },
+  {
    "name": "66_veldo_0051_events",
    "file": "66_veldo_0051_events.py",
    "requires": [
@@ -761,6 +761,15 @@
    ],
    "regions": "One canonical event vocabulary for every enabled producer and the validator, the journal projection published in order at an explicit watermark, and spec.shipped only from a confirmed landing receipt for its exact unit and dispatch",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a scaffolded Git repository running its own canonical gate and push guard, real publications by the VELDO-0028 effect executor process to bare remotes, the installed emitter CLI, executor hook, review projection and validator in separate processes, and the journal projector. Writes only temporary fixtures."
+  },
+  {
+   "name": "68_veldo_0137_policy_revision",
+   "file": "68_veldo_0137_policy_revision.py",
+   "requires": [
+    "68_veldo_0137_policy_revision"
+   ],
+   "regions": "policy_check's stale-proof check over digest-form and integer-form spec revisions",
+   "requires_note": "Uses only shared ROOT and expect; a temporary Git repository laid from .veldo/ modules, driven through git_process."
   }
  ]
 }
