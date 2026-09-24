@@ -1,0 +1,24 @@
+{
+ "command": "the current suite run in process at 9409888, as proof/VELDO-0132/drive.py runs it",
+ "commit": "9409888 (the row added, the fix not yet applied)",
+ "failed_rows": [
+  "VELDO-0132 workflow/owner-answer-per-visit",
+  "VELDO-0132 workflow/ordinary-authorization",
+  "VELDO-0132 workflow/observations"
+ ],
+ "owner_answer_per_visit": {
+  "fresh_answer_moves_on": true,
+  "loop_asks_each_pass": [
+   false,
+   false,
+   false
+  ],
+  "loop_bound_after_fourth": [
+   "refused",
+   "budget_exceeded:loop/t-decline"
+  ],
+  "review_waits_for_owner": false
+ },
+ "raised": [],
+ "reading": "The review after the work did not wait for the owner (it routed on the admission given before the work), and the decline loop never asked the owner again: it was already refused at its bound when the first extra decline arrived."
+}

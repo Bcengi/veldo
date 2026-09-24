@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_enrollment.py
++++ b/.veldo/control_channel_enrollment.py
+@@ -204 +204 @@
+-    return {kid: {'kind': 'verification_key', 'data': dict(data, retired_at=at, retired_by=params['retired_by'])},
++    return {kid: {'kind': 'verification_key', 'data': dict(data, retired_at=at + 86400, retired_by=params['retired_by'])},

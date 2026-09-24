@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_enrollment.py
++++ b/.veldo/control_channel_enrollment.py
+@@ -311 +311 @@
+-            if not ok:
++            if False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_keys_custody.py
++++ b/.veldo/control_keys_custody.py
+@@ -120 +120 @@
+-    chain = set(protected)
++    chain = set()

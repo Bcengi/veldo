@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -154 +154 @@
+-        version = WF.head_version(conn, domain, repository, workflow) if WF._identifier(workflow) else 0
++        version = 1 if WF._identifier(workflow) and WF.head_version(conn, domain, repository, workflow) else 0  # defect: a new cycle binds the first revision

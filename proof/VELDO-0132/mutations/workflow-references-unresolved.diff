@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -365 +365 @@
+-            if not resolve(kind, ref):
++            if False:  # defect: a configuration reference is never looked up in the store

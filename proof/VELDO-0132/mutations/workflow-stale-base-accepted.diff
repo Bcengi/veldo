@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -482 +482 @@
+-    if params.get('base') != current:
++    if False:  # defect: an edit that did not see the head is accepted

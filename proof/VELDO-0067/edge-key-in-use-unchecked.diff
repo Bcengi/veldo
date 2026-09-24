@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_enrollment.py
++++ b/.veldo/control_channel_enrollment.py
+@@ -306 +306 @@
+-            if any(_key_text(params[f]) in held for f in ('public_key', 'connection_public_key')):
++            if False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -586 +586 @@
+-            if (data.get('domain'), data.get('repository')) == (self.domain, self.repository) and data['state'] == 'waiting':
++            if (data.get('domain'), data.get('repository')) == (self.domain, self.repository) and data['state'] == 'running':  # defect: waiting work is not listed

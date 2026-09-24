@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -317 +317 @@
+-        if 'max' not in edge:
++        if False:  # defect: a ring of unbounded transitions is not looked for

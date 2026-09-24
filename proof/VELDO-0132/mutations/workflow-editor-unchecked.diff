@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -473 +473 @@
+-    problem = editor_problem(conn, params.get('principal'), repository, params.get('now'))
++    problem = None  # defect: the editor is not judged
