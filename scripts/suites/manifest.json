@@ -653,6 +653,15 @@
    ],
    "regions": "Versioned Telegram presentation receipts, visible supersession and presentation-bound answers",
    "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and loopback HTTP."
+  },
+  {
+   "name": "63_veldo_0066_attribution",
+   "file": "63_veldo_0066_attribution.py",
+   "requires": [
+    "63_veldo_0066_attribution"
+   ],
+   "regions": "Canonical Telegram acquisition, stable-id sender attribution, presentation-bound answers and person-only authority",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and a loopback Bot API over HTTP."
   }
  ]
 }
