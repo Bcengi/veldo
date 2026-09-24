@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -207 +207 @@
+-                  stop=None if completed or status == 'refused' else
++                  stop=None if completed else

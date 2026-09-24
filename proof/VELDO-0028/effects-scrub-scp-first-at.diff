@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -99 +99 @@
+-    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]
++    rest = url[url.find('@', 0, len(url) if slash < 0 else slash) + 1:]

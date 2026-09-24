@@ -1,0 +1,11 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -157,5 +157,3 @@
+-    if previous:
+-        if previous['data']['request_digest'] != SIG.digest(request):
+-            raise Refused('request-content-conflict')
+-        return previous['data'], False
+-    nonce = hid
++    if previous and previous['data']['request_digest'] != SIG.digest(request):
++        raise Refused('request-content-conflict')
++    nonce = hid if previous else secrets.token_hex(20)

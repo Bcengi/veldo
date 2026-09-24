@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -193 +193 @@
+-        absent = set(payload['old_tip']) == {'0'}
++        absent = False

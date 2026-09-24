@@ -1,0 +1,20 @@
+Re-run of the checker's R5 scripts (harness pointed at this worktree) against 3f04a33.
+== p1_widen.py
+a: status=completed completed=True refs=refs/heads/main 3e9723287b1fe60a6bdc495772a8d08475fef8fe
+  push options the receiver saw: []
+  git remote lists: 'file:///tmp/r28-tc21jg12/b remote.git\n'
+b: status=unknown completed=False refs=refs/heads/main fd6d41f5a081e2f1355d63b34871b5a905a54ad0
+  elsewhere main=fd6d41f5a081 (old=fd6d41f5a081 tip=3e9723287b1f)
+  git remote lists: 'file:///tmp/r28-geboez4x/b2.git\n'
+b2: status=unknown completed=False refs=refs/heads/main 491c7f327cb041a4ce6fbbe7be9fbbf96c1963df
+  elsewhere main=491c7f327cb0 (old=491c7f327cb0 tip=b0f39c34e133)
+c: status=unknown completed=False refs=refs/heads/main 491c7f327cb041a4ce6fbbe7be9fbbf96c1963df  | refs/heads/side 491c7f327cb041a4ce6fbbe7be9fbbf96c1963df
+d: status=unknown completed=False refs=refs/heads/main a83baffe3809a410cc2bbbb9650c0520305d9f9b  | refs/tags/server-side e4d0f3c5123b0beb677baf378f688f072202b548
+e: status=unknown completed=False refs=refs/heads/main 7fda0c80c9b1738217928c99f2d9864b0f0ccc04
+  elsewhere refs: (none)
+== p2_capabilities.py
+global-insteadof: plain git push rc=0; executor status=completed completed=True remote main is tip=True
+global-credential-helper: plain git push rc=0; executor status=completed completed=True remote main is tip=True
+env-GIT_SSH_COMMAND: plain git push rc=0; executor status=completed completed=True remote main is tip=True
+global-core.sshCommand: plain git push rc=0; executor status=completed completed=True remote main is tip=True
+control-local-credential-helper: plain git push rc=0; executor status=completed completed=True remote main is tip=True

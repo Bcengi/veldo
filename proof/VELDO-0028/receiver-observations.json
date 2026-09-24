@@ -1,0 +1,268 @@
+[
+  {
+    "mode": "baseline",
+    "mutation": null,
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": true,
+        "completion/publication": true,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": true,
+        "nonce/publication": true,
+        "real-publication": true,
+        "scope/provider": true,
+        "scope/publication": true,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 6
+      },
+      "out_of_scope_calls": 0,
+      "provider_calls": 5,
+      "publication_calls": 5,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": true,
+      "effects/completion/publication": true,
+      "effects/nonce/provider": true,
+      "effects/nonce/publication": true,
+      "effects/scope/provider": true,
+      "effects/scope/publication": true
+    },
+    "subject_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca"
+  },
+  {
+    "mode": "mutant",
+    "mutation": "effects-worker-scope",
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": true,
+        "completion/publication": true,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": false,
+        "nonce/publication": false,
+        "real-publication": true,
+        "scope/provider": false,
+        "scope/publication": false,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 6
+      },
+      "out_of_scope_calls": 2,
+      "provider_calls": 4,
+      "publication_calls": 4,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": true,
+      "effects/completion/publication": true,
+      "effects/nonce/provider": false,
+      "effects/nonce/publication": false,
+      "effects/scope/provider": false,
+      "effects/scope/publication": false
+    },
+    "subject_sha256": "ab1d4216a14e912da821f4ed78aac294f3c8d5b5c1acab4596eeea45eef716db"
+  },
+  {
+    "mode": "mutant",
+    "mutation": "effects-overlong-handle",
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": true,
+        "completion/publication": true,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": true,
+        "nonce/publication": true,
+        "real-publication": true,
+        "scope/provider": false,
+        "scope/publication": false,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 6
+      },
+      "out_of_scope_calls": 0,
+      "provider_calls": 5,
+      "publication_calls": 5,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": true,
+      "effects/completion/publication": true,
+      "effects/nonce/provider": true,
+      "effects/nonce/publication": true,
+      "effects/scope/provider": false,
+      "effects/scope/publication": false
+    },
+    "subject_sha256": "d592ffc87cc0f5347a9e7619218a1d768bf7266bbf09e6242a7a33885aedc303"
+  },
+  {
+    "mode": "mutant",
+    "mutation": "effects-second-use-before-consumption",
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": false,
+        "completion/publication": false,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": false,
+        "nonce/publication": false,
+        "real-publication": false,
+        "scope/provider": true,
+        "scope/publication": true,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 7
+      },
+      "out_of_scope_calls": 0,
+      "provider_calls": 9,
+      "publication_calls": 9,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": false,
+      "effects/completion/publication": false,
+      "effects/nonce/provider": false,
+      "effects/nonce/publication": false,
+      "effects/scope/provider": true,
+      "effects/scope/publication": true
+    },
+    "subject_sha256": "740a397c73736dd74aa46764e2671a89844b26fd8bc72b156e18e07763a8ae60"
+  },
+  {
+    "mode": "mutant",
+    "mutation": "effects-changed-content-replay",
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": true,
+        "completion/publication": true,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": false,
+        "nonce/publication": false,
+        "real-publication": true,
+        "scope/provider": true,
+        "scope/publication": true,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 6
+      },
+      "out_of_scope_calls": 0,
+      "provider_calls": 5,
+      "publication_calls": 5,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": true,
+      "effects/completion/publication": true,
+      "effects/nonce/provider": false,
+      "effects/nonce/publication": false,
+      "effects/scope/provider": true,
+      "effects/scope/publication": true
+    },
+    "subject_sha256": "34036aa1686c18c05c286392bf07d7ed12f04e85924e7f1d2e6048a1796ec48f"
+  },
+  {
+    "mode": "mutant",
+    "mutation": "effects-acceptance-is-completion",
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": false,
+        "completion/publication": false,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": true,
+        "nonce/publication": true,
+        "real-publication": true,
+        "scope/provider": true,
+        "scope/publication": true,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 4
+      },
+      "out_of_scope_calls": 0,
+      "provider_calls": 5,
+      "publication_calls": 5,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": false,
+      "effects/completion/publication": false,
+      "effects/nonce/provider": true,
+      "effects/nonce/publication": true,
+      "effects/scope/provider": true,
+      "effects/scope/publication": true
+    },
+    "subject_sha256": "a853e2588fe6af0a8907660859e703ff7cef9fb623b6f8b5e8533c37479110e1"
+  },
+  {
+    "mode": "mutant",
+    "mutation": "effects-unbound-result",
+    "observations": {
+      "checks": {
+        "authenticated-ipc": true,
+        "completion/provider": false,
+        "completion/publication": false,
+        "current-authority/provider": true,
+        "current-authority/publication": true,
+        "nonce/provider": true,
+        "nonce/publication": true,
+        "real-publication": true,
+        "scope/provider": true,
+        "scope/publication": true,
+        "signed-store": true,
+        "worker-credential-read": true
+      },
+      "metrics": {
+        "accepted": 11,
+        "pending": 4
+      },
+      "out_of_scope_calls": 0,
+      "provider_calls": 5,
+      "publication_calls": 5,
+      "remote_commit_confirmed": true
+    },
+    "original_sha256": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "rows": {
+      "effects/completion/provider": false,
+      "effects/completion/publication": false,
+      "effects/nonce/provider": true,
+      "effects/nonce/publication": true,
+      "effects/scope/provider": true,
+      "effects/scope/publication": true
+    },
+    "subject_sha256": "9e99bea8f4e58410b5921597211476ef13de025357dd63ccdc2514eb5aa14612"
+  }
+]

@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -194 +194 @@
+-    matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)
++    matches = isinstance(observation, dict)

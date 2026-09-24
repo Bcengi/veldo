@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -168 +168 @@
+-        lines = shown.stdout[len(head):].split('\n') if shown.stdout.startswith(head) else []
++        lines = shown.stdout.split('\n')[1:]

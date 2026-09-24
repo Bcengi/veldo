@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -222 +222 @@
+-        result['destination'] = destination
++        pass

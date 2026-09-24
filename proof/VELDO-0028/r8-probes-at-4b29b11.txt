@@ -1,0 +1,106 @@
+Re-run of the R8 review's probes (p1_resolution.py, p1b_named_listing.py, p3_tip.py, p2_scrub.py and
+p4_scrub_unit.py with their harnesses h7.py and harness.py) against 4b29b11, unchanged, from a copy pointed
+at this worktree with RV_TREE. One line per case: verdict, label, then the status (`raised` is how the
+direct-call harness shows a refusal made before pushing) and the recorded destinations. Run directories
+are <run>, fixture credential strings <fixture-credential>. Remaining BUG lines are explained in
+README.md, review round R8.
+
+== p1_resolution.py
+ok: control plain URL | status=completed | destinations: <run>/ctl-A.git at-tip
+ok: two urls, pushInsteadOf on one | status=completed | destinations: <run>/pio-r-a.git at-tip
+ok: remote.pub.mirror=true | status=unknown | destinations: <run>/mir-A.git not-at-tip
+ok: remote.pushDefault=other | status=completed | destinations: <run>/pd-A.git at-tip
+ok: includeIf onbranch pushurl | status=completed | destinations: <run>/ib-B.git at-tip
+ok: includeIf hasconfig:remote.*.url pushurl | status=completed | destinations: <run>/hc-B.git at-tip
+ok: remote.pub.receivepack redirect | status=unknown | destinations: <run>/rp-A.git not-at-tip
+ok: URL-named section receivepack+uploadpack redirect | status=completed | destinations: <run>/rp2-A.git at-tip
+ok: insteadOf chain, honest A (stated limit) | status=raised (rerouted-destination) | destinations: none
+ok: insteadOf chain fan-out, A reports ok without updating | status=raised (rerouted-destination) | destinations: none
+ok: remote named like a resolved URL, fan-out, A reports ok without updating | status=unknown | destinations: <run>/rn-A.git not-at-tip, <run>/rn-B.git at-tip
+ok: remote named like a resolved URL, single honest destination | status=completed | destinations: <run>/rn2-A.git at-tip
+ok: remotes/ file named like a slashless scp destination, fan-out, liar | status=raised (rerouted-destination) | destinations: none
+ok: newline in an injected url subsection | status=raised (invalid-input) | destinations: none
+== p1b_named_listing.py
+ok: control plain URL | status=completed | destinations: <run>/ctl-A.git at-tip
+ok: two urls, pushInsteadOf on one | status=completed | destinations: <run>/pio-r-a.git at-tip
+ok: remote.pub.mirror=true | status=unknown | destinations: <run>/mir-A.git not-at-tip
+ok: remote.pushDefault=other | status=completed | destinations: <run>/pd-A.git at-tip
+ok: includeIf onbranch pushurl | status=completed | destinations: <run>/ib-B.git at-tip
+ok: includeIf hasconfig:remote.*.url pushurl | status=completed | destinations: <run>/hc-B.git at-tip
+ok: remote.pub.receivepack redirect | status=unknown | destinations: <run>/rp-A.git not-at-tip
+ok: URL-named section receivepack+uploadpack redirect | status=completed | destinations: <run>/rp2-A.git at-tip
+ok: insteadOf chain, honest A (stated limit) | status=raised (rerouted-destination) | destinations: none
+ok: insteadOf chain fan-out, A reports ok without updating | status=raised (rerouted-destination) | destinations: none
+ok: remote named like a resolved URL, fan-out, A reports ok without updating | status=unknown | destinations: <run>/rn-A.git not-at-tip, <run>/rn-B.git at-tip
+ok: remote named like a resolved URL, single honest destination | status=completed | destinations: <run>/rn2-A.git at-tip
+ok: remotes/ file named like a slashless scp destination, fan-out, liar | status=raised (rerouted-destination) | destinations: none
+ok: newline in an injected url subsection | status=raised (invalid-input) | destinations: none
+ok: section named like a resolved file:// URL, fan-out, A reports ok without updating | status=raised (rerouted-destination) | destinations: none
+ok: section named like a resolved file:// URL, single honest destination | status=raised (rerouted-destination) | destinations: none
+== p3_tip.py
+ok: ref creation lands but never completes | status=completed | destinations: <run>/create.git at-tip
+ok: push runs although the destination could not be listed before it | status=raised | destinations: none
+ok: partial fan-out push although a destination was known not at the old tip before pushing | status=raised | destinations: none
+BUG: server-created side ref makes a landed push not-at-tip | status=unknown | destinations: <run>/serverref.git not-at-tip
+BUG: push to a remote symbolic ref lands but is not-at-tip | status=unknown | destinations: <run>/symref-target.git not-at-tip
+BUG: protocol v0 hides non-HEAD symref targets: landed push not-at-tip | status=unknown | destinations: <run>/v0.git not-at-tip
+ok: info: protocol v2, non-HEAD symref alias->main | status=completed | destinations: none
+ok: info: another actor lands the same tip first | status=unknown | destinations: <run>/sametip.git at-tip
+ok: info: liar destination, another actor moved the ref to the same tip | status=unknown | destinations: <run>/liar-race.git not-at-tip
+== p2_scrub.py
+ok: scrub https-user-password | status=completed | destinations: veldotest://host<run>/p2-https-user-password.git at-tip
+ok: scrub https-password-with-at-and-colon | status=completed | destinations: veldotest://host<run>/p2-https-password-with-at-and-colon.git at-tip
+ok: scrub percent-encoded-userinfo | status=completed | destinations: veldotest://host<run>/p2-percent-encoded-userinfo.git at-tip
+ok: scrub ipv6-scheme | status=completed | destinations: veldotest://[::1]:8443<run>/p2-ipv6-scheme.git at-tip
+ok: scrub ssh-user-port | status=completed | destinations: ssh://host:2222<run>/p2-ssh-user-port.git at-tip
+ok: scrub ssh-user-password-port | status=completed | destinations: ssh://host:2222<run>/p2-ssh-user-password-port.git at-tip
+ok: scrub ssh-ipv6 | status=completed | destinations: ssh://[::1]:22<run>/p2-ssh-ipv6.git at-tip
+ok: scrub scp-user | status=completed | destinations: host:<run>/p2-scp-user.git at-tip
+ok: scrub scp-ipv6 | status=completed | destinations: [::1]:<run>/p2-scp-ipv6.git at-tip
+ok: scrub scp-user-with-at | status=completed | destinations: host:<run>/p2-scp-user-with-at.git at-tip
+ok: scrub transport-prefix-scheme | status=completed | destinations: veldotest::https://host<run>/p2-transport-prefix-scheme.git at-tip
+ok: scrub transport-prefix-ssh | status=completed | destinations: veldotest::ssh://host<run>/p2-transport-prefix-ssh.git at-tip
+ok: scrub file-url | status=completed | destinations: file://<run>/p2-file-url.git at-tip
+ok: scrub local-path | status=completed | destinations: <run>/p2-local-path.git at-tip
+ok: scrub token-in-query | status=completed | destinations: veldotest://host<run>/p2-token-in-query.git at-tip
+ok: scrub insteadOf-injected credentials in a transport-prefixed rewrite | status=completed | destinations: veldotest::https://host<run>/p2-insteadof-creds.git at-tip
+== p4_scrub_unit.py
+ok: pw %2F 'https://<fixture-credential>:<fixture-credential>%2Fx@h/r.git' -> 'https://h/r.git'
+ok: pw %3F 'https://<fixture-credential>:<fixture-credential>%3Fx@h/r.git' -> 'https://h/r.git'
+ok: pw %23 'https://<fixture-credential>:<fixture-credential>%23x@h/r.git' -> 'https://h/r.git'
+ok: pw %40 'https://<fixture-credential>:<fixture-credential>%40x@h/r.git' -> 'https://h/r.git'
+ok: pw %25 'https://<fixture-credential>:<fixture-credential>%25x@h/r.git' -> 'https://h/r.git'
+ok: pw %3A 'https://<fixture-credential>:<fixture-credential>%3Ax@h/r.git' -> 'https://h/r.git'
+ok: user %40 in user 'https://<fixture-credential>%40corp.com:<fixture-credential>@h/r.git' -> 'https://h/r.git'
+ok: pw raw @ twice 'https://<fixture-credential>:<fixture-credential>@x@y@h/r.git' -> 'https://h/r.git'
+ok: pw raw : 'https://<fixture-credential>:<fixture-credential>:PW@h/r.git' -> 'https://h/r.git'
+ok: pw raw [ ] 'https://<fixture-credential>:<fixture-credential>[]@h/r.git' -> 'https://h/r.git'
+ok: pw raw space 'https://<fixture-credential>:<fixture-credential> PW@h/r.git' -> 'https://h/r.git'
+ok: pw raw unicode 'https://<fixture-credential>:<fixture-credential>é@h/r.git' -> 'https://h/r.git'
+ok: pw raw / 'https://<fixture-credential>:<fixture-credential>/PW@h/r.git' -> 'https://<unparsed>'
+ok: pw raw ? 'https://<fixture-credential>:<fixture-credential>?PW@h/r.git' -> 'https://<unparsed>'
+ok: pw raw # 'https://<fixture-credential>:<fixture-credential>#PW@h/r.git' -> 'https://<unparsed>'
+ok: pw raw \ 'https://<fixture-credential>:<fixture-credential>\\PW@h/r.git' -> 'https://h/r.git'
+ok: uppercase scheme 'HTTPS://<fixture-credential>:<fixture-credential>@h/r.git' -> 'HTTPS://h/r.git'
+ok: git+ssh 'git+ssh://<fixture-credential>@h/r.git' -> 'git+ssh://h/r.git'
+ok: ssh port ipv6 'ssh://<fixture-credential>:<fixture-credential>@[::1]:22/r.git' -> 'ssh://[::1]:22/r.git'
+ok: bracketed user inside host (ssh) 'ssh://[<fixture-credential>@h:22]/r.git' -> 'ssh://<unparsed>'
+ok: scp bracketed user '[<fixture-credential>@h:22]:r.git' -> 'h:22]:r.git'
+ok: scp user:pw '<fixture-credential>:<fixture-credential>@h:r.git' -> 'h:r.git'
+ok: scp double @ 'a@<fixture-credential>@h:r.git' -> 'h:r.git'
+ok: empty host 'https://<fixture-credential>:<fixture-credential>@/r.git' -> 'https:///r.git'
+ok: userinfo only 'https://<fixture-credential>:<fixture-credential>@' -> 'https://'
+ok: query token 'https://h/r.git?access_token=<fixture-credential>' -> 'https://h/r.git'
+ok: fragment token 'https://h/r.git#<fixture-credential>' -> 'https://h/r.git'
+ok: query without path 'https://h?<fixture-credential>' -> 'https://h'
+ok: query then @ 'https://h?x=<fixture-credential>@y' -> 'https://h'
+ok: transport prefix nested 'a::b::https://<fixture-credential>:<fixture-credential>@h/r' -> 'a::b::https://h/r'
+ok: transport prefix scp 'veldotest::<fixture-credential>@h:r.git' -> 'veldotest::h:r.git'
+ok: file with userinfo 'file://<fixture-credential>:<fixture-credential>@h/r.git' -> 'file://h/r.git'
+stated: file query (literal path) 'file:///r.git?<fixture-credential>' -> 'file:///r.git?<fixture-credential>'
+ok: ext:: command (protocol off by default) "ext::ssh -l <fixture-credential> h 'git-receive-pack r'" -> 'ext::<command>'
+ok: ext:: with password arg 'ext::sh -c "curl -u <fixture-credential>:<fixture-credential> h" %S' -> 'ext::<command>'
+ok: surrogate byte 'https://<fixture-credential>:<fixture-credential>\udcff@h/r.git' -> 'https://h/r.git'
+ok: tab in userinfo 'https://<fixture-credential>:<fixture-credential>\tPW@h/r.git' -> 'https://h/r.git'
+ok: userinfo before host with no path 'https://<fixture-credential>:<fixture-credential>@h' -> 'https://h'
+ok: scheme-looking scp user 'ssh:<fixture-credential>@h:r.git' -> 'h:r.git'

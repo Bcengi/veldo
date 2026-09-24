@@ -1,0 +1,8 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -194 +194 @@
+-        before = [remote_refs(url) for url in pushed]
++        before = [remote_refs(remote) for url in pushed]
+@@ -219 +219 @@
+-            after = remote_refs(url)
++            after = remote_refs(remote)

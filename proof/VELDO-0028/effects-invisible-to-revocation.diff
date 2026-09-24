@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -171 +171 @@
+-                {'effect_id': rid, 'principal': principal, 'receiver': contract['target'],
++                {'effect_id': rid, 'principal': 'effect-executor', 'receiver': contract['target'],

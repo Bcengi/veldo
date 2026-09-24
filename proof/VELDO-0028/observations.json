@@ -1,0 +1,24 @@
+{
+  "checks": {
+    "authenticated-ipc": true,
+    "completion/provider": true,
+    "completion/publication": true,
+    "current-authority/provider": true,
+    "current-authority/publication": true,
+    "nonce/provider": true,
+    "nonce/publication": true,
+    "real-publication": true,
+    "scope/provider": true,
+    "scope/publication": true,
+    "signed-store": true,
+    "worker-credential-read": true
+  },
+  "metrics": {
+    "accepted": 11,
+    "pending": 6
+  },
+  "out_of_scope_calls": 0,
+  "provider_calls": 5,
+  "publication_calls": 5,
+  "remote_commit_confirmed": true
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/git_process.py
++++ b/.veldo/git_process.py
+@@ -69 +69 @@
+-        result.update(GIT_NO_REPLACE_OBJECTS="1")
++        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")

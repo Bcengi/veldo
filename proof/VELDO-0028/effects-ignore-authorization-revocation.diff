@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -71 +71 @@
+-    if revoked(conn, principal, now):
++    if False:

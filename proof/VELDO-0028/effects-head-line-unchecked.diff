@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -175 +175 @@
+-                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
++                or False):

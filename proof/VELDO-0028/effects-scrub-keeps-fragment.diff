@@ -1,0 +1,4 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -78 +77,0 @@
+-            tail = tail.partition('#')[0]

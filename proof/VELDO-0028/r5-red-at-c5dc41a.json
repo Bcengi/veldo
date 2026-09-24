@@ -1,0 +1,112 @@
+{
+ "description": "Suite 58 at 3f04a33 run with .veldo/control_effect_executor.py, .veldo/git_process.py and .veldo/control_effects.py taken from c5dc41a (a copy of the tree, the worktree untouched). The seven R5 rows fail by assertion; every earlier row passes.",
+ "earlier_rows_green": true,
+ "failed_rows": [
+  "VELDO-0028 effects/publication-push-options",
+  "VELDO-0028 effects/publication-push-reaches-only-authorized-url",
+  "VELDO-0028 effects/publication-global-insteadof",
+  "VELDO-0028 effects/publication-global-credential-helper",
+  "VELDO-0028 effects/publication-env-ssh-command",
+  "VELDO-0028 effects/publication-global-ssh-command",
+  "VELDO-0028 effects/publication-network-profile-strips-coordinates"
+ ],
+ "r5_observations": {
+  "env-ssh-command": {
+   "completed": false,
+   "ssh_ran": false,
+   "status": "unknown"
+  },
+  "global-credential-helper": {
+   "completed": false,
+   "status": "unknown",
+   "unauthenticated_refused": true
+  },
+  "global-insteadof": {
+   "completed": false,
+   "status": "unknown"
+  },
+  "global-ssh-command": {
+   "completed": false,
+   "ssh_ran": false,
+   "status": "unknown"
+  },
+  "network-coordinates": {
+   "completed": true,
+   "elsewhere_moved": false,
+   "namespaced": "",
+   "network_profile_kept": null,
+   "status": "completed"
+  },
+  "push-options": {
+   "completed": true,
+   "receiver_saw": [
+    [
+     "count=2",
+     "merge_request.create",
+     "ci.skip"
+    ],
+    [
+     "count=2",
+     "merge_request.create",
+     "ci.skip"
+    ]
+   ],
+   "status": "completed"
+  },
+  "redirect-branches-file": {
+   "authorized_moved": false,
+   "completed": true,
+   "elsewhere_moved": true,
+   "status": "completed"
+  },
+  "redirect-global-push-instead-of": {
+   "authorized_moved": true,
+   "completed": true,
+   "elsewhere_moved": false,
+   "status": "completed"
+  },
+  "redirect-other-remote-control": {
+   "authorized_moved": true,
+   "completed": true,
+   "elsewhere_moved": false,
+   "status": "completed"
+  },
+  "redirect-push-instead-of": {
+   "authorized_moved": false,
+   "completed": false,
+   "elsewhere_moved": true,
+   "status": "unknown"
+  },
+  "redirect-pushurl-only": {
+   "authorized_moved": false,
+   "completed": false,
+   "elsewhere_moved": false,
+   "status": "unknown"
+  },
+  "redirect-remotes-file": {
+   "authorized_moved": false,
+   "completed": true,
+   "elsewhere_moved": true,
+   "status": "completed"
+  },
+  "redirect-space-section": {
+   "authorized_moved": false,
+   "completed": false,
+   "elsewhere_moved": true,
+   "status": "unknown"
+  }
+ },
+ "r5_rows_red": [
+  "publication-env-ssh-command",
+  "publication-global-credential-helper",
+  "publication-global-insteadof",
+  "publication-global-ssh-command",
+  "publication-network-profile-strips-coordinates",
+  "publication-push-options",
+  "publication-push-reaches-only-authorized-url"
+ ],
+ "summary": [
+  "58_veldo_0028_effects                           21 passed   15.49s",
+  "selftest (PARTIAL, 1 of 65 suites): 47 passed, 7 failed in 15.49s"
+ ]
+}

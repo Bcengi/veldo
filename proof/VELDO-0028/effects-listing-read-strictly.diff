@@ -1,0 +1,4 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -134,0 +135 @@
++            listed.stdout.encode('utf-8')

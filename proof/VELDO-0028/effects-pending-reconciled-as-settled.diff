@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -230 +230 @@
+-        if completed or status == 'refused':
++        if status in ('accepted', 'completed'):

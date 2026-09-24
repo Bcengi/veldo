@@ -1,0 +1,5 @@
+--- a/.veldo/git_process.py
++++ b/.veldo/git_process.py
+@@ -63 +63 @@
+-        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})
++        result.update({k: v for k, v in source.items() if k.startswith("GIT_")})

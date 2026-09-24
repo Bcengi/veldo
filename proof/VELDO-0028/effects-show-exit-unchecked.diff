@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -174 +174 @@
+-        if (shown.returncode or not lines or not lines[0].startswith('  Fetch URL: ') or not pushed
++        if (not lines or not lines[0].startswith('  Fetch URL: ') or not pushed

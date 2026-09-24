@@ -1,0 +1,236 @@
+{
+ "checks_observed": 55,
+ "description": "Suite 58 at 4b29b11 run with .veldo/control_effect_executor.py, .veldo/control_effects.py and .veldo/git_process.py taken from 9774c65 (a copy of the tree, the worktree untouched). The suite ran every row. Of the ten R8 rows, seven fail by assertion; the three that pass there pin rules 9774c65 already kept (a clean push exit, the C locale) or a limit a suite row cannot exceed in its time (the fixed 20 s and 50 s limits; see r8-slow-push.txt for that defect reproduced at 9774c65 in real time). The two rewritten rows fail because they now expect the named refusal. Every other row passes. Suite directories are <suite-dir>, fixture credential strings <fixture-credential>.",
+ "failed_rows": [
+  "VELDO-0028 effects/publication-records-resolved-destination",
+  "VELDO-0028 effects/publication-refused-when-not-at-old-tip",
+  "VELDO-0028 effects/publication-refusal-reaches-caller",
+  "VELDO-0028 effects/publication-ref-creation",
+  "VELDO-0028 effects/publication-destination-listed-as-resolved",
+  "VELDO-0028 effects/publication-scrub-malformed-address",
+  "VELDO-0028 effects/publication-line-break-refused",
+  "VELDO-0028 effects/publication-resolution-output-checked",
+  "VELDO-0028 effects/publication-config-selection-parity"
+ ],
+ "new_rows_green_at_9774c65": [
+  "publication-call-covers-every-destination",
+  "publication-requires-clean-push-exit",
+  "publication-resolution-in-c-locale"
+ ],
+ "new_rows_red": [
+  "publication-destination-listed-as-resolved",
+  "publication-line-break-refused",
+  "publication-ref-creation",
+  "publication-refusal-reaches-caller",
+  "publication-refused-when-not-at-old-tip",
+  "publication-resolution-output-checked",
+  "publication-scrub-malformed-address"
+ ],
+ "observations": {
+  "break-pushurl": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "break-remote": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "create": {
+   "completed": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/create-remote.git",
+    "destinations": [
+     {
+      "outcome": "not-at-tip",
+      "url": "file://<suite-dir>/create-remote.git"
+     },
+     {
+      "outcome": "not-at-tip",
+      "url": "<suite-dir>/create-elsewhere.git"
+     }
+    ]
+   },
+   "status": "unknown"
+  },
+  "create-existing": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "hook-then-fail": {
+   "completed": false,
+   "destination": {
+    "authorized_url": "<suite-dir>/hook-then-fail-remote.git",
+    "destinations": [
+     {
+      "outcome": "at-tip",
+      "url": "<suite-dir>/hook-then-fail-remote.git"
+     }
+    ]
+   },
+   "status": "unknown"
+  },
+  "reroute-insteadof-chain": {
+   "completed": false,
+   "moved": [
+    false,
+    true,
+    false
+   ],
+   "refusal": null,
+   "status": "unknown"
+  },
+  "reroute-legacy-file": {
+   "completed": false,
+   "moved": [
+    true,
+    true,
+    false
+   ],
+   "refusal": null,
+   "status": "unknown"
+  },
+  "reroute-section": {
+   "completed": false,
+   "moved": [
+    true,
+    true,
+    false
+   ],
+   "refusal": null,
+   "status": "unknown"
+  },
+  "route-fan-out-stale": {
+   "authorized_moved": true,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-fan-out-stale-remote.git",
+    "destinations": [
+     {
+      "outcome": "at-tip",
+      "url": "file://<suite-dir>/route-fan-out-stale-remote.git"
+     },
+     {
+      "outcome": "not-at-tip",
+      "url": "<suite-dir>/route-fan-out-stale-elsewhere.git"
+     }
+    ]
+   },
+   "status": "unknown"
+  },
+  "route-fan-out-unreachable": {
+   "authorized_moved": true,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-fan-out-unreachable-remote.git",
+    "destinations": [
+     {
+      "outcome": "at-tip",
+      "url": "file://<suite-dir>/route-fan-out-unreachable-remote.git"
+     },
+     {
+      "outcome": "unreachable",
+      "url": "<suite-dir>/route-no-such.git"
+     }
+    ]
+   },
+   "status": "unknown"
+  },
+  "scrub-ext": {
+   "completed": true,
+   "destination": {
+    "authorized_url": "ext::env V28_TOKEN=<fixture-credential> git %s <suite-dir>/scrub-ext-remote.git",
+    "destinations": [
+     {
+      "outcome": "at-tip",
+      "url": "ext::env V28_TOKEN=<fixture-credential> git %s <suite-dir>/scrub-ext-remote.git"
+     }
+    ]
+   },
+   "status": "completed"
+  },
+  "scrub-table": {
+   "completed": null,
+   "mismatches": {
+    "<fixture-credential>:<fixture-credential>@deploy-host:repo.git": "<fixture-credential>:<fixture-credential>@deploy-host:repo.git",
+    "deploy-host:repo@<fixture-credential>.git": "deploy-host:repo@<fixture-credential>.git",
+    "ext::sh -c 'curl -u <fixture-credential>:<fixture-credential> h' %S": "ext::sh -c 'curl -u <fixture-credential>:<fixture-credential> h' %S",
+    "https://<fixture-credential>/<fixture-credential>@h/r.git": "https://<fixture-credential>/<fixture-credential>@h/r.git",
+    "https://<fixture-credential>:<fixture-credential>/PW@h/r.git": "https://<fixture-credential>:<fixture-credential>/PW@h/r.git",
+    "https://<fixture-credential>:<fixture-credential>?PW@h/r.git": "https://<fixture-credential>:<fixture-credential>",
+    "ssh://[<fixture-credential>@h:22]/r.git": "ssh://h:22]/r.git",
+    "ssh:<fixture-credential>@deploy-host:repo.git": "ssh:<fixture-credential>@deploy-host:repo.git",
+    "veldotest::ext::sh <fixture-credential>": "veldotest::ext::sh <fixture-credential>"
+   },
+   "status": null
+  },
+  "shape-config-exit": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "shape-extra": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "shape-header": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "shape-show-exit": {
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "shape-translated": {
+   "completed": true,
+   "refusal": null,
+   "status": "completed"
+  },
+  "slow-fan-out": {
+   "completed": true,
+   "seconds": 6.2,
+   "status": "completed",
+   "supervisor_refusal": null
+  },
+  "stale-fan-out": {
+   "accepted": true,
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "stale-replay": {
+   "completed": false,
+   "refusal": null,
+   "replay_refusal": null,
+   "status": "unknown"
+  },
+  "stale-single": {
+   "accepted": true,
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  },
+  "stale-unlisted": {
+   "accepted": true,
+   "completed": false,
+   "refusal": null,
+   "status": "unknown"
+  }
+ },
+ "other_rows_green": true,
+ "rewritten_rows_red": [
+  "publication-config-selection-parity",
+  "publication-records-resolved-destination"
+ ],
+ "summary": [
+  "  58_veldo_0028_effects                           40 passed   30.93s",
+  "selftest (PARTIAL, 1 of 73 suites): 66 passed, 9 failed in 30.93s"
+ ]
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -166 +166 @@
+-        shown = transport('remote', 'show', '-n', '--', remote, env=dict(os.environ, LC_ALL='C'))
++        shown = git('remote', 'show', '-n', '--', remote, env=dict(os.environ, LC_ALL='C'))

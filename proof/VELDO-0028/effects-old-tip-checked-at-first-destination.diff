@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -196 +196 @@
+-               for state in before):
++               for state in before[:1]):

@@ -1,0 +1,41 @@
+Re-run of the R7 reviewer's probes (p1_destination_read.py, p2_scrub.py, p3_fanout.py with their shared
+harness.py) against 2fc4eac, from a copy pointed at this worktree with RV_TREE. One adapter was added to
+the harness copy: the scripts read the old record key `pushed_urls`, so it is filled with each resolved
+destination's URL in order; nothing else was changed. Per case: the script's verdict and label, the
+status, and each recorded destination with its outcome. Run directories are shown as <run> and fixture
+credential strings as <fixture-credential>. Every remaining BUG line is explained in README.md, review
+round R7.
+
+== p1_destination_read.py
+ok: 1a correct push, hook prints text without a trailing newline | status=completed | destinations: <run>/1a.git at-tip
+BUG: 1b pushurl route to X read completed via hook-forged To block | status=completed | destinations: <run>/1b-X.git at-tip
+ok: 1c hook text hides the real destination X from the record | status=completed | destinations: <run>/1c-X.git at-tip
+ok: 1d server-side hook text reaches the destination read | status=completed | destinations: <run>/1d.git at-tip
+BUG: 1e fan-out with a talking hook | status=completed | destinations: <run>/1e.git at-tip, <run>/1e-X.git at-tip
+ok: 1f newline in the destination path records a destination the push never used | status=raised | destinations: none
+BUG: 1g server proc-receive report forges the destination; pushurl route to X read completed | status=completed | destinations: <run>/1g-X.git at-tip
+ok: 1h hook prints a Latin-1 byte: push moves the remote, record loses the destination | status=completed | destinations: <run>/1h.git at-tip
+== p2_scrub.py
+ok: scrub https-user-password | status=completed | destinations: veldotest://host<run>/p2-https-user-password.git at-tip
+ok: scrub https-password-with-at-and-colon | status=completed | destinations: veldotest://host<run>/p2-https-password-with-at-and-colon.git at-tip
+ok: scrub percent-encoded-userinfo | status=completed | destinations: veldotest://host<run>/p2-percent-encoded-userinfo.git at-tip
+ok: scrub ipv6-scheme | status=completed | destinations: veldotest://[::1]:8443<run>/p2-ipv6-scheme.git at-tip
+ok: scrub ssh-user-port | status=completed | destinations: ssh://host:2222<run>/p2-ssh-user-port.git at-tip
+ok: scrub ssh-user-password-port | status=completed | destinations: ssh://host:2222<run>/p2-ssh-user-password-port.git at-tip
+ok: scrub ssh-ipv6 | status=completed | destinations: ssh://[::1]:22<run>/p2-ssh-ipv6.git at-tip
+ok: scrub scp-user | status=completed | destinations: host:<run>/p2-scp-user.git at-tip
+ok: scrub scp-ipv6 | status=completed | destinations: [::1]:<run>/p2-scp-ipv6.git at-tip
+ok: scrub scp-user-with-at | status=completed | destinations: host:<run>/p2-scp-user-with-at.git at-tip
+ok: scrub transport-prefix-scheme | status=completed | destinations: veldotest::https://host<run>/p2-transport-prefix-scheme.git at-tip
+ok: scrub transport-prefix-ssh | status=completed | destinations: veldotest::ssh://host<run>/p2-transport-prefix-ssh.git at-tip
+ok: scrub file-url | status=completed | destinations: file://<run>/p2-file-url.git at-tip
+ok: scrub local-path | status=completed | destinations: <run>/p2-local-path.git at-tip
+ok: scrub token-in-query | status=completed | destinations: veldotest://host<run>/p2-token-in-query.git at-tip
+ok: scrub insteadOf-injected credentials in a transport-prefixed rewrite | status=completed | destinations: veldotest::https://host<run>/p2-insteadof-creds.git at-tip
+== p3_fanout.py
+BUG: 3a two pushurls both accept | status=completed | destinations: <run>/3a.git at-tip, <run>/3a-X.git at-tip
+ok: 3b second pushurl rejects the lease | status=unknown | destinations: <run>/3b.git at-tip, <run>/3b-X.git not-at-tip
+ok: 3c second pushurl unreachable | status=unknown | destinations: <run>/3c.git at-tip, <run>/no-such.git unreachable
+BUG: 3d two url values | status=completed | destinations: file://<run>/3d.git at-tip, <run>/3d-X.git at-tip
+BUG: 3e second pushurl accepts and reports another refname (AGit-style proc-receive) | status=unknown | destinations: file://<run>/3e.git at-tip, <run>/3e-X.git not-at-tip
+X refs/changes/1 = True

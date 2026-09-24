@@ -31,9 +31,14 @@ FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
 def cases():
     result = []
 
-    def add(finding, name, suite, module, old, new, rows):
-        result.append(dict(finding=finding, name=name, suite=suite, module=module,
-                           old=old, new=new, rows=rows))
+    def add(finding, name, suite, module, old, new, rows, also=()):
+        case = dict(finding=finding, name=name, suite=suite, module=module,
+                    old=old, new=new, rows=rows)
+        if also:
+            # Further exact replacements in the same module, for a defect that one edit cannot
+            # reintroduce because the fixed code guards it in several places.
+            case['also'] = [list(pair) for pair in also]
+        result.append(case)
 
     def signature(name, old, new, rows):
         add(1, name, '47_veldo_0107_ipc.py', 'control_client.py', old, new, rows)
@@ -280,6 +285,288 @@ def cases():
     signing('signing-ignore-coordinate-problems', 'control_signer.py', envelope_check,
             "        if any('wrong repository, domain or store' not in problem for problem in problems):\n"
             "            raise K.Refused('missing-attribution')", 'personal-foreign/domain_uuid')
+    def effect(name, old, new, criterion, also=()):
+        add(28, name, '58_veldo_0028_effects.py', 'control_effects.py', old, new,
+            ['effects/' + criterion + '/' + kind for kind in ('provider', 'publication')], also)
+    scope = "    if any(request.get(f) != contract[f] for f in BINDINGS):\n        raise Refused('scope-mismatch')"
+    effect('effects-worker-scope', scope,
+           "    contract = dict(contract, **{f: request[f] for f in BINDINGS})\n    entry = dict(entry, data=contract)", 'scope')
+    effect('effects-overlong-handle', "expires_at=min(contract['deadline'] + 900, time.time() + 900)",
+           "expires_at=contract['deadline'] + 901", 'scope')
+    replay = """    if previous:
+        if previous['data']['request_digest'] != SIG.digest(request):
+            raise Refused('request-content-conflict')
+        return previous['data'], False
+    nonce = hid"""
+    effect('effects-second-use-before-consumption', replay,
+           """    if previous and previous['data']['request_digest'] != SIG.digest(request):
+        raise Refused('request-content-conflict')
+    nonce = hid if previous else secrets.token_hex(20)""", 'nonce')
+    effect('effects-changed-content-replay', "        if previous['data']['request_digest'] != SIG.digest(request):",
+           "        if False:", 'nonce')
+    effect('effects-acceptance-is-completion', "    completed = status == 'completed' and bool(observation.get('evidence'))",
+           "    completed = status in ('accepted', 'completed') and bool(observation.get('evidence'))", 'completion')
+    effect('effects-unbound-result', "    matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)",
+           "    matches = isinstance(observation, dict)", 'completion')
+    revocation = "    if revoked(conn, principal, now):\n        raise Refused('revoked')"
+    effect('effects-ignore-authorization-revocation', revocation,
+           "    if False:\n        raise Refused('revoked')", 'revocation-committed')
+    # Acceptance is ordered against revocation by VELDO-0026's accept_effect inside the store
+    # transaction, with the ledger a declared version. Checking only the preflight means undoing
+    # that ordering too: no revocable effect, no ledger declaration, no reconciliation.
+    v26_accept = ("            changes = dict(S.COMMAND_REGISTRY['accept_effect']['transition'](\n"
+                  "                {'effect_id': rid, 'principal': principal, 'receiver': contract['target'],\n"
+                  "                 'kind': contract['kind'], 'at': time.time()}, before))")
+    v26_reconcile = "        if completed or status == 'refused':\n            changes.update("
+    effect('effects-revocation-preflight-only', revocation,
+           "    if not consume and revoked(conn, principal, now):\n        raise Refused('revoked')", 'revocation-before-transaction',
+           also=[(v26_accept, "            changes = {}"),
+                 ("{'new_ids': [eid, rid, R.LEDGER_ENTITY]}", "{'new_ids': [eid]}"),
+                 (v26_reconcile, "        if False:\n            changes.update(")])
+    # R3 A: an accepted protected effect is in flight for VELDO-0026's revocation accounting.
+    effect('effects-invisible-to-revocation', v26_accept,
+           v26_accept.replace("'principal': principal,", "'principal': 'effect-executor',"), 'revocation-in-flight')
+    effect('effects-pending-reconciled-as-settled', v26_reconcile,
+           "        if status in ('accepted', 'completed'):\n            changes.update(", 'revocation-in-flight')
+    # R3 B: a committed ledger entry applies from its commit, whatever its timestamp.
+    ledger_read = "    return principal in R.ledger(S, conn)[0]['revoked'] or R.is_revoked(S, conn, principal, now)"
+    effect('effects-future-dated-revocation-waits', ledger_read,
+           "    return R.is_revoked(S, conn, principal, now)", 'revocation-future-dated')
+    effect('effects-revocation-skew-allowance', ledger_read,
+           "    return R.ledger(S, conn)[0]['revoked'].get(principal, {}).get('at', now + 2) <= now + 1 or R.is_revoked(S, conn, principal, now)",
+           'revocation-future-dated')
+    # R3 E: a review by a revoked principal satisfies nothing.
+    reviewer = "        if revoked(conn, data['reviewer'], now):"
+    add(28, 'effects-revoked-reviewer-accepted', '58_veldo_0028_effects.py', 'control_effects.py', reviewer,
+        "        if False:", ['effects/publication-revoked-reviewer'])
+    add(28, 'effects-reviewer-membership-only', '58_veldo_0028_effects.py', 'control_effects.py', reviewer,
+        "        if state.get(data['reviewer'], {}).get('data', {}).get('revoked_at') is not None:",
+        ['effects/publication-revoked-reviewer'])
+    receiver_refused = ("            if isinstance(observation, dict) and observation.get('status') == 'refused':\n"
+                        "                # A receiver that ran may already have acted, so its own \"refused\" is not\n"
+                        "                # conclusive and its text is not repeated: recorded as unknown, a stop owed.\n"
+                        "                observation = dict(accepted, status='unknown', evidence=None)\n")
+    for name, new, kinds in (('effects-receiver-refused-conclusive', '', ('provider', 'publication')),
+                             ('effects-receiver-refused-provider-only',
+                              receiver_refused.replace("== 'refused':", "== 'refused' and contract.get('kind') == 'provider':"),
+                              ('publication',))):
+        add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', receiver_refused, new,
+            ['effects/receiver-refused-is-unknown/' + kind for kind in kinds])
+    def publication(name, old, new, criterion):
+        add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
+            ['effects/' + criterion])
+    push = ("        push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',\n"
+            "                         '--no-follow-tags', '--recurse-submodules=no',")
+    publication('effects-push-widened-by-clone-config', push,
+                "        push = transport('push', '--porcelain',\n                         '--recurse-submodules=no',", 'publication-exact-ref')
+    publication('effects-push-follows-tags', push,
+                push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
+    confirm = "after == expected else 'not-at-tip'"
+    publication('effects-confirm-authorized-ref-only', confirm,
+                "after.get(ref) == payload['commit'] else 'not-at-tip'", 'publication-confirms-one-change')
+    publication('effects-confirm-ignores-new-refs', confirm,
+                "all(after.get(k) == v for k, v in expected.items()) else 'not-at-tip'",
+                'publication-confirms-one-change')
+    # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
+    # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
+    send_pack = "        push = transport('send-pack',"
+    add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
+        ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
+    publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
+                'publication-pre-push-hook')
+    newline_remote = "        if '\\n' in remote:\n"
+    publication('effects-remote-must-exist-verbatim', newline_remote,
+                "        if '\\n' in remote or not (Path(remote).exists() or '://' in remote):\n", 'publication-url-rewrite')
+    publication('effects-push-transports-restricted', push,
+                push.replace("transport('-c', 'push.followTags=false',", "transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
+                'publication-smart-http')
+    # R4 P2: confirmation reads HEAD and its symbolic target, not only the refs namespace.
+    listing = "            listed = transport('ls-remote', '--symref', url)"
+    publication('effects-confirm-without-head', listing,
+                "            listed = transport('ls-remote', '--refs', url)", 'publication-head-change')
+    publication('effects-confirm-without-symref-targets', listing,
+                "            listed = transport('ls-remote', url)", 'publication-head-change')
+    # R5 1: push options from any configuration scope never reach the receiver. `--no-push-option`
+    # looks like the fix and clears only options given on the command line.
+    publication('effects-push-options-from-config', push, push.replace("'-c', 'push.pushOption=', ", ''),
+                'publication-push-options')
+    publication('effects-push-options-flag-only', push,
+                push.replace("'-c', 'push.pushOption=', 'push',", "'push', '--no-push-option',"),
+                'publication-push-options')
+    # R6 1 and R7: the push is routed as the operator configured it; where it goes is git's own
+    # resolution from configuration, and completion is each destination's state after the push.
+    # Each mutant loses one part of that account or reads it from text the push prints.
+    routed = 'publication-records-resolved-destination'
+    add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
+        "        result['destination'] = destination", "        pass",
+        ['effects/' + routed, 'effects/publication-destination-without-credentials'])
+    parsed = ("        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n"
+              "                break\n            pushed.append(line[len('  Push  URL: '):])\n")
+    shape = "                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):"
+    # The fetch-side resolution (`ls-remote --get-url`) in place of git's push resolution: it
+    # misses pushInsteadOf and pushurl routing, so the record names the authorized repository.
+    add(28, 'effects-destinations-from-fetch-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
+        "        pushed = [transport('ls-remote', '--get-url', remote).stdout.strip()]\n",
+        ['effects/' + routed, 'effects/publication-destination-despite-hook-text',
+         'effects/publication-rejected-destination-recorded'], also=[(shape, "                or False):")])
+    # The destinations read from the To lines a dry-run push prints: hook text reaches them.
+    add(28, 'effects-destinations-from-dry-run-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
+        "        pushed = [line[len('To '):] for line in transport('push', '--dry-run', '--porcelain', remote,\n"
+        "                  payload['commit'] + ':' + ref).stdout.splitlines() if line.startswith('To ')]\n",
+        ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded',
+         'effects/publication-hook-text-without-newline'], also=[(shape, "                or False):")])
+    # Git's resolution read in the isolated profile, so global routing is missed.
+    add(28, 'effects-resolution-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "        shown = transport('remote', 'show', '-n', '--', remote, env=dict(",
+        "        shown = git('remote', 'show', '-n', '--', remote, env=dict(",
+        ['effects/' + routed, 'effects/publication-config-selection-parity'])
+    # The guard against a configured URL holding a line break removed.
+    add(28, 'effects-newline-config-accepted', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "        if urls.returncode not in (0, 1) or any(", "        if False and any(",
+        ['effects/' + routed, 'effects/publication-line-break-refused'])
+    complete = "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)"
+    # Completion from the push's exit status alone, from the first destination only, or from the
+    # To lines the push prints.
+    add(28, 'effects-completion-from-exit-status', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
+        "        complete = push.returncode == 0",
+        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'])
+    add(28, 'effects-completion-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
+        "        complete = push.returncode == 0 and outcomes[:1] == ['at-tip']",
+        ['effects/publication-fan-out-agit-report'])
+    publication('effects-completion-from-push-output', complete,
+                complete + "\n        complete = complete and all('To ' + url in push.stdout.splitlines() for url in pushed)",
+                'publication-hook-text-without-newline')
+    # Each destination's state read at the authorized URL instead of at the destination.
+    add(28, 'effects-state-read-at-authorized-url', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "            after = remote_refs(url)\n", "            after = remote_refs(remote)\n",
+        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'],
+        also=[("        before = [remote_refs(url) for url in pushed]", "        before = [remote_refs(remote) for url in pushed]")])
+    # Output read strictly as UTF-8: the push's (a hook's Latin-1 byte) or a listing's (a ref name).
+    publication('effects-push-output-read-strictly', "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n",
+                "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n        push.stdout.encode('utf-8')\n",
+                'publication-non-utf8-output')
+    publication('effects-listing-read-strictly', "            if listed.returncode:\n                return None\n",
+                "            listed.stdout.encode('utf-8')\n            if listed.returncode:\n                return None\n",
+                'publication-non-utf8-output')
+    # Credentials: the authorized URL, or the resolved destinations, recorded as given.
+    publication('effects-destination-with-credentials', "        destination = {'authorized_url': scrubbed_url(remote),",
+                "        destination = {'authorized_url': remote,", 'publication-destination-without-credentials')
+    add(28, 'effects-destinations-not-scrubbed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}",
+        "                       'destinations': [{'url': url, 'outcome': outcome}",
+        ['effects/publication-destination-without-credentials', 'effects/publication-scrub-transport-prefix'])
+    # Scrubbing by parsing: an scp-style address's user information ends at its LAST `@`, a
+    # transport-prefixed URL is scrubbed in its address, and a query or fragment is dropped.
+    scp = "    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]"
+    publication('effects-scrub-scp-first-at', scp, scp.replace('url.rfind(', 'url.find('), 'publication-scrub-scp-user-information')
+    publication('effects-scrub-scp-unchanged', "    if colon < 0:\n        return url\n", "    if True:\n        return url\n",
+                'publication-scrub-scp-user-information')
+    publication('effects-scrub-transport-not-recursed', "    if scheme and url.startswith('::', scheme.end()):",
+                "    if False:", 'publication-scrub-transport-prefix')
+    publication('effects-scrub-keeps-query', "            tail = tail.partition('?')[0]\n", "", 'publication-scrub-query-fragment')
+    publication('effects-scrub-keeps-fragment', "            tail = tail.partition('#')[0]\n", "", 'publication-scrub-query-fragment')
+    # R8 B1: nothing is pushed unless every destination was listed first and holds the expected
+    # old state (the old tip, or absent for a creation); the refusal is named, recorded as
+    # conclusive, reconciled as stopped and returned again on a replay.
+    stale_rows = ['effects/publication-refused-when-not-at-old-tip', 'effects/' + routed]
+    precheck = ("        if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])\n"
+                "               for state in before):")
+    publication('effects-push-without-old-tip-check', precheck, "        if False:", 'publication-refused-when-not-at-old-tip')
+    add(28, 'effects-old-tip-checked-at-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        precheck, precheck.replace('for state in before):', 'for state in before[:1]):'), stale_rows)
+    add(28, 'effects-unlisted-destination-pushed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        precheck, precheck.replace('state is None or (', 'state is not None and ('),
+        stale_rows + ['effects/publication-config-selection-parity'])
+    add(28, 'effects-receiver-refusal-as-unknown', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "            observation = dict(accepted, status='refused', refusal=error.code, evidence=None)",
+        "            observation = dict(accepted, status='unknown', evidence=None)",
+        ['effects/publication-refused-when-not-at-old-tip', 'effects/publication-refusal-reaches-caller'])
+    publication('effects-replayed-refusal-reads-accepted', "            if accepted.get('status') == 'refused':",
+                "            if False:", 'publication-refusal-reaches-caller')
+    add(28, 'effects-refusal-owes-a-stop', '58_veldo_0028_effects.py', 'control_effects.py',
+        "                  stop=None if completed or status == 'refused' else",
+        "                  stop=None if completed else", ['effects/publication-refusal-reaches-caller'])
+    add(28, 'effects-refusal-left-in-flight', '58_veldo_0028_effects.py', 'control_effects.py',
+        "        if completed or status == 'refused':", "        if completed:",
+        ['effects/publication-refusal-reaches-caller'])
+    publication('effects-creation-expects-zero-id', "        absent = set(payload['old_tip']) == {'0'}",
+                "        absent = False", 'publication-ref-creation')
+    publication('effects-creation-over-existing-ref', precheck, precheck.replace('(ref in state if absent', '(False if absent'),
+                'publication-ref-creation')
+    # R8 B2: every destination must resolve to itself for its listing, or it is refused.
+    itself = ("        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n"
+              "            if itself.returncode or itself.stdout != url + '\\n':")
+    publication('effects-destination-listing-unchecked', itself, itself.replace(
+        "            if itself.returncode or itself.stdout != url + '\\n':", "            if False:"),
+        'publication-destination-listed-as-resolved')
+    publication('effects-destination-listing-first-only', itself,
+                itself.replace('        for url in pushed:\n', '        for url in pushed[:1]:\n'),
+                'publication-destination-listed-as-resolved')
+    # R8 time limits: the push is bounded per destination, and the supervisor's limit follows
+    # the windows the executor announces.
+    publication('effects-push-timeout-not-scaled', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
+                "remote, payload['commit'] + ':' + ref)", 'publication-call-covers-every-destination')
+    publication('effects-call-window-not-extended', "                deadline = time.monotonic() + answer['window_seconds']",
+                "                pass", 'publication-call-covers-every-destination')
+    # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed.
+    malformed = 'publication-scrub-malformed-address'
+    publication('effects-scrub-scp-user-at-first-colon', scp,
+                "    rest = url[url.rfind('@', 0, colon) + 1:]", malformed)
+    publication('effects-scrub-ext-command-kept', "        if scheme.group().lower() == 'ext':", "        if False:", malformed)
+    publication('effects-scrub-malformed-host-kept', "        if not _AUTHORITY.fullmatch(host):", "        if False:", malformed)
+    publication('effects-scrub-at-in-path-kept', "            if '@' in tail:", "            if False:", malformed)
+    # R8 rules pinned by rows of their own: a clean push exit, the receiver-URL line-break guard,
+    # the shape of git's report and the configuration read's exit status, and the C locale.
+    exit_rule = 'publication-requires-clean-push-exit'
+    publication('effects-completion-ignores-exit-status', complete,
+                "        complete = all(outcome == 'at-tip' for outcome in outcomes)", exit_rule)
+    publication('effects-completion-ignores-hook-failure', complete,
+                complete.replace('push.returncode == 0', 'push.returncode != 128'), exit_rule)
+    publication('effects-remote-line-break-accepted', "        if '\\n' in remote:\n", "        if False:\n",
+                'publication-line-break-refused')
+    report = 'publication-resolution-output-checked'
+    publication('effects-show-exit-unchecked', "        if (shown.returncode or not lines", "        if (not lines", report)
+    publication('effects-header-unchecked',
+                "        lines = shown.stdout[len(head):].split('\\n') if shown.stdout.startswith(head) else []",
+                "        lines = shown.stdout.split('\\n')[1:]", report)
+    publication('effects-fetch-line-unchecked', "not lines[0].startswith('  Fetch URL: ') or ", "", report)
+    publication('effects-empty-resolution-accepted', " or not pushed\n", "\n", report)
+    publication('effects-head-line-unchecked', shape, "                or False):", report)
+    publication('effects-config-exit-unchecked', "        if urls.returncode not in (0, 1) or any(", "        if any(", report)
+    publication('effects-resolution-locale-not-forced', "env=dict(os.environ, LC_ALL='C'))", "env=None)",
+                'publication-resolution-in-c-locale')
+    publication('effects-resolution-messages-locale-only', "env=dict(os.environ, LC_ALL='C'))",
+                "env=dict(os.environ, LC_MESSAGES='C'))", 'publication-resolution-in-c-locale')
+    # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
+    # profile loses global config and transport variables at once; each git_process mutant loses
+    # one of them, or stops stripping the coordinates the profile must still strip.
+    capability = ['effects/publication-' + name for name in
+                  ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
+                   'config-selection-parity')]
+    add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "            return git(*args, profile='network', env=env, steps=steps)", "            return git(*args, env=env, steps=steps)", capability)
+    add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
+        '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
+        '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
+        [label for label in capability if 'global' in label or 'selection' in label])
+    add(28, 'effects-network-profile-drops-transport-variables', '58_veldo_0028_effects.py', 'git_process.py',
+        '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
+        '        pass', ['effects/publication-env-ssh-command'])
+    add(28, 'effects-network-profile-keeps-coordinates', '58_veldo_0028_effects.py', 'git_process.py',
+        '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
+        '        result.update({k: v for k, v in source.items() if k.startswith("GIT_")})',
+        ['effects/publication-network-profile-strips-coordinates'])
+    # R6 2 and 3: the network profile passes the variables that select or inject operator
+    # configuration, as a plain git command honors them. One mutant strips the selectors (and
+    # GIT_CONFIG_COUNT and GIT_CONFIG_PARAMETERS) as coordinates, which is the defect found; the
+    # other keeps them but drops the numbered GIT_CONFIG_KEY_<n>/GIT_CONFIG_VALUE_<n> entries.
+    configuration = ('        result.update({k: v for k, v in source.items()\n'
+                     '                       if k in CONFIGURATION_VARIABLES or INJECTED_CONFIGURATION.fullmatch(k)})')
+    selection_rows = ['effects/publication-config-selection-parity', 'effects/publication-network-profile-strips-coordinates']
+    add(28, 'effects-network-profile-drops-config-selection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
+        '        result.update({k: v for k, v in source.items() if INJECTED_CONFIGURATION.fullmatch(k)})', selection_rows)
+    add(28, 'effects-network-profile-drops-config-injection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
+        '        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})', selection_rows)
     # VELDO-0036: each reservation assertion has two independently driven defects.
     def reservation(name, module, old, new, row):
         add(36, name, '58_veldo_0036_reservations.py', module, old, new,
@@ -2134,6 +2421,22 @@ def cases():
     return result
 
 
+def edits(case):
+    return [(case['old'], case['new'])] + [tuple(pair) for pair in case.get('also', ())]
+
+
+def mutate(text, case):
+    """Apply every replacement of `case` to `text` (str or bytes); each anchor must occur exactly
+    once in the text it is applied to."""
+    for old, new in edits(case):
+        if isinstance(text, bytes):
+            old, new = old.encode(), new.encode()
+        if text.count(old) != 1:
+            raise RuntimeError((case['name'], 'mutation anchor moved', text.count(old)))
+        text = text.replace(old, new)
+    return text
+
+
 def materialize(case, mode, directory, root=ROOT):
     """Own case paths, exact replacement and file/directory copies for every driver.
 
@@ -2146,10 +2449,11 @@ def materialize(case, mode, directory, root=ROOT):
     base = root / 'scripts/fixtures' if fixture else root / '.veldo'
     source = base / case['module']
     before = source.read_bytes()
-    old, new = case['old'].encode(), case['new'].encode()
+    old = case['old'].encode()
     count = before.count(old)
     if count != 1:
         raise RuntimeError((case['name'], 'mutation anchor moved', count))
+    mutated = mutate(before, case)
     mutant = None
     after = before
     if mode != 'baseline':
@@ -2165,7 +2469,7 @@ def materialize(case, mode, directory, root=ROOT):
             mutant = destination / 'veldo' / case['module']
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(before if mode == 'noop' else before.replace(old, new))
+        target.write_bytes(before if mode == 'noop' else mutated)
         after = target.read_bytes()
     return dict(source=source, mutant=mutant, replacement_count=count,
                 old_digest=hashlib.sha256(before).hexdigest(),
@@ -2238,7 +2542,7 @@ def main():
             prepared[case['name']] = materialize(case, 'mutant', Path(directory) / case['name'])
             if args.diff_dir:
                 source = prepared[case['name']]['source'].read_text()
-                changed = source.replace(case['old'], case['new'])
+                changed = mutate(source, case)
                 relative = str(prepared[case['name']]['source'].relative_to(ROOT))
                 args.diff_dir.mkdir(parents=True, exist_ok=True)
                 (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(

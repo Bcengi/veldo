@@ -1,0 +1,16 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -71 +71 @@
+-    if revoked(conn, principal, now):
++    if not consume and revoked(conn, principal, now):
+@@ -170,3 +170 @@
+-            changes = dict(S.COMMAND_REGISTRY['accept_effect']['transition'](
+-                {'effect_id': rid, 'principal': principal, 'receiver': contract['target'],
+-                 'kind': contract['kind'], 'at': time.time()}, before))
++            changes = {}
+@@ -188 +186 @@
+-    transact(conn, 'accept_protected_effect', {'new_ids': [eid, rid, R.LEDGER_ENTITY]}, state, nonce, journal, transition)
++    transact(conn, 'accept_protected_effect', {'new_ids': [eid]}, state, nonce, journal, transition)
+@@ -230 +228 @@
+-        if completed or status == 'refused':
++        if False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -230 +230 @@
+-        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)
++        complete = push.returncode == 0

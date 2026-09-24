@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -226 +226 @@
+-            outcomes.append('at-tip' if after == expected else 'not-at-tip')
++            outcomes.append('at-tip' if after.get(ref) == payload['commit'] else 'not-at-tip')

@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -195 +195 @@
+-        if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])
++        if any(state is None or (False if absent else state.get(ref) != payload['old_tip'])

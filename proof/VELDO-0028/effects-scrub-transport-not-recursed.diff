@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -69 +69 @@
+-    if scheme and url.startswith('::', scheme.end()):
++    if False:

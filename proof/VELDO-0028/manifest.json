@@ -1,0 +1,159 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0028",
+  "commit": "65294a72a31f4df499cc395bce2e176efcba6a43",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-09-23T05:07:43.216930+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "rows": [
+        "effects/scope/provider",
+        "effects/scope/publication"
+      ],
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0028/observations.json",
+          "detail": "Actual signed IPC, configured SQLite and receiver observations; see criterion-to-row table in README."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0028/gate-summary.json",
+          "detail": "Clean full canonical gate, including first-use integration and real local Git publication."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0028/gate-mutations.json",
+          "detail": "Fresh baseline and no-op controls; two distinct mutations per named row, each false without exception or timeout."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "rows": [
+        "effects/nonce/provider",
+        "effects/nonce/publication"
+      ],
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0028/observations.json",
+          "detail": "Actual signed IPC, configured SQLite and receiver observations; see criterion-to-row table in README."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0028/gate-summary.json",
+          "detail": "Clean full canonical gate, including first-use integration and real local Git publication."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0028/gate-mutations.json",
+          "detail": "Fresh baseline and no-op controls; two distinct mutations per named row, each false without exception or timeout."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "rows": [
+        "effects/completion/provider",
+        "effects/completion/publication"
+      ],
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0028/observations.json",
+          "detail": "Actual signed IPC, configured SQLite and receiver observations; see criterion-to-row table in README."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0028/gate-summary.json",
+          "detail": "Clean full canonical gate, including first-use integration and real local Git publication."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0028/gate-mutations.json",
+          "detail": "Fresh baseline and no-op controls; two distinct mutations per named row, each false without exception or timeout."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0028/gate-summary.json"
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0028/gate-summary.json"
+    },
+    {
+      "name": "mutations",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0028/gate-summary.json"
+    }
+  ],
+  "rollback": "Disable new protected effects; preserve handles, original dispatches, unknown outcomes and outstanding invocation reservations. No automatic retry or recovery.",
+  "review": "Implementation evidence only; independent review and landing approval are not claimed.",
+  "implementation_sha256": {
+    ".veldo/control_effects.py": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    ".veldo/control_effect_executor.py": "681470e1ad2f0967a37194fc1d9547711678d4a8c07b622a5b7d9fea2ed59d47",
+    ".veldo/credential_issue.py": "81b15f782dbbc5149cddad68c5691c48706e0a65b7e208a9866d06d3de71683f",
+    ".veldo/init_scaffold.py": "c3dff675b169381eb27edf79947353f79b299f798f6ae4c6c6eb31836628683f",
+    "engine/.veldo/control_effects.py": "df75b1ede2732acd654bfe57538173c6aa1298face959ca8ae52f068433463ca",
+    "engine/.veldo/control_effect_executor.py": "681470e1ad2f0967a37194fc1d9547711678d4a8c07b622a5b7d9fea2ed59d47",
+    "engine/.veldo/credential_issue.py": "81b15f782dbbc5149cddad68c5691c48706e0a65b7e208a9866d06d3de71683f",
+    "engine/.veldo/init_scaffold.py": "c3dff675b169381eb27edf79947353f79b299f798f6ae4c6c6eb31836628683f",
+    "scripts/check_teeth_mutations.py": "e4267c546b20e0bc1e13eddeb7023c3e6d3e27b22ae036ecc897f80de5972ff7",
+    "scripts/suites/58_veldo_0028_effects.py": "415478ae7b244ec11f84e5876ad4ed03152595bb77c218fa950e9d46fb8a11f0",
+    "scripts/suites/manifest.json": "e0a7555759ecb6e0856f29f34b2f333cf7c62795f5d630b373cdd911f4486ff7",
+    "scripts/suites/requires.json": "bf94b9e6e777b3b6dda9620a752698a47e87ee43994b191adbba689bf58c36eb",
+    "specs/VELDO-0028-protected-effects.md": "48299100e81e0f0599a8a3b8a86f00c35128ab6b09cc5fe0f9123e55865fafd8"
+  },
+  "artifacts": [
+    "proof/VELDO-0028/README.md",
+    "proof/VELDO-0028/drive_observations.py",
+    "proof/VELDO-0028/effects-acceptance-is-completion.diff",
+    "proof/VELDO-0028/effects-changed-content-replay.diff",
+    "proof/VELDO-0028/effects-confirm-authorized-ref-only.diff",
+    "proof/VELDO-0028/effects-confirm-ignores-new-refs.diff",
+    "proof/VELDO-0028/effects-confirm-without-head.diff",
+    "proof/VELDO-0028/effects-confirm-without-symref-targets.diff",
+    "proof/VELDO-0028/effects-future-dated-revocation-waits.diff",
+    "proof/VELDO-0028/effects-ignore-authorization-revocation.diff",
+    "proof/VELDO-0028/effects-invisible-to-revocation.diff",
+    "proof/VELDO-0028/effects-overlong-handle.diff",
+    "proof/VELDO-0028/effects-pending-reconciled-as-settled.diff",
+    "proof/VELDO-0028/effects-push-by-send-pack.diff",
+    "proof/VELDO-0028/effects-push-follows-tags.diff",
+    "proof/VELDO-0028/effects-push-skips-hooks.diff",
+    "proof/VELDO-0028/effects-push-transports-restricted.diff",
+    "proof/VELDO-0028/effects-push-widened-by-clone-config.diff",
+    "proof/VELDO-0028/effects-remote-must-exist-verbatim.diff",
+    "proof/VELDO-0028/effects-reviewer-membership-only.diff",
+    "proof/VELDO-0028/effects-revocation-preflight-only.diff",
+    "proof/VELDO-0028/effects-revocation-skew-allowance.diff",
+    "proof/VELDO-0028/effects-revoked-reviewer-accepted.diff",
+    "proof/VELDO-0028/effects-second-use-before-consumption.diff",
+    "proof/VELDO-0028/effects-unbound-result.diff",
+    "proof/VELDO-0028/effects-worker-scope.diff",
+    "proof/VELDO-0028/gate-mutations.json",
+    "proof/VELDO-0028/gate-summary.json",
+    "proof/VELDO-0028/mutations.json",
+    "proof/VELDO-0028/observations.json",
+    "proof/VELDO-0028/receiver-observations.json",
+    "proof/VELDO-0028/timing.json"
+  ]
+}

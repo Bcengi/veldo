@@ -1,0 +1,201 @@
+{
+ "checks_observed": 45,
+ "description": "Suite 58 at 2fc4eac run with .veldo/control_effect_executor.py, .veldo/control_effects.py and .veldo/git_process.py taken from 0a97547 (a copy of the tree, the worktree untouched). The nine R7 rows and the three rows rewritten for the new record fail by assertion (the suite ran every row); every other row passes. Observations of the defect cases follow; the suite directory is shown as <suite-dir> and the fixture credential strings as <fixture-credential>. Where a case reads null, the row stopped at an earlier case of the same row.",
+ "failed_rows": [
+  "VELDO-0028 effects/publication-records-resolved-destination",
+  "VELDO-0028 effects/publication-destination-without-credentials",
+  "VELDO-0028 effects/publication-destination-despite-hook-text",
+  "VELDO-0028 effects/publication-rejected-destination-recorded",
+  "VELDO-0028 effects/publication-completion-from-destination-state",
+  "VELDO-0028 effects/publication-hook-text-without-newline",
+  "VELDO-0028 effects/publication-non-utf8-output",
+  "VELDO-0028 effects/publication-fan-out-agit-report",
+  "VELDO-0028 effects/publication-scrub-scp-user-information",
+  "VELDO-0028 effects/publication-scrub-transport-prefix",
+  "VELDO-0028 effects/publication-scrub-query-fragment",
+  "VELDO-0028 effects/publication-config-selection-parity"
+ ],
+ "new_rows_red": [
+  "publication-completion-from-destination-state",
+  "publication-destination-despite-hook-text",
+  "publication-fan-out-agit-report",
+  "publication-hook-text-without-newline",
+  "publication-non-utf8-output",
+  "publication-rejected-destination-recorded",
+  "publication-scrub-query-fragment",
+  "publication-scrub-scp-user-information",
+  "publication-scrub-transport-prefix"
+ ],
+ "observations": {
+  "fan-out-agit": {
+   "agit_ref_at_tip": true,
+   "completed": true,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/fan-out-agit-remote.git",
+    "listed_url": "file://<suite-dir>/fan-out-agit-remote.git",
+    "pushed_urls": [
+     "file://<suite-dir>/fan-out-agit-remote.git"
+    ]
+   },
+   "status": "completed"
+  },
+  "route-config-newline": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-config-newline-remote.git",
+    "listed_url": "file://<suite-dir>/route-config-newline-remote.git",
+    "pushed_urls": []
+   },
+   "status": "unknown"
+  },
+  "route-fan-out-stale": {
+   "authorized_moved": true,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-fan-out-stale-remote.git",
+    "listed_url": "file://<suite-dir>/route-fan-out-stale-remote.git",
+    "pushed_urls": [
+     "file://<suite-dir>/route-fan-out-stale-remote.git",
+     "<suite-dir>/route-fan-out-stale-elsewhere.git"
+    ]
+   },
+   "status": "unknown"
+  },
+  "route-fan-out-unreachable": {
+   "authorized_moved": true,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-fan-out-unreachable-remote.git",
+    "listed_url": "file://<suite-dir>/route-fan-out-unreachable-remote.git",
+    "pushed_urls": [
+     "file://<suite-dir>/route-fan-out-unreachable-remote.git"
+    ]
+   },
+   "status": "unknown"
+  },
+  "route-path-newline": {
+   "authorized_moved": true,
+   "completed": false,
+   "decoy_moved": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-path\nnewline.git",
+    "listed_url": "file://<suite-dir>/route-path\nnewline.git",
+    "pushed_urls": []
+   },
+   "status": "unknown"
+  },
+  "route-push-instead-of": {
+   "authorized_moved": false,
+   "completed": false,
+   "decoy_moved": true,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/route-push-instead-of-remote.git",
+    "listed_url": "file://<suite-dir>/route-push-instead-of-remote.git",
+    "pushed_urls": [
+     "<suite-dir>/route-push-instead-of-elsewhere.git"
+    ]
+   },
+   "status": "unknown"
+  },
+  "scrub-query": {
+   "completed": true,
+   "destination": {
+    "authorized_url": "veldotest://veldo-host<suite-dir>/scrub-query-remote.git?private_token=<fixture-credential>",
+    "listed_url": "veldotest://veldo-host<suite-dir>/scrub-query-remote.git?private_token=<fixture-credential>",
+    "pushed_urls": [
+     "veldotest://veldo-host<suite-dir>/scrub-query-remote.git?private_token=<fixture-credential>"
+    ]
+   },
+   "status": "completed"
+  },
+  "scrub-scp-user-with-at": {
+   "completed": true,
+   "destination": {
+    "authorized_url": "<fixture-credential>@deploy-host:<suite-dir>/scrub-scp-user-with-at-remote.git",
+    "listed_url": "<fixture-credential>@deploy-host:<suite-dir>/scrub-scp-user-with-at-remote.git",
+    "pushed_urls": [
+     "<fixture-credential>@deploy-host:<suite-dir>/scrub-scp-user-with-at-remote.git"
+    ]
+   },
+   "status": "completed"
+  },
+  "scrub-transport-scheme": {
+   "completed": true,
+   "destination": {
+    "authorized_url": "veldotest::https://<fixture-credential>:<fixture-credential>@veldo-host<suite-dir>/scrub-transport-scheme-remote.git",
+    "listed_url": "veldotest::https://<fixture-credential>:<fixture-credential>@veldo-host<suite-dir>/scrub-transport-scheme-remote.git",
+    "pushed_urls": [
+     "veldotest::https://<fixture-credential>:<fixture-credential>@veldo-host<suite-dir>/scrub-transport-scheme-remote.git"
+    ]
+   },
+   "status": "completed"
+  },
+  "text-latin1": {
+   "completed": false,
+   "destination": null,
+   "status": "unknown"
+  },
+  "text-mirrored": {
+   "completed": true,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/text-mirrored-remote.git",
+    "listed_url": "file://<suite-dir>/text-mirrored-remote.git",
+    "pushed_urls": [
+     "file://<suite-dir>/text-mirrored-remote.git"
+    ]
+   },
+   "l_moved": true,
+   "status": "completed",
+   "x_moved": true
+  },
+  "text-no-newline": {
+   "completed": false,
+   "destination": {
+    "authorized_url": "<suite-dir>/text-no-newline-remote.git",
+    "listed_url": "<suite-dir>/text-no-newline-remote.git",
+    "pushed_urls": []
+   },
+   "status": "unknown"
+  },
+  "text-proc-receive": {
+   "completed": true,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/text-proc-receive-remote.git",
+    "listed_url": "file://<suite-dir>/text-proc-receive-remote.git",
+    "pushed_urls": [
+     "file://<suite-dir>/text-proc-receive-remote.git"
+    ]
+   },
+   "l_moved": true,
+   "status": "completed",
+   "x_moved": false
+  },
+  "text-refused": {
+   "completed": false,
+   "destination": {
+    "authorized_url": "file://<suite-dir>/text-refused-remote.git",
+    "listed_url": "file://<suite-dir>/text-refused-remote.git",
+    "pushed_urls": [
+     "file://<suite-dir>/text-refused-remote.git"
+    ]
+   },
+   "l_moved": false,
+   "status": "unknown",
+   "x_moved": false
+  }
+ },
+ "other_rows_green": true,
+ "rewritten_rows_red": [
+  "publication-config-selection-parity",
+  "publication-destination-without-credentials",
+  "publication-records-resolved-destination"
+ ],
+ "summary": [
+  "  58_veldo_0028_effects                           27 passed   18.65s",
+  "selftest (PARTIAL, 1 of 72 suites): 53 passed, 12 failed in 18.65s"
+ ]
+}

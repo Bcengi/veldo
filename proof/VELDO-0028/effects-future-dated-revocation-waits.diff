@@ -1,0 +1,5 @@
+--- a/.veldo/control_effects.py
++++ b/.veldo/control_effects.py
+@@ -63 +63 @@
+-    return principal in R.ledger(S, conn)[0]['revoked'] or R.is_revoked(S, conn, principal, now)
++    return R.is_revoked(S, conn, principal, now)

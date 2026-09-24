@@ -1,0 +1,6 @@
+--- a/.veldo/git_process.py
++++ b/.veldo/git_process.py
+@@ -64,2 +64 @@
+-        result.update({k: v for k, v in source.items()
+-                       if k in CONFIGURATION_VARIABLES or INJECTED_CONFIGURATION.fullmatch(k)})
++        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})
