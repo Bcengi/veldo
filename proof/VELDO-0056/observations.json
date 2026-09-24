@@ -1,0 +1,928 @@
+{
+ "failed": 0,
+ "observed": {
+  "detached": {
+   "calls": [
+    [
+     "remote",
+     "get-url"
+    ],
+    [
+     "rev-parse",
+     "--path-format=absolute"
+    ],
+    [
+     "rev-parse",
+     "--verify"
+    ]
+   ],
+   "moved": [
+    "remote",
+    "remote_trunk"
+   ],
+   "moved_at_gate": [],
+   "result": {
+    "ok": true,
+    "stage": "landed"
+   },
+   "workspace": {
+    "alternates": [
+     "/dev/shm/v56-l42lug38/caller/.git/objects"
+    ],
+    "detached": true,
+    "outside_caller": true,
+    "own_git_directory": true,
+    "status": ""
+   },
+   "writes": []
+  },
+  "every_operation": {
+   "baseline": {
+    "calls": [
+     "rev-parse",
+     "init",
+     "remote",
+     "fetch",
+     "rev-parse",
+     "update-ref",
+     "symbolic-ref",
+     "checkout",
+     "rev-parse",
+     "rev-parse",
+     "ls-tree",
+     "cat-file",
+     "cat-file",
+     "merge-base",
+     "merge",
+     "diff",
+     "ls-files",
+     "cat-file",
+     "cat-file",
+     "cat-file",
+     "merge-file",
+     "add",
+     "checkout",
+     "add",
+     "commit",
+     "rev-parse",
+     "merge",
+     "rev-parse",
+     "add",
+     "diff",
+     "rev-parse",
+     "commit",
+     "rev-parse",
+     "rev-parse",
+     "rev-parse",
+     "rev-parse",
+     "status",
+     "merge-base",
+     "merge-base",
+     "merge-base"
+    ],
+    "detail": {
+     "ok": false,
+     "stopped": "fixture"
+    },
+    "stage": "gate"
+   },
+   "faults": [
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 0,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "init",
+     "gate": false,
+     "index": 1,
+     "leftover": [],
+     "moved": [],
+     "operation": "init",
+     "raised": null,
+     "refusal": "unavailable_service:git/init",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "remote",
+     "gate": false,
+     "index": 2,
+     "leftover": [],
+     "moved": [],
+     "operation": "remote",
+     "raised": null,
+     "refusal": "unavailable_service:git/remote",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "fetch",
+     "gate": false,
+     "index": 3,
+     "leftover": [],
+     "moved": [],
+     "operation": "fetch",
+     "raised": null,
+     "refusal": "unavailable_service:git/fetch",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 4,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "update-ref",
+     "gate": false,
+     "index": 5,
+     "leftover": [],
+     "moved": [],
+     "operation": "update-ref",
+     "raised": null,
+     "refusal": "unavailable_service:git/update-ref",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "symbolic-ref",
+     "gate": false,
+     "index": 6,
+     "leftover": [],
+     "moved": [],
+     "operation": "symbolic-ref",
+     "raised": null,
+     "refusal": "unavailable_service:git/symbolic-ref",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "checkout",
+     "gate": false,
+     "index": 7,
+     "leftover": [],
+     "moved": [],
+     "operation": "checkout",
+     "raised": null,
+     "refusal": "unavailable_service:git/checkout",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 8,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "sync_main"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 9,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "ls-tree",
+     "gate": false,
+     "index": 10,
+     "leftover": [],
+     "moved": [],
+     "operation": "ls-tree",
+     "raised": null,
+     "refusal": "unavailable_service:git/ls-tree",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "cat-file",
+     "gate": false,
+     "index": 11,
+     "leftover": [],
+     "moved": [],
+     "operation": "cat-file",
+     "raised": null,
+     "refusal": "unavailable_service:git/cat-file",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "cat-file",
+     "gate": false,
+     "index": 12,
+     "leftover": [],
+     "moved": [],
+     "operation": "cat-file",
+     "raised": null,
+     "refusal": "missing_evidence:implementation/absent",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge-base",
+     "gate": false,
+     "index": 13,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge-base",
+     "raised": null,
+     "refusal": "unavailable_service:git/merge-base",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge",
+     "gate": false,
+     "index": 14,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge",
+     "raised": null,
+     "refusal": "unavailable_service:git/merge",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "diff",
+     "gate": false,
+     "index": 15,
+     "leftover": [],
+     "moved": [],
+     "operation": "diff",
+     "raised": null,
+     "refusal": "unavailable_service:git/diff",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "ls-files",
+     "gate": false,
+     "index": 16,
+     "leftover": [],
+     "moved": [],
+     "operation": "ls-files",
+     "raised": null,
+     "refusal": "unavailable_service:git/ls-files",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "cat-file",
+     "gate": false,
+     "index": 17,
+     "leftover": [],
+     "moved": [],
+     "operation": "cat-file",
+     "raised": null,
+     "refusal": "unavailable_service:git/cat-file",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "cat-file",
+     "gate": false,
+     "index": 18,
+     "leftover": [],
+     "moved": [],
+     "operation": "cat-file",
+     "raised": null,
+     "refusal": "unavailable_service:git/cat-file",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "cat-file",
+     "gate": false,
+     "index": 19,
+     "leftover": [],
+     "moved": [],
+     "operation": "cat-file",
+     "raised": null,
+     "refusal": "unavailable_service:git/cat-file",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge-file",
+     "gate": false,
+     "index": 20,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge-file",
+     "raised": null,
+     "refusal": "union_unsafe:.veldo/capabilities.yaml",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "add",
+     "gate": false,
+     "index": 21,
+     "leftover": [],
+     "moved": [],
+     "operation": "add",
+     "raised": null,
+     "refusal": "unavailable_service:git/add",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "checkout",
+     "gate": false,
+     "index": 22,
+     "leftover": [],
+     "moved": [],
+     "operation": "checkout",
+     "raised": null,
+     "refusal": "unavailable_service:git/checkout",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "add",
+     "gate": false,
+     "index": 23,
+     "leftover": [],
+     "moved": [],
+     "operation": "add",
+     "raised": null,
+     "refusal": "unavailable_service:git/add",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "commit",
+     "gate": false,
+     "index": 24,
+     "leftover": [],
+     "moved": [],
+     "operation": "commit",
+     "raised": null,
+     "refusal": "unavailable_service:git/commit",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 25,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge",
+     "gate": false,
+     "index": 26,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge",
+     "raised": null,
+     "refusal": "unavailable_service:git/merge",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 27,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "add",
+     "gate": false,
+     "index": 28,
+     "leftover": [],
+     "moved": [],
+     "operation": "add",
+     "raised": null,
+     "refusal": "unavailable_service:git/add",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "diff",
+     "gate": false,
+     "index": 29,
+     "leftover": [],
+     "moved": [],
+     "operation": "diff",
+     "raised": null,
+     "refusal": "unavailable_service:git/diff",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 30,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "commit",
+     "gate": false,
+     "index": 31,
+     "leftover": [],
+     "moved": [],
+     "operation": "commit",
+     "raised": null,
+     "refusal": "unavailable_service:git/commit",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 32,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 33,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 34,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "rev-parse",
+     "gate": false,
+     "index": 35,
+     "leftover": [],
+     "moved": [],
+     "operation": "rev-parse",
+     "raised": null,
+     "refusal": "unavailable_service:git/rev-parse",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "status",
+     "gate": false,
+     "index": 36,
+     "leftover": [],
+     "moved": [],
+     "operation": "status",
+     "raised": null,
+     "refusal": "unavailable_service:git/status",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge-base",
+     "gate": false,
+     "index": 37,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge-base",
+     "raised": null,
+     "refusal": "unavailable_service:git/merge-base",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge-base",
+     "gate": false,
+     "index": 38,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge-base",
+     "raised": null,
+     "refusal": "unavailable_service:git/merge-base",
+     "same_prefix": true,
+     "stage": "reconcile"
+    },
+    {
+     "failed": "merge-base",
+     "gate": false,
+     "index": 39,
+     "leftover": [],
+     "moved": [],
+     "operation": "merge-base",
+     "raised": null,
+     "refusal": "unavailable_service:git/merge-base",
+     "same_prefix": true,
+     "stage": "reconcile"
+    }
+   ]
+  },
+  "factory": {
+   "VELDO-9563": {
+    "floor": "handoff",
+    "proof": "ok"
+   },
+   "VELDO-9564": {
+    "floor": "handoff",
+    "proof": "raised"
+   },
+   "VELDO-9565": {
+    "floor": "returned",
+    "proof": "ok"
+   },
+   "VELDO-9566": {
+    "floor": "handoff",
+    "proof": "ok"
+   },
+   "VELDO-9567": {
+    "floor": "handoff",
+    "proof": "ok"
+   }
+  },
+  "failures": {
+   "fetch_absent_trunk": {
+    "conflicts": null,
+    "gate": false,
+    "leftover": [],
+    "moved": [],
+    "operation": "fetch",
+    "raised": null,
+    "refusal": "unavailable_service:git/fetch",
+    "stage": "sync_main"
+   },
+   "fetch_unreachable": {
+    "conflicts": null,
+    "gate": false,
+    "leftover": [],
+    "moved": [],
+    "operation": "fetch",
+    "raised": null,
+    "refusal": "unavailable_service:git/fetch",
+    "stage": "sync_main"
+   },
+   "foreign_implementation": {
+    "conflicts": null,
+    "gate": false,
+    "leftover": [],
+    "moved": [],
+    "operation": "merge-base",
+    "raised": null,
+    "refusal": "missing_evidence:implementation/not_ancestor",
+    "stage": "reconcile"
+   },
+   "merge_conflict": {
+    "conflicts": [
+     "README.md"
+    ],
+    "gate": false,
+    "leftover": [],
+    "moved": [],
+    "operation": "merge",
+    "raised": null,
+    "refusal": "conflict:README.md",
+    "stage": "reconcile"
+   },
+   "missing_build_ref": {
+    "conflicts": null,
+    "gate": false,
+    "leftover": [],
+    "moved": [],
+    "operation": "rev-parse",
+    "raised": null,
+    "refusal": "missing_evidence:build_ref",
+    "stage": "reconcile"
+   },
+   "missing_proof": {
+    "conflicts": null,
+    "gate": false,
+    "leftover": [],
+    "moved": [],
+    "operation": null,
+    "raised": null,
+    "refusal": "missing_evidence:proof/VELDO-9569",
+    "stage": "reconcile"
+   }
+  },
+  "observations": {
+   "events": 110,
+   "refused": [
+    "conflict:README.md",
+    "missing_authority:approval/owner",
+    "missing_authority:repository_policy",
+    "missing_evidence:build_ref",
+    "missing_evidence:gate",
+    "missing_evidence:implementation/absent",
+    "missing_evidence:implementation/not_ancestor",
+    "missing_evidence:proof/VELDO-9569",
+    "missing_evidence:proof_bundle",
+    "not_handed_off:returned",
+    "unavailable_service:git/add",
+    "unavailable_service:git/cat-file",
+    "unavailable_service:git/checkout",
+    "unavailable_service:git/commit",
+    "unavailable_service:git/diff",
+    "unavailable_service:git/fetch",
+    "unavailable_service:git/init",
+    "unavailable_service:git/ls-files",
+    "unavailable_service:git/ls-tree",
+    "unavailable_service:git/merge",
+    "unavailable_service:git/merge-base",
+    "unavailable_service:git/remote",
+    "unavailable_service:git/rev-parse",
+    "unavailable_service:git/status",
+    "unavailable_service:git/symbolic-ref",
+    "unavailable_service:git/update-ref",
+    "union_unsafe:.veldo/capabilities.yaml"
+   ],
+   "sample": [
+    {
+     "accepted_versions": {
+      "commit": "27cdd5a37f32f0ba949c27b0365c9185986c670f",
+      "evidence": "f039e32b3ea8926c7ffa75ab843b1961ec21a63b",
+      "implementation": "55335a98ce0cd66c5c0755123688695e29dccf4c",
+      "tree": "dcaa461f1a9f46b3d0e3e593eb3acd1f31f0af63",
+      "watermark": "2a18117f1d4cc5f58d8a4f64c4bb33a7721cbe9a"
+     },
+     "detail": "GATE: RED (27cdd5a37f32f0ba949c27b0365c9185986c670f)",
+     "domain": "domain-56",
+     "failed": null,
+     "operation": "gate",
+     "outcome": "refused",
+     "refusal": "missing_evidence:gate",
+     "repository": "repository-56",
+     "request": "candidate-b847f0d66ac947ab",
+     "schema": "veldo.landing_candidate/v1",
+     "taxonomy": "missing_evidence",
+     "unit": "VELDO-9563"
+    },
+    {
+     "accepted_versions": {
+      "commit": "e3ed8151596b03e960aa172ab286afdb1cf335a4",
+      "evidence": "c0744f86c7462baeb06bdfe425b7577b2464b091",
+      "implementation": "d6d526c79f0fe92a272b5c2dd025cbc607549029",
+      "tree": "91f34f07cb18e63cbd3ee717fc1d01037ddf0e22",
+      "watermark": "2a18117f1d4cc5f58d8a4f64c4bb33a7721cbe9a"
+     },
+     "detail": "missing_evidence:proof_bundle",
+     "domain": "domain-56",
+     "failed": "policy",
+     "operation": "finalize",
+     "outcome": "refused",
+     "refusal": "missing_evidence:proof_bundle",
+     "repository": "repository-56",
+     "request": "candidate-800605f3aec9413c",
+     "schema": "veldo.landing_candidate/v1",
+     "taxonomy": "missing_evidence",
+     "unit": "VELDO-9564"
+    }
+   ],
+   "status_after": [
+    "ok",
+    {
+     "accepted": 4,
+     "pending": [],
+     "refused": 0
+    }
+   ],
+   "status_at_gate": {
+    "accepted": 2,
+    "pending": [
+     "candidate-ef1a82530ce84b14"
+    ],
+    "refused": 0
+   }
+  },
+  "raised": [],
+  "rejections": {
+   "invalid_proof": {
+    "finalize": true,
+    "gate": true,
+    "leftover": [],
+    "moved": [],
+    "raised": null,
+    "refusal": "missing_evidence:proof_bundle",
+    "refusals": [
+     "missing_evidence:proof_bundle"
+    ],
+    "stage": "finalize"
+   },
+   "red_gate": {
+    "finalize": false,
+    "gate": true,
+    "leftover": [],
+    "moved": [],
+    "raised": null,
+    "refusal": "missing_evidence:gate",
+    "refusals": null,
+    "stage": "gate"
+   },
+   "rejected_approval": {
+    "finalize": true,
+    "gate": true,
+    "leftover": [],
+    "moved": [],
+    "raised": null,
+    "refusal": "missing_authority:approval/owner",
+    "refusals": [
+     "missing_authority:approval/owner"
+    ],
+    "stage": "finalize"
+   },
+   "repository_policy": {
+    "finalize": true,
+    "gate": true,
+    "leftover": [],
+    "moved": [],
+    "raised": null,
+    "refusal": "missing_authority:repository_policy",
+    "refusals": [
+     "missing_authority:repository_policy"
+    ],
+    "stage": "finalize"
+   },
+   "unresolved_finding": {
+    "finalize": true,
+    "gate": true,
+    "leftover": [],
+    "moved": [],
+    "raised": null,
+    "refusal": "not_handed_off:returned",
+    "refusals": [
+     "not_handed_off:returned",
+     "unresolved_finding:VELDO-9565/1/reviewer-b/1/F1"
+    ],
+    "stage": "finalize"
+   }
+  },
+  "valid_land": {
+   "moved": [
+    "remote",
+    "remote_trunk"
+   ],
+   "remote_trunk": "5cffd0946c61bc44382f0d37ab1895af20bdcdae",
+   "result": {
+    "ok": true,
+    "stage": "landed"
+   }
+  },
+  "whole": {
+   "chain": [
+    "e45eee7ceaaed76f227f52cfba9448c597ac2059",
+    "457015e15d12dae1899bb41427c2eff648aaf1c9",
+    "535cae35aad69c5dec1c65ab1373b14d69556da3",
+    "5cffd0946c61bc44382f0d37ab1895af20bdcdae",
+    "78495294836bac7eebff41966816824651205668"
+   ],
+   "parents": {
+    "457015e15d12dae1899bb41427c2eff648aaf1c9": [
+     "535cae35aad69c5dec1c65ab1373b14d69556da3",
+     "e358ff1bb5e3518c771c3028d9a492edd146ee5c"
+    ],
+    "535cae35aad69c5dec1c65ab1373b14d69556da3": [
+     "5cffd0946c61bc44382f0d37ab1895af20bdcdae",
+     "de5f7195fc34be640e378cb3419b944948be23bb"
+    ],
+    "5cffd0946c61bc44382f0d37ab1895af20bdcdae": [
+     "78495294836bac7eebff41966816824651205668"
+    ],
+    "e45eee7ceaaed76f227f52cfba9448c597ac2059": [
+     "457015e15d12dae1899bb41427c2eff648aaf1c9"
+    ]
+   },
+   "projection_equal": true,
+   "projection_paths": [
+    "specs/index.md"
+   ],
+   "record": {
+    "commit": "e45eee7ceaaed76f227f52cfba9448c597ac2059",
+    "evidence": "e358ff1bb5e3518c771c3028d9a492edd146ee5c",
+    "implementation": "de5f7195fc34be640e378cb3419b944948be23bb",
+    "merges": [
+     {
+      "commit": "de5f7195fc34be640e378cb3419b944948be23bb",
+      "merge": "535cae35aad69c5dec1c65ab1373b14d69556da3",
+      "resolved": [
+       ".veldo/capabilities.yaml",
+       "specs/index.md"
+      ],
+      "role": "implementation"
+     },
+     {
+      "commit": "e358ff1bb5e3518c771c3028d9a492edd146ee5c",
+      "merge": "457015e15d12dae1899bb41427c2eff648aaf1c9",
+      "role": "evidence"
+     }
+    ],
+    "projection_commit": "e45eee7ceaaed76f227f52cfba9448c597ac2059",
+    "projections": {
+     "specs/index.md": {
+      "blob": "ecbf1ba9898f89a042a3e87585d551cc4cc2ea7f",
+      "generator": "scripts/update_index.py"
+     }
+    },
+    "watermark": "5cffd0946c61bc44382f0d37ab1895af20bdcdae"
+   }
+  }
+ },
+ "passed": 11,
+ "rows": [
+  [
+   "VELDO-0056 candidate/rejection-leaves-trunk",
+   true
+  ],
+  [
+   "VELDO-0056 candidate/named-policy-refusals",
+   true
+  ],
+  [
+   "VELDO-0056 candidate/detached-held-trunk",
+   true
+  ],
+  [
+   "VELDO-0056 candidate/whole-candidate",
+   true
+  ],
+  [
+   "VELDO-0056 candidate/git-failures-refuse",
+   true
+  ],
+  [
+   "VELDO-0056 candidate/every-git-operation-checked",
+   true
+  ],
+  [
+   "VELDO-0056 candidate/observations",
+   true
+  ],
+  [
+   "VELDO-0056 ran/candidate/rejection-leaves-trunk",
+   true
+  ],
+  [
+   "VELDO-0056 ran/candidate/detached-held-trunk",
+   true
+  ],
+  [
+   "VELDO-0056 ran/candidate/git-failures-refuse",
+   true
+  ],
+  [
+   "VELDO-0056 ran/candidate/observations",
+   true
+  ]
+ ],
+ "suite": "67_veldo_0056_candidates.py",
+ "suite_seconds": 21.426
+}

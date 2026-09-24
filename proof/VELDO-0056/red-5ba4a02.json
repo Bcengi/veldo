@@ -1,0 +1,195 @@
+{
+ "production_at": "5ba4a02",
+ "substituted": {
+  "lander.py": "5ba4a02:.veldo/lander.py"
+ },
+ "other_installed_modules_identical_to_commit": true,
+ "differing": [],
+ "failed": [
+  "VELDO-0056 candidate/rejection-leaves-trunk",
+  "VELDO-0056 candidate/named-policy-refusals",
+  "VELDO-0056 candidate/detached-held-trunk",
+  "VELDO-0056 candidate/whole-candidate",
+  "VELDO-0056 candidate/git-failures-refuse",
+  "VELDO-0056 candidate/every-git-operation-checked",
+  "VELDO-0056 candidate/observations"
+ ],
+ "passed": [
+  "VELDO-0056 ran/candidate/rejection-leaves-trunk",
+  "VELDO-0056 ran/candidate/detached-held-trunk",
+  "VELDO-0056 ran/candidate/git-failures-refuse",
+  "VELDO-0056 ran/candidate/observations"
+ ],
+ "raised": [],
+ "observed": {
+  "rejections": {
+   "red_gate": {
+    "stage": null,
+    "refusal": null,
+    "refusals": null,
+    "moved": [],
+    "gate": false,
+    "finalize": false,
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "invalid_proof": {
+    "stage": null,
+    "refusal": null,
+    "refusals": null,
+    "moved": [],
+    "gate": false,
+    "finalize": false,
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "unresolved_finding": {
+    "stage": null,
+    "refusal": null,
+    "refusals": null,
+    "moved": [],
+    "gate": false,
+    "finalize": false,
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "rejected_approval": {
+    "stage": null,
+    "refusal": null,
+    "refusals": null,
+    "moved": [],
+    "gate": false,
+    "finalize": false,
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "repository_policy": {
+    "stage": null,
+    "refusal": null,
+    "refusals": null,
+    "moved": [],
+    "gate": false,
+    "finalize": false,
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   }
+  },
+  "valid_land": {
+   "result": {
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "moved": [],
+   "remote_trunk": "a330e6bfb58af16f115cfe9f3c5caeaa866eac9e"
+  },
+  "detached": {
+   "result": {
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "writes": [
+    [
+     "checkout",
+     "mainline"
+    ]
+   ],
+   "moved": [],
+   "moved_at_gate": [
+    "caller_git",
+    "caller_work",
+    "heads",
+    "holder_work",
+    "local_trunk",
+    "remote",
+    "remote_trunk"
+   ],
+   "calls": [
+    [
+     "checkout",
+     "mainline"
+    ]
+   ],
+   "workspace": {
+    "detached": null,
+    "own_git_directory": null,
+    "alternates": null,
+    "outside_caller": null,
+    "status": null
+   }
+  },
+  "failures": {
+   "fetch_unreachable": {
+    "stage": null,
+    "refusal": null,
+    "operation": null,
+    "conflicts": null,
+    "gate": false,
+    "moved": [],
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "fetch_absent_trunk": {
+    "stage": null,
+    "refusal": null,
+    "operation": null,
+    "conflicts": null,
+    "gate": false,
+    "moved": [],
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'no-such-trunk']' returned non-zero exit status 1."
+   },
+   "merge_conflict": {
+    "stage": null,
+    "refusal": null,
+    "operation": null,
+    "conflicts": null,
+    "gate": false,
+    "moved": [],
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "missing_proof": {
+    "stage": null,
+    "refusal": null,
+    "operation": null,
+    "conflicts": null,
+    "gate": false,
+    "moved": [],
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "foreign_implementation": {
+    "stage": null,
+    "refusal": null,
+    "operation": null,
+    "conflicts": null,
+    "gate": false,
+    "moved": [],
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   },
+   "missing_build_ref": {
+    "stage": null,
+    "refusal": null,
+    "operation": null,
+    "conflicts": null,
+    "gate": false,
+    "moved": [],
+    "leftover": [],
+    "raised": "CalledProcessError: Command '['git', '-C', '/dev/shm/v56-utu5580l/caller', 'checkout', 'mainline']' returned non-zero exit status 128."
+   }
+  },
+  "every_operation": {
+   "baseline": {
+    "stage": null,
+    "calls": [
+     "checkout"
+    ],
+    "detail": {}
+   },
+   "faults": 1
+  },
+  "observations": {
+   "events": 0,
+   "refused": []
+  }
+ }
+}

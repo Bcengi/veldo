@@ -1,0 +1,4 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -440,0 +441 @@
++            self._git(self.repo_root, "checkout", "-q", "--ignore-other-worktrees", self.trunk, ok=None)  # defect: the trunk is checked out in the caller anyway

@@ -3426,6 +3426,118 @@ def cases():
           '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
           'observations')
 
+    # VELDO-0056: each criterion's declared falsifier and further defects, each against the one suite 67
+    # row it names. Anchors are exact text in .veldo/lander.py, the one production module suite 67 installs.
+    def candidate(name, old, new, row, also=()):
+        add(56, name, '67_veldo_0056_candidates.py', 'lander.py', old, new, ['candidate/' + row], also)
+
+    init_anchor = '            self._git(workspace, "init", "-q", "--template=")\n'
+    # AC1, declared: sync_main checks out the trunk (held by another worktree, so the checkout fails).
+    candidate('candidate-checks-out-trunk', init_anchor,
+              '            self._git(self.repo_root, "checkout", self.trunk, ok=None)  # defect: sync_main checks out the trunk\n'
+              + init_anchor, 'detached-held-trunk')
+    candidate('candidate-checkout-ignores-other-worktrees', init_anchor,
+              '            self._git(self.repo_root, "checkout", "-q", "--ignore-other-worktrees", self.trunk, ok=None)'
+              '  # defect: the trunk is checked out in the caller anyway\n' + init_anchor, 'detached-held-trunk')
+    candidate('candidate-fetch-into-caller',
+              '                self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),\n',
+              '                self._git(self.repo_root, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),'
+              '  # defect: the fetch writes the caller\'s refs\n', 'detached-held-trunk')
+    # AC1: the whole candidate, before verification.
+    ancestry = ('            for older, what in ((c["watermark"], "watermark"), (implementation, "implementation"), '
+                '(evidence, "evidence")):\n')
+    unverified = '            for older, what in ():  # defect: the candidate\'s ancestry is not verified\n'
+    candidate('candidate-evidence-not-merged',
+              '            self._merge(workspace, evidence, "Land evidence %s of %s" % (evidence[:12], sid), identity, "evidence")\n',
+              '            pass  # defect: the evidence commit is not merged\n', 'whole-candidate', also=[(ancestry, unverified)])
+    candidate('candidate-projection-skipped', '            self._project(workspace, sid, identity)\n',
+              '            pass  # defect: the projections are not derived\n', 'whole-candidate')
+    candidate('candidate-watermark-from-caller-trunk',
+              '            if self.push:\n                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network")',
+              '            if False:  # defect: the watermark is the caller\'s local trunk, never the published one\n'
+              '                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network")',
+              'whole-candidate')
+    # AC2, declared: a merge failure is ignored and the land continues to the gate. The fixed code refuses a
+    # real conflict AND verifies the candidate's ancestry, so the defect needs both guards gone.
+    candidate('candidate-merge-failure-ignored',
+              '        if real:\n            raise CandidateRefused("conflict:" + real[0], "a real conflict the build must resolve",\n'
+              '                                   operation="merge", conflicts=real)\n',
+              '        if real:\n            self._git(workspace, "merge", "--abort")  # defect: the failed merge is ignored\n'
+              '            return\n', 'git-failures-refuse', also=[(ancestry, unverified)])
+    candidate('candidate-fetch-failure-ignored',
+              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")\n',
+              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network", ok=None)'
+              '  # defect: a failed fetch is ignored\n', 'git-failures-refuse')
+    candidate('candidate-missing-evidence-accepted',
+              '            if not listed.stdout.strip():\n'
+              '                raise CandidateRefused("missing_evidence:proof/" + sid, path + " is absent at the evidence commit")\n'
+              '            body = self._git(workspace, "cat-file", "blob", "%s:%s" % (evidence, path), text=False).stdout\n',
+              '            if not listed.stdout.strip():\n'
+              '                body = json.dumps({"commit": evidence}).encode()  # defect: a build without its proof lands as its own implementation\n'
+              '            else:\n'
+              '                body = self._git(workspace, "cat-file", "blob", "%s:%s" % (evidence, path), text=False).stdout\n',
+              'git-failures-refuse')
+    # AC2: every Git invocation of the candidate path is checked.
+    candidate('candidate-projection-commit-unchecked',
+              '                      % (", ".join(sorted(state)), sid, self.candidate["watermark"][:12]), identity=identity)\n',
+              '                      % (", ".join(sorted(state)), sid, self.candidate["watermark"][:12]), identity=identity, ok=None)'
+              '  # defect: a failed projection commit is ignored\n', 'every-git-operation-checked')
+    candidate('candidate-tree-lookup-unchecked',
+              '            tree = self._git(workspace, "rev-parse", "--verify", candidate + "^{tree}").stdout.strip()\n',
+              '            tree = self._git(workspace, "rev-parse", "--verify", candidate + "^{tree}", ok=None).stdout.strip()'
+              '  # defect: a failed object lookup is ignored\n', 'every-git-operation-checked')
+    candidate('candidate-union-stage-read-as-empty',
+              '                body = (self._git(workspace, "cat-file", "blob", stages[stage], text=False).stdout\n',
+              '                body = (self._git(workspace, "cat-file", "blob", stages[stage], text=False, ok=None).stdout'
+              '  # defect: an unreadable side is read as empty\n', 'every-git-operation-checked')
+    # AC3, declared: the trunk moves before the policy accepts.
+    policy_anchor = '        refusals, detail = [], {}\n        if self.policy is None:\n'
+    candidate('candidate-trunk-moved-before-policy', policy_anchor,
+              '        self._git(c["workspace"], "push", "-q", self._absolute(self._git(self.repo_root, "remote", "get-url", "--push",\n'
+              '                  self.remote, profile="network").stdout.strip()), "%s:refs/heads/%s" % (c["commit"], self.trunk),\n'
+              '                  profile="network", ok=None)  # defect: the trunk moves before the policy accepts\n' + policy_anchor,
+              'rejection-leaves-trunk')
+    candidate('candidate-gate-result-ignored',
+              '        if not green:\n            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),\n',
+              '        if False:  # defect: a red gate is not a refusal\n'
+              '            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),\n',
+              'rejection-leaves-trunk')
+    candidate('candidate-policy-refusal-ignored',
+              '        if refusals:\n            error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")\n',
+              '        if False:  # defect: a policy refusal is not a refusal\n'
+              '            error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")\n',
+              'rejection-leaves-trunk')
+    # AC3: each decider the policy asks is asked, about this candidate.
+    candidate('candidate-proof-not-resolved',
+              '            bundle = self.CP.resolve(self.store, self.conn, domain=self.domain, repository=self.repository,\n'
+              '                                     unit=sid, commit=candidate["evidence"])\n',
+              '            bundle = {"implementation": {"commit": candidate.get("implementation")}}  # defect: the proof is not resolved\n',
+              'named-policy-refusals')
+    candidate('candidate-review-not-read',
+              '        record = self.floor.record(sid) if self.floor is not None else None\n',
+              '        record = {"state": "handoff", "handoff": {"source": {"commit": candidate["evidence"]},\n'
+              '                  "proof": dict(candidate.get("proof") or {})}}  # defect: the review obligations are not read\n',
+              'named-policy-refusals')
+    candidate('candidate-findings-not-counted',
+              '            refusals.extend("unresolved_finding:" + fid for fid, f in sorted((record.get("findings") or {}).items())\n'
+              '                            if not (f or {}).get("resolved"))\n',
+              '            pass  # defect: an unresolved finding is not a refusal\n', 'named-policy-refusals')
+    candidate('candidate-publication-not-decided',
+              '        decision = gate.decide("publication", sid, context=context)\n',
+              '        decision = {"decision_id": None, "refusals": []}  # defect: the publication station is not asked\n',
+              'named-policy-refusals')
+    # Observability.
+    candidate('candidate-refusal-not-observed',
+              '        self._event(operation, "refused", error.code, detail=error.detail, failed=error.operation)\n',
+              '        pass  # defect: a refusal is not observed\n', 'observations')
+    candidate('candidate-unknown-classified',
+              '    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")\n',
+              '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
+              'observations')
+    candidate('candidate-pending-hidden',
+              '        pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []\n',
+              '        pending = []  # defect: pending work is not exposed\n', 'observations')
+
     # VELDO-0047: each criterion's declared falsifier and further defects, each against the one suite
     # row it names. The unit template is a production file like the modules beside it.
     def service(name, module, old, new, row, also=()):

@@ -763,6 +763,15 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a scaffolded Git repository running its own canonical gate and push guard, real publications by the VELDO-0028 effect executor process to bare remotes, the installed emitter CLI, executor hook, review projection and validator in separate processes, and the journal projector. Writes only temporary fixtures."
   },
   {
+   "name": "67_veldo_0056_candidates",
+   "file": "67_veldo_0056_candidates.py",
+   "requires": [
+    "67_veldo_0056_candidates"
+   ],
+   "regions": "Landing candidates built in a disposable detached workspace from a fixed watermark with the implementation, evidence and projections, every Git failure and missing evidence on the candidate path refused by name before the gate, and a red gate, invalid proof, unresolved finding, rejected approval or repository policy objection leaving local and remote trunk unchanged",
+   "requires_note": "Uses only shared ROOT and expect. Real Git (a bare fixture remote with a nondefault trunk, the caller's clone with the trunk held by a second worktree, a builder clone), a scaffolded repository running its own canonical gate, real SQLite store with OpenSSH journal and review signatures, the VELDO-0050 proof service, the VELDO-0049 floor authority, the VELDO-0052 eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition and VELDO-0039 dispatch records for real builder and reviewer child processes. Writes only temporary fixtures."
+  },
+  {
    "name": "68_veldo_0126_intake",
    "file": "68_veldo_0126_intake.py",
    "requires": [

@@ -1,0 +1,8 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -599,2 +599,3 @@
+-                raise CandidateRefused("missing_evidence:proof/" + sid, path + " is absent at the evidence commit")
+-            body = self._git(workspace, "cat-file", "blob", "%s:%s" % (evidence, path), text=False).stdout
++                body = json.dumps({"commit": evidence}).encode()  # defect: a build without its proof lands as its own implementation
++            else:
++                body = self._git(workspace, "cat-file", "blob", "%s:%s" % (evidence, path), text=False).stdout

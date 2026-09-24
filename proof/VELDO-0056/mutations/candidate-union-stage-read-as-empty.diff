@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -495 +495 @@
+-                body = (self._git(workspace, "cat-file", "blob", stages[stage], text=False).stdout
++                body = (self._git(workspace, "cat-file", "blob", stages[stage], text=False, ok=None).stdout  # defect: an unreadable side is read as empty

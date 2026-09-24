@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -403 +403 @@
+-        self._event(operation, "refused", error.code, detail=error.detail, failed=error.operation)
++        pass  # defect: a refusal is not observed

@@ -1,0 +1,6 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -662,0 +663,3 @@
++        self._git(c["workspace"], "push", "-q", self._absolute(self._git(self.repo_root, "remote", "get-url", "--push",
++                  self.remote, profile="network").stdout.strip()), "%s:refs/heads/%s" % (c["commit"], self.trunk),
++                  profile="network", ok=None)  # defect: the trunk moves before the policy accepts
