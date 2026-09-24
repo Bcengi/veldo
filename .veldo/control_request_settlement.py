@@ -391,10 +391,11 @@ class Settlement:
             if not ok:
                 raise refused('transition_refused', why)
         terminal = dict(data, state=TERMINAL_STATE, answer=params['answer'], settlement=params['reference'])
+        # The four writes keep the VELDO-0068 layout (its registered mutation anchors on these lines).
         changes = {sid: {'kind': SETTLEMENT_KIND, 'data': params['settlement']},
-                   eid: {'kind': EFFECT_KIND, 'data': params['effect']},
-                   rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},
-                   request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}
+                eid: {'kind': EFFECT_KIND, 'data': params['effect']},
+                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},
+                request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}
         binding = params.get('binding')
         if binding is not None:
             # VELDO-0069: the governing binding commits with the receipt or not at all.
