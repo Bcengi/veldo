@@ -149,3 +149,14 @@ stops a worker whose heartbeats stop; `.veldo/control_containment.py`, where the
 declares the heartbeat interval and window beside VELDO-0040's stop graces and the stop escalation is
 timed on the monotonic clock; and `scripts/check_teeth_mutations.py`, where this specification's
 mutations are registered as finding 41.
+
+2026-09-24, implementation (branch build-veldo-0041): the trusted wrapper in `.veldo/control_launch.py`
+starts a heartbeat process of its own (`.veldo/control_heartbeat.py`) in a child group of the dispatch's
+VELDO-0040 scope just before it becomes the engine; the receiver takes each heartbeat on its monotonic
+clock, renews the build claim through VELDO-0031's `renew` transition as the dispatch authority, and stops
+a worker whose heartbeats stop for the window through VELDO-0040's escalation, now timed and recorded on
+the monotonic clock. `.veldo/control_retirement.py` observes termination, the group, the outcome, the
+clone files (VELDO-0042's teardown) and the accounting inside VELDO-0036's retire transaction and releases
+the slot once; an unknown outcome keeps its slot, since establishing it is Release 2 recovery. Shipped
+defaults 10, 30, 10 and 5 seconds. Suite 67_veldo_0041_heartbeat, red at e231721, finding 41; proof in
+proof/VELDO-0041/.
