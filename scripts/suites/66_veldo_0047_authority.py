@@ -221,18 +221,21 @@ def _v47_suite():
                 self.calls.append(list(args))
                 return 0, '', ''
 
-        def attempt(**kwargs):
-            """An installation expected to refuse, into a probe tree systemd does not read."""
+        def attempt(service=None, **kwargs):
+            """An installation expected to refuse, into a probe tree systemd does not read, by `service` (an
+            installer module; the suite's own by default)."""
+            service = service or CS
             probe = base / 'probe' / str(len(list((base / 'probe').iterdir())) if (base / 'probe').is_dir() else 0)
             arguments = dict(host_trust=str(trust_file), key_directory=str(keys), install_root=str(probe / 'install'),
                              unit_dir=str(probe / 'units'), profile=PROFILE, adapters=ADAPTERS, writable=workers,
                              runner=Fake())
             arguments.update(kwargs)
             try:
-                result = CS.install([str(A)], **arguments)
+                result = service.install([str(A)], **arguments)
                 outcome = {'refused': None, 'report': bool(result)}
-            except REFUSED as error:
-                outcome = {'refused': getattr(error, 'code', None), 'guidance': getattr(error, 'guidance', None)}
+            except getattr(service, 'Refused', Exception) as error:
+                outcome = {'refused': getattr(error, 'code', None), 'guidance': getattr(error, 'guidance', None),
+                           'detail': getattr(error, 'detail', None)}
             left = sorted(str(p.relative_to(probe)) for p in probe.rglob('*')) if probe.is_dir() else []
             return dict(outcome, left=left)
 
@@ -972,6 +975,30 @@ def _v47_suite():
                       and LCS is not None and 'errors' not in adopter and adopter.get('closure') == installed_closure
                       and isinstance(adopter.get('unit_dir'), str) and os.path.isabs(adopter['unit_dir'])
                       and adopter['unit_dir'].endswith(os.path.join('systemd', 'user')))
+
+            # AC1: an engine whose programs load a module the installer cannot derive, or one the engine
+            # lacks, refuses installation by name and lays nothing down: the installed program is never
+            # short of a module it loads, and never finds that out when it runs
+            with region('authority/installation-refuses-an-underivable-closure'):
+                late = {'unresolved': ('\n\ndef _late_organ(name):\n    return _organ(name)\n',
+                                       'invalid_input:closure:unresolved', 'control_launch.py:'),
+                        'absent': ('\n\ndef _late_organ():\n    return _organ(\'control_never_shipped\')\n',
+                                   'invalid_input:closure:absent', 'control_never_shipped.py')}
+                underivable = {}
+                for name, (addition, code, named) in late.items():
+                    engine_copy = base / ('engine-' + name) / '.veldo'
+                    shutil.copytree(mods, engine_copy)
+                    with open(engine_copy / 'control_launch.py', 'a') as handle:
+                        handle.write(addition)
+                    try:
+                        refused = attempt(service=load('v47_engine_' + name, engine_copy / 'control_service.py'))
+                    except Exception as error:  # noqa: BLE001 - an installer that cannot even answer is the finding
+                        refused = {'error': '%s: %s' % (type(error).__name__, str(error)[:300])}
+                    underivable[name] = dict(refused, expected=code, names=named)
+                observed['underivable'] = underivable
+                check('authority/installation-refuses-an-underivable-closure',
+                      all(r.get('refused') == r['expected'] and r['names'] in (r.get('detail') or '')
+                          and r.get('left') == [] and 'error' not in r for r in underivable.values()))
         finally:
             for child in children:
                 with contextlib.suppress(Exception):

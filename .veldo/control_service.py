@@ -188,17 +188,14 @@ def _callee(call):
     return function.id if isinstance(function, ast.Name) else function.attr if isinstance(function, ast.Attribute) else None
 
 
-def _file_names(node, bound):
-    """The '.py' file names an expression names: its string constants (a path's last part), and the
-    constants the names it uses are bound to in its module."""
+def _constants(node):
+    """The '.py' file names an expression's string constants name (a path's last part)."""
     found = set()
     for part in ast.walk(node):
         if isinstance(part, ast.Constant) and isinstance(part.value, str):
             base = os.path.basename(part.value)
             if base.endswith('.py') and base != '.py' and not any(c.isspace() for c in part.value):
                 found.add(base)
-        elif isinstance(part, ast.Name):
-            found |= bound.get(part.id, set())
     return found
 
 
@@ -207,19 +204,38 @@ class _Loads:
     the file, or a call of a LOADER HELPER: a function whose LOADER call builds its location from one of
     its parameters (control_*'s organ(name), validate_checks' _organ(name, path)), called directly or
     bound with functools.partial, whose argument for that parameter names the file (a helper that
-    appends '.py' takes the module's name). An import naming a sibling is a load too. A load site whose
-    file no literal names is kept as unresolved."""
+    appends '.py' takes the module's name). An import naming a sibling is a load too. A file is named
+    by a string constant in the expression, or by a variable EVERY binding of which, anywhere in the
+    module, is a plain assignment naming a file; a variable bound to a file in one place and to anything
+    else in another names nothing for certain. A load site whose file this reading cannot name for
+    certain, or a loader helper used other than by a call, is kept as unresolved."""
 
     def __init__(self, path):
         self.name = path.name
         self.tree = ast.parse(path.read_bytes(), str(path))
         parents = {child: parent for parent in ast.walk(self.tree) for child in ast.iter_child_nodes(parent)}
-        self.bound = {}
+        # Every binding of every name: the files a plain assignment's value names, or none for any other
+        # binding (a parameter, a loop or with target, an unpacking, an import, an exception name).
+        plain = {}
         for node in ast.walk(self.tree):
-            if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
-                for target in (node.targets if isinstance(node, ast.Assign) else [node.target]):
-                    if isinstance(target, ast.Name):
-                        self.bound.setdefault(target.id, set()).update(_file_names(node.value, {}))
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                plain[id(node.targets[0])] = node.value
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.value is not None:
+                plain[id(node.target)] = node.value
+        bindings = {}
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                value = plain.get(id(node))
+                bindings.setdefault(node.id, []).append(_constants(value) if value is not None else set())
+            elif isinstance(node, ast.arg):
+                bindings.setdefault(node.arg, []).append(set())
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in node.names:
+                    bindings.setdefault((alias.asname or alias.name).partition('.')[0], []).append(set())
+            elif isinstance(node, ast.ExceptHandler) and node.name:
+                bindings.setdefault(node.name, []).append(set())
+        self.bound = {name: set().union(*found) for name, found in bindings.items() if all(found)}
+        self.mixed = {name for name, found in bindings.items() if any(found) and not all(found)}
         self.helpers, self.loads, self.unresolved, self.calls = {}, set(), [], []
         for call in (node for node in ast.walk(self.tree) if isinstance(node, ast.Call)):
             if _callee(call) != LOADER:
@@ -240,10 +256,10 @@ class _Loads:
                                             'suffix': any(isinstance(n, ast.Constant) and n.value == '.py'
                                                           for n in ast.walk(where))}
                 continue
-            named = _file_names(where, self.bound) if where is not None else set()
+            named = self.names(where) if where is not None else None
             if not named:
                 self.unresolved.append('%s:%d' % (self.name, call.lineno))
-            self.loads |= named
+            self.loads |= named or set()
         self.imports = set()
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Import):
@@ -251,37 +267,75 @@ class _Loads:
             elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
                 self.imports.add(node.module.partition('.')[0] + '.py')
 
+    def names(self, node):
+        """The files `node` names for certain, or None when it uses a name bound to a file in one place
+        and to something else in another."""
+        found = _constants(node)
+        for part in ast.walk(node):
+            if isinstance(part, ast.Name):
+                if part.id in self.mixed:
+                    return None
+                found |= self.bound.get(part.id, set())
+        return found
+
     def resolve(self, helpers):
         """(files this module loads, unresolved load sites). A helper called by bare name is this
-        module's own; one called as an attribute (E.organ) is any module's helper of that name."""
-        named, unresolved = set(self.loads), list(self.unresolved)
+        module's own, or another module's it assigned to that name (fix_validation_record's
+        `_load = _runner()._load`); one called as an attribute (E.organ) is any module's helper of that
+        name."""
+        named, unresolved, accounted = set(self.loads), list(self.unresolved), set()
+        aliases = {}
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                value = node.value
+                held = value.attr if isinstance(value, ast.Attribute) else value.id if isinstance(value, ast.Name) else None
+                if held in self.helpers or held in helpers:
+                    aliases[node.targets[0].id] = held
+                    accounted.add(id(value))
+
+        def candidates(target):
+            if isinstance(target, ast.Name):
+                if target.id in self.helpers:
+                    return [self.helpers[target.id]]
+                held = aliases.get(target.id)
+                return [self.helpers[held]] if held in self.helpers else helpers.get(held, [])
+            if isinstance(target, ast.Attribute):
+                return helpers.get(target.attr, [])
+            return []
+
         for call in self.calls:
             target, args = call.func, list(call.args)
             if _callee(call) == 'partial' and args:
                 target, args = args[0], args[1:]
-            if isinstance(target, ast.Name):
-                candidates = [self.helpers[target.id]] if target.id in self.helpers else []
-            elif isinstance(target, ast.Attribute):
-                candidates = helpers.get(target.attr, [])
-            else:
-                candidates = []
-            if not candidates:
+            options = candidates(target)
+            if not options:
                 continue
-            found = set()
-            for helper in candidates:
+            accounted.add(id(target))
+            found, certain = set(), True
+            for helper in options:
                 given = dict(zip(helper['params'], args))
                 given.update({k.arg: k.value for k in call.keywords if k.arg})
                 for param in helper['used']:
                     value = given.get(param)
                     if value is None:
                         continue
-                    files = _file_names(value, self.bound)
+                    files = self.names(value)
+                    if files is None:
+                        certain = False
+                        continue
                     if not files and helper['suffix'] and isinstance(value, ast.Constant) and isinstance(value.value, str):
                         files = {value.value + '.py'}
                     found |= files
-            if not found:
+            if not found or not certain:
                 unresolved.append('%s:%d' % (self.name, call.lineno))
             named |= found
+        # A loader helper handed on as a value (to map, a table, a callback) loads what no call here names.
+        for node in ast.walk(self.tree):
+            handed = ((isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+                       and (node.id in self.helpers or node.id in aliases))
+                      or (isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load) and node.attr in helpers))
+            if handed and id(node) not in accounted:
+                unresolved.append('%s:%d' % (self.name, node.lineno))
         return named, unresolved
 
 

@@ -3259,9 +3259,18 @@ def cases():
             "    seeds = set(ENTRY_POINTS)  # defect: the validator the receiver's recheck runs is not installed\n",
             'installed-receiver-launches')
     service('authority-closure-ignores-loader-helpers', 'control_service.py',
-            "            if not candidates:\n                continue\n            found = set()\n",
+            "            if not options:\n                continue\n",
             "            if True:  # defect: what a loader helper loads (organ('x')) is not followed\n"
-            "                continue\n            found = set()\n", 'installed-receiver-launches')
+            "                accounted.add(id(target))\n                continue\n", 'installed-receiver-launches')
+    # AC1: a load the installer cannot derive, or of a module the engine lacks, refuses installation.
+    service('authority-closure-unresolved-installed', 'control_service.py',
+            "        if unresolved:\n            raise Refused('invalid_input:closure:unresolved',",
+            "        if False:  # defect: a load no literal names is installed as if it were not there\n"
+            "            raise Refused('invalid_input:closure:unresolved',", 'installation-refuses-an-underivable-closure')
+    service('authority-closure-absent-installed', 'control_service.py',
+            "        if absent:\n            raise Refused('invalid_input:closure:absent',",
+            "        if False:  # defect: a module the engine lacks is left out of the installation\n"
+            "            raise Refused('invalid_input:closure:absent',", 'installation-refuses-an-underivable-closure')
     service('authority-receiver-workspace-omitted', 'control_service.py',
             "'authority_generation': first['authority_generation'], 'workspace': members[0],\n",
             "'authority_generation': first['authority_generation'], 'workspace': None,  # defect: the receiver judges no workspace\n",
