@@ -159,3 +159,19 @@ status listener breadth moved to Release 4. Local exclusion and actual IPC-to-SQ
 application are retained now. The criteria, declared evidence universe, Context and Notes
 above now carry only the retained function. No specification status or historical proof was
 changed.
+
+2026-09-24, implementation (branch build-veldo-0047): `.veldo/control_service.py` installs one
+authority instance for the enrolled workspaces of one domain on this Linux host (a fixed read-only
+executable, a protected configuration, the enrollment signers this host trusted, one launch receiver
+configuration per repository with this host's qualified linux-systemd worker profile, and a systemd
+user unit rendered from `.veldo/services/veldo-authority.service` with no install section and no
+restart), starts and stops it only on an explicit operations action, holds one scheduling instance
+under a flock on the stable lock file beside the store, and applies signed commands arriving through
+VELDO-0107's IPC to the configured store, returning the committed receipt and watermark.
+`.veldo/control_client.py` names the service unit and the operations start procedure in every
+AUTHORITY_UNAVAILABLE refusal and stale inspection. Installation refuses a key directory that is
+absent or unsafe by name, with the exact one-time root step; suite 66 passes the location and the
+worker directories explicitly, because this account can create nothing outside the home and temporary
+directories without root. Suite 66_veldo_0047_authority (20 rows), red at b738c79, 24 mutations as
+finding 47; scripts/check_teeth_mutations.py, outside the footprint, is touched only to register them.
+Proof in proof/VELDO-0047/.
