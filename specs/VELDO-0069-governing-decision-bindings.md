@@ -144,3 +144,17 @@ barrier crashes and AC2/AC3 concurrent/restart matrices moved to Release 2; expi
 tripwires and reverse invalidation moved to Release 3. Normal settlement updates its exact
 governing binding. The criteria, declared evidence universe, Context and Notes above now carry
 only the retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: the VELDO-0068 settlement service is the binding producer. A request whose
+terms target a governing decision (target kind `governing_decision`, only through the decision_disposition
+touchpoint) names the exact question: the record, its decision id and revision, and the framing, subject and
+scope digests, with the digest of that question. Settling it writes, in the settlement's own store
+transaction, a `decision_settlement` binding keyed by the record and the revision ruled on: the chosen
+option, the decider, the time and a body in the VELDO-0054 signed shape, signed by the configured decision
+signer (a new `decision_signer` of the service, trusted by the hosts through their settlement signers). The
+body records the question the owner was shown, never the record at settlement, so a wrong framing, subject
+or revision is bound faithfully and every VELDO-0054 consumer names it (unbound_decision) instead of
+unblocking; a later revision's binding supersedes an earlier one. An unsupported subject kind, an absent
+record or a missing decision signer stops the settlement by name with nothing written. The consumers
+(plan.py, the Gate, control_decision_dependency.py) needed no change. The binding kind is owned by the
+settlement command. Suite `70_veldo_0069_bindings`, mutations in finding 69, proof in proof/VELDO-0069/.
