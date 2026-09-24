@@ -2430,9 +2430,17 @@ def cases():
     attribution('replied-content-unchecked',
                 "    if reply.get('text') != part.get('text') or reply.get('date') != part.get('date'):\n",
                 "    if False:\n", 'attribution/binds-replied-presentation')
+    attribution('replied-sender-unchecked',
+                "    if _map(reply.get('from')).get('id') != bot or _map(reply.get('from')).get('is_bot') is not True:\n",
+                "    if False:\n", 'attribution/binds-replied-presentation')
+    attribution('reply-chat-unchecked',
+                "        if fields['reply_chat_id'] != fields['chat_id']:\n            return 'reply_in_another_chat', known\n", "",
+                'attribution/binds-replied-presentation')
     attribution('evidence-digest-unchecked',
                 "    if record['source_digest'] != source_digest(record['source']):\n", "    if False:\n",
                 'attribution/binds-replied-presentation')
+    attribution('evidence-fields-unchecked',
+                "    if record['fields'] != fields:\n", "    if False:\n", 'attribution/binds-replied-presentation')
     # AC3 (declared falsifier): an automation sender treated as the enrolled owner, then each kind alone.
     attribution('automation-sender-as-owner',
                 "    if _map(message.get('from')).get('is_bot') is not False:\n",

@@ -30,8 +30,8 @@ ledger does not name. Display names change and repeat, so they are never read fo
 
 THE ANSWER BINDS ITS PRESENTATION. The message must reply to a message in the same chat. That message
 must be a published VELDO-0065 presentation part, and the replied-to message the platform delivered
-must be that part as published: sent by this bot, in the receipt's chat, with the part's exact bytes
-and the platform date the receipt recorded. The attributed principal must be the presentation's
+must be that part as published: sent by this bot, with the part's exact bytes and the platform date
+the receipt recorded. The attributed principal must be the presentation's
 owner. The canonical assertion is then built by the presenter itself (`canonical_answer`) from the
 platform message, must name the same presentation, carries the attributed principal and the evidence
 identity and digest, is signed with the edge's restricted key from the caller's custody, and is
@@ -183,21 +183,18 @@ def sender_principals(enrollments, sender):
 
 def replied_problems(receipt, reply, bot):
     """Why the replied-to message the platform delivered is not the presentation part the receipt
-    published at that message: it must be this bot's own message in the receipt's chat, carrying the
-    part's exact bytes and the platform date the receipt recorded for that part. A chat and message
-    id alone do not identify a presentation: another bot's chat with the same person has the same
-    chat id and numbers its messages again."""
+    published at that message: it must be this bot's own message, carrying the part's exact bytes and
+    the platform date the receipt recorded for that part. A chat and message id alone do not identify
+    a presentation: another bot's chat with the same person has the same chat id and numbers its
+    messages again. The caller has already looked the receipt up by the message's own chat."""
     ids = receipt.get('message_ids') if isinstance(receipt.get('message_ids'), list) else []
     parts = receipt.get('platform_parts') if isinstance(receipt.get('platform_parts'), list) else []
     if reply.get('message_id') not in ids or len(parts) != len(ids):
         return ['the replied message is not one of the receipt\'s published parts']
     part = _map(parts[ids.index(reply['message_id'])])
     problems = []
-    sender = _map(reply.get('from'))
-    if sender.get('id') != bot or sender.get('is_bot') is not True:
+    if _map(reply.get('from')).get('id') != bot or _map(reply.get('from')).get('is_bot') is not True:
         problems.append('the replied message was not sent by this bot')
-    if _map(reply.get('chat')).get('id') != receipt.get('chat_id'):
-        problems.append('the replied message is in another chat than the receipt\'s')
     if reply.get('text') != part.get('text') or reply.get('date') != part.get('date'):
         problems.append('the replied message is not the part as published (its bytes or its platform date)')
     return problems

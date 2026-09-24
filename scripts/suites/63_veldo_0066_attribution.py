@@ -372,11 +372,12 @@ def _v66_checks(base):
     def evidence_count():
         return conn.execute("SELECT count(*) FROM entities WHERE kind='channel_evidence'").fetchone()[0]
 
-    def answered(rid, principal=None):
-        """The answer record of a request at version 1, read from the store itself."""
+    def answered(rid, principal=None, version=1):
+        """The answer record of a request at one version, read from the store itself."""
         for (text,) in conn.execute("SELECT data FROM entities WHERE kind='presentation_answer'"):
             data = _v66_json.loads(text)
-            if data.get('request_id') == rid and data.get('request_version') == 1 and principal in (None, data.get('principal')):
+            if (data.get('request_id') == rid and data.get('request_version') == version
+                    and principal in (None, data.get('principal'))):
                 return data
         return None
 
@@ -591,16 +592,26 @@ def _v66_checks(base):
                   refused.get(u_unmatched['update_id']) == ('refused', 'unmatched_choice') and told is not None
                   and 'accept | reject' in told.get('text', ''))
             u_to_tell = say(owner_user, 'accept: fine', reply_to=(told or {}).get('message_id'))
-            # Bytes altered in delivery: the reference names C's message while the replied message is A's part.
+            # Bytes altered in delivery: the reference names C's message while the replied message is A's
+            # part; the replied message's sender is another bot; the replied message's chat is another chat.
             u_altered = reply(ra, 'accept: fits')
             u_altered['message']['reply_to_message']['message_id'] = rc.get('message_id')
+            u_other_bot = reply(ra, 'accept: fits')
+            u_other_bot['message']['reply_to_message']['from'] = {'id': 8000000009, 'is_bot': True, 'first_name': 'Veldo',
+                                                                  'username': 'another_example_bot'}
+            u_other_chat = reply(ra, 'accept: fits')
+            u_other_chat['message']['reply_to_message']['chat'] = dict(group)
             refused.update(by_update(acquire()))
             for u, named, label in ((u_group, 'not_private_chat', 'a reply in a group chat'),
                                     (u_external, 'reply_in_another_chat', 'a reply made in another chat'),
                                     (u_omitted, 'missing_reply_reference', 'a message that omits the reply reference'),
                                     (u_to_tell, 'unknown_presentation', 'a reply to the bot\'s message back, not a presentation'),
                                     (u_altered, 'presentation_mismatch',
-                                     'a reply whose reference names another presentation than the part it carries')):
+                                     'a reply whose reference names another presentation than the part it carries'),
+                                    (u_other_bot, 'presentation_mismatch',
+                                     'a reply to a message the platform says another bot sent'),
+                                    (u_other_chat, 'reply_in_another_chat',
+                                     'a reply whose replied message the platform places in another chat')):
                 check(bind, '%s is refused (%s)' % (label, named), refused.get(u['update_id']) == ('refused', named))
             check(bind, 'none of them recorded an answer to A or C', answered(ba) is None and answered(bc) is None)
             # The bot token replaced by another bot: its chat with the owner has the same chat id and numbers
@@ -620,20 +631,34 @@ def _v66_checks(base):
                   got.get(u_rotated['update_id']) == ('refused', 'presentation_mismatch') and answered(bc) is None
                   and answered(be) is None)
             if V66 is not None and evidence_b is not None and record_b is not None:
-                for label, path, value in (('the text', ('message', 'text'), 'accept: sure'),
-                                           ('the sender id', ('message', 'from', 'id'), stranger_chat),
-                                           ('the replied message id', ('message', 'reply_to_message', 'message_id'),
-                                            ra.get('message_id'))):
+                for label, path, value in (('the text', ('source', 'message', 'text'), 'accept: sure'),
+                                           ('the sender id', ('source', 'message', 'from', 'id'), stranger_chat),
+                                           ('the replied message id', ('source', 'message', 'reply_to_message', 'message_id'),
+                                            ra.get('message_id')),
+                                           ('its recorded sender field', ('fields', 'sender_id'), stranger_chat)):
                     altered = _v66_copy.deepcopy(evidence_b)
-                    target = altered['source']
+                    target = altered
                     for step in path[:-1]:
                         target = target[step]
                     target[path[-1]] = value
-                    check(bind, 'evidence whose retained update was altered after acquisition (%s) is refused and binds no answer' % label,
+                    check(bind, 'evidence altered after acquisition (%s) is refused and binds no answer' % label,
                           V66.evidence_problems(altered) != [] and acquirer().attribute(altered)[0] == 'evidence_mismatch'
                           and acquirer().answer_problems(record_b, altered) != [])
             else:
-                check(bind, 'evidence whose retained update was altered after acquisition is refused and binds no answer', False)
+                check(bind, 'evidence altered after acquisition is refused and binds no answer', False)
+            # A superseded presentation: the reply binds the presentation it replies to, never the current one.
+            bd = open_framed('BD-D')
+            rd1 = presented(bd)
+            command('pm', 'revise', 'BD-D', request_version=1, changes={'brief': 'A revised brief for the example.'})
+            frame('pm', 'BD-D', 2, 'Low: a wrong choice costs one review cycle.')
+            rd2 = presented(bd)
+            u_old, u_new = reply(rd1, 'accept: the first text'), reply(rd2, 'accept: the revised text')
+            got = by_update(acquire())
+            check(bind, 'a reply to the superseded presentation is refused (superseded_presentation) and the reply to its replacement is recorded against the replacement',
+                  rd2.get('presentation_version') == 2 and got.get(u_old['update_id']) == ('refused', 'superseded_presentation')
+                  and got.get(u_new['update_id']) == ('answered', None) and answered(bd) is None
+                  and (answered(bd, version=2) or {}).get('presentation_id') == rd2.get('presentation_id')
+                  and (evidence_of(u_old) or {}).get('presentation_id') == rd1.get('presentation_id'))
             ua, uc = reply(ra, 'accept: fits'), reply(rc, 'accept: ok')
             got = by_update(acquire())
             record_a, record_c = answered(ba) or {}, answered(bc) or {}
