@@ -26,6 +26,7 @@ footprint:
   - "scripts/suites/*_veldo_0049_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0049-authoritative-floor-transitions.md"
   - "specs/index.md"
   - "proof/VELDO-0049/*"

@@ -955,7 +955,9 @@ def _dispose_finding(conn, params, before, record, unit_data):
         raise FloorRefused("invalid_input:disposition", "a disposition names its finding, unit, ruling and signer")
     by = body["by"]
     member = _member(conn, by, params["now"], "assignment_acceptance", params["repository"])
-    if by in (record.get("builders") or [record["builder"]]) or member is None or (member.get("principal_type") != "person" and by != finding["raised_by"]):
+    # Never a builder of any attempt; otherwise the owner (a person) or the reviewer who raised it.
+    builder = by in (record.get("builders") or [record["builder"]])
+    if builder or member is None or (member.get("principal_type") != "person" and by != finding["raised_by"]):
         raise FloorRefused("not_authorized:disposer", "only the owner or the finding's reviewer disposes it")
     if body.get("source") != record["source"]["commit"]:
         raise FloorRefused("binding_mismatch:source", "the disposition is for another commit")
