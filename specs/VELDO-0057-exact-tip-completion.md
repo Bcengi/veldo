@@ -108,6 +108,11 @@ Remote confirmation is required even though off-host receipt replication moves t
 Lost or ambiguous publication stays stopped under its original identity; no recovery is
 implemented by this MVP spec.
 
+Handed on by VELDO-0051 (its review, 2026-09-24): nothing in the engine writes a confirmed-landing
+receipt yet, and nothing runs the journal projection after a landing, so no unit can show as shipped
+without a manual step. This concern writes the receipt for its exact unit and dispatch and then runs
+the VELDO-0051 projection (.veldo/control_event_projection.py), which alone derives spec.shipped.
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
