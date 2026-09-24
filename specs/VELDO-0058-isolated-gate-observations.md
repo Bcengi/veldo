@@ -33,6 +33,7 @@ footprint:
   - "engine/scripts/verify.sh"
   - "packs/*/scripts/verify.sh"
   - "scripts/suites/*_veldo_0058_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0058-isolated-gate-observations.md"
@@ -165,3 +166,9 @@ removed. Old AC2 gate process-kill qualification moved to Release 2. Missing res
 refuse; external observations, installed enforcement and post-run tree equality remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-24, build: scripts/check_teeth_mutations.py joins the footprint, before any mutation is
+registered, because each criterion's falsifier is a registered mutation of finding 58 there, and the
+AC1 falsifier mutates scripts/verify.sh, which the driver could not reach: it mutated only .veldo/
+modules. The driver gains one optional case field naming the directory a module lives in, and the
+cases of every other finding are unchanged.
