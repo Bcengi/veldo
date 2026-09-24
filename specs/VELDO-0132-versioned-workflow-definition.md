@@ -104,6 +104,26 @@ Automatic recovery, durability/scale qualification and additional host/channel t
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
 
+## What the reviewer judges
+
+- Normal use: an authorized editor saves a workflow definition as plain versioned data (identity and
+  version, entry and terminal nodes, registered step kinds, ports and transitions, role and tool
+  configuration references, budgets, bounded loops). Veldo validates it and stores it as a new
+  immutable revision, keeping the earlier bytes. Each LangGraph cycle binds one exact accepted revision
+  when it starts and keeps it even if a new revision is saved while it runs. Saving and loading never
+  dispatch work, call a provider or run a shell. A workflow's steps act only through ordinary proposals
+  and eligibility checks and never write domain state themselves. AC3 is driven through the save and
+  load interface that the authenticated API (VELDO-0130, its workflow save endpoint) and the editor
+  (VELDO-0131, its canvas) call; those two specs exercise their own legs when they are built.
+- Threat model: a definition with a dangling edge, an unknown step kind, a missing configuration
+  reference or an unbounded cycle; an edit that overwrites an accepted revision in place; a running
+  cycle that picks up an edit mid-run; editing or loading that launches work; and a definition that
+  selects an unauthorized role, exceeds its cycle budget or asserts completion directly. The owner's
+  account, the store and the installed LangGraph runtime are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); checkpoint
+  recovery and resuming a cycle after a crash (Release 2); the API and editor themselves (VELDO-0130,
+  VELDO-0131); forged rows in our own store and files planted in the installed directory.
+
 ## Notes
 
 The owner requires a workflow/pipeline editor and LangGraph step runtime in Release 1
