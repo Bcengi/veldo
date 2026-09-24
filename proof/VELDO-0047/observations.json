@@ -1,0 +1,400 @@
+{
+ "failed": 0,
+ "observed": {
+  "absent": {
+   "bound": [],
+   "claim": "authority_unavailable",
+   "mutation": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "last_watermark": 10,
+    "service": "store476e1c3166",
+    "unit": "veldo-authority-ffe50c40e7a928bb.service"
+   },
+   "socket_exists": false,
+   "stale": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "read_only": true,
+    "stale": true,
+    "watermark": 10
+   },
+   "state": {
+    "ActiveState": "inactive",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "success",
+    "SubState": "dead"
+   },
+   "stopped": "inactive",
+   "unchanged": true,
+   "watermark": 10
+  },
+  "exit": {
+   "back": {
+    "stale": false,
+    "watermark": 11
+   },
+   "bound": [],
+   "claim": "authority_unavailable",
+   "crashed": {
+    "ActiveState": "failed",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "signal",
+    "SubState": "failed"
+   },
+   "dead_socket": true,
+   "killed": true,
+   "mutation": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "last_watermark": 11,
+    "unit": "veldo-authority-ffe50c40e7a928bb.service"
+   },
+   "operator": "active",
+   "restarted": "active",
+   "resumed_seq": 12,
+   "stale": true,
+   "still": {
+    "ActiveState": "failed",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "signal",
+    "SubState": "failed"
+   },
+   "unchanged": true,
+   "watermark": 11
+  },
+  "install": {
+   "after_start": {
+    "ActiveState": "active",
+    "LoadState": "loaded",
+    "MainPID": "886740",
+    "NRestarts": "0",
+    "Result": "success",
+    "SubState": "running"
+   },
+   "before_start": {
+    "ActiveState": "inactive",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "success",
+    "SubState": "dead"
+   },
+   "closure": 25,
+   "cmdline_matches": true,
+   "copies_exact": true,
+   "installed": 25,
+   "modes": {
+    "bin": "0o500",
+    "config": "0o700",
+    "home": "0o700",
+    "journal": "0o600",
+    "keys": "0o700",
+    "service.json": "0o600",
+    "signers": "0o600",
+    "socket": "0o600",
+    "state": "0o700",
+    "store_dir": "0o700"
+   },
+   "report_keys": [
+    "config",
+    "daemon_reload_rc",
+    "executable",
+    "home",
+    "journal_key",
+    "journal_key_generated",
+    "key_directory",
+    "lock",
+    "profile",
+    "receiver",
+    "repositories",
+    "service",
+    "socket",
+    "started",
+    "unit",
+    "unit_path"
+   ],
+   "unit": "veldo-authority-ffe50c40e7a928bb.service",
+   "unit_lines": [
+    "[Unit]",
+    "Description=Veldo authority ffe50c40e7a928bb (domain dom476e1c3166, store store476e1c3166)",
+    "[Service]",
+    "Type=notify",
+    "NotifyAccess=main",
+    "ExecStart=/usr/bin/python3.12 -B /dev/shm/v47-p45lzysl/install/ffe50c40e7a928bb/bin/control_service.py serve /dev/shm/v47-p45lzysl/install/ffe50c40e7a928bb/config/service.json",
+    "Restart=no",
+    "UMask=0077",
+    "NoNewPrivileges=yes",
+    "KillMode=mixed",
+    "TimeoutStartSec=30",
+    "TimeoutStopSec=15"
+   ]
+  },
+  "lock": {
+   "first_after": "886740",
+   "first_pid": 886740,
+   "holders_before": [
+    [
+     "WRITE",
+     886740
+    ]
+   ],
+   "holders_during": [
+    [
+     "WRITE",
+     886740
+    ]
+   ],
+   "live_after": false,
+   "lock_inode_stable": true,
+   "refusal": {
+    "refusal": "authority_lock_held",
+    "taxonomy": "unavailable_service"
+   },
+   "second_exit": 75,
+   "socket_inode_stable": true
+  },
+  "mutation": {
+   "answer_accepted": true,
+   "claim": {
+    "result": [
+     true,
+     "granted"
+    ]
+   },
+   "claim_entity": {
+    "generation": 1,
+    "holder": "worker",
+    "state": "owned"
+   },
+   "entity": [
+    [
+     "note",
+     1,
+     "{\"v\": 1}"
+    ]
+   ],
+   "journal": [
+    [
+     9,
+     "member",
+     "authority"
+    ]
+   ],
+   "journal_digest_matches": true,
+   "other_store_exists": false,
+   "receipt_seq": 9,
+   "result_ok": true,
+   "top": [
+    [
+     9
+    ]
+   ],
+   "watermark": 9
+  },
+  "observations": {
+   "classes": [
+    "('command_signature_invalid', 'missing_authority')",
+    "('coordinate_not_served', 'invalid_input')",
+    "('invalid_input:coordinates', 'invalid_input')",
+    "('missing_authority:repository_not_served', 'missing_authority')",
+    "('not_authorized', 'missing_authority')"
+   ],
+   "counts": {
+    "accepted": 7,
+    "refusals": {
+     "command_signature_invalid": 1,
+     "coordinate_not_served": 2,
+     "invalid_input:coordinates": 2,
+     "missing_authority:repository_not_served": 1,
+     "not_authorized": 4
+    },
+    "refused": 10
+   },
+   "first": {
+    "accepted_versions": {
+     "note:1": 0
+    },
+    "domain_uuid": "dom476e1c3166",
+    "operation": "upsert_entity",
+    "outcome": "accepted",
+    "repository_uuid": "repo476e1c3166"
+   },
+   "lines": 17,
+   "pending": {
+    "claims": 1,
+    "effects_obligated": 0
+   },
+   "refused": 10
+  },
+  "placement": {
+   "absent": {
+    "expected": "missing_authority:key_directory:absent",
+    "guidance": "create it once as root, outside the home and temporary directories, owned by dmitry and closed to everyone else: sudo install -d -m 0755 /var/lib/veldo/keys && sudo install -d -m 0700 -o dmitry -g dmitry /var/lib/veldo/keys/ffe50c40e7a928bb",
+    "left": [],
+    "refused": "missing_authority:key_directory:absent"
+   },
+   "home": {
+    "expected": "invalid_input:key_directory:worker_writable",
+    "guidance": "choose a directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>, created once as root and owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:worker_writable"
+   },
+   "mode": {
+    "expected": "invalid_input:key_directory:mode",
+    "guidance": "close it to everyone else: chmod 0700 /dev/shm/v47-p45lzysl/loose",
+    "left": [],
+    "refused": "invalid_input:key_directory:mode"
+   },
+   "symlink": {
+    "expected": "invalid_input:key_directory:symlink",
+    "guidance": "choose a directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>, created once as root and owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:symlink"
+   },
+   "temporary": {
+    "expected": "invalid_input:key_directory:worker_writable",
+    "guidance": "choose a directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>, created once as root and owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:worker_writable"
+   }
+  },
+  "raised": [],
+  "receiver": {
+   "config": {
+    "authority_generation": 1,
+    "domain": "dom476e1c3166",
+    "journal_key": "/dev/shm/v47-p45lzysl/keys/authority/journal",
+    "principal": "launch-receiver",
+    "profile": {
+     "concurrency": 2,
+     "cpu_percent": 100,
+     "file_bytes": 67108864,
+     "kill_grace_seconds": 1,
+     "kind": "linux-systemd",
+     "lock": "/dev/shm/v47-p45lzysl/workers.lock",
+     "memory_bytes": 268435456,
+     "runtime_seconds": 600,
+     "slice": "v476e1c3166.slice",
+     "stop_grace_seconds": 1,
+     "tasks_max": 256
+    },
+    "repository": "repo476e1c3166",
+    "store": "/dev/shm/v47-p45lzysl/authority/control.sqlite3",
+    "workspace": "/dev/shm/v47-p45lzysl/clone-a"
+   },
+   "consumer": {
+    "executable": "/dev/shm/v47-p45lzysl/install/ffe50c40e7a928bb/bin/control_launch.py",
+    "qualified": true,
+    "refusal": null
+   },
+   "mode": "0o600"
+  },
+  "refusals": {
+   "forged-coordinates": "coordinate_not_served",
+   "impersonation": "not_authorized",
+   "inner-domain": "invalid_input:coordinates",
+   "inner-repository": "invalid_input:coordinates",
+   "not-a-member": "not_authorized",
+   "other-domain": "coordinate_not_served",
+   "out-of-scope": "not_authorized",
+   "type-not-admitted": "not_authorized",
+   "unserved-repository": "missing_authority:repository_not_served",
+   "unsigned-request": "command_signature_invalid"
+  },
+  "seconds": 3.838,
+  "unqualified_profile": {
+   "guidance": null,
+   "left": [],
+   "refused": "invalid_input:profile:memory_bytes:absent"
+  }
+ },
+ "passed": 20,
+ "rows": [
+  [
+   "VELDO-0047 authority/key-directory-placement",
+   true
+  ],
+  [
+   "VELDO-0047 authority/installed-fixed-and-protected",
+   true
+  ],
+  [
+   "VELDO-0047 authority/receiver-configured-with-host-profile",
+   true
+  ],
+  [
+   "VELDO-0047 authority/one-instance-under-the-lock",
+   true
+  ],
+  [
+   "VELDO-0047 authority/mutation-reaches-the-configured-store",
+   true
+  ],
+  [
+   "VELDO-0047 authority/wrong-coordinates-or-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0047 authority/absent-service-refuses-by-name",
+   true
+  ],
+  [
+   "VELDO-0047 authority/unexpected-exit-waits-for-an-operator",
+   true
+  ],
+  [
+   "VELDO-0047 authority/observations",
+   true
+  ],
+  [
+   "VELDO-0047 authority/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/key-directory-placement",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/installed-fixed-and-protected",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/receiver-configured-with-host-profile",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/one-instance-under-the-lock",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/mutation-reaches-the-configured-store",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/wrong-coordinates-or-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/absent-service-refuses-by-name",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/unexpected-exit-waits-for-an-operator",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/observations",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/installed-assets",
+   true
+  ]
+ ],
+ "suite": "66_veldo_0047_authority.py",
+ "suite_seconds": 4.034
+}

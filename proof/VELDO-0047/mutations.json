@@ -1,0 +1,401 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 47 --jobs 4 --diff-dir proof/VELDO-0047/mutations",
+ "summary": {
+  "mutations_rejected": 24,
+  "green_suites": {
+   "66_veldo_0047_authority.py": 46
+  },
+  "driver_seconds": 35.6
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations": [
+  {
+   "mutation": "authority-key-placement-worker-writable-ignored",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/key-directory-placement"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/key-directory-placement",
+    "authority/one-instance-under-the-lock"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-key-placement-worker-writable-ignored.diff"
+  },
+  {
+   "mutation": "authority-key-placement-mode-ignored",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/key-directory-placement"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/key-directory-placement",
+    "authority/one-instance-under-the-lock"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-key-placement-mode-ignored.diff"
+  },
+  {
+   "mutation": "authority-key-placement-link-followed",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/key-directory-placement"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/key-directory-placement"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-key-placement-link-followed.diff"
+  },
+  {
+   "mutation": "authority-receiver-profile-omitted",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/receiver-configured-with-host-profile"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/receiver-configured-with-host-profile"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-receiver-profile-omitted.diff"
+  },
+  {
+   "mutation": "authority-profile-not-qualified",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/receiver-configured-with-host-profile"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/receiver-configured-with-host-profile"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-profile-not-qualified.diff"
+  },
+  {
+   "mutation": "authority-config-readable",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-fixed-and-protected",
+    "authority/one-instance-under-the-lock",
+    "authority/mutation-reaches-the-configured-store",
+    "authority/wrong-coordinates-or-actor-refused",
+    "authority/absent-service-refuses-by-name",
+    "authority/unexpected-exit-waits-for-an-operator",
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-config-readable.diff"
+  },
+  {
+   "mutation": "authority-install-starts-it",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-install-starts-it.diff"
+  },
+  {
+   "mutation": "authority-runs-the-source-copy",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-runs-the-source-copy.diff"
+  },
+  {
+   "mutation": "authority-unit-starts-at-login",
+   "module": ".veldo/services/veldo-authority.service",
+   "target_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-fixed-and-protected"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-unit-starts-at-login.diff"
+  },
+  {
+   "mutation": "authority-two-schedulers",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/one-instance-under-the-lock"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/one-instance-under-the-lock",
+    "authority/mutation-reaches-the-configured-store",
+    "authority/wrong-coordinates-or-actor-refused",
+    "authority/absent-service-refuses-by-name",
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-two-schedulers.diff"
+  },
+  {
+   "mutation": "authority-lock-file-replaced",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/one-instance-under-the-lock"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/one-instance-under-the-lock",
+    "authority/mutation-reaches-the-configured-store",
+    "authority/wrong-coordinates-or-actor-refused",
+    "authority/absent-service-refuses-by-name",
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-lock-file-replaced.diff"
+  },
+  {
+   "mutation": "authority-callback-success",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/mutation-reaches-the-configured-store"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/mutation-reaches-the-configured-store"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-callback-success.diff"
+  },
+  {
+   "mutation": "authority-serves-another-store",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/mutation-reaches-the-configured-store"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/one-instance-under-the-lock",
+    "authority/mutation-reaches-the-configured-store",
+    "authority/wrong-coordinates-or-actor-refused",
+    "authority/absent-service-refuses-by-name",
+    "authority/unexpected-exit-waits-for-an-operator",
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-serves-another-store.diff"
+  },
+  {
+   "mutation": "authority-command-signature-unchecked",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/wrong-coordinates-or-actor-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/wrong-coordinates-or-actor-refused",
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-command-signature-unchecked.diff"
+  },
+  {
+   "mutation": "authority-command-coordinates-unchecked",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/wrong-coordinates-or-actor-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/wrong-coordinates-or-actor-refused",
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-command-coordinates-unchecked.diff"
+  },
+  {
+   "mutation": "authority-client-starts-missing-service",
+   "module": ".veldo/control_client.py",
+   "target_rows": [
+    "authority/absent-service-refuses-by-name"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/absent-service-refuses-by-name"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-client-starts-missing-service.diff"
+  },
+  {
+   "mutation": "authority-client-queues-locally",
+   "module": ".veldo/control_client.py",
+   "target_rows": [
+    "authority/absent-service-refuses-by-name"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/absent-service-refuses-by-name",
+    "authority/unexpected-exit-waits-for-an-operator"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-client-queues-locally.diff"
+  },
+  {
+   "mutation": "authority-unit-restarts-on-failure",
+   "module": ".veldo/services/veldo-authority.service",
+   "target_rows": [
+    "authority/unexpected-exit-waits-for-an-operator"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-fixed-and-protected",
+    "authority/unexpected-exit-waits-for-an-operator"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-unit-restarts-on-failure.diff"
+  },
+  {
+   "mutation": "authority-client-starts-dead-service",
+   "module": ".veldo/control_client.py",
+   "target_rows": [
+    "authority/unexpected-exit-waits-for-an-operator"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/unexpected-exit-waits-for-an-operator"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-client-starts-dead-service.diff"
+  },
+  {
+   "mutation": "authority-refusal-not-observed",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-refusal-not-observed.diff"
+  },
+  {
+   "mutation": "authority-request-refusal-not-observed",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-request-refusal-not-observed.diff"
+  },
+  {
+   "mutation": "authority-unknown-classified",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-unknown-classified.diff"
+  },
+  {
+   "mutation": "authority-service-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "authority/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-service-not-installed.diff"
+  },
+  {
+   "mutation": "authority-unit-template-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "authority/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-unit-template-not-installed.diff"
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+--- a/.veldo/services/veldo-authority.service
++++ b/.veldo/services/veldo-authority.service
+@@ -20,0 +21,3 @@
++
++[Install]
++WantedBy=default.target

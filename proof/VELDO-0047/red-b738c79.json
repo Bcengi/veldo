@@ -1,0 +1,213 @@
+{
+ "differing": [],
+ "failed": [
+  "VELDO-0047 authority/key-directory-placement",
+  "VELDO-0047 authority/installed-fixed-and-protected",
+  "VELDO-0047 authority/receiver-configured-with-host-profile",
+  "VELDO-0047 authority/one-instance-under-the-lock",
+  "VELDO-0047 authority/mutation-reaches-the-configured-store",
+  "VELDO-0047 authority/wrong-coordinates-or-actor-refused",
+  "VELDO-0047 authority/absent-service-refuses-by-name",
+  "VELDO-0047 authority/unexpected-exit-waits-for-an-operator",
+  "VELDO-0047 authority/observations",
+  "VELDO-0047 authority/installed-assets"
+ ],
+ "observed": {
+  "absent": {
+   "bound": [],
+   "claim": "authority_unavailable",
+   "mutation": {
+    "code": null,
+    "last_watermark": null,
+    "service": "store474a137c8d",
+    "unit": null
+   },
+   "socket_exists": false,
+   "stale": {
+    "code": null,
+    "read_only": null,
+    "stale": true,
+    "watermark": null
+   },
+   "state": {},
+   "stopped": null,
+   "unchanged": true,
+   "watermark": null
+  },
+  "exit": {
+   "back": {
+    "stale": true,
+    "watermark": null
+   },
+   "bound": [],
+   "claim": "authority_unavailable",
+   "crashed": {},
+   "dead_socket": null,
+   "killed": false,
+   "mutation": {
+    "code": null,
+    "last_watermark": null,
+    "unit": null
+   },
+   "operator": null,
+   "restarted": null,
+   "resumed_seq": null,
+   "stale": true,
+   "still": {},
+   "unchanged": true,
+   "watermark": null
+  },
+  "install": {
+   "after_start": {},
+   "before_start": {},
+   "closure": 0,
+   "cmdline_matches": false,
+   "copies_exact": false,
+   "installed": 0,
+   "modes": {
+    "bin": null,
+    "config": null,
+    "home": null,
+    "journal": null,
+    "keys": "0o700",
+    "service.json": null,
+    "signers": null,
+    "socket": null,
+    "state": null,
+    "store_dir": "0o775"
+   },
+   "report_keys": [],
+   "unit": null,
+   "unit_lines": []
+  },
+  "lock": {
+   "first_after": null,
+   "first_pid": 0,
+   "holders_before": null,
+   "holders_during": null,
+   "live_after": true,
+   "lock_inode_stable": false,
+   "refusal": {
+    "refusal": null,
+    "taxonomy": null
+   },
+   "second_exit": 2,
+   "socket_inode_stable": false
+  },
+  "mutation": {
+   "answer_accepted": null,
+   "claim": {
+    "coordinates": {
+     "address": "/dev/shm/v47-kcsfa1ay/authority/authority.sock",
+     "as_of": null,
+     "last_watermark": null,
+     "service": "store474a137c8d",
+     "store": "/dev/shm/v47-kcsfa1ay/authority/control.sqlite3",
+     "workspace": "/dev/shm/v47-kcsfa1ay/clone-a"
+    },
+    "stopped": "authority_unavailable"
+   },
+   "claim_entity": {
+    "generation": null,
+    "holder": null,
+    "state": null
+   },
+   "entity": [],
+   "journal": [],
+   "journal_digest_matches": false,
+   "other_store_exists": false,
+   "receipt_seq": null,
+   "result_ok": null,
+   "top": [
+    [
+     8
+    ]
+   ],
+   "watermark": null
+  },
+  "observations": {
+   "classes": [],
+   "counts": {},
+   "first": {
+    "accepted_versions": null,
+    "domain_uuid": null,
+    "operation": null,
+    "outcome": null,
+    "repository_uuid": null
+   },
+   "lines": 0,
+   "pending": {},
+   "refused": 0
+  },
+  "placement": {
+   "absent": {
+    "expected": "missing_authority:key_directory:absent",
+    "left": [],
+    "refused": null,
+    "report": false
+   },
+   "home": {
+    "expected": "invalid_input:key_directory:worker_writable",
+    "left": [],
+    "refused": null,
+    "report": false
+   },
+   "mode": {
+    "expected": "invalid_input:key_directory:mode",
+    "left": [],
+    "refused": null,
+    "report": false
+   },
+   "symlink": {
+    "expected": "invalid_input:key_directory:symlink",
+    "left": [],
+    "refused": null,
+    "report": false
+   },
+   "temporary": {
+    "expected": "invalid_input:key_directory:worker_writable",
+    "left": [],
+    "refused": null,
+    "report": false
+   }
+  },
+  "receiver": {
+   "config": {},
+   "consumer": {},
+   "mode": null
+  },
+  "refusals": {
+   "forged-coordinates": "FileNotFoundError(2, 'No such file or directory')",
+   "impersonation": "authority_unavailable",
+   "inner-domain": "authority_unavailable",
+   "inner-repository": "authority_unavailable",
+   "not-a-member": "authority_unavailable",
+   "other-domain": "FileNotFoundError(2, 'No such file or directory')",
+   "out-of-scope": "authority_unavailable",
+   "type-not-admitted": "authority_unavailable",
+   "unserved-repository": "authority_unavailable",
+   "unsigned-request": "authority_unavailable"
+  }
+ },
+ "other_installed_modules_identical_to_commit": true,
+ "passed": [
+  "VELDO-0047 ran/authority/key-directory-placement",
+  "VELDO-0047 ran/authority/installed-fixed-and-protected",
+  "VELDO-0047 ran/authority/receiver-configured-with-host-profile",
+  "VELDO-0047 ran/authority/one-instance-under-the-lock",
+  "VELDO-0047 ran/authority/mutation-reaches-the-configured-store",
+  "VELDO-0047 ran/authority/wrong-coordinates-or-actor-refused",
+  "VELDO-0047 ran/authority/absent-service-refuses-by-name",
+  "VELDO-0047 ran/authority/unexpected-exit-waits-for-an-operator",
+  "VELDO-0047 ran/authority/observations",
+  "VELDO-0047 ran/authority/installed-assets"
+ ],
+ "production_at": "b738c79",
+ "raised": [],
+ "substituted": {
+  "control_client.py": "b738c79:.veldo/control_client.py",
+  "control_service.py": "proof/VELDO-0047/prefix/control_service.py",
+  "init_scaffold.py": "b738c79:.veldo/init_scaffold.py",
+  "services/veldo-authority.service": "proof/VELDO-0047/prefix/veldo-authority.service"
+ }
+}

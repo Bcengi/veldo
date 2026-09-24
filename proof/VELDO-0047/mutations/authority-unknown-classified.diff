@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -172 +172 @@
+-    return head if head in CLASSES else NAMED.get(head, 'unknown_outcome')
++    return head if head in CLASSES else NAMED.get(head, 'missing_evidence')  # defect: an unknown code is classified

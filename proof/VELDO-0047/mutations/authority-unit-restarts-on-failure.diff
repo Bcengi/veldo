@@ -1,0 +1,6 @@
+--- a/.veldo/services/veldo-authority.service
++++ b/.veldo/services/veldo-authority.service
+@@ -15 +15,2 @@
+-Restart=no
++Restart=on-failure
++RestartSec=100ms
