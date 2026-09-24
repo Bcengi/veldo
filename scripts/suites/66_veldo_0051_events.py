@@ -577,7 +577,8 @@ def _v51_suite():
                     'foreign_owner': sorted(t for t in journey if by_type.get(t) and by_type[t] != {registry[t]}),
                     'schemas': sorted({str(e.get('schema')) for e in written}),
                     'validator': [verdict_exit, verdict_output[-600:]],
-                    'registrations_outside': {k: sorted(v - set(registry)) for k, v in registrations.items() if v - set(registry)}}
+                    'registrations_outside': {k: sorted(v - set(registry)) for k, v in registrations.items() if v - set(registry)},
+                    'spend_registration': {t: registry.get(t) for t in sorted(registrations['spend.py'])}}
                 check('events/vocabulary-roundtrip',
                       set(registry) == set(VOC.EVENT_TYPES) == set(EV.EVENT_TYPES)
                       # both directions: every producer registration is in the registry, every type has an owner

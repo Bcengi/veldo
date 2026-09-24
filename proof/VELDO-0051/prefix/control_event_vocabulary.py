@@ -15,6 +15,7 @@ JOURNAL_PROJECTION = "control_event_projection.py"   # derived from the committe
 EXECUTOR = "executor.py"
 GATE = "verify.sh"
 GUARD = "veldo-guard"
+SPEND_RECORDER = "spend.py"                          # the agent's own record of what a change cost
 INCIDENT_RECONCILER = "veldo.incident_reconcile/v1"
 REQUEST_RECONCILER = "request_reconcile.py"          # writes no producer field of its own
 
@@ -25,6 +26,7 @@ OWNER_FILES = {
     EXECUTOR: ".veldo/executor.py",
     GATE: "scripts/verify.sh",
     GUARD: "scripts/veldo-guard.sh",
+    SPEND_RECORDER: ".veldo/spend.py",
     INCIDENT_RECONCILER: ".veldo/incident_reconcile.py",
     REQUEST_RECONCILER: ".veldo/request_reconcile.py",
 }
@@ -41,6 +43,10 @@ EVENTS = {
     # The gate and the push guard write their own lines.
     "gate.passed": GATE, "gate.failed": GATE,
     "emergency.push": GUARD,
+    # Spend actuals (WARP-0733): what a change cost, recorded by the agent that did the work. Spend is
+    # not completion. Before VELDO-0051 the recorder wrote each record as a spec.shipped line; those
+    # lines stay valid under that historical spelling, and every reader of spend actuals still reads them.
+    "spend.recorded": SPEND_RECORDER,
     # The executor's own steps (VELDO-0050).
     "proof.recorded": EXECUTOR, "review.requested": EXECUTOR, "approval.recorded": EXECUTOR,
     # The review projection (WARP-0722), descriptive: derived from committed verdict artifacts.

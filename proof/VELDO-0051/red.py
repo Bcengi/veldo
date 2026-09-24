@@ -2,14 +2,16 @@
 """Run the CURRENT suite 66 over the pre-change code and print every VELDO-0051 row.
 
     python3 -B proof/VELDO-0051/red.py 8231708 > proof/VELDO-0051/red-8231708.json
+    python3 -B proof/VELDO-0051/red.py 8dba446 > proof/VELDO-0051/red-8dba446.json
 
 This is how each row was recorded red by assertion before the change. At 8231708 the emitter holds
 31 event types and the validator its own 21, the writer admits a type substituted through an extra
 field, spec.shipped is an ordinary hand-emittable type, and nothing projects the control journal.
-The suite's three existing production anchors (events.py, validate.py, init_scaffold.py) are pointed
-at the commit's own bytes; the two modules the commit does not have are pointed at prefix/, marked
-stand-ins (the registry the suite enumerates, which nothing at the commit loads, and a projection
-that derives nothing). Every other installed module is written from `git show 8231708:<path>`, and
+At 8dba446 spec.shipped is projection-owned and the spend recorder still writes its records as
+spec.shipped, so every spend record is refused. Each of the suite's production anchors is pointed at
+the commit's own bytes; a module the commit does not have is pointed at prefix/, a marked stand-in
+(at 8231708 the registry the suite enumerates, which nothing at the commit loads, and a projection
+that derives nothing). Every other installed module is written from `git show <commit>:<path>`, and
 so is the engine template tree the scaffolder lays from, so the stand-ins are the only substitution.
 A row that fails reports its observation, never a crash: each region reds its rows on a raise, and a
 `ran/` row says whether it did.
@@ -28,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SUITE = ROOT / 'scripts/suites/66_veldo_0051_events.py'
 HERE = Path(__file__).resolve().parent
 NEW = ('control_event_vocabulary.py', 'control_event_projection.py')
+PRODUCTION = ('events.py', 'validate.py', 'init_scaffold.py', 'spend.py', 'judgment_load.py') + NEW
 _spec = importlib.util.spec_from_file_location('red_git', ROOT / '.veldo' / 'git_process.py')
 _git_process = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_git_process)
@@ -50,9 +53,8 @@ def main(commit):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(git('show', '%s:%s' % (commit, path)))
         source = SUITE.read_text()
-        anchors = {'ROOT / ".veldo" / "%s"' % name: base / '.veldo' / name
-                   for name in ('events.py', 'validate.py', 'init_scaffold.py')}
-        anchors.update({'ROOT / ".veldo" / "%s"' % name: HERE / 'prefix' / name for name in NEW})
+        anchors = {'ROOT / ".veldo" / "%s"' % name: base / '.veldo' / name if '.veldo/' + name in installed
+                   else HERE / 'prefix' / name for name in PRODUCTION}
         anchors.update({"ROOT / '.veldo'": base / '.veldo', "ROOT / 'engine'": base / 'engine'})
         for text, path in anchors.items():
             assert source.count(text) == 1, 'anchor moved: ' + text
@@ -74,7 +76,8 @@ def main(commit):
     vocabulary = observed.get('vocabulary') or {}
     print(json.dumps({
         'production_at': commit,
-        'substituted': {name: 'proof/VELDO-0051/prefix/%s (absent at %s)' % (name, commit) for name in NEW},
+        'substituted': {name: 'proof/VELDO-0051/prefix/%s (absent at %s)' % (name, commit)
+                        for name in NEW if name not in present},
         'new_modules_present_at_commit': present,
         'installed_from_commit': len(installed), 'engine_templates_from_commit': len(engine),
         'failed': [n for n, ok in mine if not ok], 'passed': [n for n, ok in mine if ok],
@@ -82,6 +85,9 @@ def main(commit):
         'observed': {
             'validator_over_the_owners_events': vocabulary.get('validator'),
             'journey_at_commit': vocabulary.get('journey'),
+            'owners_missing_from_the_round_trip': vocabulary.get('missing'),
+            'spend_type_and_its_registered_owner': vocabulary.get('spend_registration'),
+            'spend_recorder': observed.get('spend'),
             'substitution_at_the_writer': (observed.get('refusals') or {}).get('writer', {}).get('substituted'),
             'substitution_in_process': (observed.get('refusals') or {}).get('substituted'),
             'direct_spec_shipped_after_build_only': (observed.get('build_only') or {}).get('direct'),
