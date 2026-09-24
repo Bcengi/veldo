@@ -32,14 +32,33 @@ A slot already retired is refused `already_retired` before anything is submitted
 refuses a second commit under the same command identity, so no retry, runner or race releases a slot
 twice.
 
-KEPT. A refused attempt leaves the dispatch in `pending()` with each open obligation named and the
-group the receiver reported (a later attempt observes the same group, never "no group"); `retire`
-is called again once an obligation is completed.
+KEPT AND RETRIED. A refused attempt leaves the dispatch pending (`pending()`), with each open
+obligation named and the group the receiver reported (a later attempt observes the same group, never
+"no group"), and the outcome the runner gave. A pending retirement is retried when an obligation it
+waits on is completed, never only when a caller happens to ask again:
+
+- at once, when this service observes the completion itself: its own teardown of a clone removes
+  the files another pending retirement waits on (`clone_removed`), or the reservation service it
+  listens to accepts a usage report of a call under a dispatch that waits on its accounting
+  (`accounting_reported`; a final report completes it). The listener is that service's one
+  observation seam, `observe`, which it calls after every operation it accepts or refuses; the
+  observer it already had is kept and still receives every event.
+- on every sweep (`sweep()`), which the runner makes before each preparation (and so each submit)
+  and after each wait, and which a scheduler may make at any time, so a completion this service did
+  not observe (a report through another connection, a group emptied by the kernel) strands nothing.
+
+A retry first re-reads the obligations and is attempted only when what it waits on has changed: the
+open obligations differ from its last attempt's, its clone can now be removed (every user of the
+clone has ended, by the provisioner's own observation), or its last refusal named no obligation (an
+unavailable service, a stale version). An unchanged obligation, such as an unknown outcome, is not
+attempted again and again. A retry is the same single release: the same gate, the same command
+identity and the `already_retired` refusal, so a slot released by any path is never released twice.
 
 OBSERVABILITY. Each attempt appends one event to `observations`: operation, domain, repository, unit,
 dispatch, request, accepted slot version, outcome, named refusal and its taxonomy, the obligations
-still open and what the kernel said of the group. `status()` counts accepted and refused attempts and
-lists the pending ones.
+still open, what the kernel said of the group, and its basis (the runner's reason for a first attempt,
+or what a retry was made for: `clone_removed`, `accounting_reported`, `sweep`). `status()` counts
+accepted, refused and retried attempts and lists the pending ones.
 
 WHAT IT IS NOT. What it tracks is in memory: retirement that survives the runner's crash, recovery of
 an unknown outcome and leadership fencing are Release 2. Standard library only.
@@ -71,7 +90,10 @@ CONCLUSIVE = ('prepared', 'exited', 'refused')
 TAXONOMY = {'worker_alive': 'stale_subject', 'cleanup_incomplete': 'stale_subject', 'already_retired': 'stale_subject',
             'stale_version': 'stale_subject', 'outcome_unknown': 'unknown_outcome', 'missing_accounting': 'missing_evidence',
             'missing_worker': 'invalid_input', 'missing_outcome': 'invalid_input', 'invalid_input': 'invalid_input',
-            'command_content_conflict': 'invalid_input', 'missing_authority': 'missing_authority'}
+            'command_content_conflict': 'invalid_input', 'missing_authority': 'missing_authority',
+            'unavailable_service': 'unavailable_service'}
+# The refusals an open obligation names: a retirement refused with one of them waits on that obligation.
+WAITING = frozenset(REFUSALS.values())
 
 
 def taxonomy(code):
@@ -103,12 +125,23 @@ class Retirements:
         self.clock = clock or time.time
         self.observations = observations if observations is not None else []
         self.entries = {}
-        self.counts = {'accepted': 0, 'refused': 0}
+        self.counts = {'accepted': 0, 'refused': 0, 'retried': 0}
+        # Accounting is completed by a call's final report, which the reservation service accepts:
+        # listen on its one observation seam, keeping the observer it already had.
+        previous = getattr(reservations, 'observe', None) or (lambda event: None)
+
+        def observe(event):
+            try:
+                previous(event)
+            finally:
+                self.reported(event)
+        reservations.observe = observe
 
     def _entry(self, dispatch_id):
         return self.entries.setdefault(dispatch_id, {'group': None, 'stop_requested': False, 'supervision': None,
                                                      'clone': None, 'attempts': 0, 'released': 0, 'open': [],
-                                                     'refusal': None, 'observed': None})
+                                                     'refusal': None, 'observed': None, 'outcome': None,
+                                                     'held': False})
 
     def track(self, dispatch_id, *, group=None, stop_requested=False, supervision=None):
         """What the runner knows of a dispatch it will retire: the group the receiver reported, whether it
@@ -135,7 +168,7 @@ class Retirements:
             if handle is None:
                 return None
             entry['clone'] = {'handle': handle, 'clone_id': handle.env_id, 'root': handle.paths.get('root'),
-                              'teardown': None, 'refusal': None}
+                              'teardown': None, 'refusal': None, 'removed_by': None}
         clone = entry['clone']
         # The provisioner's own liveness surface (env_provision): its root on disk or a pin still held.
         return {'clone_id': clone['clone_id'], 'root': clone['root'], 'present': bool(self.clones._is_live(clone['handle'])),
@@ -174,17 +207,48 @@ class Retirements:
             if isinstance(entry['group'], dict) and entry['group'].get('cgroup'):
                 self.clones.record_group(dispatch_id, {k: entry['group'].get(k) for k in ('unit', 'slice', 'cgroup')})
             self.clones.retire(clone['handle'])
-            clone['teardown'], clone['refusal'] = 'retired', None
+            clone.update(teardown='retired', refusal=None, removed_by=dispatch_id)
         except Exception as error:  # noqa: BLE001 - a refused teardown keeps the clone and the slot
             clone['teardown'], clone['refusal'] = 'refused', getattr(error, 'code', None) or type(error).__name__
 
+    def _removable(self, entry):
+        """Whether the teardown of a pending retirement's clone can succeed now: every user of the clone
+        has ended, by the provisioner's own observation (a clone it cannot observe is left to the attempt)."""
+        try:
+            users = self.clones.observe(entry['clone']['handle'])['users']
+        except Exception:  # noqa: BLE001 - gone or unobservable: the attempt itself judges it
+            return True
+        return bool(users) and all(user.get('ended') for user in users)
+
     def retire(self, dispatch_id, outcome, basis):
         """Try to release the dispatch's worker slot now. True once released; False keeps it, with the
-        open obligations named in `pending()`."""
+        open obligations named in `pending()`, to be retried when one of them is completed."""
         entry = self._entry(dispatch_id)
-        entry['attempts'] += 1
         if outcome in ('completed', 'failed') and entry['stop_requested']:
             outcome = 'cancelled'  # the runner asked for the stop
+        entry['outcome'] = outcome
+        return self._attempt(dispatch_id, entry, basis)
+
+    def _attempt(self, dispatch_id, entry, basis):
+        """One attempt; when its teardown removed the dispatch's clone, each other pending retirement
+        that waits on those files is retried at once."""
+        removed_before = (entry['clone'] or {}).get('teardown') == 'retired'
+        released = self._try(dispatch_id, entry, basis)
+        clone = entry['clone'] or {}
+        if clone.get('teardown') == 'retired' and not removed_before:
+            for other in sorted(self.entries):
+                waiting = self.entries[other]
+                if other != dispatch_id and waiting['held'] and (waiting['clone'] or {}).get('clone_id') == clone['clone_id']:
+                    waiting['clone']['removed_by'] = dispatch_id
+                    try:
+                        self._retry(other, 'clone_removed')
+                    except Exception as error:  # noqa: BLE001 - the sweep retries what this could not
+                        self._unobserved(other, 'clone_removed', error)
+        return released
+
+    def _try(self, dispatch_id, entry, basis):
+        entry['attempts'] += 1
+        outcome = entry['outcome']
         entity, version, slot = self._slot(dispatch_id)
         record = self.dispatches.record(dispatch_id) or {}
         request = 'retire/' + dispatch_id
@@ -195,7 +259,10 @@ class Retirements:
         entry['observed'] = None
         if slot is not None and slot.get('retired'):
             return self._refused(entry, event, 'already_retired')
-        entry['observed'] = self._observe(dispatch_id, entry)
+        try:
+            entry['observed'] = self._observe(dispatch_id, entry)
+        except Exception as error:  # noqa: BLE001 - an obligation that cannot be read keeps the slot
+            return self._refused(entry, event, 'unavailable_service:' + type(error).__name__)
         self._complete_clone(dispatch_id, entry, entry['observed'])
 
         def lifecycle(_dispatch):
@@ -212,20 +279,84 @@ class Retirements:
         except Exception as error:  # noqa: BLE001 - a refused retirement keeps the slot held
             return self._refused(entry, event, getattr(error, 'code', None) or type(error).__name__)
         seen = entry['observed']
-        entry.update(released=entry['released'] + 1, open=[], refusal=None)
+        entry.update(released=entry['released'] + 1, open=[], refusal=None, held=False)
         self.counts['accepted'] += 1
         self.observations.append(dict(event, outcome='retired', open=[], retained=seen['retained'],
                                       observed=seen['kernel']['group'].get('observed'), clone=self._clone_event(entry)))
         return True
 
+    def _held(self, dispatch_id, entry):
+        """Whether a pending retirement's slot is still held; one released by any path is pending no more."""
+        slot = self._slot(dispatch_id)[2]
+        if slot is None or slot.get('retired'):
+            entry['held'] = False
+        return entry['held']
+
+    def _due(self, dispatch_id, entry):
+        """Whether a pending retirement could now complete or progress: its last refusal named no
+        obligation, the obligations it keeps open have changed since, or its clone can now be removed."""
+        if entry['refusal'] not in WAITING:
+            return True
+        try:
+            seen = self._observe(dispatch_id, entry)
+        except Exception:  # noqa: BLE001 - unreadable now: the attempt records why
+            return True
+        if seen['open'] != entry['open']:
+            return True
+        return seen['open'][:1] == ['clone'] and self._removable(entry)
+
+    def _retry(self, dispatch_id, basis):
+        """Retry one pending retirement for `basis` when it is due. True once released."""
+        entry = self.entries.get(dispatch_id)
+        if entry is None or not entry['held'] or not self._held(dispatch_id, entry) or not self._due(dispatch_id, entry):
+            return False
+        self.counts['retried'] += 1
+        return self._attempt(dispatch_id, entry, basis)
+
+    def sweep(self, basis='sweep'):
+        """Retry every pending retirement that is due; the dispatches it released, in order."""
+        released = []
+        for dispatch_id in list(self.pending()):
+            try:
+                if self._retry(dispatch_id, basis):
+                    released.append(dispatch_id)
+            except Exception as error:  # noqa: BLE001 - one retirement that cannot be tried strands no other
+                self._unobserved(dispatch_id, basis, error)
+        return released
+
+    def reported(self, event):
+        """The reservation service's observer: an accepted usage report of a call made under a dispatch
+        whose pending retirement waits on its accounting retries that retirement (a final report completes
+        the obligation). It never raises into the service, whose report has already committed."""
+        dispatch_id = None
+        try:
+            if not isinstance(event, dict) or event.get('operation') != 'report' or event.get('outcome') != 'accepted':
+                return
+            row = self.reservations.conn.execute('SELECT data FROM entities WHERE id=?', (event.get('subject'),)).fetchone()
+            dispatch_id = (json.loads(row[0]) if row else {}).get('dispatch')
+            entry = self.entries.get(dispatch_id)
+            if entry is not None and entry['held'] and 'accounting' in entry['open']:
+                self._retry(dispatch_id, 'accounting_reported')
+        except Exception as error:  # noqa: BLE001 - the sweep retries what this could not
+            self._unobserved(dispatch_id, 'accounting_reported', error)
+
+    def _unobserved(self, dispatch_id, basis, error):
+        code = 'unavailable_service:' + type(error).__name__
+        self.counts['refused'] += 1
+        self.observations.append({'schema': SCHEMA, 'operation': 'retire', 'domain': self.reservations.domain,
+                                  'repository': self.reservations.repository, 'dispatch_id': dispatch_id,
+                                  'request': 'retire/%s' % dispatch_id, 'unit': None, 'accepted_versions': {},
+                                  'basis': basis, 'outcome': 'refused', 'refusal': code, 'taxonomy': taxonomy(code),
+                                  'open': list((self.entries.get(dispatch_id) or {}).get('open') or [])})
+
     @staticmethod
     def _clone_event(entry):
         clone = entry['clone']
-        return {k: clone[k] for k in ('clone_id', 'teardown', 'refusal')} if clone else None
+        return {k: clone.get(k) for k in ('clone_id', 'teardown', 'refusal', 'removed_by')} if clone else None
 
     def _refused(self, entry, event, code):
         seen = entry['observed']
-        entry.update(open=list(seen['open']) if seen else [], refusal=code)
+        entry.update(open=list(seen['open']) if seen else [], refusal=code, held=code != 'already_retired')
         self.counts['refused'] += 1
         self.observations.append(dict(event, outcome='refused', refusal=code, taxonomy=taxonomy(code),
                                       open=list(entry['open']), clone=self._clone_event(entry),
@@ -233,9 +364,12 @@ class Retirements:
         return False
 
     def pending(self):
-        """Every tracked dispatch whose slot is still held, with its open obligations and last refusal."""
+        """Every retirement refused and not yet released whose slot is still held, with its open
+        obligations, last refusal and attempts."""
         held = {}
         for dispatch_id, entry in sorted(self.entries.items()):
+            if not entry['held']:
+                continue
             slot = self._slot(dispatch_id)[2]
             if slot is not None and not slot.get('retired'):
                 held[dispatch_id] = {'open': list(entry['open']), 'refusal': entry['refusal'], 'attempts': entry['attempts']}

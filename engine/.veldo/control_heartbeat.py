@@ -6,7 +6,9 @@ blocking model call, the claim renewed on each heartbeat, and the missed-heartbe
 THE HEARTBEAT (`start`, in the trusted wrapper). A contained worker's wrapper (control_launch.py
 `exec --contained`) is released by the receiver and then becomes the engine by exec, so the engine
 keeps the pid the receiver recorded. Just before that exec the wrapper starts its heartbeat: a process
-of its own, forked twice so it is no child the engine could wait for, that writes one line
+of its own, forked twice so it is no child the engine could wait for, in a session and process group
+of its own (taken between the two forks, before the engine exists), so an engine that signals its own
+process group leaves it beating. It writes one line
 (veldo.heartbeat/v1: a sequence number, its monotonic time and its pid) on the heartbeat channel at
 once and then every `heartbeat_seconds` of the worker profile, on a fixed monotonic schedule. It reads
 nothing the engine writes and waits on nothing the engine does, so a model call that blocks for an
@@ -88,6 +90,9 @@ def start(fd, seconds):
         first = os.fork()
         if first == 0:
             try:
+                # Its own session and process group, taken before the second fork and so before the
+                # engine exists: a signal the engine sends to its own group never reaches the heartbeat.
+                os.setsid()
                 if os.fork() == 0:
                     _beat(fd, seconds, engine)
             finally:

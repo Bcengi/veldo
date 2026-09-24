@@ -60,7 +60,10 @@ liveness and is stopped (`heartbeat_missing`). Every stop escalates on the monot
 supervision the receiver reports carries its steps on both clocks, its graces and the heartbeat's
 account. The runner returns a worker slot through control_retirement.py, which keeps each open
 obligation (termination, the outcome, the clone files and the accounting) until it is completed and
-releases the slot once.
+releases the slot once. A refused retirement stays pending and is retried when an obligation it waits
+on is completed: at once when the retirement service observes the completion (its own clone teardown,
+a final accounting report the reservation service accepts), and on the runner's sweep before each
+preparation and after each wait, so none is stranded.
 
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
@@ -143,7 +146,10 @@ class Runner:
     """The scheduler's side of every dispatch. `gate` is VELDO-0052's eligibility Gate, `reservations`
     VELDO-0036's service, `dispatches` a control_dispatch.Dispatches writing as the runner,
     `receiver(contract)` invokes the trusted receiver and returns its Launch, and `clones` is
-    VELDO-0042's clone provisioner when dispatches use clones (its teardown retires their files)."""
+    VELDO-0042's clone provisioner when dispatches use clones (its teardown retires their files).
+    Every slot is returned through `retirements` (VELDO-0041): a refused retirement is kept pending
+    and retried when what it waits on is completed, and `sweep()` retries every pending one that is
+    due, before each preparation and after each wait."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
@@ -166,7 +172,8 @@ class Runner:
         keeps the dispatch, its reported containment group and every obligation still open until the
         slot is released once. The observation is the runner's own, read from the kernel now (VELDO-0040):
         a live worker or a populated group is refused (worker_alive, cleanup_incomplete) and keeps the
-        slot. A dispatch the runner asked to stop is accounted as cancelled."""
+        slot, pending, until an obligation it waits on is completed and the retirement is retried. A
+        dispatch the runner asked to stop is accounted as cancelled."""
         launch = self.launches.pop(dispatch_id, None)
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
@@ -174,9 +181,18 @@ class Runner:
                                    supervision=getattr(launch, 'supervision', None))
         return self.retirements.retire(dispatch_id, outcome, basis)
 
+    def sweep(self):
+        """Retry every pending retirement whose obligations have changed since its last attempt, or whose
+        clone can now be removed (VELDO-0041); the dispatches whose slots it released. Each preparation
+        and each wait makes one, and a scheduler may make one at any time."""
+        return self.retirements.sweep()
+
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
                 deadline, context=None):
         """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract."""
+        # Pending retirements first: a slot whose obligations have since completed is released before
+        # this preparation reserves another.
+        self.sweep()
         now = self.clock()
         decided = dict(context or {}, holder=holder)
         decision = self.gate.require(station, unit, context=decided)
@@ -238,6 +254,8 @@ class Runner:
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
+        # This dispatch's end may have completed another's obligation (a group the kernel emptied).
+        self.sweep()
         return record
 
 

@@ -1,7 +1,10 @@
-"""VELDO-0041: the trusted wrapper's heartbeat independent of a blocked model call, the receiver's claim
-renewal and missed-heartbeat stop, the bounded escalation of an accepted stop over the whole VELDO-0040
-group, and a retirement that follows actual termination, keeps each open obligation and releases the
-capacity slot once, over real processes on this host.
+"""VELDO-0041: the trusted wrapper's heartbeat independent of a blocked model call (in a session of its
+own, on a channel the engine does not hold), the receiver's claim renewal and missed-heartbeat stop, the
+bounded escalation of an accepted stop over the whole VELDO-0040 group, and a retirement that follows
+actual termination, keeps each open obligation, is retried by the runner itself once an obligation is
+completed and releases the capacity slot once, over real processes on this host. Every release reaches
+the slot through the runner's production paths (submit, wait, its sweep, its teardown and its listener
+on the reservation service); no row calls the runner's private retirement.
 
 Only shared ROOT and expect are consumed. One temporary tree, in the owner's runtime directory so the
 VELDO-0042 clone layout has no protected target beneath a temporary directory, holds the installed
@@ -84,6 +87,7 @@ def _v41_suite():
         D = L.D
         EL = load('v41_eligibility', mods / 'control_eligibility.py')
         RES = load('v41_reservations', mods / 'control_reservations.py')
+        RR = load('v41_reservation_runtime', mods / 'control_reservation_runtime.py')
         SIG = load('v41_signer', mods / 'control_signer.py')
         _git_process = load('v41_git', mods / 'git_process.py')
         CL = load('v41_clone', mods / 'control_clone.py') if (mods / 'control_clone.py').exists() else None
@@ -231,6 +235,11 @@ if payload.get('block'):
 end = time.monotonic() + payload.get('hold', 0)
 while time.monotonic() < end and not (payload.get('release') and Path(payload['release']).exists()):
     time.sleep(0.02)
+if payload.get('signal_group'):
+    # The engine signals its own process group, as an engine ending its own children does, and lives on.
+    mark(markers, tag, 'signalled', {'at': time.monotonic(), 'pgrp': os.getpgrp()})
+    os.killpg(0, signal.SIGTERM)
+    time.sleep(payload['signal_group'])
 mark(markers, tag, 'exit', {'at': time.monotonic()})
 sys.exit(payload.get('code', 0))
 ''')
@@ -276,14 +285,14 @@ sys.exit(payload.get('code', 0))
                 return launch
             return receive
 
-        def runner(name, **extra):
+        def runner(name, receive=None, **extra):
             if name not in runners:
+                receive = receive or receive_with(configs[name])
                 try:
-                    runners[name] = L.Runner(gate, reservations, dispatches, receive_with(configs[name]), account=ACCOUNT,
-                                             **extra)
+                    runners[name] = L.Runner(gate, reservations, dispatches, receive, account=ACCOUNT, **extra)
                 except TypeError:
                     # A runner that takes no clone provisioner retires without one.
-                    runners[name] = L.Runner(gate, reservations, dispatches, receive_with(configs[name]), account=ACCOUNT)
+                    runners[name] = L.Runner(gate, reservations, dispatches, receive, account=ACCOUNT)
             return runners[name]
 
         releases = []
@@ -360,6 +369,20 @@ sys.exit(payload.get('code', 0))
 
         def capacity(unit):
             return reservations.balances('unit', unit)['capacity']
+
+        def links(pid):
+            """What each open descriptor of process `pid` refers to, read from /proc by this suite."""
+            found = []
+            with contextlib.suppress(OSError, TypeError):
+                for name in os.listdir('/proc/%d/fd' % pid):
+                    with contextlib.suppress(OSError):
+                        found.append(os.readlink('/proc/%d/fd/%s' % (pid, name)))
+            return sorted(found)
+
+        def events(name, dispatch_id, since=0):
+            """The retirement events one runner recorded for one dispatch, from index `since` of its list."""
+            listed = getattr(runners.get(name), 'observations', None) or []
+            return [dict(e) for e in listed[since:] if e.get('operation') == 'retire' and e.get('dispatch_id') == dispatch_id]
 
         def heartbeats(dispatch_id):
             return writer.execute('SELECT command_id, principal FROM journal WHERE command_id LIKE ? ORDER BY seq',
@@ -441,12 +464,16 @@ sys.exit(payload.get('code', 0))
             # short, which reds the rows that read it.
             with contextlib.suppress(Exception):
                 units = {name: admitted(unit) for name, unit in (('blocked', 'VELDO-9501'), ('missing', 'VELDO-9502'),
-                                                                 ('shipped', 'VELDO-9503'), ('orphan', 'VELDO-9508'))}
+                                                                 ('shipped', 'VELDO-9503'), ('orphan', 'VELDO-9508'),
+                                                                 ('signal', 'VELDO-9511'))}
                 claims = {name: claim_version(unit) for name, unit in units.items()}
                 started['blocked'] = runner('fast').submit(units['blocked'], 'build', **job(block=2.0))
                 started['missing'] = runner('fast').submit(units['missing'], 'build', **job(block=8))
                 started['shipped'] = runner('shipped').submit(units['shipped'], 'build', **job(block=1.5))
                 started['orphan'] = runner('main').submit(units['orphan'], 'build', **job(hold=30))
+                # Waits for its release, then signals its own process group and runs two seconds more.
+                started['signal'] = runner('fast').submit(units['signal'], 'build', **job(
+                    hold=30, release='signal', signal_group=2.0, on_term='ignore'))
 
             # AC1: the heartbeat comes from the trusted wrapper while the model call is still blocked, and
             # each one renews the claim.
@@ -518,6 +545,60 @@ sys.exit(payload.get('code', 0))
                       and not living(worker) and all(proc_start(pid) is None for pid in beaters)
                       and ended.get('state') == 'exited' and supervision.get('empty') is True
                       and slot(missing.dispatch_id).get('retired') is True)
+
+            # AC1: the engine never holds the heartbeat channel. Its open descriptors, read from /proc while it
+            # runs, include no end of the one pipe the heartbeat writes and the receiver reads.
+            with region('heartbeat/channel-not-held'):
+                signalled = started['signal']
+                worker = marker(signalled, 'worker')
+                cgroup = (getattr(signalled, 'group', None) or {}).get('cgroup')
+                beating = wait_for(lambda: len(heartbeats(signalled.dispatch_id)) >= 2, 10)
+                beaters = procs(str(cgroup) + '/' + GROUP) if cgroup else []
+                held = {pid: links(pid) for pid in beaters}
+                channels = sorted({link for found in held.values() for link in found if link.startswith('pipe:')})
+                engine_links = links(worker.get('pid'))
+                receiver_links = links(getattr(getattr(signalled, 'child', None), 'pid', None))
+                observed['channel'] = {'heartbeat_pids': beaters, 'heartbeat_descriptors': held, 'channels': channels,
+                                       'engine_pid': worker.get('pid'), 'engine_descriptors': engine_links,
+                                       'receiver_holds_channel': bool(channels) and channels[0] in receiver_links}
+                check('heartbeat/channel-not-held',
+                      beating and living(worker) and len(beaters) == 1 and len(channels) == 1
+                      and channels[0].startswith('pipe:[') and len(channels[0]) > len('pipe:[]')
+                      and channels[0] in receiver_links
+                      and any(link.startswith('pipe:') for link in engine_links)
+                      and channels[0] not in engine_links)
+
+            # AC1: an engine that signals its own process group leaves the heartbeat beating: the heartbeat has
+            # a session and group of its own, so the worker is never stopped as heartbeat_missing for it.
+            with region('heartbeat/engine-group-signal'):
+                signalled = started['signal']
+                worker = marker(signalled, 'worker')
+                cgroup = (getattr(signalled, 'group', None) or {}).get('cgroup')
+                before = procs(str(cgroup) + '/' + GROUP) if cgroup else []
+                release(signalled)
+                sent = marker(signalled, 'signalled')
+                ended = runner('fast').wait(signalled) or {}
+                supervision = getattr(signalled, 'supervision', None) or {}
+                beat = supervision.get('heartbeat') or {}
+                recent = beat.get('recent') or []
+                at = sent.get('at')
+                after = [b for b in recent if isinstance(at, (int, float)) and b['taken'] > at]
+                spanning = [b for b in recent if isinstance(at, (int, float)) and b['taken'] > at - 0.5]
+                gaps = [round(b['taken'] - a['taken'], 3) for a, b in zip(spanning, spanning[1:])]
+                terms = times(signalled, 'worker', 'term')
+                observed['group_signal'] = {'signalled': sent, 'engine_pgrp_is_its_pid': sent.get('pgrp') == worker.get('pid'),
+                                            'heartbeat_pids': before, 'beats_after_signal': len(after),
+                                            'gaps_around_signal': gaps, 'engine_terms': terms, 'heartbeat_pid': beat.get('pid'),
+                                            'cause': supervision.get('cause'), 'liveness': beat.get('liveness'),
+                                            'state': ended.get('state'), 'termination': ended.get('termination')}
+                check('heartbeat/engine-group-signal',
+                      bool(sent) and sent.get('pgrp') == worker.get('pid') and len(before) == 1
+                      and bool(terms) and within(minus(terms[0], at), 0, TOL)
+                      and len(after) >= 6 and bool(gaps) and max(gaps) <= 0.25 + TOL
+                      and beat.get('pid') == before[0] and beat.get('liveness') == 'live' and beat.get('uncertain_at') is None
+                      and supervision.get('cause') is None and ended.get('state') == 'exited'
+                      and (ended.get('termination') or {}).get('returncode') == 0
+                      and slot(signalled.dispatch_id).get('retired') is True)
 
             # AC1 and AC2: the shipped values exactly, and the timed rows used their configured ones.
             with region('heartbeat/shipped-defaults'):
@@ -599,75 +680,102 @@ sys.exit(payload.get('code', 0))
                       and (ended.get('termination') or {}).get('deadline_stop') is False
                       and slot(target.dispatch_id).get('retired') is True)
 
-            # AC3: retirement follows the actual end of the whole group, not the worker's own exit.
+            # AC3: retirement follows the actual end of the whole group, not the worker's own exit, and a
+            # refused retirement is retried by the runner itself once its group has ended.
             with region('retirement/live-descendant'):
+                # A launch whose refusal reports its group while a process it left is still in the dispatch's own
+                # scope: the receiver seam hands the runner that report (a receiver that could not start, as
+                # VELDO-0039's invoke settles it, with the group a refusal reports, as VELDO-0040's does). Only
+                # the runner's own kernel observation stands between that report and the release.
+                planted = {}
+
+                def linger_receive(contract):
+                    if not contract['input']['payload'].get('plant'):
+                        return receive_with(configs['linger'])(contract)
+                    scope = C.unit_name(contract['dispatch_id'])
+                    made.append(scope)
+                    holder = subprocess.Popen(['systemd-run', '--user', '--scope', '--quiet', '--unit=' + scope,
+                                               '--slice=' + slice_name, '--', 'sleep', '30'], env=tools,
+                                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                              stderr=subprocess.DEVNULL, start_new_session=True)
+                    wait_for(lambda: (C.cgroup_of(holder.pid) or '').endswith(scope), 10)
+                    planted.update(holder=holder, facts={'pid': holder.pid, 'start': proc_start(holder.pid)},
+                                   group={'unit': scope, 'slice': slice_name, 'cgroup': C.cgroup_of(holder.pid)})
+                    launch = L.invoke(base / 'receiver-absent.json', contract, dispatches, accept_seconds=20)
+                    launch.group = planted['group']
+                    launches.append(launch)
+                    return launch
+                lingerer = runner('linger', receive=linger_receive)
+                planted_unit = admitted('VELDO-9506')
+                planted_launch = lingerer.submit(planted_unit, 'build', **job(plant=True))
+                planted_id = planted_launch.dispatch_id
+                planted_first = events('linger', planted_id)
+                planted_held = slot(planted_id).get('retired')
                 unit = admitted('VELDO-9505')
                 capacity_before = capacity(unit)
-                lingering = runner('linger').submit(unit, 'build', **job(descendants=[['stubborn', 'stubborn', 30]], hold=30))
+                # Its preparation sweeps the pending retirements: the planted group is still populated, so
+                # nothing it waits on has changed and nothing is attempted.
+                lingering = lingerer.submit(unit, 'build', **job(descendants=[['stubborn', 'stubborn', 30]], hold=30))
+                planted_at_submit = {'alive': living(planted.get('facts')), 'pending': pending('linger').get(planted_id),
+                                     'events': len(events('linger', planted_id))}
                 worker, stubborn = marker(lingering, 'worker'), marker(lingering, 'stubborn')
-                seen, watcher = deaths([worker, stubborn])
+                seen, watcher = deaths([worker, stubborn, planted.get('facts') or {'pid': None}])
                 wait_for(lambda: len(times(lingering, 'stubborn', 'beat')) >= 3, 5)
                 asked = getattr(lingering, 'stop', lambda: False)()
                 # The worker ends on the cooperative stop; its signal-ignoring descendant lives on until the kill.
                 wait_for(lambda: worker.get('pid') in seen, 5)
-                attempts = []
-                for _ in range(2):
-                    alive = living(stubborn)
-                    result = runner('linger')._retire(lingering.dispatch_id, 'cancelled', 'probe')
-                    attempts.append({'retired': result, 'descendant_alive': alive, 'slot_retired': slot(lingering.dispatch_id).get('retired'),
-                                     'event': dict(runner('linger').observations[-1]) if runner('linger').observations else {},
-                                     'pending': pending('linger').get(lingering.dispatch_id)})
-                ended = runner('linger').wait(lingering) or {}
-                watcher.join(timeout=10)
-                retirement = slot(lingering.dispatch_id).get('retirement') or {}
-                death = seen.get(stubborn.get('pid'))
-                commits = retired_commits(lingering.dispatch_id)
-                again = runner('linger')._retire(lingering.dispatch_id, 'cancelled', 'probe')
-                again_event = dict(runner('linger').observations[-1]) if runner('linger').observations else {}
-                # The same observer alone: a dispatch with every other obligation complete (never launched)
-                # whose group still holds a live process.
-                planted_unit = admitted('VELDO-9506')
-                prepared = runner('linger').prepare(planted_unit, 'build', **job())
-                planted_scope = C.unit_name(prepared['dispatch_id'])
-                made.append(planted_scope)
-                holder = subprocess.Popen(['systemd-run', '--user', '--scope', '--quiet', '--unit=' + planted_scope,
-                                           '--slice=' + slice_name, '--', 'sleep', '30'], env=tools,
-                                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                                          start_new_session=True)
-                wait_for(lambda: (C.cgroup_of(holder.pid) or '').endswith(planted_scope), 10)
-                planted_group = {'unit': planted_scope, 'slice': slice_name, 'cgroup': C.cgroup_of(holder.pid)}
-                runner('linger').launches[prepared['dispatch_id']] = types.SimpleNamespace(
-                    group=planted_group, stop_requested=False, supervision=None)
-                planted_first = runner('linger')._retire(prepared['dispatch_id'], 'cancelled', 'probe')
-                planted_held = slot(prepared['dispatch_id']).get('retired')
+                # The process left in the planted group ends; the runner is not told.
+                cgroup = (planted.get('group') or {}).get('cgroup')
                 with contextlib.suppress(OSError):
-                    (group_path(planted_group['cgroup']) / 'cgroup.kill').write_text('1')
-                holder.wait(timeout=10)
-                wait_for(lambda: not group_path(planted_group['cgroup']).exists(), 10)
-                planted_after = runner('linger')._retire(prepared['dispatch_id'], 'cancelled', 'probe')
+                    (group_path(cgroup) / 'cgroup.kill').write_text('1')
+                with contextlib.suppress(Exception):
+                    planted['holder'].wait(timeout=10)
+                wait_for(lambda: not group_path(cgroup).exists(), 10)
+                mark = len(lingerer.observations)
+                ended = lingerer.wait(lingering) or {}
+                watcher.join(timeout=10)
+                during_wait = [(e['dispatch_id'], e['outcome'], e.get('basis')) for e in lingerer.observations[mark:]
+                               if e.get('operation') == 'retire']
+                retirement = slot(lingering.dispatch_id).get('retirement') or {}
+                planted_retirement = slot(planted_id).get('retirement') or {}
+                death, planted_death = seen.get(stubborn.get('pid')), seen.get((planted.get('facts') or {}).get('pid'))
+                commits = retired_commits(lingering.dispatch_id)
+                mark = len(lingerer.observations)
+                again_record = lingerer.wait(lingering) or {}
+                again = events('linger', lingering.dispatch_id, mark)
                 observed['live_descendant'] = {
-                    'asked': asked, 'attempts': attempts, 'state': ended.get('state'),
-                    'descendant_died': death, 'retirement_observed_at': retirement.get('observed_at'),
-                    'retirement_group': retirement.get('group'), 'release_commits': commits, 'retry_after_release': again,
-                    'retry_event': again_event,
-                    'capacity': [capacity_before, capacity(unit)],
-                    'planted': {'group': planted_group, 'first': planted_first, 'held': planted_held, 'after': planted_after,
-                                'commits': retired_commits(prepared['dispatch_id'])}}
+                    'planted': {'group': planted.get('group'), 'first': planted_first, 'held_after_submit': planted_held,
+                                'at_next_submit': planted_at_submit, 'died': planted_death,
+                                'retirement_observed_at': planted_retirement.get('observed_at'),
+                                'retirement_group': planted_retirement.get('group'),
+                                'retirement_basis': planted_retirement.get('basis'),
+                                'commits': retired_commits(planted_id)},
+                    'asked': asked, 'state': ended.get('state'), 'descendant_died': death,
+                    'retirement_observed_at': retirement.get('observed_at'), 'retirement_group': retirement.get('group'),
+                    'retirements_during_wait': during_wait, 'release_commits': commits,
+                    'second_wait': {'state': again_record.get('state'), 'events': again},
+                    'capacity': [capacity_before, capacity(unit)]}
                 check('retirement/live-descendant',
-                      asked is True and len(attempts) == 2
-                      and all(a['descendant_alive'] and a['retired'] is False and a['slot_retired'] is False
-                              and a['event'].get('refusal') == 'cleanup_incomplete' and a['event'].get('observed') == 'populated'
-                              and (a['pending'] or {}).get('open', [])[:1] == ['group'] for a in attempts)
-                      and ended.get('state') == 'exited' and bool(death)
+                      planted.get('group', {}).get('cgroup') is not None and len(planted_first) == 1
+                      and planted_first[0].get('outcome') == 'refused' and planted_first[0].get('basis') == 'never_spawned'
+                      and planted_first[0].get('refusal') == 'cleanup_incomplete'
+                      and planted_first[0].get('observed') == 'populated'
+                      and planted_first[0].get('open', [])[:1] == ['group'] and planted_held is False
+                      and planted_at_submit['alive'] is True and planted_at_submit['events'] == 1
+                      and (planted_at_submit['pending'] or {}).get('open', [])[:1] == ['group']
+                      and during_wait == [(lingering.dispatch_id, 'retired', 'worker_reaped'), (planted_id, 'retired', 'sweep')]
+                      and bool(planted_death) and minus(planted_retirement.get('observed_at'), planted_death[1]) >= 0
+                      and (planted_retirement.get('group') or {}).get('observed') in ('absent', 'unpopulated')
+                      and len(retired_commits(planted_id)) == 1
+                      and asked is True and ended.get('state') == 'exited' and bool(death)
                       and minus(retirement.get('observed_at'), death[1]) >= 0 and retirement.get('cleaned') is True
                       and (retirement.get('group') or {}).get('observed') in ('absent', 'unpopulated')
-                      and len(commits) == 1 and again is False
-                      and again_event.get('refusal') == 'already_retired'
-                      and retired_commits(lingering.dispatch_id) == commits and capacity(unit) == capacity_before
-                      and planted_group['cgroup'] is not None and planted_first is False and planted_held is False
-                      and planted_after is True and len(retired_commits(prepared['dispatch_id'])) == 1)
+                      and len(commits) == 1 and again_record.get('state') == 'exited'
+                      and [(e.get('outcome'), e.get('refusal')) for e in again] == [('refused', 'already_retired')]
+                      and retired_commits(lingering.dispatch_id) == commits and capacity(unit) == capacity_before)
 
-            # AC3: a model call with no final report keeps the slot until its accounting is complete.
+            # AC3: a model call with no final report keeps the slot until its accounting is complete, and the
+            # final report landing on the reservation service is what retries the retirement.
             with region('retirement/missing-accounting'):
                 unit = admitted('VELDO-9507')
                 capacity_before = capacity(unit)
@@ -675,36 +783,56 @@ sys.exit(payload.get('code', 0))
                 marker(accounted, 'worker')
                 invocation = 'invocation/' + tag(accounted)
                 capacity_running = capacity(unit)
-                # The model call the adapter's InvocationGuard reserves at its initial boundary (VELDO-0036).
-                reservations.reserve_call('call/' + invocation, accounted.dispatch_id, invocation, 'initial', 60,
-                                          now=time.time())
+                # The adapter's side of the model call: VELDO-0036's InvocationGuard over the same reservation
+                # service, reserving at its initial boundary and reporting the call's usage.
+                launched, stops = [], []
+                guard = RR.InvocationGuard(reservations, 'claude_code', lambda call, configuration: launched.append(call),
+                                           stops.append)
+                guard.invoke('call/' + invocation, accounted.dispatch_id, invocation, 'initial', 60,
+                             {'tools': ['Read', 'Bash'], 'model': 'configured-model'}, now=time.time())
                 release(accounted)
                 ended = runner('main').wait(accounted) or {}
-                first = dict(runner('main').observations[-1]) if runner('main').observations else {}
+                first = events('main', accounted.dispatch_id)
                 held = slot(accounted.dispatch_id).get('retired')
                 waiting = pending('main').get(accounted.dispatch_id)
-                reservations.report('report/' + invocation, invocation, 1, {'invocations': 1, 'wall_seconds': 1.5},
-                                    final=True, outcome='completed', now=time.time())
-                released = runner('main')._retire(accounted.dispatch_id, 'completed', 'accounting_complete')
+                mark = len(runner('main').observations)
+                reported = guard.observe('report/' + invocation, invocation, 1, {'invocations': 1, 'wall_seconds': 1.5},
+                                         now=time.time(), final=True, outcome='completed')
+                # Read before the runner is called again: the release came with the report.
+                at_report = slot(accounted.dispatch_id).get('retired')
+                with_report = events('main', accounted.dispatch_id, mark)
                 retirement = slot(accounted.dispatch_id).get('retirement') or {}
                 commits = retired_commits(accounted.dispatch_id)
-                again = runner('main')._retire(accounted.dispatch_id, 'completed', 'accounting_complete')
+                mark = len(runner('main').observations)
+                again_record = runner('main').wait(accounted) or {}
+                again = events('main', accounted.dispatch_id, mark)
                 observed['missing_accounting'] = {
                     'state': ended.get('state'), 'first': first, 'held': held, 'pending': waiting,
-                    'released': released, 'retained': retirement.get('retained'),
-                    'obligations': retirement.get('obligations'), 'commits': commits, 'again': again,
+                    'report': {k: reported.get(k) for k in ('replayed', 'stop_required')},
+                    'released_with_report': at_report, 'events_with_report': with_report,
+                    'retained': retirement.get('retained'), 'basis': retirement.get('basis'),
+                    'obligations': retirement.get('obligations'), 'commits': commits,
+                    'second_wait': {'state': again_record.get('state'), 'events': again},
+                    'commits_after_second_wait': retired_commits(accounted.dispatch_id),
+                    'launched': launched, 'stops': stops,
                     'capacity': [capacity_before, capacity_running, capacity(unit)]}
                 check('retirement/missing-accounting',
-                      ended.get('state') == 'exited' and first.get('refusal') == 'missing_accounting' and held is False
-                      and (waiting or {}).get('open') == ['accounting']
-                      and (((first.get('open') or [None])[:1]) == ['accounting'])
-                      and released is True and len(commits) == 1 and again is False
+                      ended.get('state') == 'exited' and launched == [invocation] and stops == []
+                      and len(first) == 1 and first[0].get('refusal') == 'missing_accounting' and held is False
+                      and first[0].get('open', [])[:1] == ['accounting'] and (waiting or {}).get('open') == ['accounting']
+                      and at_report is True
+                      and [(e.get('outcome'), e.get('basis')) for e in with_report] == [('retired', 'accounting_reported')]
+                      and retirement.get('basis') == 'accounting_reported' and len(commits) == 1
+                      and again_record.get('state') == 'exited'
+                      and [(e.get('outcome'), e.get('refusal')) for e in again] == [('refused', 'already_retired')]
+                      and retired_commits(accounted.dispatch_id) == commits
                       and (retirement.get('retained') or {}).get('accounting_unknown') == {invocation: ['messages', 'tokens']}
                       and ((retirement.get('obligations') or {}).get('accounting') or {}).get('open') is False
                       and capacity_running == capacity_before + 1 and capacity(unit) == capacity_before
                       and accounted.dispatch_id not in pending('main'))
 
-            # AC3: the clone files are removed through VELDO-0042's teardown before the slot is released.
+            # AC3: the clone files are removed through VELDO-0042's teardown before the slot is released, and the
+            # teardown that removes them is what retries the retirement waiting on them.
             with region('retirement/clone-files'):
                 clone_state = {}
                 if CL is None:
@@ -713,30 +841,41 @@ sys.exit(payload.get('code', 0))
                 provisioner = CL.Clones(dispatches, clones=str(state / 'clones'), caches=str(state / 'caches'),
                                         protected=[str(private)])
                 config('clone', MAIN, {'engine': {'argv': provisioner.adapter(engine_argv)}})
-                cloned = runner('clone', clones=provisioner)
+                shared_clone = {}
+
+                def clone_receive(contract):
+                    # The runner's receiver seam composed with the provisioner, as VELDO-0129 wires it: the first
+                    # dispatch's clone is created, and the second dispatch is attached to it as its consumer.
+                    if 'handle' in shared_clone:
+                        provisioner.attach(shared_clone['handle'].env_id, contract)
+                    else:
+                        shared_clone['handle'] = provisioner.create(contract)
+                    return receive_with(configs['clone'])(contract)
+                cloned = runner('clone', receive=clone_receive, clones=provisioner)
                 owner_unit, consumer_unit = admitted('VELDO-9509'), admitted('VELDO-9510')
-                contract = cloned.prepare(owner_unit, 'build', **job(hold=0.3))
-                handle = provisioner.create(contract)
-                consumer_contract = cloned.prepare(consumer_unit, 'build', **job(hold=0.3))
-                provisioner.attach(handle.env_id, consumer_contract)
+                owner = cloned.submit(owner_unit, 'build', **job(hold=0.3))
+                handle = shared_clone['handle']
                 root = Path(handle.paths['root'])
-                owner = cloned.receiver(contract)
-                cloned.launches[contract['dispatch_id']] = owner
-                owner_worker = marker(owner, 'worker')
+                consumer = cloned.submit(consumer_unit, 'build', **job(hold=30, release='consumer'))
+                owner_worker, consumer_worker = marker(owner, 'worker'), marker(consumer, 'worker')
+                # The owner ends while its consumer still runs in the clone: its retirement is refused.
                 ended = cloned.wait(owner) or {}
-                first = dict(cloned.observations[-1]) if cloned.observations else {}
-                held = slot(contract['dispatch_id']).get('retired')
+                first = events('clone', owner.dispatch_id)
+                held = slot(owner.dispatch_id).get('retired')
                 files_while_held = root.exists()
-                waiting = pending('clone').get(contract['dispatch_id'])
-                # The consumer runs and ends; its own retirement finds the clone every user of which has ended.
-                consumer = cloned.receiver(consumer_contract)
-                cloned.launches[consumer_contract['dispatch_id']] = consumer
-                consumer_worker = marker(consumer, 'worker')
+                waiting = pending('clone').get(owner.dispatch_id)
+                # The consumer ends; its own retirement removes the clone every user of which has ended.
+                release(consumer)
+                mark = len(cloned.observations)
                 consumer_ended = cloned.wait(consumer) or {}
-                consumer_event = dict(cloned.observations[-1]) if cloned.observations else {}
+                during_wait = [(e['dispatch_id'], e['outcome'], e.get('basis'), (e.get('clone') or {}).get('removed_by'))
+                               for e in cloned.observations[mark:] if e.get('operation') == 'retire']
                 files_after_consumer = root.exists()
-                released = cloned._retire(contract['dispatch_id'], 'completed', 'clone_removed')
-                retirement = slot(contract['dispatch_id']).get('retirement') or {}
+                retirement = slot(owner.dispatch_id).get('retirement') or {}
+                commits = [retired_commits(owner.dispatch_id), retired_commits(consumer.dispatch_id)]
+                mark = len(cloned.observations)
+                again_record = cloned.wait(owner) or {}
+                again = events('clone', owner.dispatch_id, mark)
                 pins = []
                 for cache in sorted((state / 'caches').glob('*.git')):
                     listed = _git_process.run(['git', '-C', str(cache), 'for-each-ref', 'refs/veldo/pins/'],
@@ -745,27 +884,32 @@ sys.exit(payload.get('code', 0))
                 clone_state = {
                     'clone_id': handle.env_id, 'owner_cwd': owner_worker.get('cwd'), 'consumer_cwd': consumer_worker.get('cwd'),
                     'owner_state': ended.get('state'), 'first': first, 'held': held, 'files_while_held': files_while_held,
-                    'pending': waiting, 'consumer_state': consumer_ended.get('state'), 'consumer_event': consumer_event,
-                    'files_after_consumer': files_after_consumer, 'released': released,
-                    'clone_obligation': (retirement.get('obligations') or {}).get('clone'),
-                    'pins_left': pins, 'commits': [retired_commits(contract['dispatch_id']),
-                                                   retired_commits(consumer_contract['dispatch_id'])],
+                    'pending': waiting, 'consumer_state': consumer_ended.get('state'),
+                    'retirements_during_consumer_wait': during_wait, 'files_after_consumer': files_after_consumer,
+                    'owner_basis': retirement.get('basis'), 'clone_obligation': (retirement.get('obligations') or {}).get('clone'),
+                    'second_wait': {'state': again_record.get('state'), 'events': again},
+                    'pins_left': pins, 'commits': commits,
                     'provisioner_events': [{k: e.get(k) for k in ('operation', 'outcome', 'refusal', 'dispatch_id')}
                                            for e in provisioner.observations]}
                 observed['clone_files'] = clone_state
                 check('retirement/clone-files',
-                      owner_worker.get('cwd') == str(root / 'work') and ended.get('state') == 'exited'
-                      and first.get('refusal') == 'cleanup_incomplete:clone'
-                      and (first.get('clone') or {}).get('refusal') == 'clone_in_use'
+                      owner_worker.get('cwd') == str(root / 'work') and consumer_worker.get('cwd') == str(root / 'work')
+                      and ended.get('state') == 'exited' and len(first) == 1
+                      and first[0].get('refusal') == 'cleanup_incomplete:clone'
+                      and (first[0].get('clone') or {}).get('refusal') == 'clone_in_use'
                       and held is False and files_while_held is True and (waiting or {}).get('open') == ['clone']
-                      and consumer_ended.get('state') == 'exited' and consumer_event.get('outcome') == 'retired'
-                      and (consumer_event.get('clone') or {}).get('teardown') == 'retired'
-                      and files_after_consumer is False and released is True
+                      and consumer_ended.get('state') == 'exited'
+                      and during_wait == [(consumer.dispatch_id, 'retired', 'worker_reaped', consumer.dispatch_id),
+                                          (owner.dispatch_id, 'retired', 'clone_removed', consumer.dispatch_id)]
+                      and files_after_consumer is False and retirement.get('basis') == 'clone_removed'
                       and ((retirement.get('obligations') or {}).get('clone') or {}).get('present') is False
-                      and pins == [] and clone_state['commits'][0] and len(clone_state['commits'][0]) == 1
-                      and len(clone_state['commits'][1]) == 1)
+                      and pins == [] and [len(c) for c in commits] == [1, 1]
+                      and again_record.get('state') == 'exited'
+                      and [(e.get('outcome'), e.get('refusal')) for e in again] == [('refused', 'already_retired')]
+                      and retired_commits(owner.dispatch_id) == commits[0])
 
-            # AC3: an unknown outcome is kept: the slot stays held even once everything of the worker ended.
+            # AC3: an unknown outcome is kept: the slot stays held even once everything of the worker ended. The
+            # runner's sweep retries the retirement once its group has ended, and then leaves it alone.
             with region('retirement/unknown-outcome'):
                 orphan = started['orphan']
                 worker = marker(orphan, 'worker')
@@ -773,43 +917,51 @@ sys.exit(payload.get('code', 0))
                 orphan.child.kill()  # the receiver ends without recording how the dispatch ended
                 orphan.child.wait(timeout=10)
                 ended = runner('main').wait(orphan, timeout=5) or {}
-                first = dict(runner('main').observations[-1]) if runner('main').observations else {}
+                first = events('main', orphan.dispatch_id)
                 alive_then = living(worker)
                 with contextlib.suppress(OSError):
                     (group_path(cgroup) / 'cgroup.kill').write_text('1')
                 wait_for(lambda: not living(worker) and not group_path(cgroup).exists(), 10)
-                later = [runner('main')._retire(orphan.dispatch_id, 'unknown', 'probe') for _ in range(2)]
-                last = dict(runner('main').observations[-1]) if runner('main').observations else {}
+                # The next two preparations each sweep: the first finds the termination and group completed and
+                # tries again; the second finds nothing changed and tries nothing.
+                mark = len(runner('main').observations)
+                runner('main').prepare(admitted('VELDO-9512'), 'build', **job())
+                swept = events('main', orphan.dispatch_id, mark)
+                mark = len(runner('main').observations)
+                runner('main').prepare(admitted('VELDO-9513'), 'build', **job())
+                swept_again = events('main', orphan.dispatch_id, mark)
                 observed['unknown_outcome'] = {'state': ended.get('state'), 'reason': ended.get('reason'), 'first': first,
-                                               'alive_at_first': alive_then, 'later': later, 'last': last,
+                                               'alive_at_first': alive_then, 'swept': swept, 'swept_again': swept_again,
                                                'pending': pending('main').get(orphan.dispatch_id),
                                                'slot_retired': slot(orphan.dispatch_id).get('retired'),
                                                'commits': retired_commits(orphan.dispatch_id)}
                 check('retirement/unknown-outcome',
-                      ended.get('state') == 'unknown' and alive_then is True and first.get('refusal') == 'worker_alive'
-                      and later == [False, False] and last.get('refusal') == 'outcome_unknown'
-                      and last.get('open') == ['outcome'] and not living(worker)
+                      ended.get('state') == 'unknown' and alive_then is True and len(first) == 1
+                      and first[0].get('refusal') == 'worker_alive' and first[0].get('basis') == 'outcome_unknown'
+                      and [(e.get('outcome'), e.get('basis'), e.get('refusal'), e.get('open')) for e in swept]
+                      == [('refused', 'sweep', 'outcome_unknown', ['outcome'])]
+                      and swept_again == [] and not living(worker)
                       and (pending('main').get(orphan.dispatch_id) or {}).get('open') == ['outcome']
                       and slot(orphan.dispatch_id).get('retired') is False and retired_commits(orphan.dispatch_id) == [])
 
             with region('retirement/observations', 'retirement/installed-assets'):
-                events = [e for name in sorted(runners) for e in runners[name].observations if e.get('operation') == 'retire']
+                every = [e for name in sorted(runners) for e in runners[name].observations if e.get('operation') == 'retire']
                 fields = ('schema', 'domain', 'repository', 'unit', 'dispatch_id', 'request', 'accepted_versions',
                           'outcome', 'open')
-                refused = [e for e in events if e.get('outcome') == 'refused']
+                refused = [e for e in every if e.get('outcome') == 'refused']
                 classes = {e['refusal']: e.get('taxonomy') for e in refused}
                 expected = {'cleanup_incomplete': 'stale_subject', 'already_retired': 'stale_subject',
                             'missing_accounting': 'missing_evidence', 'cleanup_incomplete:clone': 'stale_subject',
                             'worker_alive': 'stale_subject', 'outcome_unknown': 'unknown_outcome'}
                 status = getattr(retirements('main'), 'status', lambda: {})()
-                observed['observations'] = {'events': len(events), 'refusal_classes': classes, 'status': status,
-                                            'sample': events[:1]}
+                observed['observations'] = {'events': len(every), 'refusal_classes': classes, 'status': status,
+                                            'sample': every[:1]}
                 check('retirement/observations',
-                      bool(events) and all(all(f in e for f in fields) for e in events)
-                      and all(e['request'] == 'retire/' + e['dispatch_id'] and e['unit'] for e in events)
+                      bool(every) and all(all(f in e for f in fields) for e in every)
+                      and all(e['request'] == 'retire/' + e['dispatch_id'] and e['unit'] for e in every)
                       and all(e.get('refusal') and e.get('taxonomy') for e in refused)
                       and {k: classes.get(k) for k in expected} == expected
-                      and status.get('accepted', 0) >= 1 and status.get('refused', 0) >= 1
+                      and status.get('accepted', 0) >= 1 and status.get('refused', 0) >= 1 and status.get('retried', 0) >= 1
                       and list((status.get('pending') or {})) == [started['orphan'].dispatch_id])
                 scaffold = load('v41_scaffold', mods / 'init_scaffold.py')
                 check('retirement/installed-assets', '.veldo/control_heartbeat.py' in scaffold._FILES
