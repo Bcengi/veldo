@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0134
 title: Accept a repository's architecture contract by a signed owner command
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -185,6 +185,29 @@ policy-decided architecture) is not offered; if the owner wants it, it is a new 
 consumed, not changed. Acceptance through Telegram or the factory API is not added here; the
 authenticated API may later carry the same signed packet unchanged.
 
+## What the reviewer judges
+
+- Normal use: the owner, an active person member holding project_owner whose scope covers the
+  repository, signs an accept command naming a commit. The authority verifies the signature against
+  that person's active key in the store's committed keyring, reads `.veldo/architecture.yaml` at that
+  commit from the object store, requires the installed structural validator to accept it and the
+  stated digest to equal the SHA-256 of its raw bytes, and records `architecture:<repository>` in the
+  schema in Notes through the store's registered command path. From then on VELDO-0053's Gate treats
+  the contract as required whatever the workspace's policy says. A later acceptance replaces it with
+  the next contract_version. The reader accepts exactly the schema-valid records.
+- Threat model: a worker editing `.veldo/policy.yaml` to make the contract optional; a signer who is
+  not an active person with project_owner covering the repository (an agent_run, service or policy
+  member, a revoked key, a scope that does not cover it); a digest that does not match the bytes at the
+  commit; a missing commit or contract; bytes the validator refuses; a replayed nonce; coordinates
+  naming another domain or repository; a record in any shape other than the schema, including one
+  written through the generic upsert operation. The owner's account, the store and the installed
+  validator are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery of a
+  lost acknowledgement, concurrent acceptance beyond the store's expected-version refusal and clock
+  qualification (Release 2); withdrawing an accepted contract; acceptance through Telegram or the API;
+  rows written into our own store file directly, outside every command path; files planted in the
+  installed directory.
+
 ## Notes
 
 The record schema, `veldo.architecture_record/v1`. The store entity id is
@@ -252,3 +275,5 @@ is in this release; recovery, concurrency and clocks are Release 2.
 2026-09-23: plans/PLAN-0019-dark-factory.md joined the footprint because this specification's own writing
 change adds its work item (W97) to the plan, and the shape gate holds a change that names one
 specification to that specification's footprint.
+
+2026-09-24: the owner marked this specification ready (Telegram 29041).

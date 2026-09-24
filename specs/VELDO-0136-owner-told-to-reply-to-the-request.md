@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0136
 title: Tell the owner to reply to the request when an answer does not reply to a presentation
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: required
@@ -103,3 +103,5 @@ message.
 
 2026-09-24: new draft, from the scoped review of VELDO-0066 (an owner who does not press Reply gets
 silence).
+
+2026-09-24: the owner marked this specification ready (Telegram 29041).
