@@ -99,3 +99,23 @@ an unknown dispatch, descendant containment and retirement policy are VELDO-0040
 recovery of an unknown dispatch is Release 2. The branch where the receiver process cannot be
 started at all is not driven by the suite. `scripts/check_docs.sh` fails on a non-ASCII byte in
 `proof/VELDO-0028/r8-probes-at-4b29b11.txt`, which predates this work.
+
+## Review of bb72994 (scoped, 2026-09-23)
+
+Two blocking findings, both fixed in 95c4749:
+
+- B1: a worker that closed its output escaped its deadline (the reap loop ended on end of output and then
+  waited with no timeout). Row `dispatch/deadline-after-closed-output`: red at 68b5776 by assertion (the
+  worker ran 8.1 s and was recorded as a clean exit), green after (stopped at the 2 s deadline, recorded
+  `deadline_stop`). Mutations `dispatch-closed-output-not-held`, `dispatch-closed-output-late-deadline`.
+- B2: through the trusted wrapper (a remote engine), a deadline stop killed only the local transport and
+  recorded `exited`, which freed the unit while the far engine could still run. Now it is `unknown` with
+  reason `remote_stop_unconfirmed` and the unit stays held. Row `dispatch/remote-stop-holds-unit`: red at
+  68b5776 by assertion (recorded `exited`, and a second worker was accepted for the same unit), green after.
+  Mutations `dispatch-remote-stop-exits`, `dispatch-remote-stop-needs-signal`.
+
+`--finding 39 --jobs 4`: 28 of 28 rejected; suite 47 assertions green. Filed from the same review (not
+blocking under the scope): the Mac environment is not forwarded over ssh unless configured; the start
+time budgets on a slow ssh; the new runner is not yet wired into executor.py and dispatch.py; later
+transitions do not compare the record's own domain and repository; a failed store write leaves a unit
+held; the worker slot is returned only by Runner.wait.

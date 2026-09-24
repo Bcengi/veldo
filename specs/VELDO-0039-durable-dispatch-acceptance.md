@@ -138,3 +138,7 @@ transport through its trusted wrapper, which reports the engine's own identity. 
 62_veldo_0039_dispatch and proof/VELDO-0039. scripts/check_teeth_mutations.py joined the footprint to
 register the criteria's driven mutations as finding 39, as it did for VELDO-0036 and VELDO-0052.
 Status is unchanged.
+
+2026-09-23, scoped review of bb72994: two blocking defects fixed (a worker that closes its output is held
+to its deadline; a remote deadline stop is unknown and holds the unit), with rows red at 68b5776 and four
+mutations. Six items filed for later work (proof README).

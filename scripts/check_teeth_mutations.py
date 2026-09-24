@@ -1226,6 +1226,24 @@ def cases():
     def dispatch(name, module, old, new, row, also=()):
         add(39, name, '62_veldo_0039_dispatch.py', module, old, new, ['dispatch/' + row], also)
 
+    # Review of bb72994, B1: a worker that closes its output is still held to its deadline.
+    closed_wait = ("        if not stopped:\n"
+                   "            # Closing its output does not end a worker: it is still held to the contract deadline.\n"
+                   "            try:\n"
+                   "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n")
+    dispatch('dispatch-closed-output-not-held', 'control_launch.py', closed_wait,
+             closed_wait.replace("        if not stopped:\n", "        if False:\n"), 'deadline-after-closed-output')
+    dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
+             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
+             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()) + 30)\n",
+             'deadline-after-closed-output')
+    # Review of bb72994, B2: a remote deadline stop is unknown and holds the unit.
+    remote_stop = "        if remote and termination['deadline_stop']:\n"
+    dispatch('dispatch-remote-stop-exits', 'control_launch.py', remote_stop,
+             "        if False:\n", 'remote-stop-holds-unit')
+    dispatch('dispatch-remote-stop-needs-signal', 'control_launch.py', remote_stop,
+             "        if remote and termination['deadline_stop'] and termination['signal'] is None:\n",
+             'remote-stop-holds-unit')
     # AC1, declared: the worker is spawned before the contract is recorded. The fixed code guards it
     # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
     # needs the prepared record), so the defect is both edits.
