@@ -42,7 +42,8 @@ output, a stop request or the next stop timer. Nothing polls for liveness.
 RETIREMENT. `retirement` is the runner's observation for returning the worker slot (VELDO-0036's
 lifecycle observer): read from the kernel at that moment, the worker's process is gone and its group
 is empty (the cgroup directory is removed, which the kernel allows only when empty, or reports
-populated 0). A populated group keeps the slot.
+populated 0). A populated group keeps the slot. control_retirement.py (VELDO-0041) takes it at every
+attempt, inside the transaction that releases the slot, beside the other open obligations.
 
 WHAT IT IS NOT. The worker runs as the owner's account, so it could write its own group's control
 files or ask the same user manager for another unit; distinct worker identities through a privileged
