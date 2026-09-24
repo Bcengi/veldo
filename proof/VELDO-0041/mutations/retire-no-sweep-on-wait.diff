@@ -1,0 +1,7 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -256,3 +256 @@
+-        self.launches.pop(launch.dispatch_id, None)
+-        # This dispatch's end may have completed another's obligation (a group the kernel emptied).
+-        self.sweep()
++        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement

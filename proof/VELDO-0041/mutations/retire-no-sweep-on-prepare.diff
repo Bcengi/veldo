@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -195,2 +195 @@
+-        self.sweep()
+-        now = self.clock()
++        now = self.clock()  # defect: a preparation sweeps no pending retirement

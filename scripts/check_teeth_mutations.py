@@ -2765,12 +2765,15 @@ def cases():
     dispatch('dispatch-closed-output-not-held', 'control_launch.py', closed,
              closed + "                            code = worker.wait()  # defect: the deadline ends with the output\n",
              'deadline-after-closed-output')
+    # Since VELDO-0041 the loop's wait is the least of its timers (the deadline on the wall clock, the
+    # stop, the missed-heartbeat deadline and the settling on the monotonic one) and a stop begins with
+    # its cause alone, so the late deadline and the stop at close are made there.
     dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
-             "                due = min(contract['deadline'] if cause is None and code is None else math.inf,\n",
-             "                due = min(contract['deadline'] + 30 if cause is None and code is None else math.inf,\n",
+             "                waits = [contract['deadline'] - time.time()] if live else []\n",
+             "                waits = [contract['deadline'] + 30 - time.time()] if live else []\n",
              'deadline-after-closed-output')
     dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py', closed,
-             closed + "                            begin('deadline', time.time())  # defect: stopped when it closes\n",
+             closed + "                            begin('deadline')  # defect: stopped when it closes\n",
              'deadline-after-closed-output')
     # Review of bb72994, B2: a remote deadline stop is unknown and holds the unit.
     remote_stop = "        if remote and termination['deadline_stop']:\n"
@@ -2991,15 +2994,21 @@ def cases():
     contain('containment-no-cooperative-step', 'control_containment.py',
             "            self._step('cooperative' if adapter_alive else 'terminate', now)\n",
             "            self._step('terminate', now)  # defect: the adapter is not asked first\n", 'cooperative-stop')
+    # Re-pointed by VELDO-0041 at the loop's least-timer wait and at the worker's exit, which leaves the
+    # wrapper's own heartbeat SETTLE_SECONDS to end before what is left is stopped.
     contain('containment-exit-polled', 'control_launch.py',
-            "                timeout = None if due == math.inf else max(0, math.ceil((due - time.time()) * 1000))\n",
+            "                timeout = max(0, math.ceil(min(waits) * 1000)) if waits else None\n",
             "                timeout = 50  # defect: the reap wakes every 50 ms to look\n", 'exit-notified')
     contain('containment-exit-leaves-descendants', 'control_launch.py',
             "                if code is not None and (group is None or not group.populated()):\n",
             "                if code is not None:  # defect: the exit ends the reap while the group still runs\n",
             'ordinary-exit',
             also=[("                        if stop is not None and group.populated():\n"
-                   "                            stop.adapter_exited(time.time())\n", "")])
+                   "                            if group.members() or watch is None:\n"
+                   "                                stop.adapter_exited(time.monotonic())\n"
+                   "                            else:\n"
+                   "                                # Only the wrapper's heartbeat is left, and it ends on the worker's exit.\n"
+                   "                                settle = time.monotonic() + HB.SETTLE_SECONDS\n", "")])
     contain('containment-retire-without-looking', 'control_containment.py',
             "    return {'terminated': process is None or not alive(process), 'cleaned': observed != 'populated',\n",
             "    return {'terminated': process is None or not alive(process), 'cleaned': True,  # defect\n",
@@ -3010,6 +3019,152 @@ def cases():
             'observations')
     contain('containment-not-installed', 'init_scaffold.py',
             '    ".veldo/control_containment.py",\n', '', 'installed-assets')
+    # VELDO-0041: each criterion's declared falsifier and further defects, each against the one suite
+    # row it names. Anchors are exact text in the production modules suite 67 installs.
+    def beat(name, module, old, new, row, also=()):
+        add(41, name, '67_veldo_0041_heartbeat.py', module, old, new, [row], also)
+
+    # AC1, declared: heartbeats are emitted only once the model call has returned.
+    beat('heartbeat-after-model-return', 'control_heartbeat.py',
+         "        started, seq = time.monotonic(), 0\n",
+         "        started, seq = time.monotonic(), 0\n"
+         "        poller.poll()  # defect: the heartbeat waits for the engine's model call to return\n",
+         'heartbeat/blocked-call-liveness')
+    beat('heartbeat-renewal-skipped', 'control_launch.py',
+         "        renewed, refusal = self.renewals.renew(contract, contract_digest, process, beat['seq'], time.time())\n",
+         "        renewed, refusal = None, None  # defect: a heartbeat does not renew the claim\n",
+         'heartbeat/blocked-call-liveness')
+    beat('heartbeat-configured-interval-ignored', 'control_launch.py',
+         "                   '--heartbeat', str(beat), repr(float(interval))] + argv\n",
+         "                   '--heartbeat', str(beat), repr(float(C.SETTINGS['heartbeat_seconds']['default']))] + argv"
+         "  # defect: the wrapper beats at the shipped interval, not the configured one\n",
+         'heartbeat/blocked-call-liveness')
+    beat('heartbeat-missing-not-stopped', 'control_launch.py',
+         "                elif cause is None and code is None and watch is not None and watch.expired(now):\n",
+         "                elif False:  # defect: a missing heartbeat is never acted on\n",
+         'heartbeat/missing-heartbeat-stop')
+    beat('heartbeat-window-from-first', 'control_heartbeat.py',
+         "        return (self.last if self.last is not None else self.released) + self.window\n",
+         "        return (self.first if self.first is not None else self.released) + self.window  # defect\n",
+         'heartbeat/missing-heartbeat-stop')
+    beat('heartbeat-default-interval', 'control_containment.py',
+         "    'heartbeat_seconds': dict(required=False, kind='seconds', default=10, controls=[],\n",
+         "    'heartbeat_seconds': dict(required=False, kind='seconds', default=5, controls=[],  # defect\n",
+         'heartbeat/shipped-defaults')
+    beat('heartbeat-default-window', 'control_containment.py',
+         "    'heartbeat_window_seconds': dict(required=False, kind='seconds', default=30, controls=[],\n",
+         "    'heartbeat_window_seconds': dict(required=False, kind='seconds', default=60, controls=[],  # defect\n",
+         'heartbeat/shipped-defaults')
+    beat('stop-default-grace', 'control_containment.py',
+         "    'stop_grace_seconds': dict(required=False, kind='seconds', default=10, controls=[],\n",
+         "    'stop_grace_seconds': dict(required=False, kind='seconds', default=15, controls=[],  # defect\n",
+         'heartbeat/shipped-defaults')
+    # AC2, declared: termination is sent only to the parent.
+    beat('stop-terminate-only-parent', 'control_containment.py',
+         "        elif stage == 'terminate':\n            self.group.terminate()\n",
+         "        elif stage == 'terminate':\n"
+         "            with contextlib.suppress(ProcessLookupError):\n"
+         "                os.kill(self.pid, signal.SIGTERM)  # defect: termination goes to the parent only\n",
+         'stop/bounded-group-exit')
+    beat('stop-configured-graces-ignored', 'control_launch.py',
+         "        return self._settings('stop_grace_seconds', 'kill_grace_seconds')\n",
+         "        return tuple(C.SETTINGS[n]['default'] for n in ('stop_grace_seconds', 'kill_grace_seconds'))  # defect\n",
+         'stop/bounded-group-exit')
+    beat('stop-kill-at-termination', 'control_containment.py',
+         "{'cooperative': stop_grace, 'terminate': kill_grace,",
+         "{'cooperative': stop_grace, 'terminate': 0,", 'stop/bounded-group-exit')
+    # AC3, declared: the slot is released before the descendants have ended.
+    beat('retire-before-descendant-termination', 'control_retirement.py',
+         "        kernel = C.retirement(entry['group'], record.get('process'))\n",
+         "        kernel = C.retirement(None, record.get('process'))  # defect: only the worker is looked at\n",
+         'retirement/live-descendant')
+    beat('retire-on-first-observation', 'control_retirement.py',
+         "            seen = self._observe(dispatch_id, entry)\n            entry['observed'] = seen\n",
+         "            seen = entry.setdefault('first_seen', self._observe(dispatch_id, entry))  # defect: stale\n"
+         "            entry['observed'] = seen\n",
+         'retirement/live-descendant')
+    beat('retire-without-accounting', 'control_reservations.py',
+         "            if any(r['state'] not in ('settled', 'unknown') for r in calls):\n"
+         "                raise Refused('missing_accounting')\n",
+         "", 'retirement/missing-accounting')
+    beat('retire-pending-call-settled', 'control_reservations.py',
+         "            if any(r['state'] not in ('settled', 'unknown') for r in calls):\n",
+         "            if any(r['state'] not in ('settled', 'unknown', 'pending') for r in calls):  # defect\n",
+         'retirement/missing-accounting')
+    beat('retire-drops-unknown-accounting', 'control_retirement.py',
+         "        retained = {'accounting_unknown': {r['invocation']: sorted(r['unknown']) for r in calls if r['unknown']}}\n",
+         "        retained = {'accounting_unknown': {}}  # defect: what stays unknown is dropped\n",
+         'retirement/missing-accounting')
+    beat('retire-leaves-clone-files', 'control_retirement.py',
+         "            'clone': dict(clone, open=clone['present']) if clone else {'open': False, 'clone_id': None},\n",
+         "            'clone': {'open': False, 'clone_id': None},  # defect: the clone files are no obligation\n",
+         'retirement/clone-files')
+    beat('retire-clone-group-unrecorded', 'control_retirement.py',
+         "                self.clones.record_group(dispatch_id, {k: entry['group'].get(k) for k in ('unit', 'slice', 'cgroup')})\n",
+         "                pass  # defect: the receiver's group is not recorded on the clone's user\n",
+         'retirement/clone-files')
+    beat('retire-trusts-teardown-answer', 'control_retirement.py',
+         "'present': bool(self.clones._is_live(clone['handle'])),",
+         "'present': clone['teardown'] is None,  # defect: the teardown's answer, not the files", 'retirement/clone-files')
+    beat('retire-unknown-outcome-conclusive', 'control_retirement.py',
+         "CONCLUSIVE = ('prepared', 'exited', 'refused')\n",
+         "CONCLUSIVE = ('prepared', 'exited', 'refused', 'unknown')  # defect\n", 'retirement/unknown-outcome')
+    beat('retire-open-outcome-released', 'control_retirement.py',
+         "            if first in ('outcome', 'clone'):\n",
+         "            if first in ('clone',):  # defect: an open outcome does not hold the slot\n",
+         'retirement/unknown-outcome')
+    beat('retire-refusal-unclassified', 'control_retirement.py',
+         "refusal=code, taxonomy=taxonomy(code),", "refusal=code, taxonomy=None,", 'retirement/observations')
+    beat('retire-pending-unlisted', 'control_retirement.py',
+         "            if slot is not None and not slot.get('retired'):\n",
+         "            if False:  # defect: a held slot is not listed as pending\n", 'retirement/observations')
+    # AC3, review of 5f53aa3: a refused retirement is retried by the runner itself when what it waits on is
+    # completed, and the retry is the same single release.
+    beat('retire-report-not-subscribed', 'control_retirement.py',
+         "        reservations.observe = observe\n",
+         "        pass  # defect: the final accounting report is never listened for\n",
+         'retirement/missing-accounting')
+    beat('retire-retry-releases-twice', 'control_retirement.py',
+         "        request = 'retire/' + dispatch_id\n",
+         "        request = 'retire/%s/%d' % (dispatch_id, entry['attempts'])  # defect: each attempt a request of its own\n",
+         'retirement/missing-accounting',
+         also=[("        if slot is not None and slot.get('retired'):\n"
+                "            return self._refused(entry, event, 'already_retired')\n",
+                "        pass  # defect: a released slot is not looked at before it is released again\n")])
+    beat('retire-clone-removal-not-retried', 'control_retirement.py',
+         "                    try:\n                        self._retry(other, 'clone_removed')\n",
+         "                    try:\n                        pass  # defect: the retirements waiting on the removed clone wait on\n",
+         'retirement/clone-files')
+    beat('retire-pending-never-retried', 'control_retirement.py',
+         "        self.counts['retried'] += 1\n        return self._attempt(dispatch_id, entry, basis)\n",
+         "        return False  # defect: a pending retirement is never tried again\n",
+         'retirement/clone-files')
+    beat('retire-no-sweep-on-wait', 'control_launch.py',
+         "        self.launches.pop(launch.dispatch_id, None)\n"
+         "        # This dispatch's end may have completed another's obligation (a group the kernel emptied).\n"
+         "        self.sweep()\n",
+         "        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement\n",
+         'retirement/live-descendant')
+    beat('retire-no-sweep-on-prepare', 'control_launch.py',
+         "        self.sweep()\n        now = self.clock()\n",
+         "        now = self.clock()  # defect: a preparation sweeps no pending retirement\n",
+         'retirement/unknown-outcome')
+    beat('retire-sweep-retries-unchanged', 'control_retirement.py',
+         "        if seen['open'] != entry['open']:\n            return True\n",
+         "        return True  # defect: tried again whether or not anything it waits on changed\n",
+         'retirement/unknown-outcome')
+    # AC1, review of 5f53aa3: the heartbeat outlives a signal the engine sends its own group, and the engine
+    # holds no end of the heartbeat channel.
+    beat('heartbeat-shares-engine-session', 'control_heartbeat.py',
+         "                os.setsid()\n", "", 'heartbeat/engine-group-signal')
+    beat('heartbeat-channel-left-to-engine', 'control_heartbeat.py',
+         "        os.close(engine)\n        os.close(fd)\n",
+         "        os.close(engine)  # defect: the channel stays open into the engine\n",
+         'heartbeat/channel-not-held')
+    beat('heartbeat-not-installed', 'init_scaffold.py', '    ".veldo/control_heartbeat.py",\n', '',
+         'retirement/installed-assets')
+    beat('retirement-not-installed', 'init_scaffold.py', '    ".veldo/control_retirement.py",\n', '',
+         'retirement/installed-assets')
     # VELDO-0049: each criterion's declared falsifier and further defects, each against the one
     # suite row it names. Anchors are exact text in the production modules suite 63 installs.
     def floor(name, old, new, row, also=(), module='dispatch.py'):

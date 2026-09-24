@@ -141,6 +141,11 @@ _FILES = [
     # VELDO-0040: worker profiles, containment groups, caps and group stop the receiver calls; a
     # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_containment.py",
+    # VELDO-0041: the trusted wrapper's heartbeat and the receiver's watch of it, and the retirement
+    # of worker slots, which control_launch.py loads; runtime assets, no validator import, not
+    # REQUIRED_SUBSTRATE.
+    ".veldo/control_heartbeat.py",
+    ".veldo/control_retirement.py",
     # VELDO-0042: isolated worker clones at the accepted commit over pinned per-repository object
     # caches, and the Landlock wrapper that keeps a worker's direct writes off other clones, the store,
     # the keys, the authority's Git metadata and the caches; the lifecycle base it builds on
