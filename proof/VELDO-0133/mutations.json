@@ -123,7 +123,7 @@
     true
    ]
   ],
-  "seconds": 2.439
+  "seconds": 2.565
  },
  "controls_green": true,
  "mutants": [
@@ -161,7 +161,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "b05f1b2632a70031e757843cb15fc8200b7217b76f255a3b7480f0bab69c15ef",
+   "mutant_sha256": "5b104e023ae2e6fac2de2f367acf68ee459d3b326e0498e8227b4b7d885118c7",
    "name": "disposition-every-question-to-project-owner",
    "named_row_red": true,
    "named_rows": [
@@ -286,8 +286,8 @@
      true
     ]
    ],
-   "seconds": 2.456,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.447,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -299,7 +299,7 @@
     "VELDO-0133 disposition/no-project-owner"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "f7f58de4f3a1e27cb5afaacf5a5c9a4b6af98c544c741f027cb42f1e20b39e21",
+   "mutant_sha256": "f8eae516f0853aadc0bcd9df43142e25159193410562a64bec5d0f164d4bb6c1",
    "name": "disposition-project-owner-guessed",
    "named_row_red": true,
    "named_rows": [
@@ -424,8 +424,8 @@
      true
     ]
    ],
-   "seconds": 2.586,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.468,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -437,7 +437,7 @@
     "VELDO-0133 disposition/question-opened"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "f2c1d725d0e2159ca021fe3da29e1423c7141b63d4e6c0d276c8dc88938c4a18",
+   "mutant_sha256": "8565a9c8515af9384e430742f26f6ada693b84c13da3e467e41ce5da11f6c4a1",
    "name": "disposition-question-names-first-request-version",
    "named_row_red": true,
    "named_rows": [
@@ -562,8 +562,8 @@
      true
     ]
    ],
-   "seconds": 2.484,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.489,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -597,7 +597,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "3a53b3a7bd6d97130a0d99f2e73bd0eb75818c642352c0c5a88338a44a8c9934",
+   "mutant_sha256": "e54258d0adc2e28caa4f00917a57781f144ef4fb355af24f2052f0f7f2e62d6a",
    "name": "disposition-instruction-beside-signed-command",
    "named_row_red": true,
    "named_rows": [
@@ -722,8 +722,8 @@
      true
     ]
    ],
-   "seconds": 2.481,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.485,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -759,7 +759,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "fa3d6af0cc45e5ce4724a0c8a5e20f655d153ccfdbcc53e0ccc5471164ae8144",
+   "mutant_sha256": "8c96ff89073ee2fe698b2e47bc8479898af82495aae48835b37c375609c6f5c1",
    "name": "disposition-empty-other-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -884,8 +884,8 @@
      true
     ]
    ],
-   "seconds": 2.956,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.994,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -917,7 +917,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "0ba8375aa97f49c5869e4408de3ad072eb5a91b71ab703c0b112858cf6f59d4d",
+   "mutant_sha256": "bb02212e386f8b9b07d1ac569f5a74616a5b0f46195f66683436107db1880133",
    "name": "disposition-question-declinable",
    "named_row_red": true,
    "named_rows": [
@@ -1042,8 +1042,8 @@
      true
     ]
    ],
-   "seconds": 2.488,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.47,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1065,7 +1065,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "e74dd0b536e902805a5b523ed20a628ad3782ca9da13a6d68b534a44f6b1e9ec",
+   "mutant_sha256": "e6b5842264ae12d98bf69202173ff86ec5c84b8dba7b9fda3e6527d4c2e35dc7",
    "name": "disposition-other-applied-as-backlog",
    "named_row_red": true,
    "named_rows": [
@@ -1190,8 +1190,8 @@
      true
     ]
    ],
-   "seconds": 2.478,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.428,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1213,7 +1213,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "c5721084df775ea3acf86ce2fe818019871d1658f760c58bf5984bde685a60a8",
+   "mutant_sha256": "714daab429d97bc913aa7d6f542b3f66044756f80475ac1687bae6d636213972",
    "name": "disposition-other-read-from-free-text",
    "named_row_red": true,
    "named_rows": [
@@ -1338,8 +1338,8 @@
      true
     ]
    ],
-   "seconds": 2.431,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.407,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1351,7 +1351,7 @@
     "VELDO-0133 disposition/dispose-other"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "bdf876144207bb88bd745cdb99fbfa741d2f7300c92b5b63566cc4a319260acd",
+   "mutant_sha256": "deb943150532c39b264d6350200ec6fd23126752016899d27dffc97c377b718b",
    "name": "disposition-other-under-another-source",
    "named_row_red": true,
    "named_rows": [
@@ -1476,8 +1476,8 @@
      true
     ]
    ],
-   "seconds": 2.436,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.449,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1489,7 +1489,7 @@
     "VELDO-0133 disposition/close-spares-siblings"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "a7db45eb1f2e14733b732113e3e8531fb3c3fa165c6f9f76807ffe6604658a05",
+   "mutant_sha256": "efaaf4e4ff8f0deccc031e2f16ec4d0c765686b46c91fb0d7a87cc53c89dc443",
    "name": "disposition-close-cancels-sibling-backlog",
    "named_row_red": true,
    "named_rows": [
@@ -1614,8 +1614,8 @@
      true
     ]
    ],
-   "seconds": 2.452,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.469,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1627,7 +1627,7 @@
     "VELDO-0133 disposition/dispose-once"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "1d74951e9fd56991a505617df3b82168515143d1a1e36578ab9777b0cbb806d3",
+   "mutant_sha256": "89cb06e650df5d9fce7f5745749063b102633d641ee15df4227551dd76aa0ab0",
    "name": "disposition-applied-twice",
    "named_row_red": true,
    "named_rows": [
@@ -1752,8 +1752,8 @@
      true
     ]
    ],
-   "seconds": 2.428,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.464,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1767,7 +1767,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "7efcef86accc7af5629d52509e36fa38d2f2f1a0ff6da4434eca7db91eb328f1",
+   "mutant_sha256": "b3feebd795b1f89fae45b0fcff0ef576f15bfa5cb287f60be6e4bb229a139d48",
    "name": "disposition-dispose-ignores-revoked-answer",
    "named_row_red": true,
    "named_rows": [
@@ -1892,8 +1892,8 @@
      true
     ]
    ],
-   "seconds": 2.468,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.48,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -1905,7 +1905,7 @@
     "VELDO-0133 disposition/dispose-backlog"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "8d8540330bbe3fdd9b1b8e424d00c69e4115a19710f2aa558305b54f2c6dc2a7",
+   "mutant_sha256": "604fe3ff42a8f4c592315461fdae0ae80d154b0080e8a24ae9083d8f77e503ce",
    "name": "disposition-backlog-keeps-park",
    "named_row_red": true,
    "named_rows": [
@@ -2030,8 +2030,8 @@
      true
     ]
    ],
-   "seconds": 2.47,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.476,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -2168,7 +2168,7 @@
      true
     ]
    ],
-   "seconds": 2.433,
+   "seconds": 2.429,
    "source_sha256": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
   },
   {
@@ -2185,7 +2185,7 @@
     "VELDO-0133 disposition/walk-holds-nothing"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "c6e2fc0195fef2f9a1e3c96a971e506aba0ba4a6f1e7c4358aace5e036db0e35",
+   "mutant_sha256": "ddebb6c4a3c2655a14606aafe134d8350bb10ad6bf59aae394dff1564605b1b8",
    "name": "disposition-pending-shown-under-original-reason",
    "named_row_red": true,
    "named_rows": [
@@ -2310,8 +2310,8 @@
      true
     ]
    ],
-   "seconds": 2.556,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.411,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -2341,7 +2341,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "7ab8d265e7a812cd35d29f6778ffa64f23e2722bc40d52cfb498214ec05f4d3d",
+   "mutant_sha256": "30ee6e068c2959114f0fa817605b32dabb2962046ffce07e3c7b6418d719009e",
    "name": "disposition-open-question-unparks-unit",
    "named_row_red": true,
    "named_rows": [
@@ -2466,8 +2466,8 @@
      true
     ]
    ],
-   "seconds": 2.463,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.409,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -2483,7 +2483,7 @@
     "VELDO-0133 disposition/walk-holds-nothing"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "8c9906cf970605e0257f3a8970da83b9d7ffed03f2f2c4dff38c50531b19f1bc",
+   "mutant_sha256": "10a2a5ce36ebf27024e6c6b4e9120bad25a65dd29f588a4fd3477d832bc15dc8",
    "name": "disposition-ask-ignores-open-question",
    "named_row_red": true,
    "named_rows": [
@@ -2608,8 +2608,8 @@
      true
     ]
    ],
-   "seconds": 2.462,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.422,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   {
    "by_assertion": true,
@@ -2621,7 +2621,7 @@
     "VELDO-0133 disposition/observability"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "e0d8ae24c5095c8e6e0e1ac6fe7e6694c44e20161887ddddca3ce27d25a4dc71",
+   "mutant_sha256": "231bd247e918616bcc3250f4337c5c4191eb29f10f477fdd3cb3e78425ad93fc",
    "name": "disposition-instruction-logged",
    "named_row_red": true,
    "named_rows": [
@@ -2746,13 +2746,13 @@
      true
     ]
    ],
-   "seconds": 2.492,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.461,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   }
  ],
  "noop": {
   "control_assignment.py": {
-   "copy_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea",
+   "copy_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2874,8 +2874,8 @@
      true
     ]
    ],
-   "seconds": 2.43,
-   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "seconds": 2.478,
+   "source_sha256": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   "control_claim.py": {
    "copy_sha256": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf",
@@ -3000,13 +3000,13 @@
      true
     ]
    ],
-   "seconds": 2.443,
+   "seconds": 2.446,
    "source_sha256": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 133",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 52.332,
+ "serial_seconds": 52.147,
  "spec_id": "VELDO-0133",
  "suite": "scripts/suites/69_veldo_0133_dispositions.py"
 }

@@ -46,7 +46,7 @@
  "modules": {
   ".veldo/control_assignment.py": {
    "at_commit": "ad6e5e86a5799d73d26eca8f469af45fdcdc871badaefded4717fd92114a7dfc",
-   "now": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+   "now": "7bfea537671e4704509b967200255825847e5aa8f829bc821c71de076dd6f010"
   },
   ".veldo/control_channel_presentation.py": {
    "at_commit": "f6f76e5858aff9276fe322f1273318b1d5b9e2c9133410b427c7b4f54223b87c",
@@ -185,7 +185,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.394,
+ "seconds": 1.386,
  "spec_id": "VELDO-0133",
  "suite": "scripts/suites/69_veldo_0133_dispositions.py",
  "tree": "git archive 3e00de0f5f7a79a211f2527919cc2be3d72ca571, unchanged; the current suite file run against it"

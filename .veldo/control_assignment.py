@@ -582,7 +582,7 @@ class Inbox:
                                 repository_uuid=repository, parked_on=params['assignment_id'])
         return set(inputs) | {unit, backlog, cid}
 
-    # -- what becomes of work that stopped (VELDO-0133) ------------------------------------
+    # What becomes of work that stopped (VELDO-0133).
 
     def _question_on_end(self, state, entities, aid, data, op, principal, now, params, observation):
         """The disposition question a decline or cancel opens in its own transaction, when the
