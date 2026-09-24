@@ -94,6 +94,26 @@ Automatic recovery, durability/scale qualification and additional host/channel t
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
 
+## What the reviewer judges
+
+- Normal use: a message from an authenticated allowed source, a Telegram message acquired through
+  VELDO-0066 or an authenticated API call through the intake interface VELDO-0130 will expose, becomes
+  one normalized intake command. It records the source identity (message id or API request id), the
+  exact text, the authenticated principal and the project context, and produces a proposed objective or
+  work item, or an inbox proposal plus a question when the project is unresolved. Arbitrary prose is
+  kept as written; a ticket reference is data an agent may fetch with its configured tools, never
+  watched. Intake never admits or prioritizes work. The same source request repeated unchanged returns
+  the same proposal. AC1's API leg runs through the intake interface the API will call; VELDO-0130
+  drives its own leg when it is built.
+- Threat model: forged actor text inside a Telegram message; an unauthenticated API call; an
+  unsupported source; one source written to a separate queue; a message required to carry a ticket id;
+  intake that creates an executable unit or grants priority; a repeated request identity with changed
+  content. The owner's account, the store and the authenticated channel edges are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); Jira watchers,
+  polling intake and webhook triggers (dropped by the owner, 28857); the API server itself
+  (VELDO-0130); recovery (Release 2); forged rows in our own store and files planted in the installed
+  directory.
+
 ## Notes
 
 Owner Telegram 28857 limits new-work triggers to a Telegram message or authenticated API call;
