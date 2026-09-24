@@ -97,6 +97,19 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: on this Linux box the dispatch receiver launches each worker in its own systemd scope and
+  cgroup v2 group under the trusted wrapper, with the profile's declared caps applied before the worker
+  runs; a stop terminates the whole group; exits are detected from operating system notifications, and
+  the group is empty before the dispatch is retired.
+- Threat model: a worker and its descendants (a child started outside the group, a signal-ignoring
+  descendant, a worker that outlasts its elapsed-runtime cap or its memory or CPU limits). The owner's
+  account, systemd and the kernel are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); root or another
+  account acting on the group; kernel or systemd defects; recovery when systemd is unavailable
+  (Release 2); the Mac profile (VELDO-0124).
+
 ## Notes
 
 This criterion universe is this Linux box only; the Mac profile is a separate Release 1
