@@ -3912,10 +3912,12 @@ def cases():
     def hints(name, module, old, new, row, also=()):
         add(136, name, '68_veldo_0136_hints.py', module, old, new, [row], also=also)
 
-    # AC1 (declared falsifier): a plain message, one with no reply reference, is sent nothing.
-    hints('plain-message-not-hinted', 'control_channel_attribution.py',
-          "NOT_A_REPLY = ('missing_reply_reference', 'unknown_presentation')\n",
-          "NOT_A_REPLY = ('unknown_presentation',)\n", 'hint/tells-owner-to-reply')
+    # AC1 (declared falsifier): a plain message, one with no reply reference, is sent nothing. The
+    # decision is the intake pass's, after intake has seen the message (review of VELDO-0136).
+    hints('plain-message-not-hinted', 'control_intake.py',
+          "        if (record.get('outcome') != 'refused' or record.get('reason') not in ORDINARY\n",
+          "        if (record.get('outcome') != 'refused' or record.get('reason') != 'unknown_presentation'  # defect\n",
+          'hint/tells-owner-to-reply')
     # AC1: the hint names only the first waiting request, so with two waiting one goes unnamed.
     hints('hint-names-first-only', 'control_channel_presentation.py',
           "        for r in receipts:\n            line = 'Request:",
@@ -3954,9 +3956,36 @@ def cases():
           "        due = list(waiting)\n", 'hint/once-per-pending-request', also=permissive)
     # AC3: when a new request is due, the hint names again the requests already hinted.
     hints('hint-renames-hinted', 'control_channel_presentation.py',
-          "        text, named = self._hint_text(m.get('cause'), due)\n",
-          "        text, named = self._hint_text(m.get('cause'), waiting if due else due)\n",
+          "        text, named = self._hint_text(m.get('cause'), due, taken, lead)\n",
+          "        text, named = self._hint_text(m.get('cause'), waiting if due else due, taken, lead)\n",
           'hint/once-per-pending-request', also=permissive)
+    # Review of VELDO-0136: one decision per owner message, taken after intake has seen it.
+    # New work is told it answers nothing, as if intake had not taken it.
+    hints('new-work-told-answers-nothing', 'control_intake.py',
+          "                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)\n",
+          "                self._hint(payload, None)  # defect: new work is told it answers nothing\n",
+          'hint/new-work-one-reply')
+    # The finding itself: the Acquirer hints when it refuses, before intake has seen the message.
+    hints('hint-before-intake', 'control_channel_attribution.py',
+          "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
+          "        if refusal in NOT_A_REPLY and known['principal'] is not None:  # defect: hinted before intake\n"
+          "            self.presenter.hint_owner(dict(cause=refusal, principal=known['principal'],\n"
+          "                                           chat_id=fields.get('chat_id'), sender_id=fields.get('sender_id'),\n"
+          "                                           message_id=fields.get('message_id'), evidence_id=eid,\n"
+          "                                           update_id=record.get('update_id')))\n"
+          "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
+          'hint/answer-without-reply-one-reply')
+    # Intake's project question and the note go out as two replies.
+    hints('question-and-note-apart', 'control_intake.py',
+          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
+          "        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies\n",
+          'hint/two-projects-one-reply')
+    # A clarification and a Reply to intake's own question are hinted as if intake had not taken them.
+    hints('intake-replies-hinted', 'control_intake.py',
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):\n",
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused', 'clarification',\n"
+          "                                                                         'resolved'):  # defect\n",
+          'hint/intake-replies-not-hinted')
 
     # VELDO-0137: policy_check reads a VELDO-0050 digest-form spec revision. Each case against the one
     # suite 68 row it names.

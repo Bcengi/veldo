@@ -34,7 +34,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 SUITE = '68_veldo_0136_hints.py'
-MODULES = ('control_channel_presentation.py', 'control_channel_attribution.py')
+MODULES = ('control_channel_presentation.py', 'control_channel_attribution.py', 'control_intake.py')
 PREFIX = 'VELDO-0136 '
 
 
