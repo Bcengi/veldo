@@ -15,10 +15,10 @@ observation, never a crash: each region reds its rows on a raise, and a `ran/` r
 """
 import ast
 import contextlib
+import importlib.util
 import io
 import json
 from pathlib import Path
-import subprocess
 import sys
 import tempfile
 
@@ -28,8 +28,18 @@ SUITE = ROOT / 'scripts/suites/63_veldo_0040_containment.py'
 HERE = Path(__file__).resolve().parent
 
 
+def _load(name, path):
+    spec = importlib.util.spec_from_file_location(name, str(path))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_git_process = _load('red_git_process', ROOT / '.veldo' / 'git_process.py')
+
+
 def git(*args):
-    return subprocess.run(['git', '-C', str(ROOT), *args], check=True, capture_output=True).stdout
+    return _git_process.run(['git', '-C', str(ROOT), *args], check=True, capture_output=True).stdout
 
 
 def main(commit):

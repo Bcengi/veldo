@@ -256,6 +256,7 @@ class Launch:
         self.group = None
         self.supervision = None
         self.stop_requested = False
+        self.ends_by = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -293,6 +294,8 @@ class Launch:
             self.group = message['group']
         if message.get('supervision') is not None:
             self.supervision = message['supervision']
+        if isinstance(message.get('ends_by'), (int, float)):
+            self.ends_by = message['ends_by']
         return message
 
     def _end_receiver(self):
@@ -349,8 +352,11 @@ class Launch:
         """The dispatch's record once the receiver has recorded its end, or unknown if it cannot."""
         if not self.owned:
             return self.dispatches.record(self.dispatch_id)
+        # By default the receiver has until the contract deadline, or the later end it announced for a
+        # contained worker's stop, and ACCEPT_SECONDS more.
+        ends_by = max(self.contract['deadline'], self.ends_by or 0)
         deadline = time.monotonic() + (timeout if timeout is not None else
-                                       max(1.0, self.contract['deadline'] - time.time() + ACCEPT_SECONDS))
+                                       max(1.0, ends_by - time.time() + ACCEPT_SECONDS))
         if self.result == 'accepted' and (self.record or {}).get('state') == 'running':
             while True:
                 message = self._message(deadline)
@@ -514,7 +520,11 @@ class Receiver:
             self._stop(worker)
             raise
         group = getattr(worker, 'group', None)
-        self.emit({'event': 'running', 'process': process, 'group': group.report() if group else None})
+        # When this receiver will have recorded the end at the latest: a stop begun at the deadline, its
+        # graces and the settling of the group.
+        ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)
+        self.emit({'event': 'running', 'process': process, 'ends_by': ends_by,
+                   'group': group.report() if group else None})
         termination = self._reap(worker, contract, carry)
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its

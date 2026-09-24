@@ -69,7 +69,7 @@ def _v40_suite():
         EL = load('v40_eligibility', mods / 'control_eligibility.py')
         RES = load('v40_reservations', mods / 'control_reservations.py')
         SIG = load('v40_signer', mods / 'control_signer.py')
-        GP = load('v40_git', mods / 'git_process.py')
+        _git_process = load('v40_git', mods / 'git_process.py')
         CLM = D.CLM
         DOMAIN, REPOSITORY, ACCOUNT, HOLDER = 'domain-40', 'repository-40', 'acct-40', 'builder-1'
         private = base / 'private'
@@ -136,10 +136,10 @@ def _v40_suite():
             return unit
 
         src = base / 'source'
-        GP.run(['git', 'init', '-q', str(src)], check=True, capture_output=True)
+        _git_process.run(['git', 'init', '-q', str(src)], check=True, capture_output=True)
         (src / 'README').write_text('containment source\n')
-        GP.run(['git', '-C', str(src), 'add', 'README'], check=True, capture_output=True)
-        GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
+        _git_process.run(['git', '-C', str(src), 'add', 'README'], check=True, capture_output=True)
+        _git_process.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
                capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
 
         # The fixture engine and its descendants. Every process writes <tag>.<name>.json with what the

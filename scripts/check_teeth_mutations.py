@@ -2771,8 +2771,8 @@ def cases():
             "    return {'terminated': process is None or not alive(process), 'cleaned': True,  # defect\n",
             'retire-after-empty')
     contain('containment-group-not-reported', 'control_launch.py',
-            "'group': group.report() if group else None})\n        termination = self._reap(worker, contract, carry)\n",
-            "'group': None})  # defect\n        termination = self._reap(worker, contract, carry)\n",
+            "                   'group': group.report() if group else None})\n",
+            "                   'group': None})  # defect: the receiver does not report the worker's group\n",
             'observations')
     contain('containment-not-installed', 'init_scaffold.py',
             '    ".veldo/control_containment.py",\n', '', 'installed-assets')
