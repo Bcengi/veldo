@@ -2651,8 +2651,12 @@ def cases():
             "                 if terms['target'].get('kind') == GOVERNING_TARGET and self.decision_signer is not None\n"
             "                 else None)  # defect: no signer, no binding, and the receipt commits\n",
             'binding/one-transaction')
-    binding('binding-choice-generic', "'signature': signature, 'choice': winner['choice'],",
-            "'signature': signature, 'choice': 'decided',", 'binding/one-transaction')
+    # The signed body's ruling is what every VELDO-0054 consumer reads: forced to approve, the owner's reject
+    # would clear the work. The unsigned chosen option, fixed to accept whatever the owner chose.
+    binding('ruling-forced-approve', "'scope_digest': question['scope_digest'], 'ruling': winner['ruling'],",
+            "'scope_digest': question['scope_digest'], 'ruling': 'approve',", 'binding/owner-ruling')
+    binding('binding-choice-forced-accept', "'signature': signature, 'choice': winner['choice'],",
+            "'signature': signature, 'choice': 'accept',", 'binding/owner-ruling')
     # AC2 (declared falsifier): the subject digest the owner was shown is ignored during binding; then the
     # framing and the revision taken from the record at settlement instead of from the question.
     binding('binding-ignores-subject-digest', "'subject': dict(question['subject']),",
@@ -2670,6 +2674,10 @@ def cases():
             "    if subject['kind'] not in DD.SUBJECT_KINDS:\n        return 'unsupported_subject'",
             "    if False:  # defect: a question about an unsupported subject is recorded\n        return 'unsupported_subject'",
             'refusal/unsupported-subject-stops')
+    # Threat model: a question at a revision above the record's is bound, so it clears the work once the
+    # record reaches that revision and refuses the genuine question as already settled.
+    binding('future-revision-accepted', "        if question['revision'] > record['revision']:\n",
+            "        if False:  # defect: a question above the record's revision is bound\n", 'refusal/future-revision')
     # AC3 (declared falsifier): inline open_decisions text treated as authority by the plan readers; then
     # by the store-backed stations, and a record's own settled status treated as its settlement.
     binding('inline-status-authority', '                blocked.setdefault(s, []).append(d.get("id"))\n',
