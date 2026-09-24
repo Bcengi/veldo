@@ -23,6 +23,10 @@ footprint:
   - "specs/VELDO-0126-message-objective-intake.md"
   - "specs/index.md"
   - "proof/VELDO-0126/*"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -94,6 +98,26 @@ Automatic recovery, durability/scale qualification and additional host/channel t
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
 
+## What the reviewer judges
+
+- Normal use: a message from an authenticated allowed source, a Telegram message acquired through
+  VELDO-0066 or an authenticated API call through the intake interface VELDO-0130 will expose, becomes
+  one normalized intake command. It records the source identity (message id or API request id), the
+  exact text, the authenticated principal and the project context, and produces a proposed objective or
+  work item, or an inbox proposal plus a question when the project is unresolved. Arbitrary prose is
+  kept as written; a ticket reference is data an agent may fetch with its configured tools, never
+  watched. Intake never admits or prioritizes work. The same source request repeated unchanged returns
+  the same proposal. AC1's API leg runs through the intake interface the API will call; VELDO-0130
+  drives its own leg when it is built.
+- Threat model: forged actor text inside a Telegram message; an unauthenticated API call; an
+  unsupported source; one source written to a separate queue; a message required to carry a ticket id;
+  intake that creates an executable unit or grants priority; a repeated request identity with changed
+  content. The owner's account, the store and the authenticated channel edges are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); Jira watchers,
+  polling intake and webhook triggers (dropped by the owner, 28857); the API server itself
+  (VELDO-0130); recovery (Release 2); forged rows in our own store and files planted in the installed
+  directory.
+
 ## Notes
 
 Owner Telegram 28857 limits new-work triggers to a Telegram message or authenticated API call;
@@ -116,3 +140,21 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-24, implementation: `.veldo/init_scaffold.py` (both copies, and any pack copy) and
+`scripts/check_teeth_mutations.py` were added to the footprint before either was changed, so the
+scaffold installs the intake module and the registry holds this specification's mutations.
+
+2026-09-24, implementation: `.veldo/control_intake.py` takes a Telegram message kept and attributed by
+VELDO-0066 and an API request signed by the API edge principal into one normalized command and one
+store command that writes only intake sources, proposals and questions; an unresolved project keeps an
+inbox proposal and asks. Suite 68 has 18 rows, finding 126 has 14 mutations, and the rows are red at
+d34980f (`proof/VELDO-0126/`). The API leg drives the intake interface; VELDO-0130 drives its own leg.
+The criteria, status and risk are unchanged.
+
+2026-09-24, review fixes: a follow-up to an inbox proposal already resolved (a Telegram reply to the
+original message or its question, or an API request naming the inbox id) now follows `resolved_to` and
+lands on the live objective. On the lead's decision, a Telegram message whose sender was not a member
+at the message's platform date stays refused after the sender is enrolled, read from the effective
+time of the key the VELDO-0025 enrollment writes. Suite 68 keeps 18 rows with two new row cases, red at
+8607f50; finding 126 has 18 mutations (`proof/VELDO-0126/`). The criteria, status and risk are unchanged.

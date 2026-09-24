@@ -752,8 +752,8 @@
    ],
    "regions": "The trusted wrapper's heartbeat while a model call is blocked, in a session of its own and on a channel the engine does not hold, claim renewal on each heartbeat and the missed-heartbeat stop, an accepted stop's bounded escalation over the whole group, and a retirement that follows actual termination, keeps each open obligation, is retried by the runner once an obligation is completed and releases the slot once",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory."
-   },
-   {
+  },
+  {
    "name": "66_veldo_0051_events",
    "file": "66_veldo_0051_events.py",
    "requires": [
@@ -779,6 +779,24 @@
    ],
    "regions": "The owner told once, per waiting request, to reply to the request message when his attributed message replies to no presentation; the hint never records an answer and reaches only the current enrolled owner",
    "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and a loopback Bot API over HTTP."
+  },
+  {
+   "name": "68_veldo_0137_policy_revision",
+   "file": "68_veldo_0137_policy_revision.py",
+   "requires": [
+    "68_veldo_0137_policy_revision"
+   ],
+   "regions": "policy_check's stale-proof check over digest-form and integer-form spec revisions",
+   "requires_note": "Uses only shared ROOT and expect; a temporary Git repository laid from .veldo/ modules, driven through git_process."
+  },
+  {
+   "name": "68_veldo_0126_intake",
+   "file": "68_veldo_0126_intake.py",
+   "requires": [
+    "68_veldo_0126_intake"
+   ],
+   "regions": "One normalized intake command from a Telegram message and an authenticated API request, proposals only, an inbox proposal and a question when the project is unresolved, text kept as written, follow-up clarification, authenticated allowed sources only and one proposal per source request",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal, edge and API request signatures, the VELDO-0066 Acquirer and VELDO-0065 presentation edge over a loopback Bot API, and a loopback ticket host that records requests. Writes only temporary fixtures."
   }
  ]
 }

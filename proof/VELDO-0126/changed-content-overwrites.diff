@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -420 +420 @@
+-            raise Refused('identity_conflict', key)
++            pass  # defect: changed content overwrites the recorded request

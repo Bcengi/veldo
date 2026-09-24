@@ -1,0 +1,18 @@
+{
+ "schema": "veldo.approval/v1",
+ "id": "APPROVAL-0137-1",
+ "decision": "approved",
+ "approver": "dmitry",
+ "scope": {
+  "spec_id": "VELDO-0137",
+  "commit": "b8a6bbaa187c2dc7d829ae96dfa65e302bf452d0",
+  "paths": [
+   ".veldo/policy_check.py",
+   "engine/.veldo/policy_check.py"
+  ]
+ },
+ "basis": "Dmitry authorized this change over Telegram on 2026-09-24. He was asked (29057): may I change policy_check.py (a protected file) so its stale-proof check reads the new digest form of a proof's spec revision, because today it reads that as a number, fails, and treats every factory proof as stale; he answered 'Approved' (29058). The two paths are the protected_paths this commit changes. What they carry is the digest-form reading in spec_revision_stale and nothing else: integer-form proofs are judged exactly as before, and every shape the new reading cannot name for certain stays stale.",
+ "recorded_at": "2026-09-24T18:30:00Z",
+ "recorded_by": "claude-opus-5-5 (recording Dmitry's Telegram authorization of 2026-09-24)",
+ "expires_at": "2026-10-31T00:00:00Z"
+}
