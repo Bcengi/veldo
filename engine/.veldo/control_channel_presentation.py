@@ -431,15 +431,17 @@ def binding_mismatches(receipt, current):
 class TelegramPresentationEdge:
     """The Bot API sendMessage call for presentations. A replacement is sent as a reply to the
     message it supersedes. `projection` is the VELDO-0064 projection module, whose refusal
-    classification is reused: only Telegram's own 4xx error answer proves nothing was published."""
+    classification is reused: only Telegram's own 4xx error answer proves nothing was published.
+    `activation` is the VELDO-0073 gate every send asks (projection.gated_open)."""
 
-    def __init__(self, projection, base_url, token, *, timeout=10):
+    def __init__(self, projection, base_url, token, *, timeout=10, activation=None):
         self.P = projection
         if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
             raise projection.EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
         if not isinstance(token, str) or not token:
             raise projection.EdgeRefused('invalid_input', 'a token is required')
         self.base_url, self._token, self.timeout = base_url.rstrip('/'), token, timeout
+        self.activation = activation
 
     def send(self, chat, text, reply_to=None):
         EdgeRefused = self.P.EdgeRefused
@@ -454,7 +456,7 @@ class TelegramPresentationEdge:
                                          data=json.dumps(payload).encode(), method='POST',
                                          headers={'Content-Type': 'application/json'})
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with self.P.gated_open(self.activation, self.base_url, request, self.timeout, 'sendMessage', chat) as response:
                 answer = json.loads(response.read())
         except urllib.error.HTTPError as exc:
             error = self.P.telegram_error_answer(exc, exc.code) if 400 <= exc.code < 500 else None

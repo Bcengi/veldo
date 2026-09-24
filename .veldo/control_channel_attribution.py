@@ -258,15 +258,17 @@ class TelegramAcquisitionEdge:
     """The Bot API calls acquisition makes: getMe (the bot's own identity) and getUpdates (the updates
     after the cursor). Only the Bot API's own successful JSON answer counts: a transcript, a proxy page
     or an unreadable body acquires nothing. `projection` is the VELDO-0064 module, whose error answer
-    reader and refusal type are reused."""
+    reader and refusal type are reused. `activation` is the VELDO-0073 gate every call asks
+    (projection.gated_open); a getMe answer naming another bot than the activated one refuses."""
 
-    def __init__(self, projection, base_url, token, *, timeout=10):
+    def __init__(self, projection, base_url, token, *, timeout=10, activation=None):
         self.P = projection
         if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
             raise projection.EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
         if not isinstance(token, str) or not token:
             raise projection.EdgeRefused('invalid_input', 'a token is required')
         self.base_url, self._token, self.timeout = base_url.rstrip('/'), token, timeout
+        self.activation = activation
 
     def _call(self, method, payload):
         EdgeRefused = self.P.EdgeRefused
@@ -274,7 +276,7 @@ class TelegramAcquisitionEdge:
                                          data=json.dumps(payload).encode(), method='POST',
                                          headers={'Content-Type': 'application/json'})
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with self.P.gated_open(self.activation, self.base_url, request, self.timeout, method) as response:
                 body = response.read()
         except urllib.error.HTTPError as exc:
             if 400 <= exc.code < 500 and self.P.telegram_error_answer(exc, exc.code) is not None:
@@ -295,6 +297,7 @@ class TelegramAcquisitionEdge:
         result, _ = self._call('getMe', {})
         if not isinstance(result, dict) or type(result.get('id')) is not int or result.get('is_bot') is not True:
             raise self.P.EdgeRefused('invalid_platform_answer', 'getMe did not answer with this bot\'s User')
+        self.P.gated_bot(self.activation, result['id'])
         return {'id': result['id'], 'is_bot': True, 'username': result.get('username')}
 
     def get_updates(self, offset):

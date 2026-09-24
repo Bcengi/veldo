@@ -204,6 +204,10 @@ _FILES = [
     # VELDO-0068: the one request settlement service (terms, API answers, the terminal transaction and
     # the published request state). A runtime asset the authority loads; not validator substrate.
     ".veldo/control_request_settlement.py",
+    # VELDO-0073: the Telegram edge's activation gate, qualification record and activated ingress (the
+    # production construction of the settlement path). Runtime assets the authority loads; not substrate.
+    ".veldo/control_channel_activation.py",
+    ".veldo/control_channel_ingress.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",
