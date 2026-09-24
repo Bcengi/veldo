@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -667 +667 @@
+-                        disposition_of=dict(assignment_id=aid, request_version=data['request_version'], unit_id=unit,
++                        disposition_of=dict(assignment_id=aid, request_version=1, unit_id=unit,

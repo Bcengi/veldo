@@ -1,0 +1,3012 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0133 install/assets",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/set-derived",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/question-opened",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/addressee",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/no-project-owner",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/projected-to-own-chat",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/answer-refusals",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/unsigned-instruction",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/question-only-answered",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/valid-answers-admitted",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/revoked-answer-not-disposed",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/dispose-close",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/close-spares-siblings",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/dispose-backlog",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/dispose-other",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/dispose-once",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/ask-again",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/awaiting-disposition",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/walk-holds-nothing",
+    true
+   ],
+   [
+    "VELDO-0133 disposition/observability",
+    true
+   ],
+   [
+    "VELDO-0133 ran/install/assets",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/question-opened",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/projected-to-own-chat",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/dispose-once",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/answer-refusals",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/dispose-close",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/ask-again",
+    true
+   ],
+   [
+    "VELDO-0133 ran/disposition/observability",
+    true
+   ]
+  ],
+  "seconds": 2.439
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/addressee: c1: asked alice; c1: why decliner; c2: asked pete; c2: why canceler; c3: asked paula; c3: why canceler; n4: asked dora",
+    "VELDO-0133 detail: disposition/projected-to-own-chat: c1: in the chat enrolled for alice; c1: the platform holds it there naming the addressee, choices and source; c2: in the chat enrolled for pete; c2: the platform holds it there naming the addressee, choices and source; c3: in the chat enrolled for paula; c3: the platform holds it there naming the addressee, choices and source; an addressee with no enrolled chat is refused no_enrolled_chat; and nothing about it is sent to any chat",
+    "VELDO-0133 detail: disposition/valid-answers-admitted: c1: the addressee's other is accepted; c1: it is admitted by the inbox admission check; c1: the signed command keeps the instruction as written; c2: the addressee's close is accepted; c2: it is admitted by the inbox admission check; c3: the addressee's backlog is accepted; c3: it is admitted by the inbox admission check",
+    "VELDO-0133 detail: disposition/revoked-answer-not-disposed: control: the answer was accepted and admitted before the revocation; the revocation reaches back: admission refuses it; dispose is refused missing_authority",
+    "VELDO-0133 detail: disposition/dispose-close: c2: dispose is accepted; c2: the unit is CANCELED carrying the disposition",
+    "VELDO-0133 detail: disposition/close-spares-siblings: the closed unit is CANCELED; the recorded disposition says so",
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: dispose is accepted; c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds",
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c2: a second dispose is refused stale_subject; c3: a second dispose is refused stale_subject",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 answered: reads ready_to_dispose; c1 disposed: reads routed_to_intake; c2 answered: reads ready_to_dispose; c2 disposed: reads None; c3 answered: reads ready_to_dispose; c3 disposed: reads None",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 answered: the step was reached; c1 asked_again: the step was reached; c1 disposed: the step was reached; c2 answered: the step was reached; c2 disposed: the step was reached; c3 answered: the step was reached; c3 disposed: the step was reached",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-every-question-to-project-owner.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/addressee",
+    "VELDO-0133 disposition/projected-to-own-chat",
+    "VELDO-0133 disposition/valid-answers-admitted",
+    "VELDO-0133 disposition/revoked-answer-not-disposed",
+    "VELDO-0133 disposition/dispose-close",
+    "VELDO-0133 disposition/close-spares-siblings",
+    "VELDO-0133 disposition/dispose-backlog",
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "b05f1b2632a70031e757843cb15fc8200b7217b76f255a3b7480f0bab69c15ef",
+   "name": "disposition-every-question-to-project-owner",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/addressee"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.456,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/no-project-owner: ask for expired work in a project with two owners is refused no_project_owner; neither owner is guessed; the expired unit stays visible as expired"
+   ],
+   "diff": "proof/VELDO-0133/disposition-project-owner-guessed.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/no-project-owner"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "f7f58de4f3a1e27cb5afaacf5a5c9a4b6af98c544c741f027cb42f1e20b39e21",
+   "name": "disposition-project-owner-guessed",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/no-project-owner"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.586,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/question-opened: c4: it names the source assignment and request version"
+   ],
+   "diff": "proof/VELDO-0133/disposition-question-names-first-request-version.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/question-opened"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "f2c1d725d0e2159ca021fe3da29e1423c7141b63d4e6c0d276c8dc88938c4a18",
+   "name": "disposition-question-names-first-request-version",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/question-opened"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.484,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/unsigned-instruction: c1: other whose text is beside the signed command is refused invalid_input; c1: and nothing changed; c2: other whose text is beside the signed command is refused invalid_input; c2: and nothing changed; c3: other whose text is beside the signed command is refused invalid_input; c3: and nothing changed; c4: other whose text is beside the signed command is refused invalid_input; c4: and nothing changed; c5: other whose text is beside the signed command is refused invalid_input; c5: and nothing changed; c6: other whose text is beside the signed command is refused invalid_input; c6: and nothing changed; c7: other whose text is beside the signed command is refused invalid_input; c7: and nothing changed",
+    "VELDO-0133 detail: disposition/question-only-answered: c1: a decline of the question is refused; c1: a cancel of the question is refused; c1: the question is still pending, unchanged; c2: a decline of the question is refused; c2: a cancel of the question is refused; c2: the question is still pending, unchanged; c3: a decline of the question is refused; c3: a cancel of the question is refused; c3: the question is still pending, unchanged; c4: a decline of the question is refused; c4: a cancel of the question is refused; c4: the question is still pending, unchanged; c5: a decline of the question is refused; c5: a cancel of the question is refused; c5: the question is still pending, unchanged; c6: a decline of the question is refused; c6: a cancel of the question is refused; c6: the question is still pending, unchanged; c7: a decline of the question is refused; c7: a cancel of the question is refused; c7: the question is still pending, unchanged",
+    "VELDO-0133 detail: disposition/valid-answers-admitted: c1: the addressee's other is accepted; c1: it is admitted by the inbox admission check; c1: the signed command keeps the instruction as written; c2: the addressee's close is accepted; c2: it is admitted by the inbox admission check; c3: the addressee's backlog is accepted; c3: it is admitted by the inbox admission check; c4: the addressee's other is accepted; c4: it is admitted by the inbox admission check; c4: the signed command keeps the instruction as written; c5: the addressee's backlog is accepted; c5: it is admitted by the inbox admission check; c6: the addressee's close is accepted; c6: it is admitted by the inbox admission check; c7: the addressee's other is accepted; c7: it is admitted by the inbox admission check; c7: the signed command keeps the instruction as written",
+    "VELDO-0133 detail: disposition/dispose-close: c2: dispose is accepted; c2: the unit is CANCELED carrying the disposition; c6: dispose is accepted; c6: the unit is CANCELED carrying the disposition; c6: its backlog item, with no other open unit, is CANCELED carrying the disposition",
+    "VELDO-0133 detail: disposition/close-spares-siblings: the closed unit is CANCELED; the recorded disposition says so",
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: dispose is accepted; c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: dispose is accepted; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds",
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c2: a second dispose is refused stale_subject; c3: a second dispose is refused stale_subject; c4: a second dispose returns the same proposal and writes nothing; c5: a second dispose is refused stale_subject; c6: a second dispose is refused stale_subject; c7: a second dispose returns the same proposal and writes nothing",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 answered: reads ready_to_dispose; c1 asked_again: reads awaiting_disposition; c1 disposed: reads routed_to_intake; c2 answered: reads ready_to_dispose; c2 disposed: reads None; c3 answered: reads ready_to_dispose; c3 disposed: reads None; c4 answered: reads ready_to_dispose; c4 asked_again: reads awaiting_disposition; c4 disposed: reads routed_to_intake; c5 answered: reads ready_to_dispose; c5 disposed: reads None; c6 answered: reads ready_to_dispose; c6 disposed: reads None; c7 answered: reads ready_to_dispose; c7 asked_again: reads awaiting_disposition; c7 disposed: reads routed_to_intake",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 asked_again: the step was reached; c1 disposed: the step was reached; c2 disposed: the step was reached; c3 disposed: the step was reached; c4 asked_again: the step was reached; c4 disposed: the step was reached; c5 disposed: the step was reached; c6 disposed: the step was reached; c7 asked_again: the step was reached; c7 disposed: the step was reached",
+    "VELDO-0133 detail: disposition/observability: each dispose is observed with its question and ruling; accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-instruction-beside-signed-command.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/unsigned-instruction",
+    "VELDO-0133 disposition/question-only-answered",
+    "VELDO-0133 disposition/valid-answers-admitted",
+    "VELDO-0133 disposition/dispose-close",
+    "VELDO-0133 disposition/close-spares-siblings",
+    "VELDO-0133 disposition/dispose-backlog",
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "3a53b3a7bd6d97130a0d99f2e73bd0eb75818c642352c0c5a88338a44a8c9934",
+   "name": "disposition-instruction-beside-signed-command",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/unsigned-instruction"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.481,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/answer-refusals: c1: other with empty text refused invalid_input; c1: other with blank text refused invalid_input; c2: other with empty text refused invalid_input; c2: other with blank text refused invalid_input; c3: other with empty text refused invalid_input; c3: other with blank text refused invalid_input; c4: other with empty text refused invalid_input; c4: other with blank text refused invalid_input; c5: other with empty text refused invalid_input; c5: other with blank text refused invalid_input; c6: other with empty text refused invalid_input; c6: other with blank text refused invalid_input; c7: other with empty text refused invalid_input; c7: other with blank text refused invalid_input",
+    "VELDO-0133 detail: disposition/unsigned-instruction: c1: and nothing changed; c2: and nothing changed; c3: and nothing changed; c4: and nothing changed; c5: and nothing changed; c6: and nothing changed; c7: and nothing changed",
+    "VELDO-0133 detail: disposition/question-only-answered: c1: the question is still pending, unchanged; c2: the question is still pending, unchanged; c3: the question is still pending, unchanged; c4: the question is still pending, unchanged; c5: the question is still pending, unchanged; c6: the question is still pending, unchanged; c7: the question is still pending, unchanged",
+    "VELDO-0133 detail: disposition/valid-answers-admitted: c1: the addressee's other is accepted; c1: the signed command keeps the instruction as written; c2: the addressee's close is accepted; c3: the addressee's backlog is accepted; c4: the addressee's other is accepted; c4: the signed command keeps the instruction as written; c5: the addressee's backlog is accepted; c6: the addressee's close is accepted; c7: the addressee's other is accepted; c7: the signed command keeps the instruction as written",
+    "VELDO-0133 detail: disposition/dispose-close: c2: dispose is accepted; c2: the unit is CANCELED carrying the disposition; c6: dispose is accepted; c6: the unit is CANCELED carrying the disposition; c6: its backlog item, with no other open unit, is CANCELED carrying the disposition",
+    "VELDO-0133 detail: disposition/close-spares-siblings: the closed unit is CANCELED; the recorded disposition says so",
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: dispose is accepted; c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: dispose is accepted; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds",
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c2: a second dispose is refused stale_subject; c3: a second dispose is refused stale_subject; c4: a second dispose returns the same proposal and writes nothing; c5: a second dispose is refused stale_subject; c6: a second dispose is refused stale_subject; c7: a second dispose returns the same proposal and writes nothing",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 asked_again: reads awaiting_disposition; c1 disposed: reads routed_to_intake; c2 disposed: reads None; c3 disposed: reads None; c4 asked_again: reads awaiting_disposition; c4 disposed: reads routed_to_intake; c5 disposed: reads None; c6 disposed: reads None; c7 asked_again: reads awaiting_disposition; c7 disposed: reads routed_to_intake",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 asked_again: the step was reached; c1 disposed: the step was reached; c2 disposed: the step was reached; c3 disposed: the step was reached; c4 asked_again: the step was reached; c4 disposed: the step was reached; c5 disposed: the step was reached; c6 disposed: the step was reached; c7 asked_again: the step was reached; c7 disposed: the step was reached",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-empty-other-accepted.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/answer-refusals",
+    "VELDO-0133 disposition/unsigned-instruction",
+    "VELDO-0133 disposition/question-only-answered",
+    "VELDO-0133 disposition/valid-answers-admitted",
+    "VELDO-0133 disposition/dispose-close",
+    "VELDO-0133 disposition/close-spares-siblings",
+    "VELDO-0133 disposition/dispose-backlog",
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "fa3d6af0cc45e5ce4724a0c8a5e20f655d153ccfdbcc53e0ccc5471164ae8144",
+   "name": "disposition-empty-other-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/answer-refusals"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.956,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/question-only-answered: c1: a decline of the question is refused; c1: a cancel of the question is refused; c1: the question is still pending, unchanged; c2: a decline of the question is refused; c2: a cancel of the question is refused; c2: the question is still pending, unchanged; c3: a decline of the question is refused; c3: a cancel of the question is refused; c3: the question is still pending, unchanged; c4: a decline of the question is refused; c4: a cancel of the question is refused; c4: the question is still pending, unchanged; c5: a decline of the question is refused; c5: a cancel of the question is refused; c5: the question is still pending, unchanged; c6: a decline of the question is refused; c6: a cancel of the question is refused; c6: the question is still pending, unchanged; c7: a decline of the question is refused; c7: a cancel of the question is refused; c7: the question is still pending, unchanged",
+    "VELDO-0133 detail: disposition/valid-answers-admitted: c1: the addressee's other is accepted; c1: it is admitted by the inbox admission check; c1: the signed command keeps the instruction as written; c2: the addressee's close is accepted; c2: it is admitted by the inbox admission check; c3: the addressee's backlog is accepted; c3: it is admitted by the inbox admission check; c4: the addressee's other is accepted; c4: it is admitted by the inbox admission check; c4: the signed command keeps the instruction as written; c5: the addressee's backlog is accepted; c5: it is admitted by the inbox admission check; c6: the addressee's close is accepted; c6: it is admitted by the inbox admission check; c7: the addressee's other is accepted; c7: it is admitted by the inbox admission check; c7: the signed command keeps the instruction as written",
+    "VELDO-0133 detail: disposition/dispose-close: c2: dispose is accepted; c2: the unit is CANCELED carrying the disposition; c6: dispose is accepted; c6: the unit is CANCELED carrying the disposition; c6: its backlog item, with no other open unit, is CANCELED carrying the disposition",
+    "VELDO-0133 detail: disposition/close-spares-siblings: the closed unit is CANCELED; the recorded disposition says so",
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: dispose is accepted; c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: dispose is accepted; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds",
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c2: a second dispose is refused stale_subject; c3: a second dispose is refused stale_subject; c4: a second dispose returns the same proposal and writes nothing; c5: a second dispose is refused stale_subject; c6: a second dispose is refused stale_subject; c7: a second dispose returns the same proposal and writes nothing",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 answered: reads ready_to_dispose; c1 disposed: reads routed_to_intake; c2 answered: reads ready_to_dispose; c2 disposed: reads None; c3 answered: reads ready_to_dispose; c3 disposed: reads None; c4 answered: reads ready_to_dispose; c4 disposed: reads routed_to_intake; c5 answered: reads ready_to_dispose; c5 disposed: reads None; c6 answered: reads ready_to_dispose; c6 disposed: reads None; c7 answered: reads ready_to_dispose; c7 disposed: reads routed_to_intake",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 answered: the step was reached; c1 asked_again: the step was reached; c1 disposed: the step was reached; c2 answered: the step was reached; c2 disposed: the step was reached; c3 answered: the step was reached; c3 disposed: the step was reached; c4 answered: the step was reached; c4 asked_again: the step was reached; c4 disposed: the step was reached; c5 answered: the step was reached; c5 disposed: the step was reached; c6 answered: the step was reached; c6 disposed: the step was reached; c7 answered: the step was reached; c7 asked_again: the step was reached; c7 disposed: the step was reached",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-question-declinable.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/question-only-answered",
+    "VELDO-0133 disposition/valid-answers-admitted",
+    "VELDO-0133 disposition/dispose-close",
+    "VELDO-0133 disposition/close-spares-siblings",
+    "VELDO-0133 disposition/dispose-backlog",
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "0ba8375aa97f49c5869e4408de3ad072eb5a91b71ab703c0b112858cf6f59d4d",
+   "name": "disposition-question-declinable",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/question-only-answered"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.488,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: no unit, backlog item or claim changed; c1: a claim before and after is refused as parked; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: no unit, backlog item or claim changed; c4: a claim before and after is refused as parked; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: no unit, backlog item or claim changed; c7: a claim before and after is refused as parked; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c4: a second dispose returns the same proposal and writes nothing; c7: a second dispose returns the same proposal and writes nothing",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 asked_again: reads awaiting_disposition; c1 disposed: reads routed_to_intake; c4 asked_again: reads awaiting_disposition; c4 disposed: reads routed_to_intake; c7 asked_again: reads awaiting_disposition; c7 disposed: reads routed_to_intake",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 asked_again: the step was reached; c1 asked_again: no claim held; c1 asked_again: a claim is refused as parked until close or backlog; c1 disposed: a claim is refused as parked until close or backlog; c4 asked_again: the step was reached; c4 asked_again: no claim held; c4 asked_again: a claim is refused as parked until close or backlog; c4 disposed: a claim is refused as parked until close or backlog; c7 asked_again: the step was reached; c7 asked_again: no claim held; c7 asked_again: a claim is refused as parked until close or backlog; c7 disposed: a claim is refused as parked until close or backlog",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-other-applied-as-backlog.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "e74dd0b536e902805a5b523ed20a628ad3782ca9da13a6d68b534a44f6b1e9ec",
+   "name": "disposition-other-applied-as-backlog",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/dispose-other"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.478,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: no unit, backlog item or claim changed; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: no unit, backlog item or claim changed; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: no unit, backlog item or claim changed; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c4: a second dispose returns the same proposal and writes nothing; c7: a second dispose returns the same proposal and writes nothing",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 asked_again: reads awaiting_disposition; c1 disposed: reads routed_to_intake; c4 asked_again: reads awaiting_disposition; c4 disposed: reads routed_to_intake; c7 asked_again: reads awaiting_disposition; c7 disposed: reads routed_to_intake",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 asked_again: the step was reached; c4 asked_again: the step was reached; c7 asked_again: the step was reached",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-other-read-from-free-text.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "c5721084df775ea3acf86ce2fe818019871d1658f760c58bf5984bde685a60a8",
+   "name": "disposition-other-read-from-free-text",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/dispose-other"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.431,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/dispose-other: c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c7: under the source it arrived on; c7: with the signed answer's command identity beside it"
+   ],
+   "diff": "proof/VELDO-0133/disposition-other-under-another-source.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/dispose-other"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "bdf876144207bb88bd745cdb99fbfa741d2f7300c92b5b63566cc4a319260acd",
+   "name": "disposition-other-under-another-source",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/dispose-other"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.436,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/close-spares-siblings: the backlog item that owns an open sibling is left as it was"
+   ],
+   "diff": "proof/VELDO-0133/disposition-close-cancels-sibling-backlog.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/close-spares-siblings"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "a7db45eb1f2e14733b732113e3e8531fb3c3fa165c6f9f76807ffe6604658a05",
+   "name": "disposition-close-cancels-sibling-backlog",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/close-spares-siblings"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.452,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/dispose-once: c2: a second dispose is refused stale_subject; c6: a second dispose is refused stale_subject"
+   ],
+   "diff": "proof/VELDO-0133/disposition-applied-twice.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/dispose-once"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "1d74951e9fd56991a505617df3b82168515143d1a1e36578ab9777b0cbb806d3",
+   "name": "disposition-applied-twice",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/dispose-once"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.428,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/revoked-answer-not-disposed: dispose is refused missing_authority; nothing changed; the unit still waits for its disposition",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-dispose-ignores-revoked-answer.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/revoked-answer-not-disposed",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "7efcef86accc7af5629d52509e36fa38d2f2f1a0ff6da4434eca7db91eb328f1",
+   "name": "disposition-dispose-ignores-revoked-answer",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/revoked-answer-not-disposed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.468,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds"
+   ],
+   "diff": "proof/VELDO-0133/disposition-backlog-keeps-park.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/dispose-backlog"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "8d8540330bbe3fdd9b1b8e424d00c69e4115a19710f2aa558305b54f2c6dc2a7",
+   "name": "disposition-backlog-keeps-park",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/dispose-backlog"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.47,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds"
+   ],
+   "diff": "proof/VELDO-0133/claims-unpark-keeps-parked-on.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/dispose-backlog"
+   ],
+   "module": ".veldo/control_claim.py",
+   "mutant_sha256": "37df9e8abca93b9381e5a34411beb7e22e6ce7483826ce927250b384d57fdadc",
+   "name": "claims-unpark-keeps-parked-on",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/dispose-backlog"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.433,
+   "source_sha256": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/ask-again: c1: a second ask while it is open is refused stale_subject; c4: a second ask while it is open is refused stale_subject; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 asked_again: reads awaiting_disposition; c1 opened: reads awaiting_disposition; c2 opened: reads awaiting_disposition; c3 opened: reads awaiting_disposition; c4 asked_again: reads awaiting_disposition; c4 opened: reads awaiting_disposition; c5 opened: reads awaiting_disposition; c6 opened: reads awaiting_disposition; c7 asked_again: reads awaiting_disposition; c7 opened: reads awaiting_disposition",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c7 asked_again: the step was reached"
+   ],
+   "diff": "proof/VELDO-0133/disposition-pending-shown-under-original-reason.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "c6e2fc0195fef2f9a1e3c96a971e506aba0ba4a6f1e7c4358aace5e036db0e35",
+   "name": "disposition-pending-shown-under-original-reason",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/awaiting-disposition"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.556,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/revoked-answer-not-disposed: the unit still waits for its disposition",
+    "VELDO-0133 detail: disposition/dispose-close: c2: dispose is accepted; c2: the unit is CANCELED carrying the disposition; c2: a claim before it was refused as parked; c6: dispose is accepted; c6: the unit is CANCELED carrying the disposition; c6: a claim before it was refused as parked; c6: its backlog item, with no other open unit, is CANCELED carrying the disposition",
+    "VELDO-0133 detail: disposition/close-spares-siblings: the closed unit is CANCELED; the recorded disposition says so",
+    "VELDO-0133 detail: disposition/dispose-backlog: c3: dispose is accepted; c3: a claim before it was refused as parked; c3: the park is cleared: released, no holder, no parked_on; c3: an ordinary claim by an eligible holder then succeeds; c5: dispose is accepted; c5: a claim before it was refused as parked; c5: the park is cleared: released, no holder, no parked_on; c5: an ordinary claim by an eligible holder then succeeds",
+    "VELDO-0133 detail: disposition/dispose-other: c1: dispose is accepted and names a proposal; c1: the intake's own reader holds the instruction exactly as signed; c1: attributed to the answering person, in the unit's project; c1: under the source it arrived on; c1: with the signed answer's command identity beside it; c1: a claim before and after is refused as parked; c1: the unit stays parked as routed_to_intake naming the proposal; c1: the recorded disposition keeps the instruction verbatim; c4: dispose is accepted and names a proposal; c4: the intake's own reader holds the instruction exactly as signed; c4: attributed to the answering person, in the unit's project; c4: under the source it arrived on; c4: with the signed answer's command identity beside it; c4: a claim before and after is refused as parked; c4: the unit stays parked as routed_to_intake naming the proposal; c4: the recorded disposition keeps the instruction verbatim; c7: dispose is accepted and names a proposal; c7: the intake's own reader holds the instruction exactly as signed; c7: attributed to the answering person, in the unit's project; c7: under the source it arrived on; c7: with the signed answer's command identity beside it; c7: a claim before and after is refused as parked; c7: the unit stays parked as routed_to_intake naming the proposal; c7: the recorded disposition keeps the instruction verbatim",
+    "VELDO-0133 detail: disposition/dispose-once: c1: a second dispose returns the same proposal and writes nothing; c4: a second dispose returns the same proposal and writes nothing; c7: a second dispose returns the same proposal and writes nothing",
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: asked again after other; c7: of olga again; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 answered: reads ready_to_dispose; c1 asked_again: reads awaiting_disposition; c1 disposed: reads routed_to_intake; c1 opened: reads awaiting_disposition; c2 answered: reads ready_to_dispose; c2 opened: reads awaiting_disposition; c3 answered: reads ready_to_dispose; c3 opened: reads awaiting_disposition; c4 answered: reads ready_to_dispose; c4 asked_again: reads awaiting_disposition; c4 disposed: reads routed_to_intake; c4 opened: reads awaiting_disposition; c5 answered: reads ready_to_dispose; c5 opened: reads awaiting_disposition; c6 answered: reads ready_to_dispose; c6 opened: reads awaiting_disposition; c7 answered: reads ready_to_dispose; c7 asked_again: reads awaiting_disposition; c7 disposed: reads routed_to_intake; c7 opened: reads awaiting_disposition",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 answered: no claim held; c1 answered: a claim is refused as parked until close or backlog; c1 asked_again: the step was reached; c1 asked_again: no claim held; c1 asked_again: a claim is refused as parked until close or backlog; c1 disposed: the step was reached; c1 disposed: no claim held; c1 disposed: a claim is refused as parked until close or backlog; c1 opened: a claim is refused as parked until close or backlog; c2 answered: no claim held; c2 answered: a claim is refused as parked until close or backlog; c2 disposed: the step was reached; c2 disposed: no claim held; c2 opened: a claim is refused as parked until close or backlog; c3 answered: no claim held; c3 answered: a claim is refused as parked until close or backlog; c3 disposed: the step was reached; c3 disposed: no claim held; c3 opened: a claim is refused as parked until close or backlog; c4 answered: no claim held; c4 answered: a claim is refused as parked until close or backlog; c4 asked_again: the step was reached; c4 asked_again: no claim held; c4 asked_again: a claim is refused as parked until close or backlog; c4 disposed: the step was reached; c4 disposed: no claim held; c4 disposed: a claim is refused as parked until close or backlog; c4 opened: a claim is refused as parked until close or backlog; c5 answered: no claim held; c5 answered: a claim is refused as parked until close or backlog; c5 disposed: the step was reached; c5 disposed: no claim held; c5 opened: a claim is refused as parked until close or backlog; c6 answered: no claim held; c6 answered: a claim is refused as parked until close or backlog; c6 disposed: the step was reached; c6 disposed: no claim held; c6 opened: a claim is refused as parked until close or backlog; c7 answered: no claim held; c7 answered: a claim is refused as parked until close or backlog; c7 asked_again: the step was reached; c7 asked_again: no claim held; c7 asked_again: a claim is refused as parked until close or backlog; c7 disposed: the step was reached; c7 disposed: no claim held; c7 disposed: a claim is refused as parked until close or backlog; c7 opened: a claim is refused as parked until close or backlog",
+    "VELDO-0133 detail: disposition/observability: accepted dispositions are counted by outcome; refused dispositions are counted by outcome"
+   ],
+   "diff": "proof/VELDO-0133/disposition-open-question-unparks-unit.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/revoked-answer-not-disposed",
+    "VELDO-0133 disposition/dispose-close",
+    "VELDO-0133 disposition/close-spares-siblings",
+    "VELDO-0133 disposition/dispose-backlog",
+    "VELDO-0133 disposition/dispose-other",
+    "VELDO-0133 disposition/dispose-once",
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing",
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "7ab8d265e7a812cd35d29f6778ffa64f23e2722bc40d52cfb498214ec05f4d3d",
+   "name": "disposition-open-question-unparks-unit",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/walk-holds-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.463,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/ask-again: c1: asked again after other; c1: of alice again; c1: a second ask while it is open is refused stale_subject; c4: asked again after other; c4: of olga again; c4: a second ask while it is open is refused stale_subject; c7: a second ask while it is open is refused stale_subject",
+    "VELDO-0133 detail: disposition/awaiting-disposition: c1 asked_again: reads awaiting_disposition; c4 asked_again: reads awaiting_disposition",
+    "VELDO-0133 detail: disposition/walk-holds-nothing: c1 asked_again: the step was reached; c4 asked_again: the step was reached; c7 asked_again: the step was reached"
+   ],
+   "diff": "proof/VELDO-0133/disposition-ask-ignores-open-question.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/ask-again",
+    "VELDO-0133 disposition/awaiting-disposition",
+    "VELDO-0133 disposition/walk-holds-nothing"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "8c9906cf970605e0257f3a8970da83b9d7ffed03f2f2c4dff38c50531b19f1bc",
+   "name": "disposition-ask-ignores-open-question",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/ask-again"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     false
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.462,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0133 detail: disposition/observability: no instruction text, brief or signature is logged"
+   ],
+   "diff": "proof/VELDO-0133/disposition-instruction-logged.diff",
+   "failed_rows": [
+    "VELDO-0133 disposition/observability"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "e0d8ae24c5095c8e6e0e1ac6fe7e6694c44e20161887ddddca3ce27d25a4dc71",
+   "name": "disposition-instruction-logged",
+   "named_row_red": true,
+   "named_rows": [
+    "disposition/observability"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     false
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.492,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  }
+ ],
+ "noop": {
+  "control_assignment.py": {
+   "copy_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.43,
+   "source_sha256": "9e509e3a77bb35f3220b5e999e2773ef34e17f4a9e54c9a28df565eef7dabfea"
+  },
+  "control_claim.py": {
+   "copy_sha256": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0133 install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/set-derived",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/addressee",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/no-project-owner",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/unsigned-instruction",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/question-only-answered",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/valid-answers-admitted",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/close-spares-siblings",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-backlog",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-other",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/awaiting-disposition",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/walk-holds-nothing",
+     true
+    ],
+    [
+     "VELDO-0133 disposition/observability",
+     true
+    ],
+    [
+     "VELDO-0133 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/question-opened",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/projected-to-own-chat",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-once",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/answer-refusals",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/revoked-answer-not-disposed",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/dispose-close",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/ask-again",
+     true
+    ],
+    [
+     "VELDO-0133 ran/disposition/observability",
+     true
+    ]
+   ],
+   "seconds": 2.443,
+   "source_sha256": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 133",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 52.332,
+ "spec_id": "VELDO-0133",
+ "suite": "scripts/suites/69_veldo_0133_dispositions.py"
+}

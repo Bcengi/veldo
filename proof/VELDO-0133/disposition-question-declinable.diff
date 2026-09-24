@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -440 +440 @@
+-            if question and op not in ('answer', 'dispose'):
++            if question and op not in ('answer', 'dispose', 'decline', 'cancel'):  # defect

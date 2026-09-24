@@ -1,0 +1,7 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -772,2 +772,2 @@
+-        if reason != 'admitted':
+-            raise Refused(reason, 'the question\'s answer does not admit')
++        if reason not in ('admitted', 'missing_authority'):
++            raise Refused(reason, 'the question\'s answer does not admit')  # defect

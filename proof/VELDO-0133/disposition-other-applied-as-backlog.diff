@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -797 +797 @@
+-        if ruling == 'other':
++        if ruling == 'never':  # defect: other is applied as backlog

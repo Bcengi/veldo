@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -840 +840 @@
+-        command = {'schema': INTAKE_COMMAND_SCHEMA, 'source_kind': arrived['source_kind'], 'source_id': source_id,
++        command = {'schema': INTAKE_COMMAND_SCHEMA, 'source_kind': 'api_request', 'source_id': source_id,

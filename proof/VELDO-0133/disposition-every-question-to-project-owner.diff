@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -677,0 +678,2 @@
++        owner, read = self._project_owner(state, entities, unit, scope, now)
++        return owner, 'project_owner', read  # defect: every question goes to the project owner

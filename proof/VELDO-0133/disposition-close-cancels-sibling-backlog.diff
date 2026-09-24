@@ -1,0 +1,6 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -953,2 +953 @@
+-            if not plan['siblings']:
+-                targets.append((plan['backlog_item_uuid'], 'backlog_item'))
++            targets.append((plan['backlog_item_uuid'], 'backlog_item'))  # defect: sibling work is canceled too

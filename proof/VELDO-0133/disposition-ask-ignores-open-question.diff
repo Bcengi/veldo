@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -612 +612 @@
+-        reason = parked['reason']
++        reason = parked.get('ended_as') or parked['reason']  # defect: an open question is not seen

@@ -4400,6 +4400,92 @@ def cases():
                "        return _git_process.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)\n",
                "        return subprocess.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)  # defect\n",
                ['worker-inputs'])
+    # VELDO-0133: the four declared falsifiers plus the threat model's defects, each naming its row.
+    def disposition(name, old, new, row, module='control_assignment.py', also=()):
+        add(133, name, '69_veldo_0133_dispositions.py', module, old, new, ['disposition/' + row], also)
+
+    disposition('disposition-every-question-to-project-owner',
+                "        if prior is not None and prior['data']['disposition_of']['addressed_as'] != 'project_owner':\n",
+                "        owner, read = self._project_owner(state, entities, unit, scope, now)\n"
+                "        return owner, 'project_owner', read  # defect: every question goes to the project owner\n"
+                "        if prior is not None and prior['data']['disposition_of']['addressed_as'] != 'project_owner':\n",
+                'addressee')
+    disposition('disposition-project-owner-guessed',
+                "        return (owners[0] if len(owners) == 1 else None), read\n",
+                "        return (owners[0] if owners else None), read  # defect: the first candidate is taken\n",
+                'no-project-owner')
+    disposition('disposition-question-names-first-request-version',
+                "disposition_of=dict(assignment_id=aid, request_version=data['request_version'], unit_id=unit,",
+                "disposition_of=dict(assignment_id=aid, request_version=1, unit_id=unit,",
+                'question-opened')
+    disposition('disposition-instruction-beside-signed-command',
+                "                    problem = disposition_answer_problem(command)\n",
+                "                    problem = disposition_answer_problem(dict(command, **{k: packet[k] for k in ('instruction',)"
+                " if k in packet}))  # defect: the packet's text counts\n",
+                'unsigned-instruction')
+    disposition('disposition-empty-other-accepted',
+                "        if not isinstance(text, str) or not text.strip():\n",
+                "        if not isinstance(text, str):  # defect: empty text is an instruction\n",
+                'answer-refusals')
+    disposition('disposition-question-declinable',
+                "            if question and op not in ('answer', 'dispose'):\n",
+                "            if question and op not in ('answer', 'dispose', 'decline', 'cancel'):  # defect\n",
+                'question-only-answered')
+    disposition('disposition-other-applied-as-backlog',
+                "        if ruling == 'other':\n            proposal, arrived, read = self._to_intake(entities, item, unit)\n",
+                "        if ruling == 'never':  # defect: other is applied as backlog\n"
+                "            proposal, arrived, read = self._to_intake(entities, item, unit)\n",
+                'dispose-other')
+    disposition('disposition-other-read-from-free-text',
+                "        ruling, signed = answer['ruling'], answer['command']\n",
+                "        ruling, signed = answer['ruling'], answer['command']\n"
+                "        if ruling == 'other' and 'close' in signed.get('instruction', '').lower():\n"
+                "            ruling = 'close'  # defect: the free text is read as a ruling\n",
+                'dispose-other')
+    disposition('disposition-other-under-another-source',
+                "'source_kind': arrived['source_kind'], 'source_id': source_id,",
+                "'source_kind': 'api_request', 'source_id': source_id,", 'dispose-other')
+    disposition('disposition-close-cancels-sibling-backlog',
+                "            if not plan['siblings']:\n                targets.append((plan['backlog_item_uuid'], 'backlog_item'))\n",
+                "            targets.append((plan['backlog_item_uuid'], 'backlog_item'))  # defect: sibling work is canceled too\n",
+                'close-spares-siblings')
+    disposition('disposition-applied-twice',
+                "        if existing is not None and ruling != 'other':\n"
+                "            raise Refused('stale_subject', 'the disposition is already applied')\n", "",
+                'dispose-once', also=[("\n                or plan['record_id'] in before):", "):")])
+    disposition('disposition-dispose-ignores-revoked-answer',
+                "        reason, inputs = self._admission(item)\n        if reason != 'admitted':\n"
+                "            raise Refused(reason, 'the question\\'s answer does not admit')\n",
+                "        reason, inputs = self._admission(item)\n        if reason not in ('admitted', 'missing_authority'):\n"
+                "            raise Refused(reason, 'the question\\'s answer does not admit')  # defect\n",
+                'revoked-answer-not-disposed')
+    disposition('disposition-backlog-keeps-park',
+                "        if 'unpark' in plan:\n", "        if False:  # defect: backlog leaves the park in place\n",
+                'dispose-backlog')
+    disposition('claims-unpark-keeps-parked-on',
+                "        data = {k: v for k, v in current.items() if k != 'parked_on'}\n",
+                "        data = dict(current)  # defect: the park is not cleared\n",
+                'dispose-backlog', module='control_claim.py')
+    disposition('disposition-pending-shown-under-original-reason',
+                "            return 'awaiting_disposition', fields\n",
+                "            return ended_as, fields  # defect: the original reason is reported\n",
+                'awaiting-disposition')
+    disposition('disposition-open-question-unparks-unit',
+                "        return {question['id']: {'kind': ENTITY_KIND, 'data': question['data']}}\n",
+                "        freed = {k: v for k, v in claim.items() if k != 'parked_on'}\n"
+                "        return {question['id']: {'kind': ENTITY_KIND, 'data': question['data']},\n"
+                "                question['claim_id']: {'kind': 'claim', 'data': freed}}  # defect: claimable while it waits\n",
+                'walk-holds-nothing')
+    disposition('disposition-ask-ignores-open-question',
+                "        reason = parked['reason']\n",
+                "        reason = parked.get('ended_as') or parked['reason']  # defect: an open question is not seen\n",
+                'ask-again')
+    disposition('disposition-instruction-logged',
+                "                                          ruling=(data.get('answer') or {}).get('ruling'))\n",
+                "                                          ruling=(data.get('answer') or {}).get('ruling'),\n"
+                "                                          said=((data.get('answer') or {}).get('command') or {})"
+                ".get('instruction'))  # defect: the instruction is logged\n",
+                'observability')
     return result
 
 
