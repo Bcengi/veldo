@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -97 +97 @@
+-    'unknown': (('accepted', 'running'), 'unknown'),
++    'unknown': (('accepted', 'running', 'exited'), 'unknown'),  # defect: an ended dispatch reopens

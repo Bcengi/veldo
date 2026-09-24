@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -338 +338 @@
+-    if record['state'] not in allowed:
++    if record['state'] not in allowed and record['state'] != 'exited':  # defect

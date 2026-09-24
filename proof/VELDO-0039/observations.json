@@ -1,0 +1,489 @@
+{
+ "failed": 0,
+ "observed": {
+  "authority": {
+   "agent-worker": [
+    "refused",
+    "missing_authority"
+   ],
+   "elsewhere-service": [
+    "refused",
+    "missing_authority"
+   ],
+   "nobody": [
+    "refused",
+    "missing_authority"
+   ],
+   "revoked-service": [
+    "refused",
+    "missing_authority"
+   ]
+  },
+  "binding": {
+   "a": "exited",
+   "b": "exited",
+   "b_while_a_ended": "running",
+   "probes": {
+    "a_process_under_b_digest": [
+     "refused",
+     "binding_mismatch:process"
+    ],
+    "a_result_to_b": [
+     "refused",
+     "binding_mismatch:contract_digest"
+    ],
+    "a_stop_to_b": [
+     "refused",
+     "binding_mismatch:contract_digest"
+    ]
+   }
+  },
+  "contract": {
+   "acceptance_record": "sha256:6aba247b65030d9ddef0864a03d2ec48ffcd85519ed4ebb02689868e287ac867",
+   "bindings": {
+    "capability": true,
+    "claim": true,
+    "complete": true,
+    "deadline": true,
+    "input": true,
+    "reservation": true,
+    "source": true
+   },
+   "birth_acceptance": "sha256:6aba247b65030d9ddef0864a03d2ec48ffcd85519ed4ebb02689868e287ac867",
+   "journal_order": [
+    15,
+    16,
+    17
+   ],
+   "second": [
+    "refused",
+    "active_dispatch:dispatch/VELDO-9301/89987b889cc64472ac36c51fa2d159e2"
+   ],
+   "seen_at_start": "running",
+   "workers": 1
+  },
+  "event_sample": [
+   {
+    "accepted_versions": {
+     "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 0,
+     "dispatch:dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d": 0
+    },
+    "dispatch_id": "dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d",
+    "domain": "domain-39",
+    "operation": "prepare",
+    "outcome": "accepted",
+    "repository": "repository-39",
+    "request": "dispatch/prepare/dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d/d6de196cd624176c0670d5dd",
+    "schema": "veldo.dispatch/v1",
+    "state": "prepared",
+    "station": "build",
+    "unit": "VELDO-9306",
+    "watermark": 75
+   },
+   {
+    "accepted_versions": {
+     "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 1,
+     "dispatch:dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d": 2
+    },
+    "dispatch_id": "dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d",
+    "domain": "domain-39",
+    "operation": "unknown",
+    "outcome": "accepted",
+    "repository": "repository-39",
+    "request": "dispatch/unknown/dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d/e07a0270aad5eb5edce7e023",
+    "schema": "veldo.dispatch/v1",
+    "state": "unknown",
+    "station": "build",
+    "unit": "VELDO-9306",
+    "watermark": 77
+   },
+   {
+    "accepted_versions": {
+     "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 1,
+     "dispatch:dispatch/VELDO-9306/fresh": 0
+    },
+    "dispatch_id": "dispatch/VELDO-9306/fresh",
+    "domain": "domain-39",
+    "operation": "prepare",
+    "outcome": "refused",
+    "refusal": "dispatch_outcome_unknown:dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d",
+    "repository": "repository-39",
+    "request": "dispatch/prepare/dispatch/VELDO-9306/fresh/04ff04e2df57207a147bba8d",
+    "schema": "veldo.dispatch/v1",
+    "station": "build",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9306"
+   },
+   {
+    "accepted_versions": {
+     "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 1,
+     "dispatch:dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d": 3
+    },
+    "dispatch_id": "dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d",
+    "domain": "domain-39",
+    "operation": "prepare",
+    "outcome": "refused",
+    "refusal": "duplicate_dispatch",
+    "repository": "repository-39",
+    "request": "dispatch/prepare/dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d/91d82dd2ec72194ebe6350d6",
+    "schema": "veldo.dispatch/v1",
+    "station": "build",
+    "taxonomy": "invalid_input",
+    "unit": "VELDO-9306"
+   }
+  ],
+  "launch_results": {
+   "accepted": {
+    "proc_start": "191862019",
+    "receiver_pid": 960580,
+    "result": "accepted",
+    "stored_process": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "host": "dmitry-pc",
+     "pid": 960604,
+     "platform": "linux",
+     "start": "191862019"
+    },
+    "worker_reported": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "pid": 960604,
+     "start": "191862019"
+    }
+   },
+   "one_identity_each": true,
+   "refused_recheck": {
+    "refusal": "stale_input:admission; missing_authority:admission",
+    "result": "refused",
+    "states": [
+     "prepared",
+     "refused"
+    ]
+   },
+   "refused_spawn": {
+    "refusal": "spawn_failed:ENOENT",
+    "result": "refused",
+    "states": [
+     "prepared",
+     "accepted",
+     "refused"
+    ]
+   },
+   "unknown": {
+    "reason": "launch_evidence_missing",
+    "result": "unknown",
+    "states": [
+     "prepared",
+     "accepted",
+     "unknown"
+    ],
+    "stop": "dispatch-outcome-unknown"
+   }
+  },
+  "raised": [],
+  "status": {
+   "accepted": 13,
+   "pending": [
+    "dispatch/VELDO-9308/da015282411b430cb5a72c863b221adf",
+    "dispatch/VELDO-9309/42623ac7aa984cb48d3d3561f10f7118"
+   ],
+   "refused": 8,
+   "states": {
+    "accepted": 1,
+    "exited": 6,
+    "prepared": 1,
+    "refused": 2,
+    "running": 0,
+    "unknown": 2
+   },
+   "stopped": [
+    "dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d",
+    "dispatch/VELDO-9307/86f344f0cc05486d8d996b1acd03a27b"
+   ]
+  },
+  "terminal": {
+   "completion": {
+    "artifact_accepted": false,
+    "attempt_finished": false,
+    "objective_satisfied": false,
+    "revision_landed": false
+   },
+   "receipts": 0,
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 196,
+    "output_digest": "sha256:3d5e0512696c6f20b8fc99eeb13d2844ac6059f3e1e25b90434b51f974155357",
+    "returncode": 0,
+    "signal": null
+   },
+   "worker_printed": {
+    "dispatch_id": "dispatch/VELDO-9311/38309b2a15664419a02c1b582937f540",
+    "landed": true,
+    "revision_landed": "claimed-landed-8785d6869bbf",
+    "status": "completed",
+    "worker_token": "6eb462d096798587"
+   }
+  },
+  "transitions": {
+   "derived": [
+    "('accepted', 'refuse', 'refused')",
+    "('accepted', 'run', 'running')",
+    "('accepted', 'unknown', 'unknown')",
+    "('prepared', 'accept', 'accepted')",
+    "('prepared', 'refuse', 'refused')",
+    "('running', 'exit', 'exited')",
+    "('running', 'unknown', 'unknown')",
+    "(None, 'prepare', 'prepared')"
+   ],
+   "disallowed": {
+    "accepted/accept": [
+     "refused",
+     "transition_refused:accepted:accept"
+    ],
+    "accepted/exit": [
+     "refused",
+     "transition_refused:accepted:exit"
+    ],
+    "accepted/prepare": [
+     "refused",
+     "duplicate_dispatch"
+    ],
+    "exited/accept": [
+     "refused",
+     "transition_refused:exited:accept"
+    ],
+    "exited/exit": [
+     "refused",
+     "transition_refused:exited:exit"
+    ],
+    "exited/prepare": [
+     "refused",
+     "duplicate_dispatch"
+    ],
+    "exited/refuse": [
+     "refused",
+     "transition_refused:exited:refuse"
+    ],
+    "exited/run": [
+     "refused",
+     "transition_refused:exited:run"
+    ],
+    "exited/unknown": [
+     "refused",
+     "transition_refused:exited:unknown"
+    ],
+    "prepared/exit": [
+     "refused",
+     "transition_refused:prepared:exit"
+    ],
+    "prepared/prepare": [
+     "refused",
+     "duplicate_dispatch"
+    ],
+    "prepared/run": [
+     "refused",
+     "transition_refused:prepared:run"
+    ],
+    "prepared/unknown": [
+     "refused",
+     "transition_refused:prepared:unknown"
+    ],
+    "refused/accept": [
+     "refused",
+     "transition_refused:refused:accept"
+    ],
+    "refused/exit": [
+     "refused",
+     "transition_refused:refused:exit"
+    ],
+    "refused/prepare": [
+     "refused",
+     "duplicate_dispatch"
+    ],
+    "refused/refuse": [
+     "refused",
+     "transition_refused:refused:refuse"
+    ],
+    "refused/run": [
+     "refused",
+     "transition_refused:refused:run"
+    ],
+    "refused/unknown": [
+     "refused",
+     "transition_refused:refused:unknown"
+    ],
+    "running/accept": [
+     "refused",
+     "transition_refused:running:accept"
+    ],
+    "running/prepare": [
+     "refused",
+     "duplicate_dispatch"
+    ],
+    "running/refuse": [
+     "refused",
+     "transition_refused:running:refuse"
+    ],
+    "running/run": [
+     "refused",
+     "transition_refused:running:run"
+    ],
+    "unknown/accept": [
+     "refused",
+     "transition_refused:unknown:accept"
+    ],
+    "unknown/exit": [
+     "refused",
+     "transition_refused:unknown:exit"
+    ],
+    "unknown/prepare": [
+     "refused",
+     "duplicate_dispatch"
+    ],
+    "unknown/refuse": [
+     "refused",
+     "transition_refused:unknown:refuse"
+    ],
+    "unknown/run": [
+     "refused",
+     "transition_refused:unknown:run"
+    ],
+    "unknown/unknown": [
+     "refused",
+     "transition_refused:unknown:unknown"
+    ]
+   },
+   "running_lost": "unknown",
+   "walked_by_real_records": [
+    "('accepted', 'refuse', 'refused')",
+    "('accepted', 'run', 'running')",
+    "('accepted', 'unknown', 'unknown')",
+    "('prepared', 'accept', 'accepted')",
+    "('prepared', 'refuse', 'refused')",
+    "('running', 'exit', 'exited')",
+    "('running', 'unknown', 'unknown')",
+    "(None, 'prepare', 'prepared')"
+   ]
+  },
+  "uniqueness": {
+   "direct": [
+    "refused",
+    "active_dispatch:dispatch/VELDO-9301/89987b889cc64472ac36c51fa2d159e2"
+   ],
+   "race": [
+    [
+     "refused",
+     "stale_version"
+    ],
+    [
+     "ok",
+     "accepted"
+    ]
+   ],
+   "race_capacity_after": 0,
+   "race_errors": [],
+   "race_workers": 1,
+   "second": [
+    "refused",
+    "active_dispatch:dispatch/VELDO-9301/89987b889cc64472ac36c51fa2d159e2"
+   ],
+   "third": "ok",
+   "third_attempt": 2
+  },
+  "unknown_relaunch": {
+   "direct": [
+    "refused",
+    "dispatch_outcome_unknown:dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d"
+   ],
+   "reinvoke": [
+    "refused",
+    "not_prepared:unknown",
+    false
+   ],
+   "reinvoke_exited": [
+    "refused",
+    "not_prepared:exited"
+   ],
+   "resubmit": [
+    "refused",
+    "dispatch_outcome_unknown:dispatch/VELDO-9306/2a1014d4beed4dfc833f02e0c712ff2d"
+   ]
+  }
+ },
+ "passed": 18,
+ "rows": [
+  [
+   "VELDO-0039 dispatch/contract-before-launch",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/one-active-per-unit-station",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/launch-results",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/unknown-never-relaunched",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/transitions-from-schema",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/result-binding",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/terminal-not-completion",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/service-principals-only",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/observations",
+   true
+  ],
+  [
+   "VELDO-0039 dispatch/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/contract-before-launch",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/launch-results",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/unknown-never-relaunched",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/transitions-from-schema",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/result-binding",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/service-principals-only",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/observations",
+   true
+  ],
+  [
+   "VELDO-0039 ran/dispatch/installed-assets",
+   true
+  ]
+ ],
+ "suite": "62_veldo_0039_dispatch.py",
+ "suite_seconds": 2.125
+}

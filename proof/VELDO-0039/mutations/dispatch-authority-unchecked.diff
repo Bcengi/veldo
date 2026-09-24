@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -297 +297 @@
+-    _authorize(conn, params.get('principal'), params.get('repository'), now)
++    pass  # defect: the principal's authority is not checked

@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -353 +353 @@
+-        if record is None or record['state'] != 'prepared':
++        if record is None or record['state'] not in ('prepared', 'unknown', 'exited'):  # defect

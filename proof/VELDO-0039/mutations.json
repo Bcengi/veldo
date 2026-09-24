@@ -1,0 +1,355 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 39 --jobs 4 --diff-dir proof/VELDO-0039/mutations",
+ "summary": {
+  "mutations_rejected": 21,
+  "green_suites": {
+   "62_veldo_0039_dispatch.py": 44
+  },
+  "driver_seconds": 11.3
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations": [
+  {
+   "mutation": "dispatch-spawn-before-contract",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/contract-before-launch"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/contract-before-launch",
+    "dispatch/one-active-per-unit-station",
+    "dispatch/launch-results",
+    "dispatch/unknown-never-relaunched",
+    "dispatch/transitions-from-schema"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-spawn-before-contract.diff"
+  },
+  {
+   "mutation": "dispatch-spawn-before-acceptance",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/contract-before-launch"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/contract-before-launch",
+    "dispatch/launch-results",
+    "dispatch/unknown-never-relaunched",
+    "dispatch/transitions-from-schema"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-spawn-before-acceptance.diff"
+  },
+  {
+   "mutation": "dispatch-holder-not-consulted",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/one-active-per-unit-station"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/one-active-per-unit-station",
+    "dispatch/unknown-never-relaunched",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-holder-not-consulted.diff"
+  },
+  {
+   "mutation": "dispatch-hold-not-recorded",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/one-active-per-unit-station"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/contract-before-launch",
+    "dispatch/one-active-per-unit-station",
+    "dispatch/unknown-never-relaunched",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-hold-not-recorded.diff"
+  },
+  {
+   "mutation": "dispatch-new-dispatch-for-unknown",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/unknown-never-relaunched"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/unknown-never-relaunched",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-new-dispatch-for-unknown.diff"
+  },
+  {
+   "mutation": "dispatch-receiver-takes-unprepared",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/unknown-never-relaunched"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/unknown-never-relaunched"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-receiver-takes-unprepared.diff"
+  },
+  {
+   "mutation": "dispatch-lost-answer-as-refused",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/launch-results"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/launch-results",
+    "dispatch/unknown-never-relaunched",
+    "dispatch/transitions-from-schema",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-lost-answer-as-refused.diff"
+  },
+  {
+   "mutation": "dispatch-receiver-identity-recorded",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/launch-results"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/launch-results",
+    "dispatch/transitions-from-schema",
+    "dispatch/terminal-not-completion"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-receiver-identity-recorded.diff"
+  },
+  {
+   "mutation": "dispatch-spawn-failure-as-unknown",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/launch-results"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/launch-results",
+    "dispatch/transitions-from-schema",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-spawn-failure-as-unknown.diff"
+  },
+  {
+   "mutation": "dispatch-acceptance-without-recheck",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/launch-results"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/launch-results",
+    "dispatch/transitions-from-schema"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-acceptance-without-recheck.diff"
+  },
+  {
+   "mutation": "dispatch-result-unbound",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/result-binding"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/result-binding"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-result-unbound.diff"
+  },
+  {
+   "mutation": "dispatch-contract-digest-unbound",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/result-binding"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/result-binding",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-contract-digest-unbound.diff"
+  },
+  {
+   "mutation": "dispatch-exited-moves-again",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/transitions-from-schema"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/transitions-from-schema"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-exited-moves-again.diff"
+  },
+  {
+   "mutation": "dispatch-unknown-after-exit",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/transitions-from-schema"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/transitions-from-schema"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-unknown-after-exit.diff"
+  },
+  {
+   "mutation": "dispatch-exit-lands-unit",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "dispatch/terminal-not-completion"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/terminal-not-completion"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-exit-lands-unit.diff"
+  },
+  {
+   "mutation": "dispatch-authority-unchecked",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/service-principals-only"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/service-principals-only",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-authority-unchecked.diff"
+  },
+  {
+   "mutation": "dispatch-any-principal-type",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/service-principals-only"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/service-principals-only",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-any-principal-type.diff"
+  },
+  {
+   "mutation": "dispatch-stopped-not-reported",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-stopped-not-reported.diff"
+  },
+  {
+   "mutation": "dispatch-refusal-not-observed",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-refusal-not-observed.diff"
+  },
+  {
+   "mutation": "dispatch-receiver-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "dispatch/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-receiver-not-installed.diff"
+  },
+  {
+   "mutation": "dispatch-authority-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "dispatch/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-authority-not-installed.diff"
+  }
+ ]
+}

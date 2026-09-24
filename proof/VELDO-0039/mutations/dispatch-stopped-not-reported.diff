@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -436 +436 @@
+-                    stopped=sorted(d for d, s in states.items() if s == 'unknown'),
++                    stopped=sorted(d for d, s in states.items() if s == 'refused'),

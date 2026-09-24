@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -100 +100 @@
+-HOLDING = ('prepared', 'accepted', 'running', 'unknown')
++HOLDING = ('prepared', 'accepted', 'running')  # defect: an unknown outcome frees its unit

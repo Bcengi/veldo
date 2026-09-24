@@ -1,0 +1,6 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -340,2 +340 @@
+-    if params.get('contract_digest') != record['contract_digest']:
+-        raise Refused('binding_mismatch:contract_digest', 'this observation belongs to another dispatch')
++    pass  # defect: an observation is not held to its dispatch's contract

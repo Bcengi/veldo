@@ -1,0 +1,7 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -370,0 +371 @@
++        spawned = self._spawn(dispatch_id, self.dispatches.receipt(dispatch_id, 'accept'), adapter)  # defect
+@@ -381 +382 @@
+-            worker = self._spawn(dispatch_id, acceptance, adapter)
++            worker = spawned

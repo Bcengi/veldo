@@ -347,7 +347,8 @@ sys.exit(payload.get('code', 0))
                 observed['contract'] = {'bindings': bindings, 'seen_at_start': seen_record.get('state'),
                                         'birth_acceptance': seen.get('acceptance'),
                                         'acceptance_record': accept_row[0] if accept_row else None,
-                                        'journal_order': order, 'workers': len(workers_u1), 'second': second}
+                                        'journal_order': order, 'workers': len(workers_u1),
+                                        'second': [second[0], getattr(second[1], 'result', second[1])]}
                 check('dispatch/contract-before-launch', order_ok and all(bindings.values()) and len(workers_u1) == 1
                       and len(of_unit('dispatch', u1)) == 1 and len(of_unit('subscription_reservation', u1)) == 1)
 
@@ -356,7 +357,7 @@ sys.exit(payload.get('code', 0))
                 reservations.reserve_worker('worker/' + rival['dispatch_id'], rival['dispatch_id'], ACCOUNT, 'p1', u1,
                                             now=time.time())
                 rslot = entity(RES.entity('worker', [DOMAIN, rival['dispatch_id']]))
-                rival['reservation'] = dict(contract['reservation'], entity=RES.entity('worker', [DOMAIN, rival['dispatch_id']]),
+                rival['reservation'] = dict(contract.get('reservation') or {}, entity=RES.entity('worker', [DOMAIN, rival['dispatch_id']]),
                                             version=rslot['version'], digest=rslot['digest'])
                 # The next attempt number, so only the active dispatch can refuse it.
                 rival['attempt'] = 2
@@ -413,7 +414,9 @@ sys.exit(payload.get('code', 0))
                 for racer_thread in racers:
                     racer_thread.join(timeout=60)
                 balance = reservations.balances('unit', u2)
-                observed['uniqueness'] = {'second': second, 'direct': direct, 'third': third_try[0],
+                observed['uniqueness'] = {'second': [second[0], getattr(second[1], 'result', second[1])],
+                                          'direct': [direct[0], getattr(direct[1], 'get', lambda k: direct[1])('state')],
+                                          'third': third_try[0],
                                           'third_attempt': rec(third_id).get('contract', {}).get('attempt'),
                                           'race': outcomes, 'race_errors': errors, 'race_workers': len(worker_markers('dispatch/%s/' % u2)),
                                           'race_capacity_after': balance['capacity']}
@@ -500,7 +503,8 @@ sys.exit(payload.get('code', 0))
                 again = invoke(rec(lost.dispatch_id).get('contract'))
                 ended_again = invoke(rec(first.dispatch_id).get('contract'))
                 time.sleep(0.2)
-                observed['unknown_relaunch'] = {'resubmit': resubmit, 'direct': direct,
+                observed['unknown_relaunch'] = {'resubmit': [resubmit[0], getattr(resubmit[1], 'result', resubmit[1])],
+                                                'direct': [direct[0], getattr(direct[1], 'get', lambda k: direct[1])('state')],
                                                 'reinvoke': [again.result, again.refusal, again.owned],
                                                 'reinvoke_exited': [ended_again.result, ended_again.refusal]}
                 check('dispatch/unknown-never-relaunched',
