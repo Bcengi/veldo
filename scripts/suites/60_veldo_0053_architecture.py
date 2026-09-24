@@ -1241,9 +1241,12 @@ def _v53_suite():
             check('architecture/validated-is-digested', race_ok)
 
         with region('architecture/observations'):
-            # Every decision records the architecture it judged, and its refusals keep their taxonomy.
-            judged = [e for e in gate.observations if e.get('architecture')]
-            obs_ok = len(judged) == len(gate.observations) > 0
+            # Every eligibility decision (one event per station, EL.FLOOR_STATIONS) records the architecture it
+            # judged, and its refusals keep their taxonomy. The Gate's other events, VELDO-0054's decision
+            # dependency and invalid record observations, judge no architecture.
+            decisions = [e for e in gate.observations if e.get('operation') in EL.FLOOR_STATIONS]
+            judged = [e for e in decisions if e.get('architecture')]
+            obs_ok = len(judged) == len(decisions) > 0
             obs_ok &= all(set(e['architecture']) - {'error'} == {'basis', 'kind', 'artifact_digest', 'validator'} for e in judged)
             refused_arch = [e for e in gate.observations if any('architecture' in r for r in e['refusals'])]
             obs_ok &= len(refused_arch) > 0 and all(

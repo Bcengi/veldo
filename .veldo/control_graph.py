@@ -412,7 +412,8 @@ def git_finds_repository(directory):
     """Ask Git, through the shared Git boundary under a fixed environment, whether its own
     discovery from an existing `directory` reaches a repository or a Git directory. Exit 0 is yes;
     nothing is parsed from Git's messages (a failing Git is left to the shape checks)."""
-    result = _git_boundary().run(['git', '-C', str(directory), '-c', 'safe.directory=*', 'rev-parse',
+    _git_process = _git_boundary()
+    result = _git_process.run(['git', '-C', str(directory), '-c', 'safe.directory=*', 'rev-parse',
                                   '--absolute-git-dir'], env=dict(GIT_ENVIRONMENT), stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
     return result.returncode == 0

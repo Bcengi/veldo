@@ -327,7 +327,7 @@ def _v54_suite():
 
         reader = S.open_store(str(db), mode='r')
         trust = DD.SettlementTrust(signers.read_text())
-        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, settlement_trust=trust)
+        gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base), settlement_trust=trust)
         PL = load('v54_plan', mods / 'plan.py')
         FR = load('v54_frontier', mods / 'frontier.py')
         RS = load('v54_runstatus', mods / 'runstatus.py')
@@ -737,7 +737,7 @@ def _v54_suite():
             # unsigned settlement: a fresh trust, so nothing it verified before is remembered.
             path, os.environ['PATH'] = os.environ.get('PATH', ''), ''
             try:
-                blind = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY,
+                blind = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base),
                                 settlement_trust=DD.SettlementTrust(signers.read_text()))
                 unavailable = blind.decide('selection', 'VELDO-9401')
             finally:
@@ -850,7 +850,7 @@ def _v54_suite():
                 '%s namespaces="%s" %s %s\n' % (written, DD.SETTLEMENT_NAMESPACE,
                                                  *(rsa_public if key == 'rsa' else public))
                 for _, written, key in EDGES.values())
-            edge_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY,
+            edge_gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base),
                                 settlement_trust=DD.SettlementTrust(edge_signers))
             planned('PLAN-9415', sorted(BOUNDED) + sorted(EDGES))
             for sid, (field, change) in BOUNDED.items():
@@ -900,7 +900,7 @@ def _v54_suite():
             class Exploding:
                 def verify(self, message, signature, principal):
                     raise RuntimeError('a verifier fault nobody named')
-            exploding = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, settlement_trust=Exploding())
+            exploding = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base), settlement_trust=Exploding())
             try:
                 unexpected = ('ok', exploding.decide('selection', 'VELDO-9401')['refusals'],
                               exploding.decision_blockers('VELDO-9401'))
@@ -920,7 +920,7 @@ def _v54_suite():
             class Verifier:
                 def verify(self, message, signature, principal):
                     raise error
-            return EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, settlement_trust=Verifier())
+            return EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base), settlement_trust=Verifier())
 
         def outcome(call):
             try:
