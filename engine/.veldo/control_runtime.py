@@ -85,7 +85,7 @@ COUNTS = {'accepted': 0, 'refused': 0}
 DOMAIN = REPOSITORY = 'runtime-qualification'
 QUALIFICATION_WORKFLOW = 'veldo-runtime-qualification'
 QUALIFICATION = r'''
-# ---- VELDO-0045 activation qualification: deterministic and nonpersistent, no model, no network ----
+# VELDO-0045 activation qualification: deterministic and nonpersistent, no model, no network
 def _qualification_intake(view):
     return {'next': 'rank', 'suspend': True, 'notes': {'snapshot': view['snapshot']['id']}}
 

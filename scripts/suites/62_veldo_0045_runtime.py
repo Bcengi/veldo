@@ -154,7 +154,7 @@ with open(log, 'w') as out:
         stage = tmp / 'stage'
         state = {}
 
-        # ---- the reference installation, laid by the production scaffolder from the canonical engine
+        # the reference installation, laid by the production scaffolder from the canonical engine
         regions.append('setup')
         try:
             scaffold = load('v45_scaffold', PRODUCTION['init_scaffold.py'])
@@ -229,7 +229,7 @@ with open(log, 'w') as out:
                 archive.writestr('typing_extensions-4.16.0.dist-info/RECORD', text.getvalue())
             return wheel
 
-        # ---- AC1: records against the lock, the registry and the installed metadata
+        # AC1: records against the lock, the registry and the installed metadata
         with region('runtime/records-cover-lock'):
             proc, accepted = cr('check')
             records = read_json(installed / '.veldo/runtime/langgraph-records.json')
@@ -276,7 +276,7 @@ with open(log, 'w') as out:
                   and refused.get('problems') == ['license_unapproved:certifi:LicenseRef-Proprietary',
                                                   'unrecorded_package:sniffio'])
 
-        # ---- AC1: the actual nonpersistent adapter workload on the activated runtime
+        # AC1: the actual nonpersistent adapter workload on the activated runtime
         with region('runtime/workload'):
             proc, qualified = cr('qualify', '--stage', tmp / 'qualify-stage')
             work = (qualified or {}).get('workload') or {}
@@ -292,7 +292,7 @@ with open(log, 'w') as out:
                   and work.get('counts') == {'accepted': 5, 'refused': 0} and work.get('pending') == []
                   and len(work.get('observations') or []) == 5)
 
-        # ---- AC1: an altered artifact hash in the lock refuses activation
+        # AC1: an altered artifact hash in the lock refuses activation
         with region('runtime/altered-hash-refused'):
             pinned = dict((r[0], r[3]) for r in lock.PACKAGES)[ALTERED]
             flipped = pinned[:-1] + ('0' if pinned[-1] != '0' else '1')
@@ -313,7 +313,7 @@ with open(log, 'w') as out:
                   and 'hash_mismatch:' + ALTERED in (answer.get('problems') or [])
                   and not any(p.startswith('runtime_absent') for p in answer.get('problems') or []))
 
-        # ---- AC1: a wheel installed with hash enforcement bypassed; the runtime-integrity check refuses it
+        # AC1: a wheel installed with hash enforcement bypassed; the runtime-integrity check refuses it
         with region('runtime/altered-wheel-refused'):
             outcomes = {}
             requirement = tmp / 'one-locked-requirement.txt'
@@ -340,7 +340,7 @@ with open(log, 'w') as out:
                   and outcomes['consistent']['problems'] == ['content_mismatch:' + ALTERED]
                   and outcomes['genuine']['problems'] == ['file_mismatch:%s:%s.py' % (ALTERED, ALTERED)])
 
-        # ---- AC1: an omitted dependency refuses activation; pip check is the outside judge
+        # AC1: an omitted dependency refuses activation; pip check is the outside judge
         with region('runtime/omitted-dependency-refused'):
             omitted = {}
             home = tmp / 'home-no-sniffio'
@@ -386,7 +386,7 @@ with open(log, 'w') as out:
                   and omitted['root_uninstalled']['check_exit'] == 1
                   and omitted['root_uninstalled']['problems'] == ['missing_dependency:langgraph'])
 
-        # ---- observability: every activation says what it judged, and a refusal keeps its taxonomy
+        # observability: every activation says what it judged, and a refusal keeps its taxonomy
         with region('runtime/observations'):
             proc, fine = cr('check')
             empty = tmp / 'home-empty'
@@ -412,7 +412,7 @@ with open(log, 'w') as out:
                   and absent.get('problems') == ['runtime_absent:' + lock.digest()]
                   and altered.get('taxonomy') == ['invalid_input'] and altered.get('counts') == {'accepted': 0, 'refused': 1})
 
-        # ---- AC2: the journey's every reached asset is installed, with the digest it was laid with
+        # AC2: the journey's every reached asset is installed, with the digest it was laid with
         with region('journey/assets-installed'):
             proc, trace = traced(tmp, 'journey', state['cr'], ['install', '--stage', stage], cwd=installed)
             answer = report(proc) or {}
@@ -507,7 +507,7 @@ with open(log, 'w') as out:
                   and child.get('answer') == 'suspended' and child.get('runtime_label') == evidence
                   and child.get('runtime_files', 0) > 100 and not child.get('bad_runtime') and not child.get('outside'))
 
-        # ---- AC2: an omitted asset is a named failure, never a read of the source tree
+        # AC2: an omitted asset is a named failure, never a read of the source tree
         with region('journey/omitted-asset-named'):
             named = {}
             for rel in ('.veldo/runtime/langgraph-records.json', '.veldo/control_graph_lock.py'):
@@ -525,7 +525,7 @@ with open(log, 'w') as out:
                 n['exit'] == 1 and n['problems'] == ['missing_asset:' + rel] and not n['source_tree_reads'] and not n['traceback']
                 for rel, n in named.items()))
 
-        # ---- AC3: every enabled installed enforcement entry, with the runtime hidden
+        # AC3: every enabled installed enforcement entry, with the runtime hidden
         with region('enforcement/entries-enumerated', 'enforcement/no-runtime', 'enforcement/graph-unavailable'):
             proc = run([sys.executable, '-B', state['cr'], 'enforcement', '--root', installed], cwd=installed,
                        env=dict(FIXED, HOME=str(tmp)))

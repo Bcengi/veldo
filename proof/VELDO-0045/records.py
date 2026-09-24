@@ -4,7 +4,7 @@
     python3 -B proof/VELDO-0045/records.py SCRATCH_DIR
 
 Reads, for every package in .veldo/control_graph_lock.py, TODAY's PyPI JSON for its exact release
-(https://pypi.org/pypi/<name>/<version>/json) and for the project (…/pypi/<name>/json, the latest
+(https://pypi.org/pypi/<name>/<version>/json) and for the project (https://pypi.org/pypi/<name>/json, the latest
 release), and the PEP 740 provenance of its locked wheel from the PyPI integrity API
 (https://pypi.org/integrity/<name>/<version>/<wheel>/provenance; a 404 is recorded as no published
 attestation). It downloads the one locked wheel from the URL the registry serves, refuses it unless
