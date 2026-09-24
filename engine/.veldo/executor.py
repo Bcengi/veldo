@@ -311,7 +311,13 @@ class LiveLoop(LoopSteps):
                     installed = CV.installation_at(self.root, self.base, Path(directory) / "installed")
                 else:
                     raise CV.Refused("missing_authority:verifier", "no base commit and no installed verifier")
-                observed, _reference = CV.observe_gate(self.root, installed, Path(directory) / "gate")
+                # The refs are not bound: self.root is the caller's own repository, whose sibling
+                # worktrees commit and whose fetches move refs in normal use, and nothing after this
+                # gate reads a range from them (the proof service is handed the spec's base commit
+                # explicitly, and merge_ready reads the spec). HEAD, its tree, the index and every
+                # file outside .git stay bound.
+                observed, _reference = CV.observe_gate(self.root, installed, Path(directory) / "gate",
+                                                       bind_refs=False)
             except CV.Refused as error:
                 return {"green": False, "detail": "gate not run: %s" % error.code}
         result = {"green": observed["green"], "detail": CP.detail(observed)}

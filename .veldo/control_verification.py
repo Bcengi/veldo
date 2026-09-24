@@ -16,10 +16,16 @@ and the executor (LiveLoop.gate) go through for that.
   observe_gate      runs the installed verifier in candidate mode, `verify.sh --candidate <root>
                     --sink <dir>`, so every check runs in the candidate while the stamp, the gate
                     event and the review-event reconciliation go to a sink outside it. The state of
-                    the candidate (HEAD, its tree, every index entry, every ref and HEAD's symbolic
-                    target, and the bytes of every file in the work tree, tracked, untracked or
-                    ignored, outside .git) is taken before and after, and must be equal. It returns the observation and writes it, canonical
-                    JSON, beside the sink: the exact candidate commit and tree, the command, the
+                    the candidate (HEAD, its tree, HEAD's symbolic target, every index entry, and
+                    the bytes of every file in the work tree, tracked, untracked or ignored, outside
+                    .git) is taken before and after, and must be equal. Whether every ref of the
+                    repository is part of that state is the caller's explicit `bind_refs`, never a
+                    default: True where a later reader takes a range from the refs (the lander's
+                    own workspace, which shares no refs with anyone), False over a caller's
+                    repository whose sibling worktrees and fetches move refs in normal use and
+                    where nothing reads a range from them afterwards (the executor). It returns the
+                    observation and writes it, canonical JSON, beside the sink: the exact candidate
+                    commit and tree, whether the refs were bound, the command, the
                     verifier's digest and origin, the catalog's required checks and each one's
                     captured result, the complete output and its digests, the sink's stamp and gate
                     event, and the post-run equality. green is the conjunction of all of it, and
@@ -27,7 +33,8 @@ and the executor (LiveLoop.gate) go through for that.
   accept            the acceptance of that observation just before anything is published: the file
                     must be outside the candidate, carry exactly the digest recorded when it was
                     written, judge green again from its own content, and the candidate must still be
-                    in the state it was verified in. Anything else is refused by name; evidence that
+                    in the state it was verified in, taken with the same `bind_refs` the
+                    observation records. Anything else is refused by name; evidence that
                     changes the candidate's bytes needs a new commit and a new verification.
   run_policy        the installed policy_check.py asked about the candidate: the installed module is
                     loaded by its own path (its siblings come from the installation), its subject
@@ -126,27 +133,45 @@ def _git(repo, *args, ok=(0,)):
 # The exact state of a candidate.
 
 def _refs(root):
-    """Every ref of the repository (its object and, for a symbolic ref, its target) and HEAD's
-    symbolic target. A candidate that moves a ref during the run, such as refs/remotes/origin/main,
-    changes what a reader of those refs concludes about it, so the refs are part of its state."""
+    """Every ref of the repository: its object and, for a symbolic ref, its target. A candidate that
+    moves a ref during the run, such as refs/remotes/origin/main, changes what a later reader of those
+    refs concludes about it, so where one reads them the refs are part of its state."""
     listed = _git(root, "for-each-ref", "--format=%(refname)%00%(objectname)%00%(symref)").stdout.decode("utf-8", "surrogateescape")
     refs = {}
     for line in listed.splitlines():
         name, _sep, rest = line.partition("\0")
         refs[name] = rest.split("\0")
+    return refs
+
+
+def _head_target(root):
+    """HEAD's symbolic target (this work tree's own), None when HEAD is detached."""
     target = _git(root, "symbolic-ref", "-q", "HEAD", ok=(0, 1)).stdout.decode("utf-8", "surrogateescape").strip()
-    return refs, target or None
+    return target or None
 
 
-def state(root):
-    """HEAD, its tree, every index entry and flag, every ref and HEAD's symbolic target, and the bytes
-    of every entry of the work tree outside .git (tracked, untracked and ignored alike, directories
-    and symlinks included). Two states are equal only when all of it is."""
+def _bind_refs(bind_refs):
+    """The caller's explicit choice of whether the repository's refs are part of the state. Anything
+    but True or False is refused: the binding is an input, never an ambient default."""
+    if bind_refs is not True and bind_refs is not False:
+        raise Refused("invalid_input:bind_refs", repr(bind_refs))
+    return bind_refs
+
+
+def state(root, *, bind_refs):
+    """HEAD, its tree, HEAD's symbolic target, every index entry and flag, and the bytes of every entry
+    of the work tree outside .git (tracked, untracked and ignored alike, directories and symlinks
+    included); with `bind_refs` True, also every ref of the repository. The caller says which, with no
+    default: the refs belong to the state where a later reader takes a range from them (the lander's
+    own workspace), and not over a caller's repository whose sibling worktrees commit and fetch in
+    normal use (the executor). Two states are equal only when all of it is, including the choice."""
+    bind_refs = _bind_refs(bind_refs)
     root = Path(root)
     found = _git(root, "rev-parse", "--verify", "--quiet", "HEAD^{commit}", ok=(0, 1)).stdout.decode().strip()
     tree = _git(root, "rev-parse", "--verify", "--quiet", "HEAD^{tree}", ok=(0, 1)).stdout.decode().strip()
     entries = _git(root, "ls-files", "-s", "-v", "-z").stdout
-    refs, head_target = _refs(root)
+    refs = _refs(root) if bind_refs else None
+    head_target = _head_target(root)
     files = {}
     for directory, dirs, names in os.walk(str(root)):
         rel_dir = os.path.relpath(directory, str(root))
@@ -170,8 +195,8 @@ def state(root):
                     files[rel] = ["other", stat.S_IFMT(info.st_mode)]
             except OSError as error:
                 files[rel] = ["unreadable", type(error).__name__]
-    body = {"head": found or None, "tree": tree or None, "index": digest(entries), "refs": refs,
-            "head_target": head_target, "files": files}
+    body = {"head": found or None, "tree": tree or None, "index": digest(entries), "binds_refs": bind_refs,
+            "refs": refs, "head_target": head_target, "files": files}
     return dict(body, digest=digest(canonical(body)))
 
 
@@ -183,7 +208,7 @@ def changes(before, after):
     for ref in sorted(set(old) | set(new), reverse=True):
         if old.get(ref) != new.get(ref):
             named.insert(0, ":ref/" + ref)
-    for key in ("head", "tree", "index", "head_target"):
+    for key in ("head", "tree", "index", "head_target", "binds_refs"):
         if before.get(key) != after.get(key):
             named.insert(0, ":" + key)
     return named
@@ -316,6 +341,8 @@ def judge(observation):
     candidate = observation.get("candidate") or {}
     if candidate.get("commit") != commit or not CP._hex(candidate.get("tree")):
         problems.append("binding_mismatch:observation/candidate")
+    if candidate.get("binds_refs") is not True and candidate.get("binds_refs") is not False:
+        problems.append("invalid_input:observation/bind_refs")
     post = observation.get("post_run") or {}
     if post.get("equal") is not True or post.get("state") != candidate.get("state"):
         problems.append("stale_subject:candidate/changed_during_gate")
@@ -328,11 +355,14 @@ def judge(observation):
     return problems
 
 
-def observe_gate(candidate, installation, directory, timeout=None):
+def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None):
     """Run the installed verifier against `candidate` in candidate mode and observe it. `directory` is
     a new or empty directory outside the candidate: it receives the sink and observation.json.
-    Returns (observation, reference); reference is {path, digest} of the written observation."""
+    `bind_refs` (required, True or False) is whether the repository's refs are part of the candidate
+    state compared before and after (see state). Returns (observation, reference); reference is
+    {path, digest} of the written observation."""
     CP = _proof()
+    bind_refs = _bind_refs(bind_refs)
     candidate = Path(_real(candidate))
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -351,7 +381,7 @@ def observe_gate(candidate, installation, directory, timeout=None):
     sink = directory / "sink"
     sink.mkdir()
     seeded = _regular_bytes(str(candidate / ".veldo" / "events.jsonl")) or b""
-    before = state(candidate)
+    before = state(candidate, bind_refs=bind_refs)
     command = ["bash", str(root / GATE_PATH), "--candidate", str(candidate), "--sink", str(sink)]
     started = time.time()
     try:
@@ -363,7 +393,7 @@ def observe_gate(candidate, installation, directory, timeout=None):
     except OSError as error:
         exit_code, out, err = None, b"", str(error).encode()
     finished = time.time()
-    after = state(candidate)
+    after = state(candidate, bind_refs=bind_refs)
     stdout = out.decode("utf-8", "surrogateescape")
     ran = CP.catalog(text)
     results, terminal = CP.gate_results(stdout, ran["required"])
@@ -372,7 +402,7 @@ def observe_gate(candidate, installation, directory, timeout=None):
         "schema": CP.OBSERVATION_SCHEMA, "command": command, "commit": before["head"],
         "gate": {"path": GATE_PATH, "digest": digest(verifier), "installation": source},
         "candidate": {"root": str(candidate), "commit": before["head"], "tree": before["tree"],
-                      "state": before["digest"]},
+                      "state": before["digest"], "binds_refs": bind_refs},
         "catalog": {"required": ran["required"], "commands": ran["commands"], "results": results},
         "exit": exit_code, "stdout": stdout, "stdout_digest": digest(out),
         "stderr": err.decode("utf-8", "surrogateescape"), "stderr_digest": digest(err),
@@ -388,9 +418,11 @@ def observe_gate(candidate, installation, directory, timeout=None):
     return observation, {"path": str(path), "digest": digest(body)}
 
 
-def accept(reference, candidate, commit):
+def accept(reference, candidate, commit, *, bind_refs):
     """Every reason the observation `reference` names cannot be accepted for publishing `commit` from
-    `candidate` now. Empty means accepted."""
+    `candidate` now, its state taken again with `bind_refs` (required, True or False), which must be
+    the binding the observation records. Empty means accepted."""
+    bind_refs = _bind_refs(bind_refs)
     reference = reference if isinstance(reference, dict) else {}
     path = reference.get("path")
     if not isinstance(path, str) or not path:
@@ -410,8 +442,10 @@ def accept(reference, candidate, commit):
     problems = judge(observation)
     if observation.get("commit") != commit:
         problems.append("stale_subject:observation/commit")
+    if (observation.get("candidate") or {}).get("binds_refs") is not bind_refs:
+        problems.append("binding_mismatch:observation/bind_refs")
     try:
-        now = state(candidate)
+        now = state(candidate, bind_refs=bind_refs)
     except Refused as error:
         return problems + [error.code]
     if now["head"] != commit or now["digest"] != (observation.get("candidate") or {}).get("state"):

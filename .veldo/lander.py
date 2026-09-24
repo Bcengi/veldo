@@ -686,7 +686,10 @@ class GitLandOps(LandOps):
         try:
             c["observation_dir"] = tempfile.mkdtemp(prefix="veldo-observation-", dir=self.observations)
             installed = self._installed(c)
-            observed, reference = CV.observe_gate(c["workspace"], installed, Path(c["observation_dir"]) / "gate")
+            # The refs are bound: the workspace is this land's own repository, sharing no refs with
+            # anyone, so a ref that moves during the gate was moved by the candidate's code.
+            observed, reference = CV.observe_gate(c["workspace"], installed, Path(c["observation_dir"]) / "gate",
+                                                  bind_refs=True)
         except CV.Refused as error:
             c["gate"] = {"exit": None, "terminal": None, "green": False, "refusals": [error.code]}
             return self._refuse("gate", CandidateRefused(error.code, str(error.detail)))
@@ -745,7 +748,8 @@ class GitLandOps(LandOps):
         # VELDO-0058: the gate's external observation accepted again, last, before anything moves: the
         # same bytes outside the candidate, still green, and the candidate still in the state it was
         # verified in.
-        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"])
+        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"],
+                                               bind_refs=True)
         refusals.extend(accepted)
         c["acceptance"] = {"refusals": list(accepted)}
         c["policy"] = {"refusals": list(refusals)}
