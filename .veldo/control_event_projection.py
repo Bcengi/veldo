@@ -160,9 +160,11 @@ class Projection:
     # -- reads -----------------------------------------------------------------------------------
 
     def _rows(self):
+        if not Path(self.database).is_file():
+            raise Refused('unavailable_service:store', 'no store at the named path')
         try:
             conn = self.store.open_store(self.database, mode='r')
-        except (OSError, self.store.StoreRefused) as error:
+        except (OSError, self.store.StoreRefused, self.store.sqlite3.Error) as error:
             raise Refused('unavailable_service:store', str(error)) from None
         try:
             return [(seq, command, digest, json.loads(transition), committed) for seq, command, digest, transition, committed
@@ -287,14 +289,7 @@ class Projection:
             except OSError:
                 raise Refused('unavailable_service:lock', 'another projection holds the log') from None
             fh.seek(0)
-            present = set()
-            for line in fh.read().splitlines():
-                try:
-                    known = json.loads(line)
-                except ValueError:
-                    continue
-                if isinstance(known, dict) and known.get('producer') == PRODUCER:
-                    present.add(known.get('id'))
+            present = self._present(fh.read())
             fresh = [e for e in events if e['id'] not in present]
             try:
                 EV.append_journal_projection(fh, fresh)
@@ -330,8 +325,26 @@ class Projection:
         after = mark['watermark'] if mark else 0
         head = rows[-1][0] if rows else 0
         events, _judged = self.derive(rows, after)
+        present = self._present()
         return dict(self.counts, watermark=after, head=head, pending_records=max(0, head - after),
-                    pending_events=[e['id'] for e in events])
+                    pending_events=[e['id'] for e in events if e['id'] not in present])
+
+    def _present(self, text=None):
+        """The ids of this projection's lines already in the destination log."""
+        if text is None:
+            try:
+                text = self.log.read_text()
+            except FileNotFoundError:
+                return set()
+        present = set()
+        for line in text.splitlines():
+            try:
+                known = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(known, dict) and known.get('producer') == PRODUCER:
+                present.add(known.get('id'))
+        return present
 
     def _emit(self, operation, **fields):
         self.observe(dict({'schema': SCHEMA, 'operation': operation, 'domain': self.domain,
