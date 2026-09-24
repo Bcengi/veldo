@@ -26,6 +26,13 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "packs/*/.veldo/control_launch.py"
+  - "engine/.veldo/control_containment.py"
+  - ".veldo/control_containment.py"
+  - "packs/*/.veldo/control_containment.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0041_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -135,3 +142,10 @@ fencing/timing, AC2 all-profile/stopped-orchestrator matrix and AC3 crash-safe r
 moved to Release 2; broader hosts moved to Release 4. Normal liveness/stop/exit/retirement
 remain. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-24, footprint (branch build-veldo-0041): the footprint names `.veldo/control_launch.py`, where
+the trusted wrapper emits the heartbeat and the VELDO-0039 receiver watches it, renews the claim and
+stops a worker whose heartbeats stop; `.veldo/control_containment.py`, where the worker profile
+declares the heartbeat interval and window beside VELDO-0040's stop graces and the stop escalation is
+timed on the monotonic clock; and `scripts/check_teeth_mutations.py`, where this specification's
+mutations are registered as finding 41.
