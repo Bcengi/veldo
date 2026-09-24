@@ -155,3 +155,12 @@ and its copies were already in it). The Gate digested the workspace contract wit
 it, so a writer landing in between made it pass bytes it never validated. arch.read_contract now reads
 the file once and returns the digest of the bytes it parsed, the loader hands that digest to its
 caller, and the Gate compares only it. No criterion, status or evidence universe changed.
+
+2026-09-24, suite fix: the snapshot-held-names row went false under concurrent load (about 2% of runs
+at load 49 on 20 cores, never alone) with every decision correct and one "released reader" counted.
+The cause was the suite's FIFO helper, not the snapshot: the snapshot opens a FIFO without waiting and
+judges it by that descriptor, and a write-end open landing while that descriptor is open succeeds, so
+the helper polling from the start counted a reader that never waited. The helper now touches the FIFO
+only after a 20 second grace with the judgement still running (it takes under a second under that
+load), so a release means a real wait; the row records each sub-condition and the values it saw. No
+product code, criterion, status or evidence universe changed.

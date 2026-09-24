@@ -1007,16 +1007,29 @@ def _v53_suite():
                 except Exception as error:  # noqa: BLE001 - recorded by type, asserted below
                     answered[label] = type(error).__name__
             decided, _, _ = judge(dotted, 'dotpy_gate')
-            held_names['empty_name'] = (set(answered.values()) == {'ImportError'} and not dot_marker.exists()
-                                        and outcome(decided, CODES['invalid_structure']))
+            # Each sub-condition by name, beside the value it saw, so a false row says which part went false.
+            empty_parts = {'requests_all_import_error': set(answered.values()) == {'ImportError'},
+                           'dot_py_never_ran': not dot_marker.exists(),
+                           'decisions_invalid_structure': outcome(decided, CODES['invalid_structure'])}
+            empty_seen = {'refusals': sorted({r for d in decided.values() for r in d['refusals']})}
+            held_names['empty_name'] = all(empty_parts.values()) and len(empty_parts) == 3
             piped = engine_copy(top / 'fifo' / '.veldo')
             os.mkfifo(str(piped / 'zz.py'))
             # A reader blocked on the FIFO would wait for a writer forever; this helper opens it for writing,
             # which releases such a reader with an empty read, so a snapshot that reads it cannot hang the suite.
+            # It touches the FIFO only after FIFO_GRACE seconds with the judgement still running. The snapshot's
+            # own open is non-blocking and is held open while it is judged by descriptor, so a write-end open
+            # landing in that window succeeds without any reader having waited; polling from the start counted
+            # that as a release whenever load stretched the window. After the grace, a release means a reader
+            # was still there after the judgement had every chance to finish: a wait.
             import threading
+            import time
+            FIFO_GRACE = 20.0
             stop_helper, unblocked = threading.Event(), []
 
             def release_readers():
+                if stop_helper.wait(FIFO_GRACE):
+                    return
                 while not stop_helper.is_set():
                     try:
                         os.close(os.open(str(piped / 'zz.py'), os.O_WRONLY | os.O_NONBLOCK))
@@ -1028,16 +1041,28 @@ def _v53_suite():
             helper = threading.Thread(target=release_readers, daemon=True)
             helper.start()
             fifo_events = []
+            fifo_started = time.monotonic()
             try:
                 decided, _, _ = judge(piped, 'fifo_gate', events=fifo_events)
             finally:
+                fifo_seconds = time.monotonic() - fifo_started
                 stop_helper.set()
                 helper.join(5)
-            held_names['fifo_is_named_stop'] = (
-                outcome(decided, 'unavailable_service:architecture_validator') and not unblocked
-                and all((d.get('architecture') or {}).get('error') == 'ImportError' for d in decided.values()))
+            fifo_parts = {'decisions_unavailable_validator': outcome(decided, 'unavailable_service:architecture_validator'),
+                          'no_reader_released': not unblocked,
+                          'errors_import_error': all((d.get('architecture') or {}).get('error') == 'ImportError'
+                                                     for d in decided.values())}
+            fifo_seen = {'refusals': sorted({r for d in decided.values() for r in d['refusals']}),
+                         'errors': sorted({str((d.get('architecture') or {}).get('error')) for d in decided.values()}),
+                         'helper_alive_after_join': helper.is_alive(), 'judge_seconds': round(fifo_seconds, 3),
+                         'grace_seconds': FIFO_GRACE}
+            held_names['fifo_is_named_stop'] = all(fifo_parts.values()) and len(fifo_parts) == 3
             reset('valid')
-            observed['snapshot_held_names'] = {'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked)}
+            observed['snapshot_held_names'] = {
+                'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked),
+                'empty_name': dict(parts=empty_parts, seen=empty_seen), 'fifo': dict(parts=fifo_parts, seen=fifo_seen),
+                'false': sorted(case + '/' + part for case, parts in (('empty_name', empty_parts), ('fifo', fifo_parts))
+                                for part, value in parts.items() if not value)}
             check('architecture/snapshot-held-names', all(held_names.values()) and len(held_names) == 2)
 
         with region('architecture/snapshot-file-bounded'):
