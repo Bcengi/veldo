@@ -1,0 +1,4 @@
+--- a/.veldo/control_event_vocabulary.py
++++ b/.veldo/control_event_vocabulary.py
+@@ -66 +65,0 @@
+-    "spend.recorded": SPEND_RECORDER,

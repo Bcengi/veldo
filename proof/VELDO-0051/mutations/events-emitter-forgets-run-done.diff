@@ -1,0 +1,5 @@
+--- a/.veldo/events.py
++++ b/.veldo/events.py
+@@ -124 +124 @@
+-EVENT_TYPES = set(_VOCAB.EVENT_TYPES)
++EVENT_TYPES = set(_VOCAB.EVENT_TYPES) - {"run.done"}  # defect: the emitter forgets run.done

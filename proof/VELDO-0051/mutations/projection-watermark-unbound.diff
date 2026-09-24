@@ -1,0 +1,6 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -300 +300,2 @@
+-                      'record_digest': digests.get(target, GENESIS), 'log': LOG.as_posix()}
++                      'record_digest': digests.get(after, GENESIS),  # defect: the watermark names the record it started from
++                      'log': LOG.as_posix()}

@@ -3683,6 +3683,76 @@ def cases():
     workflow('workflow-pending-unlisted', "(self.domain, self.repository) and data['state'] == 'waiting':\n",
              "(self.domain, self.repository) and data['state'] == 'running':  # defect: waiting work is not listed\n",
              'observations', module=cycle)
+    # VELDO-0051: each criterion's declared falsifier and further defects, each against the one suite 66
+    # row it names. Anchors are exact text in the five production modules suite 66 installs.
+    def events51(name, old, new, row, module='control_event_projection.py', also=()):
+        add(51, name, '66_veldo_0051_events.py', module, old, new, ['events/' + row], also)
+
+    vocabulary = 'control_event_vocabulary.py'
+    # AC1, declared: the validator no longer recognizes run.done while the emitter still writes it.
+    events51('events-validator-forgets-run-done', 'EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES)\n',
+             'EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES) - {"run.done"}  # defect: the validator forgets run.done\n',
+             'vocabulary-roundtrip', module='validate.py')
+    events51('events-emitter-forgets-run-done', 'EVENT_TYPES = set(_VOCAB.EVENT_TYPES)\n',
+             'EVENT_TYPES = set(_VOCAB.EVENT_TYPES) - {"run.done"}  # defect: the emitter forgets run.done\n',
+             'vocabulary-roundtrip', module='events.py')
+    events51('events-historical-spelling-dropped', 'SCHEMAS = (SCHEMA,) + HISTORICAL_SCHEMAS\n',
+             'SCHEMAS = (SCHEMA,)  # defect: the historical schema spelling is no longer accepted\n',
+             'vocabulary-roundtrip', module=vocabulary)
+    events51('events-substitution-admitted', '    if requested is not None and ev.get("type") != requested:\n',
+             '    if False:  # defect: a type substituted through an extra field is admitted\n',
+             'unknown-refused', module='events.py')
+    events51('events-unknown-schema-validates', '    if event.get("schema") not in schemas:\n',
+             '    if False:  # defect: a schema no spelling admits validates\n', 'unknown-refused', module=vocabulary)
+    # AC2, declared: a committed event is skipped while the watermark still advances.
+    fresh = "            fresh = [e for e in events if e['id'] not in present]\n"
+    events51('projection-skips-committed-event', fresh,
+             "            fresh = [e for e in events if e['id'] not in present][1:]  # defect: a committed event is skipped\n",
+             'projection-prefix')
+    events51('projection-rewrites-history', "        with open(self.log, 'a+') as fh:\n",
+             "        with open(self.log, 'w+') as fh:  # defect: the log is rewritten, not appended\n", 'projection-prefix')
+    events51('projection-watermark-unbound', "'record_digest': digests.get(target, GENESIS),",
+             "'record_digest': digests.get(after, GENESIS),  # defect: the watermark names the record it started from\n                     ",
+             'projection-prefix')
+    # AC3, declared: spec.shipped may be emitted directly, so a build-only run can ship.
+    events51('events-direct-spec-shipped', 'PROJECTION_OWNED = frozenset(_VOCAB.PROJECTIONS)\n',
+             'PROJECTION_OWNED = frozenset(_VOCAB.PROJECTIONS) - {"spec.shipped"}  # defect: spec.shipped is hand-emittable\n',
+             'completion-owner', module='events.py')
+    events51('vocabulary-spec-shipped-hand-owned', '    "spec.shipped": JOURNAL_PROJECTION,\n',
+             '    "spec.shipped": HAND,  # defect: completion is registered as a hand emission\n',
+             'completion-owner', module=vocabulary)
+    events51('projection-dispatch-unit-unjoined', "            if publication.get('unit') != unit:\n",
+             '            if False:  # defect: the dispatch is not joined to the receipt\'s unit\n', 'confirmed-landing-only')
+    events51('projection-confirmation-unrequired', '            if not confirmed(publication):\n',
+             '            if False:  # defect: an unconfirmed publication counts as a landing\n', 'confirmed-landing-only')
+    events51('projection-duplicate-republished', fresh,
+             '            fresh = list(events)  # defect: a landing already in the log is published again\n',
+             'confirmed-landing-only')
+    events51('scaffold-vocabulary-not-laid',
+             '    # VELDO-0051: the canonical event vocabulary events.py and validate.py both load.\n'
+             '    ".veldo/control_event_vocabulary.py",\n', '', 'installed-assets', module='init_scaffold.py')
+    events51('scaffold-projection-not-laid', '    ".veldo/control_event_projection.py",\n', '', 'installed-assets',
+             module='init_scaffold.py')
+    events51('projection-refusal-unobserved', "        for item in judged:\n",
+             "        for item in [i for i in judged if not i['refusals']]:  # defect: a refused receipt is not observed\n",
+             'observations')
+    events51('projection-unknown-taxonomy-classified', "    return head if head in TAXONOMY else 'unknown_outcome'\n",
+             "    return head if head in TAXONOMY else 'missing_evidence'  # defect: an unknown code is classified\n",
+             'observations')
+    events51('projection-pending-unlisted', "                    pending_events=[e['id'] for e in events if e['id'] not in present])\n",
+             "                    pending_events=[])  # defect: pending landings are not listed\n", 'observations')
+    # The spend recorder (a landed producer VELDO-0051 broke): its records are spend.recorded, owned by
+    # spend.py, and every reader of spend actuals reads that type and the historical spec.shipped one.
+    spend_rows = ['events/spend-recorded', 'events/vocabulary-roundtrip']
+    add(51, 'spend-records-as-spec-shipped', '66_veldo_0051_events.py', 'spend.py',
+        'SCHEMA_EVENT_TYPE = "spend.recorded"\n',
+        'SCHEMA_EVENT_TYPE = "spec.shipped"  # defect: a spend record is written as completion\n', spend_rows)
+    add(51, 'vocabulary-forgets-spend-recorded', '66_veldo_0051_events.py', vocabulary,
+        '    "spend.recorded": SPEND_RECORDER,\n', '', spend_rows)
+    events51('judgment-spend-recorded-unkinded', '    "spend.recorded": "ship_bulk",\n', '', 'spend-recorded',
+             module='judgment_load.py')
+    events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
+             module='judgment_load.py')
     return result
 
 

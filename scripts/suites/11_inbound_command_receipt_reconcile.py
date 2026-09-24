@@ -802,8 +802,10 @@ with tempfile.TemporaryDirectory() as _ired:
            not (set(_ir_V.EVENT_TYPES) & set(INC.INCIDENT_EVENT_TYPES))
            and set(INC.INCIDENT_EVENT_TYPES) <= set(V.EVENT_TYPES)
            and _ir_V.EVENT_TYPES is not V.EVENT_TYPES)
-expect("WARP-1208 AC6: the validate.py EVENT_TYPES change is PURELY ADDITIVE (the previously recognized set is untouched; only the four incident types are new)",
-       set(V.EVENT_TYPES) - set(INC.INCIDENT_EVENT_TYPES) == {
+# VELDO-0051 made the validator's set the canonical vocabulary, so the run, request and decision types
+# the emitter already wrote are recognized too: what WARP-1208 added stays additive, an inclusion.
+expect("WARP-1208 AC6: the validate.py EVENT_TYPES change is PURELY ADDITIVE (the previously recognized set is untouched; the four incident types were added beside it)",
+       set(V.EVENT_TYPES) - set(INC.INCIDENT_EVENT_TYPES) >= {
            "plan.created", "plan.approved", "plan.revised", "work.pulled", "spec.ready", "spec.shipped",
            "spec.blocked", "gate.passed", "gate.failed", "proof.recorded", "review.requested",
            "verdict.recorded", "approval.recorded", "emergency.push", "emergency.closed",

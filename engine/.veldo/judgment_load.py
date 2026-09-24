@@ -38,10 +38,11 @@ minutes-per-review coefficient would be an invention, and an invented second axi
 plan's no-false-precision posture (NG6) refuses. Episodes say how often; only minutes say how long.
 
 THE ONLY RECORDER PRODUCES A MIXED SIGNAL, AND THIS MODULE NAMES IT. `spend.py` records minutes on a
-`spec.shipped` event: one bulk number for a whole change. A bulk number cannot say whether the time
+`spend.recorded` event: one bulk number for a whole change. A bulk number cannot say whether the time
 went into reviewing or into approving, so those minutes land in the `ship_bulk` kind and
 `split_known` stays False. A reader is never handed an approval figure that was inferred from a
-total.
+total. Before VELDO-0051 the same recorder wrote the same bulk figure on a `spec.shipped` event, and
+those lines stay in the append-only log, so both types are read as `ship_bulk`.
 
 WRITES NOTHING, EVER. There is no emitter, no store and no append here: this module reads the corpus,
 the event log and the plan registry, and returns rows. A repository that records no minutes and no
@@ -82,8 +83,13 @@ KIND_BY_EVENT = {
     "verdict.recorded": "review",
     "approval.recorded": "approval",
     "plan.approved": "approval",
-    # The ONE type the recorder writes today (spend.py records at ship). A bulk figure for a whole
-    # change, which is why it is its own kind rather than being folded into review or approval.
+    # The ONE type the recorder writes today (spend.py records spend.recorded, VELDO-0051). A bulk
+    # figure for a whole change, which is why it is its own kind rather than being folded into review
+    # or approval.
+    "spend.recorded": "ship_bulk",
+    # The type the same recorder wrote before VELDO-0051. Those lines stay valid under this historical
+    # spelling and carry the same bulk figure. A spec.shipped the journal projection writes carries
+    # no minutes, so completion adds nothing here.
     "spec.shipped": "ship_bulk",
 }
 KINDS = ("review", "approval", "ship_bulk", "other")
