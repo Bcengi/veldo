@@ -638,7 +638,10 @@ with tempfile.TemporaryDirectory() as _mrepo, tempfile.TemporaryDirectory() as _
 # --- serialized lander (WARP-0704, Y4 of PLAN-0007). Two parts. (1) the REAL git land over
 # temp repos: a diverged trunk union-merges the shared append-only files while preserving the
 # build's impl commit sha (merge, not cherry-pick, so the proof/verdict binding survives), and
-# a real (non-additive) conflict is rejected rather than guessed. (2) the control logic over a
+# a real (non-additive) conflict is rejected rather than guessed. Since VELDO-0056 the merge is
+# made in the land's disposable candidate workspace, never in the caller's checkout, so each
+# case reads the candidate and requires the caller's tree untouched; each build carries the
+# proof manifest naming its implementation commit, which the candidate now requires. (2) the control logic over a
 # fake LandOps: the land lock serializes concurrent lands to one at a time, a failing stage
 # aborts and still releases the lock, a rejected (non-ff) push does not clobber, and the lock
 # is heartbeat-kept-alive while held.
@@ -663,6 +666,21 @@ def _ld_ins(p, line):
     t = open(p).read().splitlines(); t.insert(len(t) - 1, line)
     open(p, "w").write("\n".join(t) + "\n")
 
+def _ld_proof(d, unit):
+    """The build's evidence commit: its proof manifest names the implementation commit at HEAD."""
+    impl = _ld_git(d, "rev-parse", "HEAD").stdout.strip()
+    os.makedirs(os.path.join(d, "proof", unit), exist_ok=True)
+    open(os.path.join(d, "proof", unit, "manifest.json"), "w").write(json.dumps({"spec_id": unit, "commit": impl}))
+    _ld_git(d, "add", "-A"); _ld_git(d, "commit", "-q", "-m", "proof " + unit)
+
+def _ld_candidate(d, ref, unit):
+    """Build the land's candidate (sync_main, then reconcile) and return (reconcile result, candidate
+    workspace or None, the caller's porcelain status); the ops are returned for discard."""
+    ops = LD.GitLandOps(d, ref, push=False)
+    got = ops.sync_main()
+    got = ops.reconcile(unit) if got.get("ok") else got
+    return got, (ops.record() or {}).get("workspace"), _ld_git(d, "status", "--porcelain").stdout.strip(), ops
+
 # (1a) diverged trunk union-merges append-only files and preserves the build impl sha
 with tempfile.TemporaryDirectory() as _d:
     _ld_seed(_d)
@@ -671,20 +689,23 @@ with tempfile.TemporaryDirectory() as _d:
     open(os.path.join(_d, ".veldo/events.jsonl"), "a").write('{"e":"A"}\n')
     _ld_git(_d, "add", "-A"); _ld_git(_d, "commit", "-q", "-m", "A impl")
     _a_sha = _ld_git(_d, "rev-parse", "HEAD").stdout.strip()
+    _ld_proof(_d, "VELDO-9401")
     _ld_git(_d, "checkout", "-q", "main")
     _ld_ins(os.path.join(_d, "scripts/selftest.py"), "# BLOCK_B")
     open(os.path.join(_d, ".veldo/events.jsonl"), "a").write('{"e":"B"}\n')
     _ld_git(_d, "add", "-A"); _ld_git(_d, "commit", "-q", "-m", "prior land B")
-    _rc = LD.GitLandOps(_d, "bA", push=False).reconcile(None)
-    _stf = open(os.path.join(_d, "scripts/selftest.py")).read()
-    _evf = open(os.path.join(_d, ".veldo/events.jsonl")).read()
+    _rc, _ws, _st, _ops = _ld_candidate(_d, "bA", {"spec": "VELDO-9401"})
+    _stf = open(os.path.join(_ws, "scripts/selftest.py")).read() if _ws else ""
+    _evf = open(os.path.join(_ws, ".veldo/events.jsonl")).read() if _ws else ""
     expect("lander union-merges a diverged trunk (both append-only sides survive, no markers)",
            _rc.get("ok") and "BLOCK_A" in _stf and "BLOCK_B" in _stf and "<<<<<<" not in _stf
            and '"e":"A"' in _evf and '"e":"B"' in _evf)
     expect("lander preserves the build's impl commit sha (merge, not cherry-pick)",
-           _a_sha in _ld_git(_d, "log", "--pretty=%H").stdout)
+           bool(_ws) and _a_sha in _ld_git(_ws, "log", "--pretty=%H").stdout)
     expect("lander leaves a clean tree after the merge commit",
-           _ld_git(_d, "status", "--porcelain").stdout.strip() == "")
+           bool(_ws) and _ld_git(_ws, "status", "--porcelain").stdout.strip() == "" and _st == ""
+           and "BLOCK_A" not in open(os.path.join(_d, "scripts/selftest.py")).read())
+    _ops.discard()
 
 # (1b) a real (non-additive) conflict is rejected and the merge aborted
 with tempfile.TemporaryDirectory() as _d:
@@ -692,14 +713,16 @@ with tempfile.TemporaryDirectory() as _d:
     _ld_git(_d, "checkout", "-q", "-b", "bC")
     open(os.path.join(_d, "README.md"), "w").write("l1\nC\nl3\n")
     _ld_git(_d, "add", "-A"); _ld_git(_d, "commit", "-q", "-m", "C readme")
+    _ld_proof(_d, "VELDO-9402")
     _ld_git(_d, "checkout", "-q", "main")
     open(os.path.join(_d, "README.md"), "w").write("l1\nM\nl3\n")
     _ld_git(_d, "add", "-A"); _ld_git(_d, "commit", "-q", "-m", "M readme")
-    _rc2 = LD.GitLandOps(_d, "bC", push=False).reconcile(None)
+    _rc2, _ws2, _st2, _ops2 = _ld_candidate(_d, "bC", {"spec": "VELDO-9402"})
     expect("lander rejects a real (non-additive) conflict instead of guessing",
            _rc2.get("ok") is False and "README.md" in (_rc2.get("conflicts") or []))
     expect("lander aborts the failed merge, leaving a clean tree",
-           _ld_git(_d, "status", "--porcelain").stdout.strip() == "")
+           _st2 == "" and open(os.path.join(_d, "README.md")).read() == "l1\nM\nl3\n")
+    _ops2.discard()
 
 # (1c) an unsafe union (a binary union-listed file) is rejected, not truncated to empty
 with tempfile.TemporaryDirectory() as _d:
@@ -711,14 +734,17 @@ with tempfile.TemporaryDirectory() as _d:
     _ld_git(_d, "checkout", "-q", "-b", "bX")
     open(os.path.join(_d, ".veldo/events.jsonl"), "ab").write(b'{"e":"A"}\x00\n')
     _ld_git(_d, "add", "-A"); _ld_git(_d, "commit", "-q", "-m", "A")
+    _ld_proof(_d, "VELDO-9403")
     _ld_git(_d, "checkout", "-q", "main")
     open(os.path.join(_d, ".veldo/events.jsonl"), "ab").write(b'{"e":"B"}\x00\n')
     _ld_git(_d, "add", "-A"); _ld_git(_d, "commit", "-q", "-m", "B")
-    _rc3 = LD.GitLandOps(_d, "bX", push=False).reconcile(None)
+    _rc3, _ws3, _st3, _ops3 = _ld_candidate(_d, "bX", {"spec": "VELDO-9403"})
     expect("lander rejects an unsafe (binary) union rather than truncating it to empty",
            _rc3.get("ok") is False and _rc3.get("reason") == "union_unsafe"
            and os.path.getsize(os.path.join(_d, ".veldo/events.jsonl")) > 0
-           and _ld_git(_d, "status", "--porcelain").stdout.strip() == "")
+           and bool(_ws3) and os.path.getsize(os.path.join(_ws3, ".veldo/events.jsonl")) > 0
+           and _st3 == "")
+    _ops3.discard()
 
 # (2) control logic over a fake LandOps
 class _SerialOps(LD.LandOps):

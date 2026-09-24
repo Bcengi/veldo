@@ -20,6 +20,8 @@ footprint:
   - "scripts/suites/*_veldo_0056_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/suites/04_run_status_reader_veldo.py"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0056-disposable-landing-candidates.md"
   - "specs/index.md"
   - "proof/VELDO-0056/*"
@@ -124,3 +126,12 @@ SIGKILL/restart and competing-lander matrices moved to Release 2. Whole detached
 checked Git failures and unchanged trunk on refusal remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-24 footprint, before any mutation is registered: two paths are added, each because the
+change cannot be made without it. `scripts/check_teeth_mutations.py` is the registry every
+criterion's negative controls are registered in (finding 56), as VELDO-0049 and VELDO-0050 did.
+`scripts/suites/04_run_status_reader_veldo.py` holds WARP-0704's real-Git lander rows, which
+called `GitLandOps.reconcile` directly in the caller's checkout and read the merge result from the
+caller's own files: with the candidate built in its own workspace those rows now build the
+candidate (sync_main, then reconcile), read the candidate, require the caller untouched, and give
+each build the proof manifest the candidate now requires. Every row keeps its name and its claim.
