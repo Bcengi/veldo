@@ -47,8 +47,14 @@ through another module's helper assigned to a name (`_load = _runner()._load`), 
 variable names a file only when every binding of it in its module is a plain assignment naming one. A
 load naming a module the engine directory lacks, a load site whose module this reading cannot name
 for certain, or a loader helper handed on as a value, refuses installation by name
-(`invalid_input:closure:absent`, `invalid_input:closure:unresolved`), so the installed program is
-never short of a module it loads. Here it installs 45 modules where the hand list had 25. The
+(`invalid_input:closure:absent`, `invalid_input:closure:unresolved`). That covers the load shapes the
+engine uses today, and nothing more: the second review (2026-09-24) found shapes this reading misses
+WITHOUT refusing (a loader call whose location mixes a literal with a computed name, the loader imported
+under another name or reached through getattr, importlib.import_module, runpy.run_path, SourceFileLoader,
+and a subprocess running a sibling file). None of the 45 modules uses them, so the installed program is
+complete today; the end-to-end guard for a later engine edit is the row below, which launches through the
+installed receiver, not this reading. Filed: the reader treats those shapes as unresolved. Here it installs
+45 modules where the hand list had 25. The
 scaffold's `REQUIRED_SUBSTRATE` is not a seed: it declares a repository's gate rather than what the snapshot loads, and `init_scaffold.py` is
 not laid down in an adopter's tree, where this installer runs too. `supervisor.py`, which the
 installer loads for its default unit directory, is now laid down by the scaffolder.

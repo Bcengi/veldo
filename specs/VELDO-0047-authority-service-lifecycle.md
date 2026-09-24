@@ -202,3 +202,8 @@ authority/key-directory-location-before-existence, authority/key-directory-guida
 and authority/key-directory-relative-refused are new, and installed-fixed-and-protected,
 installed-assets and key-directory-placement judge the derived closure, an adopter's laid tree and the
 new guidance; all eight are red by assertion at 7ed08fb. Finding 47 has 38 mutations.
+
+2026-09-24, second review of the fix: nothing blocking. Filed: the closure reader misses some load
+shapes without refusing (none used by the engine today; the installed-receiver launch row is the guard);
+install(writable=...) replaces the default worker directories instead of adding to them (tests only); the
+guidance for an explicitly passed worker directory names the home and temporary directories.
