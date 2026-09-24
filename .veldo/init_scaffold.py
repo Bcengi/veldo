@@ -198,6 +198,9 @@ _FILES = [
     ".veldo/control_channel_enrollment.py",
     ".veldo/control_signer_answers.py",
     ".veldo/control_keys_custody.py",
+    # VELDO-0068: the one request settlement service (terms, API answers, the terminal transaction and
+    # the published request state). A runtime asset the authority loads; not validator substrate.
+    ".veldo/control_request_settlement.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",
