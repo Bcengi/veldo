@@ -4,10 +4,45 @@ Release 1 revision 3 canonical Telegram attribution. The specification status, r
 `.veldo/policy.yaml` are unchanged. This proof is for independent review; it is not a self-approval,
 and the canonical gate is run by the lead, not recorded here.
 
-**Pending, not done: AC1's live Telegram sandbox run.** The criterion asks for a real Telegram sandbox.
-None was available, so every row runs against a loopback Bot API server (real HTTP) that answers in
-the platform's documented shapes. This is not live qualification. The run is still owed and needs
-the owner to provide a Telegram test-environment bot.
+The suite's rows run against a loopback Bot API server (real HTTP) in the platform's documented shapes.
+The live run below is separate, and it discharges only part of AC1.
+
+## Live run 2026-09-24
+
+**What ran.** `live.py` against https://api.telegram.org with a dedicated test bot the owner provided,
+on the production service (not Telegram's separate test environment), at da9127b with the attribution
+module unchanged; the record is `live-2026-09-24.json`. From his own account the owner sent the bot, at
+12:53 to 12:55 UTC, the opening bot command his client sends when a chat starts, a plain message, a
+message after changing his first name, and a message forwarded from another chat. One getUpdates call
+with no parameters first saved the exact response in a private scratch folder outside the repository,
+confirming nothing. Pass A enrolled his stable user id as the one person member and ran the production
+Acquirer once through the production `TelegramAcquisitionEdge` (getMe, then getUpdates from the fresh
+cursor's offset 0). Pass B, in a fresh store where he is a member but nobody is enrolled, ran the
+production Acquirer against a loopback serving pass A's getMe answer and the saved bytes, after first
+serving a text-only transcript of the same messages. The driver refuses any method but getMe and
+getUpdates before a request is made, and the presenter's edge pointed at a loopback that publishes
+nothing; it received no call. The record holds field names, outcomes, principals and booleans only; the
+bot id is withheld because a token begins with it, and the owner's user id is an argument.
+
+**What was found.** Every update carried every required canonical field in its documented type (update
+id, message id, date, chat id and type, sender id and is_bot), from a person account in its own private
+chat, with no automation marker. The live answer was byte-identical to the saved one, and both passes
+kept identical evidence with no name or text in any canonical field or observation. Pass A attributed
+the opening command, the plain message and the renamed message to the owner's principal by his stable
+id, then refused each as `missing_reply_reference`: none replies to a presentation, since publishing
+one was out of bounds. The forward was refused as `forwarded_message` and attributed to nobody; its
+evidence keeps the sender's id. Pass B refused all four with no principal (three `unknown_sender`, the
+forward `forwarded_message`) and refused the transcript as `invalid_platform_answer`, keeping nothing.
+No answer was recorded in either pass.
+
+**What did not match the criterion.** The rename is not in the platform's data: the first name is the
+same on all four updates, so one principal for the plain and renamed messages shows nothing about
+renaming, and AC1's rename is still owed live. There was no second Telegram account, so the unknown
+actor was the owner's own account with nobody enrolled, and a stranger copying his display name was
+not tried live. The forward's origin (`forward_origin` type user) is the owner himself, so this run
+cannot tell the sender from the origin. The reply fields and AC2's binding were not exercised. Pass A's
+offset 0 confirmed nothing, so the updates stay on the platform until it drops them; the call set the
+bot's allowed_updates to message and edited_message, which the platform keeps.
 
 ## What was built
 
