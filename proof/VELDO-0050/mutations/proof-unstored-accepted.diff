@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -357 +357 @@
+-        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
++        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted
