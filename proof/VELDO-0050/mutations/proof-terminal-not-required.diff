@@ -1,6 +1,6 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -441,2 +441 @@
+@@ -449,2 +449 @@
 -        if terminal != "GATE: GREEN (%s)" % commit:
 -            problems.append("missing_evidence:observation/terminal")
 +        pass  # defect: a gate that printed no terminal result is not refused for it

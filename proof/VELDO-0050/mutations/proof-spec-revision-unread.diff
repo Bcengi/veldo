@@ -1,5 +1,5 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -371 +371 @@
+@@ -404 +404 @@
 -    if manifest.get("spec_revision") != spec["revision"]:
 +    if False:  # defect: the proof's spec revision is not compared with the accepted one

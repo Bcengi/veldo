@@ -1,5 +1,5 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -450 +450 @@
+@@ -458 +458 @@
 -                               "observed": "   %s: pass" % name, "gate_exit": observation.get("exit"),
 +                               "observed": "   %s: pass" % name, "gate_exit": None,  # defect: the gate exit is not recorded

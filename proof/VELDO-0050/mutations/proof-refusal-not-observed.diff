@@ -1,6 +1,6 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -586,2 +586 @@
+@@ -594,2 +594 @@
 -            self.observe(dict(event, outcome="refused", refusal=error.code, refusals=codes,
 -                              taxonomy=taxonomy(error.code)))
 +            pass  # defect: a refusal is not observed

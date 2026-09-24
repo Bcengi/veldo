@@ -1,0 +1,534 @@
+{
+ "failed": 0,
+ "observed": {
+  "accepted_before_offer": {
+   "again": [
+    "refused",
+    "proof_immutable"
+   ],
+   "dispatch": {
+    "halted_at": null,
+    "ok": true,
+    "reason": null,
+    "status": "review"
+   },
+   "events": [
+    {
+     "at": "2026-09-24T06:32:27Z",
+     "bundle": "proof-bundle:[\"domain-50\",\"repository-50\",\"VELDO-9501\",\"f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c\"]",
+     "commit": "f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c",
+     "correlation_id": "VELDO-9501",
+     "id": "2bb05b382ce9",
+     "producer": "executor.py",
+     "schema": "veldo.event/v1",
+     "spec_id": "VELDO-9501",
+     "type": "proof.recorded"
+    }
+   ],
+   "forged": [
+    "refused",
+    "entity_owned"
+   ],
+   "owners": {
+    "accepted-carriers/": "/dev/shm/v50-3ductfol/installed/.veldo/control_readset.py",
+    "accepted_carriers": "/dev/shm/v50-3ductfol/installed/.veldo/control_readset.py",
+    "accepted_revision": "/dev/shm/v50-3ductfol/installed/.veldo/control_readset.py",
+    "control_snapshot": "/dev/shm/v50-3ductfol/installed/.veldo/control_readset.py",
+    "gate_observation": "/dev/shm/v50-3ductfol/installed/.veldo/control_proof.py",
+    "proof_bundle": "/dev/shm/v50-3ductfol/installed/.veldo/control_proof.py"
+   },
+   "proof_step": {
+    "bundle": "proof-bundle:[\"domain-50\",\"repository-50\",\"VELDO-9501\",\"f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c\"]",
+    "cycle": 1,
+    "errors": 0,
+    "name": "proof",
+    "ok": true
+   },
+   "seqs": {
+    "acceptance": 53,
+    "floor": 54,
+    "observation": 52
+   },
+   "unstored": {
+    "halted_at": "proof",
+    "ok": false,
+    "reason": "proof refused: missing_authority:proof_service"
+   },
+   "version": 1
+  },
+  "actual_checks": {
+   "checks": [
+    {
+     "command": "python3 -B check.py",
+     "gate_exit": 0,
+     "name": "unit",
+     "observation": "gate-observation:7387364cd418558d7dbf069a3adb806ed0d61bd3602c9455ac4403f7e7f859f5",
+     "observed": "   unit: pass",
+     "status": "passed"
+    },
+    {
+     "command": "python3 scripts/secret_inventory.py",
+     "gate_exit": 0,
+     "name": "security",
+     "observation": "gate-observation:7387364cd418558d7dbf069a3adb806ed0d61bd3602c9455ac4403f7e7f859f5",
+     "observed": "   security: pass",
+     "status": "passed"
+    }
+   ],
+   "claims": [
+    {
+     "name": "unit",
+     "status": "passed"
+    }
+   ],
+   "exit": 0,
+   "installed": [
+    [
+     "unit",
+     "python3 -B check.py"
+    ],
+    [
+     "security",
+     "python3 scripts/secret_inventory.py"
+    ]
+   ],
+   "terminal": [
+    "GATE: GREEN (f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c)"
+   ]
+  },
+  "build_only": {
+   "fresh": {
+    "bundle": {
+     "bundle": "proof-bundle:[\"domain-50\",\"repository-50\",\"VELDO-9501\",\"f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c\"]",
+     "checks": [
+      "unit",
+      "security"
+     ]
+    },
+    "completion": {
+     "artifact_accepted": false,
+     "attempt_finished": false,
+     "objective_satisfied": false,
+     "revision_landed": false
+    },
+    "floor": {
+     "VELDO-9501": "review"
+    },
+    "pid": 2181941,
+    "receipts": 0
+   },
+   "landing": [],
+   "result": {
+    "halted_at": null,
+    "state": "built"
+   },
+   "steps": [
+    "build",
+    "eligibility",
+    "gate",
+    "proof",
+    "resolve"
+   ]
+  },
+  "contextual": {
+   "absent_artifact": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:artifact/src/never_written.py"
+    ]
+   },
+   "duplicate": {
+    "ok": false,
+    "problems": [
+     "invalid_input:criteria/duplicate:AC1"
+    ]
+   },
+   "empty": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:criteria/empty",
+     "missing_evidence:criteria/omitted:AC1",
+     "missing_evidence:criteria/omitted:AC2",
+     "missing_evidence:required/integration"
+    ]
+   },
+   "empty_nonexistent": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:commit/nonexistent",
+     "missing_evidence:criteria/empty",
+     "missing_evidence:criteria/omitted:AC1",
+     "missing_evidence:criteria/omitted:AC2",
+     "missing_evidence:required/integration"
+    ]
+   },
+   "invented": {
+    "ok": false,
+    "problems": [
+     "invalid_input:criteria/invented:AC9"
+    ]
+   },
+   "missing_evidence": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:criterion/AC2",
+     "missing_evidence:required/integration"
+    ]
+   },
+   "missing_observation": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:observation/unrecorded",
+     "binding_mismatch:check_claim/unit"
+    ]
+   },
+   "missing_producer": {
+    "ok": false,
+    "problems": [
+     "missing_authority:producer"
+    ]
+   },
+   "nonexistent_commit": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:commit/nonexistent"
+    ]
+   },
+   "omitted": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:criteria/omitted:AC2",
+     "missing_evidence:required/integration"
+    ]
+   },
+   "other_producer": {
+    "ok": false,
+    "problems": [
+     "binding_mismatch:producer"
+    ]
+   },
+   "required_kind": {
+    "ok": false,
+    "problems": [
+     "missing_evidence:required/integration"
+    ]
+   },
+   "wrong_digest": {
+    "ok": false,
+    "problems": [
+     "binding_mismatch:artifact/src/veldo_9502.py"
+    ]
+   },
+   "wrong_spec_revision": {
+    "ok": false,
+    "problems": [
+     "stale_subject:spec_revision"
+    ]
+   }
+  },
+  "contextual_valid": {
+   "ok": true,
+   "problems": [],
+   "required_checks": [
+    "unit",
+    "security"
+   ],
+   "spec": {
+    "criteria": [
+     "AC1",
+     "AC2"
+    ],
+    "path": "specs/VELDO-9502-proof-fixture.md",
+    "required_evidence": [
+     "unit",
+     "integration"
+    ],
+    "revision": "sha256:1208af249e64c22d815764ec2b9c99ef0fe74c23a6c466427e566d0008a000bd"
+   }
+  },
+  "fresh_reviewer": {
+   "builder_state": "exited",
+   "floor_state": "handoff",
+   "resolution": {
+    "artifacts": [
+     [
+      "src/veldo_9501.py",
+      "sha256:95b144c2cbb6df45634ef6c1d3ca09fcf6789f0a9a9e040b62ae925a1fa1759f"
+     ],
+     [
+      "proof/VELDO-9501/evidence.txt",
+      "sha256:81f55516392ec0356148d7f41b917a2f9848bf45902694234615170d635a295c"
+     ]
+    ],
+    "bundle": "proof-bundle:[\"domain-50\",\"repository-50\",\"VELDO-9501\",\"f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c\"]",
+    "checks": [
+     [
+      "unit",
+      "gate-observation:7387364cd418558d7dbf069a3adb806ed0d61bd3602c9455ac4403f7e7f859f5"
+     ],
+     [
+      "security",
+      "gate-observation:7387364cd418558d7dbf069a3adb806ed0d61bd3602c9455ac4403f7e7f859f5"
+     ]
+    ],
+    "criteria": [
+     "AC1",
+     "AC2"
+    ],
+    "implementation": "699500130cf303056ca56cae608b410d97d1822c",
+    "manifest": "sha256:64f8ac1c7b2759778f400f57524bcd465ee5a69fbf693ae6703feb097715e0ee",
+    "observation": "gate-observation:7387364cd418558d7dbf069a3adb806ed0d61bd3602c9455ac4403f7e7f859f5",
+    "pid": 2181963,
+    "resolved": true,
+    "spec": "sha256:0d909fc0b634b00fa73fe5ada5f12bcd8475356327cc6245f6e4a6ce19c4c6df"
+   },
+   "reviewed": [
+    "ok",
+    {
+     "kind": "review",
+     "land": {
+      "ok": true,
+      "stage": "landed"
+     },
+     "landed": true,
+     "ok": true,
+     "projection": {
+      "manifest": {
+       "accepted_commit": "f69e9a8203d5f0562f317f8aaf9a3917f6c0a49c",
+       "domain_uuid": "domain-50",
+       "members": {
+        "proof/VELDO-9501/manifest.json": "sha256:64f8ac1c7b2759778f400f57524bcd465ee5a69fbf693ae6703feb097715e0ee",
+        "status/VELDO-9501.json": "sha256:770f6db0857f4dbb86fb384ae22f125298a9d7d1a942f4a52255a0f4532346ab"
+       },
+       "repository_uuid": "repository-50",
+       "schema": "veldo.control_snapshot/v1",
+       "snapshot_digest": "sha256:23fd9fb1936e5f91ad40c8eef14777524e9eebc31ccb24a7052300addc754158",
+       "snapshot_id": "floor-projection:repository-50:VELDO-9501:5f925eaf12d043e8a0ea1058a7c7aca7",
+       "watermark": 83
+      },
+      "path": "/dev/shm/v50-3ductfol/projections/VELDO-9501/000004",
+      "snapshot": "floor-projection:repository-50:VELDO-9501:5f925eaf12d043e8a0ea1058a7c7aca7",
+      "version": 4,
+      "watermark": 83
+     },
+     "shipped": false,
+     "spec": "VELDO-9501",
+     "status": "handoff",
+     "verdict": "pass"
+    }
+   ]
+  },
+  "installed": {
+   "closure": {
+    "authority_contract.py": true,
+    "control_membership.py": true,
+    "control_proof.py": true,
+    "control_store.py": true,
+    "executor.py": true,
+    "git_process.py": true,
+    "validate.py": true,
+    "yamlish.py": true
+   },
+   "created": true,
+   "probe": "veldo.proof_bundle/v1"
+  },
+  "no_default_success": {
+   "altered": [
+    "binding_mismatch:observation",
+    "binding_mismatch:check_claim/unit"
+   ],
+   "assembled_checks": [],
+   "direct": [
+    "missing_evidence:observation/exit",
+    "missing_evidence:observation/terminal",
+    "missing_evidence:check/unit",
+    "missing_evidence:check/security",
+    "binding_mismatch:check_claim/unit"
+   ],
+   "foreign": [
+    "stale_subject:observation/commit",
+    "missing_evidence:observation/terminal"
+   ],
+   "killed": {
+    "halted_at": "gate",
+    "ok": false,
+    "reason": "== unit"
+   },
+   "killed_observation": {
+    "exit": -9,
+    "green": false,
+    "terminal": null
+   },
+   "proof_events": [],
+   "red": {
+    "halted_at": "gate",
+    "ok": false,
+    "reason": "GATE: RED (444e8c301e5d303b12a18bc124c80295e038d200)"
+   },
+   "red_observation": {
+    "exit": 1,
+    "green": false,
+    "terminal": "GATE: RED (444e8c301e5d303b12a18bc124c80295e038d200)"
+   }
+  },
+  "observations": {
+   "refused": 18,
+   "sample": [
+    {
+     "domain": "domain-50",
+     "operation": "accept_proof",
+     "outcome": "refused",
+     "refusal": "proof_immutable",
+     "refusals": [
+      "proof_immutable"
+     ],
+     "repository": "repository-50",
+     "request": "proof/accept/VELDO-9501/d738448e95ebe8da969bf4aa",
+     "schema": "veldo.proof_bundle/v1",
+     "taxonomy": "stale_subject",
+     "unit": "VELDO-9501"
+    },
+    {
+     "domain": "domain-50",
+     "operation": "accept_proof",
+     "outcome": "refused",
+     "refusal": "missing_evidence:criteria/empty",
+     "refusals": [
+      "missing_evidence:criteria/empty",
+      "missing_evidence:criteria/omitted:AC1",
+      "missing_evidence:criteria/omitted:AC2",
+      "missing_evidence:required/integration"
+     ],
+     "repository": "repository-50",
+     "request": "proof/accept/VELDO-9502/4be937e8dca7aa5a51ef607e",
+     "schema": "veldo.proof_bundle/v1",
+     "taxonomy": "missing_evidence",
+     "unit": "VELDO-9502"
+    },
+    {
+     "domain": "domain-50",
+     "operation": "accept_proof",
+     "outcome": "refused",
+     "refusal": "missing_evidence:criteria/omitted:AC2",
+     "refusals": [
+      "missing_evidence:criteria/omitted:AC2",
+      "missing_evidence:required/integration"
+     ],
+     "repository": "repository-50",
+     "request": "proof/accept/VELDO-9502/6302fc507d62beb60c44cc9a",
+     "schema": "veldo.proof_bundle/v1",
+     "taxonomy": "missing_evidence",
+     "unit": "VELDO-9502"
+    }
+   ],
+   "status": {
+    "accepted": 8,
+    "pending": [
+     "444e8c301e5d303b12a18bc124c80295e038d200",
+     "efe27f2e1b1ad9eb1112b5dab06badbec573ed3c"
+    ],
+    "proven": [
+     "VELDO-9501",
+     "VELDO-9502",
+     "VELDO-9505"
+    ],
+    "refused": 18
+   }
+  },
+  "owning_services": {
+   "events": [
+    [
+     "proof.recorded",
+     "executor.py"
+    ],
+    [
+     "review.requested",
+     "executor.py"
+    ],
+    [
+     "approval.recorded",
+     "executor.py"
+    ]
+   ],
+   "halted": [
+    null,
+    null
+   ],
+   "journal": [
+    [
+     "proof/observe/515ef18495542d74817113e05998a4ebde90c77ab4ab1edd60f2ba4d1f2905ee/20a3b76a368124bf3bb24f21",
+     "proof-service"
+    ],
+    [
+     "proof/accept/VELDO-9505/84fbf656e191f447a8e342fd",
+     "proof-service"
+    ]
+   ],
+   "raised": null,
+   "resolution": true,
+   "run": "ready"
+  },
+  "raised": []
+ },
+ "passed": 14,
+ "rows": [
+  [
+   "VELDO-0050 proof/accepted-before-offer",
+   true
+  ],
+  [
+   "VELDO-0050 proof/actual-checks",
+   true
+  ],
+  [
+   "VELDO-0050 proof/build-only-no-landing",
+   true
+  ],
+  [
+   "VELDO-0050 proof/fresh-reviewer-resolves",
+   true
+  ],
+  [
+   "VELDO-0050 proof/contextual-refusals",
+   true
+  ],
+  [
+   "VELDO-0050 proof/owning-services",
+   true
+  ],
+  [
+   "VELDO-0050 proof/no-default-success",
+   true
+  ],
+  [
+   "VELDO-0050 proof/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0050 proof/observations",
+   true
+  ],
+  [
+   "VELDO-0050 ran/proof/accepted-before-offer",
+   true
+  ],
+  [
+   "VELDO-0050 ran/proof/contextual-refusals",
+   true
+  ],
+  [
+   "VELDO-0050 ran/proof/owning-services",
+   true
+  ],
+  [
+   "VELDO-0050 ran/proof/no-default-success",
+   true
+  ],
+  [
+   "VELDO-0050 ran/proof/installed-assets",
+   true
+  ]
+ ],
+ "suite": "64_veldo_0050_proof.py",
+ "suite_seconds": 5.422
+}

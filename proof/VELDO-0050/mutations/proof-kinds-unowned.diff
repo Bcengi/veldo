@@ -1,5 +1,5 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -565 +565 @@
+@@ -573 +573 @@
 -        store.declare_owners(conn, OWNER, kinds={BUNDLE_KIND: (ACCEPT,), OBSERVATION_KIND: (OBSERVE,)}, module=__file__)
 +        pass  # defect: nothing declares who alone writes accepted proof

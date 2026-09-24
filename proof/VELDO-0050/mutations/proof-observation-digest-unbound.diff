@@ -1,5 +1,5 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -531 +531 @@
+@@ -539 +539 @@
 -    elif stored["digest"] != reference.get("digest"):
 +    elif False:  # defect: an altered observation reference is believed

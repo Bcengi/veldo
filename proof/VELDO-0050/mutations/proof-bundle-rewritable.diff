@@ -1,6 +1,6 @@
 --- a/.veldo/control_proof.py
 +++ b/.veldo/control_proof.py
-@@ -521,2 +521 @@
+@@ -529,2 +529 @@
 -    if before.get(rid) is not None:
 -        raise Refused("proof_immutable", rid)
 +    pass  # defect: an accepted bundle may be rewritten

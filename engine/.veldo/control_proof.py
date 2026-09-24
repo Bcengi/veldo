@@ -342,6 +342,39 @@ def accepted_spec(repo, base, spec_path, unit):
             "required_evidence": list(required) if isinstance(required, list) else []}, []
 
 
+def _criteria_problems(repo, commit, spec, manifest):
+    """(problems, artifacts): the criterion set, the accepted spec's exactly once each, and every
+    evidence artifact bound at the built commit by its path and digest."""
+    problems, artifacts = [], []
+    criteria = manifest.get("criteria")
+    if not isinstance(criteria, list) or not criteria:
+        problems.append("missing_evidence:criteria/empty")
+        criteria = []
+    ids = [c.get("id") if isinstance(c, dict) else None for c in criteria]
+    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in spec["criteria"] if cid not in ids)
+    problems.extend("invalid_input:criteria/duplicate:%s" % cid for cid in sorted({i for i in ids if ids.count(i) > 1}, key=str))
+    problems.extend("invalid_input:criteria/invented:%s" % cid for cid in sorted({i for i in ids if i not in spec["criteria"]}, key=str))
+    for item in criteria:
+        cid = item.get("id") if isinstance(item, dict) else None
+        evidence = item.get("evidence") if isinstance(item, dict) else None
+        if not isinstance(item, dict) or item.get("status") != "passed" or not isinstance(evidence, list) or not evidence:
+            problems.append("missing_evidence:criterion/%s" % cid)
+            continue
+        for entry in evidence:
+            if not isinstance(entry, dict) or not all(_text(entry.get(f)) for f in ("type", "path", "digest")) \
+                    or not _safe(entry["path"]):
+                problems.append("invalid_input:evidence/%s" % cid)
+                continue
+            body = blob(repo, commit, entry["path"])
+            if body is None:
+                problems.append("missing_evidence:artifact/%s" % entry["path"])
+            elif digest(body) != entry["digest"]:
+                problems.append("binding_mismatch:artifact/%s" % entry["path"])
+            else:
+                artifacts.append({"criterion": cid, "type": entry["type"], "path": entry["path"], "digest": entry["digest"]})
+    return problems, artifacts
+
+
 def contextual(repo, *, unit, commit, base, spec_path, manifest, observation, observation_id=None, builder=None):
     """(problems, record): complete contextual validation of `manifest` for `unit` at the built commit
     `commit`, against the accepted specification and the installed catalog at `base`, the repository's
@@ -398,34 +431,9 @@ def contextual(repo, *, unit, commit, base, spec_path, manifest, observation, ob
         problems.append("missing_authority:producer")
     elif _text(builder) and producer != builder:
         problems.append("binding_mismatch:producer")
-    # The criterion set: the accepted spec's, exactly once each.
-    criteria = manifest.get("criteria")
-    artifacts = []
-    if not isinstance(criteria, list) or not criteria:
-        problems.append("missing_evidence:criteria/empty")
-        criteria = []
-    ids = [c.get("id") if isinstance(c, dict) else None for c in criteria]
-    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in spec["criteria"] if cid not in ids)
-    problems.extend("invalid_input:criteria/duplicate:%s" % cid for cid in sorted({i for i in ids if ids.count(i) > 1}, key=str))
-    problems.extend("invalid_input:criteria/invented:%s" % cid for cid in sorted({i for i in ids if i not in spec["criteria"]}, key=str))
-    for item in criteria:
-        cid = item.get("id") if isinstance(item, dict) else None
-        evidence = item.get("evidence") if isinstance(item, dict) else None
-        if not isinstance(item, dict) or item.get("status") != "passed" or not isinstance(evidence, list) or not evidence:
-            problems.append("missing_evidence:criterion/%s" % cid)
-            continue
-        for entry in evidence:
-            if not isinstance(entry, dict) or not all(_text(entry.get(f)) for f in ("type", "path", "digest")) \
-                    or not _safe(entry["path"]):
-                problems.append("invalid_input:evidence/%s" % cid)
-                continue
-            body = blob(repo, commit, entry["path"])
-            if body is None:
-                problems.append("missing_evidence:artifact/%s" % entry["path"])
-            elif digest(body) != entry["digest"]:
-                problems.append("binding_mismatch:artifact/%s" % entry["path"])
-            else:
-                artifacts.append({"criterion": cid, "type": entry["type"], "path": entry["path"], "digest": entry["digest"]})
+    # The criterion set, the accepted spec's exactly once each, and every artifact it names.
+    found, artifacts = _criteria_problems(repo, commit, spec, manifest)
+    problems.extend(found)
     # The checks: the installed catalog's required items, as the observation shows them.
     checks, results = [], {}
     if observation_problems(observation):
