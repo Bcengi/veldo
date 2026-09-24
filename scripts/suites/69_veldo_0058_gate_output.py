@@ -693,14 +693,13 @@ def _v58_suite():
                 attempt('moved', lambda: git(ws, 'update-ref', 'refs/remotes/origin/main', watermark))
                 git(ws, 'update-ref', 'refs/tags/late', 'HEAD')
                 attempt('added', lambda: git(ws, 'update-ref', '-d', 'refs/tags/late'))
-                git(ws, 'update-ref', 'refs/remotes/origin/other', watermark)
-                git(ws, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/other')
-                moves['other_created'] = True
-
-                def unretarget():
-                    git(ws, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main')
-                    git(ws, 'update-ref', '-d', 'refs/remotes/origin/other')
-                attempt('retargeted', unretarget)
+                # Retargeted to a ref that existed at the gate and names the same commit, so only the
+                # symbolic target differs.
+                moves['same_object'] = git(ws, 'rev-parse', 'refs/veldo/candidate/watermark') == git(
+                    ws, 'rev-parse', 'refs/remotes/origin/HEAD')
+                git(ws, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/veldo/candidate/watermark')
+                attempt('retargeted', lambda: git(ws, 'symbolic-ref', 'refs/remotes/origin/HEAD',
+                                                  'refs/remotes/origin/main'))
             b12, _impl, _evidence = build(U['bound_after'], {'src/bound_after.py': 'OK = True\n'})
             bound_after = land(b12, U['bound_after'], between=move_refs)
             bcommit = (bound_after['record'] or {}).get('commit')
@@ -716,7 +715,7 @@ def _v58_suite():
             check('gate-output/refs-bound',
                   refusal(bound_during['gate']) == 'stale_subject:candidate/changed_during_gate'
                   and ':ref/refs/remotes/origin/main' in dchanged and bound_during['trunk_after'] == trunk_bound
-                  and all(after_refused.values()) and len(after_refused) == 3
+                  and all(after_refused.values()) and len(after_refused) == 3 and moves.get('same_object') is True
                   and (bound_after['finalize'] or [{}])[-1].get('pushed') is True
                   and bcommit and bound_after['trunk_after'] == bcommit)
 
