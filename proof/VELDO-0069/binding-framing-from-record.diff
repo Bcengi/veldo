@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -710 +710 @@
+-                'framing_digest': question['framing_digest'], 'subject': dict(question['subject']),
++                'framing_digest': record['framing_digest'], 'subject': dict(question['subject']),

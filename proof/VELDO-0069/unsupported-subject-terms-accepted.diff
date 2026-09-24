@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -261 +261 @@
+-    if subject['kind'] not in DD.SUBJECT_KINDS:
++    if False:  # defect: a question about an unsupported subject is recorded

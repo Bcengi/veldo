@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -709 +709 @@
+-                'decision_id': question['decision_id'], 'decision_revision': question['revision'],
++                'decision_id': question['decision_id'], 'decision_revision': record['revision'],

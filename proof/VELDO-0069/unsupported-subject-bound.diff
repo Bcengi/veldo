@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -702 +702 @@
+-        if kind not in DD.SUBJECT_KINDS:
++        if False:  # defect: an unsupported governed subject is bound
