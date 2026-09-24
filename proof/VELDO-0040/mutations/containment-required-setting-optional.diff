@@ -1,0 +1,6 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -153,2 +153 @@
+-            if rule['required']:
+-                problems.append('invalid_input:profile:%s:absent' % name)
++            pass  # defect: a required setting may be absent

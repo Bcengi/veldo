@@ -315,8 +315,14 @@ sys.stdout.flush()
             adapters[who] = {'argv': [sys.executable, '-B', str(reviewer_engine), str(mods), str(db), DOMAIN, REPOSITORY,
                                       str(private / who), who, str(markers)]}
         config = base / 'receiver.json'
+        worker_slice = 'v50s%s.slice' % os.urandom(4).hex()
         config.write_text(json.dumps({'store': str(db), 'journal_key': str(private / 'journal'),
                                       'principal': 'launch-receiver', 'workspace': str(work), 'domain': DOMAIN,
+                                      # VELDO-0040: each local worker in its own systemd scope in this run's own slice.
+                                      'profile': {'kind': 'linux-systemd', 'slice': worker_slice,
+                                                  'lock': str(base / 'containment.lock'), 'concurrency': 64,
+                                                  'runtime_seconds': 600,
+                                                  'memory_bytes': 1 << 30, 'cpu_percent': 400, 'file_bytes': 1 << 30},
                                       'repository': REPOSITORY, 'authority_generation': 1, 'adapters': adapters}))
         CONFIG = {'mcp_servers': {'veldo': {'command': 'veldo-mcp', 'args': ['serve', REPOSITORY]}},
                   'tools': ['Read', 'Edit', 'Bash'], 'model': 'configured-model'}
@@ -850,6 +856,10 @@ sys.stdout.flush()
                       and taxonomy('binding_mismatch:artifact/x') == 'stale_subject'
                       and taxonomy('something-unnamed') == 'unknown_outcome')
         finally:
+            with contextlib.suppress(Exception):
+                subprocess.run(['systemctl', '--user', 'stop', worker_slice], capture_output=True, timeout=20,
+                               stdin=subprocess.DEVNULL, env=dict(os.environ, XDG_RUNTIME_DIR=os.environ.get(
+                                   'XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()))
             for launch in launches:
                 with contextlib.suppress(Exception):
                     if launch.child is not None and launch.child.poll() is None:

@@ -1,0 +1,7 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -347 +347 @@
+-                 ('RuntimeMaxSec', _usec(s['runtime_seconds'])), ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),
++                 ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),  # defect: the runtime cap is ignored
+@@ -407 +406,0 @@
+-            'runtime_seconds': {'RuntimeMaxUSec': round(s['runtime_seconds'] * 10 ** 6)},

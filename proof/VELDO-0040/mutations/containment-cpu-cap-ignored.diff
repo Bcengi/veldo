@@ -1,0 +1,7 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -346 +346 @@
+-        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),
++        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'),  # defect: the CPU cap is ignored
+@@ -406 +405,0 @@
+-            'cpu_percent': {'cpu.max': '%d 100000' % (s['cpu_percent'] * 1000)},

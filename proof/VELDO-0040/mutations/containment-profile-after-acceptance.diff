@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -439,2 +439 @@
+-        self.qualification = C.qualify(self.profile)
+-        return self.qualification['refusal']
++        return None  # defect: the host profile is not qualified before acceptance

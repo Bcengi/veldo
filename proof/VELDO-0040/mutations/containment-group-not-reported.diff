@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -517 +517 @@
+-        self.emit({'event': 'running', 'process': process, 'group': group.report() if group else None})
++        self.emit({'event': 'running', 'process': process, 'group': None})  # defect

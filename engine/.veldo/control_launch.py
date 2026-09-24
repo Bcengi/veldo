@@ -37,13 +37,28 @@ An adapter launched through a transport to another host (the Mac, over SSH, sinc
 and its store stay on this Linux host) sets `identity: reported` and runs the trusted wrapper
 (`control_launch.py exec <argv>`) there: the wrapper's first output line names its own identity
 before it becomes the engine by exec, so the recorded pid and start time are the engine's. The
-receiver, on the authority's host, records it. Host qualification is VELDO-0040's profiles.
+receiver, on the authority's host, records it.
 
-WHAT IT IS NOT. No containment of descendants (VELDO-0040), heartbeat or retirement policy
-(VELDO-0041), recovery of an unknown dispatch (Release 2), or model API. Standard library only.
+CONTAINMENT (VELDO-0040, R43, R44). A local adapter's worker is contained by the host's worker
+profile (the config's `profile`, control_containment.py): the receiver qualifies it before its
+acceptance, refusing an absent, invalid or unenforceable profile by name, and the one spawn starts the
+trusted wrapper (`control_launch.py exec --contained ...`) inside the dispatch's own systemd scope with
+every declared cap installed, checks the wrapper is in that group with those controls, and only then
+releases it to exec the engine. The reap sleeps until an OS notification (output, the worker's pidfd,
+the group's populated event, a stop request from the runner on the receiver's stdin, or the next stop
+timer); the worker's exit ends the dispatch, anything left in its group is stopped, and the exit is
+recorded only once the group is empty. A group that cannot be emptied is recorded unknown
+(`containment_not_empty`), holding its unit. The runner returns the worker slot only on its own kernel
+observation that the process is gone and the group empty. Another host's worker (identity reported)
+is contained by that host's profile (VELDO-0124).
+
+WHAT IT IS NOT. No heartbeat or retirement policy (VELDO-0041), recovery of an unknown dispatch
+(Release 2), or model API. Standard library only.
 """
+import contextlib
 import errno
 import hashlib
+import math
 import importlib.util
 import json
 import os
@@ -68,6 +83,7 @@ def _organ(name):
 
 D = _organ('control_dispatch')
 S = D.S
+C = _organ('control_containment')
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
@@ -121,6 +137,7 @@ class Runner:
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
         self.observations = []
+        self.launches = {}
 
     def _slot(self, dispatch_id):
         entity = RES_ENTITY(self.dispatches.domain, dispatch_id)
@@ -130,9 +147,17 @@ class Runner:
         return entity, row[0], row[1]
 
     def _retire(self, dispatch_id, outcome, basis):
-        """Return a conclusively ended dispatch's worker slot, with the receiver's observation."""
-        observation = {'terminated': True, 'cleaned': True, 'outcome': outcome,
-                       'observer': 'launch_receiver', 'basis': basis}
+        """Return a conclusively ended dispatch's worker slot. The observation is the runner's own, read
+        from the kernel now (VELDO-0040): the recorded worker process is gone and the containment group
+        the receiver reported is empty; a populated group is refused (cleanup_incomplete) and keeps the
+        slot. A dispatch the runner asked to stop is accounted as cancelled."""
+        launch = self.launches.pop(dispatch_id, None)
+        record = self.dispatches.record(dispatch_id) or {}
+        if outcome in ('completed', 'failed') and getattr(launch, 'stop_requested', False):
+            outcome = 'cancelled'
+        observation = dict(C.retirement(getattr(launch, 'group', None), record.get('process')),
+                           outcome=outcome, observer='launch_runner', basis=basis,
+                           supervision=getattr(launch, 'supervision', None))
         try:
             self.reservations.retire('retire/' + dispatch_id, dispatch_id, lambda _: dict(observation), now=self.clock())
         except Exception as error:  # noqa: BLE001 - a refused retirement keeps the slot held
@@ -190,6 +215,7 @@ class Runner:
         """Prepare the complete contract, then invoke the receiver: the one launch path."""
         contract = self.prepare(unit, station, **kwargs)
         launch = self.receiver(contract)
+        self.launches[contract['dispatch_id']] = launch
         if launch.owned and (launch.record or {}).get('state') == 'refused':
             self._retire(contract['dispatch_id'], 'cancelled', 'never_spawned')
         return launch
@@ -201,6 +227,7 @@ class Runner:
             termination = record['termination'] or {}
             clean = termination.get('returncode') == 0 and not termination.get('deadline_stop')
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
+        self.launches.pop(launch.dispatch_id, None)
         return record
 
 
@@ -213,7 +240,9 @@ def RES_ENTITY(domain, dispatch_id):
 class Launch:
     """One invocation of the receiver. `result` is accepted, refused or unknown, read from the record.
     `owned` is False when the receiver refused to launch a dispatch that was not prepared: that
-    invocation launched nothing, owns nothing and never writes the record."""
+    invocation launched nothing, owns nothing and never writes the record. `group` is the containment
+    group the receiver reported (unit, slice and cgroup), `supervision` its account of how the worker
+    and its group ended, and `stop()` asks it to stop the dispatch."""
 
     def __init__(self, child, contract, dispatches, clock):
         self.child, self.contract, self.dispatches, self.clock = child, contract, dispatches, clock
@@ -224,6 +253,23 @@ class Launch:
         self.refusal = None
         self.owned = True
         self.record = None
+        self.group = None
+        self.supervision = None
+        self.stop_requested = False
+        self.ends_by = None
+
+    def stop(self, reason='requested'):
+        """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
+        False when there is no receiver of this dispatch to ask."""
+        if not self.owned or self.child is None or self.child.stdin is None:
+            return False
+        try:
+            self.child.stdin.write((json.dumps({'stop': reason}) + '\n').encode())
+            self.child.stdin.flush()
+        except (OSError, ValueError):
+            return False
+        self.stop_requested = True
+        return True
 
     def _message(self, deadline):
         if self.child is None:
@@ -242,7 +288,15 @@ class Launch:
         except ValueError:
             return {}
         self.messages.append(message)
-        return message if isinstance(message, dict) else {}
+        if not isinstance(message, dict):
+            return {}
+        if isinstance(message.get('group'), dict):
+            self.group = message['group']
+        if message.get('supervision') is not None:
+            self.supervision = message['supervision']
+        if isinstance(message.get('ends_by'), (int, float)):
+            self.ends_by = message['ends_by']
+        return message
 
     def _end_receiver(self):
         """Make the receiver's silence conclusive: it is stopped and reaped, so it writes no more."""
@@ -251,6 +305,9 @@ class Launch:
         if self.child.poll() is None:
             self.child.kill()
         self.child.wait(timeout=10)
+        with contextlib.suppress(OSError, ValueError):
+            if self.child.stdin is not None:
+                self.child.stdin.close()
 
     def _settle(self, lost):
         """The launch result from the record. When the receiver ended without a conclusive record it
@@ -295,8 +352,11 @@ class Launch:
         """The dispatch's record once the receiver has recorded its end, or unknown if it cannot."""
         if not self.owned:
             return self.dispatches.record(self.dispatch_id)
+        # By default the receiver has until the contract deadline, or the later end it announced for a
+        # contained worker's stop, and ACCEPT_SECONDS more.
+        ends_by = max(self.contract['deadline'], self.ends_by or 0)
         deadline = time.monotonic() + (timeout if timeout is not None else
-                                       max(1.0, self.contract['deadline'] - time.time() + ACCEPT_SECONDS))
+                                       max(1.0, ends_by - time.time() + ACCEPT_SECONDS))
         if self.result == 'accepted' and (self.record or {}).get('state') == 'running':
             while True:
                 message = self._message(deadline)
@@ -324,8 +384,9 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         return launch
     launch = Launch(child, contract, dispatches, clock or time.time)
     try:
+        # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
-        child.stdin.close()
+        child.stdin.flush()
     except OSError:
         pass
     return launch.start(accept_seconds)
@@ -335,10 +396,16 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
 
 class Receiver:
     """The trusted launch receiver over the installed configuration: {store, journal_key, principal,
-    domain, repository, authority_generation, adapters: {name: {argv, environment?}}}."""
+    domain, repository, authority_generation, workspace, profile, adapters: {name: {argv, environment?,
+    identity?}}}. `profile` is this host's worker profile (control_containment); `control` is the
+    runner's channel after its request line (fd, what was already read of it), where it asks for a stop."""
 
-    def __init__(self, config, emit):
+    def __init__(self, config, emit, control=None):
         self.config, self.emit = config, emit
+        self.profile = config.get('profile')
+        self.qualification = None
+        self.supervision = None
+        self.control = control
         self.conn = S.open_store(config['store'])
         key = config['journal_key']
         signer = _organ('control_signer')
@@ -369,6 +436,15 @@ class Receiver:
             reader.close()
         return None if decision['eligible'] else '; '.join(decision['refusals'])
 
+    def _qualify(self, adapter):
+        """This host's worker profile, qualified before acceptance for a local adapter: an absent, invalid
+        or unenforceable profile is refused by name and nothing is spawned. Another host's worker
+        (identity reported) is contained by that host's profile (VELDO-0124)."""
+        if adapter.get('identity', 'local') == 'reported':
+            return None
+        self.qualification = C.qualify(self.profile)
+        return self.qualification['refusal']
+
     def launch(self, contract):
         dispatch_id = contract['dispatch_id']
         record = self.dispatches.record(dispatch_id)
@@ -386,6 +462,8 @@ class Receiver:
             refusal = 'unregistered_adapter:' + str(contract['capability']['adapter'])
         else:
             refusal = self._recheck(contract)
+        if not refusal:
+            refusal = self._qualify(adapter)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -408,6 +486,9 @@ class Receiver:
         self.emit({'event': 'accepted', 'acceptance': acceptance})
         try:
             worker = self._spawn(dispatch_id, acceptance, adapter)
+        except C.Refused as error:
+            self._uncontained(dispatch_id, contract_digest, error)
+            return
         except OSError as error:
             refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)
             self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')
@@ -438,7 +519,12 @@ class Receiver:
             # The worker ran with no running record: stop it; the runner records the outcome unknown.
             self._stop(worker)
             raise
-        self.emit({'event': 'running', 'process': process})
+        group = getattr(worker, 'group', None)
+        # When this receiver will have recorded the end at the latest: a stop begun at the deadline, its
+        # graces and the settling of the group.
+        ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)
+        self.emit({'event': 'running', 'process': process, 'ends_by': ends_by,
+                   'group': group.report() if group else None})
         termination = self._reap(worker, contract, carry)
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
@@ -447,22 +533,85 @@ class Receiver:
                                     expected_state='running')
             self.emit({'event': 'unknown'})
             return
+        supervision = self.supervision
+        if remote and supervision['cause'] == 'requested':
+            # Nor does stopping it on request: the unit and station stay held.
+            self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
+                                    expected_state='running')
+            self.emit({'event': 'unknown', 'supervision': supervision})
+            return
+        if supervision['empty'] is False:
+            # Something of the worker's group is still running: never recorded as ended.
+            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
+                                    expected_state='running')
+            self.emit({'event': 'unknown', 'supervision': supervision})
+            return
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
-        self.emit({'event': 'exited', 'termination': termination})
+        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
 
-    @staticmethod
-    def _spawn(dispatch_id, acceptance, adapter):
+    def _uncontained(self, dispatch_id, contract_digest, error):
+        """A worker that could not be contained as declared was never released to its engine: refused
+        by name, or unknown when its group could not be emptied."""
+        if error.settled:
+            self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self.emit({'event': 'refused', 'refusal': error.code, 'group': error.group})
+        else:
+            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
+                                    expected_state='accepted')
+            self.emit({'event': 'unknown', 'group': error.group})
+
+    def _spawn(self, dispatch_id, acceptance, adapter):
         """THE ONE SPAWN: the adapter's configured argv in its own session, its own pipes (it never
         shares this receiver's reply channel) and an environment naming its dispatch and the journal
         digest of the acceptance it launches under. That digest exists only once the acceptance has
         committed, so a worker's birth environment is evidence the acceptance, and the contract it
-        accepted, were recorded before the worker existed."""
+        accepted, were recorded before the worker existed. A local adapter's worker is started inside
+        its dispatch's own containment group (VELDO-0040); a transport to another host is started as
+        configured, and that host's profile contains the engine there."""
         environment = dict(os.environ)
         environment.update(adapter.get('environment') or {})
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+        if adapter.get('identity', 'local') != 'reported':
+            return self._contained(dispatch_id, list(adapter['argv']), environment)
         return subprocess.Popen(list(adapter['argv']), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.DEVNULL, env=environment, start_new_session=True, close_fds=True)
+
+    def _contained(self, dispatch_id, argv, environment):
+        """Start the trusted wrapper inside the dispatch's own containment group with every declared cap
+        installed, check it is in that group with those controls, and only then release it to become the
+        engine (the same pid). The group is created under the profile's concurrency admission. A worker
+        that is not contained as declared is discarded before any engine code runs and refused by name."""
+        if self.qualification is None:
+            self.qualification = C.qualify(self.profile)
+        if not self.qualification['qualified']:
+            raise C.Refused(self.qualification['refusal'])
+        group = C.Group(self.profile, self.qualification, dispatch_id, environment)
+        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(group.held())] + argv
+        with group.admission():
+            worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                      stderr=subprocess.DEVNULL, env=group.environment, start_new_session=True,
+                                      close_fds=True)
+            worker.group = group
+            try:
+                reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
+                problems = [refusal] if refusal else group.attach(worker.pid)
+                if not problems and reported.get('pid') != worker.pid:
+                    problems = ['spawn_failed:containment:identity']
+            except (OSError, ValueError, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
+                problems = ['spawn_failed:containment:unavailable']
+            if problems:
+                settled = group.discard(worker)
+                if problems[0] == 'spawn_failed:ENOENT' and settled:
+                    raise FileNotFoundError(errno.ENOENT, 'no engine: ' + str(argv[0]))
+                raise C.Refused(problems[0], settled=settled, group=group.report())
+        try:
+            worker.stdin.write(b'go\n')
+            worker.stdin.flush()
+        except OSError:
+            settled = group.discard(worker)
+            raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
+        return worker
 
     @staticmethod
     def _reported(worker, contract):
@@ -492,14 +641,52 @@ class Receiver:
 
     @staticmethod
     def _stop(worker):
+        """Kill a worker at once: its whole containment group when it has one, and its session."""
+        group = getattr(worker, 'group', None)
+        if group is not None:
+            group.kill()
         try:
             os.killpg(worker.pid, signal.SIGKILL)
         except OSError:
             pass
         worker.wait()
 
+    def _graces(self):
+        settings = (self.qualification or {}).get('settings') or {}
+        return tuple((settings.get(name) or {}).get('value', C.SETTINGS[name]['default'])
+                     for name in ('stop_grace_seconds', 'kill_grace_seconds'))
+
+    def _stop_asked(self, poller=None):
+        """Whether the runner asked for a stop in what it has written on the control channel; with a
+        poller, what is readable now is read first (end of the channel unregisters it)."""
+        if self.control is None:
+            return False
+        fd, pending = self.control
+        if poller is not None:
+            try:
+                chunk = os.read(fd, 4096)
+            except OSError:
+                chunk = b''
+            if not chunk:
+                poller.unregister(fd)
+            pending += chunk
+        asked = False
+        while b'\n' in pending:
+            line, _, rest = bytes(pending).partition(b'\n')
+            pending[:] = rest
+            with contextlib.suppress(ValueError):
+                message = json.loads(line)
+                asked = asked or (isinstance(message, dict) and bool(message.get('stop')))
+        return asked
+
     def _reap(self, worker, contract, carry=b''):
-        """Feed the worker its packet, hash what it prints, and reap it by the contract deadline."""
+        """Feed the worker its packet, hash what it prints, and reap it and its group by the contract
+        deadline. The loop sleeps in poll until an OS notification or the next stop timer: the worker's
+        output, its pidfd (its exit), its group's populated event, a stop request on the control
+        channel, the deadline or the next escalation step; nothing is polled for liveness. Closing its
+        output does not end a worker: it is still held to the contract deadline. Its exit ends the
+        dispatch: whatever is left in its group is stopped, and the reap ends once the group is empty
+        (or, SETTLE_SECONDS after the kill, declared not empty in the supervision)."""
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
@@ -512,51 +699,135 @@ class Receiver:
                 pass
         feeder = threading.Thread(target=feed, daemon=True)
         feeder.start()
-        hasher, size, stopped = hashlib.sha256(carry), len(carry), False
-        while True:
-            remaining = contract['deadline'] - time.time()
-            if remaining <= 0:
-                stopped = True
+        group = getattr(worker, 'group', None)
+        stop = C.Stop(group, worker.pid, *self._graces()) if group is not None else None
+        hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
+        output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
+        poller = select.poll()
+        poller.register(output, select.POLLIN)
+        poller.register(pidfd, select.POLLIN)
+        if group is not None:
+            poller.register(group.events, select.POLLPRI | select.POLLERR)
+        if self.control is not None:
+            poller.register(self.control[0], select.POLLIN)
+
+        def begin(reason, now):
+            nonlocal cause, stopped, code
+            if cause is not None or code is not None:
+                return
+            cause, stopped = reason, reason == 'deadline'
+            if stop is not None:
+                stop.begin(reason, now, True)
+            else:
                 self._stop(worker)
-                break
-            if not select.select([worker.stdout], [], [], min(remaining, 1.0))[0]:
-                continue
-            chunk = os.read(worker.stdout.fileno(), 65536)
-            if not chunk:
-                break
-            size += len(chunk)
-            hasher.update(chunk)
-        if not stopped:
-            # Closing its output does not end a worker: it is still held to the contract deadline.
-            try:
-                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))
-            except subprocess.TimeoutExpired:
-                stopped = True
-                self._stop(worker)
-        code = worker.wait()
+                code = worker.returncode
+        try:
+            if self._stop_asked():
+                begin('requested', time.time())
+            while True:
+                if code is not None and (group is None or not group.populated()):
+                    empty = True
+                    break
+                if stop is not None and stop.stage == 'abandoned':
+                    empty = False
+                    break
+                due = min(contract['deadline'] if cause is None and code is None else math.inf,
+                          stop.due if stop is not None else math.inf)
+                timeout = None if due == math.inf else max(0, math.ceil((due - time.time()) * 1000))
+                for fd, _ in poller.poll(timeout):
+                    if fd == output:
+                        chunk = os.read(output, 65536)
+                        if not chunk:
+                            poller.unregister(output)
+                        size += len(chunk)
+                        hasher.update(chunk)
+                    elif fd == pidfd:
+                        poller.unregister(pidfd)
+                        code = worker.wait()
+                        if stop is not None and group.populated():
+                            stop.adapter_exited(time.time())
+                    elif group is not None and fd == group.events:
+                        group.populated()
+                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):
+                        begin('requested', time.time())
+                now = time.time()
+                if cause is None and code is None and now >= contract['deadline']:
+                    begin('deadline', now)
+                elif stop is not None:
+                    stop.advance(now)
+        finally:
+            os.close(pidfd)
+        # What is left in the pipe, without waiting on a writer that is no longer in the group.
+        os.set_blocking(output, False)
+        with contextlib.suppress(OSError):
+            for chunk in iter(lambda: os.read(output, 65536), b''):
+                size += len(chunk)
+                hasher.update(chunk)
+        code = worker.poll() if code is None else code
+        result = group.conclude() if group is not None and empty else None
+        if cause is None and result in ('timeout', 'oom-kill'):
+            # systemd stopped the group at a cap: the runtime cap is a deadline, the memory cap is not.
+            cause = {'timeout': 'runtime_cap', 'oom-kill': 'memory_cap'}[result]
+            stopped = cause == 'runtime_cap'
+        self.supervision = {'cause': cause or (stop.cause if stop is not None else None),
+                            'steps': stop.steps if stop is not None else [], 'empty': empty,
+                            'empty_at': time.time() if empty else None, 'result': result,
+                            'group': group.report() if group is not None else None}
+        if group is not None and empty:
+            group.close()
         feeder.join(timeout=5)
         worker.stdout.close()
-        return {'returncode': code if code >= 0 else None, 'signal': -code if code < 0 else None,
+        return {'returncode': code if code is not None and code >= 0 else None,
+                'signal': -code if code is not None and code < 0 else None,
                 'output_digest': 'sha256:' + hasher.hexdigest(), 'output_bytes': size, 'deadline_stop': stopped}
 
 
 def wrap(argv):
-    """THE TRUSTED WRAPPER (`control_launch.py exec <argv>`), what a launch through a transport runs
-    on the far host (the Mac over SSH, for one). It writes the OS identity of this very process on its
-    first output line and then becomes the engine by exec, so the pid and start time it named are the
-    engine's. An engine that cannot be found is refused by name before anything runs. It opens no
-    store: the receiver on the authority's host records what it reports."""
+    """THE TRUSTED WRAPPER (`control_launch.py exec [--contained <limits>] <argv>`). Through a transport
+    it is what runs on the far host (the Mac over SSH, for one); on this host it is what the dispatch's
+    containment group is created around (VELDO-0040). It writes the OS identity of this very process on
+    its first output line and then becomes the engine by exec, so the pid and start time it named are the
+    engine's. Contained, it first applies the profile's per-process limits, which every descendant
+    inherits, and after its identity line waits for the receiver's release: the receiver checks the group
+    and its controls in between, so no engine code runs uncontained. An engine that cannot be found is
+    refused by name before anything runs. It opens no store: the receiver records what it reports."""
+    held = None
+    if argv[:1] == ['--contained'] and len(argv) > 2:
+        held, argv = json.loads(argv[1]), argv[2:]
     path = shutil.which(argv[0]) if argv else None
     if not path:
         sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'refused': 'spawn_failed:ENOENT'}) + '\n')
         sys.stdout.flush()
         os._exit(127)
+    if held is not None:
+        C.hold(held)
     sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid())}) + '\n')
     sys.stdout.flush()
+    if held is not None and not C.released(0):
+        os._exit(125)
+    # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
+    for number in (signal.SIGPIPE, signal.SIGXFSZ):
+        signal.signal(number, signal.SIG_DFL)
     try:
         os.execv(path, argv)
     except OSError:
         os._exit(126)
+
+
+def _request(fd, seconds):
+    """The runner's request, the first line on the receiver's stdin, and what it has written after it
+    (the start of the control channel), read from the descriptor itself so nothing is buffered away."""
+    pending, end = b'', time.monotonic() + seconds
+    while b'\n' not in pending and len(pending) < 1 << 22:
+        remaining = end - time.monotonic()
+        if remaining <= 0 or not select.select([fd], [], [], remaining)[0]:
+            raise ValueError('no request')
+        chunk = os.read(fd, 65536)
+        if not chunk:
+            break
+        pending += chunk
+    line, _, rest = pending.partition(b'\n')
+    return json.loads(line), bytearray(rest)
 
 
 def main():
@@ -570,12 +841,10 @@ def main():
     receiver = None
     try:
         config = json.loads(Path(sys.argv[1]).read_text())
-        if not select.select([sys.stdin], [], [], 10)[0]:
-            raise ValueError('no request')
-        request = json.loads(sys.stdin.buffer.readline(1 << 22))
-        receiver = Receiver(config, emit)
+        request, pending = _request(0, 10)
+        receiver = Receiver(config, emit, control=(0, pending))
         receiver.launch(request['contract'])
-    except (OSError, ValueError, TypeError, KeyError, D.Refused, S.StoreRefused) as error:
+    except (OSError, ValueError, TypeError, KeyError, D.Refused, S.StoreRefused, C.Refused) as error:
         # Nothing conclusive is claimed: the runner reads the record and settles it.
         emit({'event': 'failed', 'error': type(error).__name__})
     finally:

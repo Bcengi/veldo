@@ -1,0 +1,381 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 40 --jobs 4 --diff-dir proof/VELDO-0040/mutations",
+ "summary": {
+  "mutations_rejected": 22,
+  "green_suites": {
+   "63_veldo_0040_containment.py": 46
+  },
+  "driver_seconds": 56.9
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations": [
+  {
+   "mutation": "containment-launch-outside-group",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/dedicated-group"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/dedicated-group",
+    "containment/ordinary-exit",
+    "containment/exit-notified",
+    "containment/caps-installed",
+    "containment/runtime-cap",
+    "containment/cooperative-stop",
+    "containment/stop-escalation",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-launch-outside-group.diff"
+  },
+  {
+   "mutation": "containment-wrapper-leaves-group",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "containment/dedicated-group"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/dedicated-group",
+    "containment/ordinary-exit",
+    "containment/caps-installed",
+    "containment/runtime-cap",
+    "containment/stop-escalation",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-wrapper-leaves-group.diff"
+  },
+  {
+   "mutation": "containment-shared-group",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/dedicated-group"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/dedicated-group",
+    "containment/ordinary-exit",
+    "containment/exit-notified",
+    "containment/caps-installed",
+    "containment/runtime-cap",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-shared-group.diff"
+  },
+  {
+   "mutation": "containment-unknown-setting-ignored",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/unqualified-profile-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/unqualified-profile-refused",
+    "containment/required-settings-refused",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-unknown-setting-ignored.diff"
+  },
+  {
+   "mutation": "containment-kind-unchecked",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/unqualified-profile-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/unqualified-profile-refused",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-kind-unchecked.diff"
+  },
+  {
+   "mutation": "containment-profile-after-acceptance",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "containment/unqualified-profile-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/unqualified-profile-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-profile-after-acceptance.diff"
+  },
+  {
+   "mutation": "containment-runtime-cap-ignored",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/runtime-cap"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "containment/caps-installed",
+    "containment/runtime-cap"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-runtime-cap-ignored.diff"
+  },
+  {
+   "mutation": "containment-memory-cap-ignored",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/caps-installed"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "containment/caps-installed"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-memory-cap-ignored.diff"
+  },
+  {
+   "mutation": "containment-cpu-cap-ignored",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/caps-installed"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "containment/caps-installed"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-cpu-cap-ignored.diff"
+  },
+  {
+   "mutation": "containment-file-limit-ignored",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/caps-installed"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "containment/dedicated-group",
+    "containment/caps-installed"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-file-limit-ignored.diff"
+  },
+  {
+   "mutation": "containment-concurrency-uncounted",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/caps-installed"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/caps-installed",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-concurrency-uncounted.diff"
+  },
+  {
+   "mutation": "containment-required-setting-optional",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/required-settings-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/unqualified-profile-refused",
+    "containment/required-settings-refused",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-required-setting-optional.diff"
+  },
+  {
+   "mutation": "containment-zero-seconds-accepted",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/required-settings-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/unqualified-profile-refused",
+    "containment/required-settings-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-zero-seconds-accepted.diff"
+  },
+  {
+   "mutation": "containment-stop-only-parent",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/stop-escalation"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/ordinary-exit",
+    "containment/stop-escalation",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-stop-only-parent.diff"
+  },
+  {
+   "mutation": "containment-terminate-without-grace",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/stop-escalation"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/cooperative-stop",
+    "containment/stop-escalation"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-terminate-without-grace.diff"
+  },
+  {
+   "mutation": "containment-kill-without-grace",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/stop-escalation"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/stop-escalation"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-kill-without-grace.diff"
+  },
+  {
+   "mutation": "containment-no-cooperative-step",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/cooperative-stop"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/cooperative-stop",
+    "containment/stop-escalation"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-no-cooperative-step.diff"
+  },
+  {
+   "mutation": "containment-exit-polled",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "containment/exit-notified"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/exit-notified"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-exit-polled.diff"
+  },
+  {
+   "mutation": "containment-exit-leaves-descendants",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "containment/ordinary-exit"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "containment/ordinary-exit",
+    "containment/runtime-cap",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-exit-leaves-descendants.diff"
+  },
+  {
+   "mutation": "containment-retire-without-looking",
+   "module": ".veldo/control_containment.py",
+   "target_rows": [
+    "containment/retire-after-empty"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/retire-after-empty"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-retire-without-looking.diff"
+  },
+  {
+   "mutation": "containment-group-not-reported",
+   "module": ".veldo/control_launch.py",
+   "target_rows": [
+    "containment/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/dedicated-group",
+    "containment/ordinary-exit",
+    "containment/stop-escalation",
+    "containment/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-group-not-reported.diff"
+  },
+  {
+   "mutation": "containment-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "containment/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "containment/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/containment-not-installed.diff"
+  }
+ ]
+}

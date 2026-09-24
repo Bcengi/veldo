@@ -23,6 +23,9 @@ footprint:
   - "engine/.veldo/control_containment*.py"
   - ".veldo/control_containment*.py"
   - "packs/*/.veldo/control_containment*.py"
+  - "engine/.veldo/control_launch*.py"
+  - ".veldo/control_launch*.py"
+  - "packs/*/.veldo/control_launch*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -30,6 +33,10 @@ footprint:
   - ".veldo/runner/veldo-runner*"
   - "packs/*/.veldo/runner/veldo-runner*"
   - "scripts/suites/*_veldo_0040_*.py"
+  - "scripts/suites/*_veldo_0039_*.py"
+  - "scripts/suites/*_veldo_0049_*.py"
+  - "scripts/suites/*_veldo_0050_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0040-process-containment.md"
@@ -97,6 +104,19 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: on this Linux box the dispatch receiver launches each worker in its own systemd scope and
+  cgroup v2 group under the trusted wrapper, with the profile's declared caps applied before the worker
+  runs; a stop terminates the whole group; exits are detected from operating system notifications, and
+  the group is empty before the dispatch is retired.
+- Threat model: a worker and its descendants (a child started outside the group, a signal-ignoring
+  descendant, a worker that outlasts its elapsed-runtime cap or its memory or CPU limits). The owner's
+  account, systemd and the kernel are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); root or another
+  account acting on the group; kernel or systemd defects; recovery when systemd is unavailable
+  (Release 2); the Mac profile (VELDO-0124).
+
 ## Notes
 
 This criterion universe is this Linux box only; the Mac profile is a separate Release 1
@@ -120,3 +140,12 @@ aggregate resource-exhaustion qualification and AC4 authority-loss/PID-reuse rec
 Release 2; other host kinds moved to Release 4. Linux launch/caps/stop/exit remain, Mac in
 0124. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation (branch build-veldo-0040): `.veldo/control_containment.py` runs each local
+worker in its own systemd user scope in the profile's slice with the profile's caps installed before
+the worker runs, refuses an unqualified or incomplete profile before spawn, stops cooperatively and
+then over the whole group, detects exit from kernel notifications and retires only after an empty
+group; the VELDO-0039 receiver calls it. Suite 63_veldo_0040_containment (20 rows), red at f5aebae,
+22 mutations as finding 40; proof in proof/VELDO-0040/. Merging main required the VELDO-0049 and
+VELDO-0050 suites to give their receiver this host's profile (f6d217e). The footprint names those two suites
+for that reason (review, 2026-09-24).

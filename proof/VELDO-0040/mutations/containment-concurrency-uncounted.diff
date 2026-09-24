@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -393 +393 @@
+-            if len(live) >= self.settings['concurrency']:
++            if False:  # defect: the live groups are not held to the concurrency cap
