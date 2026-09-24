@@ -13,6 +13,7 @@
   "VELDO-0049 floor/review-independence",
   "VELDO-0049 floor/review-binding",
   "VELDO-0049 floor/review-policy-count",
+  "VELDO-0049 floor/no-builder-reviews",
   "VELDO-0049 floor/finding-not-erased",
   "VELDO-0049 floor/completion-by-lander-only",
   "VELDO-0049 floor/authority-to-projection",
@@ -189,6 +190,12 @@
    "signatures_verified": true,
    "trunk": false
   },
+  "builders": {
+   "earlier_builder_review": "missing_evidence:producer",
+   "launched": [],
+   "builders": null,
+   "producer": null
+  },
   "findings": {
    "blocked": {
     "ok": false,
@@ -227,7 +234,7 @@
     {
      "ok": true,
      "stage": "landed",
-     "commit": "b2ca50a5c0e68424c3f78251d916bc0f8f03fd01"
+     "commit": "bfcad78e258edf5c50c0f5cda629a020a204bd68"
     }
    ],
    "trunk_unchanged_on_rejection": false,
@@ -288,7 +295,7 @@
      "item": "TCK-untracked",
      "repo": "untracked",
      "spec_id": "VELDO-0001",
-     "path": "/dev/shm/v49-6f8_6s0e/untracked/specs/VELDO-0001.md"
+     "path": "/dev/shm/v49-bb98p9uj/untracked/specs/VELDO-0001.md"
     }
    ],
    "promoted": [

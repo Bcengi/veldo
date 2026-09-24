@@ -64,7 +64,7 @@ def _v49_suite():
         TB = load('v49_bridge', mods / 'tracker_bridge.py')
         CLM = D.CLM
         DOMAIN, REPOSITORY, ACCOUNT = 'domain-49', 'repository-49', 'acct-49'
-        BUILDER, REVIEW_WORKER = 'builder-a', 'worker-r'
+        BUILDER, REBUILDER, REVIEW_WORKER = 'builder-a', 'builder-e', 'worker-r'
         REVIEWERS = ('reviewer-b', 'reviewer-c', 'reviewer-d')
         private = base / 'private'
         private.mkdir(mode=0o700)
@@ -159,7 +159,7 @@ def _v49_suite():
         for service in ('floor-service', 'launch-receiver'):
             member(service, 'service')
         member('runner', 'service', roles=['reservation_service'])
-        for agent in (BUILDER, REVIEW_WORKER) + REVIEWERS:
+        for agent in (BUILDER, REBUILDER, REVIEW_WORKER) + REVIEWERS:
             member(agent, 'agent_run')
         for who in ('owner', BUILDER) + REVIEWERS:
             put('key:' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
@@ -182,7 +182,7 @@ def _v49_suite():
             reservations.configure('policy/' + subject, scope, subject, CEILING, now=time.time())
         for sid, risk in UNITS.items():
             put(sid, 'execution_unit', dict(state='READY', repository_uuid=REPOSITORY, backlog_item_uuid='backlog:' + sid,
-                                            requirements=[], eligible_holders=[BUILDER, REVIEW_WORKER], project='p1',
+                                            requirements=[], eligible_holders=[BUILDER, REBUILDER, REVIEW_WORKER], project='p1',
                                             scope_digest='sha256:scope-' + sid, revision=1, depends_on=[], risk=risk))
             put('backlog:' + sid, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY))
             put('admission:' + sid, 'admission', dict(unit=sid, state='accepted', scope_digest='sha256:scope-' + sid))
@@ -291,6 +291,7 @@ sys.stdout.flush()
         # The builder claiming a review: its own key, naming the assigned reviewer, and naming itself.
         adapters['builder-as-reviewer-b'] = {'argv': reviewer_argv(BUILDER, 'reviewer-b', 'pass')}
         adapters['builder-as-itself'] = {'argv': reviewer_argv(BUILDER, BUILDER, 'pass')}
+        adapters['builder-a:pass'] = {'argv': reviewer_argv(BUILDER, BUILDER, 'pass')}
         config = base / 'receiver.json'
         config.write_text(json.dumps({'store': str(db), 'journal_key': str(private / 'journal'),
                                       'principal': 'launch-receiver', 'workspace': str(work), 'domain': DOMAIN,
@@ -323,8 +324,9 @@ sys.stdout.flush()
             through the VELDO-0039 runner, the gate is the repository's own script, the proof is the
             committed file and validate.py judges it."""
 
-            def __init__(self, mode, generation, attempt=1):
+            def __init__(self, mode, generation, attempt=1, holder=BUILDER):
                 self.mode, self.generation, self.attempt, self.root = mode, generation, attempt, str(work)
+                self.holder = holder
                 self.launched = []
 
             def resolve(self, sid):
@@ -337,7 +339,7 @@ sys.stdout.flush()
                 return True, 'standalone'
 
             def build(self, spec, calls=None):
-                launch = runner.submit(spec['id'], 'build', holder=BUILDER, source=str(work), revision='HEAD',
+                launch = runner.submit(spec['id'], 'build', holder=self.holder, source=str(work), revision='HEAD',
                                        payload={'unit': spec['id'], 'mode': self.mode, 'attempt': self.attempt},
                                        adapter='builder-engine', configuration=CONFIG, deadline=time.time() + 90,
                                        context={'generation': self.generation})
@@ -423,16 +425,16 @@ sys.stdout.flush()
         def rec(sid):
             return floor.record(sid) or {}
 
-        def build(sid, mode, attempt=1, keep=False):
+        def build(sid, mode, attempt=1, keep=False, holder=BUILDER):
             """One build unit dispatched by the real Dispatcher, claimed by the builder for it."""
-            generation = claim(sid, BUILDER)
-            hooks = BuildHooks(mode, generation, attempt)
-            disp = DSP.Dispatcher(repo_root=str(work), hooks=hooks, eligibility=gate, calls=calls, worker_id=BUILDER,
+            generation = claim(sid, holder)
+            hooks = BuildHooks(mode, generation, attempt, holder)
+            disp = DSP.Dispatcher(repo_root=str(work), hooks=hooks, eligibility=gate, calls=calls, worker_id=holder,
                                   authority=floor)
-            got = outcome_of(lambda: disp.dispatch(dict(kind='build', spec=sid, holder=BUILDER, generation=generation)))
+            got = outcome_of(lambda: disp.dispatch(dict(kind='build', spec=sid, holder=holder, generation=generation)))
             result = got[1] if got[0] == 'ok' and isinstance(got[1], dict) else {'raised': got}
             if not keep:
-                release(sid, BUILDER, generation)
+                release(sid, holder, generation)
             return dict(result, generation=generation, launched=list(hooks.launched), tip=git('rev-parse', 'HEAD'))
 
         def review(sid, generation, identity, adapter, **kw):
@@ -759,7 +761,7 @@ sys.stdout.flush()
                 release(U2, REVIEW_WORKER, g2)
 
             # AC3: a pass cannot erase an unresolved blocking finding; only the lander completes
-            with region('floor/finding-not-erased', 'floor/completion-by-lander-only'):
+            with region('floor/finding-not-erased', 'floor/no-builder-reviews', 'floor/completion-by-lander-only'):
                 U3 = 'VELDO-9421'
                 first = build(U3, 'good')
                 g3 = claim(U3, REVIEW_WORKER)
@@ -769,8 +771,12 @@ sys.stdout.flush()
                 findings = sorted(after_block.get('findings') or {})
                 pass_on_returned = review(U3, g3, 'reviewer-c', 'reviewer-c:pass')
                 release(U3, REVIEW_WORKER, g3)
-                second_build = build(U3, 'good', attempt=2)
+                # The fix is built by another worker: the first attempt's builder is still a builder of the unit.
+                second_build = build(U3, 'good', attempt=2, holder=REBUILDER)
                 g3 = claim(U3, REVIEW_WORKER)
+                earlier_builder = review(U3, g3, BUILDER, 'builder-a:pass')
+                rebuilt = rec(U3)
+                producer3 = ((entity(U3) or {}).get('data') or {}).get('producer')
                 pass_b = review(U3, g3, 'reviewer-b', 'reviewer-b:pass')
                 fid = findings[0] if findings else 'none'
                 source = (rec(U3).get('source') or {}).get('commit')
@@ -803,6 +809,14 @@ sys.stdout.flush()
                     'direct_land': direct_land, 'trunk_unchanged_on_rejection': trunk_at_rejection == trunk_before,
                     'disposition': resolved[0], 'after_disposition': {k: pass_d.get(k) for k in ('ok', 'landed', 'status')},
                     'handoff': final3.get('handoff')}
+                observed['builders'] = {'earlier_builder_review': refusal_of(earlier_builder),
+                                        'launched': earlier_builder['launched'], 'builders': rebuilt.get('builders'),
+                                        'producer': producer3}
+                check('floor/no-builder-reviews',
+                      refusal_of(earlier_builder) == 'reviewer_not_independent' and earlier_builder['launched'] == []
+                      and earlier_builder.get('halted_at') == 'review_assignment'
+                      and rebuilt.get('builders') == [BUILDER, REBUILDER] and rebuilt.get('builder') == REBUILDER
+                      and producer3 == REBUILDER)
                 check('floor/finding-not-erased',
                       blocked.get('ok') is False and blocked.get('status') == 'returned' and len(findings) == 1
                       and (after_block.get('findings') or {}).get(fid, {}).get('resolved') is None

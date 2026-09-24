@@ -531,12 +531,10 @@ def veldo_dispatch(unit, repo_root=None, hooks=None, reviewer=None, lander=None,
     return disp.dispatch(unit)
 
 
-# ---------------------------------------------------------------------------------------------
 # VELDO-0049: the floor authority. One registered store command, floor_transition, committed
 # through control_store's signed journal on the caller's own connection (registered on that
 # handle, as VELDO-0039's dispatch_transition is), and the Materializer that alone publishes an
 # enrolled unit's status projection (VELDO-0035's ordinary materialization).
-# ---------------------------------------------------------------------------------------------
 
 FLOOR_SCHEMA = "veldo.floor/v1"
 FLOOR_OPERATION = "floor_transition"
@@ -671,7 +669,7 @@ def proof_problems(manifest, unit):
     return problems
 
 
-# -- reads inside the transaction ---------------------------------------------------------------
+# Reads inside the transaction.
 
 def _row(conn, identity):
     row = conn.execute("SELECT kind, version, digest, data FROM entities WHERE id=?", (identity,)).fetchone()
@@ -748,7 +746,7 @@ def _clean_exit(record):
             and termination.get("signal") is None and termination.get("deadline_stop") is False)
 
 
-# -- the transition -----------------------------------------------------------------------------
+# The transition.
 
 def floor_transition(conn, params, before):
     """THE ONE TRANSITION every floor command commits, inside its store transaction."""
@@ -852,8 +850,8 @@ def _assign_review(conn, params, before, record, unit_data):
     reviewer = params.get("reviewer")
     if _member(conn, reviewer, params["now"], "assignment_acceptance", params["repository"]) is None:
         raise FloorRefused("not_authorized:reviewer", str(reviewer))
-    if reviewer == record["builder"]:
-        raise FloorRefused("reviewer_not_independent", "the builder cannot review its own build")
+    if reviewer in (record.get("builders") or [record["builder"]]):
+        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")
     attempt = record["attempt"]
     if any(r["reviewer"] == reviewer and r["attempt"] == attempt for r in record["reviews"]):
         raise FloorRefused("duplicate_reviewer", "one principal fills one review position")
@@ -910,8 +908,8 @@ def _record_review(conn, params, before, record, unit_data):
         raise FloorRefused("binding_mismatch:assignment", "the receipt answers another assignment")
     if body.get("reviewer") != reviewer:
         raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")
-    if reviewer == record["builder"]:
-        raise FloorRefused("reviewer_not_independent", "the builder cannot review its own build")
+    if reviewer in (record.get("builders") or [record["builder"]]):
+        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")
     if not _signed_by(conn, reviewer, params["now"], body, signature):
         raise FloorRefused("not_authorized:review_signature", "the receipt is not signed by the assigned reviewer")
     if body.get("source") != record["source"]["commit"]:

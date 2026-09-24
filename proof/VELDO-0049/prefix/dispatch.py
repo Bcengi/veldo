@@ -361,7 +361,6 @@ def veldo_dispatch(unit, repo_root=None, hooks=None, reviewer=None, lander=None,
     return disp.dispatch(unit)
 
 
-# ---------------------------------------------------------------------------------------------
 # RED-RECORD STAND-IN, NOT PRODUCTION CODE (proof/VELDO-0049/red.py). Everything above this line is
 # .veldo/dispatch.py at 0083c85, byte for byte. At that commit there is no floor authority, so these
 # names only let suite 63 drive that pre-change dispatcher unchanged: the Dispatcher accepts and
@@ -369,7 +368,6 @@ def veldo_dispatch(unit, repo_root=None, hooks=None, reviewer=None, lander=None,
 # nothing and refuses nothing, every refusal class is unknown, it has no states and no transitions).
 # The two pure fixture helpers the suite builds its records with (canonical, review_policy_record)
 # and the record identities are copied from the fixed module; they decide nothing.
-# ---------------------------------------------------------------------------------------------
 import hashlib as _red_hashlib
 import json as _red_json
 

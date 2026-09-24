@@ -2713,14 +2713,14 @@ def cases():
     # AC2, declared: the builder is accepted as its own reviewer (both places the authority asks).
     floor('floor-builder-reviews-itself',
           '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
-          '    if reviewer == record["builder"]:\n'
-          '        raise FloorRefused("reviewer_not_independent", "the builder cannot review its own build")\n',
+          '    if reviewer in (record.get("builders") or [record["builder"]]):\n'
+          '        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")\n',
           '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
           '    # defect: the builder may be assigned as its own reviewer\n',
           'review-independence',
           also=[('        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
-                 '    if reviewer == record["builder"]:\n'
-                 '        raise FloorRefused("reviewer_not_independent", "the builder cannot review its own build")\n',
+                 '    if reviewer in (record.get("builders") or [record["builder"]]):\n'
+                 '        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")\n',
                  '        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
                  '    # defect: the builder\'s own receipt is accepted\n')])
     floor('floor-review-signature-unchecked',
@@ -2747,6 +2747,17 @@ def cases():
     floor('floor-policy-count-ignored', '    if len(passing) < need:\n',
           '    if len(passing) < 1:  # defect: one review hands off whatever the policy requires\n',
           'review-policy-count')
+    # A builder of an EARLIER attempt is a builder of the unit: independence is not only from the latest.
+    floor('floor-earlier-builder-reviews',
+          '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
+          '    if reviewer in (record.get("builders") or [record["builder"]]):\n',
+          '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
+          '    if reviewer == record["builder"]:  # defect: only the latest attempt\'s builder is refused\n',
+          'no-builder-reviews',
+          also=[('        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
+                 '    if reviewer in (record.get("builders") or [record["builder"]]):\n',
+                 '        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
+                 '    if reviewer == record["builder"]:  # defect: only the latest attempt\'s builder is refused\n')])
     # AC3, declared: a later pass discards the unresolved finding.
     floor('floor-pass-erases-finding', '    findings = dict(record["findings"])\n',
           '    findings = {} if verdict_passes(body) else dict(record["findings"])  # defect: a pass discards findings\n',
