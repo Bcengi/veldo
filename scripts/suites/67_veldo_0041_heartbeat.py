@@ -413,6 +413,11 @@ sys.exit(payload.get('code', 0))
         def within(value, low, high):
             return isinstance(value, (int, float)) and low <= value <= high
 
+        def minus(a, b):
+            """a - b of two observed times; NaN (never within any bound) when either is absent."""
+            number = (int, float)
+            return a - b if isinstance(a, number) and isinstance(b, number) and not isinstance(a, bool) else float('nan')
+
         emitted, raised, regions, observed = set(), [], [], {}
 
         def check(label, condition):
@@ -459,7 +464,7 @@ sys.exit(payload.get('code', 0))
                 claimed = claim_version(units['blocked'])
                 observed['blocked_call'] = {
                     'configured': getattr(blocked, 'heartbeat', None), 'call': call, 'answer': answer,
-                    'blocked_seconds': round(answer.get('returned', 0) - call.get('started', 0), 3),
+                    'blocked_seconds': round(minus(answer.get('returned'), call.get('started')), 3),
                     'beats': beat.get('beats'), 'beats_during_call': len(inside), 'taken_gaps_during_call': gaps,
                     'sent_intervals': sent, 'renewed': beat.get('renewed'), 'renewal_refusals': beat.get('renewal_refusals'),
                     'claim_version': [claims['blocked'], claimed], 'journal_renewals': len(renewals),
@@ -467,14 +472,14 @@ sys.exit(payload.get('code', 0))
                     'cause': supervision.get('cause'), 'heartbeat_pid': beat.get('pid'), 'worker_pid': marker(blocked, 'worker').get('pid')}
                 check('heartbeat/blocked-call-liveness',
                       getattr(blocked, 'heartbeat', None) == {'interval_seconds': 0.25, 'window_seconds': 1.0}
-                      and bool(call) and bool(answer) and answer['returned'] - call['started'] >= 1.9
+                      and minus(answer.get('returned'), call.get('started')) >= 1.9
                       and len(inside) >= 7 and bool(gaps) and max(gaps) <= 0.25 + TOL
                       and all(b.get('renewed') is True for b in inside)
                       and bool(sent) and all(within(x, 0.25 - 0.05, 0.25 + TOL) for x in sent)
                       and beat.get('pid') not in (None, marker(blocked, 'worker').get('pid'))
                       and beat.get('liveness') == 'live' and beat.get('uncertain_at') is None
                       and beat.get('renewed') == beat.get('beats') and beat.get('renewal_refusals') == []
-                      and claimed - claims['blocked'] == beat.get('renewed') and len(renewals) == beat.get('renewed')
+                      and minus(claimed, claims['blocked']) == beat.get('renewed') and len(renewals) == beat.get('renewed')
                       and all(principal == 'launch-receiver' for _, principal in renewals)
                       and ended.get('state') == 'exited' and (ended.get('termination') or {}).get('returncode') == 0
                       and supervision.get('cause') is None and slot(blocked.dispatch_id).get('retired') is True)
@@ -494,7 +499,7 @@ sys.exit(payload.get('code', 0))
                 beat = supervision.get('heartbeat') or {}
                 steps = supervision.get('steps') or []
                 terms = times(missing, 'worker', 'term')
-                lapse = (beat.get('uncertain_at') or 0) - (beat.get('last') or 0)
+                lapse = minus(beat.get('uncertain_at'), beat.get('last'))
                 observed['missing_heartbeat'] = {
                     'configured': getattr(missing, 'heartbeat', None), 'heartbeat_pids': beaters, 'sigstop_at': stopped_at,
                     'beats': beat.get('beats'), 'last_taken': beat.get('last'), 'uncertain_at': beat.get('uncertain_at'),
@@ -508,8 +513,8 @@ sys.exit(payload.get('code', 0))
                       and (beat.get('last') or 1e18) <= stopped_at + 0.3
                       and within(lapse, 1.0, 1.0 + TOL)
                       and [s.get('step') for s in steps][:1] == ['cooperative']
-                      and within((steps[0].get('monotonic') or 0) - beat.get('uncertain_at', 1e18), 0, 0.05)
-                      and bool(terms) and within(terms[0] - beat.get('uncertain_at', 1e18), -0.01, TOL)
+                      and within(minus(steps[0].get('monotonic'), beat.get('uncertain_at')), 0, 0.05)
+                      and bool(terms) and within(minus(terms[0], beat.get('uncertain_at')), -0.01, TOL)
                       and not living(worker) and all(proc_start(pid) is None for pid in beaters)
                       and ended.get('state') == 'exited' and supervision.get('empty') is True
                       and slot(missing.dispatch_id).get('retired') is True)
@@ -525,8 +530,8 @@ sys.exit(payload.get('code', 0))
                 qualified = {name: ((C.qualify(SHIPPED_PROFILE).get('settings') or {}).get(name) or {}).get('value')
                              for name in SHIPPED}
                 observed['shipped'] = {'defaults': defaults, 'qualified': qualified, 'running': running,
-                                       'beats': beat.get('beats'), 'first_after_release':
-                                           round(beat.get('first', 0) - beat.get('released', 0), 3) if beat else None,
+                                       'beats': beat.get('beats'),
+                                       'first_after_release': round(minus(beat.get('first'), beat.get('released')), 3),
                                        'state': ended.get('state'),
                                        'configured_runs': {'blocked': observed.get('blocked_call', {}).get('configured'),
                                                            'missing': observed.get('missing_heartbeat', {}).get('configured')}}
@@ -534,7 +539,7 @@ sys.exit(payload.get('code', 0))
                       defaults == SHIPPED and qualified == SHIPPED
                       and running.get('heartbeat') == {'interval_seconds': 10, 'window_seconds': 30}
                       and running.get('graces') == {'stop_grace_seconds': 10, 'kill_grace_seconds': 5}
-                      and beat.get('beats') == 1 and within(beat.get('first', 1e18) - beat.get('released', 0), 0, 1.0)
+                      and beat.get('beats') == 1 and within(minus(beat.get('first'), beat.get('released')), 0, 1.0)
                       and beat.get('liveness') == 'live' and ended.get('state') == 'exited'
                       and observed.get('blocked_call', {}).get('configured') == {'interval_seconds': 0.25, 'window_seconds': 1.0}
                       and observed.get('missing_heartbeat', {}).get('configured') == {'interval_seconds': 0.25,
@@ -561,7 +566,8 @@ sys.exit(payload.get('code', 0))
                 s_terms, s_beats = times(target, 'stubborn', 'term'), times(target, 'stubborn', 'beat')
                 died = {name: (seen.get(f.get('pid')) or [None])[0] for name, f in
                         (('worker', worker), ('coop', coop), ('stubborn', stubborn))}
-                c0, t0, k0 = at.get('cooperative'), at.get('terminate'), at.get('kill')
+                c0, t0, k0 = (at.get(k) if isinstance(at.get(k), (int, float)) else float('nan')
+                              for k in ('cooperative', 'terminate', 'kill'))
 
                 def rel(value):
                     return round(value - asked_at, 3) if isinstance(value, (int, float)) else None
@@ -577,15 +583,17 @@ sys.exit(payload.get('code', 0))
                       asked is True and bool(worker) and bool(coop) and bool(stubborn)
                       and supervision.get('graces') == {'stop_grace_seconds': 1.0, 'kill_grace_seconds': 0.5}
                       and list(at) == ['cooperative', 'terminate', 'kill'] and supervision.get('cause') == 'requested'
-                      and within(c0 - asked_at, 0, TOL) and within(t0 - c0, 1.0, 1.0 + TOL) and within(k0 - t0, 0.5, 0.5 + TOL)
+                      and within(minus(c0, asked_at), 0, TOL) and within(minus(t0, c0), 1.0, 1.0 + TOL)
+                      and within(minus(k0, t0), 0.5, 0.5 + TOL)
                       # the requested stop reaches the worker alone first, then termination reaches the group
-                      and len(w_terms) >= 2 and within(w_terms[0] - c0, -0.01, TOL) and within(w_terms[1] - t0, -0.01, TOL)
-                      and len(c_terms) == 1 and within(c_terms[0] - t0, -0.01, TOL)
-                      and within((died['coop'] or 1e18) - c_terms[0], 0, TOL) and (died['coop'] or 1e18) < k0
-                      and len(s_terms) == 1 and within(s_terms[0] - t0, -0.01, TOL)
-                      and bool(s_beats) and s_beats[-1] >= t0 + 0.5 - 0.15
-                      and within((died['stubborn'] or 1e18) - k0, 0, TOL) and within((died['worker'] or 1e18) - k0, 0, TOL)
-                      and within((supervision.get('empty_monotonic') or 1e18) - k0, 0, TOL)
+                      and len(w_terms) >= 2 and within(minus(w_terms[0], c0), -0.01, TOL)
+                      and within(minus(w_terms[1], t0), -0.01, TOL)
+                      and len(c_terms) == 1 and within(minus(c_terms[0], t0), -0.01, TOL)
+                      and within(minus(died['coop'], c_terms[0]), 0, TOL) and minus(k0, died['coop']) > 0
+                      and len(s_terms) == 1 and within(minus(s_terms[0], t0), -0.01, TOL)
+                      and bool(s_beats) and minus(s_beats[-1], t0) >= 0.5 - 0.15
+                      and within(minus(died['stubborn'], k0), 0, TOL) and within(minus(died['worker'], k0), 0, TOL)
+                      and within(minus(supervision.get('empty_monotonic'), k0), 0, TOL)
                       and supervision.get('empty') is True and ended.get('state') == 'exited'
                       and (ended.get('termination') or {}).get('signal') == 9
                       and (ended.get('termination') or {}).get('deadline_stop') is False
@@ -651,7 +659,7 @@ sys.exit(payload.get('code', 0))
                               and a['event'].get('refusal') == 'cleanup_incomplete' and a['event'].get('observed') == 'populated'
                               and (a['pending'] or {}).get('open', [])[:1] == ['group'] for a in attempts)
                       and ended.get('state') == 'exited' and bool(death)
-                      and retirement.get('observed_at', 0) >= death[1] and retirement.get('cleaned') is True
+                      and minus(retirement.get('observed_at'), death[1]) >= 0 and retirement.get('cleaned') is True
                       and (retirement.get('group') or {}).get('observed') in ('absent', 'unpopulated')
                       and len(commits) == 1 and again is False
                       and again_event.get('refusal') == 'already_retired'
