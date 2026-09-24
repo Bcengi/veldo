@@ -29,6 +29,8 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_assignment.py"
+  - ".veldo/control_assignment.py"
   - ".veldo/settlements/*.json"
   - "scripts/suites/*_veldo_0068_*.py"
   - "scripts/suites/manifest.json"
@@ -177,3 +179,11 @@ accepted revision and snapshot. Rows, the red record at 335d996 and the finding 
 `proof/VELDO-0068/`. Every Telegram answer runs against a loopback Bot API server, not the Telegram
 service. The criteria, status and risk are unchanged.
 
+2026-09-24, review fix: `.veldo/control_assignment.py` (engine copy byte-identical) was added to the
+footprint. The VELDO-0064 `answer` command moved a presented request that carries settlement terms to
+SUBMITTED with no settlement, typed effect or receipt, and a later answer was then refused as closed, so
+that request version ended with no settlement. The command now refuses such a request as
+`settlement_required`, so the settlement service is the only way it is answered; a request without
+terms is answered exactly as before. The row case is in `settlement/one-transaction`, red at 0617f3d,
+with the finding 68 mutation `inbox-answer-bypasses-settlement`. The criteria, status and risk are
+unchanged.

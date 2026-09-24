@@ -47,7 +47,10 @@ WHAT IT IS NOT. Not settlement or quorum (VELDO-0068), presentation receipts (VE
 channel attribution (VELDO-0066), edge signing (VELDO-0067), deadline expiry sweeping, concurrent
 reassignment or lost-acknowledgement recovery (Release 2). EXPIRED is displayed when present but
 no Release 1 command produces it. SATISFIED is displayed as answered; admitting from it needs the
-settlement receipt its later consumer defines, so it refuses here as missing evidence.
+settlement receipt its later consumer defines, so it refuses here as missing evidence. A request
+whose subject is settlement terms (VELDO-0068) is answered only through the settlement service:
+the `answer` command here refuses it as `settlement_required`, so it never reaches SUBMITTED
+without its settlement, typed effect and receipt. A request without terms is answered here.
 """
 import json
 import math
@@ -82,7 +85,11 @@ DEADLINE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 PARKED_REASONS = ('awaiting_answer', 'ready_to_resume', 'answer_not_admitted', 'declined', 'canceled', 'expired',
                   'invalid_assignment', 'missing_assignment')
 REFUSALS = ('invalid_input', 'not_authorized', 'missing_authority', 'stale_subject', 'not_owner',
-            'unavailable_service', 'missing_evidence', 'invalid_record', 'not_answered', 'unknown_outcome')
+            'unavailable_service', 'missing_evidence', 'invalid_record', 'not_answered', 'unknown_outcome',
+            'settlement_required')
+# The subject kind of a request that carries settlement terms (VELDO-0068): only the settlement
+# service answers it.
+SETTLEMENT_SUBJECT_KIND = 'settlement_terms'
 _ALIAS = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 
@@ -313,6 +320,10 @@ class Inbox:
                 raise Refused('stale_subject', 'command names another request version')
             params['request_version'] = data['request_version']
             if op in ('answer', 'decline'):
+                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:
+                    # The record's version is pinned below, so a revision of the subject is stale.
+                    raise Refused('settlement_required', 'a request with settlement terms is answered through '
+                                  'the settlement service')
                 self._active(state, principal, now, ('person',), data['scope'])
                 params['ruling'] = command.get('ruling')
                 if op == 'answer':

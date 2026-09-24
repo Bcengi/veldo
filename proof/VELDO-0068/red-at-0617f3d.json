@@ -1,0 +1,65 @@
+{
+ "by_assertion": true,
+ "commit": "0617f3d2435f05fa8dddf9b5e78544ce149a1b40",
+ "details": [
+  "VELDO-0068 settlement/one-transaction detail: the VELDO-0064 answer command on a request with settlement terms is refused (settlement_required) and writes nothing [observed: True, answer]",
+  "VELDO-0068 settlement/one-transaction detail: the owner's Telegram answer then settles it: one settlement, effect and receipt, and the request terminal [observed: refused, request_closed]"
+ ],
+ "failed_rows": [
+  "VELDO-0068 settlement/one-transaction"
+ ],
+ "modules": {
+  ".veldo/control_assignment.py": {
+   "at_commit": "323112a8d0d47befb4f7e11d1d253408208185864111646b181d61f613ff9c58",
+   "now": "a843df631a918a6662a607382cc8df0b4a6330b213f50a35e75df5aba17e0ba4"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561",
+   "now": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612",
+   "now": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0068 install/assets",
+   true
+  ],
+  [
+   "VELDO-0068 ruling/offered-choice-and-reasoning",
+   true
+  ],
+  [
+   "VELDO-0068 settlement/one-winner",
+   true
+  ],
+  [
+   "VELDO-0068 settlement/one-transaction",
+   false
+  ],
+  [
+   "VELDO-0068 terminal/materialized-settlement",
+   true
+  ],
+  [
+   "VELDO-0068 authority/roles-and-independence",
+   true
+  ],
+  [
+   "VELDO-0068 authority/owner-and-presentation",
+   true
+  ],
+  [
+   "VELDO-0068 authority/unsupported-quorum-blocks",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 6.438,
+ "spec_id": "VELDO-0068",
+ "suite": "scripts/suites/69_veldo_0068_settlement.py",
+ "tree": "git archive 0617f3d2435f05fa8dddf9b5e78544ce149a1b40, unchanged; the current suite file run against it"
+}

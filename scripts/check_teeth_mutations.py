@@ -2573,6 +2573,12 @@ def cases():
     settlement('settlement-nonce-per-answer', "        self._commit(SETTLE, sid, params, expected)\n",
                "        self._commit(SETTLE, sid + ':' + winner_id, params, expected)  # defect: one nonce per answer\n",
                'settlement/one-transaction')
+    # AC2: the VELDO-0064 answer command moves a request with settlement terms to SUBMITTED with no
+    # settlement, effect or receipt, so a later answer finds it closed.
+    settlement('inbox-answer-bypasses-settlement',
+               "                if op == 'answer' and (data.get('subject') or {}).get('kind') == SETTLEMENT_SUBJECT_KIND:\n",
+               "                if False:  # defect: the inbox answers a request with settlement terms\n",
+               'settlement/one-transaction', module='control_assignment.py')
     # AC3 (declared falsifier): the request left open after settlement; then an API answer accepted on a
     # settled request.
     settlement('request-left-open',

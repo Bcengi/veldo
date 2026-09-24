@@ -150,6 +150,7 @@ def _v68_checks(base):
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
+        'control_assignment.py': ROOT / ".veldo" / "control_assignment.py",
     }
     scaffold_path = ROOT / ".veldo" / "init_scaffold.py"
     organs = base / 'installed'
@@ -606,6 +607,26 @@ def _v68_checks(base):
 
         # AC2: the ruling, the nonce, the effect, the terminal state and the receipt in one transaction.
         with section(OT):
+            # The VELDO-0064 answer command never settles a request with terms: it is refused by name and
+            # writes nothing, and the owner's Telegram answer then settles it in the one transaction.
+            direct, direct_receipt, _ = open_request('OT-direct', 'grooming')
+            before_direct, journal_before = snapshot_of(direct), journal_count()
+            bypass = inbox.apply(signed_command('owner', dict(ids, operation='answer', alias='OT-direct', principal='owner',
+                                                              command_id=next_id('c'), nonce=next_id('n'),
+                                                              request_version=1, ruling='accept')))
+            check(OT, 'the VELDO-0064 answer command on a request with settlement terms is refused '
+                      '(settlement_required) and writes nothing [observed: %s, %s]' % (bypass.get('ok'), bypass.get('reason')),
+                  bypass.get('ok') is False and bypass.get('reason') == 'settlement_required'
+                  and unchanged(direct, before_direct) and journal_count() == journal_before
+                  and request_data(direct).get('state') in I.PENDING)
+            reply(direct_receipt, 'accept: settled through the service once the direct answer was refused')
+            acquire()
+            got_direct = settle(direct)
+            s_d, e_d, r_d = settled(direct)
+            check(OT, 'the owner\'s Telegram answer then settles it: one settlement, effect and receipt, and the '
+                      'request terminal' + seen(got_direct),
+                  got_direct.get('outcome') == 'settled' and len(s_d) == len(e_d) == len(r_d) == 1
+                  and request_data(direct).get('state') == 'SATISFIED')
             rows_ = [(seq, cid, nonce, _v68_json.loads(t)) for seq, cid, nonce, t in
                      conn.execute('SELECT seq, command_id, nonce, transition FROM journal ORDER BY seq')]
             nonces = dict(conn.execute('SELECT nonce, command_id FROM nonces').fetchall())
