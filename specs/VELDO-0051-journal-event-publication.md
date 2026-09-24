@@ -95,6 +95,22 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: every enabled producer and the validator share one canonical event vocabulary, with the
+  historical spellings preserved; each owner event serializes to JSONL and validates in another
+  process. The projector follows the committed journal of the enabled domain in order and stores an
+  explicit watermark, leaving historical bytes unchanged. spec.shipped comes only from a confirmed
+  landing receipt for its exact unit and dispatch.
+- Threat model: an event type or schema the validator does not know, or one type substituted for
+  another; a projection that skips an event while advancing its watermark, or rewrites historical
+  bytes; and spec.shipped produced by a direct emit, a build-only run, a receipt for another dispatch or
+  an unconfirmed remote landing. The owner's account, the store and the journal signer are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); several
+  projectors, two clones, crash replay and replica-failure recovery (Release 2, see History); the
+  multi-repository matrix (Release 4); forged rows in our own store, files planted in the installed
+  directory and resource exhaustion by our own account.
+
 ## Notes
 
 One canonical event vocabulary includes every enabled producer and preserves historical

@@ -94,6 +94,24 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the trusted wrapper around a worker sends a heartbeat every ten seconds and renews the
+  claim while the model call is still blocked, and a worker whose heartbeats stop for the configured
+  thirty seconds is stopped. An accepted stop asks the worker to stop, terminates its whole VELDO-0040
+  group after ten seconds and kills whatever remains five seconds later. Retirement happens only after
+  the group has really ended, keeps each open obligation (unknown outcome, accounting, clone files)
+  until it is completed, and releases the capacity slot exactly once.
+- Threat model: a wrapper that reports liveness only when the model returns; a descendant that ignores
+  signals; a stop sent only to the parent; and a retirement that releases the slot while a descendant is
+  alive, with accounting missing or with clone files left. The owner's account, the user service manager
+  and the store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); leadership
+  fencing and timing, a stopped orchestrator and crash-safe retirement (Release 2, see History); other
+  host kinds (Release 4; the Mac is VELDO-0124); a worker that deliberately escapes its group (Release 2,
+  filed by VELDO-0040's review); forged rows in our own store, files planted in the installed directory
+  and resource exhaustion by our own account.
+
 ## Notes
 
 A heartbeat proves wrapper responsiveness, never effect success. Linux qualification is here;

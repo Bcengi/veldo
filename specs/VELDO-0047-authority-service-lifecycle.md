@@ -103,6 +103,27 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an explicit, authorized install, start and stop runs one authority instance on this
+  Linux host under systemd, with a fixed executable, configuration, enrollment, socket and helper
+  permissions; a second instance under the same lock refuses. Authenticated local clients send signed
+  commands over the production IPC with explicit domain, repository and workspace coordinates, and the
+  service applies each to the configured SQLite store and returns the committed result and watermark.
+  When the service is absent or has exited, mutation and admission stay unavailable
+  (AUTHORITY_UNAVAILABLE, with the service identity, the last known watermark and start guidance), read
+  state is marked stale, and nothing starts the service by itself or falls back to a local write.
+  Installation also writes the launch receiver's configuration with this host's worker profile (see
+  Notes).
+- Threat model: two instances acquiring scheduling authority; a client command with the wrong
+  coordinates or the wrong actor; a success reported by a callback that did not change the store; and an
+  automatic start or a local fallback when the service is absent. The owner's account, systemd and the
+  store file are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); automatic
+  recovery (Release 2, see History); several profiles, remote inspection and the legacy status listener
+  (Release 4); forged rows in our own store, files planted in the installed directory and resource
+  exhaustion by our own account.
+
 ## Notes
 
 This spec includes the normal request-to-real-store wiring identified by 0115 and the single
