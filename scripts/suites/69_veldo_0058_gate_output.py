@@ -11,8 +11,9 @@ registered mutation of any of the four reaches every row. Real Git throughout: a
 gate stamp was committed by the ordinary landing step, a bare remote, the caller's clone the builds are
 made in, and a work clone the executor's loop runs in. The fixture's one check is a real process that
 fails a source not marked OK and, when a source asks, has a separate process change a tracked file, an
-index entry or add an untracked file while the gate runs. This suite reads the candidates' state with
-its own walk, never with control_verification's.
+index entry or add an untracked file while the gate runs, or holds the gate open on a handshake while
+a sibling worktree of the executor's repository commits and a fetch moves its refs. This suite reads the
+candidates' state with its own walk, never with control_verification's.
 """
 
 
@@ -28,6 +29,8 @@ def _v58_suite():
     import subprocess
     import sys
     import tempfile
+    import threading
+    import time
 
     # Literal anchors: the registered mutation driver substitutes the production copy here.
     PRODUCTION = {
@@ -150,13 +153,24 @@ def _v58_suite():
             '    for mode, action in actions.items():',
             "        if 'MUTATE = %r' % mode in text:",
             "            subprocess.run([sys.executable, '-B', '-c', action], check=True)",
+            # A source naming a handshake holds the check open: it says the gate is running, then waits
+            # (at most two minutes) until the suite says the concurrent work is done.
+            'import ast, os, re, time',
+            'for text in texts.values():',
+            "    shake = re.search(r'^HANDSHAKE = (.*)$', text, re.M)",
+            '    if shake:',
+            '        started, resume = ast.literal_eval(shake.group(1))',
+            "        open(started, 'w').write('the gate is running\\n')",
+            '        deadline = time.time() + 120',
+            '        while not os.path.exists(resume) and time.time() < deadline:',
+            '            time.sleep(0.02)',
             "bad = [n for n, t in texts.items() if 'OK = True' not in t]",
             "print('red: %s' % bad if bad else 'green')",
             'sys.exit(1 if bad else 0)', '']))
         (seed / 'src').mkdir()
         (seed / 'src' / 'README').write_text('fixture sources\n')
         (seed / 'README.md').write_text('fixture\n')
-        UNITS = ['VELDO-95%02d' % n for n in range(81, 98)]
+        UNITS = ['VELDO-95%02d' % n for n in range(81, 99)]
         for sid in UNITS:
             (seed / 'specs' / ('%s-gate-output-fixture.md' % sid)).write_text('\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Gate output fixture unit', 'status: ready',
@@ -284,7 +298,7 @@ def _v58_suite():
 
         U = dict(zip(('review', 'live', 'red', 'tamper', 'during', 'stub_gate', 'stub_policy', 'valid',
                       'emptied_list', 'control_list', 'plain_list', 'refs_during', 'refs_after', 'refs_control',
-                      'refs_plain', 'bound_during', 'bound_after'), UNITS))
+                      'refs_plain', 'bound_during', 'bound_after', 'siblings'), UNITS))
 
         # AC1: the stamp, the gate event and the review-event reconciliation go to the sink.
         with region('gate-output/review-write'):
@@ -718,6 +732,58 @@ def _v58_suite():
                   and all(after_refused.values()) and len(after_refused) == 3 and moves.get('same_object') is True
                   and (bound_after['finalize'] or [{}])[-1].get('pushed') is True
                   and bcommit and bound_after['trunk_after'] == bcommit)
+
+        # AC2, the executor: LiveLoop.gate runs over the caller's own repository, whose sibling linked
+        # worktrees commit and whose fetches move refs in normal use, and nothing after its gate reads a
+        # range from those refs. A sibling worktree that commits, and a fetch that adds a remote-tracking
+        # ref, while the gate's check is held open leave the gate green with the candidate unchanged.
+        with region('gate-output/live-loop-siblings'):
+            reset_work()
+            sibling = base / 'sibling'
+            git(work, 'worktree', 'add', '-q', '-b', 'build/sibling', str(sibling), 'origin/main')
+            started, resume = base / 'siblings.started', base / 'siblings.resume'
+            moved = {}
+
+            def builder():
+                try:
+                    deadline = time.monotonic() + 120
+                    while not started.exists() and time.monotonic() < deadline:
+                        time.sleep(0.02)
+                    moved['during'] = started.exists() and not resume.exists()
+                    moved['before'] = git(sibling, 'rev-parse', 'HEAD')
+                    (sibling / 'sibling.txt').write_text('a sibling builder commits\n')
+                    git(sibling, 'add', '-A')
+                    git(sibling, 'commit', '-q', '-m', 'Sibling build', who=BUILDER)
+                    moved['after'] = git(sibling, 'rev-parse', 'HEAD')
+                    git(sibling, 'push', '-q', 'origin', 'build/sibling:refs/heads/sibling-fetch')
+                    git(work, 'fetch', '-q', 'origin')
+                    moved['fetched'] = git(work, 'rev-parse', 'refs/remotes/origin/sibling-fetch') == moved['after']
+                except Exception as error:  # noqa: BLE001 - recorded, and the row reds on it
+                    moved['error'] = repr(error)[:300]
+                finally:
+                    resume.write_text('resume\n')
+            thread = threading.Thread(target=builder, daemon=True)
+            thread.start()
+            try:
+                run = live_gate(U['siblings'], {'src/siblings.py': 'OK = True\nHANDSHAKE = (%r, %r)\n'
+                                                                  % (str(started), str(resume))})
+            finally:
+                if not resume.exists():
+                    resume.write_text('resume\n')
+                thread.join(150)
+            reset_work()
+            sobs = run['observation']
+            observed['live_loop_siblings'] = {
+                'moved': moved, 'green': run['result'].get('green'), 'detail': run['result'].get('detail'),
+                'unchanged': run['before'] == run['after'], 'refusals': sobs.get('refusals'),
+                'post_run': sobs.get('post_run')}
+            check('gate-output/live-loop-siblings',
+                  moved.get('during') is True and 'error' not in moved
+                  and moved.get('before') and moved.get('after') and moved['before'] != moved['after']
+                  and moved.get('fetched') is True
+                  and run['result'].get('green') is True and run['before'] == run['after']
+                  and sobs.get('commit') == run['commit'] and not sobs.get('refusals')
+                  and (sobs.get('post_run') or {}).get('equal') is True)
 
         for first_label in regions:
             check('ran/' + first_label, first_label not in {label for label, _ in raised})
