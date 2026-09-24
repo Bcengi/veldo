@@ -3605,7 +3605,8 @@ def cases():
               '        if False:  # defect: a red gate is not a refusal\n'
               '            ran_red = exit_code != 0 or terminal != "GATE: GREEN (%s)" % c["commit"]\n',
               'rejection-leaves-trunk',
-              also=[('        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"])\n',
+              also=[('        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"],\n'
+                     '                                               bind_refs=True)\n',
                      '        accepted = []  # defect: the gate\'s observation is not accepted again\n')])
     candidate('candidate-policy-refusal-ignored',
               '        if refusals:\n            error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")\n',

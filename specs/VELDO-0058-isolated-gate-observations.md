@@ -202,3 +202,15 @@ missing_authority unless a full 40-hex commit that exists and is an ancestor of 
 policy_check.py change is its own commit, for the owner's approval. As defense in depth the candidate
 state that the gate and acceptance compare now binds every ref and HEAD's symbolic target. Suite 69
 gains gate-output/range-base-from-lander and gate-output/refs-bound. No status was changed.
+
+2026-09-24, third review fix (AC2, blocking, normal use): binding every ref made LiveLoop.gate, which
+runs over the caller's own repository, fail with changed_during_gate whenever a sibling linked
+worktree committed or a fetch moved a remote-tracking ref during the gate, although verify.sh printed
+GREEN. Ref binding is now the caller's explicit input: control_verification state, observe_gate and
+accept take a required keyword bind_refs, True or False with no default, the observation records it
+and acceptance refuses a different one. GitLandOps passes True (its workspace is its own repository and
+the installed policy's range is read after its gate), so a candidate that moves refs stays refused.
+LiveLoop passes False: nothing after its gate reads a range from refs (the proof service is handed the
+spec's base commit, and LiveLoop runs no installed policy). HEAD, its tree, HEAD's symbolic target, the
+index and every file outside .git stay bound in both. Suite 69 gains gate-output/live-loop-siblings,
+red at 57ec2b2 by assertion (proof/VELDO-0058/red-57ec2b2.json). No status was changed.

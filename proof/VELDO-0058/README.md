@@ -26,13 +26,15 @@ the same place. Suite 69's seed is made exactly that way (row `sink-refusals` ch
 **control_verification.py** (new, `.veldo` and `engine/.veldo` identical, registered in init_scaffold).
 `installation_at` lays down the trusted verifier and `.veldo/` of a trusted commit from Git objects,
 outside the candidate. `observe_gate` runs that verifier in candidate mode and takes the candidate's
-state (HEAD, tree, every index entry, every ref and HEAD's symbolic target, and every work tree
-entry's bytes outside `.git`, tracked, untracked or ignored) before and after; the observation (written as canonical JSON beside the sink)
-binds the commit and tree, the command, the verifier digest and origin, the catalog's required checks
+state (HEAD, tree, HEAD's symbolic target, every index entry, and every work tree entry's bytes
+outside `.git`, tracked, untracked or ignored, plus every ref of the repository when the caller's
+required `bind_refs` is True) before and after; the observation (written as canonical JSON beside the sink)
+binds the commit and tree, whether the refs were bound, the command, the verifier digest and origin, the catalog's required checks
 and each captured result, the whole output and its digests, the sink's stamp, gate event and the events
 reconciliation appended, and post-run equality. `judge` re-derives every reason it is not green.
 `accept` refuses an observation inside the candidate, with a different digest, not green on re-reading,
-for another commit, or for a candidate no longer in the verified state. `run_policy` loads the installed
+for another commit, taken with a different `bind_refs`, or for a candidate no longer in the verified
+state. `run_policy` loads the installed
 `policy_check.py` by its own path in a separate process with its subject root the candidate, its
 policy source the installation's `policy.yaml` and its push range base the caller's recorded watermark
 (`policy_check.BASE`), refused as `missing_authority:policy_base/...` unless a full 40-hex commit that
@@ -41,11 +43,14 @@ exists and is an ancestor of the candidate.
 **GitLandOps** (`lander.py`): `gate` runs the watermark's verifier (or a named `installation`) through
 `observe_gate`, the observation kept under `observations` or a temporary directory removed with the
 workspace; `finalize` asks the installed policy (pre-factory) or the authority's policy, then accepts
-the observation last, before anything is pushed. **LiveLoop** (`executor.py`): `gate` runs the verifier
-of the base commit `resolve` found (or a named `installation`); the observation keeps the VELDO-0050
+the observation last, before anything is pushed; it binds the refs (`bind_refs=True`), since its
+workspace is its own repository and the installed policy's range is read after the gate. **LiveLoop** (`executor.py`): `gate` runs the verifier
+of the base commit `resolve` found (or a named `installation`) with `bind_refs=False`: its root is the
+caller's own repository, whose sibling worktrees and fetches move refs in normal use, and nothing after
+its gate reads a range from them (the proof service gets the spec's base; no installed policy runs); the observation keeps the VELDO-0050
 shape, so `ProofService.record_observation` and `accept` read it unchanged.
 
-## Rows (suite `69_veldo_0058_gate_output`, 14 rows: 7 assertions and 7 `ran/` rows)
+## Rows (suite `69_veldo_0058_gate_output`, 16 rows: 8 assertions and 8 `ran/` rows)
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
@@ -55,7 +60,8 @@ shape, so `ProofService.record_observation` and `accept` read it unchanged.
 | `gate-output/installed-policy` | AC3 | `gate-output-candidate-policy-launched`, `gate-output-policy-module-from-candidate` |
 | `gate-output/installed-policy-list` | AC3 | `gate-output-policy-source-not-set`, `gate-output-protected-list-from-subject-root` |
 | `gate-output/range-base-from-lander` | AC3 | `gate-output-range-base-ignored`, `gate-output-range-base-not-set`, `gate-output-range-base-from-workspace-refs`, `gate-output-range-base-not-validated` |
-| `gate-output/refs-bound` | AC2 | `gate-output-state-without-refs`, `gate-output-state-without-symref-targets` |
+| `gate-output/refs-bound` | AC2 | `gate-output-state-without-refs`, `gate-output-state-without-symref-targets`, `gate-output-land-does-not-bind-refs` |
+| `gate-output/live-loop-siblings` | AC2 | `gate-output-live-loop-binds-refs` |
 
 **review-write**: a land (GitLandOps) and an executor gate (LiveLoop) over committed candidates carrying
 a pass verdict: green, the candidate byte-identical before and after, the sink holding the verdict event
@@ -84,7 +90,10 @@ a 12-hex prefix), absent, or not an ancestor of the candidate is refused by name
 publishes. **refs-bound**: a check that moves a ref during the gate refuses it with the moved ref named
 in the observation; a ref moved, added, or a symbolic ref retargeted after the gate is refused at
 acceptance (`stale_subject:candidate/changed_after_gate`) with the trunk unmoved; restored, the same
-candidate publishes.
+candidate publishes. **live-loop-siblings**: LiveLoop.gate over the work clone, its check held open
+on a handshake while a sibling linked worktree of that clone commits and a push and fetch add a
+remote-tracking ref: the gate stays green, the observation equal before and after, and the candidate
+byte-identical (HEAD, index and files stay bound: post-run-mutation's LiveLoop cases still refuse).
 
 ## Evidence
 
@@ -96,4 +105,9 @@ policy-source fix, `gate-output/installed-policy-list` is the one red row, by as
 candidate was pushed), no region raised. `red.py b370581 lander.py control_verification.py
 policy_check.py` wrote `red-b370581.json`: at b370581, the code before the range-base fix,
 `gate-output/range-base-from-lander` and `gate-output/refs-bound` are the two red rows, by assertion
-(each ref-moving candidate was pushed), no region raised.
+(each ref-moving candidate was pushed), no region raised. `red.py 57ec2b2 lander.py executor.py
+control_verification.py` wrote `red-57ec2b2.json`: at 57ec2b2, the code before the explicit ref
+binding, `gate-output/live-loop-siblings` is the one red row, by assertion (the gate was refused as
+`stale_subject:candidate/changed_during_gate`, naming `refs/heads/build/sibling` and the fetched
+remote-tracking refs, though verify.sh printed GREEN), no region raised. `mutations.json` predates the
+two ref-binding mutations; `check_teeth_mutations.py --finding 58` rejects all 19.
