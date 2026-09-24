@@ -2,6 +2,12 @@
 """Run the CURRENT suite 69 over the pre-change gate and print every VELDO-0058 row.
 
     python3 -B proof/VELDO-0058/red.py 932d9b0 > proof/VELDO-0058/red-932d9b0.json
+    python3 -B proof/VELDO-0058/red.py 35be8ff control_verification.py policy_check.py \
+        > proof/VELDO-0058/red-35be8ff.json
+
+Module names after the commit choose which production anchors take that commit's bytes (verify.sh,
+lander.py and executor.py when none are named). The second record is the policy-source finding: at
+35be8ff the installed policy_check.py read the protected list from the candidate's own policy.yaml.
 
 At 932d9b0 scripts/verify.sh has no candidate mode (it verifies the checkout it lives in and writes
 .veldo/last_verify and .veldo/events.jsonl there), GitLandOps.gate runs the candidate's own
@@ -25,14 +31,18 @@ from common import ROOT, run_suite  # noqa: E402
 _spec = importlib.util.spec_from_file_location('red_git', ROOT / '.veldo' / 'git_process.py')
 _git_process = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_git_process)
-PATHS = {'verify.sh': 'scripts/verify.sh', 'lander.py': '.veldo/lander.py', 'executor.py': '.veldo/executor.py'}
+ALL_PATHS = {'verify.sh': 'scripts/verify.sh', 'lander.py': '.veldo/lander.py', 'executor.py': '.veldo/executor.py',
+             'control_verification.py': '.veldo/control_verification.py',
+             'policy_check.py': '.veldo/policy_check.py'}
+DEFAULT = ('verify.sh', 'lander.py', 'executor.py')
 
 
 def git(*args):
     return _git_process.run(['git', '-C', str(ROOT), *args], check=True, capture_output=True).stdout
 
 
-def main(commit):
+def main(commit, names=DEFAULT):
+    PATHS = {name: ALL_PATHS[name] for name in names}
     listed = [line.split('\t', 1)[1] for line in git('ls-tree', commit, '.veldo/').decode().splitlines()]
     at_commit = {Path(p).name for p in listed if p.endswith('.py')}
     current = {p.name for p in (ROOT / '.veldo').glob('*.py')}
@@ -55,4 +65,4 @@ def main(commit):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else '932d9b0')
+    main(sys.argv[1] if len(sys.argv) > 1 else '932d9b0', tuple(sys.argv[2:]) or DEFAULT)

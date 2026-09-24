@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SUITE = ROOT / 'scripts/suites/69_veldo_0058_gate_output.py'
 ANCHORS = {'verify.sh': 'ROOT / "scripts" / "verify.sh"', 'lander.py': 'ROOT / ".veldo" / "lander.py"',
            'executor.py': 'ROOT / ".veldo" / "executor.py"',
-           'control_verification.py': 'ROOT / ".veldo" / "control_verification.py"'}
+           'control_verification.py': 'ROOT / ".veldo" / "control_verification.py"',
+           'policy_check.py': 'ROOT / ".veldo" / "policy_check.py"'}
 
 
 def run_suite(substitute=None):

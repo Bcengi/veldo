@@ -35,6 +35,7 @@ def _v58_suite():
         'lander.py': ROOT / ".veldo" / "lander.py",
         'executor.py': ROOT / ".veldo" / "executor.py",
         'control_verification.py': ROOT / ".veldo" / "control_verification.py",
+        'policy_check.py': ROOT / ".veldo" / "policy_check.py",
     }
 
     def load(name, path):
@@ -132,6 +133,9 @@ def _v58_suite():
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
         IS.scaffold(str(seed), templates=str(ROOT / 'engine'))
+        # The trunk's policy module is the production one, so the installation a land lays down from the
+        # trunk carries it (and a registered mutation of it).
+        (seed / '.veldo' / 'policy_check.py').write_bytes(PRODUCTION['policy_check.py'].read_bytes())
         installed_gate = gate_text(PRODUCTION['verify.sh'].read_text())
         (seed / 'scripts' / 'verify.sh').write_text(installed_gate)
         (seed / '.gitignore').write_text('__pycache__/\n')
@@ -151,7 +155,7 @@ def _v58_suite():
         (seed / 'src').mkdir()
         (seed / 'src' / 'README').write_text('fixture sources\n')
         (seed / 'README.md').write_text('fixture\n')
-        UNITS = ['VELDO-95%02d' % n for n in range(81, 90)]
+        UNITS = ['VELDO-95%02d' % n for n in range(81, 92)]
         for sid in UNITS:
             (seed / 'specs' / ('%s-gate-output-fixture.md' % sid)).write_text('\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Gate output fixture unit', 'status: ready',
@@ -277,7 +281,8 @@ def _v58_suite():
             if stray.exists():
                 stray.unlink()
 
-        U = dict(zip(('review', 'live', 'red', 'tamper', 'during', 'stub_gate', 'stub_policy', 'valid'), UNITS))
+        U = dict(zip(('review', 'live', 'red', 'tamper', 'during', 'stub_gate', 'stub_policy', 'valid',
+                      'emptied_list', 'control_list', 'plain_list'), UNITS))
 
         # AC1: the stamp, the gate event and the review-event reconciliation go to the sink.
         with region('gate-output/review-write'):
@@ -544,6 +549,50 @@ def _v58_suite():
                   and (valid['finalize'] or [{}])[-1].get('pushed') is True and valid['trunk_after'] == vcommit
                   and changed_paths and not {'.veldo/last_verify', '.veldo/events.jsonl'} & set(changed_paths)
                   and not any(p.startswith('proof/%s/' % U['valid']) and 'observation' in p for p in changed_paths))
+
+        # AC3: the protected list the installed policy applies is the installation's policy.yaml, never the
+        # candidate's. A candidate that empties protected_paths and adds a protected file is refused by the
+        # trunk's list; the same change without the edit is refused too; an unprotected change lands.
+        with region('gate-output/installed-policy-list'):
+            trunk_list = remote_tip()
+            YM = load('v58_yamlish', mods / 'yamlish.py')
+            trunk_policy = blob(remote, trunk_list, '.veldo/policy.yaml').decode()
+            emptied = re.sub(r'(?ms)^protected_paths:\n(?:(?:  .*|\s*)\n)*', 'protected_paths: []\n',
+                             trunk_policy, count=1)
+            lists = {'trunk': [r.get('path') for r in YM.parse(trunk_policy).get('protected_paths') or []],
+                     'emptied': YM.parse(emptied).get('protected_paths')}
+            b4, _impl, _evidence = build(U['emptied_list'], {'src/emptied_list.py': 'OK = True\n',
+                                                             'auth/login.py': 'ALLOW = True\n',
+                                                             '.veldo/policy.yaml': emptied})
+            emptied_land = land(b4, U['emptied_list'])
+            b5, _impl, _evidence = build(U['control_list'], {'src/control_list.py': 'OK = True\n',
+                                                             'auth/login.py': 'ALLOW = True\n'})
+            control_land = land(b5, U['control_list'])
+            b6, _impl, _evidence = build(U['plain_list'], {'src/plain_list.py': 'OK = True\n'})
+            plain_land = land(b6, U['plain_list'])
+            pcommit = (plain_land['record'] or {}).get('commit')
+
+            def refused_by_list(result):
+                final = (result['finalize'] or [{}])[-1]
+                return (result['gate'].get('ok') is True and final.get('ok') is False
+                        and final.get('pushed') is not True
+                        and 'missing_authority:repository_policy' in (final.get('refusals') or [])
+                        and 'auth/login.py  (protected by auth/**)' in str(final.get('policy_check'))
+                        and result['trunk_after'] == trunk_list)
+
+            observed['installed_policy_list'] = {
+                'lists': lists,
+                'emptied': {'gate': emptied_land['gate'], 'finalize': emptied_land['finalize'],
+                            'trunk_moved': emptied_land['trunk_after'] != trunk_list},
+                'control': {'gate': control_land['gate'], 'finalize': control_land['finalize'],
+                            'trunk_moved': control_land['trunk_after'] != trunk_list},
+                'plain': {'gate': plain_land['gate'], 'finalize': plain_land['finalize'],
+                          'trunk_after': plain_land['trunk_after'], 'commit': pcommit}}
+            check('gate-output/installed-policy-list',
+                  'auth/**' in lists['trunk'] and lists['emptied'] == []
+                  and refused_by_list(emptied_land) and refused_by_list(control_land)
+                  and (plain_land['finalize'] or [{}])[-1].get('pushed') is True
+                  and pcommit and plain_land['trunk_after'] == pcommit)
 
         for first_label in regions:
             check('ran/' + first_label, first_label not in {label for label, _ in raised})
