@@ -144,3 +144,16 @@ whose WARP-1208 row pinned the validator's vocabulary as an exact set. One canon
 necessarily adds the run, request and decision types the emitter already wrote, so that row now
 requires the previously recognized set to be kept (an inclusion), which is the additivity it
 states. No criterion, status or historical proof changed.
+
+2026-09-24: implemented on branch build-veldo-0051 (built on 8231708, origin/main merged). Two new
+modules with byte-identical engine copies: control_event_vocabulary.py, the one registry of the 31
+event types, their owners and the schema spellings, which events.py and validate.py both load; and
+control_event_projection.py, which publishes spec.shipped from the committed journal in order at a
+stored watermark, only for a confirmed landing receipt for its exact unit and dispatch. events.py
+makes spec.shipped projection-owned and refuses a substituted type; init_scaffold.py lays both
+modules. Suite 66_veldo_0051_events has 7 criterion rows and 3 region rows. Finding 51 in
+scripts/check_teeth_mutations.py registers 18 mutations, among them each criterion's declared
+falsifier, all rejected, in the normal shell and under the gate's mutation-stage environment.
+scripts/suites/manifest.json gains suite 66, and requires.json is regenerated. Every criterion row
+was recorded red at 8231708. The proof README was written by the lead after the builder was cut off
+by a usage limit. The status stays ready. Proof: proof/VELDO-0051/.
