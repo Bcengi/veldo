@@ -1,0 +1,4 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -364 +363,0 @@
+-        versions[framing_entity_id(aid)] = 0  # decided with the request not framed: pinned as absent

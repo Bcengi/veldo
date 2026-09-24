@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -82 +82 @@
+-RETRYABLE = ('refused', 'partial')
++RETRYABLE = ('refused',)

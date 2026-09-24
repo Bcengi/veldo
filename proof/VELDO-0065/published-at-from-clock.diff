@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -521 +521 @@
+-                    published_at=every[-1]['date'], platform_texts=[p['text'] for p in every],
++                    published_at=int(time.time()), platform_texts=[p['text'] for p in every],

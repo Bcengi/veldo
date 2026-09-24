@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -833 +833 @@
+-            if not isinstance(revoked, dict):
++            if not isinstance(revoked, (dict, list, int)):

@@ -1,0 +1,7 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1166 +1166,3 @@
+-        if refusal or binding_mismatches(receipt, current):
++        if refusal:
++            raise Refused('stale_presentation', 'the named presentation no longer binds the current request')
++        if binding_mismatches(receipt, current):

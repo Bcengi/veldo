@@ -1,0 +1,60 @@
+=== r1_framing_not_requester.py
+requester framing: {'request_id': 'assignment:present-repository:Q-1', 'outcome': 'accepted'}
+first present: published
+owner (the answerer, not the requester) reframes: {'request_id': 'assignment:present-repository:Q-1', 'outcome': 'refused', 'reason': 'not_authorized'}
+second present: already_presented
+framed_by now: pm | requested_by: pm
+risk line shown: ['Risk (stated by pm): High: approving deploys to production.']
+receipt names who framed: True | "owner" or "pm" named on the Risk line: True
+=== r2_framing_generic_write_backdated.py
+frame() with the revoked key: {'request_id': 'assignment:present-repository:B-1', 'outcome': 'refused', 'reason': 'not_authorized'}
+present after a generic write with framed_at back-dated: {'request_id': 'assignment:present-repository:B-1', 'outcome': 'refused', 'reason': 'missing_framing'}
+=== r2b_framing_generic_write_any_member.py
+frame() by the stranger: {'request_id': 'assignment:present-repository:W-1', 'outcome': 'refused', 'reason': 'not_authorized'}
+present after a generic write of the stranger's framing: refused | shown risk: None
+=== r3_two_messages.py
+messages to the owner for one request version: 1
+  --- reply_to=None | has Choices line: True | says how to answer: True
+  Veldo needs your decision / Request: assignment:present-repository:T-1
+0064 notice message id: 9001
+reply to the 0064 notice was turned into an answer
+messages sent back to the owner about that refused reply: 0
+messages for the revision: 1 | reply_to of each: [9001]
+the v1 0064 notice (message 9001) is replied to or named by any later message: True
+=== r4_telegram_length.py
+brief accepted by the inbox, characters: 3347 | rendered header without brief: 0
+three publish runs: [('published', None), ('already_presented', None), ('already_presented', None)]
+receipt attempt count: 1 | settled or shown: {'anomalies': [], 'assignment_version': 1, 'attempt': 1, 'authority_statement': 'Only owner answers this, as a person member (project_owner) for scope project-a. An answer names this presentation and settles request assignment:present-repository:L-1 version 1 once.', 'brief_digest': 'sha256:2d52beb91b7dca610359ae9f7bb2d4c729f76ca7ae1d71e851dce73cdf5c227
+=== r5_answer_before_publication.py
+published_at 1790009001 | answer platform_timestamp 1790005401 | {'request_id': 'assignment:present-repository:O-1', 'outcome': 'refused', 'presentation_id': 'presentation:telegram_chat:assignment:present-repository:O-1:1:4a2b33c52bd1df6922c195477d40b1e6da829f5390e6efddb92b423be4bda95c', 'reason': 'answer_before_publication'}
+=== r6_deleted_presentation_blocks_revisions.py
+three publish runs for the revision: [('published', None), ('already_presented', None), ('already_presented', None)]
+current presentation is still version 1: 2
+=== r7_second_settlement_contract.py
+0065 outcome: accepted | presentation_settlement ruling: approve
+authority_contract.settle on the same answer: True []
+authority_contract.RULINGS: ('approve', 'reject', 'return_for_elaboration') | request choices: ['accept', 'reject']
+=== r7b_with_approve.py
+0065 outcome: accepted | presentation_settlement ruling: approve
+authority_contract.settle on the same answer: True []
+authority_contract.RULINGS: ('approve', 'reject', 'return_for_elaboration') | request choices: ['approve', 'reject']
+=== r8_reply_link_unbound.py
+genuine replacement: reply_to 9001 reply_to_message_id 9001 problems []
+receipt with reply_to set to None: problems ['the reply target is not the superseded message', 'the reply link is not the one that was sent']
+receipt with reply_to_message_id set to None: problems ['the reply link is not the one that was sent', 'the platform message of part 1 replies to another message than the receipt records']
+=== r9_group_chat_unanswerable.py
+present: refused | owner reply in the enrolled chat: refused unknown_presentation
+=== q1_attacks_that_hold.py
+HOLDS: made-up presentation id ('refused', 'unknown_presentation')
+HOLDS: altered presentation_digest ('refused', 'unknown_presentation')
+HOLDS: altered presentation_version ('refused', 'unknown_presentation')
+HOLDS: altered request_version ('refused', 'unknown_presentation')
+HOLDS: signed with stranger key ('refused', 'not_authorized')
+HOLDS: signed with pm key ('refused', 'not_authorized')
+HOLDS: signed with telegram-edge-other key ('refused', 'not_authorized')
+HOLDS: another service member claims the edge key id ('refused', 'not_authorized')
+HOLDS: edge that is not a service member ('refused', 'not_authorized')
+HOLDS: replayed identical answer after settlement ('refused', 'already_answered')
+HOLDS: answer signed for v1 submitted after revision, before re-presentation ('refused', 'stale_presentation')
+HOLDS: same answer after v2 is presented ('refused', 'superseded_presentation')
+answered v1: None v2: None

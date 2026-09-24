@@ -1835,6 +1835,287 @@ def cases():
     decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
               "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
               "            if False:\n", 'observations')
+    # VELDO-0065: the declared falsifiers plus a second, different defect per named row.
+    def presentation(name, old, new, row):
+        add(65, name, '62_veldo_0065_presentations.py', 'control_channel_presentation.py', old, new, [row])
+
+    presentation('request-digest-omits-version',
+                 "    body = {'request_id': request_id, 'request_version': request_version}\n",
+                 "    body = {'request_id': request_id}\n", 'presentation/revision-identity')
+    presentation('bindings-ignore-request-identity',
+                 "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
+                 "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
+    presentation('render-omits-risk',
+                 "             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
+                 'presentation/receipt-binds-shown-content')
+    presentation('framing-signature-unchecked',
+                 "                or not self._framing_signed(request, framing, state, c)):\n",
+                 "                or False):\n", 'presentation/receipt-binds-shown-content')
+    presentation('presentation-key-without-digest',
+                 "    return 'presentation:%s:%s:%d:%s' % (CHANNEL, request_id, request_version, digest.split(':', 1)[-1])\n",
+                 "    return 'presentation:%s:%s:%d' % (CHANNEL, request_id, request_version)\n",
+                 'presentation/visible-supersession')
+    presentation('replacement-without-reply-link',
+                 "            payload['reply_parameters'] = {'message_id': reply_to, 'allow_sending_without_reply': True}\n",
+                 "            pass\n", 'presentation/visible-supersession')
+    presentation('answer-checks-subject-only',
+                 "    return [f for f in BOUND_FIELDS if receipt.get(f) != current.get(f)]\n",
+                 "    return [f for f in ('subject_digests',) if receipt.get(f) != current.get(f)]\n",
+                 'answer/current-presentation-only')
+    presentation('missing-reference-uses-current',
+                 "        if not all(a.get(k) is not None for k in REFERENCE_FIELDS):\n"
+                 "            raise Refused('missing_presentation', 'an answer names the presentation it addresses')\n",
+                 "        if not all(a.get(k) is not None for k in REFERENCE_FIELDS):\n"
+                 "            now_shown = self.current(a.get('request_id')) or {}\n"
+                 "            a = dict(a, presentation_id=now_shown.get('presentation_id'), presentation_digest=now_shown.get('brief_digest'),\n"
+                 "                     presentation_version=now_shown.get('presentation_version'))\n",
+                 'answer/current-presentation-only')
+    presentation('answer-drops-rationale',
+                 "                  'rationale': a['rationale'], 'attribution': dict(ev),\n",
+                 "                  'rationale': None, 'attribution': dict(ev),\n",
+                 'answer/ruling-and-rationale')
+    presentation('answer-skips-edge-signature',
+                 "        if not verified:\n            raise Refused('not_authorized', 'the answer signature does not verify')\n",
+                 "", 'answer/ruling-and-rationale')
+    presentation('unsent-marked-published', "        data.update(outcome='refused', refusal=refusal)\n",
+                 "        data.update(outcome='published', refusal=refusal)\n", 'answer/unseen-refused')
+    presentation('unseen-only-refused-outcome',
+                 "        if receipt['outcome'] != 'published':\n            raise Refused('unseen_presentation'",
+                 "        if receipt['outcome'] == 'refused':\n            raise Refused('unseen_presentation'",
+                 'answer/unseen-refused')
+    # VELDO-0065 review r7: the answer record is what authority_contract.settle consumes.
+    presentation('answer-records-typed-choice-as-ruling', "'choice': a['choice'], 'ruling': a['ruling'],\n",
+                 "'choice': a['choice'], 'ruling': a['choice'],\n", 'answer/settle-consumes-answer')
+    presentation('unmapped-choice-presented', "            return 'unmapped_choice', None, versions\n",
+                 "            pass\n", 'answer/settle-consumes-answer')
+    # VELDO-0065 review r1: only the requester frames, and the framer is named.
+    presentation('project-owner-frames-again', "                    or principal != c['requested_by']):\n",
+                 "                    or (principal != c['requested_by'] and 'project_owner' not in (entry.get('roles') or []))):\n",
+                 'framing/requester-only')
+    presentation('stored-framing-any-framer', "                or principal != content['requested_by'] or command.get('principal') != principal\n",
+                 "                or command.get('principal') != principal\n",
+                 'framing/requester-only')
+    # VELDO-0065 review r2, r2b: a stored framing counts only as the frame operation accepted it.
+    presentation('stored-framing-any-writer',
+                 "        if written[1] != command['command_id'] or self.store.command_digest(accepted_by) != written[2]:\n",
+                 "        if written[1] != command['command_id']:\n", 'framing/stored-framing-reverified')
+    presentation('stored-framing-key-at-any-time', "        if not usable_key(key, principal, self.clock()):\n",
+                 "        if key is None:\n", 'framing/stored-framing-reverified')
+    # VELDO-0065 review r5: an answer cannot predate the presentation it answers.
+    presentation('answer-time-unchecked',
+                 "        if ev['platform_timestamp'] < receipt['published_at']:\n"
+                 "            raise Refused('answer_before_publication', 'the platform dates the answer before the presentation it answers')\n",
+                 "", 'answer/not-before-publication')
+    presentation('answer-time-same-second-refused', "        if ev['platform_timestamp'] < receipt['published_at']:\n",
+                 "        if ev['platform_timestamp'] <= receipt['published_at']:\n", 'answer/not-before-publication')
+    # VELDO-0065 review r9: a decision is presented only in a person's private chat.
+    presentation('group-chat-presented', "        if enrollment['data']['chat_id'] < 0:\n",
+                 "        if False:\n", 'presentation/private-chat-only')
+    presentation('unpresented-reason-not-counted',
+                 "                unpresented[refusal] = unpresented.get(refusal, 0) + 1\n", "                pass\n",
+                 'presentation/private-chat-only')
+    # VELDO-0065 review r6: a replacement publishes when the superseded message is gone.
+    presentation('replacement-requires-reply-target', "'message_id': reply_to, 'allow_sending_without_reply': True}",
+                 "'message_id': reply_to, 'allow_sending_without_reply': False}", 'presentation/replacement-without-reply-target')
+    presentation('reply-link-always-claimed', "    return record['reply_to'] is not None and replied == record['reply_to']\n",
+                 "    return record['reply_to'] is not None\n", 'presentation/replacement-without-reply-target')
+    # VELDO-0065 review r8: receipt verification binds the reply link.
+    presentation('receipt-reply-link-unchecked',
+                 "    if replied not in (receipt['reply_to'], None) or receipt.get('reply_linked') is not record_linked(receipt, replied):\n",
+                 "    if False:\n", 'presentation/reply-link-verified')
+    presentation('receipt-platform-reply-unchecked',
+                 "        if h.get('reply_to') != (receipt.get('reply_to_message_id') if i == 0 else None):\n", "        if False:\n",
+                 'presentation/reply-link-verified')
+    # VELDO-0065 review r4: a presentation longer than one Telegram message is split, never truncated.
+    presentation('part-length-in-characters', "    return len(text.encode('utf-16-le')) // 2\n",
+                 "    return len(text)\n", 'presentation/long-brief-split')
+    presentation('answer-only-to-last-part', "ev['reply_to_message_id'] not in receipt['message_ids']):",
+                 "ev['reply_to_message_id'] != receipt['message_id']):", 'presentation/long-brief-split')
+    # VELDO-0065 review r3: with presentations enabled, one decision message per request version.
+    def one_message(name, old, new):
+        add(65, name, '62_veldo_0065_presentations.py', 'control_channel_projection.py', old, new,
+            ['projection/one-message-per-version'])
+
+    one_message('projection-notice-beside-presentation',
+                "        return self._project(entry) if receipts is None else self._presented(entry, receipts)\n",
+                "        return self._project(entry)\n")
+    one_message('projection-never-reports-presented',
+                "            outcome = 'presented' if refusal is None and record is None else 'awaiting_presentation'\n",
+                "            outcome = 'awaiting_presentation'\n")
+
+    # VELDO-0065 second review n1: the store decides whether the projection sends, and an earlier
+    # notice is visibly superseded by the first presentation.
+    def projection(name, old, new, row):
+        add(65, name, '62_veldo_0065_presentations.py', 'control_channel_projection.py', old, new, [row])
+
+    projection('projection-ignores-presentations', "        in_use = enabled or framed or bool(mine)\n",
+               "        in_use = enabled\n", 'projection/silent-from-store')
+    projection('projection-ignores-enrollment-setting', "        in_use = enabled or framed or bool(mine)\n",
+               "        in_use = framed or bool(mine)\n", 'projection/silent-from-store')
+    presentation('presentation-ignores-notice',
+                 "        notices = self._notices(request, b['enrolled_chat']) if prior is None else []\n",
+                 "        notices = []\n", 'projection/notice-superseded')
+    presentation('notice-not-marked-superseded',
+                 "            changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}\n",
+                 "            pass\n", 'projection/notice-superseded')
+
+    # VELDO-0065 second review n2: a definitely refused part is sent again after its retry_after.
+    presentation('partial-never-sent-again', "RETRYABLE = ('refused', 'partial')\n", "RETRYABLE = ('refused',)\n",
+                 'presentation/refused-part-sent-again')
+    presentation('retry-after-ignored', "                and self.clock() < existing['retry_not_before']):\n",
+                 "                and False):\n", 'presentation/refused-part-sent-again')
+    # VELDO-0065 second review n5: choices match whatever case and spacing; a reply is never met with silence.
+    presentation('choice-match-case-sensitive', "    text = unicodedata.normalize('NFKC', str(text)).casefold()\n",
+                 "    text = unicodedata.normalize('NFKC', str(text))\n", 'answer/choice-matching-and-feedback')
+    presentation('owner-not-told', "        sent = self._send(ev['chat_id'], text, ev['platform_message_id'])\n",
+                 "        sent = {'platform': None, 'refusal': None}\n", 'answer/choice-matching-and-feedback')
+    # VELDO-0065 third review item 6: only the projection's own notice of the same request is superseded.
+    presentation('notice-kind-from-caller', "            if (held.get('kind') != notice_kind or not isinstance(held.get('data'), dict)\n",
+                 "            if (held.get('kind') != data['supersedes'].get('notice_kind', held.get('kind')) or not isinstance(held.get('data'), dict)\n",
+                 'presentation/notice-kind-fixed')
+    presentation('notice-of-any-request', "                    or held['data'].get('assignment_id') != data['request_id']):\n",
+                 "                    or False):\n", 'presentation/notice-kind-fixed')
+    # VELDO-0065 third review item 4: frame() and the stored-framing check apply one key rule.
+    presentation('frame-key-by-time', "            key = next((k for k in state['keyring'] if usable_key(k, principal, now)), None)\n",
+                 "            key = self.AC.active_key(state['keyring'], principal, now)\n", 'framing/frame-and-presenter-agree')
+    presentation('frame-ledger-unchecked', "            if principal in revoked:\n", "            if False:\n",
+                 'framing/frame-and-presenter-agree')
+    # VELDO-0065 fourth review item 1: pins come from the snapshot the checks read, not a later read.
+    presentation('frame-ledger-pin-read-later',
+                 "                        REVOCATION_LEDGER: seen.get(REVOCATION_LEDGER, {}).get('version', 0)}\n",
+                 "                        REVOCATION_LEDGER: (self._entity(REVOCATION_LEDGER) or {}).get('version', 0)}\n",
+                 'framing/frame-and-presenter-agree')
+    presentation('frame-key-pin-read-later', "                        key['key_id']: seen.get(key['key_id'], {}).get('version', 0),\n",
+                 "                        key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0),\n",
+                 'framing/frame-and-presenter-agree')
+    # VELDO-0065 second review n6 (restored: dropped by 82576d5): the framing key by the journal's order.
+    presentation('framing-key-read-now', "        key = self._as_of(data.get('key_id'), 'verification_key', written[0])\n",
+                 "        key = self._as_of(data.get('key_id'), 'verification_key', 1 << 62)\n", 'framing/key-by-store-order')
+    presentation('framing-ledger-unchecked', "        if not isinstance(revoked, dict) or principal in revoked:\n",
+                 "        if False:\n", 'framing/key-by-store-order')
+    # VELDO-0065 third review item 5: retry_after counts only as a bounded non-negative integer.
+    presentation('retry-after-any-number', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "min(wait, MAX_RETRY_AFTER) if type(wait) in (int, float) and wait >= 0 else None", 'presentation/retry-after-bounded')
+    presentation('retry-after-boolean-accepted', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "min(wait, MAX_RETRY_AFTER) if isinstance(wait, int) and wait >= 0 else None", 'presentation/retry-after-bounded')
+    # VELDO-0065 fourth review item 5: a retry_after above the bound is capped, not ignored.
+    presentation('retry-after-unbounded', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "wait if type(wait) is int and wait >= 0 else None", 'presentation/retry-after-capped')
+    presentation('retry-after-above-bound-ignored', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None", 'presentation/retry-after-capped')
+    # VELDO-0065 third review item 8: choices under NFKC, case folding and separator equivalence.
+    presentation('choice-without-nfkc', "    cut = next((i for i, ch in enumerate(text) if ':' in unicodedata.normalize('NFKC', ch)), None)\n",
+                 "    cut = next((i for i, ch in enumerate(text) if ch == ':'), None)\n", 'answer/choice-normalization')
+    presentation('choice-separators-distinct', "    text = text.translate(CHOICE_SEPARATORS)\n", "",
+                 'answer/choice-normalization')
+    # VELDO-0065 third review item 2: after a version is answered, a reply is told it is answered.
+    presentation('answered-checked-after-choice', "        if recorded is not None:\n", "        if False:\n",
+                 'answer/after-answered-reply')
+    presentation('answered-not-told',
+                 "            self._tell(ev, receipt, 'This request version is already answered: %s.' % recorded['data'].get('ruling'))\n",
+                 "", 'answer/after-answered-reply')
+    # VELDO-0065 third review item 3: one message back per inbound message, recorded.
+    presentation('tell-not-deduplicated', "        if self._entity(tid) is not None:\n            return\n", "",
+                 'answer/tell-once-per-message')
+    presentation('tell-keyed-by-text', "        tid = tell_id(ev['chat_id'], ev['platform_message_id'])\n",
+                 "        tid = tell_id(ev['chat_id'], len(text))\n", 'answer/tell-once-per-message')
+    # VELDO-0065 third review item 1: a notice in flight or of unknown outcome at the first presentation.
+    projection('notice-intent-without-framing-pin',
+               "        versions[framing_entity_id(aid)] = 0  # decided with the request not framed: pinned as absent\n", "",
+               'projection/in-flight-notice-superseded')
+    presentation('pending-notice-never-marked', "        self._reconcile_notices(request)\n", "",
+                 'projection/in-flight-notice-superseded')
+    # VELDO-0065 fourth review item 8: an unreadable revocation ledger fails closed.
+    presentation('journal-reader-ignores-kind', "            if (entry.get('kind') != kind or not isinstance(entry.get('data'), dict)",
+                 "            if (not isinstance(entry.get('data'), dict)", 'framing/ledger-read-fails-closed')
+    # VELDO-0065 fourth review item 6: the whole reply NFKC-normalized before the split; Unicode hyphens separate.
+    presentation('split-before-nfkc', "    cut = next((i for i, ch in enumerate(text) if ':' in unicodedata.normalize('NFKC', ch)), None)\n",
+                 "    cut = next((i for i, ch in enumerate(text) if ch in ':\\uff1a'), None)\n", 'answer/reply-nfkc-before-split')
+    # VELDO-0065 fourth review item 2: the accepted answer delivered again gets no reply.
+    presentation('redelivered-answer-told',
+                 "        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id'])\n",
+                 "        return False\n", 'answer/redelivered-answer-silent')
+    presentation('redelivery-by-chat-only',
+                 "        return recorded is not None and (was.get('chat_id'), was.get('platform_message_id')) == (ev['chat_id'], ev['platform_message_id'])\n",
+                 "        return recorded is not None and was.get('chat_id') == ev['chat_id']\n", 'answer/redelivered-answer-silent')
+    # VELDO-0065 fifth review item 1: the recorded answer delivered again is silent even after the request closed.
+    presentation('redelivery-silent-only-while-pending', "        if self._is_recorded_answer(recorded, ev):\n",
+                 "        if self._is_recorded_answer(recorded, ev) and self.inbox.brief(request).get('category') == 'pending':\n",
+                 'answer/redelivered-after-closed')
+    # VELDO-0065 fourth review item 7: a reply after the request left pending is told so, once.
+    presentation('closed-not-told',
+                 "            self._tell(ev, receipt, 'This request is no longer open, so this reply changes nothing.')\n", "",
+                 'answer/reply-after-closed')
+    presentation('closed-reported-as-stale', "            raise Refused('request_closed', 'the request is no longer pending')\n",
+                 "            raise Refused('stale_presentation', 'the request is no longer pending')\n", 'answer/reply-after-closed')
+    # VELDO-0065 fourth review item 3: the notices of the presented version and older ones, current first.
+    presentation('older-sent-notice-preferred', "        return sorted(found, key=lambda n: -n['request_version'])\n",
+                 "        return sorted(found, key=lambda n: (n['notice_state'] != 'sent', -n['request_version']))\n",
+                 'projection/notices-per-version')
+    presentation('only-first-notice-marked', "        for named in (data['supersedes'] or {}).get('notices') or []:\n",
+                 "        for named in ((data['supersedes'] or {}).get('notices') or [])[:1]:\n", 'projection/notices-per-version')
+    # VELDO-0065 fourth review item 4: a pending notice is reconciled against every presentation that named it.
+    presentation('reconcile-current-only', "        for named_by in self.receipts(request):\n",
+                 "        for named_by in [self.current(request) or {}]:\n",
+                 'projection/pending-notice-reconciled-after-replacement')
+    # VELDO-0065 fifth review item 2: nothing is sent for an edge whose scope does not cover the request.
+    presentation('edge-scope-unchecked',
+                 "        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):\n",
+                 "        if False:\n", 'answer/closed-tell-after-edge-scope')
+    # VELDO-0065 fifth review item 3: frame() refuses an unreadable ledger as the presenter does.
+    presentation('frame-ledger-any-kind', "            if ledger is not None and (ledger.get('kind') != 'revocation_ledger' or not isinstance(ledger.get('data'), dict)\n",
+                 "            if ledger is not None and (not isinstance(ledger.get('data'), dict)\n", 'framing/ledger-read-fails-closed')
+    presentation('frame-ledger-digest-unchecked', "                                       or ledger.get('digest') != self.store.digest_of(\n",
+                 "                                       or False and self.store.digest_of(\n", 'framing/ledger-read-fails-closed')
+    # VELDO-0065 fifth review item 4: the rationale recorded is the owner's own text.
+    presentation('rationale-nfkc-folded', "    return text[:cut], text[cut + 1:]\n",
+                 "    return text[:cut], unicodedata.normalize('NFKC', text[cut + 1:])\n", 'answer/rationale-original-text')
+    presentation('rationale-keeps-the-colon', "    return text[:cut], text[cut + 1:]\n",
+                 "    return text[:cut], text[cut:]\n", 'answer/rationale-original-text')
+    # VELDO-0065 fifth review: a reply to a presentation that no longer binds is told a new one is coming,
+    # and only a request that left pending is closed.
+    presentation('stale-not-told',
+                 "                self._tell(ev, receipt, 'This presentation is out of date; a new presentation is coming. Reply to that one.')\n",
+                 "                pass\n", 'answer/stale-current-told')
+    # VELDO-0065 fifth review: the reviewer's uncaught mutants, each now red by a row case.
+    presentation('x-drop-2043', "for c in '_-\\u2010\\u2011\\u2012\\u2043\\u2212'})",
+                 "for c in '_-\\u2010\\u2011\\u2012\\u2212'})", 'answer/reply-nfkc-before-split')
+    presentation('x-membership-pin-later', "                        principal: entry['entity_version'],\n",
+                 "                        principal: (self._entity(principal) or {}).get('version', 0),\n", 'framing/frame-and-presenter-agree')
+    presentation('x-versions-pin-later', "self.membership.VERSIONS_ENTITY: seen.get(self.membership.VERSIONS_ENTITY, {}).get('version', 0),",
+                 "self.membership.VERSIONS_ENTITY: (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0),", 'framing/frame-and-presenter-agree')
+    presentation('x-notice-transition-any-notice', "    if (receipt.get('outcome') != 'published' or notice not in named\n",
+                 "    if (receipt.get('outcome') != 'published'\n", 'projection/pending-notice-reconciled-after-replacement')
+    # VELDO-0065 sixth review item 1: a promise only where one will come; nothing for an owner no longer current;
+    # the recorded answer before any other message.
+    presentation('stale-neutral-not-told',
+                 "                self._tell(ev, receipt, 'This presentation is no longer current, so this reply changes nothing.')\n",
+                 "                pass\n", 'answer/stale-current-told')
+    presentation('owner-enrollment-unchecked', "        return (enrollment is not None\n", "        return True or (enrollment is not None\n",
+                 'answer/owner-not-current-silent')
+    presentation('owner-membership-unchecked',
+                 "        if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'\n                or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):\n            return False\n        if self._ledger_revokes",
+                 "        if False:\n            return False\n        if self._ledger_revokes", 'answer/owner-not-current-silent')
+    presentation('answered-told-only-while-pending', "        if recorded is not None:\n",
+                 "        if recorded is not None and self.inbox.brief(request).get('category') == 'pending':\n",
+                 'answer/redelivered-after-closed')
+    # VELDO-0065 sixth review item 2: the edge scope check comes before the redelivery check.
+    presentation('redelivery-before-edge-scope',
+                 "        # Authority first: an edge that may not act here learns nothing more, not even which message\n",
+                 "        if self._is_recorded_answer(self._entity(answer_id(request, receipt['request_version'], receipt['owner'])), ev):\n"
+                 "            raise Refused('already_answered', 'this is the recorded answer, delivered again')\n"
+                 "        # Authority first: an edge that may not act here learns nothing more, not even which message\n",
+                 'answer/closed-tell-after-edge-scope')
+    # VELDO-0065 sixth review item 3: a ledger whose revoked has the wrong shape is a named refusal.
+    presentation('frame-ledger-any-shape', "            if not isinstance(revoked, dict):\n",
+                 "            if not isinstance(revoked, (dict, list, int)):\n", 'framing/ledger-read-fails-closed')
+    # VELDO-0065 seventh review: an owner the revocation ledger revokes is not current.
+    presentation('owner-ledger-unread', "        if self._ledger_revokes(state, owner):\n            return False\n", "",
+                 'answer/owner-ledger-revoked-silent')
+    presentation('ledger-owner-not-looked-up', "        return not isinstance(revoked, dict) or principal in revoked\n",
+                 "        return not isinstance(revoked, dict)\n", 'answer/owner-ledger-revoked-silent')
+    presentation('bindings-ledger-unread', "\n                or self._ledger_revokes(state, c['owner'])):\n", "):\n",
+                 'answer/owner-ledger-revoked-silent')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

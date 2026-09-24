@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1165,2 +1164,0 @@
+-        if not verified:
+-            raise Refused('not_authorized', 'the answer signature does not verify')

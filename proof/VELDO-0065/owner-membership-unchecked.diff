@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1112,2 +1112 @@
+-        if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'
+-                or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):
++        if False:

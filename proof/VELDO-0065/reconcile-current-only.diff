@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -973 +973 @@
+-        for named_by in self.receipts(request):
++        for named_by in [self.current(request) or {}]:

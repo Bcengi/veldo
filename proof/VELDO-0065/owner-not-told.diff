@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1084 +1084 @@
+-        sent = self._send(ev['chat_id'], text, ev['platform_message_id'])
++        sent = {'platform': None, 'refusal': None}

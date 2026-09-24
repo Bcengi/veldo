@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -688,2 +688 @@
+-        if (not active or entry['principal_type'] != 'person' or not self.membership.scope_covers(entry.get('scope'), c['scope'])
+-                or self._ledger_revokes(state, c['owner'])):
++        if (not active or entry['principal_type'] != 'person' or not self.membership.scope_covers(entry.get('scope'), c['scope'])):

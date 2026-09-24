@@ -1,0 +1,7 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1171 +1171,3 @@
+-            raise Refused('missing_presentation', 'an answer names the presentation it addresses')
++            now_shown = self.current(a.get('request_id')) or {}
++            a = dict(a, presentation_id=now_shown.get('presentation_id'), presentation_digest=now_shown.get('brief_digest'),
++                     presentation_version=now_shown.get('presentation_version'))

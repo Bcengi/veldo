@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1103 +1103 @@
+-        return not isinstance(revoked, dict) or principal in revoked
++        return not isinstance(revoked, dict)

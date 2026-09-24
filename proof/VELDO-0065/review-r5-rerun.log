@@ -1,0 +1,25 @@
+=== p1_frame_ledger_kind_parity.py
+frame=refused, present=refused missing_framing
+=== p2_redelivered_after_closed.py
+answer first=accepted closed=True redelivery=refused already_answered told=[]
+cancel first=accepted closed=True redelivery=refused already_answered told=[]
+=== p3_closed_tell_before_edge_scope.py
+closed=False: refused not_authorized, sent to the owner: 0
+closed=True: refused not_authorized, sent to the owner: 0
+=== p4_rationale_nfkc.py
+typed 'reject: it costs 10\u2076 dollars and needs 5 m\xb2' -> accepted, recorded rationale 'it costs 10\u2076 dollars and needs 5 m\xb2'
+=== p6_mutant_nonequivalence.py
+pending request, framer revoked, owner replies:
+  real    ('stale_presentation', ['This presentation is out of date; a new presentation is coming. Reply to that one.'])
+  mutant  ('request_closed', ['This request is no longer open, so this reply changes nothing.'])
+BUG (teeth): x-closed-any-refusal survives the suite yet tells a PENDING request's owner "no longer open"
+membership revoked between frame()'s checks and its commit:
+  real    ('refused', 'stale_version', 'missing_framing')
+  mutant  ('accepted', None, 'missing_framing')
+BUG (teeth): x-membership-pin-later survives the suite yet frame() accepts a framing whose requester was revoked before its commit
+VELDO-0065 suite seconds: 11.720
+missing suite dir: [(None, '<probes>/tmp-fallback/v65-uullt63v')] | rows 39, failed []
+left behind: []
+VELDO-0065 suite seconds: 9.928
+unwritable suite dir: [(None, '<probes>/tmp-fallback/v65-nxp75vi3')] | rows 39, failed []
+left behind: []

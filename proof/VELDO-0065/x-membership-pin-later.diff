@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -859 +859 @@
+-                        principal: entry['entity_version'],
++                        principal: (self._entity(principal) or {}).get('version', 0),

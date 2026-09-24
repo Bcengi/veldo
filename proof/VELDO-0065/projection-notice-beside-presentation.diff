@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -418 +418 @@
+-        return self._project(entry) if receipts is None else self._presented(entry, receipts)
++        return self._project(entry)

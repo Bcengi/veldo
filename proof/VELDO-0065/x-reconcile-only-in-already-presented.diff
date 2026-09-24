@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -984 +983,0 @@
+-        self._reconcile_notices(request)
+@@ -985,0 +985 @@
++        if record is None: self._reconcile_notices(request)

@@ -1,0 +1,85 @@
+diff -ru repro/q1_attacks_that_hold.py rerun65/q1_attacks_that_hold.py
+--- repro/q1_attacks_that_hold.py	2026-09-23 07:30:44.457798405 -0400
++++ rerun65/q1_attacks_that_hold.py	2026-09-23 08:03:41.432126981 -0400
+@@ -34,4 +34,4 @@
+ res = presenter.answer(pkt); show('answer signed for v1 submitted after revision, before re-presentation', res, res['outcome'] == 'refused')
+ presenter.present(rid2)
+ res = presenter.answer(pkt); show('same answer after v2 is presented', res, res['outcome'] == 'refused')
+-print('settled v1:', presenter.settlement(rid2, 1), 'v2:', presenter.settlement(rid2, 2))
++print('answered v1:', presenter.answer_record(rid2, 1, 'owner'), 'v2:', presenter.answer_record(rid2, 2, 'owner'))
+diff -ru repro/r1_framing_not_requester.py rerun65/r1_framing_not_requester.py
+--- repro/r1_framing_not_requester.py	2026-09-23 07:27:16.301956030 -0400
++++ rerun65/r1_framing_not_requester.py	2026-09-23 08:03:41.431923342 -0400
+@@ -17,9 +17,9 @@
+ f = entity(V.framing_id(rid))['data']
+ shown = api['messages'][(r2['chat_id'], r2['message_id'])]['text']
+ print('framed_by now:', f['framed_by'], '| requested_by:', entity(rid)['data']['requested_by'])
+-print('risk line shown:', [l for l in shown.split('\n') if l.startswith('Risk:')])
++print('risk line shown:', [l for l in shown.split('\n') if l.startswith('Risk')])
+ print('receipt names who framed:', 'framed_by' in r2, '| "owner" or "pm" named on the Risk line:',
+-      any(w in [l for l in shown.split('\n') if l.startswith('Risk:')][0] for w in ('owner', 'pm')))
++      any(w in [l for l in shown.split('\n') if l.startswith('Risk')][0] for w in ('owner', 'pm')))
+ if f['framed_by'] != entity(rid)['data']['requested_by'] and r2['risk_statement'] == 'None: nothing can go wrong.':
+     print('BUG: a principal other than the requester (here the owner who answers) replaced the requester\'s '
+           'signed risk statement at the same request version, and the presentation shows it unattributed')
+diff -ru repro/r3_two_messages.py rerun65/r3_two_messages.py
+--- repro/r3_two_messages.py	2026-09-23 07:27:49.631828098 -0400
++++ rerun65/r3_two_messages.py	2026-09-23 08:03:41.431992739 -0400
+@@ -6,7 +6,7 @@
+     ('V', 'P', 'I', 'S', 'ids', 'presenter', 'api', 'frame', 'command', 'content', 'inbox', 'conn', 'journal_sign',
+      'owner_reply', 'answer'))
+ edge64 = P.TelegramEdge('http://127.0.0.1:%d' % L['server'].server_address[1], api['token'])
+-projector = P.Projection(S, inbox, edge64, conn, 'authority', journal_sign)
++projector = P.Projection(S, inbox, edge64, conn, 'authority', journal_sign, presenter=presenter)
+ command('pm', 'open', 'T-1', assignment=content())
+ rid = I.assignment_id(ids['repository_uuid'], 'T-1')
+ frame('pm', 'T-1', 1, 'Low: a wrong choice costs one review cycle.')
+@@ -19,7 +19,7 @@
+           '| says how to answer:', 'Answer by replying' in text)
+     print('  ' + text.split('\n')[0], '/', text.split('\n')[1])
+ notice = projector.correlation(rid) if hasattr(projector, 'correlation') else None
+-rec = next(r for r in (L['entity'](e[0])['data'] for e in conn.execute("SELECT id FROM entities WHERE kind='channel_projection'")) )
++rec = next((r for r in (L['entity'](e[0])['data'] for e in conn.execute("SELECT id FROM entities WHERE kind='channel_projection'"))), None) or dict(presenter.current(rid), message_id=presenter.current(rid)['message_id'])
+ print('0064 notice message id:', rec.get('message_id'))
+ fake_receipt = {'chat_id': rec['chat_id'], 'message_id': rec['message_id']}
+ msg = owner_reply(fake_receipt, 'accept: looks good')
+diff -ru repro/r7b_with_approve.py rerun65/r7b_with_approve.py
+--- repro/r7b_with_approve.py	2026-09-23 07:29:37.117300045 -0400
++++ rerun65/r7b_with_approve.py	2026-09-23 08:03:41.432063375 -0400
+@@ -10,8 +10,8 @@
+ rid = opened('S-1', choices=('approve', 'reject')); presenter.present(rid)
+ r = presenter.current(rid)
+ out = answer(owner_reply(r, 'approve: fine as shown'))
+-settled = presenter.settlement(rid, 1)
+-a = entity(settled['answer_id'])['data']['assertion']
++settled = presenter.answer_record(rid, 1, 'owner')
++a = settled['assertion']
+ print('0065 outcome:', out['outcome'], '| presentation_settlement ruling:', settled['ruling'])
+ delegation = dict(principal='owner', channel='telegram_chat', assertion_kinds=['decision_answer'],
+                   authority_scope=['project-a'], request_version=1, presentation_version=r['presentation_version'],
+diff -ru repro/r7_second_settlement_contract.py rerun65/r7_second_settlement_contract.py
+--- repro/r7_second_settlement_contract.py	2026-09-23 07:29:28.766383971 -0400
++++ rerun65/r7_second_settlement_contract.py	2026-09-23 08:03:41.432030567 -0400
+@@ -10,8 +10,8 @@
+ rid = opened('S-1'); presenter.present(rid)
+ r = presenter.current(rid)
+ out = answer(owner_reply(r, 'accept: fine as shown'))
+-settled = presenter.settlement(rid, 1)
+-a = entity(settled['answer_id'])['data']['assertion']
++settled = presenter.answer_record(rid, 1, 'owner')
++a = settled['assertion']
+ print('0065 outcome:', out['outcome'], '| presentation_settlement ruling:', settled['ruling'])
+ delegation = dict(principal='owner', channel='telegram_chat', assertion_kinds=['decision_answer'],
+                   authority_scope=['project-a'], request_version=1, presentation_version=r['presentation_version'],
+diff -ru repro/r9_group_chat_unanswerable.py rerun65/r9_group_chat_unanswerable.py
+--- repro/r9_group_chat_unanswerable.py	2026-09-23 07:31:01.754853115 -0400
++++ rerun65/r9_group_chat_unanswerable.py	2026-09-23 08:03:41.432095817 -0400
+@@ -10,7 +10,7 @@
+         dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=group, revoked_at=None))
+ rid = opened('G-1')
+ pub = presenter.present(rid)
+-r = presenter.current(rid)
++r = presenter.current(rid) or {}
+ res = answer(owner_reply(r, 'accept: from the owner in the enrolled group', sender=owner_chat, chat=group))
+ print('present:', pub['outcome'], '| owner reply in the enrolled chat:', res['outcome'], res.get('reason'))
+ if pub['outcome'] == 'published' and res.get('reason') == 'not_owner':

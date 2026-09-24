@@ -1,0 +1,28 @@
+=== q1_stale_tell_promise.py
+reframed-pending       reply -> refused stale_presentation; told ['This presentation is out of date; a new presentation is coming. Reply to that one.']; present() -> published None; new presentation came: True
+reframed-answered      reply -> refused already_answered; told ['This request version is already answered: approve.']; present() -> answered None; new presentation came: False
+framer-revoked         reply -> refused stale_presentation; told ['This presentation is no longer current, so this reply changes nothing.']; present() -> refused missing_framing; new presentation came: False
+owner-revoked          reply -> refused owner_not_current; told []; present() -> refused missing_authority; new presentation came: False
+=== q2_stale_tell_more.py
+unenrolled: reply -> refused owner_not_current; sent []; present() -> refused invalid_enrollment
+3 distinct replies each delivered twice: 3 messages back, replying to [9004, 9005, 9006]
+bot-sent reply: {'outcome': 'refused', 'reason': 'not_owner'}
+reply to a non-presentation message: {'outcome': 'refused', 'reason': 'unknown_presentation'}
+=== q3_closed_tell_unenrolled.py
+closed, channel-enrollment:telegram_chat:owner revoked: refused owner_not_current, sent []
+closed, owner revoked: refused owner_not_current, sent []
+=== q4_ledger_shape.py
+revoked=5: frame ('refused', 'not_authorized'), present ('refused', 'missing_framing')
+revoked=True: frame ('refused', 'not_authorized'), present ('refused', 'missing_framing')
+revoked='pmx': frame ('refused', 'not_authorized'), present ('refused', 'missing_framing')
+revoked=['pm']: frame ('refused', 'not_authorized'), present ('refused', 'missing_framing')
+=== q5_ledger_shape_presenter.py
+direct frame: ?
+direct frame result: {'ok': None, 'code': None}
+present: {'request_id': 'assignment:present-repository:LP-1', 'outcome': 'refused', 'reason': 'missing_framing'}
+=== q6_revise_then_present.py
+revise -> True request_version now 2
+reply -> refused stale_presentation told ['This presentation is no longer current, so this reply changes nothing.']; present() -> refused missing_framing; came: False
+BUG: the row's headline case promises a new presentation; present() makes none until the requester frames the new version (missing_framing)
+=== q7_scope_vs_redelivery.py
+first accepted; out-of-scope edge: recorded answer again -> refused not_authorized; another reply -> refused not_authorized; sent 0

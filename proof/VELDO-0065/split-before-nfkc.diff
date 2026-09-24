@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -228 +228 @@
+-    cut = next((i for i, ch in enumerate(text) if ':' in unicodedata.normalize('NFKC', ch)), None)
++    cut = next((i for i, ch in enumerate(text) if ch in ':\uff1a'), None)

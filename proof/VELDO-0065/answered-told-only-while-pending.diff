@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1208 +1208 @@
+-        if recorded is not None:
++        if recorded is not None and self.inbox.brief(request).get('category') == 'pending':

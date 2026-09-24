@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -541 +541 @@
+-        for named in (data['supersedes'] or {}).get('notices') or []:
++        for named in ((data['supersedes'] or {}).get('notices') or [])[:1]:

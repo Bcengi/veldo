@@ -41,6 +41,18 @@ observation naming why, so nothing is blindly sent again and one bad reply never
 projection of the entries after it. Looking the message up and recovering an unknown or pending
 record is Release 2 work.
 
+ONE DECISION MESSAGE WHEN PRESENTATIONS ARE IN USE (VELDO-0065). Whether this projection sends is
+decided from the store, never from how it was constructed: when the owner's enrollment says
+`presentations: enabled`, or the request has a VELDO-0065 framing (its requester's signed request to
+present it) or presentation receipt, it sends no
+notice of its own, because the versioned presentation is the one decision message and the owner's
+reply to it is what settles. Such an entry is reported as `presented` when a presentation of its
+current request version is published, otherwise `awaiting_presentation`. A projection given the
+optional `presenter` reports the presenter's own verdict and reason, and its metrics are the
+presenter's. A notice this projection sent before presentations were in use is visibly superseded
+by the first presentation (a reply that names it), which marks the notice's record superseded.
+Every other entry is projected as below.
+
 NOT AUTHORITY. A projection is a proxy of the inbox. Nothing here reads an answer, settles a
 request or changes an assignment. Presentation receipts and supersession are VELDO-0065, answer
 acquisition and attribution VELDO-0066, edge signing VELDO-0067, activation of the live edge
@@ -68,6 +80,20 @@ INTENT_FIELDS = ('schema', 'channel', 'assignment_id', 'assignment_version', 're
                  'presentation_digest', 'presentation', 'owner', 'enrollment_id', 'enrollment_version',
                  'enrolled_chat')
 ENROLLMENT_KIND = 'channel_enrollment'
+# The enrollment field that turns presentations on for an owner's chat, and VELDO-0065's receipt kind
+# (control_channel_presentation.RECEIPT_KIND; the VELDO-0065 suite binds the two).
+PRESENTATIONS_FIELD = 'presentations'
+PRESENTATION_KIND = 'channel_presentation'
+# VELDO-0065's framing kind (control_channel_presentation.FRAMING_KIND): a framed request is one its
+# requester asked to be presented, so the presentation, not a notice, is its decision message.
+FRAMING_KIND = 'presentation_framing'
+
+
+def framing_entity_id(assignment):
+    """The id of a request's VELDO-0065 framing (control_channel_presentation.framing_id; the suite
+    binds the two). A notice intent pins its absence, so a framing that lands after this projection
+    decided to send refuses the intent and nothing is sent beside the presentation."""
+    return 'presentation-framing:%s' % assignment
 ENROLLMENT_SCHEMA = 'veldo.channel_enrollment/v1'
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text')
 # What a record that is not attempted again reports on a later run.
@@ -176,14 +202,20 @@ class TelegramEdge:
                 'text': result['text']}
 
 
-def telegram_refusal(reply, status):
-    """Whether an HTTP error reply is the Bot API's own error answer for `status`: a JSON object
-    with `ok` false and `error_code` equal to the status. An unreadable body is not."""
+def telegram_error_answer(reply, status):
+    """The Bot API's own error answer for `status` carried by an HTTP error reply (a JSON object with
+    `ok` false and `error_code` equal to the status), or None. An unreadable body is None."""
     try:
         answer = json.loads(reply.read())
     except (http.client.HTTPException, OSError, ValueError):
-        return False
-    return isinstance(answer, dict) and answer.get('ok') is False and answer.get('error_code') == status
+        return None
+    ok = isinstance(answer, dict) and answer.get('ok') is False and answer.get('error_code') == status
+    return answer if ok else None
+
+
+def telegram_refusal(reply, status):
+    """Whether an HTTP error reply is the Bot API's own error answer for `status`."""
+    return telegram_error_answer(reply, status) is not None
 
 
 def anomalies(record, platform):
@@ -238,8 +270,10 @@ def _record_transition(params, before):
 class Projection:
     """Projects one inbox to one Telegram edge and records correlation through the store."""
 
-    def __init__(self, store, inbox, edge, conn, journal_signer, sign, authority_generation=1, clock=time.time):
+    def __init__(self, store, inbox, edge, conn, journal_signer, sign, authority_generation=1, clock=time.time, *,
+                 presenter=None):
         self.store, self.inbox, self.edge, self.conn = store, inbox, edge, conn
+        self.presenter = presenter
         self.journal_signer, self.sign = journal_signer, sign
         self.authority_generation, self.clock = authority_generation, clock
         self.observations = []
@@ -255,7 +289,7 @@ class Projection:
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 
     def _result(self, assignment, versions, outcome, reason, **extra):
-        accepted = outcome in ('sent', 'already_projected')
+        accepted = outcome in ('sent', 'already_projected', 'presented')
         self.counts['accepted' if accepted else 'refused'] += 1
         self.observations.append(dict(self.inbox.ids, operation='project', channel=CHANNEL,
                                       assignment_id=assignment, accepted_versions=versions,
@@ -327,6 +361,7 @@ class Projection:
         if refusal:
             return self._result(aid, versions, 'refused', refusal)
         versions[enrollment['id']] = enrollment['version']
+        versions[framing_entity_id(aid)] = 0  # decided with the request not framed: pinned as absent
         text = render(brief)
         record = dict(schema=SCHEMA, channel=CHANNEL, assignment_id=aid, assignment_version=entry['version'],
                       request_version=entry['request_version'], presentation_digest=presentation_digest(text.encode('utf-8')),
@@ -353,12 +388,45 @@ class Projection:
         reason = ','.join(done['anomalies']) if done['outcome'] == 'anomaly' else done['refusal']
         return self._result(aid, versions, done['outcome'], reason, projection_id=pid)
 
+    def _of_request(self, kind, request):
+        return [d for d in (json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (kind,)))
+                if d.get('request_id') == request]
+
+    def _presentations(self, entry):
+        """The presentation receipts of this entry's request, or None when presentations are not in
+        use for it: not enabled on its owner's enrollment, and the request neither framed nor presented."""
+        mine = self._of_request(PRESENTATION_KIND, entry['id'])
+        framed = bool(self._of_request(FRAMING_KIND, entry['id']))
+        row = self.conn.execute('SELECT data FROM entities WHERE id=? AND kind=?',
+                                (enrollment_id(entry['owner']), ENROLLMENT_KIND)).fetchone()
+        enabled = row is not None and json.loads(row[0]).get(PRESENTATIONS_FIELD) == 'enabled'
+        in_use = enabled or framed or bool(mine)
+        return mine if in_use else None
+
+    def _presented(self, entry, receipts):
+        """Presentations are in use for this entry: nothing is sent here, the presentation is the message."""
+        if self.presenter is not None:
+            refusal, record, _ = self.presenter.compose(entry['id'])
+            outcome = 'presented' if refusal is None and record is None else 'awaiting_presentation'
+            return self._result(entry['id'], {entry['id']: entry['version']}, outcome, refusal)
+        shown = any(r.get('outcome') == 'published' and r.get('request_version') == entry['request_version'] for r in receipts)
+        return self._result(entry['id'], {entry['id']: entry['version']},
+                            'presented' if shown else 'awaiting_presentation', None)
+
+    def _decide(self, entry):
+        receipts = self._presentations(entry)
+        return self._project(entry) if receipts is None else self._presented(entry, receipts)
+
     def project(self):
         """Attempt each pending entry that has no settled record at its request version; return
-        one result per pending entry."""
-        return [self._project(entry) for entry in self.inbox.index()['entries'] if entry['category'] == 'pending']
+        one result per pending entry. An entry whose presentations are in use is reported, not sent."""
+        return [self._decide(e) for e in self.inbox.index()['entries'] if e['category'] == 'pending']
 
     def metrics(self):
+        if self.presenter is not None:
+            m = self.presenter.metrics()
+            return dict(self.counts, pending=m['pending'], unknown=m['unknown'], anomalies=m['anomalies'],
+                        unpresented_by_reason=m['unpresented_by_reason'])
         records = {e['id']: self.record(projection_id(e['id'], e['request_version']))
                    for e in self.inbox.index()['entries'] if e['category'] == 'pending'}
         return dict(self.counts,

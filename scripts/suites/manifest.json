@@ -635,6 +635,15 @@
    ],
    "regions": "Decision-record dependency evaluation: exact signed bindings, named blockers and scope at every enabled consumer",
    "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, real OpenSSH Ed25519 settlement signatures and a real enrollment binding."
+   },
+   {
+   "name": "62_veldo_0065_presentations",
+   "file": "62_veldo_0065_presentations.py",
+   "requires": [
+    "62_veldo_0065_presentations"
+   ],
+   "regions": "Versioned Telegram presentation receipts, visible supersession and presentation-bound answers",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and loopback HTTP."
   }
  ]
 }

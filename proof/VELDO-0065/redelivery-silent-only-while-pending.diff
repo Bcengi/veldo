@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1200 +1200 @@
+-        if self._is_recorded_answer(recorded, ev):
++        if self._is_recorded_answer(recorded, ev) and self.inbox.brief(request).get('category') == 'pending':
