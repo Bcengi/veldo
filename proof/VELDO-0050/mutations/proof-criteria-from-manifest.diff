@@ -1,0 +1,5 @@
+--- a/.veldo/control_proof.py
++++ b/.veldo/control_proof.py
+@@ -354 +354 @@
+-    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in spec["criteria"] if cid not in ids)
++    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in ids if cid not in ids)  # defect: the manifest names its own universe

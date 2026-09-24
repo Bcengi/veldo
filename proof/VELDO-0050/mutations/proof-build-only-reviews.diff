@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -716 +716 @@
+-            if stop_after == "proof":
++            if stop_after == "proof" and False:  # defect: a build-only run goes on into review

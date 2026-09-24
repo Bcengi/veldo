@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -742 +742 @@
+-            if gate is None:
++            if True:  # defect: the executor emits verdict.recorded itself

@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0050_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0050-durable-contextual-proof.md"
   - "specs/index.md"
   - "proof/VELDO-0050/*"
@@ -107,6 +108,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: after a build, the executor stores the proof bundle as accepted, immutable evidence bound
+  to the implementation commit and the spec revision before the unit is offered as built or for review.
+  A reviewer in a fresh process, with no builder memory or temporary files, resolves the same bundle and
+  checks its artifact digests. Contextual validation derives the criteria, evidence and checks from the
+  accepted spec and the installed catalog. The proof carries the gate's actual checks with their
+  captured output and exit, and a check with no observation is never recorded as passed. The executor
+  emits only its own events, and a build-only run leaves landing receipts absent.
+- Threat model: a builder that hands in a proof which does not cover the spec: empty, omitted, duplicate
+  or invented criterion mappings, a commit that does not exist, the wrong spec revision, a missing
+  producer or observation, a wrong digest, missing evidence, or a check claimed passed that never ran;
+  and the executor recording a review verdict or completion that belongs to another service. The owner's
+  account, the store, Git and the gate script are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); crash recovery
+  at each write barrier and journal projection replay (Release 2, see History); journal projection itself
+  (VELDO-0051); forged rows in our own store and files planted in the installed directory; resource
+  exhaustion by our own account.
+
 ## Notes
 
 Preserve implementation commit, proof artifact/evidence commit and final candidate as distinct
@@ -131,3 +151,18 @@ write-barrier crash recovery and AC4 projection replay moved to Release 2. Fresh
 proof access, contextual coverage, actual checks and build-only distinction remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-24 implementation: `.veldo/control_proof.py` (engine copy identical, laid by the scaffolder)
+is the proof service. Its two store commands, each the only writer of its entity kind, record the
+gate observation when it is captured and accept one immutable proof bundle per unit and built
+commit after complete contextual validation inside the store's transaction; `resolve()` lets a
+fresh reviewer re-derive the bundle from the store and Git alone. The criterion and evidence sets
+come from the accepted spec at the run's base, the check set from the installed gate catalog there,
+and the checks a bundle records only from the observed gate output. With the floor enabled the
+executor accepts the proof before a build is offered as built or for review, and emits only its own
+events. The pre-factory loop keeps its structural check and, because suite 03 pins it, its
+verdict.recorded hand-off. The footprint adds `scripts/check_teeth_mutations.py`, the registry of
+the 24 finding-50 negative controls, as VELDO-0049 did. Suite 64 has 14 rows, each assertion row
+recorded red by assertion at 91fb549 (`proof/VELDO-0050/`). Stated there: the floor authority does
+not yet require the stored bundle, and builders and the proof skill must write the new manifest
+fields.

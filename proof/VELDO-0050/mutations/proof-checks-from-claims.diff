@@ -1,0 +1,6 @@
+--- a/.veldo/control_proof.py
++++ b/.veldo/control_proof.py
+@@ -484 +484,2 @@
+-              "checks": checks, "producer": producer, "builder": builder if _text(builder) else None}
++              "checks": [dict(c) for c in claims if isinstance(c, dict)], "producer": producer,  # defect: the claims recorded as checks
++              "builder": builder if _text(builder) else None}
