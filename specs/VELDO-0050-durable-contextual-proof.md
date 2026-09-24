@@ -107,6 +107,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: after a build, the executor stores the proof bundle as accepted, immutable evidence bound
+  to the implementation commit and the spec revision before the unit is offered as built or for review.
+  A reviewer in a fresh process, with no builder memory or temporary files, resolves the same bundle and
+  checks its artifact digests. Contextual validation derives the criteria, evidence and checks from the
+  accepted spec and the installed catalog. The proof carries the gate's actual checks with their
+  captured output and exit, and a check with no observation is never recorded as passed. The executor
+  emits only its own events, and a build-only run leaves landing receipts absent.
+- Threat model: a builder that hands in a proof which does not cover the spec: empty, omitted, duplicate
+  or invented criterion mappings, a commit that does not exist, the wrong spec revision, a missing
+  producer or observation, a wrong digest, missing evidence, or a check claimed passed that never ran;
+  and the executor recording a review verdict or completion that belongs to another service. The owner's
+  account, the store, Git and the gate script are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); crash recovery
+  at each write barrier and journal projection replay (Release 2, see History); journal projection itself
+  (VELDO-0051); forged rows in our own store and files planted in the installed directory; resource
+  exhaustion by our own account.
+
 ## Notes
 
 Preserve implementation commit, proof artifact/evidence commit and final candidate as distinct
