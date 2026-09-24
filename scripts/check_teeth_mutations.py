@@ -3908,6 +3908,55 @@ def cases():
              module='judgment_load.py')
     events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
              module='judgment_load.py')
+    # VELDO-0136: each criterion's declared falsifier, and at least one different defect per named row.
+    def hints(name, module, old, new, row, also=()):
+        add(136, name, '68_veldo_0136_hints.py', module, old, new, [row], also=also)
+
+    # AC1 (declared falsifier): a plain message, one with no reply reference, is sent nothing.
+    hints('plain-message-not-hinted', 'control_channel_attribution.py',
+          "NOT_A_REPLY = ('missing_reply_reference', 'unknown_presentation')\n",
+          "NOT_A_REPLY = ('unknown_presentation',)\n", 'hint/tells-owner-to-reply')
+    # AC1: the hint names only the first waiting request, so with two waiting one goes unnamed.
+    hints('hint-names-first-only', 'control_channel_presentation.py',
+          "        for r in receipts:\n            line = 'Request:",
+          "        for r in receipts[:1]:\n            line = 'Request:", 'hint/tells-owner-to-reply')
+    # AC2 (declared falsifier): the plain message is recorded as the answer to the waiting request.
+    hints('plain-message-recorded-as-answer', 'control_channel_attribution.py',
+          "        reply = message.get('reply_to_message')\n        if not isinstance(reply, dict):\n",
+          "        reply = message.get('reply_to_message')\n"
+          "        waiting = self.presenter.waiting(known['principal'], fields['chat_id']) if not isinstance(reply, dict) else []\n"
+          "        if waiting:  # defect: a message that replies to nothing answers the waiting request\n"
+          "            part = waiting[0]['platform_parts'][-1]\n"
+          "            reply = {'message_id': part['message_id'], 'chat': {'id': part['chat_id']}, 'date': part['date'],\n"
+          "                     'text': part['text'], 'from': {'id': record['bot_id'], 'is_bot': True}}\n"
+          "            message = dict(message, reply_to_message=reply)\n"
+          "            fields = dict(fields, reply_to_message_id=part['message_id'], reply_chat_id=part['chat_id'],\n"
+          "                          reply_date=part['date'])\n"
+          "        if not isinstance(reply, dict):\n", 'hint/owner-only-never-an-answer')
+    # AC2: the waiting set is every pending presentation, not the sender's own in his own chat, so a
+    # member with nothing waiting is told another owner's requests.
+    hints('hint-to-anyone-waiting', 'control_channel_presentation.py',
+          " or receipt.get('owner') != principal\n"
+          "                    or receipt.get('chat_id') != chat or receipt.get('enrolled_chat') != chat\n",
+          "\n", 'hint/owner-only-never-an-answer')
+    # AC2: the hint is kept as an answer record.
+    hints('hint-kept-as-answer', 'control_channel_presentation.py', "HINT_KIND = 'presentation_hint'\n",
+          "HINT_KIND = 'presentation_answer'\n", 'hint/owner-only-never-an-answer')
+    # AC3 (declared falsifier): a hint on every message. The one-hint rule is held in three places (the
+    # due filter, the expected version 0 of each mark, the transition's create-once), all removed.
+    permissive = (("                         dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')\n",
+                   "                         dict({hid: 0}, **{k: (self._entity(k) or {}).get('version', 0) for k in marks}),\n"
+                   "                         command_id=hid + ':intent')\n"),
+                  ("            if (not isinstance(mark, str) or mark in changes or (before.get(mark) or {}).get('data') is not None\n",
+                   "            if (not isinstance(mark, str) or mark in changes\n"))
+    hints('hint-every-message', 'control_channel_presentation.py',
+          "        due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]\n",
+          "        due = list(waiting)\n", 'hint/once-per-pending-request', also=permissive)
+    # AC3: when a new request is due, the hint names again the requests already hinted.
+    hints('hint-renames-hinted', 'control_channel_presentation.py',
+          "        text, named = self._hint_text(m.get('cause'), due)\n",
+          "        text, named = self._hint_text(m.get('cause'), waiting if due else due)\n",
+          'hint/once-per-pending-request', also=permissive)
     return result
 
 

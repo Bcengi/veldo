@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -94 +94 @@
+-NOT_A_REPLY = ('missing_reply_reference', 'unknown_presentation')
++NOT_A_REPLY = ('unknown_presentation',)

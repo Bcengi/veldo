@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1180 +1180 @@
+-        for r in receipts:
++        for r in receipts[:1]:

@@ -1,0 +1,372 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0136 hint/tells-owner-to-reply",
+    true
+   ],
+   [
+    "VELDO-0136 hint/owner-only-never-an-answer",
+    true
+   ],
+   [
+    "VELDO-0136 hint/once-per-pending-request",
+    true
+   ]
+  ],
+  "seconds": 1.598
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 1 waiting request gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 1 waiting request: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: each hinted message is observed with its cause, evidence, update, hint and named requests, never text",
+    "VELDO-0136 hint/tells-owner-to-reply detail: metrics count the hints sent and the owner messages refused as not a reply",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: the owner's plain message is refused as not a reply and gets its one hint naming his request",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: a stranger (a member with nothing waiting), an unknown account, a revoked owner and bot senders get nothing, and nothing goes anywhere for them",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: control: the same owner, a current member again, gets his hint",
+    "VELDO-0136 hint/once-per-pending-request detail: three plain messages for one waiting request get one hint, to the first",
+    "VELDO-0136 hint/once-per-pending-request detail: the waiting request version is marked hinted by that one hint, and the later messages are not hinted",
+    "VELDO-0136 hint/once-per-pending-request detail: the later messages are observed as already hinted, naming the request",
+    "VELDO-0136 hint/once-per-pending-request detail: a newly waiting request gets its own one hint, which does not name the request already hinted"
+   ],
+   "diff": "proof/VELDO-0136/plain-message-not-hinted.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/tells-owner-to-reply",
+    "VELDO-0136 hint/owner-only-never-an-answer",
+    "VELDO-0136 hint/once-per-pending-request"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "2bec1524a6e7bdb0d8b2034a1f8cdef9710802b1664823032b999bbf55e18f14",
+   "name": "plain-message-not-hinted",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/tells-owner-to-reply"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     false
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     false
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     false
+    ]
+   ],
+   "seconds": 1.529,
+   "source_sha256": "dbe0549469231ab6825ef09ed3d5c91f4a01c1fd62061ea8e4a1d9cbc6dbf933"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to the bot's help message with 2 waiting requests gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to the bot's help message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to another bot message with 2 waiting requests gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to another bot message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names"
+   ],
+   "diff": "proof/VELDO-0136/hint-names-first-only.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/tells-owner-to-reply"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "ca99a23270fa6398475fb9c89a5ac7e95857f774764ed1bca214663de0c1a5fb",
+   "name": "hint-names-first-only",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/tells-owner-to-reply"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     false
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     true
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     true
+    ]
+   ],
+   "seconds": 1.626,
+   "source_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 1 waiting request is refused as missing_reply_reference",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 1 waiting request gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 1 waiting request: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: control: replying to each presentation records each answer and sends nothing back",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests is refused as missing_reply_reference",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests gets exactly one message back: a reply to it saying to reply to the request message, naming every waiting request",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: control: replying to each presentation records each answer and sends nothing back",
+    "VELDO-0136 hint/tells-owner-to-reply detail: each hinted message is observed with its cause, evidence, update, hint and named requests, never text",
+    "VELDO-0136 hint/tells-owner-to-reply detail: metrics count the hints sent and the owner messages refused as not a reply",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: the owner's plain message is refused as not a reply and gets its one hint naming his request",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: a stranger (a member with nothing waiting), an unknown account, a revoked owner and bot senders get nothing, and nothing goes anywhere for them",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: the hint records no answer: no answer record, the refusal kept as decided, the request still pending",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: control: the same owner, a current member again, gets his hint",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: control: the owner's reply to the request message is his answer, from that reply alone",
+    "VELDO-0136 hint/once-per-pending-request detail: three plain messages for one waiting request get one hint, to the first",
+    "VELDO-0136 hint/once-per-pending-request detail: the waiting request version is marked hinted by that one hint, and the later messages are not hinted",
+    "VELDO-0136 hint/once-per-pending-request detail: the later messages are observed as already hinted, naming the request",
+    "VELDO-0136 hint/once-per-pending-request detail: a newly waiting request gets its own one hint, which does not name the request already hinted",
+    "VELDO-0136 hint/once-per-pending-request detail: control: replying to each presentation records each answer and sends nothing back"
+   ],
+   "diff": "proof/VELDO-0136/plain-message-recorded-as-answer.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/tells-owner-to-reply",
+    "VELDO-0136 hint/owner-only-never-an-answer",
+    "VELDO-0136 hint/once-per-pending-request"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "3fd7b1e21c93963828e2ba29c486066ccdd7ca9bd349c6a0e3b780f05695df23",
+   "name": "plain-message-recorded-as-answer",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/owner-only-never-an-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     false
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     false
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     false
+    ]
+   ],
+   "seconds": 1.717,
+   "source_sha256": "dbe0549469231ab6825ef09ed3d5c91f4a01c1fd62061ea8e4a1d9cbc6dbf933"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/owner-only-never-an-answer detail: a stranger (a member with nothing waiting), an unknown account, a revoked owner and bot senders get nothing, and nothing goes anywhere for them",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: control: the same owner, a current member again, gets his hint",
+    "VELDO-0136 hint/once-per-pending-request detail: three plain messages for one waiting request get one hint, to the first",
+    "VELDO-0136 hint/once-per-pending-request detail: the later messages are observed as already hinted, naming the request"
+   ],
+   "diff": "proof/VELDO-0136/hint-to-anyone-waiting.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/owner-only-never-an-answer",
+    "VELDO-0136 hint/once-per-pending-request"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "e07e4d4217259f578e82f022bc351ad15e66c4b305450ce09be7fe40033e98d5",
+   "name": "hint-to-anyone-waiting",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/owner-only-never-an-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     true
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     false
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     false
+    ]
+   ],
+   "seconds": 1.73,
+   "source_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 1 waiting request: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to the bot's help message with 1 waiting request: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to another bot message with 1 waiting request: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a plain message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to the bot's help message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/tells-owner-to-reply detail: a reply to another bot message with 2 waiting requests: the hint is kept with the platform's answer, joined by identity to the message, its evidence and the presentations it names",
+    "VELDO-0136 hint/owner-only-never-an-answer detail: the hint records no answer: no answer record, the refusal kept as decided, the request still pending",
+    "VELDO-0136 hint/once-per-pending-request detail: the waiting request version is marked hinted by that one hint, and the later messages are not hinted"
+   ],
+   "diff": "proof/VELDO-0136/hint-kept-as-answer.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/tells-owner-to-reply",
+    "VELDO-0136 hint/owner-only-never-an-answer",
+    "VELDO-0136 hint/once-per-pending-request"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "d0eb8174db4ea5864d50e91131db1f8e4d4b942ce994a65307bb977863a6a974",
+   "name": "hint-kept-as-answer",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/owner-only-never-an-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     false
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     false
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     false
+    ]
+   ],
+   "seconds": 1.622,
+   "source_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/once-per-pending-request detail: three plain messages for one waiting request get one hint, to the first",
+    "VELDO-0136 hint/once-per-pending-request detail: the waiting request version is marked hinted by that one hint, and the later messages are not hinted",
+    "VELDO-0136 hint/once-per-pending-request detail: the later messages are observed as already hinted, naming the request",
+    "VELDO-0136 hint/once-per-pending-request detail: a newly waiting request gets its own one hint, which does not name the request already hinted"
+   ],
+   "diff": "proof/VELDO-0136/hint-every-message.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/once-per-pending-request"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "c90c75f076a8550c825110bb873f8a022be16f0ac21ca3cc5edcfb8f94a59c90",
+   "name": "hint-every-message",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/once-per-pending-request"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     true
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     true
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     false
+    ]
+   ],
+   "seconds": 1.628,
+   "source_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0136 hint/once-per-pending-request detail: a newly waiting request gets its own one hint, which does not name the request already hinted"
+   ],
+   "diff": "proof/VELDO-0136/hint-renames-hinted.diff",
+   "failed_rows": [
+    "VELDO-0136 hint/once-per-pending-request"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "a5c4aee032d03c28d79386003779b9cc9f3596caca35234f7541957c3d2f780b",
+   "name": "hint-renames-hinted",
+   "named_row_red": true,
+   "named_rows": [
+    "hint/once-per-pending-request"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     true
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     true
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     false
+    ]
+   ],
+   "seconds": 1.626,
+   "source_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902"
+  }
+ ],
+ "noop": {
+  "control_channel_attribution.py": {
+   "copy_sha256": "dbe0549469231ab6825ef09ed3d5c91f4a01c1fd62061ea8e4a1d9cbc6dbf933",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     true
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     true
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     true
+    ]
+   ],
+   "seconds": 1.672,
+   "source_sha256": "dbe0549469231ab6825ef09ed3d5c91f4a01c1fd62061ea8e4a1d9cbc6dbf933"
+  },
+  "control_channel_presentation.py": {
+   "copy_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0136 hint/tells-owner-to-reply",
+     true
+    ],
+    [
+     "VELDO-0136 hint/owner-only-never-an-answer",
+     true
+    ],
+    [
+     "VELDO-0136 hint/once-per-pending-request",
+     true
+    ]
+   ],
+   "seconds": 1.676,
+   "source_sha256": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 136",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 16.424,
+ "spec_id": "VELDO-0136",
+ "suite": "scripts/suites/68_veldo_0136_hints.py"
+}

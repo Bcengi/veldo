@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -87 +87 @@
+-HINT_KIND = 'presentation_hint'
++HINT_KIND = 'presentation_answer'
