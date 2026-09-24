@@ -122,6 +122,10 @@ _FILES = [
     # VELDO-0054: exact decision-record dependency evaluation control_eligibility.py loads; a runtime
     # asset, no validator import, not substrate.
     ".veldo/control_decision_dependency.py",
+    # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
+    # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_dispatch.py",
+    ".veldo/control_launch.py",
     # VELDO-0031: authority claim receiver and caller, not loaded by validators.
     ".veldo/control_claim.py",
     ".veldo/control_claim_client.py",

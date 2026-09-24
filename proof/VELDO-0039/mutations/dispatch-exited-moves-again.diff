@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -338 +338 @@
+-    if record['state'] not in allowed or params.get('expected_state') not in (None, record['state']):
++    if (record['state'] not in allowed and record['state'] != 'exited') or params.get('expected_state') not in (None, record['state']):  # defect

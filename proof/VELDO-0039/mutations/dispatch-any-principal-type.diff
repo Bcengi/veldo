@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -250 +250 @@
+-    if (not active or entry.get('principal_type') not in AC.BOUNDARIES['dispatch_acceptance']
++    if (not active or entry.get('principal_type') not in AC.PRINCIPAL_TYPES

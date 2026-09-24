@@ -1,0 +1,7 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -182,0 +183 @@
++            self.early = self.receiver(contract)  # defect: invoked before the contract commits
+@@ -370,0 +372,2 @@
++        self._spawn(dispatch_id, self.dispatches.receipt(dispatch_id, 'accept'),
++                    self.config['adapters'][contract['capability']['adapter']]).stdin.close()  # defect

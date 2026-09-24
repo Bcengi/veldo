@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -410 +410 @@
+-            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')
++            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')

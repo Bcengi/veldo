@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -472,0 +473,3 @@
++        if b'\n' in carry or select.select([worker.stdout], [], [], 5)[0]:  # defect: a later line is read
++            carry += b'' if b'\n' in carry else os.read(worker.stdout.fileno(), 65536)
++            line, _, carry = carry.partition(b'\n')

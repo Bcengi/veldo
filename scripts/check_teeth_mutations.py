@@ -2518,6 +2518,156 @@ def cases():
     runtime('runtime-hide-not-enforced', 'control_runtime.py',
             "            raise PermissionError('the graph runtime is hidden: ' + _hide_os.fsdecode(place))\n", "",
             'enforcement/graph-unavailable')
+    # VELDO-0039: each criterion's declared falsifier and further defects, each against the one
+    # suite row it names. Anchors are exact text in the production modules the suite installs.
+    def dispatch(name, module, old, new, row, also=()):
+        add(39, name, '62_veldo_0039_dispatch.py', module, old, new, ['dispatch/' + row], also)
+
+    # Review of bb72994, B1: a worker that closes its output is still held to its deadline.
+    closed_wait = ("        if not stopped:\n"
+                   "            # Closing its output does not end a worker: it is still held to the contract deadline.\n"
+                   "            try:\n"
+                   "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n")
+    dispatch('dispatch-closed-output-not-held', 'control_launch.py', closed_wait,
+             closed_wait.replace("        if not stopped:\n", "        if False:\n"), 'deadline-after-closed-output')
+    dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
+             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
+             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()) + 30)\n",
+             'deadline-after-closed-output')
+    dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py',
+             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
+             "                worker.wait(timeout=0)\n", 'deadline-after-closed-output')
+    # Review of bb72994, B2: a remote deadline stop is unknown and holds the unit.
+    remote_stop = "        if remote and termination['deadline_stop']:\n"
+    dispatch('dispatch-remote-stop-exits', 'control_launch.py', remote_stop,
+             "        if False:\n", 'remote-stop-holds-unit')
+    dispatch('dispatch-remote-stop-needs-signal', 'control_launch.py', remote_stop,
+             "        if remote and termination['deadline_stop'] and termination['signal'] is None:\n",
+             'remote-stop-holds-unit')
+    # AC1, declared: the worker is spawned before the contract is recorded. The fixed code guards it
+    # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
+    # needs the prepared record), so the defect is both edits.
+    dispatch('dispatch-spawn-before-contract', 'control_launch.py',
+             "            self.dispatches.prepare(contract, now=now)\n",
+             "            self.early = self.receiver(contract)  # defect: invoked before the contract commits\n"
+             "            self.dispatches.prepare(contract, now=now)\n",
+             'contract-before-launch',
+             also=[("        dispatch_id = contract['dispatch_id']\n        record = self.dispatches.record(dispatch_id)\n",
+                    "        dispatch_id = contract['dispatch_id']\n"
+                    "        self._spawn(dispatch_id, self.dispatches.receipt(dispatch_id, 'accept'),\n"
+                    "                    self.config['adapters'][contract['capability']['adapter']]).stdin.close()  # defect\n"
+                    "        record = self.dispatches.record(dispatch_id)\n")])
+    dispatch('dispatch-spawn-before-acceptance', 'control_launch.py',
+             "        me = dict(process_identity(os.getpid()), principal=self.config['principal'])\n",
+             "        spawned = self._spawn(dispatch_id, self.dispatches.receipt(dispatch_id, 'accept'), adapter)  # defect\n"
+             "        me = dict(process_identity(os.getpid()), principal=self.config['principal'])\n",
+             'contract-before-launch',
+             also=[("            worker = self._spawn(dispatch_id, acceptance, adapter)\n",
+                    "            worker = spawned\n")])
+    dispatch('dispatch-holder-not-consulted', 'control_dispatch.py',
+             "        holder = index.get('dispatch_id')\n",
+             "        holder = None  # defect: the unit and station's holder is not consulted\n",
+             'one-active-per-unit-station')
+    dispatch('dispatch-hold-not-recorded', 'control_dispatch.py',
+             "        return {rid: {'kind': RECORD_KIND, 'data': record}, iid: {'kind': INDEX_KIND, 'data': slot}}\n",
+             "        return {rid: {'kind': RECORD_KIND, 'data': record}}  # defect: nothing holds the unit and station\n",
+             'one-active-per-unit-station')
+    # AC2, declared: a new dispatch is created for an unknown result.
+    dispatch('dispatch-new-dispatch-for-unknown', 'control_dispatch.py',
+             "HOLDING = ('prepared', 'accepted', 'running', 'unknown')\n",
+             "HOLDING = ('prepared', 'accepted', 'running')  # defect: an unknown outcome frees its unit\n",
+             'unknown-never-relaunched')
+    dispatch('dispatch-unknown-frees-unit', 'control_dispatch.py',
+             "    if target not in HOLDING:\n",
+             "    if target not in HOLDING or target == 'unknown':  # defect: an unknown outcome releases its unit\n",
+             'unknown-never-relaunched')
+    dispatch('dispatch-lost-answer-as-refused', 'control_launch.py',
+             "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
+             "                                             expected_state='accepted')\n",
+             "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
+             "                                            expected_state='accepted')\n",
+             'launch-results')
+    dispatch('dispatch-receiver-identity-recorded', 'control_launch.py',
+             "            process = process_identity(worker.pid)\n",
+             "            process = process_identity(os.getpid())  # defect: the receiver's own identity\n",
+             'launch-results')
+    dispatch('dispatch-spawn-failure-as-unknown', 'control_launch.py',
+             "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
+             "            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n",
+             "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
+             "            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n",
+             'launch-results')
+    dispatch('dispatch-identity-from-worker-output', 'control_launch.py',
+             "        line, _, carry = pending.partition(b'\\n')\n        message = json.loads(line)\n",
+             "        line, _, carry = pending.partition(b'\\n')\n"
+             "        if b'\\n' in carry or select.select([worker.stdout], [], [], 5)[0]:  # defect: a later line is read\n"
+             "            carry += b'' if b'\\n' in carry else os.read(worker.stdout.fileno(), 65536)\n"
+             "            line, _, carry = carry.partition(b'\\n')\n"
+             "        message = json.loads(line)\n",
+             'launch-results')
+    dispatch('dispatch-worker-environment-reduced', 'control_launch.py',
+             "        environment = dict(os.environ)\n",
+             "        environment = {'PATH': os.environ.get('PATH', os.defpath), 'LANG': 'C.UTF-8'}  # defect\n",
+             'contract-before-launch')
+    dispatch('dispatch-acceptance-without-recheck', 'control_launch.py',
+             "            refusal = self._recheck(contract)\n",
+             "            refusal = None  # defect: the accepting boundary does not recheck the station decision\n",
+             'launch-results')
+    # AC3, declared: one worker's result is applied to another dispatch.
+    dispatch('dispatch-result-unbound', 'control_dispatch.py',
+             "        if params.get('process') != record['process']:\n"
+             "            raise Refused('binding_mismatch:process', 'this termination belongs to another process')\n",
+             "        record['process'] = params.get('process')  # defect: the result's own process is taken as bound\n",
+             'result-binding')
+    dispatch('dispatch-contract-digest-unbound', 'control_dispatch.py',
+             "    if params.get('contract_digest') != record['contract_digest']:\n"
+             "        raise Refused('binding_mismatch:contract_digest', 'this observation belongs to another dispatch')\n",
+             "    pass  # defect: an observation is not held to its dispatch's contract\n",
+             'result-binding')
+    guard = "    if record['state'] not in allowed or params.get('expected_state') not in (None, record['state']):\n"
+    dispatch('dispatch-exited-moves-again', 'control_dispatch.py', guard,
+             "    if (record['state'] not in allowed and record['state'] != 'exited')"
+             " or params.get('expected_state') not in (None, record['state']):  # defect\n",
+             'transitions-from-schema')
+    dispatch('dispatch-ended-state-ignored', 'control_dispatch.py', guard,
+             "    if record['state'] not in allowed:  # defect: the state an observation ends is not checked\n",
+             'transitions-from-schema')
+    dispatch('dispatch-unknown-after-exit', 'control_dispatch.py',
+             "    'unknown': (('accepted', 'running'), 'unknown'),\n",
+             "    'unknown': (('accepted', 'running', 'exited'), 'unknown'),  # defect: an ended dispatch reopens\n",
+             'transitions-from-schema')
+    dispatch('dispatch-exit-lands-unit', 'control_launch.py',
+             "            self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')\n",
+             "            self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')\n"
+             "            if clean:  # defect: a clean exit is taken as the unit's landing\n"
+             "                identity = 'receipt:revision_landed:' + record['dispatch_id']\n"
+             "                self.dispatches.store.execute(self.dispatches.conn, dict(\n"
+             "                    command_id='landed/' + record['dispatch_id'], principal=self.dispatches.principal,\n"
+             "                    operation='upsert_entity', nonce='landed/' + record['dispatch_id'], artifact_digests=[],\n"
+             "                    expected_versions={identity: 0}, parameters=dict(entity_id=identity, kind='completion_receipt',\n"
+             "                    data={'fact': 'revision_landed', 'subject': {'id': record['contract']['unit'], 'revision': 1}})),\n"
+             "                    self.dispatches.signer, self.dispatches.sign, self.dispatches.generation)\n",
+             'terminal-not-completion')
+    dispatch('dispatch-authority-unchecked', 'control_dispatch.py',
+             "    _authorize(conn, params.get('principal'), params.get('repository'), now)\n",
+             "    pass  # defect: the principal's authority is not checked\n",
+             'service-principals-only')
+    dispatch('dispatch-any-principal-type', 'control_dispatch.py',
+             "entry.get('principal_type') not in AC.BOUNDARIES['dispatch_acceptance']",
+             "entry.get('principal_type') not in AC.PRINCIPAL_TYPES",
+             'service-principals-only')
+    dispatch('dispatch-stopped-not-reported', 'control_dispatch.py',
+             "stopped=sorted(d for d, s in states.items() if s == 'unknown'),",
+             "stopped=sorted(d for d, s in states.items() if s == 'refused'),",
+             'observations')
+    dispatch('dispatch-refusal-not-observed', 'control_dispatch.py',
+             "            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))\n",
+             "            pass  # defect: a refusal is not observed\n",
+             'observations')
+    dispatch('dispatch-receiver-not-installed', 'init_scaffold.py',
+             '    ".veldo/control_launch.py",\n', '', 'installed-assets')
+    dispatch('dispatch-authority-not-installed', 'init_scaffold.py',
+             '    ".veldo/control_dispatch.py",\n', '', 'installed-assets')
     return result
 
 

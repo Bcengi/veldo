@@ -1,0 +1,11 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -203,0 +204,8 @@
++            if clean:  # defect: a clean exit is taken as the unit's landing
++                identity = 'receipt:revision_landed:' + record['dispatch_id']
++                self.dispatches.store.execute(self.dispatches.conn, dict(
++                    command_id='landed/' + record['dispatch_id'], principal=self.dispatches.principal,
++                    operation='upsert_entity', nonce='landed/' + record['dispatch_id'], artifact_digests=[],
++                    expected_versions={identity: 0}, parameters=dict(entity_id=identity, kind='completion_receipt',
++                    data={'fact': 'revision_landed', 'subject': {'id': record['contract']['unit'], 'revision': 1}})),
++                    self.dispatches.signer, self.dispatches.sign, self.dispatches.generation)

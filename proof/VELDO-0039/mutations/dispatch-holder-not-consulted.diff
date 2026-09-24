@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -313 +313 @@
+-        holder = index.get('dispatch_id')
++        holder = None  # defect: the unit and station's holder is not consulted

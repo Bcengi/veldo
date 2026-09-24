@@ -26,6 +26,7 @@ footprint:
   - "scripts/suites/*_veldo_0039_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0039-durable-dispatch-acceptance.md"
   - "specs/index.md"
   - "proof/VELDO-0039/*"
@@ -125,3 +126,19 @@ replication/crash matrices and AC2 ambiguous-spawn/restart recovery moved to Rel
 Dispatch identity, acceptance and normal transitions remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-23, build on branch build-veldo-0039: control_dispatch.py records the dispatch contract
+(source, input, capability, reservation, claim, deadline) under the dispatch identity VELDO-0036's
+worker slot and VELDO-0028's effect contracts already use, holds one active dispatch per unit and
+station, and binds every later observation to its own dispatch by contract digest and, for an exit,
+process identity. control_launch.py holds the runner and the trusted receiver process, which
+records its acceptance before it spawns, records the worker's OS identity and termination, and never
+launches an unknown attempt again; a launch on another host (the Mac) runs over the configured
+transport through its trusted wrapper, which reports the engine's own identity. Suite
+62_veldo_0039_dispatch and proof/VELDO-0039. scripts/check_teeth_mutations.py joined the footprint to
+register the criteria's driven mutations as finding 39, as it did for VELDO-0036 and VELDO-0052.
+Status is unchanged.
+
+2026-09-23, scoped review of bb72994: two blocking defects fixed (a worker that closes its output is held
+to its deadline; a remote deadline stop is unknown and holds the unit), with rows red at 68b5776 and four
+mutations. Six items filed for later work (proof README).

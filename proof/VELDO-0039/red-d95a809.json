@@ -1,0 +1,202 @@
+{
+ "production_at": "d95a809",
+ "substituted": {
+  "control_dispatch.py": "proof/VELDO-0039/prefix/control_dispatch.py",
+  "control_launch.py": "proof/VELDO-0039/prefix/control_launch.py",
+  "init_scaffold.py": "d95a809:.veldo/init_scaffold.py"
+ },
+ "other_installed_modules_identical_to_commit": true,
+ "differing": [],
+ "failed": [
+  "VELDO-0039 dispatch/contract-before-launch",
+  "VELDO-0039 dispatch/one-active-per-unit-station",
+  "VELDO-0039 dispatch/launch-results",
+  "VELDO-0039 dispatch/unknown-never-relaunched",
+  "VELDO-0039 dispatch/transitions-from-schema",
+  "VELDO-0039 dispatch/result-binding",
+  "VELDO-0039 dispatch/terminal-not-completion",
+  "VELDO-0039 dispatch/service-principals-only",
+  "VELDO-0039 dispatch/observations",
+  "VELDO-0039 dispatch/installed-assets"
+ ],
+ "passed": [
+  "VELDO-0039 ran/dispatch/contract-before-launch",
+  "VELDO-0039 ran/dispatch/launch-results",
+  "VELDO-0039 ran/dispatch/unknown-never-relaunched",
+  "VELDO-0039 ran/dispatch/transitions-from-schema",
+  "VELDO-0039 ran/dispatch/result-binding",
+  "VELDO-0039 ran/dispatch/service-principals-only",
+  "VELDO-0039 ran/dispatch/observations",
+  "VELDO-0039 ran/dispatch/installed-assets"
+ ],
+ "raised": [],
+ "observed": {
+  "contract": {
+   "bindings": {
+    "source": false,
+    "input": false,
+    "capability": false,
+    "reservation": false,
+    "claim": false,
+    "deadline": false,
+    "complete": false
+   },
+   "seen_at_start": null,
+   "birth_acceptance": null,
+   "acceptance_record": null,
+   "journal_order": [
+    null,
+    null,
+    null
+   ],
+   "workers": 1,
+   "second": [
+    "ok",
+    "accepted"
+   ]
+  },
+  "uniqueness": {
+   "second": [
+    "ok",
+    "accepted"
+   ],
+   "direct": [
+    "ok",
+    null
+   ],
+   "third": "ok",
+   "third_attempt": null,
+   "race": [
+    [
+     "ok",
+     "accepted"
+    ],
+    [
+     "ok",
+     "accepted"
+    ]
+   ],
+   "race_errors": [],
+   "race_workers": 2,
+   "race_capacity_after": 0
+  },
+  "launch_results": {
+   "accepted": {
+    "result": "accepted",
+    "stored_process": {},
+    "worker_reported": {
+     "pid": 1617343,
+     "start": "191918125",
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7"
+    },
+    "proc_start": null,
+    "receiver_pid": null
+   },
+   "refused_spawn": {
+    "result": "raised:FileNotFoundError",
+    "refusal": null,
+    "states": []
+   },
+   "refused_recheck": {
+    "result": "refused",
+    "refusal": null,
+    "states": []
+   },
+   "unknown": {
+    "result": "accepted",
+    "reason": null,
+    "stop": null,
+    "states": []
+   },
+   "wrapped": {
+    "result": "accepted",
+    "stored_process": {},
+    "worker_reported": {
+     "pid": null,
+     "start": null,
+     "boot_id": null
+    },
+    "proc_start": null,
+    "missing": [
+     "accepted",
+     null
+    ]
+   },
+   "one_identity_each": false
+  },
+  "unknown_relaunch": {
+   "resubmit": [
+    "ok",
+    "accepted"
+   ],
+   "direct": [
+    "ok",
+    null
+   ],
+   "reinvoke": [
+    null,
+    null,
+    true
+   ],
+   "reinvoke_exited": [
+    null,
+    null
+   ]
+  },
+  "binding": {
+   "probes": {
+    "a_result_to_b": [
+     "ok",
+     null
+    ],
+    "a_process_under_b_digest": [
+     "ok",
+     null
+    ],
+    "a_stop_to_b": [
+     "ok",
+     null
+    ]
+   },
+   "a": null,
+   "b_while_a_ended": null,
+   "b": null
+  },
+  "terminal": {
+   "termination": {},
+   "completion": {
+    "attempt_finished": false,
+    "artifact_accepted": false,
+    "revision_landed": false,
+    "objective_satisfied": false
+   },
+   "receipts": 0,
+   "worker_printed": {}
+  },
+  "authority": {
+   "agent-worker": [
+    "ok",
+    null
+   ],
+   "revoked-service": [
+    "ok",
+    null
+   ],
+   "elsewhere-service": [
+    "ok",
+    null
+   ],
+   "nobody": [
+    "ok",
+    null
+   ]
+  },
+  "status": {
+   "accepted": 0,
+   "refused": 0,
+   "pending": [],
+   "stopped": [],
+   "states": {}
+  }
+ }
+}

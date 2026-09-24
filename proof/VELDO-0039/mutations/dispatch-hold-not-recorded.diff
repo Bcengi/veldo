@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -333 +333 @@
+-        return {rid: {'kind': RECORD_KIND, 'data': record}, iid: {'kind': INDEX_KIND, 'data': slot}}
++        return {rid: {'kind': RECORD_KIND, 'data': record}}  # defect: nothing holds the unit and station

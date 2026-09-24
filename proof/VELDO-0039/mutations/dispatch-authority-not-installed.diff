@@ -1,0 +1,4 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -94 +93,0 @@
+-    ".veldo/control_dispatch.py",
