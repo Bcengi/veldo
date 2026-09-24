@@ -39,8 +39,8 @@ WRITE CONFINEMENT (`enter`). A worker starts through the receiver's containment 
 module's `enter`, the adapter's configured argv prefix (`Clones.adapter`). It finds the clone its
 dispatch uses, records that it entered (its process identity and cgroup, in the clone root, before
 anything is confined), confines itself with Linux Landlock and becomes the engine by exec inside the
-clone, with the Git variables that select a repository removed. The confinement DENIES and grants
-everything else, so an engine keeps what it can do today:
+clone, with the Git variables that select a repository removed. The confinement denies only what the
+threat model names and grants everything else, so an engine keeps what it can do today:
 
 - Writes are denied beneath exactly these protected targets, recorded in the clone's manifest at
   provisioning: the clone root (every clone, including this clone's own manifest, pins record and

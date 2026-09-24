@@ -149,12 +149,34 @@ authority's Git metadata or a cache; cleanup releases a clone's pins only after 
 consumers have ended, observed from the kernel through control_containment. `.veldo/env_provision.py`
 `create` now passes backend arguments through so the clone backend takes the dispatch contract; the
 fake and container backends are unchanged. Both are installed by `.veldo/init_scaffold.py`; engine
-copies are byte-identical. Suite `scripts/suites/66_veldo_0042_clones.py` (0.45 s, 12 assertion
-rows), red at 18ecd6f, and 12 mutations as finding 42; proof in `proof/VELDO-0042/`. The criteria,
-status and risk are unchanged.
+copies are byte-identical. Suite `scripts/suites/66_veldo_0042_clones.py` (0.45 s, 6 assertion rows
+and 6 region-completion rows), red at 18ecd6f, and 12 mutations as finding 42; proof in
+`proof/VELDO-0042/`. The criteria, status and risk are unchanged.
 
 2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
 declared falsifiers can be registered as finding 42 of the existing teeth mutation driver, as
 VELDO-0040, VELDO-0065, VELDO-0066 and VELDO-0067 registered theirs. `scripts/suites/manifest.json`
 and `requires.json` gained the suite's enumeration and requires entry. The criteria, status and
 risk are unchanged.
+
+2026-09-24, review rework (branch build-veldo-0042): the independent review found the write
+confinement was an allow list, so a confined real engine could not work (Codex exited at start unable
+to write ~/.codex; /dev/shm, /tmp, /var/tmp, ~/.cache and the home directory were refused), against the
+owner's rule that agents keep the capabilities they have today. `enter` now denies writes beneath
+exactly the protected targets the threat model names (the clone root, the cache root, the store's
+directory, the keys and the Git metadata of every bound repository, with a worker's work tree and
+scratch granted back, a consumer's scratch only) and reads beneath the cache root and the keys (the
+named caches granted back, so an unnamed cache stays unreadable even through a worker's own
+alternates), and grants everything else, by the ancestor-chain method of control_keys_custody
+(VELDO-0067). What that method still denies is stated in the module and the proof README: a new entry
+made directly in an ancestor of a protected target (with the bound repositories under the home
+directory, the home directory is one; measured with the installed engines, Claude Code's
+write-and-rename save of ~/.claude.json and its lock directory are refused and it rewrites the file in
+place, Codex is refused nothing). No protected target may be beneath a temporary directory (refused
+`invalid_input:layout`). Retirement fails closed: a user entered on this host whose group is unknown,
+or not the group it was entered in, is still in use. Suite 66 now has 10 assertion rows and 10
+region-completion rows (about 1.5 s), four of them new and red at 2f643d0 by assertion (the installed
+engines confined, every protected target denied, consumer confinement, the real VELDO-0040 group path);
+the filed test defects are fixed (the authority target is the source repository's real .git with a git
+update-ref into it; the attachment cache write targets a real cache and is asserted). Finding 42 has 21
+mutations, at least two per row. The criteria, status and risk are unchanged.
