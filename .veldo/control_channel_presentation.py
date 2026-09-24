@@ -47,10 +47,14 @@ No second settlement record is written here.
 HINTS, NEVER ANSWERS (VELDO-0136). When the current enrolled owner's message replies to no
 presentation (he did not press Reply, or replied to another bot message) while requests wait for
 him, `hint_owner` answers it once: how to answer (reply to the request message) and each waiting
-request by its presentation's name. A hint is kept with a mark per request version it names before
-it is sent through the same send path, and the platform's answer is recorded on it; a request
-version already hinted is not named again until it is answered. A hint records no answer: the
-owner's message stays refused exactly as VELDO-0066 decided it.
+request by its presentation's name. It is called by the VELDO-0126 Telegram intake pass, once intake
+has seen the message, so the message gets one decision and at most one bot reply: the plain hint
+when intake did not take it, a note that it was taken as new work when intake made a proposal of it
+(merged into intake's project question when intake asks one), and nothing when intake took it as a
+clarification or as the answer to its own question. A hint is kept with a mark per request version
+it names before it is sent through the same send path, and the platform's answer is recorded on it;
+a request version already hinted is not named again until it is answered. A hint records no answer:
+the owner's message stays refused exactly as VELDO-0066 decided it.
 
 WHAT IT IS NOT. Not canonical acquisition of updates from the platform (VELDO-0066), edge
 enrollment and delegation (VELDO-0067), settlement, quorum and decision effects (VELDO-0068), or
@@ -88,6 +92,14 @@ HINT_KIND = 'presentation_hint'
 HINTED_KIND = 'presentation_hinted'
 HINT_OPERATION = 'presentation_hint'
 HINT_OUTCOMES = ('sent', 'refused', 'unknown_outcome')
+# A message whose decision sent nothing (nothing waited, or all was hinted), kept at the hint's own id
+# when the caller asks, so a later intake pass over the same message never decides it again.
+HINT_SKIPPED_SCHEMA = 'veldo.presentation_hint_skipped/v1'
+HINT_SKIPPED_KIND = 'presentation_hint_skipped'
+HINT_SKIPPED = ('nothing_pending', 'already_hinted', 'presentation_too_long')
+# What intake made of the message: None (it did not take it), a new proposal, or a new proposal whose
+# project question the hint is merged into.
+HINT_TAKEN = (None, 'proposed', 'inbox')
 # A notice whose delivery is not confirmed: the first presentation names it, without a reply link.
 NOTICE_UNCONFIRMED = ('pending', 'unknown_outcome')
 CHANNEL = 'telegram_chat'
@@ -610,9 +622,16 @@ def _hint_transition(params, before):
     version it names, each created exactly once: a request version already hinted is never hinted
     again. `complete` records once what the platform answered for that send. A hint is never an answer."""
     hid, phase = params.get('hint_id'), params.get('phase')
-    if not isinstance(hid, str) or phase not in ('intent', 'complete'):
+    if not isinstance(hid, str) or phase not in ('intent', 'complete', 'skipped'):
         raise ValueError('a hint record names its id and phase')
     current = (before.get(hid) or {}).get('data')
+    if phase == 'skipped':
+        # The decision that sent nothing, kept once at the hint's id; it names no request and marks none.
+        skipped = params.get('skipped')
+        if (current is not None or not isinstance(skipped, dict) or skipped.get('hint_id') != hid
+                or skipped.get('outcome') not in HINT_SKIPPED or skipped.get('requests') != []):
+            raise ValueError('a message whose decision sent nothing is kept once, naming no request')
+        return {hid: {'kind': HINT_SKIPPED_KIND, 'data': skipped}}
     if phase == 'intent':
         hint, marks = params.get('hint'), params.get('hinted')
         if (current is not None or not isinstance(hint, dict) or hint.get('hint_id') != hid
@@ -1168,14 +1187,26 @@ class Presenter:
             found.append(receipt)
         return sorted(found, key=lambda r: (r['published_at'], r['request_id']))
 
+    def hint_decided(self, chat, message_id):
+        """Whether the message `message_id` in `chat` already had its one hint decision: a hint kept
+        for it, or a decision that sent nothing kept at the hint's id."""
+        return type(chat) is int and type(message_id) is int and self._entity(hint_id(chat, message_id)) is not None
+
     @staticmethod
-    def _hint_text(cause, receipts):
-        """The hint's plain text: why the message counted for nothing, how to answer, and each request
-        named as its presentation names it. None when not even one request fits one message."""
-        first = ('That message replies to a message that is not a request, so it answers nothing.'
-                 if cause == 'unknown_presentation' else 'That message is not a reply to a request, so it answers nothing.')
-        lines = [first, 'To answer, press Reply on the request message itself and write <choice>: <your reason>.',
-                 'Waiting for your answer:']
+    def _hint_text(cause, receipts, taken=None, lead=None):
+        """The hint's plain text: what the message counted for (nothing, when intake did not take it;
+        new work, when it did), how to answer, and each request named as its presentation names it,
+        after `lead` (intake's question) when the hint is merged into it. None when not even one
+        request fits one message."""
+        if taken is None:
+            first = ('That message replies to a message that is not a request, so it answers nothing.'
+                     if cause == 'unknown_presentation' else 'That message is not a reply to a request, so it answers nothing.')
+            how = 'To answer, press Reply on the request message itself and write <choice>: <your reason>.'
+        else:
+            first = 'I took your message as new work, not as an answer to a request.'
+            how = ('To answer a waiting request, press Reply on the request message itself and write '
+                   '<choice>: <your reason>.')
+        lines = ([lead, ''] if lead else []) + [first, how, 'Waiting for your answer:']
         named = []
         for r in receipts:
             line = 'Request: %s (version %d), choices %s' % (r['request_id'], r['request_version'], ' | '.join(r['choices']))
@@ -1185,36 +1216,46 @@ class Presenter:
             named.append(r)
         return ('\n'.join(lines), named) if named else (None, [])
 
-    def hint_owner(self, message):
+    def hint_owner(self, message, taken=None, lead=None, remember=False):
         """Tell the owner, once, how to answer, when his attributed message replies to no presentation
         (`message`: cause, principal, chat_id, sender_id, message_id, evidence_id, update_id, from the
-        VELDO-0066 evidence). The hint names each request waiting for him that has had no hint, is kept
-        with the mark of every request it names before it is sent through the presenter's send path,
-        and its platform answer is recorded. It records no answer and grants nothing; a request already
-        hinted is not named again until its version is answered. Returns the observation's result."""
+        VELDO-0066 evidence). `taken` is what intake made of it (HINT_TAKEN); `lead` is intake's
+        project question, sent as the first lines of the same one message. The hint names each request
+        waiting for him that has had no hint, is kept with the mark of every request it names before it
+        is sent through the presenter's send path, and its platform answer is recorded. It records no
+        answer and grants nothing; a request already hinted is not named again until its version is
+        answered. With `remember`, a decision that sends nothing is kept too, so the message is never
+        decided again. Returns the observation's result; when a send was made, `attempted` is set and
+        `delivery` names where the platform put the message it confirmed."""
         m = message if isinstance(message, dict) else {}
         chat, principal = m.get('chat_id'), m.get('principal')
         about = {k: m.get(k) for k in ('cause', 'principal', 'evidence_id', 'update_id', 'chat_id', 'message_id')}
-        if not _is_str(principal) or type(chat) is not int or m.get('sender_id') != chat or type(m.get('message_id')) is not int:
+        about['taken'] = taken if taken in HINT_TAKEN else None
+        if (not _is_str(principal) or type(chat) is not int or m.get('sender_id') != chat
+                or type(m.get('message_id')) is not int or taken not in HINT_TAKEN
+                or (lead is not None and not _is_str(lead))):
             return self._observe_hint('refused', 'invalid_input', about)
         hid = hint_id(chat, m['message_id'])
         about['hint_id'] = hid
         if self._entity(hid) is not None:
             return self._observe_hint('already_told', None, about)
-        waiting = self.waiting(principal, chat)
+        try:
+            waiting = self.waiting(principal, chat)
+        except Exception:  # noqa: BLE001 - the refusal is already recorded; a failed read is named, never raised
+            return self._observe_hint('refused', 'unavailable_service', about)
         due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]
-        text, named = self._hint_text(m.get('cause'), due)
+        text, named = self._hint_text(m.get('cause'), due, taken, lead)
         about.update(request_ids=[r['request_id'] for r in (named or waiting)],
                      presentation_ids=[r['presentation_id'] for r in (named or waiting)])
-        if not waiting:
-            return self._observe_hint('nothing_pending', None, about)
-        if not due:
-            return self._observe_hint('already_hinted', None, about)
-        if not named:
-            return self._observe_hint('refused', 'presentation_too_long', about)
+        skip = ('nothing_pending', None) if not waiting else ('already_hinted', None) if not due else (
+            ('refused', 'presentation_too_long') if not named else None)
+        if skip is not None:
+            if remember:
+                self._skip_hint(hid, m, about, skip[1] or skip[0])
+            return self._observe_hint(skip[0], skip[1], about)
         marks = [hinted_id(r['request_id'], r['request_version'], principal) for r in named]
         hint = {'schema': HINT_SCHEMA, 'channel': CHANNEL, 'hint_id': hid, 'principal': principal, 'cause': m.get('cause'),
-                'chat_id': chat, 'message_id': m['message_id'], 'evidence_id': m.get('evidence_id'),
+                'taken': taken, 'chat_id': chat, 'message_id': m['message_id'], 'evidence_id': m.get('evidence_id'),
                 'update_id': m.get('update_id'), 'text': text, 'outcome': 'pending', 'platform': None, 'refusal': None,
                 'requests': [{'request_id': r['request_id'], 'request_version': r['request_version'],
                               'presentation_id': r['presentation_id'], 'presentation_version': r['presentation_version'],
@@ -1235,9 +1276,23 @@ class Presenter:
         except (self.store.StoreRefused, sqlite3.Error):
             return self._observe_hint('unknown_outcome', 'incomplete_transaction', about)
         about['hint_message_id'] = (sent['platform'] or {}).get('message_id')
+        delivery = ({k: sent['platform'][k] for k in ('chat_id', 'message_id', 'date')} if sent['platform'] else None)
         if outcome == 'sent':
-            return self._observe_hint('sent', None, about)
-        return self._observe_hint('not_sent', sent['refusal'] or 'unknown_outcome', about)
+            return dict(self._observe_hint('sent', None, about), attempted=True, delivery=delivery)
+        return dict(self._observe_hint('not_sent', sent['refusal'] or 'unknown_outcome', about), attempted=True,
+                    delivery=delivery)
+
+    def _skip_hint(self, hid, m, about, outcome):
+        """Keep, once, the decision about one message that sent nothing: identity only, never text."""
+        skipped = {'schema': HINT_SKIPPED_SCHEMA, 'channel': CHANNEL, 'hint_id': hid, 'principal': m.get('principal'),
+                   'cause': m.get('cause'), 'taken': about.get('taken'), 'chat_id': m.get('chat_id'),
+                   'message_id': m.get('message_id'), 'evidence_id': m.get('evidence_id'),
+                   'update_id': m.get('update_id'), 'outcome': outcome, 'requests': []}
+        try:
+            self._commit(HINT_OPERATION, dict(phase='skipped', hint_id=hid, skipped=skipped), {hid: 0},
+                         command_id=hid + ':skipped')
+        except (self.store.StoreRefused, sqlite3.Error):
+            about['skip_kept'] = False
 
     def _observe_hint(self, outcome, reason, about):
         """One observation per owner message that replies to no presentation: its cause (not a reply,

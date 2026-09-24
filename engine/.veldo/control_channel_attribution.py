@@ -37,9 +37,10 @@ platform message, must name the same presentation, carries the attributed princi
 identity and digest, is signed with the edge's restricted key from the caller's custody, and is
 decided by `Presenter.answer`, which refuses by name everything its own checks refuse and tells the
 owner, once per message, when a reply cannot count. Everything here that is not proven refuses by
-name, and nothing is sent back for it, with one exception: a message from the attributed current
-person that replies to no presentation (NOT_A_REPLY) stays refused, and the presenter's `hint_owner`
-tells him, once per request waiting for him, to reply to the request message (VELDO-0136).
+name, and nothing is sent back for it here. A message from the attributed current person that
+replies to no presentation (NOT_A_REPLY) stays refused; the VELDO-0126 intake pass then takes or
+refuses it and makes the one decision about what he is told (the presenter's `hint_owner`, once per
+request waiting for him, VELDO-0136).
 
 WHAT IT IS NOT. Not live qualification against the Telegram service, not edge enrollment or delegation
 (VELDO-0067), not settlement (VELDO-0068), and not outage or redelivery recovery (Release 2). The bot
@@ -90,7 +91,7 @@ REFUSALS = {'channel_refused': 'unavailable_service', 'unavailable_service': 'un
             'presentation_mismatch': 'missing_evidence', 'not_owner': 'missing_authority'}
 # The refusals of a message from the attributed, current person that replies to no presentation: no
 # reply reference at all, or a reply to a message of this chat that is not a presentation part. The
-# presenter then tells him, once per waiting request, to reply to the request message (VELDO-0136).
+# intake pass decides what he is told once it has seen the message (VELDO-0126, VELDO-0136).
 NOT_A_REPLY = ('missing_reply_reference', 'unknown_presentation')
 
 
@@ -530,8 +531,6 @@ class Acquirer:
     def _decide(self, record):
         eid, fields = record['evidence_id'], record.get('fields') or {}
         refusal, known = self.attribute(record)
-        # Only attribution's own refusal of a message that replies to no presentation is hinted.
-        not_a_reply = refusal if refusal in NOT_A_REPLY and known['principal'] is not None else None
         answer = None
         if refusal is None:
             signature = self._edge_signature(known['assertion'])
@@ -555,11 +554,8 @@ class Acquirer:
         except (self.store.StoreRefused, sqlite3.Error):
             # The decision was taken but not recorded: its outcome is unknown, never reported as success.
             return self._observe('attribute', 'unknown_outcome', 'incomplete_transaction', versions, **about)
-        if not_a_reply:
-            # After the refusal is recorded, never instead of it: the hint records nothing about the answer.
-            self.presenter.hint_owner(dict(cause=not_a_reply, principal=known['principal'], chat_id=fields.get('chat_id'),
-                                           sender_id=fields.get('sender_id'), message_id=fields.get('message_id'),
-                                           evidence_id=eid, update_id=record.get('update_id')))
+        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees
+        # it next, makes the one decision about what the owner is told (VELDO-0136).
         return self._observe('attribute', outcome, refusal, versions, **about)
 
     # verification

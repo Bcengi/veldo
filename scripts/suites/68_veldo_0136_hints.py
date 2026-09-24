@@ -5,8 +5,9 @@ is told once how to answer while a request of his waits. His messages reach the 
 delivers them: a loopback Bot API endpoint over real HTTP answers getMe, getUpdates and sendMessage in
 the platform's documented shapes (Update, Message, User, Chat), keeps the messages the bot published
 and the updates it holds, and confirms updates by offset. Presentations are VELDO-0065's, acquisition
-and attribution VELDO-0066's, both run through their production entry points (Presenter.present,
-Acquirer.acquire). Every journal record and edge assertion carries a real OpenSSH signature. This is
+and attribution VELDO-0066's, and the owner's messages then pass the VELDO-0126 Telegram intake, which
+makes the one decision about what he is told; all run through their production entry points
+(Presenter.present, Acquirer.acquire, Intake.take_telegram). Every journal record and edge assertion carries a real OpenSSH signature. This is
 not the Telegram service: no network or real token is used. Mutation workers replace the production
 module copies below, never assertions or fixtures. On a tree without hints the rows still run through
 the same entry points, so they fail by their own assertions rather than by an exception.
@@ -92,7 +93,9 @@ def _v136_message(st, sender, chat, text, reply_to=None, **extra):
 
 def _v136_checks(base):
     rows = {name: [] for name in ('hint/tells-owner-to-reply', 'hint/owner-only-never-an-answer',
-                                  'hint/once-per-pending-request')}
+                                  'hint/once-per-pending-request', 'hint/new-work-one-reply',
+                                  'hint/answer-without-reply-one-reply', 'hint/two-projects-one-reply',
+                                  'hint/intake-replies-not-hinted')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -109,11 +112,13 @@ def _v136_checks(base):
     # The production copies under test; mutation workers replace exactly these paths.
     V = _v136_load('v136_presentation', ROOT / ".veldo" / "control_channel_presentation.py")
     A = _v136_load('v136_attribution', ROOT / ".veldo" / "control_channel_attribution.py")
+    intake_path = ROOT / ".veldo" / "control_intake.py"
+    IN = _v136_load('v136_intake', intake_path) if intake_path.is_file() else None
 
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'pm', 'telegram-edge'):
+    for who in ('authority', 'pm', 'telegram-edge', 'owner', 'owner3', 'stranger'):
         _v136_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v136-' + who, '-f', str(keys / who)],
                      check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -147,7 +152,8 @@ def _v136_checks(base):
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
-    fixture('key-pm', 'verification_key', dict(principal='pm', public_key=public['pm'], effective_at=0))
+    for who in ('pm', 'owner', 'owner3', 'stranger'):
+        fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
     fixture(AUTHC.CHANNELS['telegram_chat']['edge_key_id'], 'verification_key',
             dict(principal='telegram-edge', public_key=public['telegram-edge'], effective_at=0))
     owner_chat, owner3_chat, stranger_chat, nobody_chat = 5560001, 5560002, 5560003, 5560099
@@ -182,6 +188,12 @@ def _v136_checks(base):
                             journal_sign, assignment=I)
     acquirer = A.Acquirer(S, CM, P, V, presenter, A.TelegramAcquisitionEdge(P, url, 'sandbox-bot'), conn,
                           'authority', journal_sign, 'telegram-edge', edge_sign)
+    # The VELDO-0126 intake the owner's messages pass next; it serves two projects, and the owner's
+    # scope covers one of them unless a row widens it.
+    intake = None if IN is None else IN.Intake(
+        S, CM, AUTHC, acquirer, conn, domain='hint-intake', projects=('project-a', 'project-b'), api_edge='api-edge',
+        journal_signer='authority', sign=journal_sign, asker=V.TelegramPresentationEdge(P, url, 'sandbox-bot'))
+    taken = {}
     counter = [0]
 
     def signed(who, body):
@@ -213,8 +225,15 @@ def _v136_checks(base):
         return update
 
     def acquire():
-        return {r['update_id']: (r.get('outcome'), r.get('reason')) for r in acquirer.acquire()
-                if r.get('update_id') is not None}
+        """One acquisition by the production Acquirer, then one Telegram intake pass over what it kept;
+        intake's result for each update is kept in `taken`."""
+        got = {r['update_id']: (r.get('outcome'), r.get('reason')) for r in acquirer.acquire()
+               if r.get('update_id') is not None}
+        for r in (intake.take_telegram() if intake is not None else []):
+            kept = acquirer.evidence(r.get('evidence_id') or '')
+            if kept is not None:
+                taken[kept['update_id']] = r
+        return got
 
     def entity(eid):
         row = conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (eid,)).fetchone()
@@ -426,6 +445,154 @@ def _v136_checks(base):
             got = acquire()
             check(once, 'once he has answered, nothing waits and nothing is sent',
                   got.get(fifth['update_id']) == ('refused', 'missing_reply_reference') and sent_since(mark) == [])
+
+        # The one decision per owner message is taken after intake has seen it (review of VELDO-0136).
+        def intake_of(update):
+            return taken.get(update['update_id']) or {}
+
+        def widen(scope):
+            fixture('owner', 'membership', dict(members['owner'], scope=scope, revoked_at=None, expires_at=None))
+
+        # New work while a request waits: one reply, saying it was taken as new work, not as an answer.
+        new = 'hint/new-work-one-reply'
+        with section(new):
+            n1, rn1 = open_framed('NEW-1')
+            mark = len(api['sent'])
+            u = say(owner_user, 'Please add a CSV export to the monthly report page.')
+            got = acquire()
+            out = sent_since(mark)
+            took = intake_of(u)
+            check(new, 'new work is refused as no answer and taken by intake as a new proposal, text as written',
+                  got.get(u['update_id']) == ('refused', 'missing_reply_reference') and took.get('outcome') == 'proposed'
+                  and (intake.proposal(took.get('proposal_id')) or {}).get('text') == u['message']['text'])
+            check(new, 'it gets exactly one bot message: a reply saying it was taken as new work, not as an answer, '
+                       'and to press Reply on the request message, naming the waiting request; never "answers nothing"',
+                  len(out) == 1 and is_hint(out[0], u, [n1]) and 'as new work, not as an answer' in out[0]['text']
+                  and 'answers nothing' not in out[0]['text'])
+            kept = hint_of(u) or {'data': {}}
+            check(new, 'the one reply is kept as the hint for that message, as taken by intake, with the platform\'s answer',
+                  kept['data'].get('taken') == 'proposed' and kept['data'].get('outcome') == 'sent' and len(out) == 1
+                  and (kept['data'].get('platform') or {}).get('message_id') == out[0]['message_id'])
+            mark = len(api['sent'])
+            acquire()
+            check(new, 'a later intake pass over the same message sends nothing more', sent_since(mark) == [])
+            answer_all([rn1], new)
+            # A message intake does not take (no text: a sticker) while nothing waits is decided once,
+            # so a request that starts waiting later does not reach back to it.
+            mark = len(api['sent'])
+            sticker = say(owner_user, None, sticker={'file_id': 'sticker-1', 'emoji': 'ok'})
+            sticker['message'].pop('text')
+            acquire()
+            quiet = sent_since(mark) == []
+            n2, rn2 = open_framed('NEW-2')
+            mark = len(api['sent'])
+            acquire()
+            check(new, 'control: a message intake does not take, decided while nothing waited, is not hinted later',
+                  intake_of(sticker).get('reason') == 'invalid_input:text' and quiet and sent_since(mark) == []
+                  and hint_of(sticker) is None)
+            mark = len(api['sent'])
+            photo = say(owner_user, None, photo=[{'file_id': 'photo-1', 'width': 1, 'height': 1}])
+            photo['message'].pop('text')
+            acquire()
+            out = sent_since(mark)
+            check(new, 'control: a message intake does not take gets the plain hint, once, naming the waiting request',
+                  intake_of(photo).get('reason') == 'invalid_input:text' and len(out) == 1 and is_hint(out[0], photo, [n2])
+                  and 'answers nothing' in out[0]['text'])
+            answer_all([rn2], new)
+
+        # An answer typed without pressing Reply: taken as new work, told so once, and never recorded.
+        shaped = 'hint/answer-without-reply-one-reply'
+        with section(shaped):
+            b1, rb1 = open_framed('SHAPED-1')
+            answers_before = kind_count('presentation_answer')
+            mark = len(api['sent'])
+            u = say(owner_user, 'accept: fits the plan')
+            got = acquire()
+            out = sent_since(mark)
+            took = intake_of(u)
+            check(shaped, 'the answer-shaped message is refused as no answer, records no answer, and the request still waits',
+                  got.get(u['update_id']) == ('refused', 'missing_reply_reference')
+                  and kind_count('presentation_answer') == answers_before and answered(b1) is None
+                  and inbox.brief(b1).get('category') == 'pending')
+            check(shaped, 'it gets exactly one bot message, saying it was taken as new work, not as an answer, and to '
+                          'press Reply on the request message to answer it, naming the request; never "answers nothing"',
+                  took.get('outcome') == 'proposed' and len(out) == 1 and is_hint(out[0], u, [b1])
+                  and 'as new work, not as an answer' in out[0]['text'] and 'answers nothing' not in out[0]['text'])
+            answer_all([rb1], shaped)
+
+        # An owner with two projects: intake's project question and the note are one reply.
+        two = 'hint/two-projects-one-reply'
+        with section(two):
+            widen(['project-a', 'project-b'])
+            try:
+                t1, rt1 = open_framed('TWO-1')
+                mark = len(api['sent'])
+                u = say(owner_user, 'Fix the login timeout bug.')
+                got = acquire()
+                out = sent_since(mark)
+                took = intake_of(u)
+                question = intake.question(took.get('question_id')) or {}
+                check(two, 'new work with two candidate projects is kept as an inbox proposal with its question',
+                      got.get(u['update_id']) == ('refused', 'missing_reply_reference') and took.get('outcome') == 'inbox'
+                      and question.get('candidates') == ['project-a', 'project-b'])
+                check(two, 'the owner gets exactly one bot message: the project question and the note naming the waiting '
+                           'request, as one reply to his message',
+                      len(out) == 1 and out[0]['text'].startswith(question.get('prompt') or '\0')
+                      and is_hint(out[0], u, [t1]) and 'as new work, not as an answer' in out[0]['text']
+                      and 'answers nothing' not in out[0]['text'])
+                kept = hint_of(u) or {'data': {}}
+                check(two, 'that one message is the question\'s recorded delivery and the kept hint\'s platform answer',
+                      len(out) == 1 and (question.get('delivery') or {}).get('message_id') == out[0]['message_id']
+                      and (kept['data'].get('platform') or {}).get('message_id') == out[0]['message_id']
+                      and kept['data'].get('taken') == 'inbox')
+                mark = len(api['sent'])
+                reply = say(owner_user, 'project-b', reply_to=out[0]['message_id'] if out else None)
+                acquire()
+                resolved = intake_of(reply)
+                check(two, 'control: his Reply to that message answers the question and sends nothing back',
+                      resolved.get('outcome') == 'resolved' and (intake.proposal(resolved.get('proposal_id')) or {})
+                      .get('project') == 'project-b' and sent_since(mark) == [])
+                answer_all([rt1], two)
+            finally:
+                widen(['project-a'])
+
+        # A Reply to intake's own question, and a reply to his own earlier message, get no hint.
+        replies = 'hint/intake-replies-not-hinted'
+        with section(replies):
+            widen(['project-a', 'project-b'])
+            try:
+                mark = len(api['sent'])
+                first = say(owner_user, 'Tidy the release notes.')
+                acquire()
+                asked = sent_since(mark)
+                check(replies, 'precondition: with nothing waiting, intake asks its project question alone',
+                      intake_of(first).get('outcome') == 'inbox' and len(asked) == 1
+                      and 'press Reply' not in asked[0]['text'])
+                d1, rd1 = open_framed('REPLY-1')
+                mark = len(api['sent'])
+                answer = say(owner_user, 'project-b', reply_to=asked[0]['message_id'] if asked else None)
+                got = acquire()
+                check(replies, 'his Reply to intake\'s question, while a request waits, resolves it and gets no hint',
+                      got.get(answer['update_id']) == ('refused', 'unknown_presentation')
+                      and intake_of(answer).get('outcome') == 'resolved' and sent_since(mark) == []
+                      and hint_of(answer) is None and entity('presentation-hinted:%s:1:owner' % d1) is None)
+                d2, rd2 = open_framed('REPLY-2')
+                mark = len(api['sent'])
+                more = say(owner_user, 'Also the changelog.', reply_to=first['message']['message_id'])
+                got = acquire()
+                check(replies, 'his reply to his own earlier message, while requests wait, is a clarification and gets no hint',
+                      got.get(more['update_id']) == ('refused', 'unknown_presentation')
+                      and intake_of(more).get('outcome') == 'clarification' and sent_since(mark) == []
+                      and hint_of(more) is None and entity('presentation-hinted:%s:1:owner' % d2) is None)
+                mark = len(api['sent'])
+                plain = say(owner_user, 'Check the backup job for project-a.')
+                acquire()
+                out = sent_since(mark)
+                check(replies, 'control: his next new work gets its one note, naming both requests still waiting',
+                      intake_of(plain).get('outcome') == 'proposed' and len(out) == 1 and is_hint(out[0], plain, [d1, d2]))
+                answer_all([rd1, rd2], replies)
+            finally:
+                widen(['project-a'])
     finally:
         server.shutdown()
         server.server_close()
