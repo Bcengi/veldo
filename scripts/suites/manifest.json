@@ -698,6 +698,15 @@
    ],
    "regions": "Proof accepted as immutable evidence before a build is offered, complete contextual validation, observed gate checks and event ownership",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, a scaffolded enrolled Git repository running its own canonical gate, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+  },
+  {
+   "name": "65_veldo_0067_edges",
+   "file": "65_veldo_0067_edges.py",
+   "requires": [
+    "65_veldo_0067_edges"
+   ],
+   "regions": "Restricted Telegram edge enrollment under current authority, the protected signer's answer purpose and every delegation dimension, current edge and actor authorization at answer acceptance, and worker key custody",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH envelope, journal, possession and answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, and a real worker process under the Landlock custody wrapper. Writes only temporary fixtures."
   }
  ]
 }
