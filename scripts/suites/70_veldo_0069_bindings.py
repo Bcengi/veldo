@@ -39,8 +39,8 @@ def _v69_suite():
 
     ROWS = ('binding/one-transaction', 'eligibility/resolved-request', 'refusal/wrong-framing',
             'refusal/wrong-subject', 'refusal/wrong-version', 'refusal/unsupported-subject-stops',
-            'consumers/inline-bypass')
-    OT, ER, WF, WS, WV, UK, IB = ROWS
+            'consumers/inline-bypass', 'refusal/future-revision', 'binding/owner-ruling')
+    OT, ER, WF, WS, WV, UK, IB, FV, RU = ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
@@ -406,7 +406,7 @@ def _v69_suite():
 
             PLANS = {'PLAN-9601': ['VELDO-9601', 'VELDO-9611', 'VELDO-9612', 'VELDO-9613', 'VELDO-9614', 'VELDO-9621',
                                    'VELDO-9623', 'VELDO-9631', 'VELDO-9632', 'VELDO-9633', 'VELDO-9634', 'VELDO-9635',
-                                   'VELDO-9636'],
+                                   'VELDO-9636', 'VELDO-9615', 'VELDO-9616', 'VELDO-9617'],
                      'PLAN-9602': ['VELDO-9602']}
             for pid, sids in PLANS.items():
                 for sid in sids:
@@ -444,7 +444,7 @@ def _v69_suite():
                 return fx_target(rid, q)
 
             for sid in ('VELDO-9601', 'VELDO-9611', 'VELDO-9612', 'VELDO-9613', 'VELDO-9614', 'VELDO-9623',
-                        'VELDO-9631', 'VELDO-9632', 'VELDO-9636'):
+                        'VELDO-9631', 'VELDO-9632', 'VELDO-9636', 'VELDO-9615', 'VELDO-9616', 'VELDO-9617'):
                 decision('decision:D-' + sid[-4:], 'spec', sid, [sid])
             decision('decision:P-9602', 'plan', 'PLAN-9602', ['plan:PLAN-9602'])
             decision('decision:D-9621', 'contract', 'CONTRACT-1', ['VELDO-9621'],
@@ -707,6 +707,81 @@ def _v69_suite():
                 check(WV, 'a question at the current revision supersedes the stale binding and clears the work' + seen(got)
                       + show(now_), got.get('outcome') == 'settled' and len(bindings('decision:D-9614')) == 2
                       and verdict(now_, []))
+
+            # Threat: a question at a revision the record has not reached. It is refused by name with nothing
+            # written, so when the record is revised to it (same framing, subject and scope) the work stays
+            # blocked until the genuine question at that revision settles.
+            with section(FV):
+                rid, sid = 'decision:D-9615', 'VELDO-9615'
+                early = ask('Q-9615', question(rid, revision=2), 'accept: ruling on a revision not yet written')
+                acquire()
+                got = service.settle(early['rid'])
+                trace = [o for o in service.observations if o.get('operation') == 'settle'
+                         and o.get('request_id') == early['rid']]
+                check(FV, 'a question at revision 2 while the record is at revision 1 is refused by name '
+                          '(future_revision, a stale subject)' + seen(got),
+                      got.get('outcome') == 'refused' and got.get('reason') == 'future_revision'
+                      and len(trace) == 1 and trace[0].get('error_class') == 'stale_subject')
+                check(FV, 'nothing is written: no settlement, effect, receipt or binding, no binding id for revision 2, '
+                          'and the request stays pending',
+                      written(early['rid']) == ([], [], [], []) and not bindings(rid)
+                      and entity('decision-settlement:%s:2' % rid) is None
+                      and (entity(early['rid']) or {}).get('data', {}).get('state') in I.PENDING)
+                held = sweep([sid])[sid]
+                check(FV, '%s stays blocked as unresolved after the refusal' % sid + show(held),
+                      verdict(before[sid], ['unresolved_decision:' + rid]) and verdict(held, ['unresolved_decision:' + rid]))
+                # The record is revised to revision 2 with the same framing, subject and scope.
+                revised = dict(records[rid], revision=2)
+                records[rid] = revised
+                put(rid, 'decision', revised)
+                reached = sweep([sid])[sid]
+                check(FV, 'once the record reaches revision 2, %s is still blocked as unresolved: nothing bound that '
+                          'revision early' % sid + show(reached), verdict(reached, ['unresolved_decision:' + rid]))
+                genuine = ask('Q-9615b', question(rid), 'accept: ruling on the real revision two')
+                acquire()
+                settled = service.settle(genuine['rid'])
+                b = bindings(rid)
+                body = (b[0][1].get('settlement') or {}) if len(b) == 1 else {}
+                cleared = sweep([sid])[sid]
+                check(FV, 'the genuine revision 2 question settles with its binding and clears %s at every consumer'
+                      % sid + seen(settled) + show(cleared),
+                      settled.get('outcome') == 'settled' and len(b) == 1 and b[0][0] == 'decision-settlement:%s:2' % rid
+                      and body.get('decision_revision') == 2 and body.get('request_id') == genuine['rid']
+                      and verdict(cleared, []))
+
+            # The owner's ruling is the signed body's ruling: reject and return for elaboration on a current
+            # exact question are bound as ruled, and the work stays blocked by that ruling at every consumer.
+            with section(RU):
+                ruled = {'VELDO-9616': ('reject', 'reject: not this approach'),
+                         'VELDO-9617': ('return_for_elaboration', 'return_for_elaboration: say how it is tested')}
+                asked_ru = {sid: ask('Q-' + sid[-4:], question('decision:D-' + sid[-4:]), text)
+                            for sid, (_choice, text) in sorted(ruled.items())}
+                acquire()
+                got_ru = {sid: service.settle(a['rid']) for sid, a in sorted(asked_ru.items())}
+                after_ru = sweep(sorted(ruled))
+                for sid, (choice, _text) in sorted(ruled.items()):
+                    rid, ruling = 'decision:D-' + sid[-4:], CHOICES[choice]
+                    named = 'decision_ruling:%s/%s' % (rid, ruling)
+                    s, e, r, b = written(asked_ru[sid]['rid'])
+                    bdata = b[0][1] if len(b) == 1 else {}
+                    body = bdata.get('settlement') or {}
+                    check(RU, '%s: the owner\'s %s settles with one binding' % (sid, choice) + seen(got_ru[sid]),
+                          got_ru[sid].get('outcome') == 'settled' and got_ru[sid].get('ruling') == ruling
+                          and len(s) == len(r) == len(b) == 1 and len(bindings(rid)) == 1)
+                    check(RU, '%s: the signed body carries the ruling %s, the binding the chosen option %s, and the '
+                              'signature verifies' % (sid, ruling, choice),
+                          body.get('ruling') == ruling and bdata.get('choice') == choice
+                          and body.get('decision_revision') == records[rid]['revision']
+                          and verifies(fx_bytes(body), bdata.get('signature')))
+                    check(RU, '%s: blocked (unresolved) before, and blocked by %s at every consumer after'
+                          % (sid, named) + show(after_ru[sid]),
+                          verdict(before[sid], ['unresolved_decision:' + rid]) and verdict(after_ru[sid], [named])
+                          and not gate.decide('direct_execution', sid)['eligible'])
+                    trace = [o for o in service.observations if o.get('operation') == 'settle'
+                             and o.get('request_id') == asked_ru[sid]['rid']]
+                    check(RU, '%s: the settlement observation names the binding as not current (%s)' % (sid, named),
+                          len(trace) == 1 and trace[0].get('binding_current') is False
+                          and trace[0].get('binding_refusals') == [named])
 
             # Threat: an unsupported subject kind, another touchpoint, or an absent record stops by name.
             with section(UK):

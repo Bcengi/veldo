@@ -49,7 +49,9 @@ chosen option, the decider, the time and a body signed by the configured decisio
 VELDO-0054 settlement namespace. The body binds what the owner was shown, never what the record says
 at settlement time, so a stale framing, another subject or an older revision is bound faithfully and
 every VELDO-0054 consumer names it (unbound_decision:<id>/framing, /subject, /revision) instead of
-unblocking. A governed subject kind this release does not bind (anything but spec or plan), an absent
+unblocking. A question at a revision ABOVE the record's current one, as read and pinned by the settling
+transaction, is refused as future_revision with nothing written: that revision was never shown to anyone,
+and a binding written for it would clear the work the moment the record reached it. A governed subject kind this release does not bind (anything but spec or plan), an absent
 governing record or no configured decision signer stops the settlement by name: nothing is written, so
 a receipt is never committed without its binding. A later revision's binding supersedes an earlier
 one, since the consumers read only the binding of the record's current revision; one revision is
@@ -135,6 +137,7 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'unmatched_choice': 'invalid_input
             'quorum_not_met': 'missing_authority', 'unsupported_quorum': 'missing_authority',
             'stale_presentation': 'stale_subject', 'stale_terms': 'stale_subject', 'already_settled': 'stale_subject',
             'request_closed': 'stale_subject', 'stale_subject': 'stale_subject', 'already_answered': 'stale_subject',
+            'future_revision': 'stale_subject',
             'missing_terms': 'missing_evidence', 'unsupported_touchpoint': 'missing_evidence',
             'no_answer': 'missing_evidence', 'missing_evidence': 'missing_evidence',
             'missing_decision': 'missing_evidence', 'unsupported_subject': 'invalid_input',
@@ -701,6 +704,10 @@ class Settlement:
         kind = record['subject']['kind']
         if kind not in DD.SUBJECT_KINDS:
             raise Refused('unsupported_subject', 'the governed subject kind %r is not bound in this release' % kind)
+        if question['revision'] > record['revision']:
+            # The record read here is pinned at its version in the settling transaction (expected below).
+            raise Refused('future_revision', 'the question names revision %d; the record is at revision %d'
+                          % (question['revision'], record['revision']))
         bid = binding_id(rid, question['revision'])
         if self._entity(bid) is not None:
             raise Refused('already_settled', 'this decision revision is settled')
