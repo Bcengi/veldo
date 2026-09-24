@@ -4069,6 +4069,16 @@ def cases():
                 'installed-policy',
                 also=[('    if inside(policy, candidate):\n        return None, "missing_authority:policy/in_candidate"\n',
                        '    if False:\n        return None, "missing_authority:policy/in_candidate"\n')])
+    # AC3, the policy source: the installed policy's protected list is read from the candidate's own
+    # policy.yaml, so a candidate that empties protected_paths lands a protected change unapproved.
+    gate_output('gate-output-policy-source-not-set', 'control_verification.py',
+                '    module.POLICY = Path(policy).parent / POLICY_SOURCE\n',
+                '    pass  # defect: the policy source is left unset, so the candidate\'s policy.yaml decides\n',
+                'installed-policy-list')
+    gate_output('gate-output-protected-list-from-subject-root', 'policy_check.py',
+                '    policy = _Y.read(policy_source())\n',
+                '    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")  # defect: the subject root\'s policy.yaml decides\n',
+                'installed-policy-list')
     return result
 
 
