@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0066_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0066-canonical-channel-attribution.md"
   - "specs/index.md"
   - "proof/VELDO-0066/*"
@@ -131,3 +132,7 @@ and AC1/AC2 email history breadth moved to Release 4; interrupted history qualif
 to Release 2. Jira acquisition/normalizer work is dropped. Canonical Telegram identity and
 answer binding remain. The criteria, declared evidence universe, Context and Notes above now
 carry only the retained function. No specification status or historical proof was changed.
+
+2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 66 of the existing teeth mutation driver, as
+VELDO-0065 registered finding 65. The criteria, status and risk are unchanged.

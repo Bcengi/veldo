@@ -2403,6 +2403,53 @@ def cases():
                  "        return not isinstance(revoked, dict)\n", 'answer/owner-ledger-revoked-silent')
     presentation('bindings-ledger-unread', "\n                or self._ledger_revokes(state, c['owner'])):\n", "):\n",
                  'answer/owner-ledger-revoked-silent')
+    # VELDO-0066: the three declared falsifiers plus at least one different defect per named row.
+    def attribution(name, old, new, row):
+        add(66, name, '63_veldo_0066_attribution.py', 'control_channel_attribution.py', old, new, [row])
+
+    # AC1 acquisition: every canonical field is the platform's own, and a kept update is confirmed.
+    attribution('platform-date-from-clock',
+                "            'message_id': _int(message.get('message_id')), 'date': _int(message.get('date')),\n",
+                "            'message_id': _int(message.get('message_id')), 'date': int(time.time()),\n",
+                'acquisition/platform-fields-retained')
+    attribution('cursor-not-advanced',
+                "                                                    'next_offset': record['update_id'] + 1}}}\n",
+                "                                                    'next_offset': cursor.get('next_offset', 0)}}}\n",
+                'acquisition/platform-fields-retained')
+    # AC1 identity (declared falsifier): the display name as principal identity misattributes the
+    # stranger who copies the owner's name and loses the renamed owner.
+    attribution('display-name-as-identity',
+                "    return sorted(principal for principal, chat in enrollments.items() if chat == sender['id'])\n",
+                "    return sorted(principal for principal, chat in enrollments.items()\n"
+                "                  if principal == str(sender.get('first_name', '')).casefold())\n",
+                'attribution/stable-sender-identity')
+    attribution('ambiguous-sender-first-wins',
+                "        if len(principals) > 1:\n            return 'ambiguous_sender', known\n", "",
+                'attribution/stable-sender-identity')
+    # AC2 (declared falsifier): a chat and message id alone accept a reply to another presentation.
+    attribution('replied-content-unchecked',
+                "    if reply.get('text') != part.get('text') or reply.get('date') != part.get('date'):\n",
+                "    if False:\n", 'attribution/binds-replied-presentation')
+    attribution('evidence-digest-unchecked',
+                "    if record['source_digest'] != source_digest(record['source']):\n", "    if False:\n",
+                'attribution/binds-replied-presentation')
+    # AC3 (declared falsifier): an automation sender treated as the enrolled owner, then each kind alone.
+    attribution('automation-sender-as-owner',
+                "    if _map(message.get('from')).get('is_bot') is not False:\n",
+                "    return None\n    if _map(message.get('from')).get('is_bot') is not False:\n",
+                'attribution/person-only-authority')
+    attribution('inline-bot-as-owner',
+                "    if message.get('via_bot') is not None:\n        return 'sent through an inline bot'\n", "",
+                'attribution/person-only-authority')
+    attribution('business-bot-as-owner',
+                "    if message.get('sender_business_bot') is not None:\n        return 'sent by a business bot'\n", "",
+                'attribution/person-only-authority')
+    attribution('offline-message-as-person',
+                "    if message.get('is_from_offline'):\n        return 'sent by an implicit action'\n", "",
+                'attribution/person-only-authority')
+    attribution('service-member-as-person',
+                "        if entry.get('principal_type') != 'person':\n            return 'not_a_person'\n", "",
+                'attribution/person-only-authority')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
