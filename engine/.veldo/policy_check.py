@@ -347,8 +347,11 @@ def _spec_at(commit, spec_id):
     if b.returncode != 0:
         return None
     try:
-        fm = _Y.front_matter(b.stdout.decode("utf-8"), names[0]) or {}
+        fm = _Y.front_matter(b.stdout.decode("utf-8"), names[0])
     except Exception:
+        return None
+    if not isinstance(fm, dict):
+        # No readable front matter is a shape this check cannot name for certain: stale, never current.
         return None
     return b.stdout, fm
 

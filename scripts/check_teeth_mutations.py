@@ -3814,6 +3814,11 @@ def cases():
            '    if then is None or "sha256:" + hashlib.sha256(then[0]).hexdigest() != pr:\n',
            '    if then is None:  # defect: the digest is never compared with the committed spec\n',
            'digest-revision-stale')
+    # Review finding: a spec with no readable front matter at the proof's commit read as an empty mapping.
+    policy('policy-digest-no-front-matter-current',
+           '        fm = _Y.front_matter(b.stdout.decode("utf-8"), names[0])\n',
+           '        fm = _Y.front_matter(b.stdout.decode("utf-8"), names[0]) or {}  # defect: no front matter reads as empty\n',
+           'digest-revision-stale')
     policy('policy-digest-revision-raise-ignored',
            '        return int(current.get("revision", 1)) > int(then[1].get("revision", 1))\n',
            '        return False  # defect: a raised declared revision leaves a digest proof current\n',

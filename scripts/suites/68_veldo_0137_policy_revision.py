@@ -75,6 +75,7 @@ def _p137_suite():
         fresh = stale()
         # A later edit that raises nothing (a History line at landing) leaves it current.
         spec('VELDO-9137', 1, '\n## History\n\n2026-09-24: landed.\n')
+        git('commit', '-q', '-am', 'a History line at landing')
         after_history = stale()
         # Raising the spec's declared revision makes it stale, as for the integer form.
         spec('VELDO-9137', 2)
@@ -89,16 +90,27 @@ def _p137_suite():
         short_commit = stale()
         manifest('VELDO-9137', 'f' * 40, digest)
         absent_commit = stale()
+        # A spec committed without readable front matter, bound by the digest of those exact bytes.
+        bare = repo / 'specs' / 'VELDO-9137-fixture.md'
+        bare.write_text('schema: veldo.spec/v1\nid: VELDO-9137\nrevision: 1\n---\n\nno opening marker\n')
+        git('commit', '-q', '-am', 'a spec with no readable front matter')
+        bare_commit = git('rev-parse', 'HEAD')
+        bare_digest = 'sha256:' + _p137_hash.sha256(bare.read_bytes()).hexdigest()
+        spec('VELDO-9137', 1)  # the working tree readable again: only the committed spec is bare
+        manifest('VELDO-9137', bare_commit, bare_digest)
+        no_front_matter = stale()
         observed = {'fresh': fresh, 'after_history': after_history, 'raised': raised, 'wrong_digest': wrong_digest,
-                    'short_commit': short_commit, 'absent_commit': absent_commit}
+                    'short_commit': short_commit, 'absent_commit': absent_commit, 'no_front_matter': no_front_matter}
         globals()['_P137_OBSERVED'] = observed
         expect('VELDO-0137 policy/digest-revision-current: a VELDO-0050 proof whose digest is the spec committed at '
                'its own commit is current, before and after a History-only edit, beside a current integer proof',
                fresh == [] and after_history == [])
         expect('VELDO-0137 policy/digest-revision-stale: raising the declared revision makes both forms stale, and a '
-               'digest naming no committed spec, a short commit id and an absent commit are each stale',
+               'digest naming no committed spec, a short commit id, an absent commit and a spec with no readable front '
+               'matter at the commit are each stale',
                raised == ['VELDO-9137', 'VELDO-9138'] and wrong_digest == ['VELDO-9137']
-               and short_commit == ['VELDO-9137'] and absent_commit == ['VELDO-9137'])
+               and short_commit == ['VELDO-9137'] and absent_commit == ['VELDO-9137']
+               and no_front_matter == ['VELDO-9137'])
 
 
 _p137_suite()

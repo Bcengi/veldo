@@ -12,8 +12,8 @@ A digest-form revision is judged by `_digest_revision_stale`: the proof is curre
 equals the SHA-256 of the spec document committed at the proof's own implementation commit (read
 through `_git_process`: `git ls-tree` for the one spec file of that id, then `git show`), and the
 spec's declared `revision` has not been raised since that commit. A commit that is not a full object
-id, a missing or ambiguous spec file, a Git refusal and an unreadable front matter are all stale
-(fail closed). Integer-form revisions are judged exactly as before. Both copies are byte-identical.
+id, a missing or ambiguous spec file, a Git refusal, an unparsable front matter and a spec with no
+readable front matter at the commit are all stale (fail closed; the last was a review finding, fixed). Integer-form revisions are judged exactly as before. Both copies are byte-identical.
 
 ## Rows
 
@@ -23,8 +23,8 @@ from its production anchor.
 
 | Criterion | Row |
 |-|-|
-| AC1 | `policy/digest-revision-current`: a digest-form proof bound to its commit is current before and after a History-only edit, beside a current integer proof |
-| AC2 | `policy/digest-revision-stale`: a raised declared revision makes both forms stale; a digest naming no committed spec, a short commit and an absent commit are each stale |
+| AC1 | `policy/digest-revision-current`: a digest-form proof bound to its commit is current before and after a committed History-only edit, beside a current integer proof |
+| AC2 | `policy/digest-revision-stale`: a raised declared revision makes both forms stale; a digest naming no committed spec, a short commit, an absent commit and a committed spec with no readable front matter are each stale |
 
 ## Red record
 
@@ -35,7 +35,8 @@ row's teeth are its mutations.
 
 ## Mutations
 
-Finding 137 in `scripts/check_teeth_mutations.py`, 4 cases, each red on its named row by assertion,
+Finding 137 in `scripts/check_teeth_mutations.py`, 5 cases, each red on its named row by assertion,
 baseline green: `policy-digest-read-as-integer` (AC1's declared falsifier) and `policy-digest-bound-to-head`
 red the current-proof row; `policy-digest-binding-unchecked` (AC2's declared falsifier) and
-`policy-digest-revision-raise-ignored` red the stale-proof row.
+`policy-digest-revision-raise-ignored` red the stale-proof row, and `policy-digest-no-front-matter-current`
+(the review finding put back: no front matter read as an empty mapping) reds it too.

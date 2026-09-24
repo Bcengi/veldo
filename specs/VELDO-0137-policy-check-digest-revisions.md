@@ -91,3 +91,7 @@ only append History do not make a proof stale.
 2026-09-24: written, implemented and proved by the lead on the owner's approval (Telegram 29058).
 Suite 68_veldo_0137_policy_revision (2 rows), red at cae421a on the current-proof row, 4 mutations
 as finding 137.
+
+2026-09-24, review: a spec with no readable front matter at the proof's commit was read as an empty
+mapping and judged current; it is now stale (fail closed), with a row case and a mutation. The current-proof
+row now commits its History-only edit, the real landing shape.
