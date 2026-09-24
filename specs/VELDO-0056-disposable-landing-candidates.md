@@ -85,6 +85,22 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the lander builds each landing candidate in its own detached workspace, from trunk at a
+  fixed watermark, with the implementation commit, the evidence commit and the accepted projections,
+  and never checks out or moves the caller's trunk, including when another worktree holds trunk and
+  whatever trunk is named. Every Git failure (fetch, merge conflict, object lookup, commit) and any
+  missing required evidence refuses the candidate by name. A red gate, an invalid proof, an unresolved
+  finding or a rejected approval leaves local and remote trunk exactly as they were.
+- Threat model: a candidate built by checking out or moving trunk; a Git failure ignored and the
+  candidate gated anyway; trunk moved before the policy accepts; a candidate missing its evidence or
+  projections. The owner's account, Git and the store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a kill or
+  restart during construction and competing landers (Release 2, see History); publication and
+  completion (VELDO-0057); forged rows in our own store, files planted in the installed directory and
+  resource exhaustion by our own account.
+
 ## Notes
 
 Build the whole candidate, including deterministic accepted projections, before the gate. Git
