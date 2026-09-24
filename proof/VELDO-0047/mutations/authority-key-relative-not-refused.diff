@@ -1,0 +1,6 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -429,2 +429 @@
+-    if not os.path.isabs(text):
+-        return ['invalid_input:key_directory:relative']
++    pass  # defect: a relative key directory is judged wherever it resolves

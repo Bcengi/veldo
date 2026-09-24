@@ -29,9 +29,10 @@ control_enrollment.
 
 WHAT IT IS NOT. No network listener, no framework, no threads, no daemon supervision. The remote
 transport is a command relay to this same endpoint (VELDO-0108) and is not a second code path. What
-happens when the authority is unreachable is VELDO-0109; this module reports it and does nothing
-else about it. Standard library only.
+happens when the authority is unreachable is VELDO-0109; this module reports it, naming the service
+unit and the operations start procedure (VELDO-0047), and does nothing else about it. Standard library only.
 """
+import hashlib
 import json
 import os
 import socket
@@ -46,6 +47,7 @@ SOCKET_NAME = "authority.sock"
 IDENTITY_FIELDS = ("repository_uuid", "repository_root_commit", "clone_uuid",
                    "binding_digest", "authority_generation")
 REQUEST_FIELDS = ("schema", "workspace", "domain_uuid", "store_uuid", "command", "signature") + IDENTITY_FIELDS
+CONTEXT_FIELDS = ("workspace", "domain_uuid", "store_uuid") + IDENTITY_FIELDS
 MAX_REQUEST_BYTES = 1 << 20
 
 REFUSALS = ("malformed_request", "peer_not_authorized", "command_signature_invalid",
@@ -72,6 +74,38 @@ def socket_path_for(binding):
     """Beside the store the binding names. The address is a consequence of the record, so there is
     no second place to look and nothing in the environment to point somewhere else."""
     return os.path.join(os.path.dirname(binding["store_path"]), SOCKET_NAME)
+
+
+# ---------------------------------------------------------------------------------------------
+# The service a binding names, and how an operator starts it (VELDO-0047)
+# ---------------------------------------------------------------------------------------------
+#
+# One authority instance serves one coordination domain and its store, installed as a systemd user
+# unit whose name follows from the two identities every binding of that domain records. So a client
+# that cannot reach its authority can say WHICH service it needs and HOW an operator starts it, from
+# the record alone, and nothing in the environment can name another. It SAYS it; it never does it.
+# Starting the authority is an operations action, and a client that starts one on first use turns a
+# stopped authority into two.
+
+SERVICE_PREFIX = "veldo-authority-"
+UNAVAILABLE_CODE = "AUTHORITY_UNAVAILABLE"
+
+
+def service_id(binding):
+    """The instance a binding names: a digest of its domain and store identities."""
+    text = "%s\n%s" % (binding["domain_uuid"], binding["store_uuid"])
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def service_unit(binding):
+    """The systemd user unit the authority of this binding is installed as."""
+    return SERVICE_PREFIX + service_id(binding) + ".service"
+
+
+def start_guidance(binding):
+    """The documented operations start procedure, for a person to run."""
+    return ("start it explicitly as an operations action: systemctl --user start %s"
+            % service_unit(binding))
 
 
 def peer_uid(conn):
@@ -260,13 +294,15 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
             # nothing else: it is in the message, never in a decision.
             seen = last_seen(enrollment, workspace, binding)
             raise RoutingRefused("authority_unavailable",
-                                 "the authority for store %s is not answering at %s (last watermark "
-                                 "seen: %s, at %s): %s"
-                                 % (binding["store_uuid"], address,
-                                    "none" if not seen else seen.get("watermark"),
-                                    "never" if not seen else seen.get("at"), e),
+                                 "%s: the authority for store %s (%s) is not answering at %s (last "
+                                 "watermark seen: %s, at %s): %s; %s"
+                                 % (UNAVAILABLE_CODE, binding["store_uuid"], service_unit(binding),
+                                    address, "none" if not seen else seen.get("watermark"),
+                                    "never" if not seen else seen.get("at"), e,
+                                    start_guidance(binding)),
                                  {"workspace": str(workspace), "address": address, "store": store,
-                                  "service": binding["store_uuid"],
+                                  "code": UNAVAILABLE_CODE, "service": binding["store_uuid"],
+                                  "unit": service_unit(binding), "start": start_guidance(binding),
                                   "last_watermark": None if not seen else seen.get("watermark"),
                                   "as_of": None if not seen else seen.get("at")})
     finally:
@@ -307,7 +343,9 @@ def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeou
                 "watermark": None if not seen else seen.get("watermark"),
                 "as_of": None if not seen else seen.get("at"),
                 "state": None if not seen else seen.get("state"),
-                "why": e.message}
+                "why": e.message, "code": e.coordinates.get("code"),
+                "unit": e.coordinates.get("unit"), "start": e.coordinates.get("start"),
+                "read_only": True}
     if not response.get("accepted"):
         reason = response.get("reason")
         raise RoutingRefused(reason if reason in REFUSALS else "malformed_request",
@@ -315,7 +353,7 @@ def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeou
                              {"workspace": str(workspace), "service": response.get("store_uuid")})
     return {"stale": False, "service": response.get("store_uuid"),
             "watermark": response.get("watermark"), "as_of": now,
-            "state": response.get("result"), "why": None}
+            "state": response.get("result"), "why": None, "read_only": True}
 
 
 # ---------------------------------------------------------------------------------------------
@@ -323,10 +361,15 @@ def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeou
 # ---------------------------------------------------------------------------------------------
 
 class Authority:
-    """Serves ONE store. Every request is judged against the store this instance serves."""
+    """Serves ONE store. Every request is judged against the store this instance serves.
+
+    `apply(command)` runs an accepted command. With `context=True` it is `apply(command,
+    coordinates)`, where `coordinates` are the request's own judged coordinates (CONTEXT_FIELDS), so
+    the service behind this seam can hold a command to the repository its request was judged for
+    rather than to anything the command says about itself."""
 
     def __init__(self, store_uuid, domain_uuid, store_path, enrollment, verify, host_identity, apply,
-                 watermark=None, minimum_generation=1):
+                 watermark=None, minimum_generation=1, context=False):
         self.store_uuid = store_uuid
         self.domain_uuid = domain_uuid
         self.store_path = os.path.realpath(os.path.abspath(store_path))
@@ -339,6 +382,7 @@ class Authority:
         # no watermark and a client says "none" rather than inventing one.
         self.watermark = watermark
         self.minimum_generation = minimum_generation
+        self.context = context
 
     def judge(self, request, uid):
         """The whole rule, as a response mapping. Both checks, in order, each named separately.
@@ -389,7 +433,10 @@ class Authority:
                 or request["binding_digest"] != self.enrollment.binding_digest(binding)):
             return self._no("coordinate_not_served",
                             "the signed repository, clone or enrollment generation is no longer current")
-        result = self.apply(request["command"])
+        if self.context:
+            result = self.apply(request["command"], {k: request[k] for k in CONTEXT_FIELDS})
+        else:
+            result = self.apply(request["command"])
         return {"schema": RESPONSE_SCHEMA, "accepted": True,
                 "store_uuid": self.store_uuid, "store_path": self.store_path,
                 "watermark": None if self.watermark is None else self.watermark(),

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -389 +389 @@
+-        if absent:
++        if False:  # defect: a module the engine lacks is left out of the installation

@@ -734,6 +734,15 @@
    ],
    "regions": "Isolated worker clones at the accepted commit, per-repository pinned read-only object caches with named attachments only, a confined worker and consumer denied every protected target while real engines keep their capabilities, and pin release only after the clone's workers, consumers and containment groups end",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, four real Git repositories with per-repository object caches, real git init/fetch/checkout/gc, real confined worker and consumer processes, the installed claude and codex CLIs confined with a temporary HOME and pointed at a local listener that answers nothing (a missing CLI fails its row by name), and the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end). Writes only temporary fixtures, in the owner's runtime directory."
+  },
+  {
+   "name": "66_veldo_0047_authority",
+   "file": "66_veldo_0047_authority.py",
+   "requires": [
+    "66_veldo_0047_authority"
+   ],
+   "regions": "Authority service installation with a fixed executable, protected configuration and this host's receiver profile, key directory placement, one instance under the store's stable lock, signed IPC commands committed to the configured store, and named refusal with nothing started while the service is absent",
+   "requires_note": "Uses only shared ROOT and expect. Real enrolled Git clones, OpenSSH enrollment, request, command and journal signatures, the configured SQLite store read through a separate connection, the owner's systemd user manager (a unit of the run's own in the runtime unit directory, uninstalled at its end), the kernel's lock and socket tables and the real claim client. Writes only temporary fixtures."
   }
  ]
 }

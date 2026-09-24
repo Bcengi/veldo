@@ -143,6 +143,17 @@ _FILES = [
     # (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_clone.py",
     ".veldo/env_provision.py",
+    # VELDO-0047: the authority service (install, explicit start and stop, one instance under the
+    # store's stable lock, signed commands applied to the configured store) and the systemd user unit
+    # template it renders. Runtime assets the installer copies into its fixed executable; no
+    # validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_service.py",
+    ".veldo/services/veldo-authority.service",
+    # The one owner of where the owner's systemd user units live, which the authority installer
+    # loads for its default unit directory. The installer copies every module its programs load
+    # (control_service.closure()), so what it loads is laid down with it; no validator import, so not
+    # REQUIRED_SUBSTRATE.
+    ".veldo/supervisor.py",
     # VELDO-0031: authority claim receiver and caller, not loaded by validators.
     ".veldo/control_claim.py",
     ".veldo/control_claim_client.py",
