@@ -142,6 +142,13 @@ Handed on by VELDO-0067 (its review, 2026-09-24): installation places the protec
 directory outside the home and temporary directories, because the custody wrapper denies a confined
 worker every file created directly in an ancestor of that directory after the worker starts.
 
+Handed on by VELDO-0042 (its reviews, 2026-09-24): installation keeps the factory's own state under
+one root outside the home directory (default /var/lib/veldo, created once by root at installation):
+the enrolled checkouts the authority serves, worker clones, object caches, the store and the keys.
+With any of them under the home directory, the worker write confinement cannot let a worker create a
+new entry directly in the home directory, which costs Claude Code its atomic ~/.claude.json save and
+breaks git config --global.
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
