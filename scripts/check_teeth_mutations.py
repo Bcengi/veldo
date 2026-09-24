@@ -3118,6 +3118,49 @@ def cases():
     beat('retire-pending-unlisted', 'control_retirement.py',
          "            if slot is not None and not slot.get('retired'):\n",
          "            if False:  # defect: a held slot is not listed as pending\n", 'retirement/observations')
+    # AC3, review of 5f53aa3: a refused retirement is retried by the runner itself when what it waits on is
+    # completed, and the retry is the same single release.
+    beat('retire-report-not-subscribed', 'control_retirement.py',
+         "        reservations.observe = observe\n",
+         "        pass  # defect: the final accounting report is never listened for\n",
+         'retirement/missing-accounting')
+    beat('retire-retry-releases-twice', 'control_retirement.py',
+         "        request = 'retire/' + dispatch_id\n",
+         "        request = 'retire/%s/%d' % (dispatch_id, entry['attempts'])  # defect: each attempt a request of its own\n",
+         'retirement/missing-accounting',
+         also=[("        if slot is not None and slot.get('retired'):\n"
+                "            return self._refused(entry, event, 'already_retired')\n",
+                "        pass  # defect: a released slot is not looked at before it is released again\n")])
+    beat('retire-clone-removal-not-retried', 'control_retirement.py',
+         "                    try:\n                        self._retry(other, 'clone_removed')\n",
+         "                    try:\n                        pass  # defect: the retirements waiting on the removed clone wait on\n",
+         'retirement/clone-files')
+    beat('retire-pending-never-retried', 'control_retirement.py',
+         "        self.counts['retried'] += 1\n        return self._attempt(dispatch_id, entry, basis)\n",
+         "        return False  # defect: a pending retirement is never tried again\n",
+         'retirement/clone-files')
+    beat('retire-no-sweep-on-wait', 'control_launch.py',
+         "        self.launches.pop(launch.dispatch_id, None)\n"
+         "        # This dispatch's end may have completed another's obligation (a group the kernel emptied).\n"
+         "        self.sweep()\n",
+         "        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement\n",
+         'retirement/live-descendant')
+    beat('retire-no-sweep-on-prepare', 'control_launch.py',
+         "        self.sweep()\n        now = self.clock()\n",
+         "        now = self.clock()  # defect: a preparation sweeps no pending retirement\n",
+         'retirement/unknown-outcome')
+    beat('retire-sweep-retries-unchanged', 'control_retirement.py',
+         "        if seen['open'] != entry['open']:\n            return True\n",
+         "        return True  # defect: tried again whether or not anything it waits on changed\n",
+         'retirement/unknown-outcome')
+    # AC1, review of 5f53aa3: the heartbeat outlives a signal the engine sends its own group, and the engine
+    # holds no end of the heartbeat channel.
+    beat('heartbeat-shares-engine-session', 'control_heartbeat.py',
+         "                os.setsid()\n", "", 'heartbeat/engine-group-signal')
+    beat('heartbeat-channel-left-to-engine', 'control_heartbeat.py',
+         "        os.close(engine)\n        os.close(fd)\n",
+         "        os.close(engine)  # defect: the channel stays open into the engine\n",
+         'heartbeat/channel-not-held')
     beat('heartbeat-not-installed', 'init_scaffold.py', '    ".veldo/control_heartbeat.py",\n', '',
          'retirement/installed-assets')
     beat('retirement-not-installed', 'init_scaffold.py', '    ".veldo/control_retirement.py",\n', '',

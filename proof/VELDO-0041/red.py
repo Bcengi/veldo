@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
-"""Run the CURRENT suite 67 over the pre-change launch path and print every VELDO-0041 row.
+"""Run the CURRENT suite 67 over the launch path of an earlier commit and print every VELDO-0041 row.
 
-    python3 -B proof/VELDO-0041/red.py e231721
+    python3 -B proof/VELDO-0041/red.py e231721    (before VELDO-0041: red-e231721.json)
+    python3 -B proof/VELDO-0041/red.py 5f53aa3    (the reviewed tip, before its findings: red-5f53aa3.json)
 
-This is how each row was recorded red by assertion before the change. At e231721 the trusted wrapper
-starts no heartbeat and the receiver watches none (a profile that declares one is refused as naming an
-unknown setting), the stop's graces are timed and recorded on the wall clock only, and the runner's
-`_retire` observes the group only on its first attempt, holds no outcome or clone obligation and keeps
-no pending list. The suite's production anchors are pointed at e231721's own control_launch.py,
-control_containment.py, control_reservations.py and init_scaffold.py, and at prefix/control_heartbeat.py
-and prefix/control_retirement.py (the modules that do not exist there, and are empty). Every other
-module the suite installs is compared with the commit's copy and each one that differs is named: those
-are the modules other specifications landed on main since (VELDO-0042's clones among them, which the
-clone row provisions with). A row that fails reports its observation, never a crash: each region reds
-its rows on a raise, and a `ran/` row says whether it did.
+The suite's production anchors (control_launch.py, control_containment.py, control_reservations.py,
+init_scaffold.py, control_heartbeat.py and control_retirement.py) are pointed at that commit's own
+copies; a module the commit does not have is replaced by its empty stand-in in prefix/ (at e231721,
+control_heartbeat.py and control_retirement.py). Every other module the suite installs is compared with
+the commit's copy and each one that differs is named: those are the modules other specifications
+landed on main since. A row that fails reports its observation, never a crash: each region reds its
+rows on a raise, and a `ran/` row says whether it did.
+
+At e231721 the trusted wrapper starts no heartbeat and the receiver watches none (a profile that
+declares one is refused as naming an unknown setting), the stop's graces are timed and recorded on the
+wall clock only, and the runner's `_retire` observes the group only on its first attempt, holds no
+outcome or clone obligation and keeps no pending list. At 5f53aa3 a refused retirement is kept but never
+tried again by anything in production, and the heartbeat shares the engine's session and process group.
 """
 import ast
 import contextlib
@@ -29,8 +32,8 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 SUITE = ROOT / 'scripts/suites/67_veldo_0041_heartbeat.py'
 HERE = Path(__file__).resolve().parent
-AT_COMMIT = ('control_launch.py', 'control_containment.py', 'control_reservations.py', 'init_scaffold.py')
-STAND_INS = ('control_heartbeat.py', 'control_retirement.py')
+MODULES = ('control_launch.py', 'control_containment.py', 'control_reservations.py', 'init_scaffold.py',
+           'control_heartbeat.py', 'control_retirement.py')
 
 
 def _load(name, path):
@@ -52,14 +55,19 @@ def main(commit, repository):
     listed = [line.split('\t', 1)[1] for line in git(repository, 'ls-tree', commit, '.veldo/').decode().splitlines()]
     at_commit = {Path(p).name for p in listed if p.endswith('.py')}
     current = {p.name for p in (ROOT / '.veldo').glob('*.py')}
-    substituted = set(AT_COMMIT) | set(STAND_INS)
+    substituted = set(MODULES)
+    at_commit_modules = [name for name in MODULES if name in at_commit]
+    stand_ins = [name for name in MODULES if name not in at_commit]
     differing = sorted(name for name in (current & at_commit) - substituted
                        if (ROOT / '.veldo' / name).read_bytes() != git(repository, 'show', '%s:.veldo/%s' % (commit, name)))
     absent_at_commit = sorted(current - at_commit - substituted)
     rows = []
     with tempfile.TemporaryDirectory(prefix='v41-red-') as directory:
-        anchors = {'ROOT / ".veldo" / "%s"' % name: HERE / 'prefix' / name for name in STAND_INS}
-        for name in AT_COMMIT:
+        anchors = {}
+        for name in stand_ins:
+            assert (HERE / 'prefix' / name).is_file(), 'no stand-in for ' + name
+            anchors['ROOT / ".veldo" / "%s"' % name] = HERE / 'prefix' / name
+        for name in at_commit_modules:
             path = Path(directory) / name
             path.write_bytes(git(repository, 'show', '%s:.veldo/%s' % (commit, name)))
             anchors['ROOT / ".veldo" / "%s"' % name] = path
@@ -81,8 +89,8 @@ def main(commit, repository):
     observed = ns.get('_V41_OBSERVED') or {}
     print(json.dumps({
         'production_at': commit,
-        'substituted': dict({name: '%s:.veldo/%s' % (commit, name) for name in AT_COMMIT},
-                            **{name: 'proof/VELDO-0041/prefix/' + name for name in STAND_INS}),
+        'substituted': dict({name: '%s:.veldo/%s' % (commit, name) for name in at_commit_modules},
+                            **{name: 'proof/VELDO-0041/prefix/' + name for name in stand_ins}),
         'installed_from_current_tree': {'differing_from_commit': differing, 'absent_at_commit': absent_at_commit},
         'failed': [n for n, ok in mine if not ok], 'passed': [n for n, ok in mine if ok],
         'raised': observed.get('raised'),
