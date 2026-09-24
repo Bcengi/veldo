@@ -145,3 +145,19 @@ Python/profile and AC2 every-pack/full inventory moved to Release 4. Compatible 
 pinned runtime and all journey assets remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-23 implementation: `.veldo/control_runtime.py` (engine copy byte-identical, laid down by
+init_scaffold.py) activates the runtime VELDO-0043 installs, from its lock and its installer and never
+a second copy of either. Activation refuses by name when a journey asset is missing from the
+installation, when the license and provenance records (`engine/runtime/langgraph-records.json`, laid
+at `.veldo/runtime/`, read from PyPI and the PyPI integrity API on 2026-09-23 by
+proof/VELDO-0045/records.py) do not record every locked package with the registry's sha256, an
+approved SPDX license and an approval, when the installed distributions or their files differ from
+the lock, from RECORD or from the genuine wheel's content, and when the runtime's own packaging finds
+an installed requirement that no locked distribution satisfies. The same module runs the qualification
+workload through the production adapter, and enumerates the installation's enforcement entries from
+its gate, its guard and its authorization entry and runs them with the runtime hidden. The scaffolder
+now also installs authorization.py and the six modules its two-key path loads; pack.py's engine globs
+and check_template_sync.sh carry the runtime/ assets. The 23 finding 45 negative controls are
+registered in scripts/check_teeth_mutations.py, which joins the machine-readable footprint as the
+authorized exception VELDO-0043 also used. No criterion, status or historical proof was changed.

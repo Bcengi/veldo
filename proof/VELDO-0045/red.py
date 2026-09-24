@@ -77,7 +77,7 @@ def main(commit):
                       'journey': {k: (observed.get('journey') or {}).get(k) for k in ('exit', 'trace_exit', 'outcome',
                                                                                      'reached_installed', 'declared')},
                       'enforcement': {k: (observed.get('enforcement') or {}).get(k) for k in ('exit', 'passed', 'derived')}},
-                     indent=1, default=str))
+                     indent=1, default=str).replace(str(Path.home()), '<account home>'))
 
 
 if __name__ == '__main__':

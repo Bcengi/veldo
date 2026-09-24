@@ -160,7 +160,7 @@
     "hidden_hits": [
      [
       "os.scandir",
-      "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/lib/python3.12/site-packages"
+      "<account home>/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/lib/python3.12/site-packages"
      ]
     ],
     "module": ".veldo/control_runtime.py",
@@ -168,7 +168,7 @@
     "status": "pass"
    },
    "hidden": [
-    "/home/dmitry/.local/share/veldo/langgraph"
+    "<account home>/.local/share/veldo/langgraph"
    ],
    "passed": true
   },
@@ -450,5 +450,5 @@
   ]
  ],
  "suite": "62_veldo_0045_runtime.py",
- "suite_seconds": 11.92
+ "suite_seconds": 11.696
 }

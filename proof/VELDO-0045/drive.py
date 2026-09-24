@@ -34,6 +34,7 @@ mine = [r for r in rows[before:] if r[0].startswith('VELDO-0045')]
 record = {'suite': suite.name, 'rows': mine, 'passed': sum(ok for _, ok in mine), 'failed': sum(not ok for _, ok in mine),
           'suite_seconds': round(elapsed, 3), 'observed': ns.get('_V45_OBSERVED')}
 out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name('observations.json')
-out.write_text(json.dumps(record, indent=1, sort_keys=True) + '\n')
+# The account home is this machine's, not evidence: written as <account home>.
+out.write_text(json.dumps(record, indent=1, sort_keys=True).replace(str(Path.home()), '<account home>') + '\n')
 print('%s: %d passed, %d failed in %.3fs -> %s' % (suite.name, record['passed'], record['failed'], elapsed, out))
 sys.exit(1 if record['failed'] else 0)
