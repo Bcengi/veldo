@@ -12,8 +12,11 @@ work: W43
 plan_revision: 3
 depends_on: [VELDO-0050, VELDO-0056]
 placement: [distribution, enforcement, fleet, loop, metrics]
-protected_paths: [scripts/verify.sh, engine/scripts/verify.sh]
+protected_paths: [scripts/verify.sh, engine/scripts/verify.sh, .veldo/policy_check.py,
+  engine/.veldo/policy_check.py]
 footprint:
+  - ".veldo/policy_check.py"
+  - "engine/.veldo/policy_check.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -179,3 +182,12 @@ trusted installation's verifier and policy against a candidate and accepts its e
 and GitLandOps.gate/finalize and LiveLoop.gate use it. The ordinary checkout gate and the landing step's
 inputs are unchanged. Suite 69 carries the four rows; proof/VELDO-0058/README.md has the evidence. No
 status was changed.
+
+2026-09-24, review fix (AC3, blocking): the installed policy_check.py read the protected list from the
+candidate's own .veldo/policy.yaml, so a candidate that emptied protected_paths landed a protected
+change with no approval. The policy source is now an explicit input separate from the subject root:
+policy_check.py reads policy.yaml through its POLICY path (unset, it is the subject root's, as before),
+and control_verification sets it to the installation's policy.yaml, refusing as missing_authority when
+that file is absent or inside the candidate. .veldo/policy_check.py and engine/.veldo/policy_check.py
+join the footprint and protected_paths; their change is its own commit, for the owner's approval.
+Suite 69 gains gate-output/installed-policy-list. No status was changed.
