@@ -340,6 +340,8 @@ sys.exit(payload.get('code', 0))
 
         def marker(launch, name, timeout=10.0):
             path = markers / ('%s.%s' % (tag(launch), name))
+            if getattr(launch, 'result', None) != 'accepted':
+                timeout = 0.05  # nothing of a launch that was not accepted is waited for
             end = time.time() + timeout
             while not path.exists() and time.time() < end:
                 time.sleep(0.02)
@@ -430,7 +432,7 @@ sys.exit(payload.get('code', 0))
                     if label not in emitted:
                         check(label, False)
 
-        started = {}
+        started, made = {}, []
         try:
             # Started first, checked later: the runtime cap and the idle receiver run beside the rest. A
             # raise here leaves `started` short, which reds the rows that read it.
@@ -577,7 +579,8 @@ sys.exit(payload.get('code', 0))
                 exit_at = marker(idle, 'exit').get('at')
                 recorded_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'exited'), None)
                 window = counted[-1][0] - counted[0][0] if len(counted) == 2 else 0
-                wakes = counted[-1][1] - counted[0][1] if len(counted) == 2 else None
+                wakes = (counted[-1][1] - counted[0][1] if len(counted) == 2 and None not in (counted[0][1], counted[-1][1])
+                         else None)
                 observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
                                              'exit_at': exit_at, 'recorded_at': recorded_at,
                                              'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
@@ -760,6 +763,7 @@ sys.exit(payload.get('code', 0))
                 u9 = admitted('VELDO-9412')
                 prepared = runner('main').prepare(u9, 'build', **job())
                 unit = C.unit_name(prepared['dispatch_id'])
+                made.append(unit)
                 holder = subprocess.Popen(['systemd-run', '--user', '--scope', '--quiet', '--unit=' + unit,
                                            '--slice=' + slices[0], '--', 'sleep', '30'], env=tools,
                                           stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
@@ -832,6 +836,15 @@ sys.exit(payload.get('code', 0))
             for name in slices:
                 with contextlib.suppress(Exception):
                     systemctl('stop', name)
+            # A scope a defective build left populated ends failed when its slice stops; this run's own are
+            # cleared so nothing it made stays loaded.
+            mine = sorted({C.unit_name(launch.dispatch_id) for launch in launches if hasattr(launch, 'dispatch_id')}
+                          | set(made))
+            with contextlib.suppress(Exception):
+                loaded = [line.split()[0] for line in systemctl('list-units', '--all', '--plain', '--no-legend',
+                                                                *mine).stdout.splitlines() if line.split()]
+                if loaded:
+                    systemctl('reset-failed', *loaded)
             # Whatever a defective build left running (a descendant that escaped its stop) is ended here.
             for leftover in sorted(markers.iterdir()):
                 with contextlib.suppress(Exception):

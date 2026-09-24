@@ -1,0 +1,6 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -147,2 +147 @@
+-    problems = ['invalid_input:profile:unknown:' + str(name) for name in profile
+-                if name not in SETTINGS and name not in FIELDS]
++    problems = []  # defect: a setting the profile does not know is silently ignored

@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -126 +126 @@
+-    return UNIT_PREFIX + hashlib.sha256(str(dispatch_id).encode()).hexdigest()[:32] + '.scope'
++    return UNIT_PREFIX + 'shared.scope'  # defect: dispatches share one group

@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -364 +364 @@
+-        return head + ['--'] + list(argv)
++        return list(argv)  # defect: the worker is launched outside its dispatch group
