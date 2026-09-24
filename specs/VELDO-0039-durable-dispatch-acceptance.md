@@ -91,6 +91,17 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the runner prepares and launches an admitted unit on this Linux box or the Mac, records the
+  dispatch contract before the worker starts, records the launch result under that dispatch, and applies
+  each later observation to its own dispatch. One active dispatch per unit and station.
+- Threat model: a worker's own output (it may claim success, name another dispatch or exit oddly). The
+  owner's account, the installed engine and the store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); crashes between
+  two writes and recovery after them (Release 2); hand-edited or forged store rows; clock jumps; filesystem
+  or disk failures.
+
 ## Notes
 
 Persist explicit dispatch identity and the accepted contract in the authority before receiver
