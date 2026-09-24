@@ -255,7 +255,8 @@ while release and not os.path.exists(release):
 
             with region('clone/worker-writes-confined'):
                 # The worker of clone A tries to write clone B, the store, the keys and the caches.
-                cache_any = str(next(caches_root.glob('*.git')))
+                a_cache = next(caches_root.glob('*.git'), None)
+                cache_any = str(a_cache) if a_cache else str(caches_root / 'none.git')
                 targets = {'other_clone': os.path.join(work_b, 'evil') if work_b else str(base / 'x'),
                            'store': str(db), 'store_dir:mkdir': os.path.join(str(db.parent), 'evil'),
                            'keys': str(private / 'evil'), 'cache': os.path.join(cache_any, 'evil'),

@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -232 +232 @@
+-    confine(grants(manifest, user))
++    confine([os.path.abspath(os.sep)])

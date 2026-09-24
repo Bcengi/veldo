@@ -1,0 +1,84 @@
+{
+ "by_assertion": true,
+ "commit": "18ecd6f777583d1629b907b25f69494ca5c18e9e",
+ "control_clone_at_commit": "absent",
+ "failed_rows": [
+  "VELDO-0042 clone/accepted-commit",
+  "VELDO-0042 clone/worker-writes-confined",
+  "VELDO-0042 clone/named-attachment-and-unnamed",
+  "VELDO-0042 clone/pins-survive-gc",
+  "VELDO-0042 clone/retire-after-users-end",
+  "VELDO-0042 clone/installed-assets"
+ ],
+ "modules": {
+  ".veldo/control_clone.py": {
+   "at_commit": null,
+   "now": "e8c2b2dc338dc75473a76c109090c69d24b2d8205f73c82c5bc423e2e41bc902"
+  },
+  ".veldo/env_provision.py": {
+   "at_commit": "7fa171c301949a908ed3d89dc89e3973f4c4d69d3c0138dc10211bb6ab1c0135",
+   "now": "efc127ddbcb326b796a2d514bdd4206e5482ff704d4be13618ffefa2443a232c"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3",
+   "now": "eeab6a41edf882a62621b5597d7816b6a71bf93ab8910f05006df81e954070fd"
+  }
+ },
+ "preamble_rows": 26,
+ "regions_that_raised": [],
+ "rows": [
+  [
+   "VELDO-0042 clone/accepted-commit",
+   false
+  ],
+  [
+   "VELDO-0042 clone/worker-writes-confined",
+   false
+  ],
+  [
+   "VELDO-0042 clone/named-attachment-and-unnamed",
+   false
+  ],
+  [
+   "VELDO-0042 clone/pins-survive-gc",
+   false
+  ],
+  [
+   "VELDO-0042 clone/retire-after-users-end",
+   false
+  ],
+  [
+   "VELDO-0042 clone/installed-assets",
+   false
+  ],
+  [
+   "VELDO-0042 ran/clone/accepted-commit",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/worker-writes-confined",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/pins-survive-gc",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/retire-after-users-end",
+   true
+  ],
+  [
+   "VELDO-0042 ran/clone/installed-assets",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.235,
+ "spec_id": "VELDO-0042",
+ "suite": "scripts/suites/66_veldo_0042_clones.py",
+ "tree": "git archive 18ecd6f777583d1629b907b25f69494ca5c18e9e, unchanged; the current suite run against it with control_clone absent (proof/VELDO-0042/prefix/control_clone.py stands in)"
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -320 +320 @@
+-        name = hashlib.sha256(('%s\n%s' % (domain, repository)).encode()).hexdigest()[:32]
++        name = 'pooled'

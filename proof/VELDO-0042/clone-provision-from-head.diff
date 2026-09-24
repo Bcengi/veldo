@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -396 +396 @@
+-            commit = accepted['commit']
++            commit = _git('-C', accepted['path'], 'rev-parse', 'HEAD', check=False).stdout.strip() or accepted['commit']

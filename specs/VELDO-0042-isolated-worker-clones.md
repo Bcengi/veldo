@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0042_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0042-isolated-worker-clones.md"
   - "specs/index.md"
   - "proof/VELDO-0042/*"
@@ -137,3 +138,23 @@ provisioning/retirement and AC2 concurrent-GC recovery moved to Release 2. Named
 attachments, accepted-commit clones and live object pins remain. The criteria, declared
 evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-24, implementation (branch build-veldo-0042): `.veldo/control_clone.py` provisions one
+isolated clone per dispatch at the contract's accepted commit and tree, never the source
+repository's HEAD, over one read-only pinned object cache per repository borrowed through Git
+alternates, with only contract-named exact-commit attachments as `refs/attachments/<name>`; its
+`enter` wrapper confines a worker's direct writes with Linux Landlock to its own clone and scratch
+(a consumer to its scratch only), so a worker cannot write another clone, the store, the keys, the
+authority's Git metadata or a cache; cleanup releases a clone's pins only after its workers and
+consumers have ended, observed from the kernel through control_containment. `.veldo/env_provision.py`
+`create` now passes backend arguments through so the clone backend takes the dispatch contract; the
+fake and container backends are unchanged. Both are installed by `.veldo/init_scaffold.py`; engine
+copies are byte-identical. Suite `scripts/suites/66_veldo_0042_clones.py` (0.45 s, 12 assertion
+rows), red at 18ecd6f, and 12 mutations as finding 42; proof in `proof/VELDO-0042/`. The criteria,
+status and risk are unchanged.
+
+2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 42 of the existing teeth mutation driver, as
+VELDO-0040, VELDO-0065, VELDO-0066 and VELDO-0067 registered theirs. `scripts/suites/manifest.json`
+and `requires.json` gained the suite's enumeration and requires entry. The criteria, status and
+risk are unchanged.
