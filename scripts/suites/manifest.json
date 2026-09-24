@@ -752,6 +752,15 @@
    ],
    "regions": "One canonical event vocabulary for every enabled producer and the validator, the journal projection published in order at an explicit watermark, and spec.shipped only from a confirmed landing receipt for its exact unit and dispatch",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a scaffolded Git repository running its own canonical gate and push guard, real publications by the VELDO-0028 effect executor process to bare remotes, the installed emitter CLI, executor hook, review projection and validator in separate processes, and the journal projector. Writes only temporary fixtures."
+  },
+  {
+   "name": "67_veldo_0135_offers",
+   "file": "67_veldo_0135_offers.py",
+   "requires": [
+    "67_veldo_0135_offers"
+   ],
+   "regions": "Enrolled work offered from its floor record at every floor state, the work loop's no-reclaim and claim-then-recheck over that record, one enrolled unit through the ordinary loop to landing, unenrolled status-line behavior unchanged, and the offer observations",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition behind the claim client, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
   }
  ]
 }

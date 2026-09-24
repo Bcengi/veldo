@@ -121,14 +121,15 @@ class WorkLoop:
         floor record through the frontier's own floor reader, and the unit is still claimable only
         while that record keeps it at the station it was offered for: a unit handed off, landed,
         returned or waiting on an open finding since the snapshot is released, never dispatched."""
-        entry = FR.floor_station(unit["spec"], self.repo_root, gate)
+        entry = FR.floor_station(unit["spec"], self.repo_root, gate if gate is not None else self.eligibility)
         if entry is not None:
             if entry["station"] == unit.get("kind"):
                 return True
+            # The record moved on since the offer and took the unit away from the offered station.
+            reason = "stale_version:floor_record"
             self._observe_floor(gate, unit, "floor_recheck", outcome="withheld", station=entry["station"],
-                                version=entry["version"], state=entry["state"],
-                                reason="stale_subject:floor_station",
-                                detail=[entry["reason"]] if entry["reason"] else [])
+                                version=entry["version"], state=entry["state"], reason=reason,
+                                taxonomy=FR.floor_taxonomy(reason), detail=[entry["reason"]] if entry["reason"] else [])
             return False
         expected = "review" if unit.get("kind") == "review" else "ready"
         return FR.current_status(unit["spec"], self.repo_root) == expected

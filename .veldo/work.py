@@ -121,7 +121,7 @@ class WorkLoop:
         floor record through the frontier's own floor reader, and the unit is still claimable only
         while that record keeps it at the station it was offered for: a unit handed off, landed,
         returned or waiting on an open finding since the snapshot is released, never dispatched."""
-        entry = FR.floor_station(unit["spec"], self.repo_root, gate)
+        entry = FR.floor_station(unit["spec"], self.repo_root, gate if gate is not None else self.eligibility)
         if entry is not None:
             if entry["station"] == unit.get("kind"):
                 return True
