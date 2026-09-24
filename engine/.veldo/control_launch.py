@@ -153,7 +153,7 @@ class Runner:
         slot. A dispatch the runner asked to stop is accounted as cancelled."""
         launch = self.launches.pop(dispatch_id, None)
         record = self.dispatches.record(dispatch_id) or {}
-        if outcome == 'completed' and getattr(launch, 'stop_requested', False):
+        if outcome in ('completed', 'failed') and getattr(launch, 'stop_requested', False):
             outcome = 'cancelled'
         observation = dict(C.retirement(getattr(launch, 'group', None), record.get('process')),
                            outcome=outcome, observer='launch_runner', basis=basis,
