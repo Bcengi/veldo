@@ -209,23 +209,41 @@ def gate_env():
 
 # The observation.
 
-def _read_outputs(sink):
-    """The sink's stamp and last gate event, each only from a regular file that is not a link."""
+def _regular_bytes(path):
+    try:
+        with open(path, "rb") as handle:
+            info = os.fstat(handle.fileno())
+            if stat.S_ISREG(info.st_mode) and not os.path.islink(path):
+                return handle.read()
+    except OSError:
+        pass
+    return None
+
+
+def _read_outputs(sink, seeded):
+    """The sink's stamp, its last gate event and every event appended beyond the candidate's own log
+    (`seeded`, the bytes the sink log was seeded from), each only from a regular file, not a link."""
     found = {}
     for name in OUTPUTS:
-        path = os.path.join(sink, name)
-        try:
-            info = os.lstat(path)
-            body = open(path, "rb").read() if stat.S_ISREG(info.st_mode) else None
-        except OSError:
-            body = None
-        found[name] = body
+        found[name] = _regular_bytes(os.path.join(sink, name))
     stamp = event = None
     try:
         stamp = json.loads(found["last_verify"]) if found["last_verify"] is not None else None
     except ValueError:
         stamp = None
-    lines = (found["events.jsonl"] or b"").decode("utf-8", "replace").splitlines()
+    body = found["events.jsonl"] or b""
+    lines = body.decode("utf-8", "replace").splitlines()
+    appended = None
+    if body.startswith(seeded):
+        appended = []
+        for line in body[len(seeded):].decode("utf-8", "replace").splitlines():
+            try:
+                event_line = json.loads(line)
+            except ValueError:
+                event_line = {"unreadable": True}
+            if isinstance(event_line, dict):
+                appended.append({k: event_line.get(k) for k in ("type", "commit", "producer", "verdict_path")
+                                 if event_line.get(k) is not None})
     for line in reversed(lines):
         try:
             candidate = json.loads(line)
@@ -237,7 +255,7 @@ def _read_outputs(sink):
     return {"sink": str(sink), "last_verify": stamp,
             "last_verify_digest": digest(found["last_verify"]) if found["last_verify"] is not None else None,
             "events_digest": digest(found["events.jsonl"]) if found["events.jsonl"] is not None else None,
-            "events_lines": len(lines), "gate_event": event}
+            "events_lines": len(lines), "appended": appended, "gate_event": event}
 
 
 def judge(observation):
@@ -308,6 +326,7 @@ def observe_gate(candidate, installation, directory, timeout=None):
         raise Refused("unavailable_service:verifier/candidate_mode", "the installed verifier has no candidate mode")
     sink = directory / "sink"
     sink.mkdir()
+    seeded = _regular_bytes(str(candidate / ".veldo" / "events.jsonl")) or b""
     before = state(candidate)
     command = ["bash", str(root / GATE_PATH), "--candidate", str(candidate), "--sink", str(sink)]
     started = time.time()
@@ -333,7 +352,7 @@ def observe_gate(candidate, installation, directory, timeout=None):
         "catalog": {"required": ran["required"], "commands": ran["commands"], "results": results},
         "exit": exit_code, "stdout": stdout, "stdout_digest": digest(out),
         "stderr": err.decode("utf-8", "surrogateescape"), "stderr_digest": digest(err),
-        "terminal": terminal, "outputs": _read_outputs(str(sink)),
+        "terminal": terminal, "outputs": _read_outputs(str(sink), seeded),
         "post_run": {"equal": not changed, "state": after["digest"], "changed": changed[:50],
                      "changed_count": len(changed)},
         "started_at": started, "finished_at": finished, "capture": uuid.uuid4().hex}
