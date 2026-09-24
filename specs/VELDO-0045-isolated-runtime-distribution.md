@@ -106,6 +106,19 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the reference installation creates the LangGraph runtime in its own environment from a
+  lock that pins every package with its hash and records its license, runs the adapter workload in it,
+  and installs every asset the journey needs. Validators, authorization and the gate keep working with
+  the runtime absent.
+- Threat model: a package artifact that does not match its pinned hash, a missing dependency or asset,
+  and a runtime import creeping into an enforcement module. The owner's account, the installed engine
+  and the package tooling are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); files planted
+  in our own installed directory; package index outages and install recovery (Release 2); bugs in pip
+  or the Python packaging tools themselves.
+
 ## Notes
 
 Exact Python/LangGraph versions and licenses must come from compatibility qualification.
