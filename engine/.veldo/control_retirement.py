@@ -41,8 +41,11 @@ waits on is completed, never only when a caller happens to ask again:
   the files another pending retirement waits on (`clone_removed`), or the reservation service it
   listens to accepts a usage report of a call under a dispatch that waits on its accounting
   (`accounting_reported`; a final report completes it). The listener is that service's one
-  observation seam, `observe`, which it calls after every operation it accepts or refuses; the
-  observer it already had is kept and still receives every event.
+  observation seam, `observe`, which it calls after every operation it accepts or refuses: one
+  dispatcher is installed on each reservation service, once, keeping the observer it already had
+  (which still receives every event first), and fans each event out to the retirement services
+  listening on it, held weakly, so a retirement service that is gone stops listening and the chain
+  never grows with the runners made over one service.
 - on every sweep (`sweep()`), which the runner makes before each preparation (and so each submit)
   and after each wait, and which a scheduler may make at any time, so a completion this service did
   not observe (a report through another connection, a group emptied by the kernel) strands nothing.
@@ -67,6 +70,7 @@ import importlib.util
 import json
 from pathlib import Path
 import time
+import weakref
 
 
 def _organ(name):
@@ -101,6 +105,28 @@ def taxonomy(code):
     return TAXONOMY.get(str(code).split(':', 1)[0], 'unknown_outcome')
 
 
+# Per reservation service, the retirement services listening on its observation seam.
+_LISTENERS = weakref.WeakKeyDictionary()
+
+
+def _listen(reservations, retirements):
+    """Make `retirements` receive every event `reservations` observes: the first listener installs one
+    dispatcher on the service's `observe`, after the observer it already had; later ones join it."""
+    listeners = _LISTENERS.get(reservations)
+    if listeners is None:
+        listeners = _LISTENERS[reservations] = weakref.WeakSet()
+        previous = getattr(reservations, 'observe', None) or (lambda event: None)
+
+        def observe(event):
+            try:
+                previous(event)
+            finally:
+                for listener in list(listeners):
+                    listener.reported(event)
+        reservations.observe = observe
+    listeners.add(retirements)
+
+
 def _members(group):
     """Every process the kernel lists anywhere in a group's subtree, for the record."""
     cgroup = group.get('cgroup') if isinstance(group, dict) else None
@@ -126,16 +152,8 @@ class Retirements:
         self.observations = observations if observations is not None else []
         self.entries = {}
         self.counts = {'accepted': 0, 'refused': 0, 'retried': 0}
-        # Accounting is completed by a call's final report, which the reservation service accepts:
-        # listen on its one observation seam, keeping the observer it already had.
-        previous = getattr(reservations, 'observe', None) or (lambda event: None)
-
-        def observe(event):
-            try:
-                previous(event)
-            finally:
-                self.reported(event)
-        reservations.observe = observe
+        # Accounting is completed by a call's final report, which the reservation service accepts.
+        _listen(reservations, self)
 
     def _entry(self, dispatch_id):
         return self.entries.setdefault(dispatch_id, {'group': None, 'stop_requested': False, 'supervision': None,
