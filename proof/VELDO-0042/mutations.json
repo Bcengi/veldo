@@ -1,0 +1,2497 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "regions_that_raised": [],
+  "rows": [
+   [
+    "VELDO-0042 clone/accepted-commit",
+    true
+   ],
+   [
+    "VELDO-0042 clone/worker-writes-confined",
+    true
+   ],
+   [
+    "VELDO-0042 clone/protected-targets-denied",
+    true
+   ],
+   [
+    "VELDO-0042 clone/real-engines-run-confined",
+    true
+   ],
+   [
+    "VELDO-0042 clone/consumer-confined",
+    true
+   ],
+   [
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    true
+   ],
+   [
+    "VELDO-0042 clone/pins-survive-gc",
+    true
+   ],
+   [
+    "VELDO-0042 clone/retire-after-users-end",
+    true
+   ],
+   [
+    "VELDO-0042 clone/retire-waits-for-group",
+    true
+   ],
+   [
+    "VELDO-0042 clone/installed-assets",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/accepted-commit",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/worker-writes-confined",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/protected-targets-denied",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/real-engines-run-confined",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/consumer-confined",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/pins-survive-gc",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/retire-after-users-end",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/retire-waits-for-group",
+    true
+   ],
+   [
+    "VELDO-0042 ran/clone/installed-assets",
+    true
+   ]
+  ],
+  "seconds": 1.548
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-provision-from-head.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/accepted-commit",
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/real-engines-run-confined",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    "VELDO-0042 clone/pins-survive-gc",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "39a06ad28a20b57c34e2414836bce83d1ed28c4ba78850a28d2382587cd6fe4d",
+   "name": "clone-provision-from-head",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/accepted-commit"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     false
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 0.346,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-verify-wrong-accepted-field.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/accepted-commit",
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/real-engines-run-confined",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    "VELDO-0042 clone/pins-survive-gc",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "9734c1f42c186657fe01585ba9eefcce7d136810ce36399747552e3c4ff245cf",
+   "name": "clone-verify-wrong-accepted-field",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/accepted-commit"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     false
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 0.341,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-confinement-not-restricted.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "75522beb9aab0239b12de4c283e8e7197db394ad0147c7d72aa6e7ae5e01f0dd",
+   "name": "clone-confinement-not-restricted",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/worker-writes-confined"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.154,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-grants-everything.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "9cbd87f852c149eff0f7e00db86f63a5e5fcba7acd0fe5664dc8a7146b4e09a9",
+   "name": "clone-grants-everything",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/worker-writes-confined"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.151,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-reads-not-denied.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/consumer-confined"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "edb78464c4a5bceee0c61e79be04ee22c39327a13bd3f76d4aafb5f6ac541984",
+   "name": "clone-reads-not-denied",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/protected-targets-denied"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.543,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-cache-root-readable.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/protected-targets-denied"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "c93c06c6c957b31fba087cc0de0678cb1832c66fdf16065a1a13a71de43ca722",
+   "name": "clone-cache-root-readable",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/protected-targets-denied"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.545,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-own-root-writable.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/protected-targets-denied"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "04714f79623095f9657e6f194aac11bebfe2092869cd72a9ed3f56e5e0d28518",
+   "name": "clone-own-root-writable",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/protected-targets-denied"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.569,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-confinement-allow-list.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/real-engines-run-confined",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "47d327eabc9814753c4dfe65b7585f3b8bac764015b167ae2bb287e85bb26ae8",
+   "name": "clone-confinement-allow-list",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/real-engines-run-confined"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.457,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-chain-walked-one-level.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/real-engines-run-confined",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "6d90cbd430ca773842f2044dc9eb65a902e8a107ecc5fa2dcda603000fce9a80",
+   "name": "clone-chain-walked-one-level",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/real-engines-run-confined"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.024,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-consumer-granted-work-tree.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/consumer-confined"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "d8533d3bc891826a1c3cfdddda76d35627c3b8c9adc666808ab6a527313dd3b2",
+   "name": "clone-consumer-granted-work-tree",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/consumer-confined"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.548,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-consumer-allow-list.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/consumer-confined"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "af525c3108935e39e827e9b3607feb16ddf163931d7016dd3613b76dfa421d79",
+   "name": "clone-consumer-allow-list",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/consumer-confined"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.557,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-pooled-cache.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/named-attachment-and-unnamed"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "36831e510fc569ce3703e70bdfa71fd477e67074bf41af90a9135cde07aca8c9",
+   "name": "clone-pooled-cache",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/named-attachment-and-unnamed"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.547,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-attachment-ref-wrong-commit.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/named-attachment-and-unnamed"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "3645c0a06810c0a516caff8ef4e53ab6395185c1c38039ea91baae2bdd103faf",
+   "name": "clone-attachment-ref-wrong-commit",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/named-attachment-and-unnamed"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.547,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-pin-not-held.diff",
+   "edits": 2,
+   "failed_rows": [
+    "VELDO-0042 clone/pins-survive-gc",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "d36553f875545c8db6d4ff4b969adfc7e5b2db9d14dbaafa4ae09cf2d17a0db8",
+   "name": "clone-pin-not-held",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/pins-survive-gc"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.561,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-pin-not-created.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/accepted-commit",
+    "VELDO-0042 clone/worker-writes-confined",
+    "VELDO-0042 clone/protected-targets-denied",
+    "VELDO-0042 clone/real-engines-run-confined",
+    "VELDO-0042 clone/consumer-confined",
+    "VELDO-0042 clone/named-attachment-and-unnamed",
+    "VELDO-0042 clone/pins-survive-gc",
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "f9567f0adf066ac8aa6ec750c2438a2ff7bd73ebe48c7912b74929f0f9196919",
+   "name": "clone-pin-not-created",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/pins-survive-gc"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     false
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     false
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     false
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     false
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 0.266,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-release-while-child-reads.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "76ec264f369f621f17e6ef0eaf159d88f37b4b244a229f77329ac363ee459512",
+   "name": "clone-release-while-child-reads",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/retire-after-users-end"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.555,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-user-ended-ignores-kernel.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/retire-after-users-end",
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "1fd4ed637ab3f7441cb3c944e293d56aea95fee0417c806c95fb5d8eb9b8282e",
+   "name": "clone-user-ended-ignores-kernel",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/retire-after-users-end"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     false
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.537,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-group-emptiness-ignored.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "46486033b1bcdd0be41e08bf8d87cff9994e3dcd0435f3d03fd21d7334e8ad9d",
+   "name": "clone-group-emptiness-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/retire-waits-for-group"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.57,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-unknown-group-ended.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/retire-waits-for-group"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "eaedc8895dc5fe0e2641ef82bb4df608ba595f79a39262282e2fb4ea952dafd9",
+   "name": "clone-unknown-group-ended",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/retire-waits-for-group"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     false
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.549,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-module-not-scaffolded.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/installed-assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "5fed255cabd13a7e2dcb5025ff2f491484020d4e31aadae5ab305d0d488fd824",
+   "name": "clone-module-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/installed-assets"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     false
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.56,
+   "source_sha256": "7af3e5bdb623502494afd83c6dc02c973f8d07c7edb0a7ef20a923ab7d1ed571"
+  },
+  {
+   "by_assertion": true,
+   "diff": "proof/VELDO-0042/clone-env-provision-not-scaffolded.diff",
+   "edits": 1,
+   "failed_rows": [
+    "VELDO-0042 clone/installed-assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "12458b892603179b16754ff70fd2434dffc061846425e511a2b122f922013845",
+   "name": "clone-env-provision-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "clone/installed-assets"
+   ],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     false
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.55,
+   "source_sha256": "7af3e5bdb623502494afd83c6dc02c973f8d07c7edb0a7ef20a923ab7d1ed571"
+  }
+ ],
+ "mutations_per_row": {
+  "clone/accepted-commit": [
+   "clone-provision-from-head",
+   "clone-verify-wrong-accepted-field"
+  ],
+  "clone/consumer-confined": [
+   "clone-consumer-granted-work-tree",
+   "clone-consumer-allow-list"
+  ],
+  "clone/installed-assets": [
+   "clone-module-not-scaffolded",
+   "clone-env-provision-not-scaffolded"
+  ],
+  "clone/named-attachment-and-unnamed": [
+   "clone-pooled-cache",
+   "clone-attachment-ref-wrong-commit"
+  ],
+  "clone/pins-survive-gc": [
+   "clone-pin-not-held",
+   "clone-pin-not-created"
+  ],
+  "clone/protected-targets-denied": [
+   "clone-reads-not-denied",
+   "clone-cache-root-readable",
+   "clone-own-root-writable"
+  ],
+  "clone/real-engines-run-confined": [
+   "clone-confinement-allow-list",
+   "clone-chain-walked-one-level"
+  ],
+  "clone/retire-after-users-end": [
+   "clone-release-while-child-reads",
+   "clone-user-ended-ignores-kernel"
+  ],
+  "clone/retire-waits-for-group": [
+   "clone-group-emptiness-ignored",
+   "clone-unknown-group-ended"
+  ],
+  "clone/worker-writes-confined": [
+   "clone-confinement-not-restricted",
+   "clone-grants-everything"
+  ]
+ },
+ "noop": {
+  "control_clone.py": {
+   "copy_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2",
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.606,
+   "source_sha256": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "7af3e5bdb623502494afd83c6dc02c973f8d07c7edb0a7ef20a923ab7d1ed571",
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "regions_that_raised": [],
+   "rows": [
+    [
+     "VELDO-0042 clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 clone/installed-assets",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/accepted-commit",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/worker-writes-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/protected-targets-denied",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/real-engines-run-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/consumer-confined",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/named-attachment-and-unnamed",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/pins-survive-gc",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-after-users-end",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/retire-waits-for-group",
+     true
+    ],
+    [
+     "VELDO-0042 ran/clone/installed-assets",
+     true
+    ]
+   ],
+   "seconds": 1.579,
+   "source_sha256": "7af3e5bdb623502494afd83c6dc02c973f8d07c7edb0a7ef20a923ab7d1ed571"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 42",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 32.21,
+ "spec_id": "VELDO-0042",
+ "suite": "scripts/suites/66_veldo_0042_clones.py"
+}

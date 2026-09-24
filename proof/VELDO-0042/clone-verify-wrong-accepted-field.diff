@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -596 +596 @@
+-        if head != accepted['commit'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():
++        if head != accepted['tree'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():

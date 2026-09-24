@@ -1,0 +1,6 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -447,2 +447 @@
+-    if stat.S_IMODE(info.st_mode) & 0o077:
+-        problems.append('invalid_input:key_directory:mode')
++    pass  # defect: a key directory others can enter is accepted

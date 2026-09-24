@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0042_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0042-isolated-worker-clones.md"
   - "specs/index.md"
   - "proof/VELDO-0042/*"
@@ -104,12 +105,14 @@ No automatic recovery, extra channel activation or broader host qualification is
   whose objects stay pinned while a clone uses them and survive ordinary garbage collection. Cleanup
   releases a clone's pins only after its workers and consumers have ended.
 - Threat model: provisioning from the current HEAD instead of the accepted commit; a worker writing
-  outside its own clone (another clone, the store, keys, authority metadata); an alternate or cache that
+  directly outside its own clone (another clone, the store, keys, authority metadata); an alternate or cache that
   exposes unnamed repository objects or authority metadata; and a pin released while a child still
   reads its objects. The owner's account outside workers, Git and the store are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); interrupted
   provisioning or retirement and recovery from concurrent garbage collection (Release 2, see History); a
-  worker that deliberately escapes its group (Release 2, filed by VELDO-0040's review); forged rows in
+  worker that deliberately escapes its group, or writes through the owner's own unconfined processes (the
+  user service manager, shell startup files, ssh to this host), which only a separate worker account
+  closes (Release 2: no second operating-system account for now, Telegram 28578/28580); forged rows in
   our own store, files planted in the installed directory and resource exhaustion by our own account.
 
 ## Notes
@@ -135,3 +138,57 @@ provisioning/retirement and AC2 concurrent-GC recovery moved to Release 2. Named
 attachments, accepted-commit clones and live object pins remain. The criteria, declared
 evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-24, implementation (branch build-veldo-0042): `.veldo/control_clone.py` provisions one
+isolated clone per dispatch at the contract's accepted commit and tree, never the source
+repository's HEAD, over one read-only pinned object cache per repository borrowed through Git
+alternates, with only contract-named exact-commit attachments as `refs/attachments/<name>`; its
+`enter` wrapper confines a worker's direct writes with Linux Landlock to its own clone and scratch
+(a consumer to its scratch only), so a worker cannot write another clone, the store, the keys, the
+authority's Git metadata or a cache; cleanup releases a clone's pins only after its workers and
+consumers have ended, observed from the kernel through control_containment. `.veldo/env_provision.py`
+`create` now passes backend arguments through so the clone backend takes the dispatch contract; the
+fake and container backends are unchanged. Both are installed by `.veldo/init_scaffold.py`; engine
+copies are byte-identical. Suite `scripts/suites/66_veldo_0042_clones.py` (0.45 s, 6 assertion rows
+and 6 region-completion rows), red at 18ecd6f, and 12 mutations as finding 42; proof in
+`proof/VELDO-0042/`. The criteria, status and risk are unchanged.
+
+2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 42 of the existing teeth mutation driver, as
+VELDO-0040, VELDO-0065, VELDO-0066 and VELDO-0067 registered theirs. `scripts/suites/manifest.json`
+and `requires.json` gained the suite's enumeration and requires entry. The criteria, status and
+risk are unchanged.
+
+2026-09-24, review rework (branch build-veldo-0042): the independent review found the write
+confinement was an allow list, so a confined real engine could not work (Codex exited at start unable
+to write ~/.codex; /dev/shm, /tmp, /var/tmp, ~/.cache and the home directory were refused), against the
+owner's rule that agents keep the capabilities they have today. `enter` now denies writes beneath
+exactly the protected targets the threat model names (the clone root, the cache root, the store's
+directory, the keys and the Git metadata of every bound repository, with a worker's work tree and
+scratch granted back, a consumer's scratch only) and reads beneath the cache root and the keys (the
+named caches granted back, so an unnamed cache stays unreadable even through a worker's own
+alternates), and grants everything else, by the ancestor-chain method of control_keys_custody
+(VELDO-0067). What that method still denies is stated in the module and the proof README: a new entry
+made directly in an ancestor of a protected target (with the bound repositories under the home
+directory, the home directory is one; measured with the installed engines, Claude Code's
+write-and-rename save of ~/.claude.json and its lock directory are refused and it rewrites the file in
+place, Codex is refused nothing). No protected target may be beneath a temporary directory (refused
+`invalid_input:layout`). Retirement fails closed: a user entered on this host whose group is unknown,
+or not the group it was entered in, is still in use. Suite 66 now has 10 assertion rows and 10
+region-completion rows (about 1.5 s), four of them new and red at 2f643d0 by assertion (the installed
+engines confined, every protected target denied, consumer confinement, the real VELDO-0040 group path);
+the filed test defects are fixed (the authority target is the source repository's real .git with a git
+update-ref into it; the attachment cache write targets a real cache and is asserted). Finding 42 has 21
+mutations, at least two per row. The criteria, status and risk are unchanged.
+
+2026-09-24, second review of the rework: nothing blocking. The residual of a bound repository's
+Git metadata under the home directory (no new entry directly in the home directory: Claude Code's atomic
+~/.claude.json save, git config --global, new dotfiles, creating ~/.npm) is filed; the production layout
+keeps every protected target under one root outside the home directory (handed to VELDO-0047). Launch-path
+duties (record the group, a new dispatch id per launch, a used clone's .git/config is hostile) are handed
+to VELDO-0129.
+
+2026-09-24, landing: the gate's mutation stage runs the suite with a fixed PATH and a temporary
+HOME, so real-engines-run-confined found neither CLI there (invalid_baseline). The suite now finds each
+engine on PATH or at the account's standard install locations read from the account's own home, and puts
+the engine's own directory first on its PATH (Codex needs its node).

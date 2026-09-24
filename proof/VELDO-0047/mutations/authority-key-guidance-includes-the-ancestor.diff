@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -462 +462 @@
+-    return list(reversed(missing))
++    return list(reversed(missing + [current]))  # defect: the first existing ancestor is named too

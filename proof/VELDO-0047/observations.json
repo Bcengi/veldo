@@ -1,0 +1,642 @@
+{
+ "failed": 0,
+ "observed": {
+  "absent": {
+   "bound": [],
+   "claim": "authority_unavailable",
+   "mutation": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "last_watermark": 10,
+    "service": "store4795997e02",
+    "unit": "veldo-authority-8c6225e0b2db167f.service"
+   },
+   "socket_exists": false,
+   "stale": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "read_only": true,
+    "stale": true,
+    "watermark": 10
+   },
+   "state": {
+    "ActiveState": "inactive",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "success",
+    "SubState": "dead"
+   },
+   "stopped": "inactive",
+   "unchanged": true,
+   "watermark": 10
+  },
+  "assets": {
+   "adopter": {
+    "closure": 45,
+    "unit_dir": "/home/dmitry/.config/systemd/user"
+   },
+   "installed": 45,
+   "not_laid": []
+  },
+  "exit": {
+   "back": {
+    "stale": false,
+    "watermark": 11
+   },
+   "bound": [],
+   "claim": "authority_unavailable",
+   "crashed": {
+    "ActiveState": "failed",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "signal",
+    "SubState": "failed"
+   },
+   "dead_socket": true,
+   "killed": true,
+   "mutation": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "last_watermark": 11,
+    "unit": "veldo-authority-8c6225e0b2db167f.service"
+   },
+   "operator": "active",
+   "restarted": "active",
+   "resumed_seq": 12,
+   "stale": true,
+   "still": {
+    "ActiveState": "failed",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "signal",
+    "SubState": "failed"
+   },
+   "unchanged": true,
+   "watermark": 11
+  },
+  "guided": {
+   "beside": {
+    "accepted_after": [],
+    "ancestor_after": "0o1777",
+    "ancestor_before": "0o1777",
+    "existing_named": [],
+    "expected": [
+     "/dev/shm/v47-c_ropz7o/shared/keys"
+    ],
+    "intermediate_modes": [],
+    "key_mode": "0o700",
+    "key_owner_is_this_account": true,
+    "last_step": [
+     "install",
+     "-d",
+     "-m",
+     "0700",
+     "-o",
+     "dmitry",
+     "-g",
+     "dmitry",
+     "/dev/shm/v47-c_ropz7o/shared/keys"
+    ],
+    "named": [
+     "/dev/shm/v47-c_ropz7o/shared/keys"
+    ],
+    "owner_unchanged": true,
+    "refused": "missing_authority:key_directory:absent",
+    "runs": [
+     0
+    ]
+   },
+   "deep": {
+    "accepted_after": [],
+    "ancestor_after": "0o755",
+    "ancestor_before": "0o755",
+    "existing_named": [],
+    "expected": [
+     "/dev/shm/v47-c_ropz7o/deep/veldo",
+     "/dev/shm/v47-c_ropz7o/deep/veldo/keys",
+     "/dev/shm/v47-c_ropz7o/deep/veldo/keys/svc"
+    ],
+    "intermediate_modes": [
+     "0o755",
+     "0o755"
+    ],
+    "key_mode": "0o700",
+    "key_owner_is_this_account": true,
+    "last_step": [
+     "install",
+     "-d",
+     "-m",
+     "0700",
+     "-o",
+     "dmitry",
+     "-g",
+     "dmitry",
+     "/dev/shm/v47-c_ropz7o/deep/veldo/keys/svc"
+    ],
+    "named": [
+     "/dev/shm/v47-c_ropz7o/deep/veldo",
+     "/dev/shm/v47-c_ropz7o/deep/veldo/keys",
+     "/dev/shm/v47-c_ropz7o/deep/veldo/keys/svc"
+    ],
+    "owner_unchanged": true,
+    "refused": "missing_authority:key_directory:absent",
+    "runs": [
+     0,
+     0,
+     0
+    ]
+   },
+   "others": {
+    "mode": {
+     "guidance": "it is open to others; a key directory is one of its own, so choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+     "refused": "invalid_input:key_directory:mode"
+    },
+    "owner": {
+     "guidance": "it does not belong to dmitry; a key directory is one of its own, so choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+     "refused": "invalid_input:key_directory:owner"
+    }
+   }
+  },
+  "install": {
+   "after_start": {
+    "ActiveState": "active",
+    "LoadState": "loaded",
+    "MainPID": "2655554",
+    "NRestarts": "0",
+    "Result": "success",
+    "SubState": "running"
+   },
+   "before_start": {
+    "ActiveState": "inactive",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "Result": "success",
+    "SubState": "dead"
+   },
+   "closure": 45,
+   "cmdline_matches": true,
+   "copies_exact": true,
+   "installed": 45,
+   "modes": {
+    "bin": "0o500",
+    "config": "0o700",
+    "home": "0o700",
+    "journal": "0o600",
+    "keys": "0o700",
+    "service.json": "0o600",
+    "signers": "0o600",
+    "socket": "0o600",
+    "state": "0o700",
+    "store_dir": "0o700"
+   },
+   "report_keys": [
+    "closure",
+    "config",
+    "daemon_reload_rc",
+    "executable",
+    "home",
+    "journal_key",
+    "journal_key_generated",
+    "key_directory",
+    "lock",
+    "profile",
+    "receiver",
+    "repositories",
+    "service",
+    "socket",
+    "started",
+    "unit",
+    "unit_path"
+   ],
+   "unit": "veldo-authority-8c6225e0b2db167f.service",
+   "unit_lines": [
+    "[Unit]",
+    "Description=Veldo authority 8c6225e0b2db167f (domain dom4795997e02, store store4795997e02)",
+    "[Service]",
+    "Type=notify",
+    "NotifyAccess=main",
+    "ExecStart=/usr/bin/python3.12 -B /dev/shm/v47-c_ropz7o/install/8c6225e0b2db167f/bin/control_service.py serve /dev/shm/v47-c_ropz7o/install/8c6225e0b2db167f/config/service.json",
+    "Restart=no",
+    "UMask=0077",
+    "NoNewPrivileges=yes",
+    "KillMode=mixed",
+    "TimeoutStartSec=30",
+    "TimeoutStopSec=15"
+   ],
+   "validator_declared": [
+    "arch.py",
+    "contract_loader.py",
+    "validate.py",
+    "validate_checks.py",
+    "yamlish.py"
+   ],
+   "validator_installed": [
+    "arch.py",
+    "contract_loader.py",
+    "validate.py",
+    "validate_checks.py",
+    "yamlish.py"
+   ]
+  },
+  "launch": {
+   "errors": {},
+   "group": {
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4795997e02.slice/veldo-dispatch-60460f0a207e8ee5970a2d2d5a9f7bdf.scope",
+    "slice": "v4795997e02.slice",
+    "unit": "veldo-dispatch-60460f0a207e8ee5970a2d2d5a9f7bdf.scope"
+   },
+   "process_pid": 2656291,
+   "receiver": "/dev/shm/v47-c_ropz7o/install/8c6225e0b2db167f/bin/control_launch.py",
+   "record_refusal": null,
+   "refusal": null,
+   "result": "accepted",
+   "retired": [
+    "retired"
+   ],
+   "scope": "veldo-dispatch-60460f0a207e8ee5970a2d2d5a9f7bdf.scope",
+   "scope_after": "inactive",
+   "state": "exited",
+   "termination": {
+    "deadline_stop": false,
+    "returncode": 0,
+    "signal": null
+   },
+   "worker": {
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4795997e02.slice/veldo-dispatch-60460f0a207e8ee5970a2d2d5a9f7bdf.scope",
+    "dispatch": "dispatch/unit-47-launch/3cea1581d516482eb5dba388f208f4e4",
+    "memory.max": "268435456",
+    "pid": 2656291,
+    "pids.max": "256"
+   }
+  },
+  "located": {
+   "directly-under-tmp": {
+    "detail": "/tmp/veldo-keys-47-95997e02",
+    "guidance": "choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "path": "/tmp/veldo-keys-47-95997e02",
+    "refused": "invalid_input:key_directory:worker_writable"
+   },
+   "under-a-worker-directory": {
+    "detail": "/dev/shm/v47-c_ropz7o/work/keys-47",
+    "guidance": "choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "path": "/dev/shm/v47-c_ropz7o/work/keys-47",
+    "refused": "invalid_input:key_directory:worker_writable"
+   },
+   "under-the-home": {
+    "detail": "/home/dmitry/.veldo-keys-47-95997e02/authority",
+    "guidance": "choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "path": "/home/dmitry/.veldo-keys-47-95997e02/authority",
+    "refused": "invalid_input:key_directory:worker_writable"
+   }
+  },
+  "lock": {
+   "first_after": "2655554",
+   "first_pid": 2655554,
+   "holders_before": [
+    [
+     "WRITE",
+     2655554
+    ]
+   ],
+   "holders_during": [
+    [
+     "WRITE",
+     2655554
+    ]
+   ],
+   "live_after": false,
+   "lock_inode_stable": true,
+   "refusal": {
+    "refusal": "authority_lock_held",
+    "taxonomy": "unavailable_service"
+   },
+   "second_exit": 75,
+   "socket_inode_stable": true
+  },
+  "mutation": {
+   "answer_accepted": true,
+   "claim": {
+    "result": [
+     true,
+     "granted"
+    ]
+   },
+   "claim_entity": {
+    "generation": 1,
+    "holder": "worker",
+    "state": "owned"
+   },
+   "entity": [
+    [
+     "note",
+     1,
+     "{\"v\": 1}"
+    ]
+   ],
+   "journal": [
+    [
+     9,
+     "member",
+     "authority"
+    ]
+   ],
+   "journal_digest_matches": true,
+   "other_store_exists": false,
+   "receipt_seq": 9,
+   "result_ok": true,
+   "top": [
+    [
+     9
+    ]
+   ],
+   "watermark": 9
+  },
+  "observations": {
+   "classes": [
+    "('command_signature_invalid', 'missing_authority')",
+    "('coordinate_not_served', 'invalid_input')",
+    "('invalid_input:coordinates', 'invalid_input')",
+    "('missing_authority:repository_not_served', 'missing_authority')",
+    "('not_authorized', 'missing_authority')"
+   ],
+   "counts": {
+    "accepted": 7,
+    "refusals": {
+     "command_signature_invalid": 1,
+     "coordinate_not_served": 2,
+     "invalid_input:coordinates": 2,
+     "missing_authority:repository_not_served": 1,
+     "not_authorized": 4
+    },
+    "refused": 10
+   },
+   "first": {
+    "accepted_versions": {
+     "note:1": 0
+    },
+    "domain_uuid": "dom4795997e02",
+    "operation": "upsert_entity",
+    "outcome": "accepted",
+    "repository_uuid": "repo4795997e02"
+   },
+   "lines": 17,
+   "pending": {
+    "claims": 1,
+    "effects_obligated": 0
+   },
+   "refused": 10
+  },
+  "placement": {
+   "absent": {
+    "detail": "/var/lib/veldo/keys/8c6225e0b2db167f",
+    "expected": "missing_authority:key_directory:absent",
+    "guidance": "create it once as root, owned by dmitry and closed to everyone else, making only the directories that are missing: sudo install -d -m 0755 /var/lib/veldo && sudo install -d -m 0755 /var/lib/veldo/keys && sudo install -d -m 0700 -o dmitry -g dmitry /var/lib/veldo/keys/8c6225e0b2db167f",
+    "left": [],
+    "refused": "missing_authority:key_directory:absent"
+   },
+   "home": {
+    "detail": "/dev/shm/v47-c_ropz7o/home",
+    "expected": "invalid_input:key_directory:worker_writable",
+    "guidance": "choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:worker_writable"
+   },
+   "mode": {
+    "detail": "/dev/shm/v47-c_ropz7o/loose",
+    "expected": "invalid_input:key_directory:mode",
+    "guidance": "it is open to others; a key directory is one of its own, so choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:mode"
+   },
+   "symlink": {
+    "detail": "/dev/shm/v47-c_ropz7o/linked",
+    "expected": "invalid_input:key_directory:symlink",
+    "guidance": "choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:symlink"
+   },
+   "temporary": {
+    "detail": "/dev/shm/v47-c_ropz7o/tempkeys",
+    "expected": "invalid_input:key_directory:worker_writable",
+    "guidance": "choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "left": [],
+    "refused": "invalid_input:key_directory:worker_writable"
+   }
+  },
+  "raised": [],
+  "receiver": {
+   "config": {
+    "authority_generation": 1,
+    "domain": "dom4795997e02",
+    "journal_key": "/dev/shm/v47-c_ropz7o/keys/authority/journal",
+    "principal": "launch-receiver",
+    "profile": {
+     "concurrency": 2,
+     "cpu_percent": 100,
+     "file_bytes": 67108864,
+     "kill_grace_seconds": 1,
+     "kind": "linux-systemd",
+     "lock": "/dev/shm/v47-c_ropz7o/workers.lock",
+     "memory_bytes": 268435456,
+     "runtime_seconds": 600,
+     "slice": "v4795997e02.slice",
+     "stop_grace_seconds": 1,
+     "tasks_max": 256
+    },
+    "repository": "repo4795997e02",
+    "store": "/dev/shm/v47-c_ropz7o/authority/control.sqlite3",
+    "workspace": "/dev/shm/v47-c_ropz7o/clone-a"
+   },
+   "consumer": {
+    "executable": "/dev/shm/v47-c_ropz7o/install/8c6225e0b2db167f/bin/control_launch.py",
+    "qualified": true,
+    "refusal": null
+   },
+   "mode": "0o600"
+  },
+  "refusals": {
+   "forged-coordinates": "coordinate_not_served",
+   "impersonation": "not_authorized",
+   "inner-domain": "invalid_input:coordinates",
+   "inner-repository": "invalid_input:coordinates",
+   "not-a-member": "not_authorized",
+   "other-domain": "coordinate_not_served",
+   "out-of-scope": "not_authorized",
+   "type-not-admitted": "not_authorized",
+   "unserved-repository": "missing_authority:repository_not_served",
+   "unsigned-request": "command_signature_invalid"
+  },
+  "relative": {
+   "names-nothing": {
+    "detail": "veldo-keys-47-95997e02",
+    "guidance": "name it by its absolute path: choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "judged_acceptable_absolute": [],
+    "left": [],
+    "path": "veldo-keys-47-95997e02",
+    "refused": "invalid_input:key_directory:relative"
+   },
+   "resolves-to-an-acceptable-directory": {
+    "detail": "../../../../../dev/shm/v47-c_ropz7o/relkeys/authority",
+    "guidance": "name it by its absolute path: choose a new directory outside the home and temporary directories, for example /var/lib/veldo/keys/<service id>; installation then prints the one-time root step that creates it, owned by dmitry",
+    "judged_acceptable_absolute": [],
+    "left": [],
+    "path": "../../../../../dev/shm/v47-c_ropz7o/relkeys/authority",
+    "refused": "invalid_input:key_directory:relative"
+   }
+  },
+  "seconds": 6.245,
+  "underivable": {
+   "absent": {
+    "detail": "/dev/shm/v47-c_ropz7o/engine-absent/.veldo holds no control_never_shipped.py (loaded by control_launch.py)",
+    "expected": "invalid_input:closure:absent",
+    "guidance": "install from a complete engine: python3 .veldo/init_scaffold.py <repository> lays down every module it loads",
+    "left": [],
+    "names": "control_never_shipped.py",
+    "refused": "invalid_input:closure:absent"
+   },
+   "unresolved": {
+    "detail": "no literal names the module loaded at control_launch.py:860",
+    "expected": "invalid_input:closure:unresolved",
+    "guidance": "load the module there by a literal file name",
+    "left": [],
+    "names": "control_launch.py:",
+    "refused": "invalid_input:closure:unresolved"
+   }
+  },
+  "unqualified_profile": {
+   "detail": "the worker profile is not qualified on this host",
+   "guidance": null,
+   "left": [],
+   "refused": "invalid_input:profile:memory_bytes:absent"
+  }
+ },
+ "passed": 30,
+ "rows": [
+  [
+   "VELDO-0047 authority/key-directory-placement",
+   true
+  ],
+  [
+   "VELDO-0047 authority/key-directory-location-before-existence",
+   true
+  ],
+  [
+   "VELDO-0047 authority/key-directory-guidance-changes-no-directory",
+   true
+  ],
+  [
+   "VELDO-0047 authority/key-directory-relative-refused",
+   true
+  ],
+  [
+   "VELDO-0047 authority/installed-fixed-and-protected",
+   true
+  ],
+  [
+   "VELDO-0047 authority/receiver-configured-with-host-profile",
+   true
+  ],
+  [
+   "VELDO-0047 authority/one-instance-under-the-lock",
+   true
+  ],
+  [
+   "VELDO-0047 authority/mutation-reaches-the-configured-store",
+   true
+  ],
+  [
+   "VELDO-0047 authority/wrong-coordinates-or-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0047 authority/absent-service-refuses-by-name",
+   true
+  ],
+  [
+   "VELDO-0047 authority/unexpected-exit-waits-for-an-operator",
+   true
+  ],
+  [
+   "VELDO-0047 authority/observations",
+   true
+  ],
+  [
+   "VELDO-0047 authority/installed-receiver-launches",
+   true
+  ],
+  [
+   "VELDO-0047 authority/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0047 authority/installation-refuses-an-underivable-closure",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/key-directory-placement",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/key-directory-location-before-existence",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/key-directory-guidance-changes-no-directory",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/key-directory-relative-refused",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/installed-fixed-and-protected",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/receiver-configured-with-host-profile",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/one-instance-under-the-lock",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/mutation-reaches-the-configured-store",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/wrong-coordinates-or-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/absent-service-refuses-by-name",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/unexpected-exit-waits-for-an-operator",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/observations",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/installed-receiver-launches",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0047 ran/authority/installation-refuses-an-underivable-closure",
+   true
+  ]
+ ],
+ "suite": "66_veldo_0047_authority.py",
+ "suite_seconds": 6.427
+}

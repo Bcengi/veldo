@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -558 +558 @@
+-                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], attachment['commit'])
++                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], accepted['commit'])

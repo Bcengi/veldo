@@ -1,0 +1,85 @@
+{
+ "ancestors": {
+  "read": [
+   "<runtime>",
+   "<base>",
+   "<state>"
+  ],
+  "write": [
+   "<runtime>",
+   "<base>",
+   "~",
+   "~/projects",
+   "~/projects/source",
+   "<state>"
+  ]
+ },
+ "engines": {
+  "claude": {
+   "installed": true,
+   "permission_denied_in_output": false,
+   "reached_network": true,
+   "refused": {
+    "mkdir ~/.claude.json.lock EACCES": 10,
+    "openat ~/.claude.json.tmp.<pid>.<hex> EACCES": 9
+   },
+   "requests": [
+    "CONNECT api.anthropic.com:443",
+    "CONNECT api.anthropic.com:443"
+   ],
+   "saved": {
+    "~/.claude.json rewritten": true
+   },
+   "seconds": 0.3,
+   "state_dirs": [
+    ".claude"
+   ],
+   "state_written": 2,
+   "version": "2.1.281 (Claude Code)"
+  },
+  "codex": {
+   "installed": true,
+   "permission_denied_in_output": false,
+   "reached_network": true,
+   "refused": {},
+   "requests": [
+    "CONNECT github.com:443",
+    "CONNECT chatgpt.com:443",
+    "CONNECT api.openai.com:443",
+    "CONNECT api.github.com:443",
+    "CONNECT api.openai.com:443",
+    "CONNECT chatgpt.com:443"
+   ],
+   "saved": {},
+   "seconds": 0.32,
+   "state_dirs": [
+    ".codex"
+   ],
+   "state_written": 90,
+   "version": "codex-cli 0.154.0"
+  },
+  "home-write-and-rename": {
+   "installed": true,
+   "permission_denied_in_output": true,
+   "reached_network": false,
+   "refused": {
+    "openat ~/.probe.tmp EACCES": 1
+   },
+   "requests": [],
+   "saved": {
+    "~/.probe replaced": false
+   },
+   "seconds": 0.2,
+   "state_dirs": [],
+   "state_written": 0,
+   "version": "3.12.3"
+  }
+ },
+ "layout": {
+  "home": "~ (a temporary HOME holding .claude/, .claude.json, .codex/, .cache/, .config/, .local/ and projects/source, the bound repository)",
+  "state": "<state> (authority/ store, keys/, clones/, caches/)"
+ },
+ "schema": "veldo.proof-engine-denials/v1",
+ "spec_id": "VELDO-0042",
+ "strace": true
+}

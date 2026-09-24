@@ -1,0 +1,6 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -673,2 +673 @@
+-        ended = (record.get('state') in ENDED and seen['terminated'] and seen['cleaned'] and not entered_alive
+-                 and not unknown)
++        ended = record.get('state') in ENDED

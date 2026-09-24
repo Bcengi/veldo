@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -393 +393 @@
+-        if unresolved:
++        if False:  # defect: a load no literal names is installed as if it were not there

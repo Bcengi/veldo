@@ -247,8 +247,10 @@ def review_r3(f):
     class HeartbeatOps(Ops):
         def gate(self):
             super().gate()
-            assert seen.wait(5), 'heartbeat did not observe uncertain ownership'
-            lander._hb_thread.join(1)
+            # A liveness bound, not a timing claim: it returns the moment the heartbeat observes, and a
+            # loaded host (the gate's parallel mutation stage) must not turn a slow thread into a false row.
+            assert seen.wait(30), 'heartbeat did not observe uncertain ownership'
+            lander._hb_thread.join(10)
             cur = f.entities()[cid]['data']
             f.write(cid, 'claim', dict(cur, heartbeat_at=f.CL._now()))
             return {'ok': True}

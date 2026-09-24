@@ -1,0 +1,20 @@
+# veldo.authority_unit/v1: the Veldo authority service, one instance per coordination domain on
+# this Linux host (PLAN-0019 W32, VELDO-0047). This file is a TEMPLATE. `control_service.py install`
+# fills every field named between at signs and writes the result into the owner's systemd user unit directory as
+# veldo-authority-<service id>.service. Installation never enables or starts it: starting and
+# stopping are explicit operations actions (systemctl --user start and stop). There is no [Install]
+# section, so nothing starts it at login, and no Restart=, so an unexpected exit leaves the authority
+# stopped until an operator starts it again (automatic recovery is Release 2).
+[Unit]
+Description=Veldo authority @SERVICE@ (domain @DOMAIN@, store @STORE@)
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=@PYTHON@ -B @EXECUTABLE@ serve @CONFIG@
+Restart=no
+UMask=0077
+NoNewPrivileges=yes
+KillMode=mixed
+TimeoutStartSec=30
+TimeoutStopSec=15

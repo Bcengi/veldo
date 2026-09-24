@@ -2535,6 +2535,108 @@ def cases():
     edges('custody-not-restricted', 'control_keys_custody.py',
           "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
           "        if False:\n", 'custody/worker-cannot-read-key')
+    # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
+    def clone(name, module, old, new, row, also=()):
+        add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)
+
+    # AC1 (declared falsifier): provision from the source repository's current HEAD instead of the
+    # accepted commit; the accepted-source tree comparison then refuses, so no clone stands at the
+    # accepted commit. Then the tree comparison reads the wrong accepted field, refusing a correct clone.
+    clone('clone-provision-from-head', 'control_clone.py',
+          "            commit = accepted['commit']\n",
+          "            commit = _git('-C', accepted['path'], 'rev-parse', 'HEAD', check=False).stdout.strip() or accepted['commit']\n",
+          'accepted-commit')
+    clone('clone-verify-wrong-accepted-field', 'control_clone.py',
+          "        if head != accepted['commit'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():\n",
+          "        if head != accepted['tree'] or tree != accepted['tree'] or status.returncode or status.stdout.strip():\n",
+          'accepted-commit')
+    # AC1: a worker's direct writes to another clone, the store, the keys, the authority's Git
+    # metadata and a cache are denied. Declared: the Landlock ruleset is never applied; then the
+    # clone records no protected target, so the whole file system is granted.
+    grants_line = "    return rules(protected['write'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])\n"
+    clone('clone-confinement-not-restricted', 'control_clone.py',
+          "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
+          "        if False:\n", 'worker-writes-confined')
+    clone('clone-grants-everything', 'control_clone.py', grants_line,
+          "    return rules([], [], write, [pin['cache'] for pin in manifest['pins']])\n", 'worker-writes-confined')
+    # Every protected target, writes and reads: the read denial has no target, so an unnamed
+    # repository's cache and the keys are readable; the cache root itself is granted back for
+    # reading instead of the named caches; the clone root is granted back instead of the work tree,
+    # so a worker rewrites its own manifest and entrance records.
+    clone('clone-reads-not-denied', 'control_clone.py', grants_line,
+          "    return rules(protected['write'], [], write, [pin['cache'] for pin in manifest['pins']])\n",
+          'protected-targets-denied')
+    clone('clone-cache-root-readable', 'control_clone.py', grants_line,
+          "    return rules(protected['write'], protected['read'], write, [str(Path(manifest['pins'][0]['cache']).parent)])\n",
+          'protected-targets-denied')
+    clone('clone-own-root-writable', 'control_clone.py',
+          "    write = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])\n",
+          "    write = [user['scratch']] + ([manifest['root']] if user.get('role') == 'worker' else [])\n",
+          'protected-targets-denied')
+    # A confined engine keeps every capability outside the protected targets: the confinement is the
+    # allow list again (everything denied but the clone and scratch); then the grant walks only the
+    # protected targets' own parent directories, so the home directory's entries, the temporary
+    # directories and /dev/shm are never granted.
+    clone('clone-confinement-allow-list', 'control_clone.py', grants_line,
+          "    return rules(['/'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])\n",
+          'real-engines-run-confined')
+    clone('clone-chain-walked-one-level', 'control_clone.py',
+          "    for ancestor in sorted(p for p in chain if not any(_beneath(p, t) for t in targets)):\n",
+          "    for ancestor in sorted({t.parent for t in targets}):\n", 'real-engines-run-confined')
+    # A consumer writes none of the clone: it is granted the work tree like a worker; then consumers
+    # get the old allow list and lose their everyday locations.
+    clone('clone-consumer-granted-work-tree', 'control_clone.py',
+          "    write = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])\n",
+          "    write = [user['scratch'], manifest['work']]\n", 'consumer-confined')
+    clone('clone-consumer-allow-list', 'control_clone.py', grants_line,
+          "    if user.get('role') != 'worker':\n"
+          "        return rules(['/'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])\n"
+          + grants_line, 'consumer-confined')
+    # AC2 (declared falsifier): a single pooled cache across repositories, so an alternate exposes an
+    # unnamed repository's objects to a clone that never named it. Then an attachment is dropped from
+    # the clone's alternate, so its named object is not exposed.
+    clone('clone-pooled-cache', 'control_clone.py',
+          "        name = hashlib.sha256(('%s\\n%s' % (domain, repository)).encode()).hexdigest()[:32]\n",
+          "        name = 'pooled'\n", 'named-attachment-and-unnamed')
+    clone('clone-attachment-ref-wrong-commit', 'control_clone.py',
+          "                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], attachment['commit'])\n",
+          "                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], accepted['commit'])\n",
+          'named-attachment-and-unnamed')
+    # AC2: ordinary garbage collection retains the live pinned objects. Declared: the fetch holds no
+    # durable pin ref and the missing-pin guard is off, so gc prunes the objects under a running clone.
+    # Then the fetch names no destination ref at all, which the guard catches before any clone exists.
+    clone('clone-pin-not-held', 'control_clone.py',
+          "        if seen != commit:\n",
+          "        if False:\n", 'pins-survive-gc',
+          also=(["'%s:%s' % (commit, ref),", "'%s' % commit,"],))
+    clone('clone-pin-not-created', 'control_clone.py',
+          "        _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s:%s' % (commit, ref),\n",
+          "        _git('-C', cache, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', source, '%s' % commit,\n",
+          'pins-survive-gc')
+    # AC3 (declared falsifier): cleanup releases a clone's pins while a child still reads it. Then a
+    # user's ending is decided from the record alone, ignoring the kernel that says the process lives.
+    clone('clone-release-while-child-reads', 'control_clone.py',
+          "        if live:\n", "        if False:\n", 'retire-after-users-end')
+    clone('clone-user-ended-ignores-kernel', 'control_clone.py',
+          "        ended = (record.get('state') in ENDED and seen['terminated'] and seen['cleaned'] and not entered_alive\n"
+          "                 and not unknown)\n",
+          "        ended = record.get('state') in ENDED\n", 'retire-after-users-end')
+    # The real VELDO-0040 group path: a user whose own process has exited but whose group still holds
+    # a child reading the clone has ended when its group's emptiness is ignored; then a user entered on
+    # this host whose group was never recorded counts as ended (retirement no longer fails closed).
+    clone('clone-group-emptiness-ignored', 'control_clone.py',
+          "        ended = (record.get('state') in ENDED and seen['terminated'] and seen['cleaned'] and not entered_alive\n",
+          "        ended = (record.get('state') in ENDED and seen['terminated'] and not entered_alive\n",
+          'retire-waits-for-group')
+    clone('clone-unknown-group-ended', 'control_clone.py',
+          "        unknown = bool(here) and (not cgroup or any(e.get('cgroup') != cgroup for e in here))\n",
+          "        unknown = False\n", 'retire-waits-for-group')
+    # Installation: each module this change installs is laid down by the scaffold.
+    clone('clone-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_clone.py",\n', '',
+          'installed-assets')
+    clone('clone-env-provision-not-scaffolded', 'init_scaffold.py', '    ".veldo/env_provision.py",\n', '',
+          'installed-assets')
+
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
@@ -3280,6 +3382,189 @@ def cases():
     proof('proof-unknown-taxonomy-classified', '    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")\n',
           '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
           'observations')
+
+    # VELDO-0047: each criterion's declared falsifier and further defects, each against the one suite
+    # row it names. The unit template is a production file like the modules beside it.
+    def service(name, module, old, new, row, also=()):
+        add(47, name, '66_veldo_0047_authority.py', module, old, new, ['authority/' + row], also)
+
+    # AC1: the key directory is placed where no worker writes directly.
+    service('authority-key-placement-worker-writable-ignored', 'control_service.py',
+            "    if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):\n"
+            "        problems.append('invalid_input:key_directory:worker_writable')\n",
+            "    pass  # defect: a directory workers write into may hold the keys\n", 'key-directory-placement')
+    service('authority-key-placement-mode-ignored', 'control_service.py',
+            "    if stat.S_IMODE(info.st_mode) & 0o077:\n        problems.append('invalid_input:key_directory:mode')\n",
+            "    pass  # defect: a key directory others can enter is accepted\n", 'key-directory-placement')
+    service('authority-key-placement-link-followed', 'control_service.py',
+            "    keys = str(key_directory) if key_directory else",
+            "    keys = os.path.realpath(str(key_directory)) if key_directory else", 'key-directory-placement')
+    # AC1: an absent key directory is judged by where it would be before whether it exists.
+    service('authority-key-existence-judged-alone', 'control_service.py',
+            "        return problems + ['missing_authority:key_directory:absent']\n",
+            "        return ['missing_authority:key_directory:absent']  # defect: an absent directory is judged by existence alone\n",
+            'key-directory-location-before-existence')
+    service('authority-key-absent-not-located', 'control_service.py',
+            "    if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):\n",
+            "    if os.path.lexists(text) and any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real)\n"
+            "                                     for root in writable):  # defect: an absent directory is not located\n",
+            'key-directory-location-before-existence')
+    # AC1: the one-time step creates only what is missing and changes no directory that exists.
+    service('authority-key-guidance-names-the-parent', 'control_service.py',
+            "        missing = _missing_below(path)\n",
+            "        missing = [os.path.dirname(str(path)), str(path)]  # defect: the parent is named, and its mode set, whether or not it exists\n",
+            'key-directory-guidance-changes-no-directory')
+    service('authority-key-guidance-includes-the-ancestor', 'control_service.py',
+            "    return list(reversed(missing))\n",
+            "    return list(reversed(missing + [current]))  # defect: the first existing ancestor is named too\n",
+            'key-directory-guidance-changes-no-directory')
+    service('authority-key-guidance-changes-the-mode', 'control_service.py',
+            "        return 'it is open to others; a key directory is one of its own, so ' + elsewhere\n",
+            "        return 'close it to everyone else: chmod 0700 %s' % path  # defect: the guidance changes an existing directory\n",
+            'key-directory-guidance-changes-no-directory')
+    # AC1: a relative key directory is refused as relative before anything resolves it.
+    service('authority-key-directory-made-absolute', 'control_service.py',
+            "    keys = str(key_directory) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)\n",
+            "    keys = os.path.abspath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)  # defect: resolved first\n",
+            'key-directory-relative-refused')
+    service('authority-key-relative-not-refused', 'control_service.py',
+            "    if not os.path.isabs(text):\n        return ['invalid_input:key_directory:relative']\n",
+            "    pass  # defect: a relative key directory is judged wherever it resolves\n", 'key-directory-relative-refused')
+    # AC1: the launch receiver's configuration carries this host's qualified worker profile.
+    service('authority-receiver-profile-omitted', 'control_service.py',
+            "                                'profile': profile, 'adapters': adapters}), 0o600)\n",
+            "                                'adapters': adapters}), 0o600)  # defect: the receiver gets no worker profile\n",
+            'receiver-configured-with-host-profile')
+    service('authority-profile-not-qualified', 'control_service.py',
+            "    if not qualification['qualified']:\n"
+            "        raise Refused(qualification['refusal'], 'the worker profile is not qualified on this host')\n",
+            "    pass  # defect: an unqualified worker profile is installed\n", 'receiver-configured-with-host-profile')
+    # AC1: a fixed executable and a protected configuration, and installation starts nothing.
+    service('authority-config-readable', 'control_service.py',
+            "        _write(config_path, _json(config), 0o600)\n",
+            "        _write(config_path, _json(config), 0o644)  # defect: the configuration is readable by everyone\n",
+            'installed-fixed-and-protected')
+    service('authority-install-starts-it', 'control_service.py',
+            "    reload_rc, _out, _err = runner.run(['daemon-reload'])\n",
+            "    reload_rc, _out, _err = runner.run(['daemon-reload'])\n"
+            "    runner.run(['start', unit])  # defect: installation starts the authority\n", 'installed-fixed-and-protected')
+    service('authority-runs-the-source-copy', 'control_service.py',
+            "'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}\n",
+            "'EXECUTABLE': str(HERE / 'control_service.py'), 'CONFIG': config_path}  # defect: the unit runs the source copy\n",
+            'installed-fixed-and-protected')
+    service('authority-unit-starts-at-login', 'services/veldo-authority.service',
+            "TimeoutStopSec=15\n", "TimeoutStopSec=15\n\n[Install]\nWantedBy=default.target\n",
+            'installed-fixed-and-protected')
+    # AC1: the fixed executable holds what its programs load, the validator the receiver's recheck runs
+    # included, so the installed receiver launches (the review's blocking finding).
+    seeds = "    seeds = set(ENTRY_POINTS) | {name for _role, name in EL.VALIDATOR_ROLES}\n"
+    # The defect the review found, restored: the hand list the installer copied before closure() existed.
+    service('authority-closure-listed-by-hand', 'control_service.py',
+            "    fixed = {name: (HERE / name).read_bytes() for name in closure()}\n",
+            "    fixed = {name: (HERE / name).read_bytes() for name in (  # defect: the installed modules listed by hand\n"
+            "        'authority_contract.py', 'claim.py', 'completion_contract.py', 'control_channel_attribution.py',\n"
+            "        'control_channel_enrollment.py', 'control_channel_presentation.py', 'control_channel_projection.py',\n"
+            "        'control_claim.py', 'control_client.py', 'control_containment.py', 'control_decision_dependency.py',\n"
+            "        'control_dispatch.py', 'control_eligibility.py', 'control_enrollment.py', 'control_keys.py',\n"
+            "        'control_keys_custody.py', 'control_launch.py', 'control_membership.py', 'control_reservations.py',\n"
+            "        'control_service.py', 'control_signer.py', 'control_signer_answers.py', 'control_snapshot.py',\n"
+            "        'control_store.py', 'git_process.py')}\n", 'installed-fixed-and-protected')
+    service('authority-closure-omits-the-validator', 'control_service.py', seeds,
+            "    seeds = set(ENTRY_POINTS)  # defect: the validator the receiver's recheck runs is not installed\n",
+            'installed-receiver-launches')
+    service('authority-closure-ignores-loader-helpers', 'control_service.py',
+            "            if not options:\n                continue\n",
+            "            if True:  # defect: what a loader helper loads (organ('x')) is not followed\n"
+            "                accounted.add(id(target))\n                continue\n", 'installed-receiver-launches')
+    # AC1: a load the installer cannot derive, or of a module the engine lacks, refuses installation.
+    service('authority-closure-unresolved-installed', 'control_service.py',
+            "        if unresolved:\n            raise Refused('invalid_input:closure:unresolved',",
+            "        if False:  # defect: a load no literal names is installed as if it were not there\n"
+            "            raise Refused('invalid_input:closure:unresolved',", 'installation-refuses-an-underivable-closure')
+    service('authority-closure-absent-installed', 'control_service.py',
+            "        if absent:\n            raise Refused('invalid_input:closure:absent',",
+            "        if False:  # defect: a module the engine lacks is left out of the installation\n"
+            "            raise Refused('invalid_input:closure:absent',", 'installation-refuses-an-underivable-closure')
+    service('authority-receiver-workspace-omitted', 'control_service.py',
+            "'authority_generation': first['authority_generation'], 'workspace': members[0],\n",
+            "'authority_generation': first['authority_generation'], 'workspace': None,  # defect: the receiver judges no workspace\n",
+            'installed-receiver-launches')
+    # AC1, declared: two instances acquire scheduling authority.
+    service('authority-two-schedulers', 'control_service.py',
+            "        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n",
+            "        pass  # defect: a second instance takes scheduling authority too\n", 'one-instance-under-the-lock')
+    service('authority-lock-file-replaced', 'control_service.py',
+            "    fd = os.open(str(path), os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)\n",
+            "    with contextlib.suppress(OSError):\n"
+            "        os.unlink(str(path))  # defect: the lock file is replaced, so each instance locks its own\n"
+            "    fd = os.open(str(path), os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)\n",
+            'one-instance-under-the-lock')
+    # AC2, declared: a success is returned without changing the configured store.
+    service('authority-callback-success', 'control_service.py',
+            "        receipt = S.execute(self.conn, {k: command.get(k) for k in S.COMMAND_FIELDS}, self.principal, self.sign,\n"
+            "                            self.generation)\n",
+            "        receipt = {'committed': True, 'command_id': command.get('command_id'), 'seq': self.watermark() + 1,\n"
+            "                   'record_digest': 'sha256:' + '0' * 64}  # defect: success without a commit\n",
+            'mutation-reaches-the-configured-store')
+    service('authority-serves-another-store', 'control_service.py',
+            "        conn = S.open_store(config['store_path'])\n",
+            "        conn = S.open_store(config['store_path'] + '-local')  # defect: the service keeps a store of its own\n",
+            'mutation-reaches-the-configured-store')
+    # AC2: the wrong coordinates or the wrong actor refuse.
+    service('authority-command-signature-unchecked', 'control_service.py',
+            "        if not verified:\n            raise Refused('not_authorized', 'the command signature is not the principal\\'s')\n",
+            "        pass  # defect: the command's own signature is not checked\n", 'wrong-coordinates-or-actor-refused')
+    service('authority-command-coordinates-unchecked', 'control_service.py',
+            "        if any(command.get(k) != v for k, v in expected.items()):\n"
+            "            raise Refused('invalid_input:coordinates', 'the command names another domain, store or repository')\n",
+            "        pass  # defect: the command's own coordinates are not compared\n", 'wrong-coordinates-or-actor-refused')
+    # AC3, declared: a client starts the service on a missing socket.
+    unavailable = '            seen = last_seen(enrollment, workspace, binding)\n            raise RoutingRefused("authority_unavailable",'
+
+    def starts_on(error):
+        return ("            if isinstance(e, %s) and not getattr(send, 'starting', False):\n"
+                "                import subprocess  # defect: a client starts the authority itself\n"
+                "                subprocess.run(['systemctl', '--user', 'start', service_unit(binding)], capture_output=True,\n"
+                "                               timeout=30)\n"
+                "                send.starting = True\n"
+                "                try:\n"
+                "                    return send(workspace, command, enrollment, verify, sign, host_identity, timeout, seen_at)\n"
+                "                finally:\n"
+                "                    send.starting = False\n" % error + unavailable)
+    service('authority-client-starts-missing-service', 'control_client.py', unavailable, starts_on('FileNotFoundError'),
+            'absent-service-refuses-by-name')
+    service('authority-client-queues-locally', 'control_client.py', unavailable,
+            "            queue = os.path.join(os.path.dirname(seen_path(enrollment, workspace)), 'pending.jsonl')\n"
+            "            os.makedirs(os.path.dirname(queue), exist_ok=True)\n"
+            "            with open(queue, 'a') as pending:  # defect: a client keeps the command until the authority returns\n"
+            "                pending.write(json.dumps(command) + '\\n')\n"
+            "            return {'schema': RESPONSE_SCHEMA, 'accepted': True, 'store_uuid': binding['store_uuid'],\n"
+            "                    'watermark': None, 'result': {'ok': True, 'queued': True}}\n" + unavailable,
+            'absent-service-refuses-by-name')
+    # AC3: an unexpected exit stays stopped until an operator starts it.
+    service('authority-unit-restarts-on-failure', 'services/veldo-authority.service',
+            "Restart=no\n", "Restart=on-failure\nRestartSec=100ms\n", 'unexpected-exit-waits-for-an-operator')
+    service('authority-client-starts-dead-service', 'control_client.py', unavailable,
+            starts_on('ConnectionRefusedError'), 'unexpected-exit-waits-for-an-operator')
+    # Observability: every refusal is observed by name and class.
+    service('authority-refusal-not-observed', 'control_service.py',
+            "        self._count(observation)\n        return result\n",
+            "        if ok:  # defect: a refused command leaves no observation\n"
+            "            self._count(observation)\n        return result\n", 'observations')
+    service('authority-request-refusal-not-observed', 'control_service.py',
+            "        if isinstance(response, dict) and response.get('accepted') is False:\n",
+            "        if False:  # defect: a request refused before apply leaves no observation\n", 'observations')
+    service('authority-unknown-classified', 'control_service.py',
+            "    return head if head in CLASSES else NAMED.get(head, 'unknown_outcome')\n",
+            "    return head if head in CLASSES else NAMED.get(head, 'missing_evidence')  # defect: an unknown code is classified\n",
+            'observations')
+    # Distribution: the service and its unit template are installed assets.
+    service('authority-service-not-installed', 'init_scaffold.py', '    ".veldo/control_service.py",\n', '',
+            'installed-assets')
+    service('authority-unit-template-not-installed', 'init_scaffold.py',
+            '    ".veldo/services/veldo-authority.service",\n', '', 'installed-assets')
+    service('authority-supervisor-not-installed', 'init_scaffold.py', '    ".veldo/supervisor.py",\n', '',
+            'installed-assets')
     # VELDO-0132: each criterion's declared falsifier and further defects, each against the one suite 65
     # row it names. Anchors are exact text in the three production modules suite 65 installs.
     def workflow(name, old, new, row, module='control_workflow.py', also=()):

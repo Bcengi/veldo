@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0047_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0047-authority-service-lifecycle.md"
   - "specs/index.md"
   - "proof/VELDO-0047/*"
@@ -141,6 +142,13 @@ Handed on by VELDO-0067 (its review, 2026-09-24): installation places the protec
 directory outside the home and temporary directories, because the custody wrapper denies a confined
 worker every file created directly in an ancestor of that directory after the worker starts.
 
+Handed on by VELDO-0042 (its reviews, 2026-09-24): installation keeps the factory's own state under
+one root outside the home directory (default /var/lib/veldo, created once by root at installation):
+the enrolled checkouts the authority serves, worker clones, object caches, the store and the keys.
+With any of them under the home directory, the worker write confinement cannot let a worker create a
+new entry directly in the home directory, which costs Claude Code its atomic ~/.claude.json save and
+breaks git config --global.
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
@@ -159,3 +167,47 @@ status listener breadth moved to Release 4. Local exclusion and actual IPC-to-SQ
 application are retained now. The criteria, declared evidence universe, Context and Notes
 above now carry only the retained function. No specification status or historical proof was
 changed.
+
+2026-09-24, implementation (branch build-veldo-0047): `.veldo/control_service.py` installs one
+authority instance for the enrolled workspaces of one domain on this Linux host (a fixed read-only
+executable, a protected configuration, the enrollment signers this host trusted, one launch receiver
+configuration per repository with this host's qualified linux-systemd worker profile, and a systemd
+user unit rendered from `.veldo/services/veldo-authority.service` with no install section and no
+restart), starts and stops it only on an explicit operations action, holds one scheduling instance
+under a flock on the stable lock file beside the store, and applies signed commands arriving through
+VELDO-0107's IPC to the configured store, returning the committed receipt and watermark.
+`.veldo/control_client.py` names the service unit and the operations start procedure in every
+AUTHORITY_UNAVAILABLE refusal and stale inspection. Installation refuses a key directory that is
+absent or unsafe by name, with the exact one-time root step; suite 66 passes the location and the
+worker directories explicitly, because this account can create nothing outside the home and temporary
+directories without root. Suite 66_veldo_0047_authority (20 rows), red at b738c79, 24 mutations as
+finding 47; scripts/check_teeth_mutations.py, outside the footprint, is touched only to register them.
+Proof in proof/VELDO-0047/.
+
+2026-09-24, landing: the footprint names scripts/check_teeth_mutations.py, where finding 47's
+mutations are registered (the gate's shape check refuses a path no footprint names).
+
+2026-09-24, review fixes (branch build-veldo-0047): the launch receiver installed into `<home>/bin`
+refused every launch as unavailable_service:architecture_validator, because the installed modules were
+a hand list without the validator its recheck loads from its own directory. `control_service.closure()`
+now derives the fixed executable at installation from the entry points and the validator files
+control_eligibility.VALIDATOR_ROLES declares, following every sibling load to a fixed point and refusing
+by name a load of an absent module or one no literal names; `supervisor.py`, which the installer loads,
+is laid down by the scaffolder. The key directory is refused as relative before anything resolves it,
+judged by location before existence, and its one-time step creates only the directories missing below
+the first existing ancestor and changes no existing directory. Suite 66 has 30 rows:
+authority/installed-receiver-launches (a real launch through the installed receiver),
+authority/installation-refuses-an-underivable-closure,
+authority/key-directory-location-before-existence, authority/key-directory-guidance-changes-no-directory
+and authority/key-directory-relative-refused are new, and installed-fixed-and-protected,
+installed-assets and key-directory-placement judge the derived closure, an adopter's laid tree and the
+new guidance; all eight are red by assertion at 7ed08fb. Finding 47 has 38 mutations.
+
+2026-09-24, second review of the fix: nothing blocking. Filed: the closure reader misses some load
+shapes without refusing (none used by the engine today; the installed-receiver launch row is the guard);
+install(writable=...) replaces the default worker directories instead of adding to them (tests only); the
+guidance for an explicitly passed worker directory names the home and temporary directories.
+
+2026-09-24, landing: the gate's mutation stage runs the suite without XDG_RUNTIME_DIR, so a client
+mutated to start the service itself failed silently there and survived. The suite gives its own process
+the operator's session (the default /run/user/<uid>) for its run, so that defect is observed.

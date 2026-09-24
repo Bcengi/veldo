@@ -1,0 +1,6 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -940,2 +940 @@
+-        if not verified:
+-            raise Refused('not_authorized', 'the command signature is not the principal\'s')
++        pass  # defect: the command's own signature is not checked

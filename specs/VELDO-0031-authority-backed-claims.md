@@ -131,3 +131,8 @@ consumed ahead of the service-runner and exact-publication items on parallel bra
 2026-09-23 independent review corrections: add lander.py and its installed copies to the
 footprint because AC3 explicitly includes landing callers. The caller checks protected use
 immediately before finalize and retains heartbeat ownership stops before publication.
+
+2026-09-24, landing of VELDO-0042 and VELDO-0047: review-r3's wait for the heartbeat to observe
+uncertain ownership is a liveness bound (5 s to 30 s, the thread join 1 s to 10 s); under the gate's
+parallel mutation stage, with heavier suites beside it, the 5 s bound turned a slow thread into a false
+baseline row. The stage restricted to finding 31 passed 23 of 23 with the old bound, so nothing else changed.

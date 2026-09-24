@@ -1,0 +1,12 @@
+--- a/.veldo/control_client.py
++++ b/.veldo/control_client.py
+@@ -294,0 +295,9 @@
++            if isinstance(e, FileNotFoundError) and not getattr(send, 'starting', False):
++                import subprocess  # defect: a client starts the authority itself
++                subprocess.run(['systemctl', '--user', 'start', service_unit(binding)], capture_output=True,
++                               timeout=30)
++                send.starting = True
++                try:
++                    return send(workspace, command, enrollment, verify, sign, host_identity, timeout, seen_at)
++                finally:
++                    send.starting = False

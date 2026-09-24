@@ -1,0 +1,9 @@
+--- a/.veldo/control_client.py
++++ b/.veldo/control_client.py
+@@ -294,0 +295,6 @@
++            queue = os.path.join(os.path.dirname(seen_path(enrollment, workspace)), 'pending.jsonl')
++            os.makedirs(os.path.dirname(queue), exist_ok=True)
++            with open(queue, 'a') as pending:  # defect: a client keeps the command until the authority returns
++                pending.write(json.dumps(command) + '\n')
++            return {'schema': RESPONSE_SCHEMA, 'accepted': True, 'store_uuid': binding['store_uuid'],
++                    'watermark': None, 'result': {'ok': True, 'queued': True}}
