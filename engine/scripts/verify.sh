@@ -10,7 +10,60 @@
 # a decision someone made, never an omission nobody noticed. Secret detection
 # runs always; VELDO contract validation runs always and is red if unavailable.
 set -u
-cd "$(dirname "$0")/.."
+# CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
+# installation verifies a landing candidate: this script is the installed copy, every check runs in
+# <root>, and the stamp, the gate event and the review-event reconciliation are written to <dir>, a
+# directory outside the candidate, never into the candidate's tree. The sink is refused before any
+# check runs when it is absent, not a directory, not writable, the candidate itself or inside it
+# (symlinks are resolved first), or already holds a symlink where an output goes; the result is then
+# RED and nothing falls back to the candidate's own files. A write to the sink that fails at the end
+# is RED too. With no arguments this is the ordinary checkout gate, unchanged: it verifies the
+# checkout it lives in and writes .veldo/last_verify and .veldo/events.jsonl there, which is where
+# the landing step commits them from. The line below is the interface the installed caller
+# (control_verification.py) requires before it runs a verifier in candidate mode.
+# veldo-gate-interface: candidate-sink/v1
+VELDO_CANDIDATE=""; VELDO_SINK=""; VELDO_REFUSE=""; VELDO_OUT=".veldo"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --candidate|--sink)
+      if [ "$#" -lt 2 ] || [ -z "$2" ]; then VELDO_REFUSE="$1 needs a value"; break; fi
+      if [ "$1" = --candidate ]; then VELDO_CANDIDATE="$2"; else VELDO_SINK="$2"; fi
+      shift 2 ;;
+    *) VELDO_REFUSE="unknown argument (only --candidate <root> --sink <dir>)"; break ;;
+  esac
+done
+if [ -z "$VELDO_REFUSE" ] && { [ -n "$VELDO_CANDIDATE" ] || [ -n "$VELDO_SINK" ]; } \
+   && { [ -z "$VELDO_CANDIDATE" ] || [ -z "$VELDO_SINK" ]; }; then
+  VELDO_REFUSE="candidate mode needs both --candidate and --sink"
+fi
+if [ -n "$VELDO_REFUSE" ]; then
+  :
+elif [ -n "$VELDO_CANDIDATE" ]; then
+  if ! cd "$VELDO_CANDIDATE" 2>/dev/null; then
+    VELDO_REFUSE="the candidate is not a directory"
+  elif [ ! -d "$VELDO_SINK" ]; then
+    VELDO_REFUSE="the sink is absent or not a directory"
+  elif ! _veldo_sink=$(cd "$VELDO_SINK" 2>/dev/null && pwd -P); then
+    VELDO_REFUSE="the sink cannot be entered"
+  else
+    _veldo_root=$(pwd -P)
+    case "$_veldo_sink/" in "$_veldo_root"/*) VELDO_REFUSE="the sink resolves inside the candidate" ;; esac
+    if [ -z "$VELDO_REFUSE" ] && [ ! -w "$_veldo_sink" ]; then VELDO_REFUSE="the sink is not writable"; fi
+    for _veldo_f in last_verify events.jsonl; do
+      if [ -z "$VELDO_REFUSE" ] && [ -L "$_veldo_sink/$_veldo_f" ]; then
+        VELDO_REFUSE="the sink's $_veldo_f is a symlink"
+      fi
+    done
+    VELDO_OUT="$_veldo_sink"
+  fi
+else
+  cd "$(dirname "$0")/.."
+fi
+if [ -n "$VELDO_REFUSE" ]; then
+  echo "== gate output: REFUSED - $VELDO_REFUSE; no check ran and nothing was written"
+  echo "GATE: RED ($(git rev-parse --verify HEAD 2>/dev/null || echo "no-git"))"
+  exit 1
+fi
 
 # ---- the validation catalog: declare EVERY item (see header) ---------------
 CHECK_format="na:no formatter adopted yet"
@@ -127,7 +180,17 @@ echo "== review events (built-in: derived from the verdict artifacts; appends an
 # bookkeeping and must never make a landing impossible). What changes is that the line a human
 # reads now distinguishes an ABSENCE from a DEFECT, which is the whole difference between standing
 # down honestly and hiding.
-python3 .veldo/events.py reconcile-verdicts || \
+# In candidate mode the reconciliation reads and appends the SINK's log, seeded once from the
+# candidate's committed log so that what it already covers is still known; the candidate's own
+# .veldo/events.jsonl is read and never written.
+set --
+if [ "$VELDO_OUT" != ".veldo" ]; then
+  if [ ! -e "$VELDO_OUT/events.jsonl" ]; then
+    if [ -f .veldo/events.jsonl ]; then cp .veldo/events.jsonl "$VELDO_OUT/events.jsonl"; else : > "$VELDO_OUT/events.jsonl"; fi
+  fi
+  set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"
+fi
+python3 .veldo/events.py reconcile-verdicts "$@" || \
   { if ! command -v python3 >/dev/null 2>&1; then \
       echo "   review events: reconciliation unavailable (no python3 on PATH) - by design not a gate failure"; \
     elif [ ! -f .veldo/events.py ]; then \
@@ -141,7 +204,7 @@ python3 .veldo/events.py reconcile-verdicts || \
 
 COMMIT=$(git rev-parse --verify HEAD 2>/dev/null || echo "no-git")
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-mkdir -p .veldo
+if [ "$VELDO_OUT" = ".veldo" ]; then mkdir -p .veldo; fi
 if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVENT=gate.failed; fi
 # THE EXIT CODE AND THE SHAPE, both, and neither alone. version.py prints its REFUSAL on stdout
 # when it cannot read a version, so taking the first word gave "veldo" - an invented version, in the
@@ -177,10 +240,29 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}\n' \
-  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" > .veldo/last_verify
-printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}\n' \
-  "$EVENT" "$COMMIT" "$TS" "$RAN" >> .veldo/events.jsonl
+STAMP_LINE=$(printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}' \
+  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON")
+EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}' \
+  "$EVENT" "$COMMIT" "$TS" "$RAN")
+if [ "$VELDO_OUT" = ".veldo" ]; then
+  printf '%s\n' "$STAMP_LINE" > .veldo/last_verify
+  printf '%s\n' "$EVENT_LINE" >> .veldo/events.jsonl
+else
+  # The sink, written only through names that are not symlinks: the stamp is renamed into place (a
+  # rename replaces a link rather than following it) and the event is appended only to a regular
+  # file. Any failure is RED, and nothing is written to the candidate instead.
+  _veldo_written=no
+  if [ ! -L "$VELDO_OUT/events.jsonl" ] && [ -f "$VELDO_OUT/events.jsonl" ] \
+     && printf '%s\n' "$STAMP_LINE" > "$VELDO_OUT/.last_verify.$$" 2>/dev/null \
+     && mv -f "$VELDO_OUT/.last_verify.$$" "$VELDO_OUT/last_verify" 2>/dev/null \
+     && printf '%s\n' "$EVENT_LINE" >> "$VELDO_OUT/events.jsonl" 2>/dev/null; then
+    _veldo_written=yes
+  fi
+  if [ "$_veldo_written" != yes ]; then
+    echo "== gate output: NOT WRITTEN - the sink refused the stamp or the gate event; this run is not trusted success"
+    FAIL=1
+  fi
+fi
 
 echo ""
 echo "catalog: ${RAN} run, ${NA} not-applicable (reasons on record), ${WAIVED} waived, ${UNDECLARED} undeclared"
