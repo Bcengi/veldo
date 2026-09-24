@@ -367,6 +367,13 @@ class Dispatcher(WK.Dispatcher):
             executor = EX.Executor(self._build_hooks(), eligibility=gate, calls=self._calls, station="build",
                                    context=context, ticket=decision)
         floor = self._floor(gate)
+        if floor is not None:
+            state = (floor.record(sid) or {}).get("state")
+            if state not in FLOOR_TRANSITIONS["accept_build"][0]:
+                # The authority holds this unit in review or handed off: no builder is launched.
+                code = "transition_refused:%s:accept_build" % state
+                return {"ok": False, "kind": "build", "spec": sid, "reviewed": False, "state": "refused",
+                        "halted_at": "floor_state", "reason": code, "refusals": [code]}
         result = executor.run(sid, stop_after="proof")
         if result.get("state") != "built":
             return {"ok": False, "kind": "build", "spec": sid, "reviewed": False,
@@ -452,6 +459,9 @@ class Dispatcher(WK.Dispatcher):
         receipt is recorded, and only the authority's handoff lets the lander run. Completion is
         the lander's: this writes no shipped status and no completion receipt."""
         sid = unit["spec"]
+        if (floor.record(sid) or {}).get("state") == "handoff":
+            # A land that failed after the handoff is retried; the reviews it was handed off on stand.
+            return self._land_handed_off(floor, unit, decision, None, None)
         refused = dict(verdict=None, shipped=False, landed=False)
         try:
             assignment = floor.assign_review(sid, getattr(self._reviewer, "identity", None))
@@ -480,7 +490,12 @@ class Dispatcher(WK.Dispatcher):
         except FloorRefused as error:
             return self._floor_refused("review", sid, error, "handoff", verdict=verdict, shipped=False,
                                        landed=False, status="review", projection=projection)
-        projection = floor.publish(sid)
+        return self._land_handed_off(floor, unit, decision, verdict, floor.publish(sid))
+
+    def _land_handed_off(self, floor, unit, decision, verdict, projection):
+        """The handed-off unit to the lander. A failed land leaves the handoff standing so a later
+        dispatch of the unit retries it; nothing here establishes completion."""
+        sid = unit["spec"]
         land = self._land(unit, decision) or {}
         if not land.get("ok"):
             return {"ok": False, "kind": "review", "spec": sid, "verdict": verdict, "shipped": False,

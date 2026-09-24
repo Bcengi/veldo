@@ -12,6 +12,7 @@
   "VELDO-0049 floor/build-acceptance",
   "VELDO-0049 floor/review-independence",
   "VELDO-0049 floor/review-binding",
+  "VELDO-0049 floor/land-retry-from-handoff",
   "VELDO-0049 floor/review-policy-count",
   "VELDO-0049 floor/no-builder-reviews",
   "VELDO-0049 floor/finding-not-erased",
@@ -99,6 +100,12 @@
     "status": null,
     "halted_at": "resolve",
     "reason": "spec VELDO-9401 is 'review', not ready"
+   },
+   "again_while_in_review": {
+    "ok": false,
+    "halted_at": "resolve",
+    "reason": "spec VELDO-9401 is 'review', not ready",
+    "launched": []
    },
    "bad_proof": {
     "ok": false,
@@ -190,6 +197,20 @@
    "signatures_verified": true,
    "trunk": false
   },
+  "land_retry": {
+   "refused_land": {
+    "ok": false,
+    "landed": false,
+    "status": null
+   },
+   "retry": {
+    "ok": false,
+    "landed": false,
+    "status": null,
+    "launched": []
+   },
+   "assigned": []
+  },
   "builders": {
    "earlier_builder_review": "missing_evidence:producer",
    "launched": [],
@@ -232,12 +253,12 @@
    "direct_land": [
     "ok",
     {
-     "ok": true,
-     "stage": "landed",
-     "commit": "bfcad78e258edf5c50c0f5cda629a020a204bd68"
+     "ok": false,
+     "stage": "finalize",
+     "detail": "the push was refused"
     }
    ],
-   "trunk_unchanged_on_rejection": false,
+   "trunk_unchanged_on_rejection": true,
    "disposition": "ok",
    "after_disposition": {
     "ok": false,
@@ -295,7 +316,7 @@
      "item": "TCK-untracked",
      "repo": "untracked",
      "spec_id": "VELDO-0001",
-     "path": "/dev/shm/v49-bb98p9uj/untracked/specs/VELDO-0001.md"
+     "path": "/dev/shm/v49-1p5e_e63/untracked/specs/VELDO-0001.md"
     }
    ],
    "promoted": [

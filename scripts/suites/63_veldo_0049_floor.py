@@ -404,9 +404,13 @@ sys.stdout.flush()
             """The lander stand-in: a real push of the handed-off commit to the bare trunk."""
 
             def __init__(self):
-                self.lands = []
+                self.lands, self.refuse_next = [], False
 
             def land(self, unit):
+                if self.refuse_next:
+                    # One refused land (the push did not go through): nothing reaches the trunk.
+                    self.refuse_next = False
+                    return {'ok': False, 'stage': 'finalize', 'detail': 'the push was refused'}
                 commit = ((floor.record(unit['spec']) or {}).get('source') or {}).get('commit') or git('rev-parse', 'HEAD')
                 GP.run(['git', '-C', str(work), 'push', '-q', str(trunk), commit + ':refs/heads/main'],
                        check=True, capture_output=True)
@@ -553,7 +557,7 @@ sys.stdout.flush()
 
         emitted, raised, regions = set(), [], []
         observed = {}
-        second, pass_d = {}, {}
+        second, retry, pass_d = {}, {}, {}
 
         def check(label, condition):
             emitted.add(label)
@@ -597,6 +601,8 @@ sys.stdout.flush()
                       and all(spec_files[s].read_bytes() == spec_originals[s] for s in spec_files))
 
                 good = build('VELDO-9401', 'good')
+                # A build unit the authority holds in review is not built again: no builder is launched.
+                again = build('VELDO-9401', 'good')
                 bad_proof = build('VELDO-9402', 'bad-proof', keep=True)
                 # The authority's own judgement, not the executor's: the invalid proof claimed green.
                 direct_bad = outcome_of(lambda: floor.accept_build('VELDO-9402', commit=bad_proof['tip'],
@@ -632,6 +638,7 @@ sys.stdout.flush()
                                    for s in ('VELDO-9402', 'VELDO-9403', 'VELDO-9404'))
                 observed['build_acceptance'] = {
                     'good': {k: good.get(k) for k in ('ok', 'status', 'halted_at', 'reason')},
+                    'again_while_in_review': {k: again.get(k) for k in ('ok', 'halted_at', 'reason', 'launched')},
                     'bad_proof': {k: bad_proof.get(k) for k in ('ok', 'halted_at', 'reason')},
                     'stale_proof': {k: stale.get(k) for k in ('ok', 'halted_at', 'reason')},
                     'red_gate': {k: red.get(k) for k in ('ok', 'halted_at', 'reason')},
@@ -646,6 +653,8 @@ sys.stdout.flush()
                       and (record.get('proof') or {}).get('digest') == 'sha256:' + hashlib.sha256(blob).hexdigest()
                       and (record.get('build') or {}).get('dispatch') in good['launched']
                       and unit_record.get('producer') == BUILDER
+                      and again.get('halted_at') == 'floor_state' and again.get('reason') == 'transition_refused:review:accept_build'
+                      and again.get('launched') == [] and again.get('tip') == good['tip']
                       and bad_proof.get('ok') is False and bad_proof.get('halted_at') == 'proof'
                       and direct_bad == ('refused', 'missing_evidence:proof/criterion:AC1')
                       and stale.get('ok') is False and stale.get('halted_at') == 'build_acceptance'
@@ -658,7 +667,8 @@ sys.stdout.flush()
                       and none_written)
 
             # AC2: review by a separate eligible principal in a fresh context bound to source and proof
-            with region('floor/review-independence', 'floor/review-binding', 'floor/review-policy-count'):
+            with region('floor/review-independence', 'floor/review-binding', 'floor/land-retry-from-handoff',
+                        'floor/review-policy-count'):
                 U2 = 'VELDO-9411'
                 built2 = build(U2, 'good')
                 g2 = claim(U2, REVIEW_WORKER)
@@ -729,7 +739,11 @@ sys.stdout.flush()
                       and trunk_tip() == trunk_before and lander.lands == [])
 
                 same_again = review(U2, g2, 'reviewer-b', 'reviewer-b:pass')
+                # The handoff's first land is refused by the lander; a later dispatch retries the land alone.
+                lander.refuse_next = True
                 second = review(U2, g2, 'reviewer-c', 'reviewer-c:pass')
+                trunk_after_refused_land = trunk_tip()
+                retry = review(U2, g2, 'reviewer-d', 'reviewer-d:pass')
                 final2 = rec(U2)
                 handed = final2.get('handoff') or {}
                 reviews2 = final2.get('reviews') or []
@@ -750,9 +764,18 @@ sys.stdout.flush()
                                             'handoff': handed, 'required': policy_record['tiers'].get('critical'),
                                             'journal_reviewers': journal_reviewers, 'signatures_verified': signed_ok,
                                             'trunk': trunk_tip() == built2['tip']}
+                observed['land_retry'] = {'refused_land': {k: second.get(k) for k in ('ok', 'landed', 'status')},
+                                          'retry': {k: retry.get(k) for k in ('ok', 'landed', 'status', 'launched')},
+                                          'assigned': sorted({a['reviewer'] for a in (final2.get('assignments') or {}).values()})}
+                check('floor/land-retry-from-handoff',
+                      second.get('ok') is False and second.get('landed') is False and second.get('status') == 'handoff'
+                      and trunk_after_refused_land == trunk_before
+                      and retry.get('ok') is True and retry.get('landed') is True and retry.get('launched') == []
+                      and 'reviewer-d' not in {a['reviewer'] for a in (final2.get('assignments') or {}).values()}
+                      and lander.lands == [(U2, built2['tip'])])
                 check('floor/review-policy-count',
                       refusal_of(same_again) == 'duplicate_reviewer' and len(same_again['launched']) == 0
-                      and second.get('ok') is True and second.get('landed') is True and second.get('shipped') is False
+                      and second.get('status') == 'handoff' and second.get('shipped') is False
                       and final2.get('state') == 'handoff' and handed.get('required') == policy_record['tiers']['critical'] == 2
                       and handed.get('reviewers') == ['reviewer-b', 'reviewer-c'] == journal_reviewers
                       and sorted(r['reviewer'] for r in reviews2) == ['reviewer-b', 'reviewer-c'] and signed_ok
@@ -844,7 +867,7 @@ sys.stdout.flush()
                       receipts == 0 and not any(v for f in facts.values() for v in f.values())
                       and all(rec(sid).get('state') == 'handoff' for sid in ('VELDO-9411', 'VELDO-9421'))
                       and targets and targets <= set(DSP.FLOOR_STATES) | {None}
-                      and second.get('shipped') is False and pass_d.get('shipped') is False
+                      and second.get('shipped') is False and retry.get('shipped') is False and pass_d.get('shipped') is False
                       and all(spec_files[s].read_bytes() == spec_originals[s] for s in spec_files)
                       and len(lander.lands) == 2)
                 release(U3, REVIEW_WORKER, g3)

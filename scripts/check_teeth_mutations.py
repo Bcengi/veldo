@@ -2710,6 +2710,14 @@ def cases():
     floor('floor-authority-not-required',
           '            if EL.enrolled(self.repo_root):\n                raise EL.Stopped("authority_required")\n',
           '            pass  # defect: an enrolled repository runs without its authority\n', 'status-write-sites')
+    floor('floor-rebuild-while-held',
+          '            if state not in FLOOR_TRANSITIONS["accept_build"][0]:\n',
+          '            if False:  # defect: a unit the authority holds in review is built again\n',
+          'build-acceptance')
+    floor('floor-land-retry-reassigns',
+          '        if (floor.record(sid) or {}).get("state") == "handoff":\n',
+          '        if False:  # defect: a failed land is not retried from its handoff\n',
+          'land-retry-from-handoff')
     # AC2, declared: the builder is accepted as its own reviewer (both places the authority asks).
     floor('floor-builder-reviews-itself',
           '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'

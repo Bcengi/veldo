@@ -76,7 +76,7 @@ def main(commit):
         'failed': [n for n, ok in mine if not ok], 'passed': [n for n, ok in mine if ok],
         'raised': observed.get('raised'),
         'observed': {k: observed.get(k) for k in ('status_writes', 'build_acceptance', 'independence', 'binding',
-                                                   'policy_count', 'builders', 'findings', 'completion', 'projection',
+                                                   'policy_count', 'land_retry', 'builders', 'findings', 'completion', 'projection',
                                                    'tracker', 'status')},
     }, indent=1, default=str))
 
