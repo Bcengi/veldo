@@ -20,7 +20,11 @@ a snapshot and the claim gates ownership only (not done-ness), the loop re-check
 claim that the unit is still the work it saw (claim-then-recheck) and releases + skips it if
 another worker finished it in the claim-time window, so two workers never dispatch the same
 unit. Pure stdlib control logic; Unix-only via the claim ledger. This is the loop only; the
-serialized lander is Y4."""
+serialized lander is Y4.
+
+VELDO-0135: enrolled work is offered from its floor record and rechecked against it after the claim
+(frontier.floor_station), never against the spec file's status line, which the floor authority's
+dispatcher does not write. Each dispatched enrolled offer is observed joined to the dispatch it led to."""
 import importlib.util
 import os
 import uuid
@@ -105,15 +109,56 @@ class WorkLoop:
         # never hot-loops its own failing unit.
         self._failed = set()
 
-    def _still_claimable(self, unit):
+    def _still_claimable(self, unit, gate=None):
         """After an atomic claim, re-check the unit is still the work we saw on the frontier.
         claimable() is a snapshot and the claim gates OWNERSHIP only, not done-ness, so between
         the snapshot and our claim another worker may have finished the unit. Its deps only ever
         go ready -> shipped (monotonic) and capability/scope do not change, so the only thing
         that can regress in that window is the spec's own status: a build unit must still be
-        ready, a review unit must still be in review. If not, another worker finished it."""
+        ready, a review unit must still be in review. If not, another worker finished it.
+
+        VELDO-0135: for enrolled work the status line never moves, so the recheck reads the unit's
+        floor record through the frontier's own floor reader, and the unit is still claimable only
+        while that record keeps it at the station it was offered for: a unit handed off, landed,
+        returned or waiting on an open finding since the snapshot is released, never dispatched."""
+        entry = FR.floor_station(unit["spec"], self.repo_root, gate)
+        if entry is not None:
+            if entry["station"] == unit.get("kind"):
+                return True
+            # The record moved on since the offer and took the unit away from the offered station.
+            reason = "stale_version:floor_record"
+            self._observe_floor(gate, unit, "floor_recheck", outcome="withheld", station=entry["station"],
+                                version=entry["version"], state=entry["state"], reason=reason,
+                                taxonomy=FR.floor_taxonomy(reason), detail=[entry["reason"]] if entry["reason"] else [])
+            return False
         expected = "review" if unit.get("kind") == "review" else "ready"
         return FR.current_status(unit["spec"], self.repo_root) == expected
+
+    @staticmethod
+    def _observe_floor(gate, unit, operation, **fields):
+        """One observation of an enrolled unit through the Gate's sink, joined to its offer by id."""
+        if gate is None:
+            return
+        offered = unit.get("floor") or {}
+        gate.observe(dict({"schema": FR.FLOOR_OFFER_SCHEMA, "operation": operation, "domain_uuid": gate.domain_uuid,
+                           "repository_uuid": gate.repository_uuid, "unit": unit.get("spec"),
+                           "offer": offered.get("offer"), "offered_station": unit.get("kind"),
+                           "offered_version": offered.get("version")}, **fields))
+
+    def _observe_dispatch(self, unit, result):
+        """VELDO-0135: join an enrolled offer to the dispatch it led to, by identity: the offer's id, the
+        record version it was offered from, the version the dispatch left, and the VELDO-0039 dispatch
+        each new build or review the authority recorded names."""
+        gate = EL.gate_for(self.repo_root or FR.ROOT, self.eligibility)
+        offered = unit.get("floor") or {}
+        after = FR.floor_station(unit["spec"], self.repo_root, gate) or {}
+        if unit.get("kind") == "build":
+            led = [after.get("build_dispatch")] if after.get("build_dispatch") not in (None, offered.get("build_dispatch")) else []
+        else:
+            led = list(after.get("review_dispatches") or [])[len(offered.get("review_dispatches") or []):]
+        self._observe_floor(gate, unit, "floor_dispatch", outcome="dispatched", station=unit.get("kind"),
+                            version=after.get("version"), state=after.get("state"), dispatches=led,
+                            ok=bool((result or {}).get("ok")), reason=(result or {}).get("reason"))
 
     def _claim_next(self):
         """Claim the next claimable unit this worker can take, or None if none claimable.
@@ -133,7 +178,7 @@ class WorkLoop:
                                    u.get("requires"), root=self.claims_root)
             if not ok:
                 continue
-            if not self._still_claimable(u):
+            if not self._still_claimable(u, gate):
                 CL.release(u["spec"], self.worker_id, root=self.claims_root)
                 continue
             if gate is not None:
@@ -162,6 +207,8 @@ class WorkLoop:
             result = {"ok": False, "error": repr(e)}
         finally:
             CL.release(unit["spec"], self.worker_id, root=self.claims_root)
+        if unit.get("floor"):
+            self._observe_dispatch(unit, result)
         if not (result or {}).get("ok"):
             # released above for a human / another worker / a later retry, but this worker
             # will not re-claim it, so it moves on to other work instead of hot-looping.

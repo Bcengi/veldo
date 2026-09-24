@@ -18,10 +18,34 @@ or a standalone spec, and capability-gated work only surfaces to a capable worke
 Reuses the pure plan logic (item_state, shipped set, decision blocks) and the claim
 ledger (capability_ok, claimed_units); the repo reading is parametrized by repo_root
 so it is testable over a temporary tree. Pure stdlib. This is the read side; claiming
-a unit is the claim ledger (WARP-0701) and driving it is the worker loop (WARP-0703)."""
+a unit is the claim ledger (WARP-0701) and driving it is the worker loop (WARP-0703).
+
+ENROLLED WORK IS OFFERED FROM ITS FLOOR RECORD (VELDO-0135). In a repository enrolled with the
+authority, VELDO-0049's floor authority holds each unit's state and the dispatcher never writes the
+spec file's status line, so that line cannot say where a unit is. Every lane here reads one status
+map, and for enrolled work each entry of it is the unit's place on the floor, read through the
+authority's own read path over the eligibility Gate's read-only connection:
+
+  no floor record  the file's word, which before the floor holds a unit is the owner's readiness
+                   mark: ready is the build station. A file that names review with no record behind
+                   it is refused by name (missing_authority:floor_record), never offered.
+  review           the review station while the authority's own handoff rule still wants a review
+                   (or would hand the unit off, which only a review dispatch does); with the review
+                   count met and a blocking finding unresolved it waits for the disposition.
+  returned         the build station when the unit was returned to ready; any other return waits.
+  handoff          nothing: landing is the lander's.
+  landed           shipped, by the one completion reader, whatever the record or the file says.
+
+A record that cannot be read is withheld by name and never becomes an offer. Every enrolled unit a
+frontier read considers is observed through the Gate's sink with the station, the record version it
+was read from and a named reason when nothing is offered."""
+import contextlib
 import importlib.util
 import os
+import sqlite3
 import sys
+import types
+import uuid
 from pathlib import Path
 
 
@@ -83,9 +107,201 @@ def current_status(sid, repo_root=None):
     """The current on-disk status of spec sid, or None if absent. The worker loop calls this
     right after an atomic claim to re-check that the unit it just claimed is still the work it
     saw on the frontier: another worker may have finished the unit in the window between the
-    frontier snapshot and the claim, and the claim ledger gates ownership only, not done-ness."""
+    frontier snapshot and the claim, and the claim ledger gates ownership only, not done-ness.
+    For enrolled work the loop asks floor_station() instead, because this line never moves."""
     fm = _spec_index(repo_root or ROOT).get(sid)
     return fm.get("status") if fm else None
+
+
+# ---------------------------------------------------------------------------------------------
+# VELDO-0135: the floor state of enrolled work.
+# ---------------------------------------------------------------------------------------------
+
+FLOOR_OFFER_SCHEMA = "veldo.frontier_floor/v1"
+# Reasons that name a place a unit waits at, not a fault: the error taxonomy does not classify them.
+FLOOR_HOLDS = ("handoff", "landed", "returned", "claimed", "scope", "status")
+_FLOOR_ORGANS = {}
+
+
+def _floor_authority():
+    """dispatch.py, where the floor authority's own definitions live (the record's identity and kind,
+    its read, its states, its handoff rule and its taxonomy), loaded beside this file on first use by an
+    enrolled repository's frontier. Reading through these, never a copy of them, is what keeps the
+    frontier from disagreeing with the authority about a record it did not write."""
+    if "dispatch" not in _FLOOR_ORGANS:
+        _FLOOR_ORGANS["dispatch"] = _load("veldo_dispatch_fr", ".veldo/dispatch.py")
+    return _FLOOR_ORGANS["dispatch"]
+
+
+def _floor_enabled(repo_root, gate):
+    """Whether offers come from floor state: an enrolled repository, which always has its Gate (gate_for
+    stops an enrolled entry without one). An unenrolled tree keeps the status-line behavior unchanged."""
+    return gate is not None and EL.enrolled(repo_root)
+
+
+def floor_taxonomy(reason):
+    """The class of a withheld unit's reason: 'held' for a place a unit waits at, otherwise the floor
+    authority's error taxonomy, then the eligibility service's; an unknown code is an unknown outcome."""
+    if reason is None:
+        return None
+    if reason.split(":", 1)[0] in FLOOR_HOLDS:
+        return "held"
+    found = _floor_authority().floor_taxonomy(reason)
+    return found if found != "unknown_outcome" else EL.taxonomy(reason)
+
+
+@contextlib.contextmanager
+def _one_read(conn):
+    """One read transaction on the Gate's read-only connection, so a record and the policy and unit it
+    is judged with are read at one watermark."""
+    owned = not conn.in_transaction
+    if owned:
+        conn.execute("BEGIN")
+    try:
+        yield
+    finally:
+        if owned and conn.in_transaction:
+            conn.execute("ROLLBACK")
+
+
+def _handoff_codes(DSP, repository, record, policy, unit):
+    """The authority's own handoff rule (the handoff transition's handler) asked of a COPY of the record,
+    with the retained review policy and the unit it would read inside the transaction: [] when it would
+    hand the unit off, else every named reason it would refuse (awaiting_reviews, unresolved_finding,
+    missing_authority:review_policy). Nothing is written: the handler returns changes, it commits none."""
+    before = {DSP.review_policy_id(repository): policy} if policy else {}
+    try:
+        DSP._handoff(None, {"repository": repository}, before, DSP.copy_record(record),
+                     dict((unit or {}).get("data") or {}))
+    except DSP.FloorRefused as error:
+        return list(error.codes)
+    except (KeyError, TypeError, AttributeError, ValueError):
+        return ["invalid_input:floor_record/shape"]
+    return []
+
+
+def _held(entry, reason, lane=None, detail=()):
+    return dict(entry, station=None, lane=lane or "floor:" + reason, reason=reason, detail=list(detail))
+
+
+def _floor_entry(gate, sid, word, landed=False):
+    """One enrolled unit's place on the floor: {unit, record, version, state, station, lane, reason,
+    detail, build_dispatch, review_dispatches}. `word` is the status the unit would otherwise have
+    (the file's, through the completion reader when the frontier asks) and `landed` the completion
+    reader's answer. station is 'build', 'review' or None; lane is the status-map word every lane of
+    the frontier decides on; reason names why nothing is offered.
+
+    The record is read through the authority's read path, FloorAuthority.record and .version, over the
+    Gate's read-only connection: the store is never opened for writing here."""
+    DSP = _floor_authority()
+    repository = gate.repository_uuid
+    view = types.SimpleNamespace(conn=gate.conn, repository=repository)
+    entry = {"unit": sid, "record": DSP.floor_id(repository, sid), "version": 0, "state": None, "station": None,
+             "lane": word, "reason": None, "detail": [], "build_dispatch": None, "review_dispatches": []}
+    try:
+        with _one_read(gate.conn):
+            version = DSP.FloorAuthority.version(view, sid)
+            record = DSP.FloorAuthority.record(view, sid)
+            policy = DSP._row(gate.conn, DSP.review_policy_id(repository))
+            unit = DSP._row(gate.conn, sid)
+    except sqlite3.Error:
+        return _held(entry, "unavailable_service:store")
+    except ValueError:
+        return _held(entry, "invalid_input:floor_record/unreadable")
+    entry["version"] = version
+    if isinstance(record, dict):
+        entry["state"] = record.get("state")
+        entry["build_dispatch"] = (record.get("build") or {}).get("dispatch") if isinstance(record.get("build"), dict) else None
+        reviews = record.get("reviews") if isinstance(record.get("reviews"), list) else []
+        entry["review_dispatches"] = [r.get("dispatch") for r in reviews if isinstance(r, dict)]
+    if landed:
+        return _held(entry, "landed", lane="shipped")
+    if record is None and version:
+        # A row stands at the record's identity but it is not a floor record: unreadable, never absent.
+        return _held(entry, "invalid_input:floor_record/kind")
+    if record is None:
+        if word == "review":
+            # The status line names a station no floor record backs.
+            return _held(entry, "missing_authority:floor_record")
+        if word == "ready":
+            return dict(entry, station="build")
+        return _held(entry, "status:%s" % word, lane=word)
+    state = entry["state"]
+    if state == "review":
+        codes = _handoff_codes(DSP, repository, record, policy, unit)
+        if not codes or any(c.startswith("awaiting_reviews") for c in codes):
+            return dict(entry, station="review", lane="review", detail=codes)
+        head = codes[0].split(":", 1)[0]
+        return _held(entry, head if head == "unresolved_finding" else codes[0], detail=codes)
+    if state == "returned":
+        to = record.get("returned_to")
+        if to == "ready":
+            return dict(entry, station="build", lane="ready")
+        return _held(entry, "returned:%s" % to)
+    if state == "handoff":
+        return _held(entry, "handoff")
+    return _held(entry, "invalid_input:floor_state", detail=[str(state)])
+
+
+def _floor_lanes(gate, idx, status):
+    """({spec: lane word}, {spec: entry}) for every spec of an enrolled repository: the status map with
+    each unit's floor place in it, and the entries the offers and their observations are made from."""
+    entries = {sid: _floor_entry(gate, sid, status.get(sid), landed=status.get(sid) == DEP_SHIPPED)
+               for sid in sorted(idx)}
+    lanes = dict(status)
+    lanes.update({sid: e["lane"] for sid, e in entries.items()})
+    return lanes, entries
+
+
+def floor_station(sid, repo_root=None, eligibility=None):
+    """The work loop's claim-then-recheck for enrolled work: the unit's floor entry read NOW, through
+    the same reader the frontier offered it from, or None in an unenrolled repository (whose loop keeps
+    rechecking the status line). A claimed unit is still the work it was offered as only while its
+    entry's station is the unit's kind.
+
+    The recheck reads the record and not completion: a unit reaches completion only after its handoff,
+    which the record already holds, so the window between an offer and its claim cannot land a unit
+    whose record still shows a station."""
+    repo_root = repo_root or ROOT
+    gate = EL.gate_for(repo_root, eligibility)
+    if not _floor_enabled(repo_root, gate):
+        return None
+    fm = _spec_index(repo_root).get(sid) or {}
+    return _floor_entry(gate, sid, fm.get("status"))
+
+
+def _observe_offers(gate, entries, out, held, idx, scope):
+    """One observation per enrolled unit in scope (the unit, the station offered, the record version
+    it was read from and, when nothing is offered, the named reason and its class), then the counts:
+    units offered per station and units withheld per named reason. Each offer carries its own id, which
+    the work loop joins to the dispatch it led to."""
+    offered = {u["spec"]: u for u in out}
+    counts = {"offered": {}, "withheld": {}}
+    base = {"schema": FLOOR_OFFER_SCHEMA, "domain_uuid": gate.domain_uuid, "repository_uuid": gate.repository_uuid}
+    for sid in sorted(entries):
+        fm = idx.get(sid) or {}
+        if not _in_scope(fm, fm.get("plan"), scope):
+            continue
+        e = entries[sid]
+        event = dict(base, operation="floor_offer", unit=sid, record=e["record"], version=e["version"],
+                     state=e["state"])
+        unit = offered.get(sid)
+        if unit is not None:
+            event.update(outcome="offered", station=unit["kind"], offer=unit["floor"]["offer"], reason=None,
+                         taxonomy=None, detail=list(e["detail"]),
+                         selection=(unit.get("eligibility") or {}).get("decision_id"))
+            counts["offered"][unit["kind"]] = counts["offered"].get(unit["kind"], 0) + 1
+        else:
+            reason, detail = held.get(sid, (None, []))
+            if e["reason"] is not None:
+                reason, detail = e["reason"], e["detail"]
+            reason = reason or "status:%s" % e["lane"]
+            event.update(outcome="withheld", station=e["station"], offer=None, reason=reason,
+                         taxonomy=floor_taxonomy(reason), detail=list(detail))
+            counts["withheld"][reason] = counts["withheld"].get(reason, 0) + 1
+        gate.observe(event)
+    gate.observe(dict(base, operation="floor_offers", offered=counts["offered"], withheld=counts["withheld"]))
+    return counts
 
 
 # A declared dependency naming a spec that does not exist resolves to this state, which is
@@ -188,8 +404,12 @@ def withheld(repo_root=None, scope=None, eligibility=None):
     dependency, an open decision) is the plan burn-down's report, not this one; this report is
     exactly the front-matter rule."""
     idx = _spec_index(repo_root or ROOT)
+    gate = EL.gate_for(repo_root or ROOT, eligibility)
     # VELDO-0052 AC3: with the floor enabled, "shipped" means a landed revision, never status text.
-    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))
+    status = EL.completion_status(gate, _status_map(idx))
+    if _floor_enabled(repo_root or ROOT, gate):
+        # VELDO-0135: an enrolled unit is build-shaped only at the build station of its floor record.
+        status, _entries = _floor_lanes(gate, idx, status)
     out = []
     for sid in sorted(idx):
         fm = idx[sid]
@@ -255,13 +475,31 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
     VELDO-0052: with the floor enabled (an explicit eligibility Gate, or an enrolled repository,
     which stops by name without one) every offer additionally passes the shared SELECTION
     decision over the real store, and carries that decision as its `eligibility` ticket so the
-    claim and every later station can refuse a changed input by name."""
+    claim and every later station can refuse a changed input by name.
+
+    VELDO-0135: in an enrolled repository each unit's lane status is its floor record's station (see
+    the module docstring), each offer carries a `floor` entry (the record's identity and version and
+    the offer's id), and every enrolled unit in scope is observed through the Gate's sink, offered or
+    withheld with its named reason. claims_root may be an authority claim client, asked per unit."""
     repo_root = repo_root or ROOT
     gate = EL.gate_for(repo_root, eligibility)
     caps = set(worker_caps or [])
     idx = _spec_index(repo_root)
     status = EL.completion_status(gate, _status_map(idx))
-    claimed = CL.claimed_units(root=claims_root)
+    # VELDO-0135: in an enrolled repository every lane below decides on each unit's floor record, read
+    # once here; the entries also carry what each offer and each withheld unit is observed with.
+    floor = None
+    if _floor_enabled(repo_root, gate):
+        status, floor = _floor_lanes(gate, idx, status)
+    try:
+        claimed = CL.claimed_units(root=claims_root).__contains__
+    except CL.ClaimStopped as stop:
+        # An authority claim client cannot list every claim (claim.py stops a listing by this name); an
+        # enrolled worker's frontier asks it about each unit it would offer, by the unit's name.
+        if stop.reason != "explicit_unit_required":
+            raise
+        claimed = lambda sid: CL.is_claimed(sid, root=claims_root)  # noqa: E731
+    held = {}
     # Load this repository's architecture contract ONCE (adoption safe: (None, None)
     # when absent). The mandatory placement gate below refuses a BUILD unit whose spec
     # lacks a placement that resolves to a contract area, so a placeless spec is never
@@ -285,30 +523,44 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
         return []
     out, seen = [], set()
 
+    def _hold(sid, reason, detail=()):
+        # The first reason a unit at its station was not offered, named for its observation.
+        held.setdefault(sid, (reason, list(detail)))
+
     def _add(sid, plan_id, kind):
-        if sid in seen or sid in claimed:
+        if sid in seen:
             return
+        if claimed(sid):
+            return _hold(sid, "claimed")
         fm = idx.get(sid) or {}
         # THE DEPENDENCY GATE, asked once for every offer however the unit was found: a build
         # unit whose spec declares an unshipped prerequisite is never surfaced, and the same
         # function that decides it explains it in withheld().
         if dependency_gate(fm, status, kind):
-            return
+            unmet = unmet_dependencies(fm, status)
+            return _hold(sid, "unresolved_dependency:%s" % unmet[0][0], ["%s (%s)" % d for d in unmet])
         reqs = fm.get("requires") or []
         if not CL.capability_ok(caps, reqs):
-            return
+            return _hold(sid, "missing_authority:capability", reqs)
         if not _in_scope(fm, plan_id, scope):
-            return
+            return _hold(sid, "scope")
         if kind == "build" and contract is not None and arch.placement_gate(fm, contract):
-            return  # placeless build with a contract present: never claimed
+            return _hold(sid, "invalid_input:placement")  # placeless build with a contract present: never claimed
         unit = {"spec": sid, "plan": plan_id, "kind": kind, "requires": list(reqs)}
         if gate is not None:
             # THE SELECTION STATION, for build and review offers alike: review cannot bypass the
             # draft-plan, decision, dependency or admission checks by being a different kind.
             decision = gate.decide("selection", sid)
             if not decision["eligible"]:
-                return
+                return _hold(sid, decision["refusals"][0], decision["refusals"])
             unit["eligibility"] = decision
+        if floor is not None and sid in floor:
+            # VELDO-0135: the floor record the offer was made from, by identity and version, and the
+            # offer's own id, which the work loop joins to the dispatch it leads to.
+            e = floor[sid]
+            unit["floor"] = {"record": e["record"], "version": e["version"], "state": e["state"], "station": kind,
+                             "offer": "offer:" + uuid.uuid4().hex, "build_dispatch": e["build_dispatch"],
+                             "review_dispatches": list(e["review_dispatches"])}
         seen.add(sid)
         out.append(unit)
 
@@ -324,10 +576,13 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
         if _is_standalone_build(fm, status):
             _add(sid, None, "build")
     # REVIEW work: any spec awaiting its verdict, by the same completion map, so a landed unit whose
-    # file still says review is not offered for another verdict.
+    # file still says review is not offered for another verdict. For enrolled work the map's review
+    # entries are exactly the units whose floor record is at the review station (VELDO-0135).
     for sid, fm in idx.items():
         if _lane_status(fm, status) == "review":
             _add(sid, fm.get("plan"), "review")
+    if floor is not None:
+        _observe_offers(gate, floor, out, held, idx, scope)
     return out
 
 
