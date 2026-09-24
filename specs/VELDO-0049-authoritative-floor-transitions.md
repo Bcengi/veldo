@@ -92,6 +92,19 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the dispatcher moves an enrolled unit from build to review to handoff only through the
+  authority's transitions; a build is accepted only with accepted proof and a green gate; review runs as a
+  separate eligible principal in a fresh context bound to the exact source and proof; a pass cannot clear
+  an unresolved blocking finding; only the lander establishes completion.
+- Threat model: a builder that reviews its own work or claims review, a stale or wrong proof or source, a
+  later pass that tries to erase an earlier blocking finding, and a direct status write that skips the
+  authority. The owner's account, the store and the gate are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); Jira tracker
+  intake (dropped by the owner, 28857 and 28859); crash recovery between transitions (Release 2); forged
+  rows in our own store.
+
 ## Notes
 
 Dispatcher._dispatch_build/_set_status and _dispatch_review/_verdict_passes use authority
