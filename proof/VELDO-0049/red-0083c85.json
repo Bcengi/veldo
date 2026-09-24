@@ -1,0 +1,327 @@
+{
+ "production_at": "0083c85",
+ "substituted": {
+  "dispatch.py": "proof/VELDO-0049/prefix/dispatch.py",
+  "tracker_bridge.py": "0083c85:.veldo/tracker_bridge.py"
+ },
+ "prefix_begins_with_the_commit_bytes": true,
+ "other_installed_modules_identical_to_commit": true,
+ "differing": [],
+ "failed": [
+  "VELDO-0049 floor/status-write-sites",
+  "VELDO-0049 floor/build-acceptance",
+  "VELDO-0049 floor/review-independence",
+  "VELDO-0049 floor/review-binding",
+  "VELDO-0049 floor/review-policy-count",
+  "VELDO-0049 floor/finding-not-erased",
+  "VELDO-0049 floor/completion-by-lander-only",
+  "VELDO-0049 floor/authority-to-projection",
+  "VELDO-0049 floor/tracker-disabled-when-enrolled",
+  "VELDO-0049 floor/observations"
+ ],
+ "passed": [
+  "VELDO-0049 ran/floor/status-write-sites",
+  "VELDO-0049 ran/floor/review-independence",
+  "VELDO-0049 ran/floor/finding-not-erased",
+  "VELDO-0049 ran/floor/authority-to-projection",
+  "VELDO-0049 ran/floor/tracker-disabled-when-enrolled",
+  "VELDO-0049 ran/floor/observations"
+ ],
+ "raised": [],
+ "observed": {
+  "status_writes": {
+   "sites": [
+    [
+     "Dispatcher._dispatch_build",
+     "review"
+    ],
+    [
+     "Dispatcher._dispatch_review",
+     "fail_status"
+    ],
+    [
+     "Dispatcher._dispatch_review",
+     "shipped"
+    ]
+   ],
+   "writers": [
+    "Dispatcher._set_status"
+   ],
+   "enrolled": [
+    "ok",
+    true
+   ],
+   "unwired": [
+    "ok",
+    {
+     "ok": false,
+     "kind": "build",
+     "spec": "VELDO-9401",
+     "reviewed": false,
+     "state": "halted",
+     "halted_at": "resolve",
+     "reason": "spec VELDO-9401 is 'review', not ready",
+     "result": {
+      "state": "halted",
+      "halted_at": "resolve",
+      "reason": "spec VELDO-9401 is 'review', not ready",
+      "steps": [
+       {
+        "name": "resolve",
+        "ok": false,
+        "reason": "spec VELDO-9401 is 'review', not ready"
+       }
+      ],
+      "human_minutes": 0,
+      "receipt": {
+       "spec_id": "VELDO-9401",
+       "criteria_proven": [],
+       "gate": null,
+       "verdict": null,
+       "human_minutes": 0,
+       "awaiting_human": null
+      }
+     }
+    }
+   ],
+   "unenrolled_control": [
+    [
+     "ok",
+     true
+    ],
+    true
+   ]
+  },
+  "build_acceptance": {
+   "good": {
+    "ok": false,
+    "status": null,
+    "halted_at": "resolve",
+    "reason": "spec VELDO-9401 is 'review', not ready"
+   },
+   "bad_proof": {
+    "ok": false,
+    "halted_at": "proof",
+    "reason": "proof did not validate (1 problem(s))"
+   },
+   "stale_proof": {
+    "ok": true,
+    "halted_at": null,
+    "reason": null
+   },
+   "red_gate": {
+    "ok": false,
+    "halted_at": "gate",
+    "reason": "red: veldo_9404.py"
+   },
+   "direct_invalid_proof": [
+    "ok",
+    {}
+   ],
+   "direct": {
+    "red_gate": [
+     "ok",
+     {}
+    ],
+    "other_holder": [
+     "ok",
+     {}
+    ],
+    "stale_generation": [
+     "ok",
+     {}
+    ],
+    "source_without_proof": [
+     "ok",
+     {}
+    ]
+   },
+   "record": {
+    "state": null,
+    "attempt": null,
+    "builder": null,
+    "proof": null,
+    "source": null
+   },
+   "producer": null,
+   "none_written_for_refused": true
+  },
+  "independence": {
+   "station_self_review": "missing_evidence:producer",
+   "station_launched": [],
+   "direct_self_assignment": [
+    "ok",
+    {}
+   ],
+   "builder_signing_as_reviewer": "missing_evidence:producer",
+   "builder_signing_as_itself": "missing_evidence:producer",
+   "reviews": 0
+  },
+  "binding": {
+   "refused": {
+    "wrong_source": "missing_evidence:producer",
+    "wrong_proof": "missing_evidence:producer",
+    "missing_receipt": "missing_evidence:producer",
+    "launched_elsewhere": "missing_evidence:producer",
+    "extra_context": "missing_evidence:producer",
+    "altered_receipt": "missing_evidence:producer"
+   },
+   "valid": {
+    "ok": false,
+    "halted_at": "eligibility",
+    "reason": "missing_evidence:producer"
+   },
+   "builder_process": null,
+   "reviewer_process": null,
+   "reviewer_packet_keys": []
+  },
+  "policy_count": {
+   "same_principal_again": "missing_evidence:producer",
+   "second_reviewer": {
+    "ok": false,
+    "landed": false,
+    "shipped": false,
+    "status": null
+   },
+   "handoff": {},
+   "required": 2,
+   "journal_reviewers": [],
+   "signatures_verified": true,
+   "trunk": false
+  },
+  "findings": {
+   "blocked": {
+    "ok": false,
+    "status": null,
+    "verdict": null
+   },
+   "findings": [],
+   "pass_on_returned_build": "missing_evidence:producer",
+   "rebuilt": {
+    "ok": false,
+    "status": null
+   },
+   "pass_after_finding": [
+    "missing_evidence:producer"
+   ],
+   "refused_approvals": {
+    "builder": [
+     "ok",
+     {}
+    ],
+    "another_reviewer": [
+     "ok",
+     {}
+    ],
+    "owner_unsigned": [
+     "ok",
+     {}
+    ]
+   },
+   "rejected_ruling": "ok",
+   "pass_with_count_met": [
+    "missing_evidence:producer"
+   ],
+   "direct_land": [
+    "ok",
+    {
+     "ok": true,
+     "stage": "landed",
+     "commit": "b2ca50a5c0e68424c3f78251d916bc0f8f03fd01"
+    }
+   ],
+   "trunk_unchanged_on_rejection": false,
+   "disposition": "ok",
+   "after_disposition": {
+    "ok": false,
+    "landed": false,
+    "status": null
+   },
+   "handoff": null
+  },
+  "completion": {
+   "receipts": 0,
+   "facts": {
+    "VELDO-9411": {
+     "attempt_finished": false,
+     "artifact_accepted": false,
+     "revision_landed": false,
+     "objective_satisfied": false
+    },
+    "VELDO-9421": {
+     "attempt_finished": false,
+     "artifact_accepted": false,
+     "revision_landed": false,
+     "objective_satisfied": false
+    }
+   },
+   "states": {
+    "VELDO-9411": null,
+    "VELDO-9421": null
+   },
+   "targets": []
+  },
+  "projection": {
+   "problems": [
+    [
+     "VELDO-9401",
+     "the spec file was written"
+    ],
+    [
+     "VELDO-9403",
+     "the spec file was written"
+    ],
+    [
+     "VELDO-9411",
+     "the spec file was written"
+    ],
+    [
+     "VELDO-9421",
+     "the spec file was written"
+    ]
+   ],
+   "published": {}
+  },
+  "tracker": {
+   "drafted": [
+    {
+     "item": "TCK-untracked",
+     "repo": "untracked",
+     "spec_id": "VELDO-0001",
+     "path": "/dev/shm/v49-6f8_6s0e/untracked/specs/VELDO-0001.md"
+    }
+   ],
+   "promoted": [
+    {
+     "item": "TCK-tracked",
+     "repo": "tracked",
+     "spec_id": "VELDO-0001"
+    },
+    {
+     "item": "TCK-untracked",
+     "repo": "untracked",
+     "spec_id": "VELDO-0001"
+    }
+   ],
+   "skipped": {},
+   "direct_write": "ok",
+   "direct_promote": [
+    "ok",
+    false
+   ],
+   "control": [
+    [
+     "VELDO-0001.md"
+    ],
+    "ready"
+   ]
+  },
+  "status": {
+   "accepted": 0,
+   "refused": 0,
+   "pending": [],
+   "handoff": [],
+   "returned": []
+  }
+ }
+}
