@@ -92,12 +92,20 @@ class Fixture:
         return self.S.materialized_state(self.conn)['entities']
 
     def write(self, eid, kind, data):
-        e = self.entities().get(eid, {})
-        n = str(uuid.uuid4())
-        return self.S.execute(self.conn, dict(command_id='fx-' + n, principal='owner', operation='upsert_entity',
-                              parameters=dict(entity_id=eid, kind=kind, data=data),
-                              expected_versions={eid: e.get('version', 0)}, artifact_digests=[], nonce='fx-' + n),
-                              'owner', lambda m: self.sign('owner', m), 1)
+        # The fixture SETS the record. A live heartbeat (review_r3) may commit a renew between this
+        # read and the write; that moved version is not the fixture's answer, so it reads again.
+        for _ in range(16):
+            e = self.entities().get(eid, {})
+            n = str(uuid.uuid4())
+            try:
+                return self.S.execute(self.conn, dict(command_id='fx-' + n, principal='owner', operation='upsert_entity',
+                                      parameters=dict(entity_id=eid, kind=kind, data=data),
+                                      expected_versions={eid: e.get('version', 0)}, artifact_digests=[], nonce='fx-' + n),
+                                      'owner', lambda m: self.sign('owner', m), 1)
+            except self.S.StoreRefused as exc:
+                if exc.code != 'stale_version' or self.entities().get(eid, {}).get('version', 0) == e.get('version', 0):
+                    raise
+        raise AssertionError('fixture write of %s kept losing to a concurrent writer' % eid)
 
     def packet(self, who, op, unit='unit', generation=0, capabilities=()):
         """The exact packet control_claim_client.Client.request builds."""
@@ -204,12 +212,42 @@ def review_r2(f):
 
 
 def review_r3(f):
+    # The race behind the heartbeat, made deterministic: another writer moves a version the
+    # authority pinned, after its read and before its commit. The renew is decided again on the
+    # current state: a unit transition leaves it owned, an unanswerable claim answers unanswerable.
+    # Before the reread a renew here was refused stale_version, which the lander read as lost.
+    unit_cid = f.C.claim_id(f.ids['repository_uuid'], 'unit')
+    granted = f.direct('worker-a', 'claim')
+    assert granted['ok'], granted
+    gen = granted['claim']['generation']
+    real_state = f.C.CM.authority_state
+    raced = []
+    for concurrent, expected in (
+            (lambda: f.write('unit', 'execution_unit', dict(f.entities()['unit']['data'], state='RUNNING')), 'renew'),
+            (lambda: f.write(unit_cid, 'claim', dict(f.entities()[unit_cid]['data'],
+                                                     heartbeat_at='2999-01-01T00:00:00Z')), 'unanswerable')):
+        def state_then_race(*args, concurrent=concurrent):
+            state = real_state(*args)
+            if len(raced) % 2 == 0:
+                raced.append(concurrent())
+            return state
+        f.C.CM.authority_state = state_then_race
+        try:
+            answer = f.direct('worker-a', 'renew', generation=gen)
+        finally:
+            f.C.CM.authority_state = real_state
+        raced.append(answer)
+        assert answer['reason'] == expected, dict(contention=expected, answer=answer)
     f.start_server()
     client = f.client(0)
     L = load('lander_review', f.mods / 'lander.py')
     cid = f.C.claim_id(f.ids['repository_uuid'], '__land_lock__')
     calls = []
-    before = [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    t0 = time.monotonic()
+    seen_log = []  # every heartbeat the lander's thread made: (seconds, outcome, value)
+    def refs():
+        return [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    before = refs()
     class Ops:
         def sync_main(self): return {'ok': True}
         def reconcile(self, unit): return {'ok': True}
@@ -222,46 +260,68 @@ def review_r3(f):
             for r in (f.repos[0], f.remote):
                 f.git(r, 'update-ref', 'refs/heads/landed', 'HEAD')
             return {'ok': True}
+    def run(lander):
+        try:
+            lander.land()
+        except Exception as exc:
+            return getattr(exc, 'reason', type(exc).__name__), repr(exc)
+        return None, None
+    def saw(phase, reason, raised, lander, **more):
+        return dict(phase=phase, reason=reason, raised=raised, calls=list(calls), refs_before=before,
+                    refs_after=refs(), hb_error=repr(lander._hb_error), heartbeats=list(seen_log),
+                    elapsed=round(time.monotonic() - t0, 3), **more)
     # No heartbeat tick: only the immediately-before-finalize use can stop this land.
-    reason = None
-    try:
-        L.Lander('worker-a', Ops(), claims_root=client, hb_interval=60).land()
-    except Exception as exc:
-        reason = getattr(exc, 'reason', type(exc).__name__)
-    assert reason == 'unanswerable' and not calls, (reason, calls)
-    assert before == [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    lander = L.Lander('worker-a', Ops(), claims_root=client, hb_interval=60)
+    reason, raised = run(lander)
+    assert reason == 'unanswerable' and not calls, saw('no-tick', reason, raised, lander)
+    assert before == refs(), saw('no-tick', reason, raised, lander)
     # A real heartbeat stop must be retained even if ownership recovers before finalize.
     cur = f.entities()[cid]['data']
     f.write(cid, 'claim', dict(cur, heartbeat_at=f.CL._now()))
     assert client.release('__land_lock__', 'worker-a')
     import threading
     seen = threading.Event()
+    seen_at = []
     heartbeat = client.heartbeat
     def observed(*args):
         try:
-            return heartbeat(*args)
-        except Exception:
+            value = heartbeat(*args)
+        except Exception as exc:
+            seen_log.append((round(time.monotonic() - t0, 3), 'raised', repr(exc)))
+            seen_at.append(round(time.monotonic() - t0, 3))
             seen.set()
             raise
+        seen_log.append((round(time.monotonic() - t0, 3), 'returned', value))
+        return value
     client.heartbeat = observed
+    request = client.request
+    def answered(operation, *args, **kwargs):
+        # The authority's own answer to every renew, beside what the heartbeat made of it.
+        try:
+            result = request(operation, *args, **kwargs)
+        except Exception as exc:
+            seen_log.append((round(time.monotonic() - t0, 3), operation + ' raised', repr(exc)))
+            raise
+        seen_log.append((round(time.monotonic() - t0, 3), operation + ' answered', result.get('reason')))
+        return result
+    client.request = answered
+    gate_saw = {}
     class HeartbeatOps(Ops):
         def gate(self):
             super().gate()
             # A liveness bound, not a timing claim: it returns the moment the heartbeat observes, and a
             # loaded host (the gate's parallel mutation stage) must not turn a slow thread into a false row.
-            assert seen.wait(30), 'heartbeat did not observe uncertain ownership'
+            gate_saw['seen'] = seen.wait(30)
             lander._hb_thread.join(10)
+            gate_saw['thread_alive'] = lander._hb_thread.is_alive()
+            assert gate_saw['seen'], 'heartbeat did not observe uncertain ownership'
             cur = f.entities()[cid]['data']
             f.write(cid, 'claim', dict(cur, heartbeat_at=f.CL._now()))
             return {'ok': True}
     lander = L.Lander('worker-a', HeartbeatOps(), claims_root=client, hb_interval=.01)
-    reason = None
-    try:
-        lander.land()
-    except Exception as exc:
-        reason = getattr(exc, 'reason', type(exc).__name__)
-    assert reason == 'unanswerable' and not calls, (reason, calls)
-    assert before == [f.git(r, 'show-ref') for r in (f.repos[0], f.remote)]
+    reason, raised = run(lander)
+    assert reason == 'unanswerable' and not calls, saw('tick', reason, raised, lander, seen_at=seen_at, gate=gate_saw)
+    assert before == refs(), saw('tick', reason, raised, lander, seen_at=seen_at, gate=gate_saw)
 
 
 def review_r4(f):
@@ -336,6 +396,8 @@ for review_number in range(1, 7):
         review_error = repr(exc)
     finally:
         review_fixture.close()
-    expect('VELDO-0031 review claims/review-r' + str(review_number), review_error is None)
+    # The row's own words after the colon carry what a false row saw, so the mutation workers keep it.
+    expect('VELDO-0031 review claims/review-r' + str(review_number)
+           + ('' if review_error is None else ': ' + review_error), review_error is None)
     if review_error:
         print('  review R%d: %s' % (review_number, review_error))
