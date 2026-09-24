@@ -3497,11 +3497,15 @@ def cases():
               '                  self.remote, profile="network").stdout.strip()), "%s:refs/heads/%s" % (c["commit"], self.trunk),\n'
               '                  profile="network", ok=None)  # defect: the trunk moves before the policy accepts\n' + policy_anchor,
               'rejection-leaves-trunk')
+    # VELDO-0058: finalize accepts the gate's external observation again before anything moves, so a
+    # red gate that is not a refusal is also accepted there: the defect is both edits.
     candidate('candidate-gate-result-ignored',
-              '        if not green:\n            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),\n',
+              '        if not green:\n            ran_red = exit_code != 0 or terminal != "GATE: GREEN (%s)" % c["commit"]\n',
               '        if False:  # defect: a red gate is not a refusal\n'
-              '            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),\n',
-              'rejection-leaves-trunk')
+              '            ran_red = exit_code != 0 or terminal != "GATE: GREEN (%s)" % c["commit"]\n',
+              'rejection-leaves-trunk',
+              also=[('        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"])\n',
+                     '        accepted = []  # defect: the gate\'s observation is not accepted again\n')])
     candidate('candidate-policy-refusal-ignored',
               '        if refusals:\n            error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")\n',
               '        if False:  # defect: a policy refusal is not a refusal\n'
@@ -4023,8 +4027,8 @@ def cases():
                 '  set -- --repo-root "$(pwd -P)"  # defect: the reconciliation appends to the candidate\'s own log\n',
                 'review-write', directory='scripts')
     gate_output('gate-output-stamp-written-to-candidate', 'verify.sh',
-                '     && mv -f "$VELDO_OUT/.last_verify.$$" "$VELDO_OUT/last_verify" 2>/dev/null \\\n',
-                '     && mv -f "$VELDO_OUT/.last_verify.$$" .veldo/last_verify 2>/dev/null \\\n',
+                '     && mv -f "$VELDO_OUT/.stamp.$$" "$VELDO_OUT/last_verify" 2>/dev/null \\\n',
+                '     && mv -f "$VELDO_OUT/.stamp.$$" .veldo/last_verify 2>/dev/null \\\n',
                 'review-write', directory='scripts')
     # AC1: a sink that refuses the final write, and a sink inside the candidate.
     gate_output('gate-output-sink-failure-still-green', 'verify.sh',
