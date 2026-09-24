@@ -3344,6 +3344,18 @@ def cases():
              'observations')
     events51('projection-pending-unlisted', "                    pending_events=[e['id'] for e in events if e['id'] not in present])\n",
              "                    pending_events=[])  # defect: pending landings are not listed\n", 'observations')
+    # The spend recorder (a landed producer VELDO-0051 broke): its records are spend.recorded, owned by
+    # spend.py, and every reader of spend actuals reads that type and the historical spec.shipped one.
+    spend_rows = ['events/spend-recorded', 'events/vocabulary-roundtrip']
+    add(51, 'spend-records-as-spec-shipped', '66_veldo_0051_events.py', 'spend.py',
+        'SCHEMA_EVENT_TYPE = "spend.recorded"\n',
+        'SCHEMA_EVENT_TYPE = "spec.shipped"  # defect: a spend record is written as completion\n', spend_rows)
+    add(51, 'vocabulary-forgets-spend-recorded', '66_veldo_0051_events.py', vocabulary,
+        '    "spend.recorded": SPEND_RECORDER,\n', '', spend_rows)
+    events51('judgment-spend-recorded-unkinded', '    "spend.recorded": "ship_bulk",\n', '', 'spend-recorded',
+             module='judgment_load.py')
+    events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
+             module='judgment_load.py')
     return result
 
 
