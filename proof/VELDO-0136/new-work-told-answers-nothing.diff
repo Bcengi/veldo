@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -279 +279 @@
+-                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)
++                self._hint(payload, None)  # defect: new work is told it answers nothing

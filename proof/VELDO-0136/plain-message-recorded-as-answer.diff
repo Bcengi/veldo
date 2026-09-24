@@ -1,0 +1,11 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -495,0 +496,8 @@
++        waiting = self.presenter.waiting(known['principal'], fields['chat_id']) if not isinstance(reply, dict) else []
++        if waiting:  # defect: a message that replies to nothing answers the waiting request
++            part = waiting[0]['platform_parts'][-1]
++            reply = {'message_id': part['message_id'], 'chat': {'id': part['chat_id']}, 'date': part['date'],
++                     'text': part['text'], 'from': {'id': record['bot_id'], 'is_bot': True}}
++            message = dict(message, reply_to_message=reply)
++            fields = dict(fields, reply_to_message_id=part['message_id'], reply_chat_id=part['chat_id'],
++                          reply_date=part['date'])

@@ -107,7 +107,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "0fc2766ef5582c84b567e18bb7035c3afbe6ccdaaafa2888dedf1c3df5fdf3e8",
+   "mutant_sha256": "3e646123851bff7912ab3aa52e3c335164047340b0788061b103b463949b8215",
    "name": "api-into-separate-queue",
    "named_row_red": true,
    "named_rows": [
@@ -188,8 +188,8 @@
      true
     ]
    ],
-   "seconds": 1.208,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.196,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -215,7 +215,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "3e8ddf62dace1f8b6810fc7121a67936ac17ff309197fa246f81f862ace97374",
+   "mutant_sha256": "4b3853b9daafb91786b6d4b918d2e85047187e9d551b08f23fac40954f7ae449",
    "name": "api-principal-from-edge",
    "named_row_red": true,
    "named_rows": [
@@ -296,8 +296,8 @@
      true
     ]
    ],
-   "seconds": 1.194,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.196,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -315,7 +315,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "0bcec0727a9428bd2dc6d21478f1ea08e39f72b5596379afa1beefe7ef3aa6b3",
+   "mutant_sha256": "6358ee1c17bd02398adebb2cf1da01256b7d72ec090d6b49cc0b6c6009818495",
    "name": "unresolved-first-candidate-wins",
    "named_row_red": true,
    "named_rows": [
@@ -396,8 +396,8 @@
      true
     ]
    ],
-   "seconds": 1.204,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.215,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -413,7 +413,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "20cfc0c2cb5dc3685387ce89704d4daf904379326c9d3ec68d13e34cb72877cb",
+   "mutant_sha256": "4d6deddf12d1a6dab15b78f4c7532405f1038383df3cbc0966ab924080cc6e2a",
    "name": "question-not-sent",
    "named_row_red": true,
    "named_rows": [
@@ -494,15 +494,15 @@
      true
     ]
    ],
-   "seconds": 1.207,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.211,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0126 detail: intake/common-command: telegram proposed; api proposed; one normalized command shape; same text, principal and context; source identities; telegram provenance; api provenance; equal proposals; distinct proposals per source; sources retained; both through the one store command",
     "VELDO-0126 detail: intake/unresolved-project-asks: telegram inbox; api inbox; no project invented; questions open with every candidate; telegram question sent as a reply; telegram delivery recorded; api question answered in the response",
-    "VELDO-0126 detail: intake/plain-objective: prose via telegram proposed; prose via telegram text exact; prose via api proposed; prose via api text exact; incomplete via telegram proposed; incomplete via telegram text exact; incomplete via api proposed; incomplete via api text exact",
+    "VELDO-0126 detail: intake/plain-objective: prose via telegram proposed; prose via telegram text exact; prose via api proposed; prose via api text exact; incomplete via telegram proposed; incomplete via telegram text exact; incomplete via api proposed; incomplete via api text exact; nothing watches the ticket",
     "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open; telegram follow-up after resolution lands on the live objective; api follow-up after resolution lands on the live objective; the retired inbox records are unchanged",
     "VELDO-0126 detail: intake/authenticated-sources-only: unknown principal refused unauthorized:not_current_member; revoked principal refused unauthorized:not_current_member; service principal refused unauthorized:not_a_person; not a member when sent refused unauthorized:not_member_when_sent; the valid request is taken; forged text never makes the owner the principal; refused before enrollment, taken once a member",
     "VELDO-0126 detail: intake/same-request-same-proposal: telegram repeat returns the same proposal; api repeat returns the same proposal; changed text refused; changed project refused; the records are unchanged",
@@ -521,7 +521,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "1c49ba7dab217febe680a1926e9726e50de7d06deff1ac022499fd85ae9802f2",
+   "mutant_sha256": "967ce1d35fe4a305daa47947364ddbe89ed3772f1a4d4e834a0ce8ff38e5de99",
    "name": "ticket-id-required",
    "named_row_red": true,
    "named_rows": [
@@ -603,7 +603,7 @@
     ]
    ],
    "seconds": 1.206,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -615,7 +615,7 @@
     "VELDO-0126 intake/plain-objective"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "28fbb6ec980a6f6adcb4a88899be46a8f6fad70b93f36b220550f1eedcbddd72",
+   "mutant_sha256": "e7c22bd0f019f42f3d271c40f3a31872f7aa38ed45b692e99021b2d217bbebdd",
    "name": "text-trimmed",
    "named_row_red": true,
    "named_rows": [
@@ -696,8 +696,8 @@
      true
     ]
    ],
-   "seconds": 1.205,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.216,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -711,7 +711,7 @@
     "VELDO-0126 intake/observations"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "53685f620e85a1e6894a802afcbfb1a059627820ce41254598869b2e6bdff260",
+   "mutant_sha256": "4abe7b6657c99fdc923e100b1a22307462d113640bb5d4722398319147cf2d02",
    "name": "follow-up-as-new-objective",
    "named_row_red": true,
    "named_rows": [
@@ -792,8 +792,8 @@
      true
     ]
    ],
-   "seconds": 1.204,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.21,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -805,7 +805,7 @@
     "VELDO-0126 intake/follow-up-clarification"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "bbdcafb6bb3cb0bb661db7bc80e9d400964e7a66f43243a9b0ca835a68fd02b2",
+   "mutant_sha256": "818c3cf3eb4d8697fb7200133b9bb9e24ee2141150f3ca39880420c8404e4bc3",
    "name": "clarification-replaces-objective-text",
    "named_row_red": true,
    "named_rows": [
@@ -886,8 +886,8 @@
      true
     ]
    ],
-   "seconds": 1.211,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.21,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -899,7 +899,7 @@
     "VELDO-0126 intake/authenticated-sources-only"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "29cbb004aafac50c444bf8d44908dc08465f84e567db63a2b82e7c73c4bb65be",
+   "mutant_sha256": "22ee4747fc60f64dd04cd3bd73cc6ad2218bccad0ac2c5a11322d926eab76794",
    "name": "api-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -980,8 +980,8 @@
      true
     ]
    ],
-   "seconds": 1.194,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.213,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -993,7 +993,7 @@
     "VELDO-0126 intake/authenticated-sources-only"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "f89e6570f68f2943abc2b691ab71efff3a19a1bc1fb211ef3f3f0e525c4b8771",
+   "mutant_sha256": "c415a65597a570c16c2235af8358159b3c99a24d587987dff6872d96aa23a241",
    "name": "unsupported-source-rides-api",
    "named_row_red": true,
    "named_rows": [
@@ -1074,8 +1074,8 @@
      true
     ]
    ],
-   "seconds": 1.203,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.215,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1091,7 +1091,7 @@
     "VELDO-0126 intake/no-admission"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "709001fe2cbf5e35e321c95b661a586bfd4b3c6dfa886bfc5fb25059e9e153ec",
+   "mutant_sha256": "4438a42a85d50169491b497ebb60cfa322f8e7e19d34223d6fa2aca10f820372",
    "name": "accepted-message-creates-unit",
    "named_row_red": true,
    "named_rows": [
@@ -1173,7 +1173,7 @@
     ]
    ],
    "seconds": 1.208,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1187,7 +1187,7 @@
     "VELDO-0126 intake/no-admission"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "0346abe7f1b181af26d4d506ebcc1f46b9e0967df4af4c6509a9725cc8c42a99",
+   "mutant_sha256": "7c8d1a1ab7cb400ed41f0e55c1340662feeea5ae02a90c3d006d2d9567fb90c7",
    "name": "accepted-message-prioritized",
    "named_row_red": true,
    "named_rows": [
@@ -1268,8 +1268,8 @@
      true
     ]
    ],
-   "seconds": 1.197,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.198,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1281,7 +1281,7 @@
     "VELDO-0126 intake/same-request-same-proposal"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "6c3e4ce0e5f4bf6e45f32f03461c82314b7e6e16b07b3f6df3f9b2f72356e92e",
+   "mutant_sha256": "2be522ae5da2b429ce5e0445022dbbb6fa8d8daedd9cf82f8f7803fb6a0fb107",
    "name": "changed-content-overwrites",
    "named_row_red": true,
    "named_rows": [
@@ -1362,20 +1362,22 @@
      true
     ]
    ],
-   "seconds": 1.197,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.219,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
    "details": [
+    "VELDO-0126 detail: intake/plain-objective: nothing watches the ticket",
     "VELDO-0126 detail: intake/same-request-same-proposal: telegram repeat returns the same proposal; api repeat returns the same proposal; an edit refused"
    ],
    "diff": "proof/VELDO-0126/repeat-refused-as-conflict.diff",
    "failed_rows": [
+    "VELDO-0126 intake/plain-objective",
     "VELDO-0126 intake/same-request-same-proposal"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "151834febc34c7ef6d294370c3e4e61e17bf94f2da826f930fffdc85f93057e6",
+   "mutant_sha256": "a5c3526c23d7a0ae2980e8d9c1440511415693e31db789af72a427472712f458",
    "name": "repeat-refused-as-conflict",
    "named_row_red": true,
    "named_rows": [
@@ -1397,7 +1399,7 @@
     ],
     [
      "VELDO-0126 intake/plain-objective",
-     true
+     false
     ],
     [
      "VELDO-0126 intake/follow-up-clarification",
@@ -1456,8 +1458,8 @@
      true
     ]
    ],
-   "seconds": 1.195,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.216,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1469,7 +1471,7 @@
     "VELDO-0126 intake/follow-up-clarification"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "718b2a136e5958dbef563a76c1b0095e80c8ec4efd71128bea3fc90c0b5761d5",
+   "mutant_sha256": "39c43b1a0dee31570e741d2059097b1b9ef3ff93bed634024f6730d0cda8ce80",
    "name": "follow-up-lands-on-retired-inbox",
    "named_row_red": true,
    "named_rows": [
@@ -1550,8 +1552,8 @@
      true
     ]
    ],
-   "seconds": 1.203,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.208,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1563,7 +1565,7 @@
     "VELDO-0126 intake/follow-up-clarification"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "443acc7dcb5d0629fcf9356cc4c7edec507f6ed29379385511f8778626bdf390",
+   "mutant_sha256": "10c3056c9f85179df98366c2a25774634a6a4a320c3571bbfb284a5822a2309d",
    "name": "follow-up-to-resolved-refused",
    "named_row_red": true,
    "named_rows": [
@@ -1644,8 +1646,8 @@
      true
     ]
    ],
-   "seconds": 1.215,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.206,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1657,7 +1659,7 @@
     "VELDO-0126 intake/authenticated-sources-only"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "506b953a638e6f1ad7e3b8f71cd6234ad2f88a37f985a154d96d6811683db3db",
+   "mutant_sha256": "e73d45ab039dfaf2a0b7ec0282c5dfa90d97a9eb864b60844c7681c2e6ac7098",
    "name": "member-checked-only-when-processed",
    "named_row_red": true,
    "named_rows": [
@@ -1738,8 +1740,8 @@
      true
     ]
    ],
-   "seconds": 1.222,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.211,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   },
   {
    "by_assertion": true,
@@ -1751,7 +1753,7 @@
     "VELDO-0126 intake/authenticated-sources-only"
    ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "7ca9c7d29d320db9ea9d1f2bb7c3bf4a23f7d9491e6e18895b5fe0c52c4c9df8",
+   "mutant_sha256": "cb4b19765ecff564ab8ad07958367f92f940657707dec3c32617035976683049",
    "name": "member-when-sent-read-at-processing-time",
    "named_row_red": true,
    "named_rows": [
@@ -1832,13 +1834,13 @@
      true
     ]
    ],
-   "seconds": 1.215,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.219,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   }
  ],
  "noop": {
   "control_intake.py": {
-   "copy_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c",
+   "copy_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1916,13 +1918,13 @@
      true
     ]
    ],
-   "seconds": 1.203,
-   "source_sha256": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c"
+   "seconds": 1.214,
+   "source_sha256": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 126",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 24.097,
+ "serial_seconds": 24.193,
  "spec_id": "VELDO-0126",
  "suite": "scripts/suites/68_veldo_0126_intake.py"
 }

@@ -1,0 +1,6 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -278 +278,2 @@
+-            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):
++            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused', 'clarification',
++                                                                         'resolved'):  # defect

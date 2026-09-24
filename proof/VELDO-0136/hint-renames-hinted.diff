@@ -1,0 +1,12 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -643 +643 @@
+-            if (not isinstance(mark, str) or mark in changes or (before.get(mark) or {}).get('data') is not None
++            if (not isinstance(mark, str) or mark in changes
+@@ -1247 +1247 @@
+-        text, named = self._hint_text(m.get('cause'), due, taken, lead)
++        text, named = self._hint_text(m.get('cause'), waiting if due else due, taken, lead)
+@@ -1265 +1265,2 @@
+-                         dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')
++                         dict({hid: 0}, **{k: (self._entity(k) or {}).get('version', 0) for k in marks}),
++                         command_id=hid + ':intent')

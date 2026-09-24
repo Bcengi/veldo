@@ -3917,6 +3917,84 @@ def cases():
              module='judgment_load.py')
     events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
              module='judgment_load.py')
+    # VELDO-0136: each criterion's declared falsifier, and at least one different defect per named row.
+    def hints(name, module, old, new, row, also=()):
+        add(136, name, '68_veldo_0136_hints.py', module, old, new, [row], also=also)
+
+    # AC1 (declared falsifier): a plain message, one with no reply reference, is sent nothing. The
+    # decision is the intake pass's, after intake has seen the message (review of VELDO-0136).
+    hints('plain-message-not-hinted', 'control_intake.py',
+          "        if (record.get('outcome') != 'refused' or record.get('reason') not in ORDINARY\n",
+          "        if (record.get('outcome') != 'refused' or record.get('reason') != 'unknown_presentation'  # defect\n",
+          'hint/tells-owner-to-reply')
+    # AC1: the hint names only the first waiting request, so with two waiting one goes unnamed.
+    hints('hint-names-first-only', 'control_channel_presentation.py',
+          "        for r in receipts:\n            line = 'Request:",
+          "        for r in receipts[:1]:\n            line = 'Request:", 'hint/tells-owner-to-reply')
+    # AC2 (declared falsifier): the plain message is recorded as the answer to the waiting request.
+    hints('plain-message-recorded-as-answer', 'control_channel_attribution.py',
+          "        reply = message.get('reply_to_message')\n        if not isinstance(reply, dict):\n",
+          "        reply = message.get('reply_to_message')\n"
+          "        waiting = self.presenter.waiting(known['principal'], fields['chat_id']) if not isinstance(reply, dict) else []\n"
+          "        if waiting:  # defect: a message that replies to nothing answers the waiting request\n"
+          "            part = waiting[0]['platform_parts'][-1]\n"
+          "            reply = {'message_id': part['message_id'], 'chat': {'id': part['chat_id']}, 'date': part['date'],\n"
+          "                     'text': part['text'], 'from': {'id': record['bot_id'], 'is_bot': True}}\n"
+          "            message = dict(message, reply_to_message=reply)\n"
+          "            fields = dict(fields, reply_to_message_id=part['message_id'], reply_chat_id=part['chat_id'],\n"
+          "                          reply_date=part['date'])\n"
+          "        if not isinstance(reply, dict):\n", 'hint/owner-only-never-an-answer')
+    # AC2: the waiting set is every pending presentation, not the sender's own in his own chat, so a
+    # member with nothing waiting is told another owner's requests.
+    hints('hint-to-anyone-waiting', 'control_channel_presentation.py',
+          " or receipt.get('owner') != principal\n"
+          "                    or receipt.get('chat_id') != chat or receipt.get('enrolled_chat') != chat\n",
+          "\n", 'hint/owner-only-never-an-answer')
+    # AC2: the hint is kept as an answer record.
+    hints('hint-kept-as-answer', 'control_channel_presentation.py', "HINT_KIND = 'presentation_hint'\n",
+          "HINT_KIND = 'presentation_answer'\n", 'hint/owner-only-never-an-answer')
+    # AC3 (declared falsifier): a hint on every message. The one-hint rule is held in three places (the
+    # due filter, the expected version 0 of each mark, the transition's create-once), all removed.
+    permissive = (("                         dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')\n",
+                   "                         dict({hid: 0}, **{k: (self._entity(k) or {}).get('version', 0) for k in marks}),\n"
+                   "                         command_id=hid + ':intent')\n"),
+                  ("            if (not isinstance(mark, str) or mark in changes or (before.get(mark) or {}).get('data') is not None\n",
+                   "            if (not isinstance(mark, str) or mark in changes\n"))
+    hints('hint-every-message', 'control_channel_presentation.py',
+          "        due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]\n",
+          "        due = list(waiting)\n", 'hint/once-per-pending-request', also=permissive)
+    # AC3: when a new request is due, the hint names again the requests already hinted.
+    hints('hint-renames-hinted', 'control_channel_presentation.py',
+          "        text, named = self._hint_text(m.get('cause'), due, taken, lead)\n",
+          "        text, named = self._hint_text(m.get('cause'), waiting if due else due, taken, lead)\n",
+          'hint/once-per-pending-request', also=permissive)
+    # Review of VELDO-0136: one decision per owner message, taken after intake has seen it.
+    # New work is told it answers nothing, as if intake had not taken it.
+    hints('new-work-told-answers-nothing', 'control_intake.py',
+          "                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)\n",
+          "                self._hint(payload, None)  # defect: new work is told it answers nothing\n",
+          'hint/new-work-one-reply')
+    # The finding itself: the Acquirer hints when it refuses, before intake has seen the message.
+    hints('hint-before-intake', 'control_channel_attribution.py',
+          "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
+          "        if refusal in NOT_A_REPLY and known['principal'] is not None:  # defect: hinted before intake\n"
+          "            self.presenter.hint_owner(dict(cause=refusal, principal=known['principal'],\n"
+          "                                           chat_id=fields.get('chat_id'), sender_id=fields.get('sender_id'),\n"
+          "                                           message_id=fields.get('message_id'), evidence_id=eid,\n"
+          "                                           update_id=record.get('update_id')))\n"
+          "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
+          'hint/answer-without-reply-one-reply')
+    # Intake's project question and the note go out as two replies.
+    hints('question-and-note-apart', 'control_intake.py',
+          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
+          "        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies\n",
+          'hint/two-projects-one-reply')
+    # A clarification and a Reply to intake's own question are hinted as if intake had not taken them.
+    hints('intake-replies-hinted', 'control_intake.py',
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):\n",
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused', 'clarification',\n"
+          "                                                                         'resolved'):  # defect\n",
+          'hint/intake-replies-not-hinted')
 
     # VELDO-0137: policy_check reads a VELDO-0050 digest-form spec revision. Each case against the one
     # suite 68 row it names.

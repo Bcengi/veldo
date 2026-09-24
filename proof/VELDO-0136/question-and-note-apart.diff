@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -580 +580 @@
+-        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])
++        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies
