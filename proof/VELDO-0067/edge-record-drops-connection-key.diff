@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_enrollment.py
++++ b/.veldo/control_channel_enrollment.py
+@@ -186 +186 @@
+-           'connection_public_key': _key_text(signed['connection_public_key']), 'scope': list(signed['scope']),
++           'scope': list(signed['scope']),

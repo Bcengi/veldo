@@ -159,6 +159,12 @@ _FILES = [
     # Runtime assets, not validator imports: REQUIRED_SUBSTRATE is unchanged.
     ".veldo/control_keys.py",
     ".veldo/control_signer.py",
+    # VELDO-0067: the restricted channel edge enrollment, the protected signer's answer purpose it
+    # loads, and the custody wrapper that keeps a worker from reading a protected key directory.
+    # Runtime assets the authority and the signer load; no validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_channel_enrollment.py",
+    ".veldo/control_signer_answers.py",
+    ".veldo/control_keys_custody.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",

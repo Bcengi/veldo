@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -216 +216 @@
+-    if (f['chat_id'] != receipt['chat_id'] or f['reply_chat_id'] != receipt['chat_id']
++    if False and (f['chat_id'] != receipt['chat_id'] or f['reply_chat_id'] != receipt['chat_id']

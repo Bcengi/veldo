@@ -1,0 +1,4 @@
+--- a/.veldo/control_channel_enrollment.py
++++ b/.veldo/control_channel_enrollment.py
+@@ -268,0 +269 @@
++        authority.update({f: envelope.get(f) for f in ('domain_uuid', 'repository_uuid', 'store_uuid')})
