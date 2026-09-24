@@ -179,3 +179,18 @@ Proof in proof/VELDO-0047/.
 
 2026-09-24, landing: the footprint names scripts/check_teeth_mutations.py, where finding 47's
 mutations are registered (the gate's shape check refuses a path no footprint names).
+
+2026-09-24, review fixes (branch build-veldo-0047): the launch receiver installed into `<home>/bin`
+refused every launch as unavailable_service:architecture_validator, because the installed modules were
+a hand list without the validator its recheck loads from its own directory. `control_service.closure()`
+now derives the fixed executable at installation from the entry points and the validator files
+control_eligibility.VALIDATOR_ROLES declares, following every sibling load to a fixed point and refusing
+by name a load of an absent module or one no literal names; `supervisor.py`, which the installer loads,
+is laid down by the scaffolder. The key directory is refused as relative before anything resolves it,
+judged by location before existence, and its one-time step creates only the directories missing below
+the first existing ancestor and changes no existing directory. Suite 66 has 28 rows:
+authority/installed-receiver-launches (a real launch through the installed receiver),
+authority/key-directory-location-before-existence, authority/key-directory-guidance-changes-no-directory
+and authority/key-directory-relative-refused are new, and installed-fixed-and-protected,
+installed-assets and key-directory-placement judge the derived closure, an adopter's laid tree and the
+new guidance; all seven are red by assertion at 7ed08fb. Finding 47 has 36 mutations.

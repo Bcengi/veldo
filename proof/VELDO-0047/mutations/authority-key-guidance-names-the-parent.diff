@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -421 +421 @@
+-        missing = _missing_below(path)
++        missing = [os.path.dirname(str(path)), str(path)]  # defect: the parent is named, and its mode set, whether or not it exists

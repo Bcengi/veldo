@@ -2,4 +2,4 @@
 +++ b/.veldo/control_service.py
 @@ -577 +577 @@
 -    keys = str(key_directory) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)
-+    keys = os.path.realpath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)
++    keys = os.path.abspath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)  # defect: resolved first

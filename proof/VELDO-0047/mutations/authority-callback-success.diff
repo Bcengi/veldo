@@ -1,6 +1,6 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -694,2 +694,2 @@
+@@ -888,2 +888,2 @@
 -        receipt = S.execute(self.conn, {k: command.get(k) for k in S.COMMAND_FIELDS}, self.principal, self.sign,
 -                            self.generation)
 +        receipt = {'committed': True, 'command_id': command.get('command_id'), 'seq': self.watermark() + 1,

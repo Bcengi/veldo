@@ -8,10 +8,13 @@ service, the client, the scaffolder or the unit template) reaches the installed 
 Real: two enrolled Git clones and a third in another domain, OpenSSH enrollment, request, command and
 journal signatures, this host's trust file, the configured SQLite store read back through its own
 separate connection, the owner's systemd user manager (units of this run's own, in the runtime unit
-directory, uninstalled at the end), the kernel's lock table and socket table, and the real claim
-client. The key directory is passed explicitly with an explicit set of worker directories, because
-this account can create no directory outside the home and temporary directories without root; the
-default placement's refusal and its guidance are asserted separately.
+directory, uninstalled at the end), the kernel's lock table and socket table, the real claim client,
+and a real launch through the INSTALLED receiver on the configuration the installer wrote, whose worker
+runs in a transient scope of this run's own slice (stopped at the end). The key directory is passed
+explicitly with an explicit set of worker directories, because this account can create no directory
+outside the home and temporary directories without root; the default placement's refusal and its
+guidance are asserted separately, and the one-time steps it prints are run without sudo below an
+ancestor of this run's own.
 """
 
 
@@ -98,6 +101,8 @@ def _v47_suite():
         _git_process = load('v47_git', mods / 'git_process.py')
         HOST = 'host-47'
         REFUSED = getattr(CS, 'Refused', Exception)
+        # The installer's own judgment of a key directory (None where a build has none).
+        judge = getattr(CS, 'key_directory_problems', lambda path, writable: None)
 
         private = base / 'private'
         private.mkdir(mode=0o700)
@@ -462,7 +467,7 @@ def _v47_suite():
                                     'owner_unchanged': before[1] == after[1], 'key_mode': mode(path),
                                     'key_owner_is_this_account': os.path.isdir(str(path)) and os.lstat(str(path)).st_uid == os.getuid(),
                                     'intermediate_modes': [mode(m) for m in missing[:-1]],
-                                    'accepted_after': CS.key_directory_problems(str(path), workers) if os.path.isdir(str(path)) else None,
+                                    'accepted_after': judge(str(path), workers) if os.path.isdir(str(path)) else None,
                                     'last_step': steps[-1][1:] if steps else None}
                 others = {'mode': attempt(key_directory=str(open_to_others)), 'owner': attempt(key_directory='/usr/share')}
                 guided['others'] = {name: {'refused': result.get('refused'), 'guidance': result.get('guidance')}
@@ -494,13 +499,13 @@ def _v47_suite():
                             'names-nothing': 'veldo-keys-47-' + run_id}
                 refusals = {name: attempt(key_directory=path) for name, path in relative.items()}
                 observed['relative'] = {name: dict(result, path=relative[name],
-                                                   judged_acceptable_absolute=CS.key_directory_problems(str(resolvable), workers))
+                                                   judged_acceptable_absolute=judge(str(resolvable), workers))
                                         for name, result in refusals.items()}
                 check('authority/key-directory-relative-refused',
                       all(result.get('refused') == 'invalid_input:key_directory:relative' and result.get('left') == []
                           for result in refusals.values())
                       and not os.path.isabs(relative['resolves-to-an-acceptable-directory'])
-                      and CS.key_directory_problems(str(resolvable), workers) == [] and not list(resolvable.iterdir())
+                      and judge(str(resolvable), workers) == [] and not list(resolvable.iterdir())
                       and not os.path.lexists(os.path.join(os.getcwd(), relative['names-nothing'])))
 
             # The installation itself: one instance, into this run's own unit in the runtime unit directory

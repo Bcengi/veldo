@@ -2,6 +2,9 @@
  "differing": [],
  "failed": [
   "VELDO-0047 authority/key-directory-placement",
+  "VELDO-0047 authority/key-directory-location-before-existence",
+  "VELDO-0047 authority/key-directory-guidance-changes-no-directory",
+  "VELDO-0047 authority/key-directory-relative-refused",
   "VELDO-0047 authority/installed-fixed-and-protected",
   "VELDO-0047 authority/receiver-configured-with-host-profile",
   "VELDO-0047 authority/one-instance-under-the-lock",
@@ -10,6 +13,7 @@
   "VELDO-0047 authority/absent-service-refuses-by-name",
   "VELDO-0047 authority/unexpected-exit-waits-for-an-operator",
   "VELDO-0047 authority/observations",
+  "VELDO-0047 authority/installed-receiver-launches",
   "VELDO-0047 authority/installed-assets"
  ],
  "observed": {
@@ -19,7 +23,7 @@
    "mutation": {
     "code": null,
     "last_watermark": null,
-    "service": "store474a137c8d",
+    "service": "store4789b20ebd",
     "unit": null
    },
    "socket_exists": false,
@@ -33,6 +37,16 @@
    "stopped": null,
    "unchanged": true,
    "watermark": null
+  },
+  "assets": {
+   "adopter": {
+    "closure": 0,
+    "errors": {
+     "load": "FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/v47-j0vdltc9/laid/.veldo/control_service.py'"
+    }
+   },
+   "installed": 0,
+   "not_laid": []
   },
   "exit": {
    "back": {
@@ -57,6 +71,57 @@
    "unchanged": true,
    "watermark": null
   },
+  "guided": {
+   "beside": {
+    "accepted_after": null,
+    "ancestor_after": "0o1777",
+    "ancestor_before": "0o1777",
+    "existing_named": [],
+    "expected": [
+     "/dev/shm/v47-j0vdltc9/shared/keys"
+    ],
+    "intermediate_modes": [],
+    "key_mode": null,
+    "key_owner_is_this_account": false,
+    "last_step": null,
+    "named": [],
+    "owner_unchanged": true,
+    "refused": null,
+    "runs": []
+   },
+   "deep": {
+    "accepted_after": null,
+    "ancestor_after": "0o755",
+    "ancestor_before": "0o755",
+    "existing_named": [],
+    "expected": [
+     "/dev/shm/v47-j0vdltc9/deep/veldo",
+     "/dev/shm/v47-j0vdltc9/deep/veldo/keys",
+     "/dev/shm/v47-j0vdltc9/deep/veldo/keys/svc"
+    ],
+    "intermediate_modes": [
+     null,
+     null
+    ],
+    "key_mode": null,
+    "key_owner_is_this_account": false,
+    "last_step": null,
+    "named": [],
+    "owner_unchanged": true,
+    "refused": null,
+    "runs": []
+   },
+   "others": {
+    "mode": {
+     "guidance": null,
+     "refused": null
+    },
+    "owner": {
+     "guidance": null,
+     "refused": null
+    }
+   }
+  },
   "install": {
    "after_start": {},
    "before_start": {},
@@ -78,7 +143,56 @@
    },
    "report_keys": [],
    "unit": null,
-   "unit_lines": []
+   "unit_lines": [],
+   "validator_declared": [
+    "arch.py",
+    "contract_loader.py",
+    "validate.py",
+    "validate_checks.py",
+    "yamlish.py"
+   ],
+   "validator_installed": []
+  },
+  "launch": {
+   "errors": {
+    "load": "AttributeError: 'NoneType' object has no attribute 'loader'"
+   },
+   "group": {},
+   "process_pid": null,
+   "receiver": null,
+   "record_refusal": null,
+   "refusal": null,
+   "result": null,
+   "retired": [],
+   "scope": null,
+   "scope_after": null,
+   "state": null,
+   "termination": {
+    "deadline_stop": null,
+    "returncode": null,
+    "signal": null
+   },
+   "worker": {}
+  },
+  "located": {
+   "directly-under-tmp": {
+    "left": [],
+    "path": "/tmp/veldo-keys-47-89b20ebd",
+    "refused": null,
+    "report": false
+   },
+   "under-a-worker-directory": {
+    "left": [],
+    "path": "/dev/shm/v47-j0vdltc9/work/keys-47",
+    "refused": null,
+    "report": false
+   },
+   "under-the-home": {
+    "left": [],
+    "path": "/home/dmitry/.veldo-keys-47-89b20ebd/authority",
+    "refused": null,
+    "report": false
+   }
   },
   "lock": {
    "first_after": null,
@@ -98,12 +212,12 @@
    "answer_accepted": null,
    "claim": {
     "coordinates": {
-     "address": "/dev/shm/v47-kcsfa1ay/authority/authority.sock",
+     "address": "/dev/shm/v47-j0vdltc9/authority/authority.sock",
      "as_of": null,
      "last_watermark": null,
-     "service": "store474a137c8d",
-     "store": "/dev/shm/v47-kcsfa1ay/authority/control.sqlite3",
-     "workspace": "/dev/shm/v47-kcsfa1ay/clone-a"
+     "service": "store4789b20ebd",
+     "store": "/dev/shm/v47-j0vdltc9/authority/control.sqlite3",
+     "workspace": "/dev/shm/v47-j0vdltc9/clone-a"
     },
     "stopped": "authority_unavailable"
    },
@@ -187,11 +301,30 @@
    "type-not-admitted": "authority_unavailable",
    "unserved-repository": "authority_unavailable",
    "unsigned-request": "authority_unavailable"
+  },
+  "relative": {
+   "names-nothing": {
+    "judged_acceptable_absolute": null,
+    "left": [],
+    "path": "veldo-keys-47-89b20ebd",
+    "refused": null,
+    "report": false
+   },
+   "resolves-to-an-acceptable-directory": {
+    "judged_acceptable_absolute": null,
+    "left": [],
+    "path": "../../../../../dev/shm/v47-j0vdltc9/relkeys/authority",
+    "refused": null,
+    "report": false
+   }
   }
  },
  "other_installed_modules_identical_to_commit": true,
  "passed": [
   "VELDO-0047 ran/authority/key-directory-placement",
+  "VELDO-0047 ran/authority/key-directory-location-before-existence",
+  "VELDO-0047 ran/authority/key-directory-guidance-changes-no-directory",
+  "VELDO-0047 ran/authority/key-directory-relative-refused",
   "VELDO-0047 ran/authority/installed-fixed-and-protected",
   "VELDO-0047 ran/authority/receiver-configured-with-host-profile",
   "VELDO-0047 ran/authority/one-instance-under-the-lock",
@@ -200,6 +333,7 @@
   "VELDO-0047 ran/authority/absent-service-refuses-by-name",
   "VELDO-0047 ran/authority/unexpected-exit-waits-for-an-operator",
   "VELDO-0047 ran/authority/observations",
+  "VELDO-0047 ran/authority/installed-receiver-launches",
   "VELDO-0047 ran/authority/installed-assets"
  ],
  "production_at": "b738c79",
