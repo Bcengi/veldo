@@ -314,10 +314,10 @@ def transition(conn, params, before):
         if holder:
             held = _entity(conn, record_id(holder))
             state = (held or {}).get('data', {}).get('state')
-            if state == 'unknown':
-                raise Refused('dispatch_outcome_unknown:' + holder, 'an unknown outcome holds this unit and station')
             if state in HOLDING:
-                raise Refused('active_dispatch:' + holder, 'one active dispatch per unit and station')
+                # An unknown outcome is named as such: a stopped original dispatch, not a free slot.
+                raise Refused(('dispatch_outcome_unknown:' if state == 'unknown' else 'active_dispatch:') + holder,
+                              'one active dispatch per unit and station')
         if contract['attempt'] != index.get('attempts', 0) + 1:
             raise Refused('stale_attempt', 'attempt %r follows %r' % (contract['attempt'], index.get('attempts', 0)))
         if now >= contract['deadline']:

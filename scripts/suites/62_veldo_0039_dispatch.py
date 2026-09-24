@@ -358,15 +358,17 @@ sys.exit(payload.get('code', 0))
                 rslot = entity(RES.entity('worker', [DOMAIN, rival['dispatch_id']]))
                 rival['reservation'] = dict(contract['reservation'], entity=RES.entity('worker', [DOMAIN, rival['dispatch_id']]),
                                             version=rslot['version'], digest=rslot['digest'])
-                rival['attempt'] = 1
+                # The next attempt number, so only the active dispatch can refuse it.
+                rival['attempt'] = 2
                 direct = attempt(lambda: dispatches.prepare(rival, now=time.time()))
                 release('u1-a')
                 ended = runner.wait(first)
                 # A conclusive end frees the unit and station: the next attempt is attempt 2.
-                third = runner.submit(u1, 'build', **job(release='u1-b'))
-                marker_for(third.dispatch_id)
+                third_try = attempt(lambda: runner.submit(u1, 'build', **job(release='u1-b')))
+                third = third_try[1] if third_try[0] == 'ok' else None
                 release('u1-b')
-                third_end = runner.wait(third)
+                third_end = runner.wait(third) if third else {}
+                third_id = getattr(third, 'dispatch_id', None)
                 # Two runners on their own connections race past their own pre-checks.
                 u2 = admitted('VELDO-9302')
                 barrier = threading.Barrier(2)
@@ -411,14 +413,15 @@ sys.exit(payload.get('code', 0))
                 for racer_thread in racers:
                     racer_thread.join(timeout=60)
                 balance = reservations.balances('unit', u2)
-                observed['uniqueness'] = {'second': second, 'direct': direct, 'third_attempt': rec(third.dispatch_id).get('contract', {}).get('attempt'),
+                observed['uniqueness'] = {'second': second, 'direct': direct, 'third': third_try[0],
+                                          'third_attempt': rec(third_id).get('contract', {}).get('attempt'),
                                           'race': outcomes, 'race_errors': errors, 'race_workers': len(worker_markers('dispatch/%s/' % u2)),
                                           'race_capacity_after': balance['capacity']}
                 check('dispatch/one-active-per-unit-station',
                       second[0] == 'refused' and str(second[1]).startswith('active_dispatch:' + first.dispatch_id)
                       and direct[0] == 'refused' and str(direct[1]).startswith('active_dispatch:' + first.dispatch_id)
                       and (ended or {}).get('state') == 'exited' and (third_end or {}).get('state') == 'exited'
-                      and rec(third.dispatch_id).get('contract', {}).get('attempt') == 2
+                      and rec(third_id).get('contract', {}).get('attempt') == 2
                       and len(worker_markers('dispatch/%s/' % u1)) == 2
                       and not errors and sorted(o[0] for o in outcomes) == ['ok', 'refused']
                       and ('ok', 'accepted') in outcomes and len(worker_markers('dispatch/%s/' % u2)) == 1
@@ -595,8 +598,8 @@ sys.exit(payload.get('code', 0))
                 untouched = (dispatches.version(b.dispatch_id) == b_version and dispatches.version(a.dispatch_id) == a_version)
                 release('ua')
                 ea = runner.wait(a) or {}
-                a_out = (markers / ('%s.out' % (ea.get('process') or {}).get('pid'))).read_bytes() \
-                    if (ea.get('process') or {}).get('pid') else b''
+                printed_path = markers / ('%s.out' % (ea.get('process') or {}).get('pid'))
+                a_out = printed_path.read_bytes() if printed_path.exists() else b''
                 b_after = rec(b.dispatch_id)
                 binding_ok = (probes['a_result_to_b'][0] == 'refused' and str(probes['a_result_to_b'][1]).startswith('binding_mismatch:')
                               and probes['a_process_under_b_digest'] == ('refused', 'binding_mismatch:process')
