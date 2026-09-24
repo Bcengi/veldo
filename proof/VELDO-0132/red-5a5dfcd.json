@@ -5,13 +5,9 @@
   "control_workflow_cycle.py": "proof/VELDO-0132/prefix/control_workflow_cycle.py (absent at 5a5dfcd)",
   "control_workflow_langgraph.py": "proof/VELDO-0132/prefix/control_workflow_langgraph.py (absent at 5a5dfcd)"
  },
- "absent_at_commit": [
-  ".veldo/control_workflow.py",
-  ".veldo/control_workflow_cycle.py",
-  ".veldo/control_workflow_langgraph.py"
- ],
- "other_installed_modules_identical_to_commit": true,
- "differing": [],
+ "new_modules_present_at_commit": [],
+ "installed_from_commit": 162,
+ "installed_tree": "git show 5a5dfcd:<path> for each of .veldo/*.py and .veldo/runtime/*",
  "failed": [
   "VELDO-0132 workflow/validation",
   "VELDO-0132 workflow/authorized-editor",
@@ -72,7 +68,7 @@
      "workflow": "canvas",
      "version": 3,
      "revision": "workflow:canvas",
-     "seq": 72
+     "seq": 75
     }
    },
    "overwrite": {
@@ -115,6 +111,10 @@
    "cycle-loop": {
     "state": "failure",
     "refusal": "unsupported_workflow"
+   },
+   "cycle-rework": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
    }
   },
   "authority": {
@@ -132,11 +132,15 @@
      "workflow"
     ],
     [
-     "workflow-write-asserting-36-12b9071b88e0",
+     "workflow-write-rework-36-e93c3f9b061e",
      "workflow"
     ],
     [
-     "workflow-write-delivery-37-09d36b3982f3",
+     "workflow-write-asserting-37-12b9071b88e0",
+     "workflow"
+    ],
+    [
+     "workflow-write-delivery-38-09d36b3982f3",
      "workflow"
     ]
    ],

@@ -68,6 +68,7 @@ def _v132_suite():
     @contextlib.contextmanager
     def region(*labels):
         regions.append(labels[0])
+        began = time.monotonic()
         try:
             yield
         except Exception as error:  # noqa: BLE001 - a raise reds its rows, never skips them
@@ -75,6 +76,8 @@ def _v132_suite():
             for label in labels:
                 if label not in emitted:
                     check(label, False)
+        finally:
+            observed.setdefault('region_seconds', {})[labels[0]] = round(time.monotonic() - began, 2)
 
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     with tempfile.TemporaryDirectory(prefix='v132-', dir=fast) as directory:

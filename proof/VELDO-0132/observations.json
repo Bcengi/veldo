@@ -1,0 +1,410 @@
+{
+ "rows": [
+  [
+   "VELDO-0132 workflow/validation",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/authorized-editor",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/revisions-immutable",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/canvas-round-trip",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/edit-without-execution",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/pinned-revision",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/actual-langgraph",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/ordinary-authorization",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/no-workflow-authority",
+   true
+  ],
+  [
+   "VELDO-0132 workflow/observations",
+   true
+  ],
+  [
+   "VELDO-0132 ran/workflow/validation",
+   true
+  ],
+  [
+   "VELDO-0132 ran/workflow/authorized-editor",
+   true
+  ],
+  [
+   "VELDO-0132 ran/workflow/revisions-immutable",
+   true
+  ],
+  [
+   "VELDO-0132 ran/workflow/edit-without-execution",
+   true
+  ],
+  [
+   "VELDO-0132 ran/workflow/pinned-revision",
+   true
+  ]
+ ],
+ "suite_seconds": 15.39,
+ "cycle_seconds": 15.13,
+ "raised": [],
+ "condition_errors": null,
+ "validation": {
+  "dangling_edge": "unsupported_configuration:dangling_edge:t-groomed:groom->ghost",
+  "dangling_source": "unsupported_configuration:dangling_edge:t-groomed:ghost->owner",
+  "duplicate_transition": "unsupported_configuration:duplicate_transition:t-again:groom.groomed",
+  "invalid_bound": "unsupported_configuration:invalid_bound:t-decline",
+  "invalid_budget": "unsupported_configuration:invalid_budget",
+  "invalid_config": "unsupported_configuration:invalid_config:groom:nodes.groom.config has unknown field shell",
+  "layout_names_no_node": "invalid_input:layout.nodes.ghost names no node",
+  "missing_reference": "unsupported_configuration:missing_reference:assign:roles/reviewer",
+  "missing_transition": "unsupported_configuration:missing_transition:assign.done",
+  "not_plain": "invalid_input:definition.budget.steps is not an allowed number",
+  "reserved_node": "unsupported_configuration:reserved_or_invalid_node_id:veldo_intake",
+  "schema": "unsupported_configuration:schema:'veldo.workflow/v0'",
+  "stale_reference": "unsupported_configuration:missing_reference:roles/builder",
+  "terminal_mismatch": "unsupported_configuration:terminal_mismatch:handle",
+  "unbounded_cycle": "unsupported_configuration:unbounded_cycle:groom->owner->groom",
+  "unknown_entry": "unsupported_configuration:unknown_entry:start",
+  "unknown_field": "invalid_input:definition has unknown field script",
+  "unknown_port": "unsupported_configuration:unknown_port:t-groomed:groom.finished",
+  "unknown_step_kind": "unsupported_configuration:unknown_step_kind:groom:shell",
+  "unreachable_node": "unsupported_configuration:missing_transition:orphan.groomed",
+  "unresolved_reference": "unsupported_configuration:missing_reference:roles/builder",
+  "unused_reference": "unsupported_configuration:unused_reference:tools/spare",
+  "wrong_kind_reference": "unsupported_configuration:missing_reference:roles/builder"
+ },
+ "editors": {
+  "unknown": "unauthenticated:editor",
+  "no_role": "missing_authority:editor",
+  "agent": "missing_authority:editor",
+  "other_scope": "missing_authority:editor",
+  "revoked": "missing_authority:editor"
+ },
+ "canvas": {
+  "stale": {
+   "refused": "stale_version",
+   "codes": [
+    "stale_version"
+   ]
+  },
+  "overwrite": {
+   "refused": "entity_owned",
+   "codes": []
+  }
+ },
+ "edit_without_execution": {
+  "launches": [],
+  "network": [],
+  "signed": 1,
+  "journal_records": [
+   "workflow/save/549037633a3a0028036ce7ef35e8d7a1"
+  ],
+  "kinds_written": [
+   "workflow_head",
+   "workflow_revision"
+  ]
+ },
+ "cycles": {
+  "cycle-a": {
+   "binding": "delivery v1",
+   "state": "proposed",
+   "refusal": null,
+   "steps": 4,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "admit",
+     "assign"
+    ],
+    [
+     "assign",
+     "done",
+     "handle"
+    ],
+    [
+     "handle",
+     "proposed",
+     null
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-b": {
+   "binding": "delivery v2",
+   "state": "waiting",
+   "refusal": null,
+   "steps": 3,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "admit",
+     "review"
+    ],
+    [
+     "review",
+     "groomed",
+     "assign"
+    ]
+   ],
+   "waiting": {
+    "input": "worker_result",
+    "node": "assign"
+   }
+  },
+  "cycle-c": {
+   "binding": "delivery v2",
+   "state": "canceled",
+   "refusal": null,
+   "steps": 1,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-blocked": {
+   "binding": "delivery v2",
+   "state": "refused",
+   "refusal": "blocked:blocker-9604",
+   "steps": 3,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "admit",
+     "review"
+    ],
+    [
+     "review",
+     "groomed",
+     "assign"
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-intruder": {
+   "binding": "intruding v1",
+   "state": "refused",
+   "refusal": "missing_authority:role/intruder",
+   "steps": 2,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "admit",
+     "assign"
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-tight": {
+   "binding": "tight v1",
+   "state": "refused",
+   "refusal": "budget_exceeded:steps",
+   "steps": 4,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "decline",
+     "groom"
+    ],
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "decline",
+     "groom"
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-asserting": {
+   "binding": "asserting v1",
+   "state": "refused",
+   "refusal": "missing_evidence:completion",
+   "steps": 1,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "handle"
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-loop": {
+   "binding": "delivery v2",
+   "state": "refused",
+   "refusal": "budget_exceeded:loop/t-decline",
+   "steps": 8,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "decline",
+     "groom"
+    ],
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "decline",
+     "groom"
+    ],
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "decline",
+     "groom"
+    ],
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "decline",
+     "groom"
+    ]
+   ],
+   "waiting": null
+  },
+  "cycle-rework": {
+   "binding": "rework v1",
+   "state": "waiting",
+   "refusal": null,
+   "steps": 4,
+   "trace": [
+    [
+     "groom",
+     "groomed",
+     "owner"
+    ],
+    [
+     "owner",
+     "admit",
+     "assign"
+    ],
+    [
+     "assign",
+     "done",
+     "review"
+    ],
+    [
+     "review",
+     "admit",
+     "assign"
+    ]
+   ],
+   "waiting": {
+    "input": "worker_result",
+    "node": "assign"
+   }
+  }
+ },
+ "authorization": {
+  "ran": {
+   "blocked_unit": true,
+   "unauthorized_role": true,
+   "cycle_budget": true,
+   "asserted_completion": true,
+   "loop_bound": true
+  },
+  "named": {
+   "blocked_unit": true,
+   "unauthorized_role": true,
+   "cycle_budget": true,
+   "asserted_completion": true,
+   "loop_bound": true
+  },
+  "revisit": true
+ },
+ "authority": {
+  "foreign": [],
+  "spec_changed": []
+ },
+ "observations": {
+  "status": {
+   "accepted": 54,
+   "refused": 5,
+   "pending": [
+    {
+     "cycle": "cycle-b",
+     "subject": "VELDO-9602",
+     "node": "assign",
+     "input": "worker_result",
+     "workflow": "delivery",
+     "version": 2
+    },
+    {
+     "cycle": "cycle-rework",
+     "subject": "VELDO-9610",
+     "node": "assign",
+     "input": "worker_result",
+     "workflow": "rework",
+     "version": 1
+    }
+   ]
+  },
+  "events": 108,
+  "refused": 34
+ }
+}
