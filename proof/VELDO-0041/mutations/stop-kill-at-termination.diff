@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -543 +543 @@
+-        self.group, self.pid, self.grace = group, pid, {'cooperative': stop_grace, 'terminate': kill_grace,
++        self.group, self.pid, self.grace = group, pid, {'cooperative': stop_grace, 'terminate': 0,

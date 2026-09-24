@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -99 +99 @@
+-    'stop_grace_seconds': dict(required=False, kind='seconds', default=10, controls=[],
++    'stop_grace_seconds': dict(required=False, kind='seconds', default=15, controls=[],  # defect

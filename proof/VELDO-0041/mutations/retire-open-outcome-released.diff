@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -291 +291 @@
+-            if first in ('outcome', 'clone'):
++            if first in ('clone',):  # defect: an open outcome does not hold the slot

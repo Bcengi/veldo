@@ -1,0 +1,6 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -331,2 +331 @@
+-        self.counts['retried'] += 1
+-        return self._attempt(dispatch_id, entry, basis)
++        return False  # defect: a pending retirement is never tried again

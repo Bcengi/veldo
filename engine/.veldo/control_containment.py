@@ -29,9 +29,11 @@ the profile are refused by name before anything is spawned.
 
 STOP (R44). A stop asks the adapter to end (SIGTERM to the worker's own process), after
 stop_grace_seconds sends SIGTERM to every process in the group, after kill_grace_seconds kills the
-group with cgroup.kill (atomic against forks), and then waits for the group to be empty. The worker's
-own exit ends its dispatch: anything left in its group is terminated and killed the same way. A group
-that is still populated SETTLE_SECONDS after the kill is reported not empty, never as ended.
+group with cgroup.kill (atomic against forks), and then waits for the group to be empty, every grace
+timed on the monotonic clock. The profile also declares the trusted wrapper's heartbeat interval and
+the receiver's missed-heartbeat window (VELDO-0041, control_heartbeat.py). The worker's own exit
+ends its dispatch: anything left in its group is terminated and killed the same way. A group that is
+still populated SETTLE_SECONDS after the kill is reported not empty, never as ended.
 
 EXIT DETECTION. The worker's exit is a pidfd becoming readable and the group's emptiness is the
 cgroup.events `populated 0` change (poll POLLPRI); the receiver sleeps in poll until one of those, its
@@ -40,7 +42,8 @@ output, a stop request or the next stop timer. Nothing polls for liveness.
 RETIREMENT. `retirement` is the runner's observation for returning the worker slot (VELDO-0036's
 lifecycle observer): read from the kernel at that moment, the worker's process is gone and its group
 is empty (the cgroup directory is removed, which the kernel allows only when empty, or reports
-populated 0). A populated group keeps the slot.
+populated 0). A populated group keeps the slot. control_retirement.py (VELDO-0041) takes it at every
+attempt, inside the transaction that releases the slot, beside the other open obligations.
 
 WHAT IT IS NOT. The worker runs as the owner's account, so it could write its own group's control
 files or ask the same user manager for another unit; distinct worker identities through a privileged
@@ -99,6 +102,15 @@ SETTINGS = {
     'kill_grace_seconds': dict(required=False, kind='seconds', default=5, controls=['TimeoutStopUSec', 'KillMode'],
                                mechanism='the receiver kills the group with cgroup.kill this long after it '
                                          'terminates it; systemd TimeoutStopSec for the stops systemd makes'),
+    # VELDO-0041: the trusted wrapper's heartbeat and the receiver's missed-heartbeat deadline.
+    'heartbeat_seconds': dict(required=False, kind='seconds', default=10, controls=[],
+                              mechanism='the trusted wrapper: its own heartbeat process, which waits on nothing '
+                                        'the engine does, writes a heartbeat to the receiver this often '
+                                        '(control_heartbeat)'),
+    'heartbeat_window_seconds': dict(required=False, kind='seconds', default=30, controls=[],
+                                     mechanism='the receiver: a worker with no heartbeat for this long has uncertain '
+                                               'liveness and is stopped with the escalation above; each heartbeat '
+                                               'renews the claim its contract binds'),
 }
 FIELDS = ('kind', 'slice', 'lock', 'systemd_run', 'systemctl')
 CONTROLLERS = {'memory_bytes': 'memory', 'cpu_percent': 'cpu', 'tasks_max': 'pids'}
@@ -154,6 +166,11 @@ def setting_problems(profile):
                 problems.append('invalid_input:profile:%s:absent' % name)
         elif not _valid(rule['kind'], profile[name]):
             problems.append('invalid_input:profile:%s:invalid' % name)
+    # A window no longer than the heartbeat interval would stop every worker between two heartbeats.
+    beat, window = (profile.get(name, SETTINGS[name]['default'])
+                    for name in ('heartbeat_seconds', 'heartbeat_window_seconds'))
+    if _valid('seconds', beat) and _valid('seconds', window) and window <= beat:
+        problems.append('invalid_input:profile:heartbeat_window_seconds:invalid')
     slice_name = profile.get('slice', DEFAULT_SLICE)
     if not isinstance(slice_name, str) or not re.fullmatch(r'[A-Za-z0-9_]+(-[A-Za-z0-9_]+)*\.slice', slice_name):
         problems.append('invalid_input:profile:slice:invalid')
@@ -518,7 +535,9 @@ class Group:
 class Stop:
     """R44's stop of one group: cooperative (SIGTERM to the adapter's own process), SIGTERM to every
     process in the group after stop_grace, cgroup.kill after kill_grace, then SETTLE_SECONDS for the
-    group to empty before it is declared not empty (`abandoned`). `due` is when the next step falls."""
+    group to empty before it is declared not empty (`abandoned`). Every `now` is the monotonic clock
+    (VELDO-0041), so a step of the wall clock neither shortens nor stretches a grace; `due` is when the
+    next step falls on it, and each step records both clocks."""
 
     def __init__(self, group, pid, stop_grace, kill_grace):
         self.group, self.pid, self.grace = group, pid, {'cooperative': stop_grace, 'terminate': kill_grace,
@@ -549,7 +568,7 @@ class Stop:
 
     def _step(self, stage, now):
         self.stage = stage
-        self.steps.append({'step': stage, 'at': now})
+        self.steps.append({'step': stage, 'at': time.time(), 'monotonic': now})
         self.due = now + self.grace[stage] if stage in self.grace else math.inf
         if stage == 'cooperative':
             with contextlib.suppress(ProcessLookupError, PermissionError):

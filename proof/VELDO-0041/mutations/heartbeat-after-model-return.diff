@@ -1,0 +1,4 @@
+--- a/.veldo/control_heartbeat.py
++++ b/.veldo/control_heartbeat.py
+@@ -123,0 +124 @@
++        poller.poll()  # defect: the heartbeat waits for the engine's model call to return

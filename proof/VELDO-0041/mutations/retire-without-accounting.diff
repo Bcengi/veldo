@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -279,2 +278,0 @@
+-            if any(r['state'] not in ('settled', 'unknown') for r in calls):
+-                raise Refused('missing_accounting')

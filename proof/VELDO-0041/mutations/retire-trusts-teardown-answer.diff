@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -192 +192 @@
+-        return {'clone_id': clone['clone_id'], 'root': clone['root'], 'present': bool(self.clones._is_live(clone['handle'])),
++        return {'clone_id': clone['clone_id'], 'root': clone['root'], 'present': clone['teardown'] is None,  # defect: the teardown's answer, not the files

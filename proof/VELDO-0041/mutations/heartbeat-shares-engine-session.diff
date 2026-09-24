@@ -1,0 +1,4 @@
+--- a/.veldo/control_heartbeat.py
++++ b/.veldo/control_heartbeat.py
+@@ -95 +94,0 @@
+-                os.setsid()

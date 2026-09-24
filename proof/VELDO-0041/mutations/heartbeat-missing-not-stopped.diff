@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -839 +839 @@
+-                elif cause is None and code is None and watch is not None and watch.expired(now):
++                elif False:  # defect: a missing heartbeat is never acted on

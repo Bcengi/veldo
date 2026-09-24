@@ -26,6 +26,13 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "packs/*/.veldo/control_launch.py"
+  - "engine/.veldo/control_containment.py"
+  - ".veldo/control_containment.py"
+  - "packs/*/.veldo/control_containment.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0041_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -135,3 +142,35 @@ fencing/timing, AC2 all-profile/stopped-orchestrator matrix and AC3 crash-safe r
 moved to Release 2; broader hosts moved to Release 4. Normal liveness/stop/exit/retirement
 remain. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-24, footprint (branch build-veldo-0041): the footprint names `.veldo/control_launch.py`, where
+the trusted wrapper emits the heartbeat and the VELDO-0039 receiver watches it, renews the claim and
+stops a worker whose heartbeats stop; `.veldo/control_containment.py`, where the worker profile
+declares the heartbeat interval and window beside VELDO-0040's stop graces and the stop escalation is
+timed on the monotonic clock; and `scripts/check_teeth_mutations.py`, where this specification's
+mutations are registered as finding 41.
+
+2026-09-24, implementation (branch build-veldo-0041): the trusted wrapper in `.veldo/control_launch.py`
+starts a heartbeat process of its own (`.veldo/control_heartbeat.py`) in a child group of the dispatch's
+VELDO-0040 scope just before it becomes the engine; the receiver takes each heartbeat on its monotonic
+clock, renews the build claim through VELDO-0031's `renew` transition as the dispatch authority, and stops
+a worker whose heartbeats stop for the window through VELDO-0040's escalation, now timed and recorded on
+the monotonic clock. `.veldo/control_retirement.py` observes termination, the group, the outcome, the
+clone files (VELDO-0042's teardown) and the accounting inside VELDO-0036's retire transaction and releases
+the slot once; an unknown outcome keeps its slot, since establishing it is Release 2 recovery. Shipped
+defaults 10, 30, 10 and 5 seconds. Suite 67_veldo_0041_heartbeat, red at e231721, finding 41; proof in
+proof/VELDO-0041/.
+
+2026-09-24, review of 5f53aa3 (branch build-veldo-0041): a refused retirement was kept but never tried
+again in production, so a slot whose obligation completed later was never released. The retirement
+service now keeps each refused retirement pending and retries it when an obligation it waits on is
+completed: at once after its own teardown removes a clone another retirement waits on, and when the
+reservation service it listens to accepts a final accounting report; and on the runner's sweep before
+each preparation and after each wait, which retries only a retirement whose obligations changed or whose
+clone can now be removed. The release is still the one gate, one command identity and one
+`already_retired` refusal. The heartbeat now takes a session and process group of its own, so an engine
+that signals its own group leaves it beating. Suite 67 reaches every release through production paths
+(no row calls the runner's private retirement) and adds heartbeat/channel-not-held and
+heartbeat/engine-group-signal; red records at e231721 and 5f53aa3; finding 41 has 34 mutations.
+Left for later: heartbeat lines forged by a hostile engine, the private `Clones._is_live`, and a refused
+renewal not stopping the worker.

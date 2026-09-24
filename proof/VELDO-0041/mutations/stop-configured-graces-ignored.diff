@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -709 +709 @@
+-        return self._settings('stop_grace_seconds', 'kill_grace_seconds')
++        return tuple(C.SETTINGS[n]['default'] for n in ('stop_grace_seconds', 'kill_grace_seconds'))  # defect
