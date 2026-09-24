@@ -92,6 +92,8 @@
   "VELDO-0068 settlement/one-winner detail: two concurrent API answers on two connections: exactly one settles",
   "VELDO-0068 settlement/one-winner detail: the other is refused by name and no second settlement exists",
   "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree",
+  "VELDO-0068 settlement/one-transaction detail: the VELDO-0064 answer command on a request with settlement terms is refused (settlement_required) and writes nothing [observed: True, answer]",
+  "VELDO-0068 settlement/one-transaction detail: the owner's Telegram answer then settles it: one settlement, effect and receipt, and the request terminal [observed: refused, no_settlement_service]",
   "VELDO-0068 settlement/one-transaction detail: every settled request was observed (the touchpoints, both conflicts and the controls)",
   "VELDO-0068 terminal/materialized-settlement detail: the accepted request is terminal in the inbox with its exact settlement and receipt",
   "VELDO-0068 terminal/materialized-settlement detail: the rejected request is terminal in the inbox with its exact settlement and receipt",
@@ -132,9 +134,13 @@
   "VELDO-0068 authority/unsupported-quorum-blocks"
  ],
  "modules": {
+  ".veldo/control_assignment.py": {
+   "at_commit": "323112a8d0d47befb4f7e11d1d253408208185864111646b181d61f613ff9c58",
+   "now": "a843df631a918a6662a607382cc8df0b4a6330b213f50a35e75df5aba17e0ba4"
+  },
   ".veldo/control_request_settlement.py": {
    "at_commit": null,
-   "now": "a856a86e27009b194305b0bee47cf1fb51c086fe392fda63fd09cae938390a0b"
+   "now": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "b55b27849a86637357dec6f50f67690714c09e6fc4bde1c3e03c165a5c4c265b",
@@ -177,7 +183,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 4.516,
+ "seconds": 4.673,
  "spec_id": "VELDO-0068",
  "suite": "scripts/suites/69_veldo_0068_settlement.py",
  "tree": "git archive 335d99663dee4b20c2a84478c24f1530ddbef459, unchanged; the current suite file run against it"

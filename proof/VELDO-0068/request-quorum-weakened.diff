@@ -1,5 +1,5 @@
 --- a/.veldo/control_request_settlement.py
 +++ b/.veldo/control_request_settlement.py
-@@ -187 +187 @@
+@@ -191 +191 @@
 -    count = max(policy['quorum'].get('count') or 1, wanted.get('count') or 1)
 +    count = policy['quorum'].get('count') or 1  # defect: the request's count is weakened

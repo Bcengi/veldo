@@ -12,7 +12,9 @@ shapes), not the Telegram service.
 ## What was built
 
 `.veldo/control_request_settlement.py` (engine copy byte-identical, in `init_scaffold._FILES`, not in
-`REQUIRED_SUBSTRATE`). Standard library only. Nothing else in the engine changed.
+`REQUIRED_SUBSTRATE`). Standard library only. The one other engine change is in the VELDO-0064 inbox
+(`.veldo/control_assignment.py`, engine copy byte-identical): its `answer` command refuses a request
+with settlement terms as `settlement_required` (see Review fixes).
 
 - **Journey configuration.** `JOURNEY` names the five enabled touchpoints (grooming, admission, priority,
   finding disposition, decision disposition): the inbox kind each is presented as, its roles, count and
@@ -44,15 +46,16 @@ on every command, journal record, possession proof, edge and API answer, the act
 process, Acquirer and presenter, two concurrent writers on two connections, a real Git repository with
 a VELDO-0035 revision and snapshot, and a reader in another process. Registry:
 `scripts/check_teeth_mutations.py --finding 68` (footprint History line added).
-`python3 -B proof/VELDO-0068/drive.py` regenerates `mutations.json` and the diffs: 17 mutants, each reds
-its named row by assertion (no section raised), baseline and a no-op copy of both mutated modules green.
+`python3 -B proof/VELDO-0068/drive.py` regenerates `mutations.json` and the diffs: 18 mutants, each reds
+its named row by assertion (no section raised), baseline and a no-op copy of each of the three mutated
+modules green.
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
 | `install/assets` | all | `settlement-not-scaffolded`, `settlement-claimed-as-substrate` |
 | `ruling/offered-choice-and-reasoning` | AC1 | `chosen-option-generic`, `effect-type-ignores-ruling` |
 | `settlement/one-winner` | AC2 | `latest-answer-wins`, `conflicting-answer-unrecorded` |
-| `settlement/one-transaction` | AC2 | `receipt-separate-transaction`, `settlement-nonce-per-answer` |
+| `settlement/one-transaction` | AC2 | `receipt-separate-transaction`, `settlement-nonce-per-answer`, `inbox-answer-bypasses-settlement` |
 | `terminal/materialized-settlement` | AC3 | `request-left-open`, `closed-request-answered-by-api` |
 | `authority/roles-and-independence` | AC4 | `request-roles-ignored`, `policy-roles-ignored`, `requester-separation-ignored` |
 | `authority/owner-and-presentation` | AC4 | `api-answer-owner-unchecked`, `api-edge-signature-unchecked` |
@@ -67,8 +70,32 @@ the published snapshot in a child process beside the repository's stale `status:
 
 **Red at 335d996.** `python3 -B proof/VELDO-0068/drive.py --red 335d996` runs the current suite against
 that tree, extracted with `git archive` and unchanged: `red-at-335d996.json`. All eight rows red by their
-own assertions (118 failing checks), none raising. The module does not exist there, so the answers are
+own assertions (120 failing checks), none raising. The module does not exist there, so the answers are
 recorded by the presenter and nothing settles them.
+
+## Review fixes
+
+**The VELDO-0064 answer command bypassed settlement.** An owner-signed `answer` command on a presented
+request with settlement terms moved it to SUBMITTED and `admit` admitted it, with no settlement, typed
+effect, receipt or published state, and a later Telegram answer was then refused as `request_closed`, so
+that request version ended with no settlement. The inbox now refuses `answer` on a request whose subject
+is settlement terms as `settlement_required`; the settlement service is the only way it is answered. A
+request without terms is answered exactly as before: no suite 60 row answers a request with terms (only
+suite 69 opens one), so suite 60 is unchanged and stays green as the control. The row case is in
+`settlement/one-transaction`: the direct answer is refused by name and writes nothing (no journal
+record, no settlement, the request still pending), then the owner's Telegram answer settles it with one
+settlement, effect and receipt. `python3 -B proof/VELDO-0068/drive.py --red 0617f3d` runs the current
+suite against the tree before the fix: `red-at-0617f3d.json`, only `settlement/one-transaction` red, by
+its two new assertions (the direct answer admitted, then the Telegram answer refused as
+`request_closed`), none raising. Mutation `inbox-answer-bypasses-settlement` removes the refusal and
+reds the same row by the same two assertions.
+
+**The concurrent answer a settlement did not read.** The docstring and this README promised every other
+answer is named on the settlement. An answer accepted after the settlement's read and before its commit
+is not; it takes no effect. The promise is corrected and the gap is filed for Release 2 (Known limits).
+
+**Red record digests.** `red-at-335d996.json` was regenerated against the current tree, so its `now`
+module digests match the committed modules (it recorded the digest before ac16e1f).
 
 ## Costs and stage environment
 
@@ -77,7 +104,7 @@ serial): 150 s. Red run: 5 s. Under the gate's stage environment (`env -i`, a sh
 TMPDIR, C.UTF-8, UTC, hash seed 0, no user site, Git system and global configuration off) the suite
 passed (8 rows, exit 2 as the partial-run marker) and finding 68 rejected all 17 mutations (exit 0).
 
-## Known limits (not filed as tickets)
+## Known limits (only the first is filed, for Release 2)
 
 - Filed for Release 2 (spec History): a settlement names as not counted only the answers it read. An
   answer accepted on another connection after that read and before the settlement commits takes no

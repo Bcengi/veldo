@@ -39,7 +39,7 @@
     true
    ]
   ],
-  "seconds": 7.436
+  "seconds": 6.369
  },
  "controls_green": true,
  "mutants": [
@@ -94,7 +94,7 @@
      true
     ]
    ],
-   "seconds": 7.307,
+   "seconds": 6.432,
    "source_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
   },
   {
@@ -148,7 +148,7 @@
      true
     ]
    ],
-   "seconds": 7.619,
+   "seconds": 6.402,
    "source_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
   },
   {
@@ -199,7 +199,7 @@
     "VELDO-0068 authority/roles-and-independence"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "468115bd0f4bd96264b1d942ecd19f5962c7dd8dd099ea18f6c0703969b6df54",
+   "mutant_sha256": "77805b9f2ce7746cf25e3becacb5bef046839838b6a13bb9823e57d3b4435189",
    "name": "chosen-option-generic",
    "named_row_red": true,
    "named_rows": [
@@ -240,8 +240,8 @@
      true
     ]
    ],
-   "seconds": 8.014,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.358,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -263,7 +263,7 @@
     "VELDO-0068 ruling/offered-choice-and-reasoning"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "774dbdccf0b6788c5e82a5ad96dec499bbaa33a53b5277022a82bf22cad8f2dc",
+   "mutant_sha256": "2c0e9bba11ed73cb9bb30a246b7fce2d8bc334172e4112ea2c7601226edadf96",
    "name": "effect-type-ignores-ruling",
    "named_row_red": true,
    "named_rows": [
@@ -304,21 +304,22 @@
      true
     ]
    ],
-   "seconds": 6.851,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.413,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0068 settlement/one-winner detail: the earliest answer wins: the Telegram accept, attributed to its channel, with an approving effect",
-    "VELDO-0068 settlement/one-winner detail: the conflicting API answer is listed, not counted and not settled"
+    "VELDO-0068 settlement/one-winner detail: the conflicting API answer is listed, not counted and not settled",
+    "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree"
    ],
    "diff": "proof/VELDO-0068/latest-answer-wins.diff",
    "failed_rows": [
     "VELDO-0068 settlement/one-winner"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "88fce8e7e756c63f3bad8ba6ba3f6850852a6aedf22bd8759ef75ae4615cf988",
+   "mutant_sha256": "314030fe1fc5fac20a6bf5bf5a89e2113d06a6c9cd6cdf80f4b4135e93c64b03",
    "name": "latest-answer-wins",
    "named_row_red": true,
    "named_rows": [
@@ -359,8 +360,8 @@
      true
     ]
    ],
-   "seconds": 9.157,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.333,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -374,7 +375,7 @@
     "VELDO-0068 authority/roles-and-independence"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "1bb78c5cb7d793894e76df7c7db1b9b3cd77fb5003b7804476977d1eb5be319e",
+   "mutant_sha256": "157ea0dcee46d56def7a736be9814f692e17437a5a6720c6e6b4ec118416919a",
    "name": "conflicting-answer-unrecorded",
    "named_row_red": true,
    "named_rows": [
@@ -415,8 +416,8 @@
      true
     ]
    ],
-   "seconds": 10.843,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.502,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -429,6 +430,10 @@
     "VELDO-0068 settlement/one-transaction detail: C2: that record consumed the settlement's own nonce (the request version)",
     "VELDO-0068 settlement/one-transaction detail: C2: the counted answer is evidence committed before the settlement",
     "VELDO-0068 settlement/one-transaction detail: C2: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: OT-direct: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: OT-direct: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: OT-direct: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: OT-direct: no later record changed the terminal request state",
     "VELDO-0068 settlement/one-transaction detail: T-admission-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
     "VELDO-0068 settlement/one-transaction detail: T-admission-accept: that record consumed the settlement's own nonce (the request version)",
     "VELDO-0068 settlement/one-transaction detail: T-admission-accept: the counted answer is evidence committed before the settlement",
@@ -495,7 +500,7 @@
     "VELDO-0068 settlement/one-transaction"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "b46deaa5091a69d0ee9c3d5d5a879157776b99c6c85f4618f479c8ab4b655e71",
+   "mutant_sha256": "4506f9560cf3bd8fe621432e7695f3a1566ec54a5e2d82c482d16e4b77c50501",
    "name": "receipt-separate-transaction",
    "named_row_red": true,
    "named_rows": [
@@ -536,14 +541,15 @@
      true
     ]
    ],
-   "seconds": 8.23,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.409,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0068 settlement/one-transaction detail: C1: that record consumed the settlement's own nonce (the request version)",
     "VELDO-0068 settlement/one-transaction detail: C2: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: OT-direct: that record consumed the settlement's own nonce (the request version)",
     "VELDO-0068 settlement/one-transaction detail: T-admission-accept: that record consumed the settlement's own nonce (the request version)",
     "VELDO-0068 settlement/one-transaction detail: T-admission-reject: that record consumed the settlement's own nonce (the request version)",
     "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
@@ -565,7 +571,7 @@
     "VELDO-0068 settlement/one-transaction"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "a219b6d7e66484774aa1866abdd88da85adb1dd879080c7c52536b96d0442445",
+   "mutant_sha256": "340eade427510cc251dd1e3361802ec89db821531f2163656438c17dae8d0596",
    "name": "settlement-nonce-per-answer",
    "named_row_red": true,
    "named_rows": [
@@ -606,8 +612,63 @@
      true
     ]
    ],
-   "seconds": 7.058,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.539,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-transaction detail: the VELDO-0064 answer command on a request with settlement terms is refused (settlement_required) and writes nothing [observed: True, answer]",
+    "VELDO-0068 settlement/one-transaction detail: the owner's Telegram answer then settles it: one settlement, effect and receipt, and the request terminal [observed: refused, request_closed]"
+   ],
+   "diff": "proof/VELDO-0068/inbox-answer-bypasses-settlement.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-transaction"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "311a999e02c1642b4089352eb6e010ef613f4494d18c9068cd19b618baa4b60b",
+   "name": "inbox-answer-bypasses-settlement",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/one-transaction"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     false
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 6.393,
+   "source_sha256": "a843df631a918a6662a607382cc8df0b4a6330b213f50a35e75df5aba17e0ba4"
   },
   {
    "by_assertion": true,
@@ -615,8 +676,10 @@
     "VELDO-0068 settlement/one-winner detail: the terminal request state names this one settlement",
     "VELDO-0068 settlement/one-winner detail: settling the version again, and a later API answer, are refused by name and write nothing",
     "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree",
+    "VELDO-0068 settlement/one-transaction detail: the owner's Telegram answer then settles it: one settlement, effect and receipt, and the request terminal [observed: settled, None]",
     "VELDO-0068 settlement/one-transaction detail: C1: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
     "VELDO-0068 settlement/one-transaction detail: C2: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: OT-direct: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
     "VELDO-0068 settlement/one-transaction detail: T-admission-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
     "VELDO-0068 settlement/one-transaction detail: T-admission-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
     "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
@@ -646,7 +709,7 @@
     "VELDO-0068 terminal/materialized-settlement"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "614f240528eca8017e2ae126ad1008db12cce1b9e80063b749877d925fc79da7",
+   "mutant_sha256": "7f8e0facc7d59e7fd994c7ae19189f123c63c14a701061becdbd4cb8b5afc782",
    "name": "request-left-open",
    "named_row_red": true,
    "named_rows": [
@@ -687,8 +750,8 @@
      true
     ]
    ],
-   "seconds": 7.554,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.916,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -702,7 +765,7 @@
     "VELDO-0068 terminal/materialized-settlement"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "4e71e06b9373b89a10e77944b194e8aed33e898ba54500602d706990c8faf176",
+   "mutant_sha256": "ccea71972713a7532d2ddf8e15c690fb6faf1da759053a2edf415bc1e89378e6",
    "name": "closed-request-answered-by-api",
    "named_row_red": true,
    "named_rows": [
@@ -743,8 +806,8 @@
      true
     ]
    ],
-   "seconds": 6.963,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.532,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -761,7 +824,7 @@
     "VELDO-0068 authority/unsupported-quorum-blocks"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "75fa787c52053ee90a76001ce58163ea3f6d52060b40235f496d7ebf68be8f93",
+   "mutant_sha256": "353a68190cd768d898b553dbfc1b441f4e58c2125fdf5d95394efc43986154bc",
    "name": "request-roles-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -802,13 +865,12 @@
      false
     ]
    ],
-   "seconds": 7.155,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.508,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree",
     "VELDO-0068 authority/roles-and-independence detail: R-policy: the answer is accepted evidence, and settlement blocks by name (role_not_satisfied) [observed: settled, None]",
     "VELDO-0068 authority/roles-and-independence detail: R-valid-accept: policy and request roles both held, so it settles (approve) [observed: settled, None]",
     "VELDO-0068 authority/roles-and-independence detail: R-valid-reject: policy and request roles both held, so it settles (reject) [observed: settled, None]",
@@ -818,12 +880,11 @@
    ],
    "diff": "proof/VELDO-0068/policy-roles-ignored.diff",
    "failed_rows": [
-    "VELDO-0068 settlement/one-winner",
     "VELDO-0068 authority/roles-and-independence",
     "VELDO-0068 authority/unsupported-quorum-blocks"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "d8ba6f59123adcfedd662b5d2d4e1cf51e7f3dcc17d4d6ebbf26d712f26c0197",
+   "mutant_sha256": "889a6abf945b1107411957199e0a908f3975f4682ff501122ee74bb73a55c0d3",
    "name": "policy-roles-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -841,7 +902,7 @@
     ],
     [
      "VELDO-0068 settlement/one-winner",
-     false
+     true
     ],
     [
      "VELDO-0068 settlement/one-transaction",
@@ -864,8 +925,8 @@
      false
     ]
    ],
-   "seconds": 7.085,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.44,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -879,7 +940,7 @@
     "VELDO-0068 authority/unsupported-quorum-blocks"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "a993e83c54db9aa2de8a3f64c389a2782ccc5dd7c3d1fdeb81e9372ee8c9f4c5",
+   "mutant_sha256": "a8efbc90ecdbf400f11a52e833be25bd940b28a7bf19596b97a49c45cd7980f8",
    "name": "requester-separation-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -920,8 +981,8 @@
      false
     ]
    ],
-   "seconds": 7.156,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.458,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -934,7 +995,7 @@
     "VELDO-0068 authority/owner-and-presentation"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "944e0cf8a5137fca082b82cf332b3df8faf4162124bdceafaea94294b502c66f",
+   "mutant_sha256": "af35ebdd5095c941b9e0ca6b34cc12c1e3d1811f23c2a972e15a8b74361d47fb",
    "name": "api-answer-owner-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -975,8 +1036,8 @@
      true
     ]
    ],
-   "seconds": 7.085,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.353,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -989,7 +1050,7 @@
     "VELDO-0068 authority/owner-and-presentation"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "8fd68717ca6d8a8f051aee615f09e9662870aa0e23979daf41dfa43ed1b2900a",
+   "mutant_sha256": "3ee917a9b25f3c9b83f51513c4d138f0a4e22489a5222bb3a49131bb5b12b236",
    "name": "api-edge-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1030,8 +1091,8 @@
      true
     ]
    ],
-   "seconds": 7.267,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.475,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -1044,7 +1105,7 @@
     "VELDO-0068 authority/unsupported-quorum-blocks"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "0be5082978542b57c948520286ae3012d3adb73d8193506f60ce9345e9541388",
+   "mutant_sha256": "4dd2e7863c973d395fdebd1a4fc7856e1ecb1305d06fd7044b42727ee183ea50",
    "name": "request-quorum-weakened",
    "named_row_red": true,
    "named_rows": [
@@ -1085,8 +1146,8 @@
      false
     ]
    ],
-   "seconds": 6.705,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.414,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   {
    "by_assertion": true,
@@ -1099,7 +1160,7 @@
     "VELDO-0068 authority/unsupported-quorum-blocks"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "591635661d9cbe1b70cee4b2f8b8d46a4ac55b1fc7307ecb093d0c9e17044ed0",
+   "mutant_sha256": "6c9933f39a4a20c10eccb6b59db972e11d8181daa66f09cef4144a993e7b6219",
    "name": "independence-above-one-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1140,8 +1201,8 @@
      false
     ]
    ],
-   "seconds": 6.964,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.367,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   }
  ],
  "mutations_per_row": {
@@ -1168,7 +1229,8 @@
   ],
   "settlement/one-transaction": [
    "receipt-separate-transaction",
-   "settlement-nonce-per-answer"
+   "settlement-nonce-per-answer",
+   "inbox-answer-bypasses-settlement"
   ],
   "settlement/one-winner": [
    "latest-answer-wins",
@@ -1180,8 +1242,8 @@
   ]
  },
  "noop": {
-  "control_request_settlement.py": {
-   "copy_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561",
+  "control_assignment.py": {
+   "copy_sha256": "a843df631a918a6662a607382cc8df0b4a6330b213f50a35e75df5aba17e0ba4",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1219,8 +1281,50 @@
      true
     ]
    ],
-   "seconds": 6.723,
-   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "seconds": 6.364,
+   "source_sha256": "a843df631a918a6662a607382cc8df0b4a6330b213f50a35e75df5aba17e0ba4"
+  },
+  "control_request_settlement.py": {
+   "copy_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 6.358,
+   "source_sha256": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   "init_scaffold.py": {
    "copy_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612",
@@ -1261,13 +1365,13 @@
      true
     ]
    ],
-   "seconds": 7.131,
+   "seconds": 6.291,
    "source_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 68",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 150.303,
+ "serial_seconds": 141.626,
  "spec_id": "VELDO-0068",
  "suite": "scripts/suites/69_veldo_0068_settlement.py"
 }

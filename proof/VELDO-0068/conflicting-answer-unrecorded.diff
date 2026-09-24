@@ -1,5 +1,5 @@
 --- a/.veldo/control_request_settlement.py
 +++ b/.veldo/control_request_settlement.py
-@@ -534 +534 @@
+@@ -540 +540 @@
 -        for eid, _ver, other_channel, answer in valid[1:]:
 +        for eid, _ver, other_channel, answer in []:  # defect: answers not counted are not named

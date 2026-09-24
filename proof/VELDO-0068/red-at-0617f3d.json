@@ -15,7 +15,7 @@
   },
   ".veldo/control_request_settlement.py": {
    "at_commit": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561",
-   "now": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+   "now": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612",
@@ -58,7 +58,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 6.438,
+ "seconds": 6.333,
  "spec_id": "VELDO-0068",
  "suite": "scripts/suites/69_veldo_0068_settlement.py",
  "tree": "git archive 0617f3d2435f05fa8dddf9b5e78544ce149a1b40, unchanged; the current suite file run against it"

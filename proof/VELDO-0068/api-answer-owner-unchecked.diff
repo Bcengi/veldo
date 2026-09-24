@@ -1,5 +1,5 @@
 --- a/.veldo/control_request_settlement.py
 +++ b/.veldo/control_request_settlement.py
-@@ -409,2 +408,0 @@
+@@ -413,2 +412,0 @@
 -            if a['principal'] != receipt['owner']:
 -                raise Refused('not_owner', 'the principal is not the owner the presentation was shown to')

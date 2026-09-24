@@ -1,5 +1,5 @@
 --- a/.veldo/control_request_settlement.py
 +++ b/.veldo/control_request_settlement.py
-@@ -577 +577 @@
+@@ -583 +583 @@
 -        self._commit(SETTLE, sid, params, expected)
 +        self._commit(SETTLE, sid + ':' + winner_id, params, expected)  # defect: one nonce per answer
