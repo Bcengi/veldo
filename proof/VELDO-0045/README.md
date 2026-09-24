@@ -70,7 +70,16 @@ measured inside the gate. Activation 0.2 s, qualification 2.1 s, enforcement 0.6
 
 - pip records the bytecode it compiles with no hash, and the interpreter runs that bytecode. Every
   hashed file and the genuine wheel content are verified; compiled bytecode is trusted like the rest
-  of the installed directory (planted files are out of review scope).
+  of the installed directory (planted files are out of review scope). Precisely: every RECORD row
+  ending `.pyc` with an empty hash, and every row starting `../`, is skipped by both the file check and
+  the genuine-wheel comparison, so an unhashed `.pyc` listed in RECORD by a wheel crafted against this
+  check (with pip's own hash refusal bypassed) would not be detected. Filed: skip an unhashed `.pyc`
+  only when it is the cache path of a `.py` the genuine wheel ships.
+- Filed: `records.py` leaves out only `.data/scripts/` rows on the wheel side while activation skips
+  every `../` row, so a future locked wheel with other `.data` members (data, headers, purelib,
+  platlib) would be refused as `content_mismatch` on a correct install. None of today's 38 wheels has one.
+- Filed: `enforcement_entries` keeps only lowercase-word arguments, so an entry with an option such as
+  `--json` or a path argument would run with it dropped. Today's installed entries are unaffected.
 - Activation gates `control_runtime.adapter()`. `control_graph.Adapter.installed()` (VELDO-0043's
   footprint) does not call it, so a caller that builds an adapter directly skips activation. Filed
   for VELDO-0043; no production caller exists yet.
