@@ -689,6 +689,15 @@
    ],
    "regions": "Enrolled build acceptance, independent review, finding dispositions and handoff through the authority's transitions, with materialized status projections",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0035 materialization and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+  },
+  {
+   "name": "64_veldo_0050_proof",
+   "file": "64_veldo_0050_proof.py",
+   "requires": [
+    "64_veldo_0050_proof"
+   ],
+   "regions": "Proof accepted as immutable evidence before a build is offered, complete contextual validation, observed gate checks and event ownership",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, a scaffolded enrolled Git repository running its own canonical gate, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
   }
  ]
 }
