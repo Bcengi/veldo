@@ -47,7 +47,7 @@ choice (it lists the choices); "another bot message" is any other bot message in
 
 ## Rows, falsifiers and red record
 
-Suite `scripts/suites/68_veldo_0136_hints.py` (about 11 s), real SQLite store, real OpenSSH signatures,
+Suite `scripts/suites/68_veldo_0136_hints.py` (about 3 s), real SQLite store, real OpenSSH signatures,
 a loopback Bot API over real HTTP, everything through `Presenter.present`, `Acquirer.acquire` and
 `Intake.take_telegram` (the owners now hold keys, so intake takes their messages).
 
