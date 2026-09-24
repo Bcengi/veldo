@@ -43,7 +43,7 @@
     true
    ]
   ],
-  "seconds": 5.688
+  "seconds": 5.519
  },
  "controls_green": true,
  "mutants": [
@@ -57,7 +57,7 @@
     "VELDO-0067 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "1b948768a8ed42693bcb41a979a336b0aadf3abb20cf273e748e45254d3e8264",
+   "mutant_sha256": "13143951ecd7a60850725f609d05a7bf5589be815b6ed91d989a4782a734d5ab",
    "name": "edge-enrollment-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -102,8 +102,8 @@
      true
     ]
    ],
-   "seconds": 5.497,
-   "source_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+   "seconds": 5.622,
+   "source_sha256": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3"
   },
   {
    "by_assertion": true,
@@ -115,7 +115,7 @@
     "VELDO-0067 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "d49aec04c9c1211d9d0c3a31fdfd55e7c092d9896254d58326f1c693c3844673",
+   "mutant_sha256": "24d0d6d46c3484e036998d7d2c2e61507d7d75f22d961b5524b75f4358a948b6",
    "name": "edge-custody-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -160,8 +160,8 @@
      true
     ]
    ],
-   "seconds": 5.489,
-   "source_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+   "seconds": 5.563,
+   "source_sha256": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3"
   },
   {
    "by_assertion": true,
@@ -257,7 +257,7 @@
      true
     ]
    ],
-   "seconds": 5.556,
+   "seconds": 5.511,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   {
@@ -386,7 +386,7 @@
      true
     ]
    ],
-   "seconds": 5.135,
+   "seconds": 5.093,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   {
@@ -480,7 +480,7 @@
      true
     ]
    ],
-   "seconds": 5.53,
+   "seconds": 5.464,
    "source_sha256": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3"
   },
   {
@@ -567,7 +567,7 @@
      true
     ]
    ],
-   "seconds": 5.657,
+   "seconds": 5.523,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   {
@@ -644,7 +644,7 @@
      true
     ]
    ],
-   "seconds": 5.637,
+   "seconds": 5.433,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   {
@@ -727,7 +727,7 @@
      true
     ]
    ],
-   "seconds": 5.646,
+   "seconds": 5.463,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   {
@@ -787,7 +787,7 @@
      true
     ]
    ],
-   "seconds": 5.512,
+   "seconds": 5.532,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   {
@@ -846,7 +846,7 @@
      true
     ]
    ],
-   "seconds": 5.573,
+   "seconds": 5.539,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   {
@@ -904,7 +904,7 @@
      true
     ]
    ],
-   "seconds": 5.531,
+   "seconds": 5.549,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   {
@@ -962,7 +962,7 @@
      true
     ]
    ],
-   "seconds": 5.478,
+   "seconds": 5.523,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   {
@@ -1029,7 +1029,7 @@
      true
     ]
    ],
-   "seconds": 5.721,
+   "seconds": 5.503,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   {
@@ -1087,7 +1087,7 @@
      true
     ]
    ],
-   "seconds": 5.742,
+   "seconds": 5.482,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   {
@@ -1145,7 +1145,7 @@
      true
     ]
    ],
-   "seconds": 5.663,
+   "seconds": 5.515,
    "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   {
@@ -1206,7 +1206,7 @@
      true
     ]
    ],
-   "seconds": 5.583,
+   "seconds": 5.557,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   {
@@ -1266,7 +1266,7 @@
      false
     ]
    ],
-   "seconds": 5.532,
+   "seconds": 5.538,
    "source_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
   },
   {
@@ -1326,7 +1326,7 @@
      false
     ]
    ],
-   "seconds": 5.445,
+   "seconds": 5.516,
    "source_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
   }
  ],
@@ -1412,7 +1412,7 @@
      true
     ]
    ],
-   "seconds": 5.548,
+   "seconds": 5.522,
    "source_sha256": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3"
   },
   "control_channel_enrollment.py": {
@@ -1458,7 +1458,7 @@
      true
     ]
    ],
-   "seconds": 5.494,
+   "seconds": 5.519,
    "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
   },
   "control_channel_presentation.py": {
@@ -1504,7 +1504,7 @@
      true
     ]
    ],
-   "seconds": 5.548,
+   "seconds": 5.55,
    "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
   },
   "control_keys_custody.py": {
@@ -1550,7 +1550,7 @@
      true
     ]
    ],
-   "seconds": 5.541,
+   "seconds": 5.506,
    "source_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
   },
   "control_signer_answers.py": {
@@ -1596,11 +1596,11 @@
      true
     ]
    ],
-   "seconds": 5.615,
+   "seconds": 5.655,
    "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
   },
   "init_scaffold.py": {
-   "copy_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32",
+   "copy_sha256": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1642,13 +1642,13 @@
      true
     ]
    ],
-   "seconds": 5.487,
-   "source_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+   "seconds": 5.641,
+   "source_sha256": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 67",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 138.848,
+ "serial_seconds": 137.838,
  "spec_id": "VELDO-0067",
  "suite": "scripts/suites/65_veldo_0067_edges.py"
 }

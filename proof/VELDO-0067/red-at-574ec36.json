@@ -152,7 +152,7 @@
   },
   ".veldo/control_signer.py": {
    "at_commit": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
-   "now": "52b14e7c5ddbf635c005eddf370624ccfd052be70dbf8667ed9b865439d4d232"
+   "now": "45853641c3387a5c1268f253096829466e031685bfc563dd548085a11f0234bb"
   },
   ".veldo/control_signer_answers.py": {
    "at_commit": null,
@@ -160,7 +160,7 @@
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "6292c1378051cf7cdfc42c6bd4181769a8a038386404bc98d4c8b84ad3116b9b",
-   "now": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+   "now": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3"
   }
  },
  "preamble_rows": 26,
@@ -203,7 +203,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 4.171,
+ "seconds": 3.612,
  "spec_id": "VELDO-0067",
  "suite": "scripts/suites/65_veldo_0067_edges.py",
  "tree": "git archive 574ec363059cf35f9c38145ab6ed34023c59c85f, unchanged; the current suite file run against it"

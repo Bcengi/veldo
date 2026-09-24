@@ -1,4 +1,4 @@
 --- a/.veldo/init_scaffold.py
 +++ b/.veldo/init_scaffold.py
-@@ -164 +163,0 @@
+@@ -167 +166,0 @@
 -    ".veldo/control_keys_custody.py",

@@ -29,7 +29,7 @@ not the Telegram service. Enrollment activates no ingress (VELDO-0073).
 
 ## Rows, falsifiers and red record
 
-Suite `scripts/suites/65_veldo_0067_edges.py`, 5.7 s. Real SQLite store, real OpenSSH signatures on
+Suite `scripts/suites/65_veldo_0067_edges.py`, 5.5 s. Real SQLite store, real OpenSSH signatures on
 every command, journal record, possession proof and answer, the actual signer process, the actual
 Acquirer and presenter, and a real worker process. Registry: `check_teeth_mutations.py --finding 67`
 (footprint History line added). `python3 -B proof/VELDO-0067/drive.py` regenerates `mutations.json`
@@ -62,8 +62,9 @@ accepted; an unwrapped worker read the private key and hard-linked it out.
 
 ## Costs
 
-Suite 5.7 s. Finding 67 with `--jobs 4`: 32 s. The drive (baseline, six no-op copies, 18 mutants,
-serial): 139 s. Red run: 6 s.
+Suite 5.5 s. Finding 67 with `--jobs 4`: 32 s. The drive (baseline, six no-op copies, 18 mutants,
+serial): 138 s. Red run: 4 s. Both records were regenerated after merging origin/main at 36fd201
+(VELDO-0040), whose three new `init_scaffold.py` lines shifted the two scaffold diffs.
 
 ## Known limits (not filed as tickets)
 
