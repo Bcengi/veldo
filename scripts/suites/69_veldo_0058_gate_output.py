@@ -144,7 +144,8 @@ def _v58_suite():
             "texts = {p.name: p.read_text() for p in sorted(pathlib.Path('src').glob('*.py'))}",
             "actions = {'tracked': \"open('README.md', 'a').write('changed while the gate ran\\\\n')\",",
             "           'untracked': \"open('stray.out', 'w').write('output left by a check\\\\n')\",",
-            "           'index': \"import subprocess; subprocess.run(['git', 'update-index', '--chmod=+x', 'README.md'], check=True)\"}",
+            "           'index': \"import subprocess; subprocess.run(['git', 'update-index', '--chmod=+x', 'README.md'], check=True)\",",
+            "           'refs': \"import subprocess; subprocess.run(['git', 'update-ref', 'refs/remotes/origin/main', 'HEAD'], check=True)\"}",
             'for text in texts.values():',
             '    for mode, action in actions.items():',
             "        if 'MUTATE = %r' % mode in text:",
@@ -155,7 +156,7 @@ def _v58_suite():
         (seed / 'src').mkdir()
         (seed / 'src' / 'README').write_text('fixture sources\n')
         (seed / 'README.md').write_text('fixture\n')
-        UNITS = ['VELDO-95%02d' % n for n in range(81, 92)]
+        UNITS = ['VELDO-95%02d' % n for n in range(81, 98)]
         for sid in UNITS:
             (seed / 'specs' / ('%s-gate-output-fixture.md' % sid)).write_text('\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Gate output fixture unit', 'status: ready',
@@ -282,7 +283,8 @@ def _v58_suite():
                 stray.unlink()
 
         U = dict(zip(('review', 'live', 'red', 'tamper', 'during', 'stub_gate', 'stub_policy', 'valid',
-                      'emptied_list', 'control_list', 'plain_list'), UNITS))
+                      'emptied_list', 'control_list', 'plain_list', 'refs_during', 'refs_after', 'refs_control',
+                      'refs_plain', 'bound_during', 'bound_after'), UNITS))
 
         # AC1: the stamp, the gate event and the review-event reconciliation go to the sink.
         with region('gate-output/review-write'):
@@ -593,6 +595,130 @@ def _v58_suite():
                   and refused_by_list(emptied_land) and refused_by_list(control_land)
                   and (plain_land['finalize'] or [{}])[-1].get('pushed') is True
                   and pcommit and plain_land['trunk_after'] == pcommit)
+
+        # AC3: the installed policy's push range starts at the lander's own watermark, never at a ref the
+        # candidate can move. A candidate whose check moves the workspace's refs/remotes/origin/main to
+        # HEAD during the gate is refused and the trunk does not move; the same move made after the gate
+        # is refused BY THE POLICY, which names the protected path; the same protected change without a
+        # move is refused; a base that is not a full commit id, absent, or not an ancestor of the
+        # candidate refuses; and an ordinary change publishes.
+        with region('gate-output/range-base-from-lander'):
+            trunk_range = remote_tip()
+            b7, _impl, _evidence = build(U['refs_during'], {'src/refs_during.py': "OK = True\nMUTATE = 'refs'\n",
+                                                            'auth/login.py': 'ALLOW = True\n'})
+            during_land = land(b7, U['refs_during'])
+
+            def move_after(ops, out):
+                git(ops.candidate['workspace'], 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+            b8, _impl, _evidence = build(U['refs_after'], {'src/refs_after.py': 'OK = True\n',
+                                                           'auth/login.py': 'ALLOW = True\n'})
+            after_land = land(b8, U['refs_after'], between=move_after)
+            b9, _impl, _evidence = build(U['refs_control'], {'src/refs_control.py': 'OK = True\n',
+                                                             'auth/login.py': 'ALLOW = True\n'})
+            control_range = land(b9, U['refs_control'])
+            orphan = git(caller, 'commit-tree', WATERMARK + '^{tree}', '-m', 'Not an ancestor of any candidate')
+            bases = {}
+
+            def bad_bases(ops, out):
+                c = ops.candidate
+                watermark = c['watermark']
+                for name, value in (('invalid', 'HEAD'), ('short', watermark[:12]), ('absent', 'f' * 40),
+                                    ('not_ancestor', orphan)):
+                    c['watermark'] = value
+                    bases[name] = ops.finalize(U['refs_plain'])
+                    bases[name + ':trunk'] = remote_tip()
+                    c['watermark'], c['state'] = watermark, 'verified'
+                    if bases[name].get('pushed'):
+                        break
+            b10, _impl, _evidence = build(U['refs_plain'], {'src/refs_plain.py': 'OK = True\n'})
+            plain_range = land(b10, U['refs_plain'], between=bad_bases)
+            rcommit = (plain_range['record'] or {}).get('commit')
+            codes = {'invalid': 'missing_authority:policy_base/invalid', 'short': 'missing_authority:policy_base/invalid',
+                     'absent': 'missing_authority:policy_base/absent',
+                     'not_ancestor': 'missing_authority:policy_base/not_ancestor'}
+            base_refused = {name: (bases.get(name) or {}).get('ok') is False
+                            and 'missing_authority:repository_policy' in ((bases.get(name) or {}).get('refusals') or [])
+                            and code in str((bases.get(name) or {}).get('policy_check'))
+                            and bases.get(name + ':trunk') == trunk_range for name, code in codes.items()}
+
+            def landed(result):
+                return result['trunk_after'] != trunk_range and 'auth/login.py' in git(
+                    remote, 'diff', '--name-only', trunk_range, result['trunk_after']).split()
+            after_final = (after_land['finalize'] or [{}])[-1]
+            control_final = (control_range['finalize'] or [{}])[-1]
+            observed['range_base'] = {
+                'during': {'gate': during_land['gate'], 'finalize': during_land['finalize'],
+                           'changed': (during_land['observation'].get('post_run') or {}).get('changed'),
+                           'landed': landed(during_land)},
+                'after': {'finalize': after_land['finalize'], 'landed': landed(after_land)},
+                'control': {'finalize': control_range['finalize'], 'landed': landed(control_range)},
+                'bases': bases, 'base_refused': base_refused,
+                'plain': {'finalize': plain_range['finalize'], 'trunk_after': plain_range['trunk_after'], 'commit': rcommit}}
+            check('gate-output/range-base-from-lander',
+                  not landed(during_land) and during_land['trunk_after'] == trunk_range
+                  and (during_land['gate'].get('ok') is False or (during_land['finalize'] or [{}])[-1].get('ok') is False)
+                  and after_land['gate'].get('ok') is True and after_final.get('ok') is False
+                  and after_final.get('pushed') is not True
+                  and 'missing_authority:repository_policy' in (after_final.get('refusals') or [])
+                  and 'auth/login.py  (protected by auth/**)' in str(after_final.get('policy_check'))
+                  and after_land['trunk_after'] == trunk_range
+                  and control_range['gate'].get('ok') is True and control_final.get('ok') is False
+                  and 'missing_authority:repository_policy' in (control_final.get('refusals') or [])
+                  and 'auth/login.py  (protected by auth/**)' in str(control_final.get('policy_check'))
+                  and control_range['trunk_after'] == trunk_range
+                  and all(base_refused.values()) and len(base_refused) == 4
+                  and (plain_range['finalize'] or [{}])[-1].get('pushed') is True
+                  and rcommit and plain_range['trunk_after'] == rcommit)
+
+        # AC2: the candidate's refs are part of the state the gate binds. A candidate whose check moves a
+        # ref during the gate is refused and the moved ref is named; a ref moved, added or retargeted after
+        # the gate is refused at acceptance by name; restored, the same candidate publishes.
+        with region('gate-output/refs-bound'):
+            trunk_bound = remote_tip()
+            b11, _impl, _evidence = build(U['bound_during'], {'src/bound_during.py': "OK = True\nMUTATE = 'refs'\n"})
+            bound_during = land(b11, U['bound_during'])
+            moves = {}
+
+            def move_refs(ops, out):
+                c = ops.candidate
+                ws = c['workspace']
+                watermark = c['watermark']
+
+                def attempt(name, restore):
+                    moves[name] = ops.finalize(U['bound_after'])
+                    moves[name + ':trunk'] = remote_tip()
+                    restore()
+                    c['state'] = 'verified'
+                git(ws, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                attempt('moved', lambda: git(ws, 'update-ref', 'refs/remotes/origin/main', watermark))
+                git(ws, 'update-ref', 'refs/tags/late', 'HEAD')
+                attempt('added', lambda: git(ws, 'update-ref', '-d', 'refs/tags/late'))
+                git(ws, 'update-ref', 'refs/remotes/origin/other', watermark)
+                git(ws, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/other')
+                moves['other_created'] = True
+
+                def unretarget():
+                    git(ws, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main')
+                    git(ws, 'update-ref', '-d', 'refs/remotes/origin/other')
+                attempt('retargeted', unretarget)
+            b12, _impl, _evidence = build(U['bound_after'], {'src/bound_after.py': 'OK = True\n'})
+            bound_after = land(b12, U['bound_after'], between=move_refs)
+            bcommit = (bound_after['record'] or {}).get('commit')
+            after_refused = {name: (moves.get(name) or {}).get('ok') is False
+                             and 'stale_subject:candidate/changed_after_gate' in ((moves.get(name) or {}).get('refusals') or [])
+                             and moves.get(name + ':trunk') == trunk_bound
+                             for name in ('moved', 'added', 'retargeted')}
+            dchanged = (bound_during['observation'].get('post_run') or {}).get('changed') or []
+            observed['refs_bound'] = {
+                'during': {'gate': bound_during['gate'], 'changed': dchanged, 'trunk_after': bound_during['trunk_after']},
+                'moves': moves, 'after_refused': after_refused,
+                'final': bound_after['finalize'], 'trunk_after': bound_after['trunk_after'], 'commit': bcommit}
+            check('gate-output/refs-bound',
+                  refusal(bound_during['gate']) == 'stale_subject:candidate/changed_during_gate'
+                  and ':ref/refs/remotes/origin/main' in dchanged and bound_during['trunk_after'] == trunk_bound
+                  and all(after_refused.values()) and len(after_refused) == 3
+                  and (bound_after['finalize'] or [{}])[-1].get('pushed') is True
+                  and bcommit and bound_after['trunk_after'] == bcommit)
 
         for first_label in regions:
             check('ran/' + first_label, first_label not in {label for label, _ in raised})
