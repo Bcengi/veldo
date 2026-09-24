@@ -187,3 +187,8 @@ Git metadata under the home directory (no new entry directly in the home directo
 keeps every protected target under one root outside the home directory (handed to VELDO-0047). Launch-path
 duties (record the group, a new dispatch id per launch, a used clone's .git/config is hostile) are handed
 to VELDO-0129.
+
+2026-09-24, landing: the gate's mutation stage runs the suite with a fixed PATH and a temporary
+HOME, so real-engines-run-confined found neither CLI there (invalid_baseline). The suite now finds each
+engine on PATH or at the account's standard install locations read from the account's own home, and puts
+the engine's own directory first on its PATH (Codex needs its node).

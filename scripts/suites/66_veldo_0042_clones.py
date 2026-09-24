@@ -323,8 +323,24 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 'os.execvp(sys.argv[3], sys.argv[3:])\n')
         started, groups, made_units = [], [], []
 
-        def engine_env(dispatch_id, proxy=None):
-            env = {'PATH': os.environ.get('PATH', os.defpath), 'HOME': str(home), 'LANG': 'C.UTF-8', 'TERM': 'dumb',
+        def engine_path(name):
+            """The installed engine CLI: on PATH, else at the account's standard install locations, read from
+            the account's own home (pwd), never $HOME, because the gate's mutation stage runs this suite with a
+            fixed PATH and a temporary HOME. None when it is not installed."""
+            import glob as _glob
+            import pwd as _pwd
+            found = shutil.which(name, path=os.environ.get('PATH', os.defpath))
+            if found:
+                return found
+            account = _pwd.getpwuid(os.getuid()).pw_dir
+            places = [os.path.join(account, '.local', 'bin', name), os.path.join(account, '.npm-global', 'bin', name)]
+            places += sorted(_glob.glob(os.path.join(account, '.nvm', 'versions', 'node', '*', 'bin', name)), reverse=True)
+            places += [os.path.join('/usr/local/bin', name), os.path.join('/usr/bin', name)]
+            return next((q for q in places if os.path.isfile(q) and os.access(q, os.X_OK)), None)
+
+        def engine_env(dispatch_id, proxy=None, path_first=None):
+            path = os.environ.get('PATH', os.defpath)
+            env = {'PATH': (path_first + os.pathsep + path) if path_first else path, 'HOME': str(home), 'LANG': 'C.UTF-8', 'TERM': 'dumb',
                    'VELDO_DISPATCH_ID': dispatch_id, 'XDG_RUNTIME_DIR': tools['XDG_RUNTIME_DIR'],
                    'DISABLE_AUTOUPDATER': '1'}
             if proxy:
@@ -332,10 +348,10 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 env.update(NO_PROXY='', no_proxy='')
             return env
 
-        def launch(dispatch_id, argv, *, grouped, proxy=None, tag='run'):
+        def launch(dispatch_id, argv, *, grouped, proxy=None, tag='run', path_first=None):
             """Start `argv` through the clone adapter as `dispatch_id`; in a real containment scope when
             `grouped`. Returns (popen, group or None)."""
-            env = engine_env(dispatch_id, proxy)
+            env = engine_env(dispatch_id, proxy, path_first)
             command = C.adapter(argv)
             group = None
             if grouped and qualification.get('qualified'):
@@ -520,7 +536,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 # /tmp, /var/tmp and ~/.cache.
                 engines = {}
                 for name, engine in ENGINES.items():
-                    found = shutil.which(engine['argv'][0], path=os.environ.get('PATH', os.defpath))
+                    found = engine_path(engine['argv'][0])
                     if not found:
                         print('  VELDO-0042 clone/real-engines-run-confined: %s is not installed (%s)'
                               % (name, engine['hint']))
@@ -548,8 +564,9 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                     before = {str(p) for p in state_dir.rglob('*') if p.is_file()}
                     begun = time.time()
                     proc, group = (None, None) if handle_a is None else launch(
-                        'dispatch/VELDO-9401/aaaa', engine['argv'], grouped=True,
-                        proxy='http://127.0.0.1:%d' % listener.getsockname()[1], tag=name)
+                        'dispatch/VELDO-9401/aaaa', [found] + engine['argv'][1:], grouped=True,
+                        proxy='http://127.0.0.1:%d' % listener.getsockname()[1], tag=name,
+                        path_first=os.path.dirname(found))
                     scoped = in_scope(group, proc)
                     while proc is not None and time.time() < begun + 25:
                         wrote = sorted({str(p) for p in state_dir.rglob('*') if p.is_file()} - before)
