@@ -99,10 +99,11 @@ module digests match the committed modules (it recorded the digest before ac16e1
 
 ## Costs and stage environment
 
-Suite 6 to 7 s. Finding 68 with `--jobs 4`: 33 s. The drive (baseline, two no-op copies, 17 mutants,
-serial): 150 s. Red run: 5 s. Under the gate's stage environment (`env -i`, a short `/dev/shm` HOME and
-TMPDIR, C.UTF-8, UTC, hash seed 0, no user site, Git system and global configuration off) the suite
-passed (8 rows, exit 2 as the partial-run marker) and finding 68 rejected all 17 mutations (exit 0).
+Suite 6 to 7 s. Finding 68 with `--jobs 4`: 32 s. The drive (baseline, three no-op copies, 18 mutants,
+serial): 142 s. Red runs: 5 s at 335d996, 6 s at 0617f3d. Under the gate's stage environment (`env -i`, a
+short `/dev/shm` HOME and TMPDIR, C.UTF-8, UTC, hash seed 0, no user site, Git system and global
+configuration off) the suite passed (8 rows, exit 2 as the partial-run marker) and finding 68 rejected
+all 18 mutations (exit 0). Finding 64 still rejects all 36 of its mutations with suite 60 green.
 
 ## Known limits (only the first is filed, for Release 2)
 
