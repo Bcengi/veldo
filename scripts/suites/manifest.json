@@ -725,6 +725,15 @@
    ],
    "regions": "Restricted Telegram edge enrollment under current authority, the protected signer's answer purpose and every delegation dimension, current edge and actor authorization at answer acceptance, and worker key custody",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH envelope, journal, possession and answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, and a real worker process under the Landlock custody wrapper. Writes only temporary fixtures."
+  },
+  {
+   "name": "67_veldo_0041_heartbeat",
+   "file": "67_veldo_0041_heartbeat.py",
+   "requires": [
+    "67_veldo_0041_heartbeat"
+   ],
+   "regions": "The trusted wrapper's heartbeat while a model call is blocked, claim renewal on each heartbeat and the missed-heartbeat stop, an accepted stop's bounded escalation over the whole group, and a retirement that follows actual termination, keeps each open obligation and releases the slot once",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory."
   }
  ]
 }
