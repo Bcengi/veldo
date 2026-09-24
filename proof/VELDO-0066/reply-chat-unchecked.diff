@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -492,2 +491,0 @@
+-        if fields['reply_chat_id'] != fields['chat_id']:
+-            return 'reply_in_another_chat', known

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -196 +196 @@
+-    if _map(reply.get('from')).get('id') != bot or _map(reply.get('from')).get('is_bot') is not True:
++    if False:

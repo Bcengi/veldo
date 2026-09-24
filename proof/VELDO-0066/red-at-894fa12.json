@@ -1,0 +1,111 @@
+{
+ "by_assertion": true,
+ "commit": "894fa12133b0a87a9d6e00413ce81aab898dca9c",
+ "details": [
+  "VELDO-0066 install/assets detail: .veldo/control_channel_attribution.py installed by the scaffold",
+  "VELDO-0066 install/assets detail: .veldo/control_channel_attribution.py engine copy identical",
+  "VELDO-0066 install/assets detail: .veldo/control_channel_attribution.py laid by the installer",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the run asks the platform who the bot is, then for updates from the start, naming the wanted types",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the owner's reply is kept as evidence exactly as the platform served it, with its own digest",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the evidence names the digest of the whole platform answer it arrived in",
+  "VELDO-0066 acquisition/platform-fields-retained detail: every canonical field is the platform's own value in that response (message, date, chat, sender, replied message)",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the recorded answer carries that message, sender, time, chat and replied message, and the evidence holding them",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the evidence records its one decision: answered by the owner through the presentation",
+  "VELDO-0066 acquisition/platform-fields-retained detail: an update of another type the platform still delivered is kept and refused, and records nothing",
+  "VELDO-0066 acquisition/platform-fields-retained detail: an edit of the answer is kept and refused as an edit, and the recorded answer is unchanged",
+  "VELDO-0066 acquisition/platform-fields-retained detail: a transcript answer on the platform exchange acquires nothing and is refused as invalid_platform_answer",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the next readable answer keeps the update the transcript answer did not",
+  "VELDO-0066 acquisition/platform-fields-retained detail: a conflict answer on the platform exchange acquires nothing and is refused as channel_refused",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the next readable answer keeps the update the conflict answer did not",
+  "VELDO-0066 acquisition/platform-fields-retained detail: a gateway answer on the platform exchange acquires nothing and is refused as unavailable_service",
+  "VELDO-0066 acquisition/platform-fields-retained detail: the next readable answer keeps the update the gateway answer did not",
+  "VELDO-0066 acquisition/platform-fields-retained detail: a token the platform does not accept acquires nothing (channel_refused)",
+  "VELDO-0066 acquisition/platform-fields-retained detail: a decision whose record could not be written is reported unknown and stays pending until the next run decides it",
+  "VELDO-0066 acquisition/platform-fields-retained detail: observations name operation, update, outcome, named refusal and its error class, never text, names or the token",
+  "VELDO-0066 acquisition/platform-fields-retained detail: metrics count accepted and refused operations, the pending work and refusals by reason",
+  "VELDO-0066 attribution/stable-sender-identity detail: a stranger who copies the owner's display name is attributed to its own stable id's principal, never the owner",
+  "VELDO-0066 attribution/stable-sender-identity detail: an unenrolled account with the owner's display name is attributed to nobody, even pasting a transcript",
+  "VELDO-0066 attribution/stable-sender-identity detail: the owner renamed (new first, last and user name) is still the owner, by the same stable id",
+  "VELDO-0066 attribution/stable-sender-identity detail: a forward is a transcript of earlier words, the owner's own included, and is refused (forwarded_message)",
+  "VELDO-0066 attribution/stable-sender-identity detail: two principals enrolled on one Telegram account are ambiguous, so neither is attributed",
+  "VELDO-0066 attribution/stable-sender-identity detail: no display name, username or text is a canonical field of the evidence",
+  "VELDO-0066 attribution/binds-replied-presentation detail: the canonical-binding check holds for it: the answer is bound by its evidence to the presentation it names",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply in a group chat is refused (not_private_chat)",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply made in another chat is refused (reply_in_another_chat)",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a message that omits the reply reference is refused (missing_reply_reference)",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply whose reference names another presentation than the part it carries is refused (presentation_mismatch)",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply to a message the platform says another bot sent is refused (presentation_mismatch)",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply whose replied message the platform places in another chat is refused (reply_in_another_chat)",
+  "VELDO-0066 attribution/binds-replied-presentation detail: none of them recorded an answer to A or C",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply in the second bot's chat is never taken as an answer to the first bot's presentation with the same ids",
+  "VELDO-0066 attribution/binds-replied-presentation detail: evidence altered after acquisition is refused and binds no answer",
+  "VELDO-0066 attribution/binds-replied-presentation detail: a reply to the superseded presentation is refused (superseded_presentation) and the reply to its replacement is recorded against the replacement",
+  "VELDO-0066 attribution/binds-replied-presentation detail: control: A and C are answered by their own replies, each bound by its evidence to its own presentation",
+  "VELDO-0066 attribution/person-only-authority detail: a message sent by an inline bot, from the owner's account is refused as automation_sender",
+  "VELDO-0066 attribution/person-only-authority detail: a message sent by a business bot, from the owner's account is refused as automation_sender",
+  "VELDO-0066 attribution/person-only-authority detail: a message sent by an away, greeting or scheduled message of the owner's account is refused as automation_sender",
+  "VELDO-0066 attribution/person-only-authority detail: a message sent by a bot account is refused as automation_sender",
+  "VELDO-0066 attribution/person-only-authority detail: a message sent by an anonymous administrator signed as the owner is refused as automation_sender",
+  "VELDO-0066 attribution/person-only-authority detail: none of them recorded an answer or sent anything back",
+  "VELDO-0066 attribution/person-only-authority detail: an enrolled automation identity (a service member on an ordinary account) is refused (not_a_person)",
+  "VELDO-0066 attribution/person-only-authority detail: an unrecognized sender is refused (unknown_sender)",
+  "VELDO-0066 attribution/person-only-authority detail: an owner no longer a current member is refused (not_current_member) and records nothing",
+  "VELDO-0066 attribution/person-only-authority detail: a message missing the sender id, the sender or the date is refused (missing_canonical_field), labels or not",
+  "VELDO-0066 attribution/person-only-authority detail: a sender's own labels naming the owner grant nothing: it is attributed by its stable id",
+  "VELDO-0066 attribution/person-only-authority detail: an assertion that labels the owner as principal over another sender is refused by the presenter (not_owner)",
+  "VELDO-0066 attribution/person-only-authority detail: control: the owner's own reply, in person, is the owner's answer"
+ ],
+ "failed_rows": [
+  "VELDO-0066 install/assets",
+  "VELDO-0066 acquisition/platform-fields-retained",
+  "VELDO-0066 attribution/stable-sender-identity",
+  "VELDO-0066 attribution/binds-replied-presentation",
+  "VELDO-0066 attribution/person-only-authority"
+ ],
+ "modules": {
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": null,
+   "now": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670",
+   "now": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  ".veldo/control_channel_projection.py": {
+   "at_commit": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188",
+   "now": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "f28a95e91a118046dc119bf7ad50a2fcd6fc5e08eab42b4057462268d0a80672",
+   "now": "32f2d18fbc6972642647859ad6ccef2a8f4c0120a0dde2da19927eda48ab96df"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0066 install/assets",
+   false
+  ],
+  [
+   "VELDO-0066 acquisition/platform-fields-retained",
+   false
+  ],
+  [
+   "VELDO-0066 attribution/stable-sender-identity",
+   false
+  ],
+  [
+   "VELDO-0066 attribution/binds-replied-presentation",
+   false
+  ],
+  [
+   "VELDO-0066 attribution/person-only-authority",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.506,
+ "spec_id": "VELDO-0066",
+ "suite": "scripts/suites/63_veldo_0066_attribution.py",
+ "tree": "git archive 894fa12133b0a87a9d6e00413ce81aab898dca9c, unchanged; the current suite file run against it"
+}
