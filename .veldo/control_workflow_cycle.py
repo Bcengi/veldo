@@ -52,6 +52,7 @@ each waiting cycle with the node and input it waits for.
 NOT HERE: checkpoint recovery and resuming a cycle after a crash (Release 2); a cycle whose exchange
 fails is refused, never retried. The dispatcher's use of a pending assignment is the floor's.
 """
+import collections
 import hashlib
 import importlib.util
 import json
@@ -173,7 +174,7 @@ def _record_transition(conn, params, before):
                               'revision': row['id'], 'entity_digest': row['digest']},
                   'started': {'principal': params['principal'], 'at': now},
                   'state': 'running', 'position': None, 'steps': 0, 'trace': [], 'visits': {}, 'resume': None,
-                  'waiting': None, 'assignment': None, 'received': None, 'proposals': [], 'refusal': None,
+                  'waiting': None, 'assignment': None, 'received': None, 'result': None, 'proposals': [], 'refusal': None,
                   'refusals': [], 'exchanges': 0}
         return {cid: {'kind': CYCLE_KIND, 'data': record}}
     record = params.get('record')
@@ -229,7 +230,8 @@ class Cycles:
         self.observe = observe or (lambda event: None)
         self.clock = clock or time.time
         self.counts = {'accepted': 0, 'refused': 0}
-        self.observations = []
+        # Diagnostics only, bounded: the durable log is the observe callback's sink.
+        self.observations = collections.deque(maxlen=1000)
         store.declare_owners(conn, OWNER, kinds={CYCLE_KIND: (RECORD,)}, module=__file__)
         conn.command_registry[RECORD] = {'transaction_transition': _record_transition, 'writes': WRITES}
 
@@ -300,9 +302,13 @@ class Cycles:
         graph = _organ('control_graph')
         workflow = {k: record['binding'][k] for k in ('id', 'version', 'digest')}
         command = '%s.%d' % (record['cycle'], record['exchanges'] + 1)
-        with tempfile.TemporaryDirectory(prefix='veldo-workflow-runner-') as scratch:
-            runner = Path(scratch) / RUNNER
+        try:
+            scratch = tempfile.TemporaryDirectory(prefix='veldo-workflow-runner-')
+            runner = Path(scratch.name) / RUNNER
             runner.write_text(runner_source(revision))
+        except OSError as error:
+            raise Refused('unavailable_service:runner', error.strerror or type(error).__name__) from error
+        with scratch:
             adapter = graph.Adapter(dict(self.runtime(), runner=str(runner)), self.domain, self.repository,
                                     self.timeout, evidence=graph.runtime_evidence())
             try:
@@ -474,12 +480,12 @@ class Cycles:
                 raise Refused('missing_evidence:result', received['id'])
             supplied.append(self._supply('worker_result', row, {'kind': row['kind']}))
         elif kind['input'] == 'accepted_result':
-            received = record.get('received')
-            if received:
-                row = self._result(received['id'])
+            result = record.get('result')
+            if result:
+                row = self._result(result['id'])
                 if not self._accepted_result(record, row) or (row['version'], row['digest']) != (
-                        received['version'], received['digest']):
-                    raise Refused('missing_evidence:result', received['id'])
+                        result['version'], result['digest']):
+                    raise Refused('missing_evidence:result', result['id'])
                 supplied.append(self._supply('accepted_result', row, {'kind': row['kind']}))
         return supplied
 
@@ -525,6 +531,10 @@ class Cycles:
             visits[taken['id']] = visits.get(taken['id'], 0) + 1
             record = dict(record, steps=record['steps'] + 1, trace=record['trace'] + [list(last)], visits=visits,
                           position=taken['to'], resume=answer['resume'])
+            if kind['input'] == 'worker_result':
+                # The result this assignment routed on is the one a result handling step may cite; a later
+                # visit to an assignment waits for its own worker, after its own checks.
+                record = dict(record, result=record['received'], received=None)
             if 'max' in taken and visits[taken['id']] > taken['max']:
                 return self._refuse(record, 'budget_exceeded:loop/' + taken['id'], node=position, graph=command)
             self._update(record, 'step', node=position, port=last[1], graph=command, runtime=answer['runtime'],
@@ -538,7 +548,7 @@ class Cycles:
                                 graph=command)
         proposals = answer['proposals']
         offered = {item['digest'] for item in supplied}
-        received = (record.get('received') or {}).get('digest')
+        received = (record.get('result') or {}).get('digest')
         valid = (len(proposals) == 1 and proposals[0]['type'] == 'completion'
                  and proposals[0]['subject'] == record['subject'])
         if not valid:
