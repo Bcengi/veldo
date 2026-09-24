@@ -10,7 +10,10 @@ is laid by that scaffolder and runs its own canonical gate and push guard; the s
 SQLite authority with OpenSSH journal signatures; publications are real pushes by the VELDO-0028
 effect executor process to bare remotes, one of which rejects the push. Units, the build-only
 attempt's records and the completion receipts are fixture records written with the store's generic
-command (their services, VELDO-0050's and VELDO-0057's, are not re-proved here).
+command (their services, VELDO-0050's and VELDO-0057's, are not re-proved here). The spend recorder
+(WARP-0733) runs through its installed CLI, since spend is not completion: its record is spend.recorded
+under its own producer, and the readers of spend actuals read it beside the historical spec.shipped
+spend lines.
 """
 
 
@@ -35,6 +38,8 @@ def _v51_suite():
         'control_event_vocabulary.py': ROOT / ".veldo" / "control_event_vocabulary.py",
         'control_event_projection.py': ROOT / ".veldo" / "control_event_projection.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
+        'spend.py': ROOT / ".veldo" / "spend.py",
+        'judgment_load.py': ROOT / ".veldo" / "judgment_load.py",
     }
     INSTALLED = ROOT / '.veldo'
     TEMPLATES = ROOT / 'engine'
@@ -42,6 +47,7 @@ def _v51_suite():
     CURRENT_SCHEMA, HISTORICAL_SCHEMA = 'veldo.event/v1', 'w' 'arp.event/v1'
     SHIPPED = 'spec.shipped'
     JOURNAL_PRODUCER = 'control_event_projection.py'
+    SPEND, SPEND_PRODUCER = 'spend.recorded', 'spend.py'
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -514,7 +520,7 @@ def _v51_suite():
                 writer.close()
 
             # AC1: every enabled owner's events, serialized to JSONL, validated in another process.
-            with region('events/vocabulary-roundtrip', 'events/unknown-refused'):
+            with region('events/vocabulary-roundtrip', 'events/unknown-refused', 'events/spend-recorded'):
                 # The owners each writes; an owner is enabled when the installer lays its file.
                 registry = dict(VOC.EVENTS)
                 owners = dict(VOC.OWNER_FILES)
@@ -524,9 +530,11 @@ def _v51_suite():
                 RL = load('v51_runlog', mods / 'runlog.py')
                 INC = load('v51_incident', mods / 'incident.py')
                 RQ = load('v51_request', mods / 'request.py')
+                SP = load('v51_spend', mods / 'spend.py')
                 registrations = {'events.py': set(EV.EVENT_TYPES), 'runlog.py': set(RL.MILESTONES),
                                  'incident.py': set(INC.INCIDENT_EVENT_TYPES), 'request.py': set(RQ.REQUEST_EVENT_TYPES),
-                                 'verify.sh': gate_types, 'veldo-guard.sh': guard_types}
+                                 'verify.sh': gate_types, 'veldo-guard.sh': guard_types,
+                                 'spend.py': {SP.SCHEMA_EVENT_TYPE}}
                 # The hand-emitted owners through the installed CLI, the executor's own steps through its
                 # hook, the push guard in the emergency lane, and the review projection over a committed verdict.
                 hand = sorted(t for t in journey if registry[t] == VOC.HAND)
@@ -544,6 +552,16 @@ def _v51_suite():
                 git('add', '-A', repo=work)
                 git('commit', '-q', '-m', 'Review verdict', repo=work)
                 verdicts = cli(mods / 'events.py', 'reconcile-verdicts', '--repo-root', work, '--log', work_log)
+                # The spend recorder through its installed CLI, in another process, then a record with no
+                # figure, which it refuses.
+                spend_before = raw(installed_log)
+                spend_run = cli(mods / 'spend.py', 'record', '--spec', 'VELDO-9601', '--basis', 'harness_reported',
+                                '--tokens', '48000', '--cost-usd', '1.92', '--human-minutes', '6', '--note', 'suite 66')
+                spend_mid = raw(installed_log)
+                spend_blank = cli(mods / 'spend.py', 'record', '--spec', 'VELDO-9601', '--basis', 'harness_reported')
+                spend_after = raw(installed_log)
+                (base / 'spend-appended.jsonl').write_bytes(spend_mid[len(spend_before):])
+                spend_lines = lines(base / 'spend-appended.jsonl')
                 roundtrip = base / 'roundtrip.jsonl'
                 roundtrip.write_bytes(raw(installed_log) + raw(work_log))
                 written = lines(roundtrip)
@@ -564,8 +582,10 @@ def _v51_suite():
                       set(registry) == set(VOC.EVENT_TYPES) == set(EV.EVENT_TYPES)
                       # both directions: every producer registration is in the registry, every type has an owner
                       and all(v and v <= set(registry) for v in registrations.values())
+                      # the spend recorder's type is its own, never a projection's
+                      and all(registry.get(t) == SPEND_PRODUCER for t in registrations['spend.py'])
                       and all(owner in owners and (ROOT / owners[owner]).is_file() for owner in registry.values())
-                      and {'run.done', 'gate.passed', 'proof.recorded', 'verdict.recorded', SHIPPED} <= journey
+                      and {'run.done', 'gate.passed', 'proof.recorded', 'verdict.recorded', SHIPPED, SPEND} <= journey
                       and all(r == 0 for r in hand_runs.values()) and all(r == 'ok' for r in executor_runs.values())
                       and guard.returncode == 0 and verdicts.returncode == 0
                       # every journey event, written by its registered owner, validated in another process
@@ -574,6 +594,62 @@ def _v51_suite():
                       and by_type['gate.passed'] == {'verify.sh'}
                       and {CURRENT_SCHEMA, HISTORICAL_SCHEMA} == {e.get('schema') for e in written}
                       and verdict_exit == 0 and 'unknown event type' not in verdict_output)
+
+                # The spend recorder's record, validated in another process beside the spend lines it wrote
+                # before VELDO-0051 (spec.shipped, in both schema spellings), and read back by the three
+                # readers of spend actuals: the corpus, the judgment axis and the budget reader.
+                historical_spend = [
+                    {'schema': CURRENT_SCHEMA, 'id': '0a0a0a0a0a01', 'type': SHIPPED, 'at': '2026-08-02T00:00:00Z',
+                     'producer': 'events.py', 'correlation_id': 'VELDO-9601', 'spec_id': 'VELDO-9601',
+                     'tokens': 1000, 'human_minutes': 4, 'spend_basis': 'agent_estimate'},
+                    {'schema': HISTORICAL_SCHEMA, 'id': '0a0a0a0a0a02', 'type': SHIPPED, 'at': '2026-07-02T00:00:00Z',
+                     'producer': 'events.py', 'correlation_id': 'VELDO-9601', 'spec_id': 'VELDO-9601',
+                     'cost_usd': 0.08, 'human_minutes': 2, 'spend_basis': 'reconstructed'}]
+                spend_log = base / 'spend.jsonl'
+                spend_log.write_text(''.join(json.dumps(e) + '\n' for e in historical_spend + spend_lines))
+                spend_exit, spend_output = validate(spend_log)
+                TC = load('v51_corpus', mods / 'toe_corpus.py')
+                JL = load('v51_judgment', mods / 'judgment_load.py')
+                MT = load('v51_metrics', mods / 'metrics.py')
+                recorded = [e for e in spend_lines if e.get('type') == SPEND]
+
+                def read_back(events):
+                    corpus = TC.spend_for(events, 'VELDO-9601')
+                    return {'corpus': [corpus['tokens'], corpus['cost_usd'], corpus['human_minutes'],
+                                       corpus['spend_recorded']],
+                            'judgment': [JL.tokens_for(events, 'VELDO-9601')['tokens'],
+                                         JL.minutes_for(events, 'VELDO-9601')['by_kind']],
+                            'budget': (MT.compute(events).get('spend_by_correlation') or {}).get('VELDO-9601')}
+
+                def kinds(bulk):
+                    return {'review': 0, 'approval': 0, 'ship_bulk': bulk, 'other': 0}
+
+                read = {'new': read_back(recorded), 'historical': read_back(historical_spend),
+                        'both': read_back(historical_spend + recorded)}
+                observed['spend'] = {'record': [spend_run.returncode, spend_run.stdout.strip()[:300],
+                                                spend_run.stderr.strip()[:300]],
+                                     'appended': spend_lines, 'blank': [spend_blank.returncode, spend_blank.stderr.strip()[:160]],
+                                     'blank_appended': spend_after != spend_mid,
+                                     'validator': [spend_exit, spend_output[-400:]], 'readers': read}
+                check('events/spend-recorded',
+                      spend_run.returncode == 0 and SP.SCHEMA_EVENT_TYPE == SPEND
+                      # exactly one line: spend.recorded by its owner, carrying the figures and the basis
+                      and [(e.get('type'), e.get('producer'), e.get('spec_id'), e.get('tokens'), e.get('cost_usd'),
+                            e.get('human_minutes'), e.get('spend_basis'), e.get('spend_note')) for e in spend_lines]
+                      == [(SPEND, SPEND_PRODUCER, 'VELDO-9601', 48000, 1.92, 6, 'harness_reported', 'suite 66')]
+                      and json.loads(spend_run.stdout or '{}').get('id') == recorded[0].get('id')
+                      # the recorder still refuses a record with no figure and appends nothing for it
+                      and spend_blank.returncode == 1 and 'no figure' in spend_blank.stderr and spend_after == spend_mid
+                      # the validator passes the new record and the historical spend lines in both spellings
+                      and spend_exit == 0 and 'unknown event type' not in spend_output
+                      # every reader of spend actuals reads the new type and keeps reading the historical one
+                      and read == {
+                          'new': {'corpus': [48000, 1.92, 6, True], 'judgment': [48000, kinds(6)],
+                                  'budget': {'tokens': 48000, 'cost_usd': 1.92}},
+                          'historical': {'corpus': [1000, 0.08, 6, True], 'judgment': [1000, kinds(6)],
+                                         'budget': {'tokens': 1000, 'cost_usd': 0.08}},
+                          'both': {'corpus': [49000, 2.0, 12, True], 'judgment': [49000, kinds(12)],
+                                   'budget': {'tokens': 49000, 'cost_usd': 2.0}}})
 
                 # The refusals: an unknown type or schema at the writer and at the validator, and one
                 # type substituted for another through an extra field, on every route.
