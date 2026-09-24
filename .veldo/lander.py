@@ -753,11 +753,13 @@ class CandidatePolicy:
                 refusals.append("not_handed_off:%s" % record.get("state"))
             refusals.extend("unresolved_finding:" + fid for fid, f in sorted((record.get("findings") or {}).items())
                             if not (f or {}).get("resolved"))
-            handoff = record.get("handoff") or {}
-            if (handoff.get("source") or {}).get("commit") != candidate["evidence"]:
-                refusals.append("binding_mismatch:review/source")
-            if (handoff.get("proof") or {}).get("digest") != (candidate.get("proof") or {}).get("digest"):
-                refusals.append("binding_mismatch:review/proof")
+            if record.get("state") == "handoff":
+                # The build handed off is exactly the one this candidate merged: its source and its proof.
+                handoff = record.get("handoff") or {}
+                if (handoff.get("source") or {}).get("commit") != candidate["evidence"]:
+                    refusals.append("binding_mismatch:review/source")
+                if (handoff.get("proof") or {}).get("digest") != (candidate.get("proof") or {}).get("digest"):
+                    refusals.append("binding_mismatch:review/proof")
         gate = self.EL.Gate(self.store, self.conn, domain_uuid=self.domain, repository_uuid=self.repository,
                             workspace=candidate.get("workspace"), settlement_trust=self.settlement_trust)
         context = {"holder": unit.get("holder"), "generation": unit.get("generation")} if isinstance(unit, dict) else {}
