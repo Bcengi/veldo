@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Isolated worker clones at the accepted commit, one read-only pinned object cache per repository,
-and a worker's direct writes confined to its own clone (PLAN-0019 W27, VELDO-0042, R45, C13).
+and a worker kept from writing directly to anything another run depends on (PLAN-0019 W27, VELDO-0042,
+R45, C13).
 
 EACH RUN ITS OWN CLONE. `Clones` provisions one clone per dispatch at the commit the dispatch contract
 accepted (contract.source.commit, checked against contract.source.tree), never at the source
@@ -29,20 +30,50 @@ age) keeps every object the clone can reach. Retirement, the provisioner's teard
 clone's pins only after every dispatch using it has ended: its worker and each consumer attached to
 it. A dispatch has ended when its record is conclusive (exited or refused) AND the kernel says now
 that its process is gone and its containment group is empty (control_containment.retirement over the
-group the VELDO-0039 receiver reported). A clone still in use is refused `clone_in_use` and keeps
-everything.
+group the VELDO-0039 receiver reported, recorded with `record_group`). A user that `enter` started on
+this host during this boot is still in use while its group is unknown, or is not the group its
+process was entered in: without the group the kernel cannot say its descendants are gone, so
+retirement fails closed. A clone still in use is refused `clone_in_use` and keeps everything.
 
 WRITE CONFINEMENT (`enter`). A worker starts through the receiver's containment wrapper and then this
 module's `enter`, the adapter's configured argv prefix (`Clones.adapter`). It finds the clone its
-dispatch uses, confines itself with Linux Landlock so that no process of the worker can write, create,
-remove, rename, link or truncate anything outside its grants, and becomes the engine by exec inside
-the clone, with the Git variables that select a repository removed. A worker's grants are its clone's
-work tree and its own scratch directory (its TMPDIR); a consumer's is its scratch directory only, so
-it reads the clone and writes none of it. Both may write the null devices and the directories the
-installation configures as writable, which may not overlap a protected path. Reading and executing
-are not restricted, and neither is changing a file's mode (not a Landlock right; the bytes stay
-unwritable). Another clone, the store, the keys, the authority's Git metadata and the caches are all
-outside every grant, so the kernel refuses a worker's write to any of them. `enter` refuses to start
+dispatch uses, records that it entered (its process identity and cgroup, in the clone root, before
+anything is confined), confines itself with Linux Landlock and becomes the engine by exec inside the
+clone, with the Git variables that select a repository removed. The confinement DENIES and grants
+everything else, so an engine keeps what it can do today:
+
+- Writes are denied beneath exactly these protected targets, recorded in the clone's manifest at
+  provisioning: the clone root (every clone, including this clone's own manifest, pins record and
+  entrance records), the cache root (every cache), the store's directory, the configured protected
+  directories (the keys), and the Git metadata of every repository the store binds (its git
+  directory, common directory and .git entry). A worker's own work tree and scratch directory (its
+  TMPDIR) are granted back beneath the clone root; a consumer's scratch directory only, so it reads
+  the clone and writes none of it.
+- Reads of file content are denied beneath the cache root and the configured protected directories.
+  The caches of the repositories this clone names are granted back, so its alternates resolve and an
+  unnamed repository's cache stays unreadable even when a worker appends it to its own alternates.
+- Everything else stays readable, writable, executable and listable as before: the home directory's
+  existing entries (an engine's state directory such as ~/.claude or ~/.codex, ~/.cache), the
+  temporary directories (/tmp, /var/tmp, /dev/shm), the devices and every other repository's work
+  tree. Changing a file's mode is not a Landlock right.
+
+Landlock grants by directory hierarchy and cannot deny a single path, so each denial is built from its
+targets' ancestor chains, as control_keys_custody (VELDO-0067) builds its read denial: every entry
+beside a chain, at every level of every chain, is granted as a whole hierarchy (an existing file
+beside a chain is granted its content rights), and nothing on a chain is granted. What that still
+denies, stated rather than hidden: a NEW entry created, removed, renamed or linked directly in an
+ancestor directory of a protected target after the worker starts (an existing file there stays
+writable in place), and, for a read-protected target's ancestors, the content of a file created there
+after the worker starts. `ancestors` names every such directory this account can write, and each
+manifest records them. So the layout keeps everyday locations off the chains: no protected target
+may be beneath a temporary directory (refused `invalid_input:layout`), and the clone root, cache root,
+store and keys belong in one directory of Veldo's own whose ancestors the owner's account cannot write
+anyway (for example /var/lib/veldo, made once by the installation). The bound repositories' Git
+metadata is where the owner keeps them, usually under the home directory, which puts the home
+directory and each repository's parent on the write chain: an engine that saves a file directly in
+the home directory by write-and-rename (Claude Code's ~/.claude.json) is refused the rename and its
+lock directory. The proof README records what the installed engines do there. Landlock also requires
+no_new_privs, so a setuid program cannot gain privilege in a confined worker. `enter` refuses to start
 the engine on a kernel without Landlock ABI 3, where truncation is first handled.
 
 WHAT IT IS NOT. It does not stop a worker that deliberately leaves its group, or writes through the
@@ -62,6 +93,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 
@@ -78,6 +110,7 @@ EP = _organ('env_provision')
 
 SCHEMA = 'veldo.worker_clone/v1'
 MANIFEST = 'clone.json'
+ENTERED = 'entered'
 PIN_PREFIX = 'refs/veldo/pins/'
 ATTACHMENT_PREFIX = 'refs/attachments/'
 ATTACHMENT_FIELDS = ('name', 'domain', 'repository', 'commit')
@@ -92,20 +125,23 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'binding_mismatch': 'invalid_input
             'unavailable_service': 'unavailable_service', 'missing_evidence': 'missing_evidence'}
 
 # Landlock (the generic syscall table numbers, the same on x86_64 and aarch64) and the rights it
-# handles here: every way to change the file system's content or names. Reading, listing and
-# executing are not handled, so they stay as they were.
+# handles here: every way to change the file system's content or names, and reading a file's content.
+# Listing and executing are not handled, so they stay as they were everywhere.
 SYSCALLS = {'x86_64': (444, 445, 446), 'aarch64': (444, 445, 446)}
 CREATE_RULESET_VERSION = 1
 RULE_PATH_BENEATH = 1
-WRITE_FILE, REMOVE_DIR, REMOVE_FILE = 1 << 1, 1 << 4, 1 << 5
+WRITE_FILE, READ_FILE, REMOVE_DIR, REMOVE_FILE = 1 << 1, 1 << 2, 1 << 4, 1 << 5
 MAKE = (1 << 6) | (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 12)  # char dir reg sock fifo block sym
 REFER, TRUNCATE = 1 << 13, 1 << 14
 WRITES = WRITE_FILE | REMOVE_DIR | REMOVE_FILE | MAKE | REFER | TRUNCATE
-FILE_WRITES = WRITE_FILE | TRUNCATE
-DEVICES = ('/dev/null', '/dev/zero', '/dev/full')
+READS = READ_FILE
+HANDLED = WRITES | READS
+# The rights a rule on a non-directory may carry (a file, a device, a socket).
+FILE_RIGHTS = WRITE_FILE | READ_FILE | TRUNCATE
 MINIMUM_ABI = 3
 PR_SET_NO_NEW_PRIVS = 38
 O_PATH = getattr(os, 'O_PATH', 0o10000000)
+TEMPORARY = ('/tmp', '/var/tmp', '/dev/shm')
 
 
 class Refused(Exception):
@@ -127,6 +163,11 @@ def _overlap(a, b):
     return a == b or a in b.parents or b in a.parents
 
 
+def _beneath(path, root):
+    path, root = Path(path), Path(root)
+    return path == root or root in path.parents
+
+
 def _git(*args, check=True, code='unavailable_service:provisioning'):
     result = _git_process.run(['git', *[str(a) for a in args]], capture_output=True, text=True, timeout=GIT_SECONDS,
                               stdin=subprocess.DEVNULL)
@@ -140,7 +181,16 @@ def _scratch(root, dispatch_id):
     return Path(root) / 'scratch' / hashlib.sha256(str(dispatch_id).encode()).hexdigest()[:24]
 
 
-# The worker side: find the clone, confine, become the engine.
+def temporary_directories(environment=None):
+    """The directories every engine creates files in directly: the system's temporary directories and
+    the process's own. No protected target may be beneath one, or its chain would deny them."""
+    source = os.environ if environment is None else environment
+    found = {Path(p).resolve() for p in TEMPORARY + (tempfile.gettempdir(), source.get('TMPDIR') or '/tmp')
+             if p and os.path.isdir(p)}
+    return sorted(found)
+
+
+# The worker side: find the clone, record the entrance, confine, become the engine.
 
 class _RulesetAttr(ctypes.Structure):
     _fields_ = [('handled_access_fs', ctypes.c_uint64)]
@@ -169,29 +219,100 @@ def abi():
     return version if version > 0 else 0
 
 
-def confine(directories, files=DEVICES):
-    """Confine this process and everything it starts: nothing outside `directories` (and the device
-    `files`, write only) can be written, created, removed, renamed, linked or truncated. Irrevocable.
-    Refuses, confining nothing, below Landlock ABI 3."""
+def _chain(targets):
+    """The targets and every ancestor of each."""
+    chain = set(targets)
+    for target in targets:
+        chain.update(target.parents)
+    return chain
+
+
+def beside(targets):
+    """[(path, is_directory)] beside the targets' ancestor chains, at every level of every chain. A path
+    is on a chain when it is a target or one of its ancestors; nothing on a chain is returned, so no
+    returned hierarchy holds a target. Symbolic links are not returned: their targets are granted, or
+    not, at their own place in the tree."""
+    targets = [Path(t) for t in targets]
+    chain = _chain(targets)
+    found = []
+    for ancestor in sorted(p for p in chain if not any(_beneath(p, t) for t in targets)):
+        try:
+            entries = list(os.scandir(ancestor))
+        except OSError:
+            continue
+        for entry in entries:
+            path = Path(entry.path)
+            if path in chain:
+                continue
+            try:
+                if entry.is_symlink():
+                    continue
+                found.append((path, entry.is_dir(follow_symlinks=False)))
+            except OSError:
+                continue
+    return found
+
+
+def rules(deny_write, deny_read, write=(), read=()):
+    """{path: (rights, is_directory)}: for each denial (writes beneath `deny_write`, reads beneath
+    `deny_read`), its rights granted on every hierarchy beside its targets' chains and on the paths
+    granted back beneath them (`write`, `read`); the whole file system when a denial has no target."""
+    merged = {}
+
+    def grant(path, is_directory, rights):
+        held, _ = merged.get(path, (0, is_directory))
+        merged[path] = (held | rights, is_directory)
+
+    for rights, targets, back in ((WRITES, deny_write, write), (READS, deny_read, read)):
+        targets = [Path(t) for t in targets]
+        for path, is_directory in beside(targets) if targets else [(Path('/'), True)]:
+            grant(path, is_directory, rights)
+        for path in back:
+            grant(Path(path), os.path.isdir(path), rights)
+    return merged
+
+
+def ancestors(deny_write, deny_read):
+    """The directories on a denial's chains that this account can write: in each, a confined process
+    cannot create, remove, rename or link an entry directly (write chain), or read a file created there
+    after it started (read chain). The everyday cost of the layout, named."""
+    cost = {}
+    for name, targets in (('write', deny_write), ('read', deny_read)):
+        targets = [Path(t) for t in targets]
+        cost[name] = sorted(str(p) for p in _chain(targets)
+                            if not any(_beneath(p, t) for t in targets) and os.access(p, os.W_OK))
+    return cost
+
+
+def confine(granted):
+    """Confine this process and everything it starts to `granted` ({path: (rights, is_directory)}): each
+    handled right is refused everywhere no rule grants it. Irrevocable. Refuses, confining nothing,
+    below Landlock ABI 3."""
     libc, (create, add_rule, restrict_self) = _libc()
     version = abi()
     if version < MINIMUM_ABI:
         raise Refused('unavailable_service:confinement', 'Landlock ABI %d is below %d' % (version, MINIMUM_ABI))
-    attr = _RulesetAttr(WRITES)
+    attr = _RulesetAttr(HANDLED)
     ruleset = libc.syscall(ctypes.c_long(create), ctypes.byref(attr), ctypes.c_size_t(ctypes.sizeof(attr)),
                            ctypes.c_uint32(0))
     if ruleset < 0:
         raise Refused('unavailable_service:confinement', 'landlock_create_ruleset failed (errno %d)' % ctypes.get_errno())
-    rules = [(Path(d), WRITES, os.O_DIRECTORY) for d in directories]
-    rules += [(Path(f), FILE_WRITES, 0) for f in files if os.path.exists(f)]
+    added = 0
     try:
-        for path, rights, flags in rules:
-            fd = os.open(path, O_PATH | os.O_CLOEXEC | flags)
+        for path, (rights, is_directory) in sorted(granted.items()):
+            rights = rights if is_directory else rights & FILE_RIGHTS
+            if not rights:
+                continue
+            try:
+                fd = os.open(path, O_PATH | os.O_CLOEXEC | os.O_NOFOLLOW)
+            except OSError:
+                continue
             try:
                 rule = _PathBeneathAttr(rights, fd)
                 if libc.syscall(ctypes.c_long(add_rule), ctypes.c_int(ruleset), ctypes.c_int(RULE_PATH_BENEATH),
                                 ctypes.byref(rule), ctypes.c_uint32(0)) < 0:
                     raise Refused('unavailable_service:confinement', 'landlock_add_rule failed (errno %d)' % ctypes.get_errno())
+                added += 1
             finally:
                 os.close(fd)
         if libc.prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0:
@@ -200,7 +321,7 @@ def confine(directories, files=DEVICES):
             raise Refused('unavailable_service:confinement', 'landlock_restrict_self failed (errno %d)' % ctypes.get_errno())
     finally:
         os.close(ruleset)
-    return len(rules)
+    return added
 
 
 def find(clones, dispatch_id):
@@ -218,18 +339,46 @@ def find(clones, dispatch_id):
 
 
 def grants(manifest, user):
-    """The directories a user of a clone may write: a worker its work tree and its scratch directory, a
-    consumer its scratch directory; both the installation's configured writable directories."""
-    directories = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])
-    return directories + list(manifest.get('writable') or [])
+    """The confinement of one user of a clone: the manifest's protected targets denied, and granted back
+    beneath them a worker's work tree and scratch directory (a consumer's scratch directory) for
+    writing, and the caches of the repositories the clone names for reading."""
+    protected = manifest.get('protected')
+    if not isinstance(protected, dict) or not protected.get('write') or not protected.get('read'):
+        raise Refused('invalid_input:clone_unknown', 'the clone records no protected targets')
+    write = [user['scratch']] + ([manifest['work']] if user.get('role') == 'worker' else [])
+    return rules(protected['write'], protected['read'], write, [pin['cache'] for pin in manifest['pins']])
+
+
+def _process(pid):
+    """A process identity as control_containment.alive reads it: pid, boot and start time."""
+    stat = Path('/proc/%d/stat' % pid).read_text()
+    return {'pid': pid, 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+            'start': stat[stat.rindex(')') + 2:].split()[19]}
+
+
+def _entrance(manifest, user):
+    """Record, in the clone root and before anything is confined, that this process entered for `user`:
+    its identity and the cgroup it runs in. The clone root is protected, so no worker can remove it."""
+    directory = Path(manifest['root']) / ENTERED
+    directory.mkdir(mode=0o700, exist_ok=True)
+    pid = os.getpid()
+    cgroup = next((line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines() if line.startswith('0::')),
+                  None)
+    record = dict(_process(pid), dispatch_id=user['dispatch_id'], cgroup=cgroup)
+    name = '%s.%d.json' % (Path(user['scratch']).name, pid)
+    temporary = directory / ('.%s.tmp' % name)
+    temporary.write_text(json.dumps(record, sort_keys=True))
+    os.replace(temporary, directory / name)
 
 
 def enter(clones, argv, environment=None):
-    """The worker side (`control_clone.py enter <clone root> -- <engine argv>`): confine the writes of
-    the dispatch named by VELDO_DISPATCH_ID to its grants, then become the engine in the clone."""
+    """The worker side (`control_clone.py enter <clone root> -- <engine argv>`): record the entrance of
+    the dispatch named by VELDO_DISPATCH_ID, confine it, then become the engine in the clone."""
     source = os.environ if environment is None else environment
     manifest, user = find(clones, source.get('VELDO_DISPATCH_ID'))
-    confine(grants(manifest, user))
+    granted = grants(manifest, user)
+    _entrance(manifest, user)
+    confine(granted)
     # The clone decides which repository the engine's Git reads: the variables that select a
     # repository, work tree, index or object store are removed by prefix; transport and
     # configuration variables stay (git_process's network profile).
@@ -244,27 +393,33 @@ def enter(clones, argv, environment=None):
 class Clones(EP.EnvProvisioner):
     """Worker clones of one domain over the runner's control_dispatch.Dispatches (its store connection,
     bindings and dispatch records). `clones` and `caches` are the roots clones and repository caches live
-    under; `protected` names directories no configured `writable` directory may overlap (the store's
-    directory is always protected); `writable` is what every worker and consumer may also write."""
+    under; `protected` names the directories no worker may read or write (the key directories). The
+    store's directory is never written by a worker either."""
 
-    def __init__(self, dispatches, *, clones, caches, protected=(), writable=(), clock=None):
+    def __init__(self, dispatches, *, clones, caches, protected=(), clock=None):
         super().__init__()
         self.C = _organ('control_containment')  # VELDO-0040: a clone user's ending read from the kernel
         self.dispatches, self.store, self.conn = dispatches, dispatches.store, dispatches.conn
         self.domain, self.clock = dispatches.domain, clock or time.time
         self.clones, self.caches = Path(clones).resolve(), Path(caches).resolve()
         database = next((row[2] for row in self.conn.execute('PRAGMA database_list') if row[1] == 'main'), '')
-        self.protected = [Path(p).resolve() for p in protected] + ([Path(database).resolve().parent] if database else [])
-        self.writable = [Path(w).resolve() for w in writable]
+        self.protected = [Path(p).resolve() for p in protected]
+        self.store_directory = [Path(database).resolve().parent] if database else []
         self.observations, self.counts = [], {'accepted': 0, 'refused': 0}
         roots = (self.clones, self.caches)
-        if _overlap(*roots) or any(_overlap(r, p) for r in roots for p in self.protected):
+        if _overlap(*roots) or any(_overlap(r, p) for r in roots for p in self.protected + self.store_directory):
             raise Refused('invalid_input:root', 'the clone and cache roots are separate and outside every protected path')
-        for path in self.writable:
-            if not path.is_dir() or any(_overlap(path, p) for p in list(roots) + self.protected):
-                raise Refused('invalid_input:writable', 'a configured writable directory overlaps a protected path')
+        self._layout(list(roots) + self.protected + self.store_directory)
         for root in roots:
             root.mkdir(mode=0o700, parents=True, exist_ok=True)
+
+    @staticmethod
+    def _layout(targets):
+        """No protected target beneath a temporary directory: its chain would deny every engine the
+        files it creates there."""
+        for target in targets:
+            if any(_beneath(target, t) for t in temporary_directories()):
+                raise Refused('invalid_input:layout', 'a protected target is not beneath a temporary directory')
 
     # What the launch path is configured with. VELDO-0129 wires the production adapters' argv to this
     # `adapter` prefix and composes create/attach/teardown with the VELDO-0039 runner and receiver; the
@@ -285,6 +440,32 @@ class Clones(EP.EnvProvisioner):
         self._write(manifest)
 
     # Provisioning.
+
+    def _metadata(self):
+        """The Git metadata of every repository the store binds, in any domain: its git directory, its
+        common directory and its .git entry. A path Git cannot read is protected whole."""
+        if not self.conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='repository_bindings'").fetchone():
+            return []
+        found = set()
+        for (path,) in self.conn.execute('SELECT path FROM repository_bindings ORDER BY path'):
+            result = _git('-C', path, 'rev-parse', '--path-format=absolute', '--git-dir', '--git-common-dir', check=False)
+            lines = [line for line in result.stdout.splitlines() if line.strip()] if not result.returncode else []
+            found.update(Path(line).resolve() for line in lines)
+            if os.path.lexists(os.path.join(path, '.git')):
+                found.add(Path(path).resolve() / '.git')
+            if not lines:
+                found.add(Path(path).resolve())
+        return sorted(found)
+
+    def _protection(self):
+        """What every user of a new clone is denied (manifest `protected`) and what that costs
+        (manifest `ancestors`)."""
+        metadata = self._metadata()
+        self._layout(metadata)
+        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata})
+        read = sorted({self.caches, *self.protected})
+        protected = {'write': [str(p) for p in write], 'read': [str(p) for p in read]}
+        return protected, ancestors(write, read)
 
     def _cache(self, domain, repository):
         """The one cache of a repository: a bare repository named from its domain and repository."""
@@ -322,8 +503,6 @@ class Clones(EP.EnvProvisioner):
             raise Refused('unavailable_service:repository', 'the bound repository is not readable')
         if any(_overlap(root, path) for root in (self.clones, self.caches)):
             raise Refused('invalid_input:root', 'a clone or cache root overlaps a bound repository')
-        if any(_overlap(w, path) for w in self.writable):
-            raise Refused('invalid_input:writable', 'a configured writable directory overlaps a bound repository')
         return path
 
     def _accepted(self, contract):
@@ -364,6 +543,7 @@ class Clones(EP.EnvProvisioner):
         root.mkdir(mode=0o700)  # exclusive: no path is ever provisioned twice
         work, pins = root / 'work', []
         try:
+            protected, cost = self._protection()
             commit = accepted['commit']
             pins.append(self._pin(self._cache(accepted['domain'], accepted['repository']), accepted['repository'],
                                   accepted['path'], commit, clone_id))
@@ -384,7 +564,7 @@ class Clones(EP.EnvProvisioner):
                         'domain': accepted['domain'], 'repository': accepted['repository'], 'unit': accepted['unit'],
                         'commit': accepted['commit'], 'tree': accepted['tree'],
                         'attachments': [{f: a[f] for f in ATTACHMENT_FIELDS} for a in accepted['attachments']],
-                        'pins': pins, 'writable': [str(w) for w in self.writable], 'created_at': self.clock(),
+                        'pins': pins, 'protected': protected, 'ancestors': cost, 'created_at': self.clock(),
                         'users': [{'dispatch_id': accepted['dispatch_id'], 'role': 'worker', 'scratch': str(scratch),
                                    'group': None}]}
             self._write(manifest)
@@ -395,7 +575,7 @@ class Clones(EP.EnvProvisioner):
             if isinstance(error, (Refused, OSError, subprocess.SubprocessError)):
                 self._event('provision', accepted, 'refused', refusal=getattr(error, 'code', 'unavailable_service:provisioning'))
             raise
-        self._event('provision', accepted, 'accepted', clone_id=clone_id)
+        self._event('provision', accepted, 'accepted', clone_id=clone_id, ancestors=cost)
         return EP.EnvHandle(clone_id, 'clone', {'root': str(root), 'work': str(work)})
 
     def _accepted_or_observed(self, operation, contract):
@@ -466,14 +646,35 @@ class Clones(EP.EnvProvisioner):
             return None
         return self.handle(manifest['clone_id'])
 
-    def user_state(self, user):
+    @staticmethod
+    def entrances(root, user):
+        """Every entrance `enter` recorded for one user of the clone at `root`."""
+        found = []
+        for path in sorted((Path(root) / ENTERED).glob(Path(user['scratch']).name + '.*.json')):
+            try:
+                found.append(json.loads(path.read_text()))
+            except (OSError, ValueError):
+                found.append({'unreadable': str(path.name)})
+        return found
+
+    def user_state(self, user, root=None):
         """Whether one user of a clone has ended: its record is conclusive and the kernel says now that its
-        process is gone and its group empty."""
+        process is gone and its group empty. A user entered on this host during this boot has ended only
+        when its group is known, is the group each of its entrances ran in, and is empty, and every
+        entered process is gone: an unknown group fails closed."""
         record = self.dispatches.record(user['dispatch_id']) or {}
-        seen = self.C.retirement(user.get('group'), record.get('process'))
-        ended = record.get('state') in ENDED and seen['terminated'] and seen['cleaned']
+        group = user.get('group')
+        seen = self.C.retirement(group, record.get('process'))
+        boot = Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+        here = [e for e in self.entrances(root, user) if e.get('boot_id') in (boot, None)] if root else []
+        cgroup = group.get('cgroup') if isinstance(group, dict) else None
+        unknown = bool(here) and (not cgroup or any(e.get('cgroup') != cgroup for e in here))
+        entered_alive = any(self.C.alive(e) for e in here)
+        ended = (record.get('state') in ENDED and seen['terminated'] and seen['cleaned'] and not entered_alive
+                 and not unknown)
         return {'dispatch_id': user['dispatch_id'], 'role': user['role'], 'state': record.get('state'),
-                'ended': ended, 'observation': seen}
+                'ended': ended, 'entrances': len(here), 'group_unknown': unknown, 'entered_alive': entered_alive,
+                'observation': seen}
 
     def _pins_held(self, clone_id):
         held = []
@@ -495,7 +696,8 @@ class Clones(EP.EnvProvisioner):
         head = _git('-C', work, 'rev-parse', 'HEAD', check=False).stdout.strip() if work else None
         return {'clone_id': handle.env_id, 'commit': manifest.get('commit'), 'tree': manifest.get('tree'), 'head': head,
                 'attachments': manifest.get('attachments'), 'pins': self._pins_held(handle.env_id),
-                'users': [self.user_state(u) for u in manifest.get('users') or []]}
+                'ancestors': manifest.get('ancestors'),
+                'users': [self.user_state(u, manifest.get('root')) for u in manifest.get('users') or []]}
 
     def _paths(self, handle):
         manifest = self._manifest(handle.env_id)
@@ -513,7 +715,7 @@ class Clones(EP.EnvProvisioner):
         manifest = self._manifest(handle.env_id)
         if manifest is None:
             return
-        users = [self.user_state(u) for u in manifest['users']]
+        users = [self.user_state(u, manifest['root']) for u in manifest['users']]
         live = sorted(u['dispatch_id'] for u in users if not u['ended'])
         if live:
             self._event('retire', manifest, 'refused', refusal='clone_in_use', clone_id=handle.env_id, users=users)
