@@ -151,3 +151,10 @@ store command that writes only intake sources, proposals and questions; an unres
 inbox proposal and asks. Suite 68 has 18 rows, finding 126 has 14 mutations, and the rows are red at
 d34980f (`proof/VELDO-0126/`). The API leg drives the intake interface; VELDO-0130 drives its own leg.
 The criteria, status and risk are unchanged.
+
+2026-09-24, review fixes: a follow-up to an inbox proposal already resolved (a Telegram reply to the
+original message or its question, or an API request naming the inbox id) now follows `resolved_to` and
+lands on the live objective. On the lead's decision, a Telegram message whose sender was not a member
+at the message's platform date stays refused after the sender is enrolled, read from the effective
+time of the key the VELDO-0025 enrollment writes. Suite 68 keeps 18 rows with two new row cases, red at
+8607f50; finding 126 has 18 mutations (`proof/VELDO-0126/`). The criteria, status and risk are unchanged.
