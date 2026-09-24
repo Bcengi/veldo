@@ -195,8 +195,8 @@ def finish(conn, accepted, observation, journal):
     status = observation.get('status') if matches else 'unknown'
     if status not in ('accepted', 'completed', 'unknown', 'refused'):
         status = 'unknown'
-    # A refusal the receiver made before anything reached a destination: conclusive, nothing was
-    # done, so no stop is owed. It must name its refusal.
+    # A refusal the executor made before any receiver ran: conclusive, nothing was done, so no
+    # stop is owed. It must name its refusal. A receiver's own refused arrives here as unknown.
     refusal = observation.get('refusal') if status == 'refused' else None
     if status == 'refused' and not (isinstance(refusal, str) and refusal):
         status, refusal = 'unknown', None
