@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -488 +488 @@
+-    definition, layout = params.get('definition'), params.get('layout')
++    definition, layout = params.get('definition'), {}  # defect: the canvas layout is not kept

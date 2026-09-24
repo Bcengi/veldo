@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -448 +448 @@
+-            if record['resume'] is not None:
++            if False:  # defect: a cycle is canceled without asking the graph

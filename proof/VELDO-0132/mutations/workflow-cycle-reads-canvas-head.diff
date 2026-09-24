@@ -1,0 +1,8 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -288,3 +288,2 @@
+-                                         binding['version'])
+-        if (row['id'], row['digest'], data['definition_digest']) != (binding['revision'], binding['entity_digest'],
+-                                                                     binding['digest']):
++                                         WF.head_version(self.conn, self.domain, self.repository, binding['id']))  # defect: the canvas's current revision
++        if False:

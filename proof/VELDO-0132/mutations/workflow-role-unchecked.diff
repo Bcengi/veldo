@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -365 +365 @@
+-        problem = self.role_problem(definition, node)
++        problem = None  # defect: the assignment's role is not judged

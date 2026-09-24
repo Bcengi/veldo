@@ -1,0 +1,401 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 132 --jobs 4",
+ "exit": 0,
+ "seconds": 117.6,
+ "summary": {
+  "mutations_rejected": 26,
+  "green_suites": {
+   "65_veldo_0132_workflow.py": 41
+  }
+ },
+ "control": {
+  "suite": "65_veldo_0132_workflow.py",
+  "assertions": 41
+ },
+ "every_target_red": true,
+ "no_ran_row_red": true,
+ "mutations_per_row": {
+  "workflow/validation": [
+   "workflow-dangling-edge-accepted",
+   "workflow-unbounded-cycle-accepted",
+   "workflow-references-unresolved"
+  ],
+  "workflow/authorized-editor": [
+   "workflow-editor-unchecked",
+   "workflow-editor-role-ignored"
+  ],
+  "workflow/revisions-immutable": [
+   "workflow-revision-kinds-unowned",
+   "workflow-stale-base-accepted",
+   "workflow-load-returns-head"
+  ],
+  "workflow/canvas-round-trip": [
+   "workflow-layout-reaches-runner",
+   "workflow-layout-dropped"
+  ],
+  "workflow/edit-without-execution": [
+   "workflow-save-launches-worker",
+   "workflow-load-activates-runtime"
+  ],
+  "workflow/pinned-revision": [
+   "workflow-cycle-reads-canvas-head",
+   "workflow-cycle-binds-first-revision"
+  ],
+  "workflow/actual-langgraph": [
+   "workflow-runner-unregistered",
+   "workflow-cancel-without-graph"
+  ],
+  "workflow/ordinary-authorization": [
+   "workflow-role-unchecked",
+   "workflow-gate-not-asked",
+   "workflow-budget-unchecked",
+   "workflow-loop-bound-unchecked",
+   "workflow-completion-unvalidated"
+  ],
+  "workflow/no-workflow-authority": [
+   "workflow-terminal-ships-spec",
+   "workflow-terminal-writes-unit"
+  ],
+  "workflow/observations": [
+   "workflow-cycle-refusal-unobserved",
+   "workflow-save-refusal-unclassified",
+   "workflow-pending-unlisted"
+  ]
+ },
+ "mutations": [
+  {
+   "mutation": "workflow-dangling-edge-accepted",
+   "module": "control_workflow.py",
+   "row": "workflow/validation",
+   "declared_falsifier_of": "AC1",
+   "red_rows": [
+    "workflow/validation"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-dangling-edge-accepted.diff"
+  },
+  {
+   "mutation": "workflow-unbounded-cycle-accepted",
+   "module": "control_workflow.py",
+   "row": "workflow/validation",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/validation"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-unbounded-cycle-accepted.diff"
+  },
+  {
+   "mutation": "workflow-references-unresolved",
+   "module": "control_workflow.py",
+   "row": "workflow/validation",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/validation"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-references-unresolved.diff"
+  },
+  {
+   "mutation": "workflow-editor-unchecked",
+   "module": "control_workflow.py",
+   "row": "workflow/authorized-editor",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/authorized-editor"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-editor-unchecked.diff"
+  },
+  {
+   "mutation": "workflow-editor-role-ignored",
+   "module": "control_workflow.py",
+   "row": "workflow/authorized-editor",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/authorized-editor"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-editor-role-ignored.diff"
+  },
+  {
+   "mutation": "workflow-revision-kinds-unowned",
+   "module": "control_workflow.py",
+   "row": "workflow/revisions-immutable",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/revisions-immutable",
+    "workflow/edit-without-execution"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-revision-kinds-unowned.diff"
+  },
+  {
+   "mutation": "workflow-stale-base-accepted",
+   "module": "control_workflow.py",
+   "row": "workflow/revisions-immutable",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/revisions-immutable",
+    "workflow/canvas-round-trip",
+    "workflow/edit-without-execution"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-stale-base-accepted.diff"
+  },
+  {
+   "mutation": "workflow-load-returns-head",
+   "module": "control_workflow.py",
+   "row": "workflow/revisions-immutable",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/revisions-immutable",
+    "workflow/pinned-revision",
+    "workflow/actual-langgraph"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-load-returns-head.diff"
+  },
+  {
+   "mutation": "workflow-layout-reaches-runner",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/canvas-round-trip",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/canvas-round-trip",
+    "workflow/pinned-revision",
+    "workflow/actual-langgraph",
+    "workflow/ordinary-authorization",
+    "workflow/no-workflow-authority",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-layout-reaches-runner.diff"
+  },
+  {
+   "mutation": "workflow-layout-dropped",
+   "module": "control_workflow.py",
+   "row": "workflow/canvas-round-trip",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/validation",
+    "workflow/canvas-round-trip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-layout-dropped.diff"
+  },
+  {
+   "mutation": "workflow-save-launches-worker",
+   "module": "control_workflow.py",
+   "row": "workflow/edit-without-execution",
+   "declared_falsifier_of": "AC3",
+   "red_rows": [
+    "workflow/edit-without-execution"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-save-launches-worker.diff"
+  },
+  {
+   "mutation": "workflow-load-activates-runtime",
+   "module": "control_workflow.py",
+   "row": "workflow/edit-without-execution",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/edit-without-execution"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-load-activates-runtime.diff"
+  },
+  {
+   "mutation": "workflow-cycle-reads-canvas-head",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/pinned-revision",
+   "declared_falsifier_of": "AC2",
+   "red_rows": [
+    "workflow/pinned-revision",
+    "workflow/no-workflow-authority",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-cycle-reads-canvas-head.diff"
+  },
+  {
+   "mutation": "workflow-cycle-binds-first-revision",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/pinned-revision",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/pinned-revision",
+    "workflow/actual-langgraph",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-cycle-binds-first-revision.diff"
+  },
+  {
+   "mutation": "workflow-runner-unregistered",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/actual-langgraph",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/canvas-round-trip",
+    "workflow/pinned-revision",
+    "workflow/actual-langgraph",
+    "workflow/ordinary-authorization",
+    "workflow/no-workflow-authority",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-runner-unregistered.diff"
+  },
+  {
+   "mutation": "workflow-cancel-without-graph",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/actual-langgraph",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/actual-langgraph"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-cancel-without-graph.diff"
+  },
+  {
+   "mutation": "workflow-role-unchecked",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/ordinary-authorization",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/ordinary-authorization",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-role-unchecked.diff"
+  },
+  {
+   "mutation": "workflow-gate-not-asked",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/ordinary-authorization",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/ordinary-authorization",
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-gate-not-asked.diff"
+  },
+  {
+   "mutation": "workflow-budget-unchecked",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/ordinary-authorization",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/ordinary-authorization"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-budget-unchecked.diff"
+  },
+  {
+   "mutation": "workflow-loop-bound-unchecked",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/ordinary-authorization",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/ordinary-authorization"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-loop-bound-unchecked.diff"
+  },
+  {
+   "mutation": "workflow-completion-unvalidated",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/ordinary-authorization",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/ordinary-authorization"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-completion-unvalidated.diff"
+  },
+  {
+   "mutation": "workflow-terminal-ships-spec",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/no-workflow-authority",
+   "declared_falsifier_of": "AC4",
+   "red_rows": [
+    "workflow/no-workflow-authority"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-terminal-ships-spec.diff"
+  },
+  {
+   "mutation": "workflow-terminal-writes-unit",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/no-workflow-authority",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/no-workflow-authority"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-terminal-writes-unit.diff"
+  },
+  {
+   "mutation": "workflow-cycle-refusal-unobserved",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/observations",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-cycle-refusal-unobserved.diff"
+  },
+  {
+   "mutation": "workflow-save-refusal-unclassified",
+   "module": "control_workflow.py",
+   "row": "workflow/observations",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-save-refusal-unclassified.diff"
+  },
+  {
+   "mutation": "workflow-pending-unlisted",
+   "module": "control_workflow_cycle.py",
+   "row": "workflow/observations",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "workflow/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/workflow-pending-unlisted.diff"
+  }
+ ]
+}

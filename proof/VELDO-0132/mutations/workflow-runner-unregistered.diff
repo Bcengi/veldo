@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -212 +212 @@
+-    block = '\n' + (HERE / STEPS).read_text() + '\nveldo_register_workflow(%r, %d)\n' % (text, revision['version'])
++    block = '\n' + (HERE / STEPS).read_text() + '\n'  # defect: the runner registers no revision
