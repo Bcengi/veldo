@@ -106,7 +106,7 @@ def _v132_suite():
         # and the accepted revision the snapshot reads.
         work = base / 'work'
         (work / 'specs').mkdir(parents=True)
-        UNITS = ['VELDO-96%02d' % n for n in range(1, 10)]
+        UNITS = ['VELDO-96%02d' % n for n in range(1, 11)]
         for sid in UNITS:
             (work / 'specs' / (sid + '-workflow-fixture.md')).write_text('\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Workflow fixture unit', 'status: ready',
@@ -178,7 +178,7 @@ def _v132_suite():
         def admit(sid, state='accepted'):
             put('admission:' + sid, 'admission', dict(unit=sid, state=state, scope_digest='sha256:scope-' + sid))
 
-        for sid in ('VELDO-9602', 'VELDO-9604', 'VELDO-9605', 'VELDO-9607'):
+        for sid in ('VELDO-9602', 'VELDO-9604', 'VELDO-9605', 'VELDO-9607', 'VELDO-9610'):
             admit(sid)
         for sid in ('VELDO-9606', 'VELDO-9608'):
             admit(sid, 'declined')
@@ -449,6 +449,12 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 saves = {name: attempt(workflows.save, {'definition': body}, principal='owner', base=0) for name, body in {
                     'delivery': definition(), 'intruding': definition('intruding', role='intruder'),
                     'tight': definition('tight', budget=4),
+                    'rework': dict(definition('rework'), nodes=dict(definition('rework')['nodes'],
+                                                                   review={'kind': 'owner_wait', 'config': {}}),
+                                   transitions=[t for t in definition('rework')['transitions'] if t['id'] != 't-done'] + [
+                                       {'id': 't-done', 'from': 'assign', 'port': 'done', 'to': 'review'},
+                                       {'id': 't-again', 'from': 'review', 'port': 'admit', 'to': 'assign', 'max': 1},
+                                       {'id': 't-accept', 'from': 'review', 'port': 'decline', 'to': 'handle'}]),
                     'asserting': {'schema': 'veldo.workflow/v1', 'id': 'asserting', 'entry': 'groom',
                                   'terminal': ['handle'], 'references': {}, 'budget': {'steps': 6},
                                   'nodes': {'groom': {'kind': 'grooming', 'config': {}},
@@ -494,10 +500,17 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                     'loop_bound': attempt(cycles.start, 'cycle-loop', workflow='delivery', subject='VELDO-9608',
                                           snapshot=snapshot),
                 }
+                # A second visit to an assignment waits for its own worker after its own checks: the owner's
+                # review sends the first result back, and the earlier result is not reused.
+                r1 = attempt(cycles.start, 'cycle-rework', workflow='rework', subject='VELDO-9610', snapshot=snapshot)
+                first_decision = ((cycles.record('cycle-rework') or {}).get('assignment') or {}).get('decision')
+                put('proof-bundle:9610', 'proof_bundle', dict(unit='VELDO-9610', domain=DOMAIN, repository=REPOSITORY,
+                                                              source={'commit': commit}))
+                r2 = attempt(cycles.advance, 'cycle-rework', {'worker_result': 'proof-bundle:9610'})
                 cycle_seconds = time.monotonic() - started
                 records = {name: cycles.record(name) or {} for name in (
                     'cycle-a', 'cycle-b', 'cycle-c', 'cycle-blocked', 'cycle-intruder', 'cycle-tight', 'cycle-asserting',
-                    'cycle-loop')}
+                    'cycle-loop', 'cycle-rework')}
                 steps = [e for e in events if e.get('schema') == CY.SCHEMA and e.get('operation') in ('step', 'propose', 'cancel')
                          and e.get('outcome') == 'accepted']
 
@@ -545,7 +558,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 staged = sorted((stage / 'runners').glob('*.py')) if (stage / 'runners').is_dir() else []
                 staged_text = [p.read_text() for p in staged]
                 texts = {canon(ok(attempt(workflows.load, w, v)).get('definition')).decode(): (w, v) for w, v in (
-                    ('delivery', 1), ('delivery', 2), ('intruding', 1), ('tight', 1), ('asserting', 1))}
+                    ('delivery', 1), ('delivery', 2), ('intruding', 1), ('tight', 1), ('asserting', 1), ('rework', 1))}
                 registered = [[(w, v) for t, (w, v) in texts.items() if 'veldo_register_workflow(%r, %d)' % (t, v) in s]
                               for s in staged_text]
                 production = (mods / 'control_graph_langgraph.py').read_text().split("\nif __name__ == '__main__':\n")[0]
@@ -568,12 +581,20 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 named = {name: records[cycle].get('state') == 'refused' and records[cycle].get('refusal') == code
                          and not records[cycle].get('proposals') and not records[cycle].get('waiting')
                          for name, (cycle, code) in wanted.items()}
-                observed['authorization'] = {'ran': ran, 'named': named}
+                rework = records['cycle-rework']
+                revisit = bool(rework.get('state') == 'waiting' and (rework.get('waiting') or {}).get('node') == 'assign'
+                               and [e[0] for e in rework.get('trace') or []] == ['groom', 'owner', 'assign', 'review']
+                               and first_decision
+                               and (rework.get('assignment') or {}).get('decision') not in (None, first_decision)
+                               and not rework.get('received'))
+                observed['authorization'] = {'ran': ran, 'named': named, 'revisit': revisit,
+                                             'answers': {'r1': r1.get('refused'), 'r2': r2.get('refused')},
+                                             'rework': {k: rework.get(k) for k in ('state', 'refusal', 'trace', 'waiting')}}
 
                 def status_now():
                     return cycles.status()
                 check('workflow/ordinary-authorization',
-                      lambda: all(ran.values()) and all(named.values())
+                      lambda: all(ran.values()) and all(named.values()) and revisit
                       and records['cycle-intruder'].get('assignment') is None
                       and records['cycle-blocked'].get('assignment') is None
                       and records['cycle-tight'].get('steps') == 4
@@ -622,7 +643,9 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                       and status['accepted'] == sum(1 for e in cycle_events if e['outcome'] == 'accepted')
                       and status['refused'] == sum(1 for e in cycle_events if e['outcome'] == 'refused')
                       and status['pending'] == [{'cycle': 'cycle-b', 'subject': 'VELDO-9602', 'node': 'assign',
-                                                 'input': 'worker_result', 'workflow': 'delivery', 'version': 2}]
+                                                 'input': 'worker_result', 'workflow': 'delivery', 'version': 2},
+                                                {'cycle': 'cycle-rework', 'subject': 'VELDO-9610', 'node': 'assign',
+                                                 'input': 'worker_result', 'workflow': 'rework', 'version': 1}]
                       and workflows.counts['refused'] == sum(1 for e in events if e.get('schema') == WF.REVISION_SCHEMA
                                                              and e['outcome'] == 'refused')
                       and 'PRIVATE KEY' not in text and str(private) not in text)
