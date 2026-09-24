@@ -105,3 +105,13 @@ message.
 silence).
 
 2026-09-24: the owner marked this specification ready (Telegram 29041).
+
+2026-09-24: built on branch build-veldo-0136. `Presenter.hint_owner` in
+`.veldo/control_channel_presentation.py` answers a message from the attributed current owner that
+replies to no presentation (`missing_reply_reference`, or `unknown_presentation` for a reply to the
+bot's help message or another bot message) with one hint naming each request waiting for him that has
+had none; the hint and a mark per request version are kept before the send and the platform's answer
+after it. `Acquirer._decide` in `.veldo/control_channel_attribution.py` calls it only after the
+refusal is recorded, so the decision is unchanged and no answer is written. Suite
+`68_veldo_0136_hints` (three rows, one per criterion), red by assertion at 8dcdd34, finding 136 in
+`scripts/check_teeth_mutations.py` (seven mutations). Proof in `proof/VELDO-0136/`.
