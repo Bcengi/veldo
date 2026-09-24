@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -506 +506 @@
+-            if record['steps'] >= definition['budget']['steps']:
++            if False:  # defect: the cycle budget is not enforced

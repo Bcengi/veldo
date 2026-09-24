@@ -1,0 +1,4 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -462 +461,0 @@
+-            or not set(entry.get('roles') or []) & set(EDITOR_ROLES)

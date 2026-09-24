@@ -1,0 +1,4 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -614,0 +615 @@
++            _organ('control_runtime').activation()  # defect: loading asks the graph runtime

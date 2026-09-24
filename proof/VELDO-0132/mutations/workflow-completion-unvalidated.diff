@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -567 +567 @@
+-        if not received or received not in evidence or not evidence <= offered:
++        if False:  # defect: an asserted completion is not checked against an accepted result

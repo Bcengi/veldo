@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -475 +475 @@
+-            if used is not None and answer['version'] <= used['version']:
++            if False:  # defect: an owner wait routes on an answer an earlier visit already used
