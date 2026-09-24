@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -411 +411 @@
+-        pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []
++        pending = []  # defect: pending work is not exposed

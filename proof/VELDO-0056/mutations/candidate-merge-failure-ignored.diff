@@ -1,0 +1,10 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -539,2 +539,2 @@
+-            raise CandidateRefused("conflict:" + real[0], "a real conflict the build must resolve",
+-                                   operation="merge", conflicts=real)
++            self._git(workspace, "merge", "--abort")  # defect: the failed merge is ignored
++            return
+@@ -623 +623 @@
+-            for older, what in ((c["watermark"], "watermark"), (implementation, "implementation"), (evidence, "evidence")):
++            for older, what in ():  # defect: the candidate's ancestry is not verified

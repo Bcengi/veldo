@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -450 +450 @@
+-                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")
++                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network", ok=None)  # defect: a failed fetch is ignored

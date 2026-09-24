@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -618 +618 @@
+-            tree = self._git(workspace, "rev-parse", "--verify", candidate + "^{tree}").stdout.strip()
++            tree = self._git(workspace, "rev-parse", "--verify", candidate + "^{tree}", ok=None).stdout.strip()  # defect: a failed object lookup is ignored

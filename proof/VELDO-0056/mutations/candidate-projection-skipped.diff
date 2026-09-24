@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -616 +616 @@
+-            self._project(workspace, sid, identity)
++            pass  # defect: the projections are not derived

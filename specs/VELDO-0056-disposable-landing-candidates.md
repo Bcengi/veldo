@@ -135,3 +135,16 @@ called `GitLandOps.reconcile` directly in the caller's checkout and read the mer
 caller's own files: with the candidate built in its own workspace those rows now build the
 candidate (sync_main, then reconcile), read the candidate, require the caller untouched, and give
 each build the proof manifest the candidate now requires. Every row keeps its name and its claim.
+
+2026-09-24 implementation: `.veldo/lander.py` (engine copy identical) builds every candidate in a
+dedicated detached workspace, a new repository borrowing the caller's objects through alternates, from
+the published trunk tip fetched once as its fixed watermark; it merges the implementation the proof
+names, then the evidence, then commits the projections derived from the merged tree, and never checks
+out, moves or fetches into the caller's trunk. Every Git step is checked and refuses by name, and missing
+evidence refuses before any merge. The gate runs in the candidate; finalize asks the authority's
+`CandidatePolicy` (VELDO-0050 proof, VELDO-0049 review obligations, VELDO-0052 publication over the
+candidate) or, for a pre-factory land, the repository policy at the candidate, and only then pushes the
+exact candidate. Suite 67 has 11 rows, each assertion row recorded red by assertion at 8995740 and at
+the merged 5ba4a02 (`proof/VELDO-0056/`), with 22 finding-56 mutations. Stated there: `policy_check.py`
+refuses every VELDO-0050 manifest as stale (its digest spec_revision), so a factory land asks the
+authority instead; local trunk synchronization and exact-tip publication stay VELDO-0057's.

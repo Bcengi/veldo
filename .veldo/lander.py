@@ -329,7 +329,7 @@ class GitLandOps(LandOps):
         self.counts = {"accepted": 0, "refused": 0}
         self.candidate = None
 
-    # -- the one checked Git step --------------------------------------------------------------
+    # The one checked Git step.
 
     def _git(self, repo, *args, operation=None, profile="isolated", ok=(0,), text=True, identity=None):
         """Run one Git operation in `repo` through the boundary. A return code outside `ok` refuses
@@ -380,7 +380,7 @@ class GitLandOps(LandOps):
                                    "no identity is configured for the candidate's commits", operation="config")
         return tuple(found)
 
-    # -- observability --------------------------------------------------------------------------
+    # Observability.
 
     def _event(self, operation, outcome, refusal=None, **extra):
         c = self.candidate or {}
@@ -422,7 +422,7 @@ class GitLandOps(LandOps):
             shutil.rmtree(c["workspace"], ignore_errors=True)
             c["discarded"] = not os.path.exists(c["workspace"])
 
-    # -- the stages -----------------------------------------------------------------------------
+    # The stages.
 
     def sync_main(self):
         """A new workspace borrowing the caller's objects, holding the watermark checked out detached."""

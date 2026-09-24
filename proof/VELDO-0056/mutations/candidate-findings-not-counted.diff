@@ -1,0 +1,6 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -754,2 +754 @@
+-            refusals.extend("unresolved_finding:" + fid for fid, f in sorted((record.get("findings") or {}).items())
+-                            if not (f or {}).get("resolved"))
++            pass  # defect: an unresolved finding is not a refusal
