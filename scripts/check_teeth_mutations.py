@@ -1432,6 +1432,106 @@ def cases():
     scope('scope-star-list-not-universal',
           '        return None if "*" in scope else set(scope)\n',
           '        return set(scope)\n', ('membership/scope-forms-agree',))
+    # VELDO-0045: each criterion's declared falsifier, a second and different defect of its row, and a
+    # driven defect for every other row the suite asserts.
+    def runtime(name, module, old, new, row):
+        add(45, name, '62_veldo_0045_runtime.py', module, old, new, [row])
+
+    runtime('runtime-content-enforcement-bypassed', 'control_runtime.py',
+            "    if content_digest(kept) != entry['content'].get('sha256'):\n",
+            "    if False:  # defect: hash enforcement bypassed, the genuine wheel's content is never compared\n",
+            'runtime/altered-wheel-refused')
+    runtime('runtime-record-digest-unchecked', 'control_runtime.py',
+            "            if algorithm != 'sha256' or not target.is_file() or _record_hash(target.read_bytes()) != value:\n",
+            "            if algorithm != 'sha256' or not target.is_file():  # defect: a file is never hashed against RECORD\n",
+            'runtime/altered-wheel-refused')
+    runtime('runtime-lock-hash-unchecked', 'control_runtime.py',
+            "        if entry.get('sha256') != pinned:\n",
+            "        if False:  # defect: the lock's artifact hash is never compared with the registry's\n",
+            'runtime/altered-hash-refused')
+    runtime('runtime-lock-hash-prefix-only', 'control_runtime.py',
+            "        if entry.get('sha256') != pinned:\n",
+            "        if str(entry.get('sha256'))[:16] != pinned[:16]:  # defect: a digest prefix stands for the digest\n",
+            'runtime/altered-hash-refused')
+    runtime('runtime-requirements-ignored', 'control_runtime.py',
+            "    for requirement in report['requirements']:\n",
+            "    for requirement in []:  # defect: the installed requirements are never evaluated\n",
+            'runtime/omitted-dependency-refused')
+    runtime('runtime-installed-set-unchecked', 'control_runtime.py',
+            "        if found is None:\n            problems.append('missing_dependency:' + name)\n            continue\n",
+            "        if found is None:\n            continue  # defect: a locked distribution may be absent\n",
+            'runtime/omitted-dependency-refused')
+    runtime('runtime-license-unjudged', 'control_runtime.py',
+            "    return ['license_unapproved:%s:%s' % (name, t) for t in identifiers if t not in APPROVED_LICENSES] or (\n",
+            "    return [] or (  # defect: any recorded license is accepted\n",
+            'runtime/records-cover-lock')
+    runtime('runtime-unrecorded-package-passes', 'control_runtime.py',
+            "        if entry is None:\n            problems.append('unrecorded_package:' + name)\n            continue\n",
+            "        if entry is None:\n            continue  # defect: a locked package needs no record\n",
+            'runtime/records-cover-lock')
+    runtime('runtime-qualification-after-entry-point', 'control_runtime.py',
+            "    return source.replace(guard, '\\n' + QUALIFICATION + guard, 1)\n",
+            "    return source + '\\n' + QUALIFICATION  # defect: registered after the entry point has served\n",
+            'runtime/workload')
+    runtime('runtime-qualification-without-result', 'control_runtime.py',
+            "answers['suspend'].get('resume'), supplied)\n",
+            "answers['suspend'].get('resume'), [])  # defect: the cycle advances without its supplied result\n",
+            'runtime/workload')
+    runtime('runtime-taxonomy-unknown', 'control_runtime.py',
+            "    report['taxonomy'] = sorted({TAXONOMY.get(p.split(':', 1)[0], 'unknown_outcome') for p in report['problems']})\n",
+            "    report['taxonomy'] = sorted({'unknown_outcome' for p in report['problems']})  # defect: every refusal unclassified\n",
+            'runtime/observations')
+    runtime('runtime-counts-omitted', 'control_runtime.py',
+            "    report['counts'] = dict(COUNTS)\n", "",
+            'runtime/observations')
+    runtime('scaffold-omits-runtime-lock', 'init_scaffold.py',
+            '    ".veldo/control_graph_lock.py",\n', '',
+            'journey/assets-installed')
+    runtime('scaffold-omits-runtime-records', 'init_scaffold.py',
+            '_RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]\n',
+            '_RUNTIME_ASSETS = []  # defect: the records are never laid down\n',
+            'journey/assets-installed')
+    runtime('runtime-records-source-fallback', 'control_runtime.py',
+            "    return HERE / rel\n",
+            "    return HERE / rel if (HERE / rel).is_file() else Path.cwd() / 'engine' / rel  # defect: the source tree\n",
+            'journey/omitted-asset-named')
+    runtime('runtime-missing-asset-unnamed', 'control_runtime.py',
+            "    missing = ['missing_asset:.veldo/' + rel for rel in JOURNEY if not _asset(rel).is_file()]\n"
+            "    if missing:\n        return _finish(report, missing)\n",
+            "    missing = []  # defect: an omitted asset is found by whatever reads it first\n"
+            "    if missing:\n        return _finish(report, missing)\n",
+            'journey/omitted-asset-named')
+    runtime('authorization-imports-langgraph', 'authorization.py',
+            'from pathlib import Path\nimport json\n',
+            'from pathlib import Path\nimport json\nimport langgraph\n',
+            'enforcement/no-runtime')
+    runtime('authorization-reads-runtime-by-path', 'authorization.py',
+            'from pathlib import Path\nimport json\n',
+            'from pathlib import Path\nimport json\n'
+            'try:  # defect: reads the graph runtime by path, past every import check\n'
+            '    import glob as _g, os as _o, pwd as _p\n'
+            "    _g.glob(_p.getpwuid(_o.getuid()).pw_dir + '/.local/share/veldo/langgraph/*/lib/python3.12/site-packages/langgraph/*.py')\n"
+            'except OSError:\n    pass\n',
+            'enforcement/no-runtime')
+    runtime('enforcement-catalog-unread', 'control_runtime.py',
+            "            if declared and not declared.group(1).startswith('required:'):\n                continue\n",
+            "            if declared:\n                continue  # defect: a required catalog slot is not an entry\n",
+            'enforcement/entries-enumerated')
+    runtime('enforcement-guard-unread', 'control_runtime.py',
+            "    for script in (GATE, GUARD):\n",
+            "    for script in (GATE,):  # defect: the guard's entries are not enumerated\n",
+            'enforcement/entries-enumerated')
+    runtime('graph-unavailable-mislabelled', 'control_runtime.py',
+            "        raise graph.Refused('runtime_unavailable', 'the graph runtime is not activated ('",
+            "        raise graph.Refused('unknown_outcome', 'the graph runtime is not activated ('",
+            'enforcement/graph-unavailable')
+    runtime('graph-probe-absent-only', 'control_runtime.py',
+            "        for label, home in (('absent', empty), ('hidden', None)):\n",
+            "        for label, home in (('absent', empty),):  # defect: the hidden runtime is never asked\n",
+            'enforcement/graph-unavailable')
+    runtime('runtime-hide-not-enforced', 'control_runtime.py',
+            "            raise PermissionError('the graph runtime is hidden: ' + _hide_os.fsdecode(place))\n", "",
+            'enforcement/graph-unavailable')
     return result
 
 

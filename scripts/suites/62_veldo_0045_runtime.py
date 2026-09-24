@@ -387,9 +387,9 @@ with open(log, 'w') as out:
             fields = {'schema', 'operation', 'journey', 'lock_digest', 'records_digest', 'runtime', 'packages',
                       'problems', 'outcome', 'taxonomy', 'counts'}
             records_digest = 'sha256:' + digest(installed / '.veldo/runtime/langgraph-records.json')
-            observed['observations'] = {'accepted': fine and {k: fine[k] for k in ('outcome', 'taxonomy', 'counts')},
-                                        'absent': absent and {k: absent[k] for k in ('problems', 'taxonomy')},
-                                        'altered': altered and {k: altered[k] for k in ('problems', 'taxonomy')}}
+            observed['observations'] = {'accepted': {k: (fine or {}).get(k) for k in ('outcome', 'taxonomy', 'counts')},
+                                        'absent': {k: (absent or {}).get(k) for k in ('problems', 'taxonomy')},
+                                        'altered': {k: (altered or {}).get(k) for k in ('problems', 'taxonomy')}}
             answers = [fine or {}, absent or {}, altered or {}]
             fine, absent, altered = fine or {}, absent or {}, altered or {}
             check('runtime/observations', have_runtime and all(set(a) == fields for a in answers)
@@ -502,7 +502,7 @@ with open(log, 'w') as out:
             for rel in ('.veldo/runtime/langgraph-records.json', '.veldo/control_graph_lock.py'):
                 tree = tmp / ('omitted-' + Path(rel).name)
                 shutil.copytree(installed, tree, symlinks=True)
-                (tree / rel).unlink()
+                (tree / rel).unlink(missing_ok=True)
                 # From the source tree, where every omitted asset has a canonical copy to fall back to.
                 proc, trace = traced(tmp, 'omitted-' + Path(rel).name, tree / '.veldo/control_runtime.py', ['check'], cwd=ROOT)
                 answer = report(proc) or {}

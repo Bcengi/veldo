@@ -33,6 +33,7 @@ footprint:
   - "scripts/check_install_and_run.py"
   - "scripts/check_pack_drift.py"
   - "scripts/check_template_sync.sh"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/verify.sh"
   - "engine/scripts/verify.sh"
   - "packs/*/scripts/verify.sh"
