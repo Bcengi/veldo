@@ -2636,6 +2636,53 @@ def cases():
     settlement('independence-above-one-accepted', "SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}\n",
                "SUPPORTED = {'count': (1,), 'min_independence': (0, 1, 2)}  # defect\n",
                'authority/unsupported-quorum-blocks')
+    # VELDO-0069: each criterion's declared falsifier, and the threat model's cases, each on the row it names.
+    def binding(name, old, new, row, module='control_request_settlement.py', also=()):
+        add(69, name, '70_veldo_0069_bindings.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): only the receipt commits, without its governing binding; then a settlement
+    # without a decision signer that commits its receipt anyway, and a binding that drops the chosen option.
+    binding('receipt-without-binding',
+            "            changes[binding['binding_id']] = {'kind': DECISION_SETTLEMENT_KIND, 'data': binding}\n",
+            "            pass  # defect: only the receipt commits, without its governing binding\n",
+            'eligibility/resolved-request')
+    binding('binding-skipped-without-signer',
+            "                 if terms['target'].get('kind') == GOVERNING_TARGET else None)\n",
+            "                 if terms['target'].get('kind') == GOVERNING_TARGET and self.decision_signer is not None\n"
+            "                 else None)  # defect: no signer, no binding, and the receipt commits\n",
+            'binding/one-transaction')
+    binding('binding-choice-generic', "'signature': signature, 'choice': winner['choice'],",
+            "'signature': signature, 'choice': 'decided',", 'binding/one-transaction')
+    # AC2 (declared falsifier): the subject digest the owner was shown is ignored during binding; then the
+    # framing and the revision taken from the record at settlement instead of from the question.
+    binding('binding-ignores-subject-digest', "'subject': dict(question['subject']),",
+            "'subject': dict(question['subject'], digest=record['subject']['digest']),", 'refusal/wrong-subject')
+    binding('binding-framing-from-record', "'framing_digest': question['framing_digest'],",
+            "'framing_digest': record['framing_digest'],", 'refusal/wrong-framing')
+    binding('binding-revision-from-record', "'decision_revision': question['revision'],",
+            "'decision_revision': record['revision'],", 'refusal/wrong-version')
+    # Threat model: an unsupported subject kind bound instead of stopped, at settlement and at the terms.
+    binding('unsupported-subject-bound',
+            "        if kind not in DD.SUBJECT_KINDS:\n            raise Refused('unsupported_subject', 'the governed",
+            "        if False:  # defect: an unsupported governed subject is bound\n"
+            "            raise Refused('unsupported_subject', 'the governed", 'refusal/unsupported-subject-stops')
+    binding('unsupported-subject-terms-accepted',
+            "    if subject['kind'] not in DD.SUBJECT_KINDS:\n        return 'unsupported_subject'",
+            "    if False:  # defect: a question about an unsupported subject is recorded\n        return 'unsupported_subject'",
+            'refusal/unsupported-subject-stops')
+    # AC3 (declared falsifier): inline open_decisions text treated as authority by the plan readers; then
+    # by the store-backed stations, and a record's own settled status treated as its settlement.
+    binding('inline-status-authority', '                blocked.setdefault(s, []).append(d.get("id"))\n',
+            '                if d.get("status") != "resolved":  # defect: inline status text resolves the decision\n'
+            '                    blocked.setdefault(s, []).append(d.get("id"))\n',
+            'consumers/inline-bypass', module='plan.py')
+    binding('inline-status-authority-at-stations', "            out.append(entry.get('id'))\n",
+            "            if entry.get('status') != 'resolved':  # defect: inline status text resolves the decision\n"
+            "                out.append(entry.get('id'))\n",
+            'consumers/inline-bypass', module='control_decision_dependency.py')
+    binding('record-status-authority', "    if not mine:\n        return ['unresolved_decision:' + rid]\n",
+            "    if not mine:\n        return [] if record.get('state') == 'settled' else ['unresolved_decision:' + rid]  # defect\n",
+            'consumers/inline-bypass', module='control_decision_dependency.py')
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
     def clone(name, module, old, new, row, also=()):
         add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)
