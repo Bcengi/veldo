@@ -1,0 +1,8 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -556,0 +557,5 @@
++        if refusal in NOT_A_REPLY and known['principal'] is not None:  # defect: hinted before intake
++            self.presenter.hint_owner(dict(cause=refusal, principal=known['principal'],
++                                           chat_id=fields.get('chat_id'), sender_id=fields.get('sender_id'),
++                                           message_id=fields.get('message_id'), evidence_id=eid,
++                                           update_id=record.get('update_id')))

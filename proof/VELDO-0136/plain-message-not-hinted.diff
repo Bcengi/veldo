@@ -1,5 +1,5 @@
---- a/.veldo/control_channel_attribution.py
-+++ b/.veldo/control_channel_attribution.py
-@@ -94 +94 @@
--NOT_A_REPLY = ('missing_reply_reference', 'unknown_presentation')
-+NOT_A_REPLY = ('unknown_presentation',)
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -555 +555 @@
+-        if (record.get('outcome') != 'refused' or record.get('reason') not in ORDINARY
++        if (record.get('outcome') != 'refused' or record.get('reason') != 'unknown_presentation'  # defect

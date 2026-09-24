@@ -1,6 +1,6 @@
 --- a/.veldo/control_channel_attribution.py
 +++ b/.veldo/control_channel_attribution.py
-@@ -494,0 +495,8 @@
+@@ -495,0 +496,8 @@
 +        waiting = self.presenter.waiting(known['principal'], fields['chat_id']) if not isinstance(reply, dict) else []
 +        if waiting:  # defect: a message that replies to nothing answers the waiting request
 +            part = waiting[0]['platform_parts'][-1]

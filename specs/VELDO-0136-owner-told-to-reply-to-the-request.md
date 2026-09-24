@@ -118,3 +118,12 @@ after it. `Acquirer._decide` in `.veldo/control_channel_attribution.py` calls it
 refusal is recorded, so the decision is unchanged and no answer is written. Suite
 `68_veldo_0136_hints` (three rows, one per criterion), red by assertion at 8dcdd34, finding 136 in
 `scripts/check_teeth_mutations.py` (seven mutations). Proof in `proof/VELDO-0136/`.
+
+2026-09-24, review fix: the hint moved from `Acquirer._decide` to the VELDO-0126 Telegram intake pass
+(`Intake._hint` in `.veldo/control_intake.py`, added to this footprint), so each owner message gets one
+decision, after intake has seen it, and at most one bot reply: nothing for a clarification or a Reply
+to intake's question, one "taken as new work, not as an answer" note for a new proposal (merged into
+intake's project question when one is asked), and the plain hint only for a message intake does not
+take. `hint_owner` catches an error reading the waiting requests. Suite `68_veldo_0136_hints` has seven
+rows, the four new ones red by assertion at 3bb287d; finding 136 has eleven mutations
+(`proof/VELDO-0136/`). The criteria, status and risk are unchanged.

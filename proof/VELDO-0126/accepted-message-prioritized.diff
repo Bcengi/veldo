@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -471 +471 @@
+@@ -484 +484 @@
 -                        'state': 'PROPOSED' if project else 'AWAITING_PROJECT', 'domain': self.domain, 'project': project,
 +                        'state': 'PRIORITIZED' if project else 'AWAITING_PROJECT', 'domain': self.domain, 'project': project,

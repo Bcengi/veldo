@@ -1,12 +1,12 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -624 +624 @@
+@@ -643 +643 @@
 -            if (not isinstance(mark, str) or mark in changes or (before.get(mark) or {}).get('data') is not None
 +            if (not isinstance(mark, str) or mark in changes
-@@ -1205 +1205 @@
+@@ -1246 +1246 @@
 -        due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]
 +        due = list(waiting)
-@@ -1224 +1224,2 @@
+@@ -1265 +1265,2 @@
 -                         dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')
 +                         dict({hid: 0}, **{k: (self._entity(k) or {}).get('version', 0) for k in marks}),
 +                         command_id=hid + ':intent')

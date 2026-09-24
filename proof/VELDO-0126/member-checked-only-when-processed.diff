@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -428 +428 @@
+@@ -441 +441 @@
 -            why = self._member_when_sent(principal, command['provenance'].get('date'))
 +            why = None  # defect: membership is checked only when the message is processed

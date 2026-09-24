@@ -1,0 +1,71 @@
+{
+ "by_assertion": true,
+ "commit": "3bb287dc7cd5f1e310fc73f17a9c5ef95342aeb4",
+ "details": [
+  "VELDO-0136 hint/new-work-one-reply detail: it gets exactly one bot message: a reply saying it was taken as new work, not as an answer, and to press Reply on the request message, naming the waiting request; never \"answers nothing\"",
+  "VELDO-0136 hint/new-work-one-reply detail: the one reply is kept as the hint for that message, as taken by intake, with the platform's answer",
+  "VELDO-0136 hint/answer-without-reply-one-reply detail: it gets exactly one bot message, saying it was taken as new work, not as an answer, and to press Reply on the request message to answer it, naming the request; never \"answers nothing\"",
+  "VELDO-0136 hint/two-projects-one-reply detail: the owner gets exactly one bot message: the project question and the note naming the waiting request, as one reply to his message",
+  "VELDO-0136 hint/two-projects-one-reply detail: that one message is the question's recorded delivery and the kept hint's platform answer",
+  "VELDO-0136 hint/two-projects-one-reply detail: control: his Reply to that message answers the question and sends nothing back",
+  "VELDO-0136 hint/intake-replies-not-hinted detail: his Reply to intake's question, while a request waits, resolves it and gets no hint",
+  "VELDO-0136 hint/intake-replies-not-hinted detail: his reply to his own earlier message, while requests wait, is a clarification and gets no hint",
+  "VELDO-0136 hint/intake-replies-not-hinted detail: control: his next new work gets its one note, naming both requests still waiting"
+ ],
+ "failed_rows": [
+  "VELDO-0136 hint/new-work-one-reply",
+  "VELDO-0136 hint/answer-without-reply-one-reply",
+  "VELDO-0136 hint/two-projects-one-reply",
+  "VELDO-0136 hint/intake-replies-not-hinted"
+ ],
+ "modules": {
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": "dbe0549469231ab6825ef09ed3d5c91f4a01c1fd62061ea8e4a1d9cbc6dbf933",
+   "now": "3072e86bb184c6ed36a5b6d324eccb3bd580765b1f3c8301bb68a85c87bd9f70"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "4ed7bb2a199ba9393f27515f22f1a9021ba9067d942ce6db9ba58f01f1386902",
+   "now": "f6f76e5858aff9276fe322f1273318b1d5b9e2c9133410b427c7b4f54223b87c"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": "d79504ce21af266230f51571f6fe3aff78d458c2cec708c72b3104b558b8144c",
+   "now": "07c6275b90bf7244112fb38d40878a58a01e25b1e98ae4815786fe6d654eaad4"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0136 hint/tells-owner-to-reply",
+   true
+  ],
+  [
+   "VELDO-0136 hint/owner-only-never-an-answer",
+   true
+  ],
+  [
+   "VELDO-0136 hint/once-per-pending-request",
+   true
+  ],
+  [
+   "VELDO-0136 hint/new-work-one-reply",
+   false
+  ],
+  [
+   "VELDO-0136 hint/answer-without-reply-one-reply",
+   false
+  ],
+  [
+   "VELDO-0136 hint/two-projects-one-reply",
+   false
+  ],
+  [
+   "VELDO-0136 hint/intake-replies-not-hinted",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.924,
+ "spec_id": "VELDO-0136",
+ "suite": "scripts/suites/68_veldo_0136_hints.py",
+ "tree": "git archive 3bb287dc7cd5f1e310fc73f17a9c5ef95342aeb4, unchanged; the current suite file run against it"
+}
