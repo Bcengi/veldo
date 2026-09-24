@@ -92,12 +92,20 @@ class Fixture:
         return self.S.materialized_state(self.conn)['entities']
 
     def write(self, eid, kind, data):
-        e = self.entities().get(eid, {})
-        n = str(uuid.uuid4())
-        return self.S.execute(self.conn, dict(command_id='fx-' + n, principal='owner', operation='upsert_entity',
-                              parameters=dict(entity_id=eid, kind=kind, data=data),
-                              expected_versions={eid: e.get('version', 0)}, artifact_digests=[], nonce='fx-' + n),
-                              'owner', lambda m: self.sign('owner', m), 1)
+        # The fixture SETS the record. A live heartbeat (review_r3) may commit a renew between this
+        # read and the write; that moved version is not the fixture's answer, so it reads again.
+        for _ in range(16):
+            e = self.entities().get(eid, {})
+            n = str(uuid.uuid4())
+            try:
+                return self.S.execute(self.conn, dict(command_id='fx-' + n, principal='owner', operation='upsert_entity',
+                                      parameters=dict(entity_id=eid, kind=kind, data=data),
+                                      expected_versions={eid: e.get('version', 0)}, artifact_digests=[], nonce='fx-' + n),
+                                      'owner', lambda m: self.sign('owner', m), 1)
+            except self.S.StoreRefused as exc:
+                if exc.code != 'stale_version' or self.entities().get(eid, {}).get('version', 0) == e.get('version', 0):
+                    raise
+        raise AssertionError('fixture write of %s kept losing to a concurrent writer' % eid)
 
     def packet(self, who, op, unit='unit', generation=0, capabilities=()):
         """The exact packet control_claim_client.Client.request builds."""
@@ -204,6 +212,32 @@ def review_r2(f):
 
 
 def review_r3(f):
+    # The race behind the heartbeat, made deterministic: another writer moves a version the
+    # authority pinned, after its read and before its commit. The renew is decided again on the
+    # current state: a unit transition leaves it owned, an unanswerable claim answers unanswerable.
+    # Before the reread a renew here was refused stale_version, which the lander read as lost.
+    unit_cid = f.C.claim_id(f.ids['repository_uuid'], 'unit')
+    granted = f.direct('worker-a', 'claim')
+    assert granted['ok'], granted
+    gen = granted['claim']['generation']
+    real_state = f.C.CM.authority_state
+    raced = []
+    for concurrent, expected in (
+            (lambda: f.write('unit', 'execution_unit', dict(f.entities()['unit']['data'], state='RUNNING')), 'renew'),
+            (lambda: f.write(unit_cid, 'claim', dict(f.entities()[unit_cid]['data'],
+                                                     heartbeat_at='2999-01-01T00:00:00Z')), 'unanswerable')):
+        def state_then_race(*args, concurrent=concurrent):
+            state = real_state(*args)
+            if len(raced) % 2 == 0:
+                raced.append(concurrent())
+            return state
+        f.C.CM.authority_state = state_then_race
+        try:
+            answer = f.direct('worker-a', 'renew', generation=gen)
+        finally:
+            f.C.CM.authority_state = real_state
+        raced.append(answer)
+        assert answer['reason'] == expected, dict(contention=expected, answer=answer)
     f.start_server()
     client = f.client(0)
     L = load('lander_review', f.mods / 'lander.py')

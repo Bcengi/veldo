@@ -1166,6 +1166,10 @@ def cases():
     add(31, 'review-r3-swallow-heartbeat-stop', '59_veldo_0031_review.py', 'lander.py',
         '                self._hb_error = exc',
         '                self._hb_error = None', ['claims/review-r3'])
+    add(31, 'review-r3-contention-as-answer', '59_veldo_0031_review.py', 'control_claim.py',
+        "                if exc.code == 'stale_version' and self._pins_moved(observation['accepted_versions']):",
+        '                if False:  # defect: a moved pin on its own read is returned as the answer',
+        ['claims/review-r3'])
     add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
         '        ledgers = [claims_root(root)]',
         "        ledgers = [os.path.join(_enrollment_ledger() or os.sep, 'claims')]", ['claims/review-r4'])
