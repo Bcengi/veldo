@@ -1,0 +1,18 @@
+{
+ "schema": "veldo.approval/v1",
+ "id": "APPROVAL-0058-3",
+ "decision": "approved",
+ "approver": "dmitry",
+ "scope": {
+  "spec_id": "VELDO-0058",
+  "commit": "fd9acee7dd6445fd0f9bc4febbcd75011565c5bd",
+  "paths": [
+   ".veldo/policy_check.py",
+   "engine/.veldo/policy_check.py"
+  ]
+ },
+ "basis": "Dmitry authorized this change over Telegram on 2026-09-24. He was told (29082) that the first critical review of VELDO-0058 found the gate's protected-file check reading its protected list from the change it checks, so a change could empty the list and land an edit to verify.sh with no approval, and asked whether policy_check.py (a protected file) may change so that the list is read from the trusted installed copy instead; he answered 'Yes' (29083). The two paths are the protected_paths this commit changes. What it carries is an explicit POLICY source, separate from the subject root ROOT: unset, a run reads ROOT/.veldo/policy.yaml exactly as before; the installed-policy runner sets it to the installation's policy.yaml. No other policy_check behavior changed.",
+ "recorded_at": "2026-09-24T21:30:00Z",
+ "recorded_by": "claude-opus-5-5 (recording Dmitry's Telegram authorization of 2026-09-24)",
+ "expires_at": "2026-10-31T00:00:00Z"
+}
