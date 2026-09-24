@@ -104,12 +104,14 @@ No automatic recovery, extra channel activation or broader host qualification is
   whose objects stay pinned while a clone uses them and survive ordinary garbage collection. Cleanup
   releases a clone's pins only after its workers and consumers have ended.
 - Threat model: provisioning from the current HEAD instead of the accepted commit; a worker writing
-  outside its own clone (another clone, the store, keys, authority metadata); an alternate or cache that
+  directly outside its own clone (another clone, the store, keys, authority metadata); an alternate or cache that
   exposes unnamed repository objects or authority metadata; and a pin released while a child still
   reads its objects. The owner's account outside workers, Git and the store are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); interrupted
   provisioning or retirement and recovery from concurrent garbage collection (Release 2, see History); a
-  worker that deliberately escapes its group (Release 2, filed by VELDO-0040's review); forged rows in
+  worker that deliberately escapes its group, or writes through the owner's own unconfined processes (the
+  user service manager, shell startup files, ssh to this host), which only a separate worker account
+  closes (Release 2: no second operating-system account for now, Telegram 28578/28580); forged rows in
   our own store, files planted in the installed directory and resource exhaustion by our own account.
 
 ## Notes
