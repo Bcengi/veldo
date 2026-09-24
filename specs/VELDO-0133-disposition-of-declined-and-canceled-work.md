@@ -172,6 +172,28 @@ item; its meaning is the project manager's work after intake. Settlement and quo
 (VELDO-0068), presentation receipts (VELDO-0065), answer acquisition and attribution
 (VELDO-0066) and the intake itself (VELDO-0126) are consumed, not changed.
 
+## What the reviewer judges
+
+- Normal use: an assignment that a parked unit waits for is declined, canceled or expires, or its
+  answer stops being admitted. Veldo opens one disposition question (close, backlog, other) in the
+  inbox, addressed to the person who declined or canceled, or else to the one project owner resolved
+  from the unit's ownership chain, and the ordinary Telegram projection sends it to that person's own
+  enrolled chat. The addressee answers with their own signed answer; a separate dispose command
+  applies it: close cancels the unit (and its backlog item unless sibling work is open), backlog
+  clears the park so an ordinary claim succeeds, and other submits the signed instruction verbatim to
+  the VELDO-0126 intake under the source it arrived on. While the question waits the unit holds no
+  claim or worker and reads awaiting_disposition.
+- Threat model: a question addressed to the wrong person (the owner when a person declined or
+  canceled, or a guessed owner when none resolves); an answer that is unsigned, signed by another
+  member, for a stale request version, choosing an unoffered ruling, with empty other text or text
+  outside the signed command, or signed by a revoked key; a decline or cancel of the disposition
+  question itself; dispose before the answer, applied twice, or inferring anything from the free
+  text; close canceling sibling work; a unit claimable or holding a claim while its question waits.
+  The owner's account, the store and the Telegram edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); restart and
+  recovery (Release 2); forged rows in our own store and files planted in the installed directory; a
+  person with no enrolled chat (refused as no_enrolled_chat, never sent elsewhere, by design).
+
 ## Notes
 
 The disposition question is an ordinary person assignment in the same inbox, of a new kind whose
