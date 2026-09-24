@@ -95,6 +95,18 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an owner answers a presented decision request in Telegram; the edge acquires the reply
+  with the platform's own sender, message, chat and time fields, binds it to the exact presentation it
+  replies to, and the authority accepts it only from the current enrolled person.
+- Threat model: another Telegram user, including one who copies the owner's display name, a reply in
+  another chat or to another presentation, an automation or bot sender, and caller-supplied actor
+  labels. The owner's account, the edge's credentials and our store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a compromised
+  Telegram account or bot token; Telegram outages and redelivery recovery (Release 2); forged rows in
+  our own store.
+
 ## Notes
 
 Canonical Telegram evidence comes from the authenticated platform exchange, never pasted
