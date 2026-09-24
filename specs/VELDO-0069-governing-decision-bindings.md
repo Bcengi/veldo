@@ -38,6 +38,7 @@ footprint:
   - "scripts/suites/*_veldo_0069_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0069-governing-decision-bindings.md"
   - "specs/index.md"
   - "proof/VELDO-0069/*"
@@ -103,6 +104,22 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: an owner settles a blocking specification question or a plan decision through the
+  VELDO-0068 settlement (a signed Telegram answer, later the authenticated API). In the same
+  transaction the settlement writes the governing binding: the decision it resolves, the chosen option,
+  the decider, the time, and the digests of the framing, the subject and its current version. The plan
+  (_decision_blocks, item_state, cmd_run_check) and the shared floor entry then read the item as
+  unblocked from that binding alone, and another process sees the same answer.
+- Threat model: a receipt committed without its binding; a settlement whose framing, subject or current
+  version does not match the governed item unblocking it anyway; inline open_decisions text or a
+  detached receipt treated as authority by any enabled consumer; an unsupported subject kind bound
+  instead of stopped. The owner's account, the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); commit
+  barrier crashes, concurrent and restart matrices (Release 2); expiry, reopening, tripwires and reverse
+  invalidation (Release 3); forged rows in our own store and files planted in the installed directory.
 
 ## Notes
 
