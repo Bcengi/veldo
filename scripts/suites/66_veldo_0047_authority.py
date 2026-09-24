@@ -1053,5 +1053,17 @@ def _v47_suite():
 
 
 _v47_started = __import__('time').monotonic()
-_v47_suite()
+# The operator's session. In production a client runs where XDG_RUNTIME_DIR names the owner's user
+# manager, so a client that tried to start the authority itself would succeed there; the gate's mutation
+# stage runs this suite without one, which would make that defect fail silently and pass. The suite's own
+# process gets the same session for its run, so the defect is observed, never masked.
+_v47_session = __import__('os').environ.get('XDG_RUNTIME_DIR')
+__import__('os').environ['XDG_RUNTIME_DIR'] = _v47_session or '/run/user/%d' % __import__('os').getuid()
+try:
+    _v47_suite()
+finally:
+    if _v47_session is None:
+        __import__('os').environ.pop('XDG_RUNTIME_DIR', None)
+    else:
+        __import__('os').environ['XDG_RUNTIME_DIR'] = _v47_session
 _V47_SECONDS = __import__('time').monotonic() - _v47_started

@@ -207,3 +207,7 @@ new guidance; all eight are red by assertion at 7ed08fb. Finding 47 has 38 mutat
 shapes without refusing (none used by the engine today; the installed-receiver launch row is the guard);
 install(writable=...) replaces the default worker directories instead of adding to them (tests only); the
 guidance for an explicitly passed worker directory names the home and temporary directories.
+
+2026-09-24, landing: the gate's mutation stage runs the suite without XDG_RUNTIME_DIR, so a client
+mutated to start the service itself failed silently there and survived. The suite gives its own process
+the operator's session (the default /run/user/<uid>) for its run, so that defect is observed.
