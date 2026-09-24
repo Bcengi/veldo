@@ -101,6 +101,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: a current member enrolls one restricted Telegram edge key with a signed enrollment
+  command whose digest binds the public key and the authority parameters, plus proof that the edge
+  holds the private key. The edge then signs only answer assertions, through the protected signer, for
+  its own purpose, channel, actor, request, presentation, scope and expiry, and only with the canonical
+  evidence VELDO-0066 produces. When an answer is accepted, both the edge and the actor must still be
+  current. The private edge key never reaches a worker or a proof bundle.
+- Threat model: a substituted public key or altered authority parameters in an enrollment; a
+  self-grant, or an enrollment by someone who is not a current member; the edge asked to sign outside
+  its purpose (a membership command, arbitrary bytes) or for another channel, actor, request,
+  presentation or scope, or after expiry; an answer signed by a retired edge or for a revoked actor;
+  and a worker process trying to read the private edge key. The owner's account outside workers, the
+  protected signing and membership services, and the store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); key
+  rotation, restart and failover (Release 2); more than one channel (Release 4); Jira enrollment
+  (dropped by the owner); activating ingress (VELDO-0073); forged rows in our own store and files
+  planted in the installed directory.
+
 ## Notes
 
 Use protected signing and membership services already present. Enrollment does not activate
