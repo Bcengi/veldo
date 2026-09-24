@@ -112,6 +112,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an owner answers a presented request (grooming, admission, priority, finding or decision
+  disposition) through a signed Telegram assertion, or later through the authenticated API, which uses
+  the same settlement service. The one SQLite authority records one terminal settlement per request
+  version, carrying the exact offered ruling and the owner's own reasoning, and commits the ruling,
+  the nonce, the typed effects, the terminal request state and the receipt in one transaction. The
+  published request state then reads as terminal with that settlement's receipt and version, and an
+  ordinary later answer changes nothing. Policy requirements and the request's own required roles
+  both apply.
+- Threat model: a chosen option flattened to a generic value; two conflicting answers for one request
+  version both taking effect or leaving a half-written settlement; a receipt written outside the
+  terminal transaction; a request left open after settlement or reapplied from stale YAML; a stronger
+  request role ignored because policy roles pass; the wrong owner, a duplicate principal or a stale
+  presentation accepted; an unsupported quorum policy weakening a requirement. The owner's account,
+  the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); the crash,
+  replica and full cross-channel matrix and restart recovery (Release 2, see History); forged rows in
+  our own store and files planted in the installed directory.
+
 ## Notes
 
 One SQLite authority owns settlement, terminal request state and typed effects. No
