@@ -1,0 +1,8 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -718 +718 @@
+-                if code is not None and (group is None or not group.populated()):
++                if code is not None:  # defect: the exit ends the reap while the group still runs
+@@ -737,2 +736,0 @@
+-                        if stop is not None and group.populated():
+-                            stop.adapter_exited(time.time())

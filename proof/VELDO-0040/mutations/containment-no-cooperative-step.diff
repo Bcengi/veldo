@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -533 +533 @@
+-            self._step('cooperative' if adapter_alive else 'terminate', now)
++            self._step('terminate', now)  # defect: the adapter is not asked first

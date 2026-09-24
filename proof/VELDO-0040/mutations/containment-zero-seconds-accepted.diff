@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -135 +135 @@
+-        return isinstance(value, (int, float)) and math.isfinite(value) and 0 < value <= 366 * 86400
++        return isinstance(value, (int, float)) and math.isfinite(value) and 0 <= value <= 366 * 86400  # defect: zero seconds is taken

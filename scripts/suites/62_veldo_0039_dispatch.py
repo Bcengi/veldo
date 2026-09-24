@@ -195,9 +195,15 @@ sys.stdout.flush()
 sys.exit(payload.get('code', 0))
 ''')
         config = base / 'receiver.json'
+        # This host's worker profile (VELDO-0040): every local worker runs in its own systemd scope in a
+        # slice of this run's own, with caps far above what these fixture engines use.
+        worker_slice = 'v39s%s.slice' % os.urandom(4).hex()
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base),
+            'profile': {'kind': 'linux-systemd', 'slice': worker_slice, 'lock': str(base / 'containment.lock'),
+                        'concurrency': 64, 'runtime_seconds': 600, 'memory_bytes': 1 << 30, 'cpu_percent': 400,
+                        'file_bytes': 1 << 30},
             'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
             'adapters': {'fixture-engine': {'argv': [sys.executable, '-B', str(worker), str(db), str(markers)],
                                             'environment': {'ENGINE_PROFILE': 'configured-profile'}},
@@ -804,6 +810,10 @@ sys.exit(payload.get('code', 0))
                     launch.child.stdout.close()
             for conn in connections:
                 conn.close()
+            with contextlib.suppress(Exception):
+                subprocess.run(['systemctl', '--user', 'stop', worker_slice], capture_output=True, timeout=20,
+                               stdin=subprocess.DEVNULL, env=dict(os.environ, XDG_RUNTIME_DIR=os.environ.get(
+                                   'XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()))
             if owner_session is None:
                 os.environ.pop('V39_OWNER_SESSION', None)
             else:

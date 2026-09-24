@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -797,0 +798,2 @@
++    if held is not None:  # defect: the engine is started in the receiver's group, not its own
++        Path('/sys/fs/cgroup', C.cgroup_of(os.getppid()).lstrip('/'), 'cgroup.procs').write_text(str(os.getpid()))

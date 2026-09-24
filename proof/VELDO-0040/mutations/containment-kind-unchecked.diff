@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -228,2 +227,0 @@
+-    if not problems and profile['kind'] != LINUX:
+-        problems.append('unavailable_service:profile:kind')

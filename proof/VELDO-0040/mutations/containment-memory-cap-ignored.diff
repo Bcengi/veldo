@@ -1,0 +1,8 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -346 +346 @@
+-        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),
++        props = [('CPUQuota', '%d%%' % s['cpu_percent']),  # defect: the memory cap is ignored
+@@ -404,2 +403,0 @@
+-            'memory_bytes': {'memory.max': str(s['memory_bytes'] // page * page), 'memory.swap.max': '0',
+-                             'OOMPolicy': 'stop'},

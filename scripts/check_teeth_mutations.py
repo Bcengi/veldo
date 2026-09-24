@@ -2578,20 +2578,21 @@ def cases():
     def dispatch(name, module, old, new, row, also=()):
         add(39, name, '62_veldo_0039_dispatch.py', module, old, new, ['dispatch/' + row], also)
 
-    # Review of bb72994, B1: a worker that closes its output is still held to its deadline.
-    closed_wait = ("        if not stopped:\n"
-                   "            # Closing its output does not end a worker: it is still held to the contract deadline.\n"
-                   "            try:\n"
-                   "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n")
-    dispatch('dispatch-closed-output-not-held', 'control_launch.py', closed_wait,
-             closed_wait.replace("        if not stopped:\n", "        if False:\n"), 'deadline-after-closed-output')
-    dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
-             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
-             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()) + 30)\n",
+    # Review of bb72994, B1: a worker that closes its output is still held to its deadline. Since
+    # VELDO-0040 the reap is one notification loop, so the same three defects are made there: the end
+    # of output waits for the worker with no deadline, the deadline is late, or it stops the worker.
+    closed = ("                        if not chunk:\n"
+              "                            poller.unregister(output)\n")
+    dispatch('dispatch-closed-output-not-held', 'control_launch.py', closed,
+             closed + "                            code = worker.wait()  # defect: the deadline ends with the output\n",
              'deadline-after-closed-output')
-    dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py',
-             "                worker.wait(timeout=max(0.0, contract['deadline'] - time.time()))\n",
-             "                worker.wait(timeout=0)\n", 'deadline-after-closed-output')
+    dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
+             "                due = min(contract['deadline'] if cause is None and code is None else math.inf,\n",
+             "                due = min(contract['deadline'] + 30 if cause is None and code is None else math.inf,\n",
+             'deadline-after-closed-output')
+    dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py', closed,
+             closed + "                            begin('deadline', time.time())  # defect: stopped when it closes\n",
+             'deadline-after-closed-output')
     # Review of bb72994, B2: a remote deadline stop is unknown and holds the unit.
     remote_stop = "        if remote and termination['deadline_stop']:\n"
     dispatch('dispatch-remote-stop-exits', 'control_launch.py', remote_stop,
@@ -2727,6 +2728,109 @@ def cases():
              '    ".veldo/control_launch.py",\n', '', 'installed-assets')
     dispatch('dispatch-authority-not-installed', 'init_scaffold.py',
              '    ".veldo/control_dispatch.py",\n', '', 'installed-assets')
+
+    # VELDO-0040: each criterion's declared falsifier and further defects, each against the one suite
+    # row it names. Where the fixed code guards a defect twice (it installs a control and then checks
+    # the control is installed), the defect is both edits.
+    def contain(name, module, old, new, row, also=()):
+        add(40, name, '63_veldo_0040_containment.py', module, old, new, ['containment/' + row], also)
+
+    # AC1, declared: the worker is launched outside its dispatch group.
+    contain('containment-launch-outside-group', 'control_containment.py',
+            "        return head + ['--'] + list(argv)\n",
+            "        return list(argv)  # defect: the worker is launched outside its dispatch group\n", 'dedicated-group')
+    contain('containment-wrapper-leaves-group', 'control_launch.py',
+            "    if held is not None and not C.released(0):\n        os._exit(125)\n",
+            "    if held is not None and not C.released(0):\n        os._exit(125)\n"
+            "    if held is not None:  # defect: the engine is started in the receiver's group, not its own\n"
+            "        Path('/sys/fs/cgroup', C.cgroup_of(os.getppid()).lstrip('/'), 'cgroup.procs').write_text(str(os.getpid()))\n",
+            'dedicated-group')
+    contain('containment-shared-group', 'control_containment.py',
+            "    return UNIT_PREFIX + hashlib.sha256(str(dispatch_id).encode()).hexdigest()[:32] + '.scope'\n",
+            "    return UNIT_PREFIX + 'shared.scope'  # defect: dispatches share one group\n", 'dedicated-group')
+    contain('containment-unknown-setting-ignored', 'control_containment.py',
+            "    problems = ['invalid_input:profile:unknown:' + str(name) for name in profile\n"
+            "                if name not in SETTINGS and name not in FIELDS]\n",
+            "    problems = []  # defect: a setting the profile does not know is silently ignored\n",
+            'unqualified-profile-refused')
+    contain('containment-kind-unchecked', 'control_containment.py',
+            "    if not problems and profile['kind'] != LINUX:\n        problems.append('unavailable_service:profile:kind')\n",
+            "", 'unqualified-profile-refused')
+    contain('containment-profile-after-acceptance', 'control_launch.py',
+            "        self.qualification = C.qualify(self.profile)\n        return self.qualification['refusal']\n",
+            "        return None  # defect: the host profile is not qualified before acceptance\n",
+            'unqualified-profile-refused')
+    # AC2, declared: the configured elapsed-runtime cap is ignored.
+    contain('containment-runtime-cap-ignored', 'control_containment.py',
+            "                 ('RuntimeMaxSec', _usec(s['runtime_seconds'])), ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),\n",
+            "                 ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),  # defect: the runtime cap is ignored\n",
+            'runtime-cap',
+            also=[("            'runtime_seconds': {'RuntimeMaxUSec': round(s['runtime_seconds'] * 10 ** 6)},\n", "")])
+    contain('containment-memory-cap-ignored', 'control_containment.py',
+            "        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),\n",
+            "        props = [('CPUQuota', '%d%%' % s['cpu_percent']),  # defect: the memory cap is ignored\n",
+            'caps-installed',
+            also=[("            'memory_bytes': {'memory.max': str(s['memory_bytes'] // page * page), 'memory.swap.max': '0',\n"
+                   "                             'OOMPolicy': 'stop'},\n", "")])
+    contain('containment-cpu-cap-ignored', 'control_containment.py',
+            "('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),\n",
+            "('MemorySwapMax', '0'),  # defect: the CPU cap is ignored\n",
+            'caps-installed',
+            also=[("            'cpu_percent': {'cpu.max': '%d 100000' % (s['cpu_percent'] * 1000)},\n", "")])
+    contain('containment-file-limit-ignored', 'control_containment.py',
+            "    resource.setrlimit(resource.RLIMIT_FSIZE, (size, size))\n",
+            "    pass  # defect: the per-file storage limit is not applied\n",
+            'caps-installed',
+            also=[("            'file_bytes': {'Max file size': (str(s['file_bytes']), str(s['file_bytes']))},\n", "")])
+    contain('containment-concurrency-uncounted', 'control_containment.py',
+            "            if len(live) >= self.settings['concurrency']:\n",
+            "            if False:  # defect: the live groups are not held to the concurrency cap\n", 'caps-installed')
+    contain('containment-required-setting-optional', 'control_containment.py',
+            "            if rule['required']:\n                problems.append('invalid_input:profile:%s:absent' % name)\n",
+            "            pass  # defect: a required setting may be absent\n", 'required-settings-refused')
+    contain('containment-zero-seconds-accepted', 'control_containment.py',
+            "math.isfinite(value) and 0 < value <= 366 * 86400\n",
+            "math.isfinite(value) and 0 <= value <= 366 * 86400  # defect: zero seconds is taken\n",
+            'required-settings-refused')
+    # AC3, declared: a stop stops only the parent.
+    contain('containment-stop-only-parent', 'control_containment.py',
+            "        elif stage == 'terminate':\n            self.group.terminate()\n"
+            "        elif stage == 'kill':\n            self.group.kill()\n",
+            "        elif stage == 'terminate':\n"
+            "            with contextlib.suppress(ProcessLookupError):\n"
+            "                os.kill(self.pid, signal.SIGTERM)  # defect: only the parent is stopped\n"
+            "        elif stage == 'kill':\n"
+            "            with contextlib.suppress(ProcessLookupError):\n"
+            "                os.kill(self.pid, signal.SIGKILL)  # defect: only the parent is stopped\n",
+            'stop-escalation')
+    contain('containment-terminate-without-grace', 'control_containment.py',
+            "{'cooperative': stop_grace, 'terminate': kill_grace,",
+            "{'cooperative': 0, 'terminate': kill_grace,", 'stop-escalation')
+    contain('containment-kill-without-grace', 'control_containment.py',
+            "{'cooperative': stop_grace, 'terminate': kill_grace,",
+            "{'cooperative': stop_grace, 'terminate': 0,", 'stop-escalation')
+    contain('containment-no-cooperative-step', 'control_containment.py',
+            "            self._step('cooperative' if adapter_alive else 'terminate', now)\n",
+            "            self._step('terminate', now)  # defect: the adapter is not asked first\n", 'cooperative-stop')
+    contain('containment-exit-polled', 'control_launch.py',
+            "                timeout = None if due == math.inf else max(0, math.ceil((due - time.time()) * 1000))\n",
+            "                timeout = 50  # defect: the reap wakes every 50 ms to look\n", 'exit-notified')
+    contain('containment-exit-leaves-descendants', 'control_launch.py',
+            "                if code is not None and (group is None or not group.populated()):\n",
+            "                if code is not None:  # defect: the exit ends the reap while the group still runs\n",
+            'ordinary-exit',
+            also=[("                        if stop is not None and group.populated():\n"
+                   "                            stop.adapter_exited(time.time())\n", "")])
+    contain('containment-retire-without-looking', 'control_containment.py',
+            "    return {'terminated': process is None or not alive(process), 'cleaned': observed != 'populated',\n",
+            "    return {'terminated': process is None or not alive(process), 'cleaned': True,  # defect\n",
+            'retire-after-empty')
+    contain('containment-group-not-reported', 'control_launch.py',
+            "                   'group': group.report() if group else None})\n",
+            "                   'group': None})  # defect: the receiver does not report the worker's group\n",
+            'observations')
+    contain('containment-not-installed', 'init_scaffold.py',
+            '    ".veldo/control_containment.py",\n', '', 'installed-assets')
     # VELDO-0049: each criterion's declared falsifier and further defects, each against the one
     # suite row it names. Anchors are exact text in the production modules suite 63 installs.
     def floor(name, old, new, row, also=(), module='dispatch.py'):

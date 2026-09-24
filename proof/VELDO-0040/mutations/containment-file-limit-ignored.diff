@@ -1,0 +1,7 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -410 +409,0 @@
+-            'file_bytes': {'Max file size': (str(s['file_bytes']), str(s['file_bytes']))},
+@@ -566 +565 @@
+-    resource.setrlimit(resource.RLIMIT_FSIZE, (size, size))
++    pass  # defect: the per-file storage limit is not applied
