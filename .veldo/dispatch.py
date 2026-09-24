@@ -971,7 +971,14 @@ def _record_review(conn, params, before, record, unit_data):
     printed, body, signature = _review_receipt(receipt)
     dispatch = _review_dispatch(conn, params, record, assignment, receipt["dispatch"], printed)
     _receipt_bound(conn, params, record, reviewer, body, signature)
-    blocking = PC.blocking_findings(body)
+    blocking = list(PC.blocking_findings(body))
+    # A blocking review dimension, and a failing verdict that lists no finding, are blocking judgements too:
+    # each stays open until disposed, so a later pass cannot hand the unit off around it.
+    for label, dimension in (("shape_fit", SR), ("security", SEC)):
+        if dimension.dimension_blocks(body):
+            blocking.append({"dimension": label, "block": body.get(label)})
+    if body.get("verdict") not in EX.PASSING_VERDICTS and not blocking:
+        blocking.append({"verdict": body.get("verdict")})
     findings = dict(record["findings"])
     raised = []
     for n, finding in enumerate(blocking, 1):
