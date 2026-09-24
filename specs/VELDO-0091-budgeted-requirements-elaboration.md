@@ -79,6 +79,18 @@ acceptance_criteria:
       budget after a pre-call refusal; the exhausted-budget stop check must fail.
     falsified_by: >
       Raise the budget after a pre-call refusal; the exhausted-budget stop check must fail.
+  - id: AC4
+    text: >
+      Claim: Every specification elaboration publishes carries a What the reviewer judges section
+      with its three parts (normal use, threat model, out of review scope) stated for that change,
+      and publication refuses a specification missing any part or leaving one empty. Set and
+      completeness: Enumerate the specifications one elaboration cycle publishes for an accepted
+      objective and check each against the three named parts of specs/TEMPLATE.md. Falsifier:
+      Publish a specification whose threat model part is empty; the reviewer-scope completeness
+      check must fail.
+    falsified_by: >
+      Publish a specification whose threat model part is empty; the reviewer-scope completeness
+      check must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -125,3 +137,8 @@ author/retry, AC2 checkpoint-deletion recovery and AC3 delayed-report/cancellati
 allocation qualification moved to Release 2. Elaboration, questions, finite reasoning limits
 and pre-call caps remain. The criteria, declared evidence universe, Context and Notes above
 now carry only the retained function. No specification status or historical proof was changed.
+
+2026-09-23: AC4 added on the owner's ruling (Telegram 28957-28962): elaboration is the agent that writes
+much better requirements, so each specification it publishes states what an independent review judges
+(normal use, threat model, out of review scope). Unlikely edge cases are out of review scope (28962).
+Until this is built, the section is written by hand for each remaining item before it is built.
