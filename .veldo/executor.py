@@ -65,6 +65,18 @@ separate RULE that an answer changing a requirement or a durable decision must b
 committed to the spec (or an ADR) before the build is accepted - so a chat answer
 never becomes hidden engineering truth - is a documented PROCEDURE for the agent
 (see the run skill), not code enforced here.
+
+DURABLE CONTEXTUAL PROOF (VELDO-0050). The proof step is assemble, validate (the
+structural contract) and ACCEPT: accept_proof validates the proof against the
+accepted spec revision, the installed gate catalog, the repository's Git objects
+and the gate's recorded observation, and stores it as an immutable accepted bundle
+(control_proof) before the run finishes built or enters review, so a fresh
+reviewer resolves it from the store with no builder memory. LiveLoop.gate observes
+the canonical gate (exit, terminal line, every required catalog check) and records
+the observation; the checks a proof records come only from it, never a default.
+With the floor enabled the executor emits only its own events (proof.recorded,
+review.requested, approval.recorded): a verdict belongs to the review projection
+and the review authority, and nothing here writes a landing or completion record.
 """
 import importlib.util
 import json
@@ -112,6 +124,18 @@ def _eligibility_organ():
     return _ELIGIBILITY[0]
 
 
+_PROOF = []
+
+
+def proof_organ():
+    """VELDO-0050: the proof service module (control_proof) beside this file, loaded on first use.
+    The executor's gate observation, contextual validation and accepted proof all come from it, so a
+    caller wiring a ProofService builds it from this same module."""
+    if not _PROOF:
+        _PROOF.append(_load_module("veldo_control_proof_exec", ".veldo/control_proof.py"))
+    return _PROOF[0]
+
+
 class LoopSteps:
     """The loop-surface seam. A concrete implementation supplies the mechanical
     surfaces (resolve, run_check, gate, assemble_proof, validate_proof,
@@ -155,6 +179,14 @@ class LoopSteps:
         """MECHANICAL. Return (ok, errors) for the assembled manifest."""
         raise NotImplementedError
 
+    def accept_proof(self, spec, build, gate, proof, context=None):
+        """MECHANICAL (VELDO-0050). Complete contextual validation of the proof against the accepted
+        spec, the installed catalog, Git and the gate's observation, and its storage as accepted
+        immutable evidence, before the unit is offered as built or for review. Return {ok, problems,
+        bundle}: ok False halts the run at proof with the named problems. A control-logic seam that
+        keeps no proof service returns None and the run records no bundle; LiveLoop never does."""
+        return None
+
     # VELDO-0052: who reviews. The review station decides reviewer independence over this identity
     # before any reviewer is launched; None is refused (reviewer_not_independent), never presumed.
     reviewer_identity = None
@@ -193,10 +225,17 @@ class LiveLoop(LoopSteps):
     spec files, plan enforcement over the plan ops). The agent and human steps
     fail LOUD, so an adopting runtime must inject an agent-backed build and
     review and a human-backed approve: a loop that silently no-ops a build or a
-    review is more dangerous than one that refuses to run."""
+    review is more dangerous than one that refuses to run.
 
-    def __init__(self, root=ROOT):
+    VELDO-0050: `proofs` is the control_proof.ProofService the proof is accepted into. With one wired,
+    gate() records its observation there and accept_proof() stores the accepted bundle there; in an
+    enrolled repository without one, accept_proof refuses (missing_authority:proof_service). In an
+    unenrolled tree, which keeps no store, the proof is still validated contextually and nothing is
+    stored."""
+
+    def __init__(self, root=ROOT, proofs=None):
         self.root = Path(root)
+        self.proofs = proofs
 
     def resolve(self, spec_id):
         V = _load_module("veldo_validate_exec", ".veldo/validate.py")
@@ -206,6 +245,12 @@ class LiveLoop(LoopSteps):
             raise ExecutorError("cannot resolve spec %r: no matching file under specs/" % spec_id)
         text = matches[0].read_text()
         fm = V.front_matter(text) or {}
+        # VELDO-0050: the accepted revision is the spec document as committed at the run's base, the
+        # commit the workspace is at before anything is built; the installed catalog is read there too.
+        CP = proof_organ()
+        base = CP.head(self.root)
+        spec_path = matches[0].relative_to(self.root).as_posix()
+        committed = CP.blob(self.root, base, spec_path) if base else None
         return {
             "id": fm.get("id", spec_id),
             "status": fm.get("status"),
@@ -214,6 +259,9 @@ class LiveLoop(LoopSteps):
             "work": fm.get("work"),
             "criteria_ids": V.spec_criterion_ids(matches[0]),
             "path": str(matches[0]),
+            "spec_path": spec_path,
+            "base": base,
+            "revision": CP.digest(committed) if committed is not None else None,
         }
 
     def run_check(self, spec):
@@ -230,16 +278,33 @@ class LiveLoop(LoopSteps):
             "commit and evidence. Refusing to fabricate a build.")
 
     def gate(self):
-        r = subprocess.run(["bash", str(self.root / "scripts" / "verify.sh")],
-                           capture_output=True, text=True, cwd=str(self.root))
-        return {"green": r.returncode == 0, "detail": r.stdout.strip().splitlines()[-1]
-                if r.stdout.strip() else "gate produced no output"}
+        """The canonical gate, run once and OBSERVED (VELDO-0050): green only on exit 0, a terminal
+        GREEN line for the commit it ran at and every required catalog item observed passing. The
+        observation is recorded with the proof service when one is wired, before any proof names it,
+        and handed on (its reference, or the observation itself when no store is kept)."""
+        CP = proof_organ()
+        observed = CP.capture_gate(self.root)
+        result = {"green": observed["green"], "detail": CP.detail(observed)}
+        if self.proofs is None:
+            result["observation"] = observed
+            return result
+        try:
+            result["observation"] = self.proofs.record_observation(observed)
+        except CP.Refused as error:
+            # An observation the service would not hold proves nothing: the gate is not green.
+            result.update(green=False, detail="gate observation refused: %s" % error.code)
+        return result
 
     def assemble_proof(self, spec, build):
-        """Build a proof manifest from the spec criteria and the build evidence.
-        Mechanical: it maps each spec criterion to its evidence from the build,
-        so a missing evidence entry becomes a criterion the validator rejects
-        rather than a silent pass."""
+        """The proof manifest for the built change. When the built commit carries its committed
+        manifest (proof/<unit>/manifest.json), that exact document is the proof. Otherwise it is
+        assembled from the build's evidence: each spec criterion mapped to its evidence, so a missing
+        entry becomes a criterion the validator rejects rather than a silent pass. VELDO-0050: its
+        checks are only what the build itself claims, never a default; the checks a proof RECORDS are
+        derived from the gate's observation when it is accepted (accept_proof)."""
+        committed = proof_organ().committed_manifest(self.root, (build or {}).get("commit"), spec.get("id"))
+        if committed is not None:
+            return committed
         evidence = (build or {}).get("evidence") or {}
         criteria = []
         for cid in spec.get("criteria_ids") or []:
@@ -252,19 +317,51 @@ class LiveLoop(LoopSteps):
             "schema": "veldo.proof/v1",
             "spec_id": spec.get("id"),
             "commit": (build or {}).get("commit", ""),
-            "producer": "executor",
+            "producer": (build or {}).get("producer") or "executor",
+            "spec_revision": spec.get("revision"),
             "criteria": criteria,
-            "checks": (build or {}).get("checks") or [{"name": "unit", "status": "passed"}],
+            "checks": list((build or {}).get("checks") or []),
             "rollback": (build or {}).get("rollback", "git revert"),
         }
 
     def validate_proof(self, proof):
+        """The structural contract alone (validate.check_json). It is not the proof's acceptance:
+        accept_proof performs the complete contextual validation."""
         V = _load_module("veldo_validate_exec", ".veldo/validate.py")
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=True) as f:
             f.write(json.dumps(proof))
             f.flush()
             errs = V.check_json(f.name, V.PROOF_REQ, "proof")
         return (errs == 0, errs)
+
+    def accept_proof(self, spec, build, gate, proof, context=None):
+        """VELDO-0050: complete contextual validation, then the proof stored as accepted immutable
+        evidence with the wired proof service (the bundle a fresh reviewer resolves from the store
+        alone). The builder is the run's claim holder when the run has one."""
+        CP = proof_organ()
+        sid = (spec or {}).get("id")
+        commit = (build or {}).get("commit")
+        observation = (gate or {}).get("observation")
+        builder = (context or {}).get("holder")
+        if self.proofs is not None:
+            try:
+                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),
+                                              manifest=proof, observation=observation, builder=builder)
+            except CP.Refused as error:
+                return {"ok": False, "problems": list(error.codes), "bundle": None}
+            return dict(accepted, ok=True, problems=[])
+        EL = _eligibility_organ()
+        try:
+            enrolled = EL.enrolled(self.root)
+        except EL.Stopped as stop:
+            return {"ok": False, "problems": ["unavailable_service:%s" % stop.reason], "bundle": None}
+        if enrolled:
+            return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
+        problems, _record = CP.contextual(self.root, unit=sid, commit=commit, base=spec.get("base"),
+                                          spec_path=spec.get("spec_path"), manifest=proof,
+                                          observation=observation if isinstance(observation, dict) else None,
+                                          builder=builder)
+        return {"ok": not problems, "problems": problems, "bundle": None}
 
     def review(self, spec, proof, calls=None):
         raise ExecutorError(
@@ -590,24 +687,36 @@ class Executor:
             ob("on_step", "gate")
             g = self.hooks.gate()
             gate_green = bool(g.get("green"))
-            record("gate", gate_green, cycle=cycle, detail=g.get("detail"))
+            seen = g.get("observation") if isinstance(g.get("observation"), dict) else {}
+            record("gate", gate_green, cycle=cycle, detail=g.get("detail"),
+                   **({"observation": seen["id"]} if seen.get("id") else {}))
             if not gate_green:
                 # HALT: a red gate does NOT proceed to proof, review, or merge.
                 return finish("halted", "gate",
                               g.get("detail", "gate red"), None,
                               proof, gate_green, verdict)
 
-            # 4. proof (mechanical assemble + validate)
+            # 4. proof (mechanical assemble + validate + accept)
             ob("on_step", "proof")
             proof = self.hooks.assemble_proof(spec, build)
             p_ok, p_err = self.hooks.validate_proof(proof)
-            record("proof", p_ok, cycle=cycle, errors=p_err)
             if not p_ok:
+                record("proof", False, cycle=cycle, errors=p_err)
                 return finish("halted", "proof",
                               "proof did not validate (%s problem(s))" % p_err,
                               None, proof, gate_green, verdict)
+            # VELDO-0050: complete contextual validation, and the proof stored as accepted immutable
+            # evidence, BEFORE the unit is offered as built or for review. A refusal names every problem.
+            accepted = self.hooks.accept_proof(spec, build, g, proof, context=self.context)
+            if accepted is not None and not accepted.get("ok"):
+                problems = list(accepted.get("problems") or ["unknown_outcome:proof"])
+                record("proof", False, cycle=cycle, errors=p_err, refusals=problems)
+                return finish("halted", "proof", "proof refused: %s" % "; ".join(problems),
+                              None, proof, gate_green, verdict)
+            bundle = {"bundle": accepted["bundle"]} if accepted and accepted.get("bundle") else {}
+            record("proof", True, cycle=cycle, errors=p_err, **bundle)
             self.hooks.emit("proof.recorded", spec=spec.get("id"),
-                            commit=build.get("commit"))
+                            commit=build.get("commit"), **bundle)
 
             if stop_after == "proof":
                 # BUILD-ONLY STOP: a passing build/gate/proof, then finish at the
@@ -635,9 +744,13 @@ class Executor:
             verdict = rv.get("verdict")
             rmin = int(rv.get("human_minutes", 0) or 0)
             state["human_minutes"] += rmin
-            self.hooks.emit("verdict.recorded", spec=spec.get("id"),
-                            commit=build.get("commit"),
-                            human_minutes=(rmin or None), verdict=verdict)
+            if gate is None:
+                # The pre-factory loop (no Gate: an unenrolled tree) is unchanged. With the floor
+                # enabled (VELDO-0050) the executor emits only its own events: verdict.recorded is the
+                # review projection's (events.py), and the review receipt is the review authority's.
+                self.hooks.emit("verdict.recorded", spec=spec.get("id"),
+                                commit=build.get("commit"),
+                                human_minutes=(rmin or None), verdict=verdict)
             passed = verdict in PASSING_VERDICTS
             record("review", passed, cycle=cycle, verdict=verdict)
             if passed:
