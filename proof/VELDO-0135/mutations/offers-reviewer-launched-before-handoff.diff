@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -467,0 +468,2 @@
++            with self._launch("review", unit, context, decision) as handle:  # defect: a reviewer still launches
++                self._reviewer.review(dict(self._resolve(sid), status="review"), unit, calls=handle)

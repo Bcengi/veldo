@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -228 +228 @@
+-        if not codes or any(c.startswith("awaiting_reviews") for c in codes):
++        if True:  # defect: a unit waiting on an open finding is offered for review

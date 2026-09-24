@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -238 +238 @@
+-        return _held(entry, "handoff")
++        return dict(entry, station="build", lane="ready")  # defect: a handed-off unit is claimable

@@ -21,7 +21,10 @@ footprint:
   - "engine/.veldo/work.py"
   - ".veldo/work.py"
   - "packs/*/.veldo/work.py"
+  - "engine/.veldo/dispatch.py"
+  - ".veldo/dispatch.py"
   - "scripts/suites/*_veldo_0135_*.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -113,3 +116,24 @@ Read the floor record through the authority's read path, never by opening the st
 acceptance because the frontier and work loop read the spec status line).
 
 2026-09-24: the owner marked this specification ready (Telegram 29041).
+
+2026-09-24: built on branch build-veldo-0135 from 5ba4a02, finishing a work in progress cut off by a usage
+limit. The frontier and the work loop read each enrolled unit's floor record through the authority's read
+path; a returned unit is offered to build (its disposition binds to the rebuilt commit), a unit with the
+review count met and a finding open waits, and a claim client's stop about one unadmitted unit is withheld
+by name. Suite 67_veldo_0135_offers (4 assertion rows) is red by assertion at 5ba4a02 and green here; 13
+registered mutations; proof in proof/VELDO-0135/.
+
+2026-09-24: the scoped review of e5b4dad found that after the owner resolves the last open finding the
+unit reaches handoff only through a new review the review policy does not require: the frontier offers the
+review station when the handoff rule passes, but the dispatcher's review station assigned and launched a
+reviewer before it ever asked for the handoff. dispatch.py (both copies) joins this footprint for that
+reason: the review station now asks the authority's handoff rule first (FloorAuthority.handoff_refusals, the
+same question the frontier asks) and hands off without a reviewer when it passes; only when it does not is a
+review assigned and launched. The work loop's failed set is keyed by unit and station, so a unit whose
+review failed is still rebuilt in the same run. New row offers/finding-path (suite 67 now 5 assertion rows),
+red by assertion at e5b4dad; 16 registered mutations.
+
+2026-09-24: suite 63_veldo_0049_floor joins this footprint because its floor/finding-not-erased row asserted
+the defect above: after the owner resolved the finding it required a third reviewer, reviewer-d, in the
+handoff. The row now requires the handoff on the two passing reviews that stand, with no reviewer launched.
