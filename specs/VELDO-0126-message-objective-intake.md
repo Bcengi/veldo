@@ -144,3 +144,10 @@ installation, adoption, migration and rollback Release 4.
 2026-09-24, implementation: `.veldo/init_scaffold.py` (both copies, and any pack copy) and
 `scripts/check_teeth_mutations.py` were added to the footprint before either was changed, so the
 scaffold installs the intake module and the registry holds this specification's mutations.
+
+2026-09-24, implementation: `.veldo/control_intake.py` takes a Telegram message kept and attributed by
+VELDO-0066 and an API request signed by the API edge principal into one normalized command and one
+store command that writes only intake sources, proposals and questions; an unresolved project keeps an
+inbox proposal and asks. Suite 68 has 18 rows, finding 126 has 14 mutations, and the rows are red at
+d34980f (`proof/VELDO-0126/`). The API leg drives the intake interface; VELDO-0130 drives its own leg.
+The criteria, status and risk are unchanged.
