@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -330 +330 @@
+-                    pending_events=[e['id'] for e in events if e['id'] not in present])
++                    pending_events=[])  # defect: pending landings are not listed

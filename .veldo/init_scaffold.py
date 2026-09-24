@@ -130,6 +130,10 @@ _FILES = [
     # VELDO-0050: accepted proof bundles and complete contextual proof validation, which executor.py
     # loads; a runtime asset, no validator import, not substrate.
     ".veldo/control_proof.py",
+    # VELDO-0051: the journal projection that publishes spec.shipped from a confirmed landing receipt
+    # (it loads events.py, completion_contract.py and control_store.py); a runtime asset, no validator
+    # import, not substrate.
+    ".veldo/control_event_projection.py",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
@@ -205,6 +209,8 @@ _FILES = [
     ".veldo/capsule.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
+    # VELDO-0051: the canonical event vocabulary events.py and validate.py both load.
+    ".veldo/control_event_vocabulary.py",
     ".veldo/arch.py",
     ".veldo/decision.py",
     ".veldo/request.py",
@@ -348,6 +354,8 @@ REQUIRED_SUBSTRATE = [
     ".veldo/capsule.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
+    # VELDO-0051: substrate, because the validator loads the canonical event vocabulary.
+    ".veldo/control_event_vocabulary.py",
     ".veldo/arch.py",
     ".veldo/decision.py",
     ".veldo/request.py",

@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -222 +222 @@
+-            if not confirmed(publication):
++            if False:  # defect: an unconfirmed publication counts as a landing

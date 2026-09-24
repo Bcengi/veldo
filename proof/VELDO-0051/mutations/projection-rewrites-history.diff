@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -284 +284 @@
+-        with open(self.log, 'a+') as fh:
++        with open(self.log, 'w+') as fh:  # defect: the log is rewritten, not appended

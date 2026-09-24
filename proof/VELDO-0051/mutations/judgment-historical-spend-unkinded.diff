@@ -1,0 +1,4 @@
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -93 +92,0 @@
+-    "spec.shipped": "ship_bulk",
