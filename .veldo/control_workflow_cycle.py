@@ -145,7 +145,7 @@ def _record_transition(conn, params, before):
     if not isinstance(now, (int, float)) or _member(conn, params.get('principal'), RUNNER_TYPES, repository, now):
         raise Refused('missing_authority:principal', 'not an active service member for this repository')
     cid = record_id(domain, repository, cycle)
-    prior = before.get(cid)
+    prior = _entity_row(conn, cid)
     if params.get('action') == 'start':
         if prior is not None:
             raise Refused('invalid_input:cycle_exists', cid)
@@ -405,7 +405,7 @@ class Cycles:
         if notes.get('workflow') != {k: record['binding'][k] for k in ('id', 'version', 'digest')}:
             return self._refuse(record, 'missing_evidence:binding', graph=command)
         record = dict(record, position=answer['resume']['position'], resume=answer['resume'])
-        self._update(record, 'step', node=INTAKE, graph=command, runtime=answer['runtime'])
+        self._update(record, 'step', node=INTAKE, graph=command, runtime=answer['runtime'], executed=notes['workflow'])
         return self._run(record, revision)
 
     def advance(self, cycle, results=None):
@@ -435,15 +435,17 @@ class Cycles:
             error = Refused('invalid_input:cycle_final', str(cycle))
             self._report(dict(self._event('cancel', record or {'cycle': cycle}), refusal=error.code))
             raise error
+        graph = {}
         try:
             revision = self._revision(record)
             if record['resume'] is not None:
                 answer, command = self._exchange(record, revision, 'cancel')
                 if answer['outcome'] != 'canceled':
                     return self._refuse(record, self._failure_code(answer, 'invalid_response:cancel'), graph=command)
+                graph = {'graph': command, 'runtime': answer['runtime']}
         except Refused as error:
             return self._refuse(record, error.code)
-        return self._update(dict(record, state='canceled', waiting=None), 'cancel')
+        return self._update(dict(record, state='canceled', waiting=None), 'cancel', **graph)
 
     @staticmethod
     def _failure_code(answer, default):
@@ -525,7 +527,8 @@ class Cycles:
                           position=taken['to'], resume=answer['resume'])
             if 'max' in taken and visits[taken['id']] > taken['max']:
                 return self._refuse(record, 'budget_exceeded:loop/' + taken['id'], node=position, graph=command)
-            self._update(record, 'step', node=position, port=last[1], graph=command, runtime=answer['runtime'])
+            self._update(record, 'step', node=position, port=last[1], graph=command, runtime=answer['runtime'],
+                         executed=notes['workflow'])
 
     def _propose(self, record, answer, command, supplied):
         """The terminal step's proposal, judged by result validation; never completion itself."""

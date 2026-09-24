@@ -472,14 +472,17 @@ def _save_transition(conn, params, before):
     problem = editor_problem(conn, params.get('principal'), repository, params.get('now'))
     if problem:
         raise Refused(problem, str(params.get('principal')))
+    # Read on the transaction's own connection, never from what the command declared.
     hid = head_id(domain, repository, workflow)
-    head = before.get(hid)
+    head = _entity_row(conn, hid)
+    if head is not None and head['kind'] != HEAD_KIND:
+        raise Refused('invalid_input', hid + ' is not a workflow head')
     current = head['data']['version'] if head else 0
     if params.get('base') != current:
         raise Refused('stale_version', 'the edit starts from version %r; the head is %d' % (params.get('base'), current))
     version = current + 1
     rid = revision_id(domain, repository, workflow, version)
-    if before.get(rid) is not None:
+    if _entity_row(conn, rid) is not None:
         raise Refused('workflow_immutable', rid)
     definition, layout = params.get('definition'), params.get('layout')
     problems = definition_problems(definition, _resolver(conn))
