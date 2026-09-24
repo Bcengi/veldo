@@ -526,7 +526,12 @@ sys.exit(payload.get('code', 0))
                 refusals = {}
                 for name, (prof, expected) in cases.items():
                     config('refuse-' + name, prof)
-                    launch = runner('refuse-' + name).submit(u3, 'build', **job(hold=5))
+                    try:
+                        launch = runner('refuse-' + name).submit(u3, 'build', **job(hold=5))
+                    except D.Refused as error:
+                        # The unit is still held by a worker an earlier case launched: nothing was refused here.
+                        refusals[name] = {'expected': expected, 'refusal': 'runner:' + error.code}
+                        continue
                     refusals[name] = {'expected': expected, 'refusal': rec(launch.dispatch_id).get('refusal'),
                                       'states': states(launch), 'worker': bool(marker(launch, 'worker', timeout=0.05)),
                                       'unit': show(C.unit_name(launch.dispatch_id), 'LoadState').get('LoadState'),
@@ -537,8 +542,8 @@ sys.exit(payload.get('code', 0))
                     counted.append((time.time(), wakes_of(idle.child.pid)))
                 observed['unqualified'] = refusals
                 check('containment/unqualified-profile-refused',
-                      all(r['refusal'] == r['expected'] and r['states'] == ['prepared', 'refused'] and not r['worker']
-                          and r['unit'] == 'not-found' and r['retired'] is True for r in refusals.values()))
+                      all(r['refusal'] == r['expected'] and r.get('states') == ['prepared', 'refused'] and not r.get('worker')
+                          and r.get('unit') == 'not-found' and r.get('retired') is True for r in refusals.values()))
                 # Every required setting of the profile schema, absent and with each invalid value of its kind,
                 # is refused by the qualification the receiver runs before acceptance; the spec's five are
                 # among them.
@@ -612,6 +617,7 @@ sys.exit(payload.get('code', 0))
                 cc = runner('concurrency').submit(admitted('VELDO-9409'), 'build', **job(hold=1))
                 release(ca)
                 runner('concurrency').wait(ca)
+                runner('concurrency').wait(cc)
                 cd = runner('concurrency').submit(rec(cc.dispatch_id).get('contract', {}).get('unit', 'VELDO-9409'),
                                                   'build', **job(hold=0.2))
                 live_groups = C.status(profile(slice=slices[1], lock=str(base / 'b.lock'), concurrency=2)).get('groups')

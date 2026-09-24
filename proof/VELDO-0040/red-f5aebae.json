@@ -1,0 +1,763 @@
+{
+ "production_at": "f5aebae",
+ "substituted": {
+  "control_launch.py": "f5aebae:.veldo/control_launch.py",
+  "init_scaffold.py": "f5aebae:.veldo/init_scaffold.py",
+  "control_containment.py": "proof/VELDO-0040/prefix/control_containment.py"
+ },
+ "other_installed_modules_identical_to_commit": true,
+ "differing": [],
+ "failed": [
+  "VELDO-0040 containment/dedicated-group",
+  "VELDO-0040 containment/ordinary-exit",
+  "VELDO-0040 containment/unqualified-profile-refused",
+  "VELDO-0040 containment/required-settings-refused",
+  "VELDO-0040 containment/exit-notified",
+  "VELDO-0040 containment/caps-installed",
+  "VELDO-0040 containment/runtime-cap",
+  "VELDO-0040 containment/cooperative-stop",
+  "VELDO-0040 containment/stop-escalation",
+  "VELDO-0040 containment/retire-after-empty",
+  "VELDO-0040 containment/observations",
+  "VELDO-0040 containment/installed-assets"
+ ],
+ "passed": [
+  "VELDO-0040 ran/containment/dedicated-group",
+  "VELDO-0040 ran/containment/unqualified-profile-refused",
+  "VELDO-0040 ran/containment/exit-notified",
+  "VELDO-0040 ran/containment/caps-installed",
+  "VELDO-0040 ran/containment/runtime-cap",
+  "VELDO-0040 ran/containment/cooperative-stop",
+  "VELDO-0040 ran/containment/retire-after-empty",
+  "VELDO-0040 ran/containment/observations"
+ ],
+ "raised": [],
+ "observed": {
+  "group": {
+   "unit": "veldo-dispatch-7af7f88f824885f1b3fbc1383128615f.scope",
+   "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+   "systemd": {
+    "Slice": "",
+    "ControlGroup": "",
+    "Description": "veldo-dispatch-7af7f88f824885f1b3fbc1383128615f.scope",
+    "ActiveState": "inactive"
+   },
+   "members": [
+    10229,
+    10845,
+    10882,
+    10883,
+    10944,
+    28584,
+    28586,
+    28715,
+    97315,
+    112768,
+    114293,
+    116886,
+    120214,
+    120556,
+    120622,
+    120714,
+    120719,
+    121067,
+    121297,
+    121326,
+    121716,
+    122441,
+    122606,
+    122644,
+    122645,
+    122649,
+    122771,
+    122773,
+    122775,
+    122833,
+    122838,
+    123068,
+    123081,
+    123083,
+    123091,
+    123096,
+    123098,
+    123102,
+    123119,
+    123121,
+    123128,
+    123129,
+    123130,
+    123132,
+    123134,
+    123136,
+    123139,
+    318009,
+    318010,
+    318019,
+    1049725,
+    1303903,
+    1403622,
+    1403623,
+    1403766,
+    1403769,
+    1403770,
+    1403789,
+    1403839,
+    1403840,
+    1403905,
+    1403930,
+    1403934,
+    1403952,
+    1403977,
+    1403989,
+    2658393,
+    2658395,
+    2658406,
+    2658407,
+    2840020,
+    2861059,
+    2877370,
+    2898935,
+    2918986,
+    2930627,
+    2942323,
+    2942453,
+    2954604,
+    2969525,
+    3204684,
+    3221159,
+    3250727,
+    3266460,
+    3266590,
+    3310464,
+    3310466,
+    3310467,
+    3310493,
+    3402162,
+    3593687,
+    3633976,
+    3633978,
+    3647342,
+    3647344,
+    3713652,
+    3713654,
+    3720173,
+    3720175,
+    3753640,
+    3753645,
+    3760412,
+    3760414,
+    3847074
+   ],
+   "processes": {
+    "worker": {
+     "pid": 123121,
+     "sid": 123121,
+     "pgid": 123121,
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ],
+     "caps": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+     },
+     "fsize": [
+      -1,
+      -1
+     ]
+    },
+    "child": {
+     "pid": 123129,
+     "sid": 123121,
+     "pgid": 123121,
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ],
+     "caps": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+     },
+     "fsize": [
+      -1,
+      -1
+     ]
+    },
+    "session": {
+     "pid": 123130,
+     "sid": 123130,
+     "pgid": 123130,
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ],
+     "caps": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+     },
+     "fsize": [
+      -1,
+      -1
+     ]
+    },
+    "daemon": {
+     "pid": 123134,
+     "sid": 123133,
+     "pgid": 123133,
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ],
+     "caps": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+     },
+     "fsize": [
+      -1,
+      -1
+     ]
+    },
+    "pgroup": {
+     "pid": 123132,
+     "sid": 123121,
+     "pgid": 123132,
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ],
+     "caps": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+     },
+     "fsize": [
+      -1,
+      -1
+     ]
+    }
+   },
+   "reported": null,
+   "other": "/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.gnome.Terminal.slice/vte-spawn-66a5a389-6fcc-4455-ae39-0a643ead12c1.scope",
+   "identity": {}
+  },
+  "ordinary_exit": {
+   "state": "exited",
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 0,
+    "signal": null
+   },
+   "supervision": null,
+   "alive_after": {
+    "worker": false,
+    "child": true,
+    "session": true,
+    "daemon": true,
+    "pgroup": true
+   },
+   "group_after": "populated 1\nfrozen 0",
+   "retirement": {
+    "basis": "worker_reaped",
+    "cleaned": true,
+    "observer": "launch_receiver",
+    "outcome": "completed",
+    "terminated": true
+   },
+   "two": [
+    "exited",
+    null
+   ]
+  },
+  "unqualified": {
+   "absent": {
+    "expected": "invalid_input:profile:absent",
+    "refusal": null,
+    "states": [
+     "prepared",
+     "accepted",
+     "running"
+    ],
+    "worker": true,
+    "unit": "not-found",
+    "retired": false
+   },
+   "unknown_setting": {
+    "expected": "invalid_input:profile:unknown:memory_limit",
+    "refusal": "runner:active_dispatch:dispatch/VELDO-9403/78adafc5d3a74c73995bb1b5cc1b95ce"
+   },
+   "required_absent": {
+    "expected": "invalid_input:profile:memory_bytes:absent",
+    "refusal": "runner:active_dispatch:dispatch/VELDO-9403/78adafc5d3a74c73995bb1b5cc1b95ce"
+   },
+   "invalid_value": {
+    "expected": "invalid_input:profile:runtime_seconds:invalid",
+    "refusal": "runner:active_dispatch:dispatch/VELDO-9403/78adafc5d3a74c73995bb1b5cc1b95ce"
+   },
+   "other_host_kind": {
+    "expected": "unavailable_service:profile:kind",
+    "refusal": "runner:active_dispatch:dispatch/VELDO-9403/78adafc5d3a74c73995bb1b5cc1b95ce"
+   },
+   "missing_systemd_run": {
+    "expected": "unavailable_service:profile:systemd_run",
+    "refusal": "runner:active_dispatch:dispatch/VELDO-9403/78adafc5d3a74c73995bb1b5cc1b95ce"
+   }
+  },
+  "required_settings": {
+   "required": [
+    "concurrency",
+    "cpu_percent",
+    "file_bytes",
+    "memory_bytes",
+    "runtime_seconds"
+   ],
+   "matrix": {
+    "concurrency": [
+     [
+      null,
+      null
+     ],
+     [
+      "0",
+      null
+     ],
+     [
+      "-1",
+      null
+     ],
+     [
+      "1.5",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "'2'",
+      null
+     ]
+    ],
+    "cpu_percent": [
+     [
+      null,
+      null
+     ],
+     [
+      "0",
+      null
+     ],
+     [
+      "-5",
+      null
+     ],
+     [
+      "1000000",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "1.5",
+      null
+     ]
+    ],
+    "file_bytes": [
+     [
+      null,
+      null
+     ],
+     [
+      "0",
+      null
+     ],
+     [
+      "1",
+      null
+     ],
+     [
+      "-4096",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "4096.0",
+      null
+     ]
+    ],
+    "kill_grace_seconds": [
+     [
+      "0",
+      null
+     ],
+     [
+      "-1",
+      null
+     ],
+     [
+      "inf",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "'1'",
+      null
+     ]
+    ],
+    "memory_bytes": [
+     [
+      null,
+      null
+     ],
+     [
+      "0",
+      null
+     ],
+     [
+      "1",
+      null
+     ],
+     [
+      "-4096",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "4096.0",
+      null
+     ]
+    ],
+    "runtime_seconds": [
+     [
+      null,
+      null
+     ],
+     [
+      "0",
+      null
+     ],
+     [
+      "-1",
+      null
+     ],
+     [
+      "inf",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "'1'",
+      null
+     ]
+    ],
+    "stop_grace_seconds": [
+     [
+      "0",
+      null
+     ],
+     [
+      "-1",
+      null
+     ],
+     [
+      "inf",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "'1'",
+      null
+     ]
+    ],
+    "tasks_max": [
+     [
+      "0",
+      null
+     ],
+     [
+      "-1",
+      null
+     ],
+     [
+      "1.5",
+      null
+     ],
+     [
+      "True",
+      null
+     ],
+     [
+      "'2'",
+      null
+     ]
+    ]
+   },
+   "qualified": true
+  },
+  "exit_notified": {
+   "window_seconds": 1.5,
+   "receiver_wakes": 2,
+   "exit_at": 1790222437.9949746,
+   "recorded_at": 1790222437.998722,
+   "latency": 0.004,
+   "idle_worker_alive_in_window": true
+  },
+  "caps": {
+   "settings": {
+    "concurrency": {
+     "declared": null,
+     "installed": null,
+     "mechanism": null,
+     "live": false
+    },
+    "runtime_seconds": {
+     "declared": 60000000,
+     "installed": null,
+     "mechanism": null,
+     "live": null
+    },
+    "memory_bytes": {
+     "declared": [
+      "268435456",
+      "0",
+      "stop"
+     ],
+     "installed": [
+      "max",
+      "max",
+      ""
+     ],
+     "mechanism": null,
+     "live": false
+    },
+    "cpu_percent": {
+     "declared": "150000 100000",
+     "installed": null,
+     "mechanism": null,
+     "live": false
+    },
+    "file_bytes": {
+     "declared": [
+      [
+       8388608,
+       8388608
+      ],
+      [
+       8388608,
+       8388608
+      ],
+      "refused:27",
+      8388608
+     ],
+     "installed": [
+      [
+       -1,
+       -1
+      ],
+      [
+       -1,
+       -1
+      ],
+      "written",
+      8454144
+     ],
+     "mechanism": null,
+     "live": false
+    },
+    "tasks_max": {
+     "declared": "128",
+     "installed": "34109",
+     "mechanism": null,
+     "live": null
+    },
+    "stop_grace_seconds": {
+     "declared": null,
+     "installed": null,
+     "mechanism": null,
+     "live": null
+    },
+    "kill_grace_seconds": {
+     "declared": [
+      600000,
+      "control-group"
+     ],
+     "installed": [
+      90000000,
+      "control-group"
+     ],
+     "mechanism": null,
+     "live": null
+    }
+   },
+   "cpu": {},
+   "concurrency": {
+    "first": "accepted",
+    "second": "accepted",
+    "third": [
+     "accepted",
+     null,
+     [
+      "prepared",
+      "accepted",
+      "running",
+      "exited"
+     ]
+    ],
+    "after_one_ended": "accepted",
+    "live_while_two_ran": []
+   },
+   "memory": null,
+   "unbounded": {}
+  },
+  "runtime_cap": {
+   "state": "exited",
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 0,
+    "signal": null
+   },
+   "supervision": {},
+   "running_at": 1790222435.5519705,
+   "last_beat_after_running": 9.95,
+   "terms": [],
+   "unit_after": "not-found"
+  },
+  "cooperative": {
+   "asked": false,
+   "state": "exited",
+   "termination": {
+    "deadline_stop": true,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": null,
+    "signal": 9
+   },
+   "supervision": {},
+   "flushed": {},
+   "owned_usr1": [],
+   "owned_term": [],
+   "retirement": {
+    "basis": "worker_reaped",
+    "cleaned": true,
+    "observer": "launch_receiver",
+    "outcome": "failed",
+    "terminated": true
+   }
+  },
+  "escalation": {
+   "asked": false,
+   "state": "exited",
+   "reason": null,
+   "termination": {
+    "deadline_stop": true,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": null,
+    "signal": 9
+   },
+   "supervision": {},
+   "worker_terms": [],
+   "descendant_terms": [],
+   "worker_last_beat": 7.79,
+   "descendant_last_beat": 7.8,
+   "descendant_alive_after": true,
+   "group_after": null,
+   "retirement": {
+    "basis": "worker_reaped",
+    "cleaned": true,
+    "observer": "launch_receiver",
+    "outcome": "failed",
+    "terminated": true
+   }
+  },
+  "retire_after_empty": {
+   "while_populated": [
+    true,
+    true
+   ],
+   "after_empty": [
+    false,
+    true,
+    {
+     "basis": "probe",
+     "cleaned": true,
+     "observer": "launch_receiver",
+     "outcome": "cancelled",
+     "terminated": true
+    }
+   ],
+   "runner_observations": [
+    {
+     "operation": "retire",
+     "dispatch_id": "dispatch/VELDO-9412/ca7d71c357b3498497dd965f4ca2fa8b",
+     "outcome": "retired"
+    },
+    {
+     "operation": "retire",
+     "dispatch_id": "dispatch/VELDO-9412/ca7d71c357b3498497dd965f4ca2fa8b",
+     "outcome": "refused",
+     "refusal": "command_content_conflict"
+    }
+   ]
+  },
+  "observations": {
+   "taxonomy": {
+    "None": "unknown_outcome",
+    "runner:active_dispatch:dispatch/VELDO-9403/78adafc5d3a74c73995bb1b5cc1b95ce": "unknown_outcome",
+    "containment_not_empty": "unknown_outcome",
+    "spawn_failed:containment:group": "unavailable_service"
+   },
+   "trace": [
+    "accepted",
+    "running",
+    "exited"
+   ],
+   "joined": false,
+   "pending_after": []
+  }
+ }
+}
