@@ -23,6 +23,10 @@ footprint:
   - "specs/VELDO-0126-message-objective-intake.md"
   - "specs/index.md"
   - "proof/VELDO-0126/*"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -136,3 +140,7 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-24, implementation: `.veldo/init_scaffold.py` (both copies, and any pack copy) and
+`scripts/check_teeth_mutations.py` were added to the footprint before either was changed, so the
+scaffold installs the intake module and the registry holds this specification's mutations.
