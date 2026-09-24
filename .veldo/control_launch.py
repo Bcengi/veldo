@@ -52,8 +52,18 @@ recorded only once the group is empty. A group that cannot be emptied is recorde
 observation that the process is gone and the group empty. Another host's worker (identity reported)
 is contained by that host's profile (VELDO-0124).
 
-WHAT IT IS NOT. No heartbeat or retirement policy (VELDO-0041), recovery of an unknown dispatch
-(Release 2), or model API. Standard library only.
+HEARTBEAT AND RETIREMENT (VELDO-0041, R44). A contained worker's wrapper starts its own heartbeat
+(control_heartbeat.py) just before it becomes the engine, on a channel the receiver passes it, so
+liveness never waits for a model call. The receiver sleeps on that channel too: each heartbeat renews
+the claim the contract binds, and a worker with no heartbeat for the profile's window has uncertain
+liveness and is stopped (`heartbeat_missing`). Every stop escalates on the monotonic clock and the
+supervision the receiver reports carries its steps on both clocks, its graces and the heartbeat's
+account. The runner returns a worker slot through control_retirement.py, which keeps each open
+obligation (termination, the outcome, the clone files and the accounting) until it is completed and
+releases the slot once.
+
+WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
+(Release 2), and no model API. Standard library only.
 """
 import contextlib
 import errno
@@ -84,6 +94,8 @@ def _organ(name):
 D = _organ('control_dispatch')
 S = D.S
 C = _organ('control_containment')
+HB = _organ('control_heartbeat')
+RT = _organ('control_retirement')
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
@@ -129,15 +141,18 @@ def resolve_source(repository_path, revision):
 
 class Runner:
     """The scheduler's side of every dispatch. `gate` is VELDO-0052's eligibility Gate, `reservations`
-    VELDO-0036's service, `dispatches` a control_dispatch.Dispatches writing as the runner, and
-    `receiver(contract)` invokes the trusted receiver and returns its Launch."""
+    VELDO-0036's service, `dispatches` a control_dispatch.Dispatches writing as the runner,
+    `receiver(contract)` invokes the trusted receiver and returns its Launch, and `clones` is
+    VELDO-0042's clone provisioner when dispatches use clones (its teardown retires their files)."""
 
-    def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None):
+    def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
         self.observations = []
         self.launches = {}
+        self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
+                                          observations=self.observations)
 
     def _slot(self, dispatch_id):
         entity = RES_ENTITY(self.dispatches.domain, dispatch_id)
@@ -147,25 +162,17 @@ class Runner:
         return entity, row[0], row[1]
 
     def _retire(self, dispatch_id, outcome, basis):
-        """Return a conclusively ended dispatch's worker slot. The observation is the runner's own, read
-        from the kernel now (VELDO-0040): the recorded worker process is gone and the containment group
-        the receiver reported is empty; a populated group is refused (cleanup_incomplete) and keeps the
+        """Return an ended dispatch's worker slot through the retirement service (VELDO-0041), which
+        keeps the dispatch, its reported containment group and every obligation still open until the
+        slot is released once. The observation is the runner's own, read from the kernel now (VELDO-0040):
+        a live worker or a populated group is refused (worker_alive, cleanup_incomplete) and keeps the
         slot. A dispatch the runner asked to stop is accounted as cancelled."""
         launch = self.launches.pop(dispatch_id, None)
-        record = self.dispatches.record(dispatch_id) or {}
-        if outcome in ('completed', 'failed') and getattr(launch, 'stop_requested', False):
-            outcome = 'cancelled'
-        observation = dict(C.retirement(getattr(launch, 'group', None), record.get('process')),
-                           outcome=outcome, observer='launch_runner', basis=basis,
-                           supervision=getattr(launch, 'supervision', None))
-        try:
-            self.reservations.retire('retire/' + dispatch_id, dispatch_id, lambda _: dict(observation), now=self.clock())
-        except Exception as error:  # noqa: BLE001 - a refused retirement keeps the slot held
-            self.observations.append({'operation': 'retire', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                      'refusal': getattr(error, 'code', type(error).__name__)})
-            return False
-        self.observations.append({'operation': 'retire', 'dispatch_id': dispatch_id, 'outcome': 'retired'})
-        return True
+        if launch is not None:
+            self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
+                                   stop_requested=getattr(launch, 'stop_requested', False),
+                                   supervision=getattr(launch, 'supervision', None))
+        return self.retirements.retire(dispatch_id, outcome, basis)
 
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
                 deadline, context=None):
@@ -227,6 +234,9 @@ class Runner:
             termination = record['termination'] or {}
             clean = termination.get('returncode') == 0 and not termination.get('deadline_stop')
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
+        elif record and record['state'] == 'unknown':
+            # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
+            self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
         return record
 
@@ -242,7 +252,8 @@ class Launch:
     `owned` is False when the receiver refused to launch a dispatch that was not prepared: that
     invocation launched nothing, owns nothing and never writes the record. `group` is the containment
     group the receiver reported (unit, slice and cgroup), `supervision` its account of how the worker
-    and its group ended, and `stop()` asks it to stop the dispatch."""
+    and its group ended, `heartbeat` the interval and window it watches the worker's heartbeat with
+    (VELDO-0041), and `stop()` asks it to stop the dispatch."""
 
     def __init__(self, child, contract, dispatches, clock):
         self.child, self.contract, self.dispatches, self.clock = child, contract, dispatches, clock
@@ -257,6 +268,7 @@ class Launch:
         self.supervision = None
         self.stop_requested = False
         self.ends_by = None
+        self.heartbeat = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -296,6 +308,8 @@ class Launch:
             self.supervision = message['supervision']
         if isinstance(message.get('ends_by'), (int, float)):
             self.ends_by = message['ends_by']
+        if isinstance(message.get('heartbeat'), dict):
+            self.heartbeat = message['heartbeat']
         return message
 
     def _end_receiver(self):
@@ -413,6 +427,7 @@ class Receiver:
                                        principal=config['principal'], signer=config['principal'],
                                        sign=lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE),
                                        generation=config.get('authority_generation', 1))
+        self.renewals = HB.Renewals(self.dispatches, D)
 
     def close(self):
         self.conn.close()
@@ -520,12 +535,15 @@ class Receiver:
             self._stop(worker)
             raise
         group = getattr(worker, 'group', None)
+        watch = getattr(worker, 'heartbeat', None)
         # When this receiver will have recorded the end at the latest: a stop begun at the deadline, its
         # graces and the settling of the group.
         ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)
-        self.emit({'event': 'running', 'process': process, 'ends_by': ends_by,
+        beat = {'interval_seconds': watch.interval, 'window_seconds': watch.window} if watch else None
+        graces = dict(zip(('stop_grace_seconds', 'kill_grace_seconds'), self._graces())) if group else None
+        self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
                    'group': group.report() if group else None})
-        termination = self._reap(worker, contract, carry)
+        termination = self._reap(worker, contract, carry, process=process, contract_digest=contract_digest)
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
@@ -587,30 +605,44 @@ class Receiver:
         if not self.qualification['qualified']:
             raise C.Refused(self.qualification['refusal'])
         group = C.Group(self.profile, self.qualification, dispatch_id, environment)
-        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(group.held())] + argv
-        with group.admission():
-            worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                      stderr=subprocess.DEVNULL, env=group.environment, start_new_session=True,
-                                      close_fds=True)
-            worker.group = group
-            try:
-                reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
-                problems = [refusal] if refusal else group.attach(worker.pid)
-                if not problems and reported.get('pid') != worker.pid:
-                    problems = ['spawn_failed:containment:identity']
-            except (OSError, ValueError, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
-                problems = ['spawn_failed:containment:unavailable']
-            if problems:
-                settled = group.discard(worker)
-                if problems[0] == 'spawn_failed:ENOENT' and settled:
-                    raise FileNotFoundError(errno.ENOENT, 'no engine: ' + str(argv[0]))
-                raise C.Refused(problems[0], settled=settled, group=group.report())
+        interval, window = self._heartbeat()
+        # The heartbeat channel (VELDO-0041): the wrapper's heartbeat writes it, this receiver reads it.
+        channel, beat = os.pipe()
+        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(group.held()),
+                   '--heartbeat', str(beat), repr(float(interval))] + argv
         try:
-            worker.stdin.write(b'go\n')
-            worker.stdin.flush()
-        except OSError:
-            settled = group.discard(worker)
-            raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
+            with group.admission():
+                try:
+                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                              stderr=subprocess.DEVNULL, env=group.environment, start_new_session=True,
+                                              close_fds=True, pass_fds=(beat,))
+                finally:
+                    os.close(beat)
+                worker.group = group
+                try:
+                    reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
+                    problems = [refusal] if refusal else group.attach(worker.pid)
+                    if not problems and reported.get('pid') != worker.pid:
+                        problems = ['spawn_failed:containment:identity']
+                    if not problems:
+                        HB.make_group(group.cgroup)
+                except (OSError, ValueError, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
+                    problems = ['spawn_failed:containment:unavailable']
+                if problems:
+                    settled = group.discard(worker)
+                    if problems[0] == 'spawn_failed:ENOENT' and settled:
+                        raise FileNotFoundError(errno.ENOENT, 'no engine: ' + str(argv[0]))
+                    raise C.Refused(problems[0], settled=settled, group=group.report())
+            try:
+                worker.stdin.write(b'go\n')
+                worker.stdin.flush()
+            except OSError:
+                settled = group.discard(worker)
+                raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
+        except BaseException:
+            os.close(channel)
+            raise
+        worker.heartbeat = HB.Watch(channel, interval, window, time.monotonic())
         return worker
 
     @staticmethod
@@ -651,10 +683,25 @@ class Receiver:
             pass
         worker.wait()
 
-    def _graces(self):
+    def _settings(self, *names):
         settings = (self.qualification or {}).get('settings') or {}
-        return tuple((settings.get(name) or {}).get('value', C.SETTINGS[name]['default'])
-                     for name in ('stop_grace_seconds', 'kill_grace_seconds'))
+        return tuple((settings.get(name) or {}).get('value', C.SETTINGS[name]['default']) for name in names)
+
+    def _graces(self):
+        return self._settings('stop_grace_seconds', 'kill_grace_seconds')
+
+    def _heartbeat(self):
+        """The profile's heartbeat interval and missed-heartbeat window (VELDO-0041)."""
+        return self._settings('heartbeat_seconds', 'heartbeat_window_seconds')
+
+    def _renew(self, watch, contract, contract_digest, process, beat):
+        """Renew the claim the contract binds on one heartbeat; a refusal is recorded by name."""
+        renewed, refusal = self.renewals.renew(contract, contract_digest, process, beat['seq'], time.time())
+        beat['renewed'] = renewed
+        if renewed:
+            watch.renewals['renewed'] += 1
+        elif refusal:
+            watch.renewals['refused'] = (watch.renewals['refused'] + [{'seq': beat['seq'], 'refusal': refusal}])[-HB.KEEP:]
 
     def _stop_asked(self, poller=None):
         """Whether the runner asked for a stop in what it has written on the control channel; with a
@@ -679,14 +726,16 @@ class Receiver:
                 asked = asked or (isinstance(message, dict) and bool(message.get('stop')))
         return asked
 
-    def _reap(self, worker, contract, carry=b''):
+    def _reap(self, worker, contract, carry=b'', process=None, contract_digest=None):
         """Feed the worker its packet, hash what it prints, and reap it and its group by the contract
-        deadline. The loop sleeps in poll until an OS notification or the next stop timer: the worker's
-        output, its pidfd (its exit), its group's populated event, a stop request on the control
-        channel, the deadline or the next escalation step; nothing is polled for liveness. Closing its
-        output does not end a worker: it is still held to the contract deadline. Its exit ends the
-        dispatch: whatever is left in its group is stopped, and the reap ends once the group is empty
-        (or, SETTLE_SECONDS after the kill, declared not empty in the supervision)."""
+        deadline. The loop sleeps in poll until an OS notification or the next timer: the worker's
+        output, its pidfd (its exit), its group's populated event, a heartbeat, a stop request on the
+        control channel, the deadline, the missed-heartbeat deadline or the next escalation step; nothing
+        is polled for liveness. Closing its output does not end a worker: it is still held to the
+        contract deadline. Its exit ends the dispatch: whatever is left in its group is stopped (the
+        wrapper's own heartbeat, which ends on the worker's exit, is given SETTLE_SECONDS first), and the
+        reap ends once the group is empty (or, SETTLE_SECONDS after the kill, declared not empty in the
+        supervision). Every stop it begins escalates on the monotonic clock."""
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
@@ -699,31 +748,34 @@ class Receiver:
                 pass
         feeder = threading.Thread(target=feed, daemon=True)
         feeder.start()
-        group = getattr(worker, 'group', None)
+        group, watch = getattr(worker, 'group', None), getattr(worker, 'heartbeat', None)
         stop = C.Stop(group, worker.pid, *self._graces()) if group is not None else None
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
+        settle = None
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
         poller = select.poll()
         poller.register(output, select.POLLIN)
         poller.register(pidfd, select.POLLIN)
         if group is not None:
             poller.register(group.events, select.POLLPRI | select.POLLERR)
+        if watch is not None:
+            poller.register(watch.fd, select.POLLIN)
         if self.control is not None:
             poller.register(self.control[0], select.POLLIN)
 
-        def begin(reason, now):
+        def begin(reason):
             nonlocal cause, stopped, code
             if cause is not None or code is not None:
                 return
             cause, stopped = reason, reason == 'deadline'
             if stop is not None:
-                stop.begin(reason, now, True)
+                stop.begin(reason, time.monotonic(), True)
             else:
                 self._stop(worker)
                 code = worker.returncode
         try:
             if self._stop_asked():
-                begin('requested', time.time())
+                begin('requested')
             while True:
                 if code is not None and (group is None or not group.populated()):
                     empty = True
@@ -731,9 +783,13 @@ class Receiver:
                 if stop is not None and stop.stage == 'abandoned':
                     empty = False
                     break
-                due = min(contract['deadline'] if cause is None and code is None else math.inf,
-                          stop.due if stop is not None else math.inf)
-                timeout = None if due == math.inf else max(0, math.ceil((due - time.time()) * 1000))
+                live = cause is None and code is None
+                waits = [contract['deadline'] - time.time()] if live else []
+                waits += [due - time.monotonic() for due in (stop.due if stop is not None else math.inf,
+                                                             watch.due() if watch is not None and live else math.inf,
+                                                             settle if settle is not None else math.inf)
+                          if due != math.inf]
+                timeout = max(0, math.ceil(min(waits) * 1000)) if waits else None
                 for fd, _ in poller.poll(timeout):
                     if fd == output:
                         chunk = os.read(output, 65536)
@@ -745,18 +801,37 @@ class Receiver:
                         poller.unregister(pidfd)
                         code = worker.wait()
                         if stop is not None and group.populated():
-                            stop.adapter_exited(time.time())
+                            if group.members() or watch is None:
+                                stop.adapter_exited(time.monotonic())
+                            else:
+                                # Only the wrapper's heartbeat is left, and it ends on the worker's exit.
+                                settle = time.monotonic() + HB.SETTLE_SECONDS
                     elif group is not None and fd == group.events:
                         group.populated()
+                    elif watch is not None and fd == watch.fd:
+                        for beat in watch.read(time.monotonic()):
+                            self._renew(watch, contract, contract_digest, process, beat)
+                        if not watch.open:
+                            poller.unregister(watch.fd)
                     elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):
-                        begin('requested', time.time())
-                now = time.time()
-                if cause is None and code is None and now >= contract['deadline']:
-                    begin('deadline', now)
+                        begin('requested')
+                now = time.monotonic()
+                if cause is None and code is None and time.time() >= contract['deadline']:
+                    begin('deadline')
+                elif cause is None and code is None and watch is not None and watch.expired(now):
+                    # No heartbeat for the window with the worker still running: its liveness is
+                    # uncertain, and it is stopped (the supervision records when and why).
+                    watch.lapse(now)
+                    begin('heartbeat_missing')
                 elif stop is not None:
+                    if settle is not None and now >= settle:
+                        settle = None
+                        stop.adapter_exited(now)
                     stop.advance(now)
         finally:
             os.close(pidfd)
+            if watch is not None:
+                os.close(watch.fd)
         # What is left in the pipe, without waiting on a writer that is no longer in the group.
         os.set_blocking(output, False)
         with contextlib.suppress(OSError):
@@ -771,8 +846,12 @@ class Receiver:
             stopped = cause == 'runtime_cap'
         self.supervision = {'cause': cause or (stop.cause if stop is not None else None),
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
-                            'empty_at': time.time() if empty else None, 'result': result,
-                            'group': group.report() if group is not None else None}
+                            'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
+                                        'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),
+                            'empty_at': time.time() if empty else None,
+                            'empty_monotonic': time.monotonic() if empty else None, 'result': result,
+                            'group': group.report() if group is not None else None,
+                            'heartbeat': watch.summary() if watch is not None else None}
         if group is not None and empty:
             group.close()
         feeder.join(timeout=5)
@@ -783,17 +862,22 @@ class Receiver:
 
 
 def wrap(argv):
-    """THE TRUSTED WRAPPER (`control_launch.py exec [--contained <limits>] <argv>`). Through a transport
-    it is what runs on the far host (the Mac over SSH, for one); on this host it is what the dispatch's
-    containment group is created around (VELDO-0040). It writes the OS identity of this very process on
-    its first output line and then becomes the engine by exec, so the pid and start time it named are the
-    engine's. Contained, it first applies the profile's per-process limits, which every descendant
-    inherits, and after its identity line waits for the receiver's release: the receiver checks the group
-    and its controls in between, so no engine code runs uncontained. An engine that cannot be found is
+    """THE TRUSTED WRAPPER (`control_launch.py exec [--contained <limits>] [--heartbeat <fd> <seconds>]
+    <argv>`). Through a transport it is what runs on the far host (the Mac over SSH, for one); on this
+    host it is what the dispatch's containment group is created around (VELDO-0040). It writes the OS
+    identity of this very process on its first output line and then becomes the engine by exec, so the
+    pid and start time it named are the engine's. Contained, it first applies the profile's per-process
+    limits, which every descendant inherits, and after its identity line waits for the receiver's
+    release: the receiver checks the group and its controls in between, so no engine code runs
+    uncontained. Released, it starts its heartbeat on the channel the receiver passed (VELDO-0041,
+    control_heartbeat.start) and closes the channel before the exec. An engine that cannot be found is
     refused by name before anything runs. It opens no store: the receiver records what it reports."""
-    held = None
+    held, beat = None, None
     if argv[:1] == ['--contained'] and len(argv) > 2:
         held, argv = json.loads(argv[1]), argv[2:]
+    if argv[:1] == ['--heartbeat'] and len(argv) > 3:
+        # VELDO-0041: the channel the receiver passed and the profile's heartbeat interval.
+        beat, argv = (int(argv[1]), float(argv[2])), argv[3:]
     path = shutil.which(argv[0]) if argv else None
     if not path:
         sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'refused': 'spawn_failed:ENOENT'}) + '\n')
@@ -805,6 +889,10 @@ def wrap(argv):
     sys.stdout.flush()
     if held is not None and not C.released(0):
         os._exit(125)
+    if beat is not None:
+        # Released: the heartbeat starts now, in a process of its own, and this process closes the
+        # channel before it becomes the engine, so liveness never waits on anything the engine does.
+        HB.start(*beat)
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)

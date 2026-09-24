@@ -56,10 +56,11 @@ HEARTBEAT AND RETIREMENT (VELDO-0041, R44). A contained worker's wrapper starts 
 (control_heartbeat.py) just before it becomes the engine, on a channel the receiver passes it, so
 liveness never waits for a model call. The receiver sleeps on that channel too: each heartbeat renews
 the claim the contract binds, and a worker with no heartbeat for the profile's window has uncertain
-liveness and is stopped (`heartbeat_missing`). Every stop the receiver begins is reported (`stopping`,
-with its graces) and escalates on the monotonic clock. The runner returns a worker slot through
-control_retirement.py, which keeps each open obligation (the group, the outcome, the clone files and
-the accounting) until it is completed and releases the slot once.
+liveness and is stopped (`heartbeat_missing`). Every stop escalates on the monotonic clock and the
+supervision the receiver reports carries its steps on both clocks, its graces and the heartbeat's
+account. The runner returns a worker slot through control_retirement.py, which keeps each open
+obligation (termination, the outcome, the clone files and the accounting) until it is completed and
+releases the slot once.
 
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
@@ -251,7 +252,8 @@ class Launch:
     `owned` is False when the receiver refused to launch a dispatch that was not prepared: that
     invocation launched nothing, owns nothing and never writes the record. `group` is the containment
     group the receiver reported (unit, slice and cgroup), `supervision` its account of how the worker
-    and its group ended, and `stop()` asks it to stop the dispatch."""
+    and its group ended, `heartbeat` the interval and window it watches the worker's heartbeat with
+    (VELDO-0041), and `stop()` asks it to stop the dispatch."""
 
     def __init__(self, child, contract, dispatches, clock):
         self.child, self.contract, self.dispatches, self.clock = child, contract, dispatches, clock
@@ -266,6 +268,7 @@ class Launch:
         self.supervision = None
         self.stop_requested = False
         self.ends_by = None
+        self.heartbeat = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -305,6 +308,8 @@ class Launch:
             self.supervision = message['supervision']
         if isinstance(message.get('ends_by'), (int, float)):
             self.ends_by = message['ends_by']
+        if isinstance(message.get('heartbeat'), dict):
+            self.heartbeat = message['heartbeat']
         return message
 
     def _end_receiver(self):
@@ -535,7 +540,8 @@ class Receiver:
         # graces and the settling of the group.
         ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)
         beat = {'interval_seconds': watch.interval, 'window_seconds': watch.window} if watch else None
-        self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat,
+        graces = dict(zip(('stop_grace_seconds', 'kill_grace_seconds'), self._graces())) if group else None
+        self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
                    'group': group.report() if group else None})
         termination = self._reap(worker, contract, carry, process=process, contract_digest=contract_digest)
         if remote and termination['deadline_stop']:
@@ -729,7 +735,7 @@ class Receiver:
         contract deadline. Its exit ends the dispatch: whatever is left in its group is stopped (the
         wrapper's own heartbeat, which ends on the worker's exit, is given SETTLE_SECONDS first), and the
         reap ends once the group is empty (or, SETTLE_SECONDS after the kill, declared not empty in the
-        supervision). Every stop it begins is reported (`stopping`) and escalates on the monotonic clock."""
+        supervision). Every stop it begins escalates on the monotonic clock."""
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
@@ -764,8 +770,6 @@ class Receiver:
             cause, stopped = reason, reason == 'deadline'
             if stop is not None:
                 stop.begin(reason, time.monotonic(), True)
-                self.emit(dict(stop.steps[-1], event='stopping', cause=reason,
-                               stop_grace_seconds=stop.grace['cooperative'], kill_grace_seconds=stop.grace['terminate']))
             else:
                 self._stop(worker)
                 code = worker.returncode
@@ -815,9 +819,9 @@ class Receiver:
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
                 elif cause is None and code is None and watch is not None and watch.expired(now):
+                    # No heartbeat for the window with the worker still running: its liveness is
+                    # uncertain, and it is stopped (the supervision records when and why).
                     watch.lapse(now)
-                    self.emit({'event': 'liveness', 'liveness': 'uncertain', 'monotonic': now, 'at': time.time(),
-                               'last_heartbeat': watch.last, 'window_seconds': watch.window})
                     begin('heartbeat_missing')
                 elif stop is not None:
                     if settle is not None and now >= settle:
@@ -842,6 +846,8 @@ class Receiver:
             stopped = cause == 'runtime_cap'
         self.supervision = {'cause': cause or (stop.cause if stop is not None else None),
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
+                            'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
+                                        'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),
                             'empty_at': time.time() if empty else None,
                             'empty_monotonic': time.monotonic() if empty else None, 'result': result,
                             'group': group.report() if group is not None else None,
@@ -856,17 +862,22 @@ class Receiver:
 
 
 def wrap(argv):
-    """THE TRUSTED WRAPPER (`control_launch.py exec [--contained <limits>] <argv>`). Through a transport
-    it is what runs on the far host (the Mac over SSH, for one); on this host it is what the dispatch's
-    containment group is created around (VELDO-0040). It writes the OS identity of this very process on
-    its first output line and then becomes the engine by exec, so the pid and start time it named are the
-    engine's. Contained, it first applies the profile's per-process limits, which every descendant
-    inherits, and after its identity line waits for the receiver's release: the receiver checks the group
-    and its controls in between, so no engine code runs uncontained. An engine that cannot be found is
+    """THE TRUSTED WRAPPER (`control_launch.py exec [--contained <limits>] [--heartbeat <fd> <seconds>]
+    <argv>`). Through a transport it is what runs on the far host (the Mac over SSH, for one); on this
+    host it is what the dispatch's containment group is created around (VELDO-0040). It writes the OS
+    identity of this very process on its first output line and then becomes the engine by exec, so the
+    pid and start time it named are the engine's. Contained, it first applies the profile's per-process
+    limits, which every descendant inherits, and after its identity line waits for the receiver's
+    release: the receiver checks the group and its controls in between, so no engine code runs
+    uncontained. Released, it starts its heartbeat on the channel the receiver passed (VELDO-0041,
+    control_heartbeat.start) and closes the channel before the exec. An engine that cannot be found is
     refused by name before anything runs. It opens no store: the receiver records what it reports."""
-    held = None
+    held, beat = None, None
     if argv[:1] == ['--contained'] and len(argv) > 2:
         held, argv = json.loads(argv[1]), argv[2:]
+    if argv[:1] == ['--heartbeat'] and len(argv) > 3:
+        # VELDO-0041: the channel the receiver passed and the profile's heartbeat interval.
+        beat, argv = (int(argv[1]), float(argv[2])), argv[3:]
     path = shutil.which(argv[0]) if argv else None
     if not path:
         sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'refused': 'spawn_failed:ENOENT'}) + '\n')
@@ -878,6 +889,10 @@ def wrap(argv):
     sys.stdout.flush()
     if held is not None and not C.released(0):
         os._exit(125)
+    if beat is not None:
+        # Released: the heartbeat starts now, in a process of its own, and this process closes the
+        # channel before it becomes the engine, so liveness never waits on anything the engine does.
+        HB.start(*beat)
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)
