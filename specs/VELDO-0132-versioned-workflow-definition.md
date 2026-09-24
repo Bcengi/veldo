@@ -146,3 +146,15 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-24: implemented on branch build-veldo-0132 (built on 5a5dfcd, origin/main merged). Three
+new modules with byte-identical engine copies: control_workflow.py (the stdlib-validated definition
+and its immutable revisions, saved and loaded without execution), control_workflow_cycle.py (cycles
+bound to one exact revision, run one judged step per exchange on the actual LangGraph through the
+VELDO-0043 adapter and the VELDO-0045 runtime, every step through the role, Gate and result checks)
+and control_workflow_langgraph.py (the step kinds spliced into the runner). Suite
+65_veldo_0132_workflow has 10 criterion rows and 5 region rows. Finding 132 in
+scripts/check_teeth_mutations.py registers 26 mutations, among them each criterion's declared
+falsifier, all rejected. scripts/suites/manifest.json gains suite 65, and requires.json is
+regenerated. Every row was recorded red at 5a5dfcd, and one defect found during the build was
+recorded red before its fix. The status stays ready. Proof: proof/VELDO-0132/.
