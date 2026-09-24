@@ -28,11 +28,11 @@
  "observed": {
   "ordinary": {
    "exit": 0,
-   "terminal": "GATE: GREEN (f42d5e7f8eb6d26668730fc5797198811099cb59)",
+   "terminal": "GATE: GREEN (bc28a70bf4617980dcae1d65f84e6ace96467b9b)",
    "stamp": {
-    "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
+    "commit": "bc28a70bf4617980dcae1d65f84e6ace96467b9b",
     "status": "green",
-    "at": "2026-09-24T19:58:11Z",
+    "at": "2026-09-24T20:07:33Z",
     "checks_run": 1,
     "checks_na": 22,
     "veldo_version": null,
@@ -41,8 +41,8 @@
    "last_event": {
     "schema": "veldo.event/v1",
     "type": "gate.passed",
-    "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
-    "at": "2026-09-24T19:58:11Z",
+    "commit": "bc28a70bf4617980dcae1d65f84e6ace96467b9b",
+    "at": "2026-09-24T20:07:33Z",
     "producer": "verify.sh",
     "checks_run": 1
    }
@@ -52,22 +52,22 @@
     "gate": {
      "ok": true,
      "detail": [
-      "GATE: GREEN (2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f)"
+      "GATE: GREEN (ba81ee50d9b1fda7ffb5d4fecaad22429a710f1e)"
      ],
      "exit": 0,
-     "candidate": "2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f"
+     "candidate": "ba81ee50d9b1fda7ffb5d4fecaad22429a710f1e"
     },
     "finalize": [
      {
       "policy_check": "",
       "ok": true,
       "pushed": true,
-      "candidate": "2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f",
+      "candidate": "ba81ee50d9b1fda7ffb5d4fecaad22429a710f1e",
       "detail": ""
      }
     ],
-    "trunk_before": "d4503f92966e625af4a261f435920bfd99aecf85",
-    "trunk_after": "2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f"
+    "trunk_before": "18370dcbd9dbde30e61bbcb51800d290f383b60c",
+    "trunk_after": "ba81ee50d9b1fda7ffb5d4fecaad22429a710f1e"
    },
    "valid_unchanged": false,
    "appended": [],
@@ -80,13 +80,13 @@
    "red": {
     "gate": {
      "detail_lines": [
-      "GATE: RED (ef193f0fbb1a9ccd7c71a977cc9178e54f9cb0f6)"
+      "GATE: RED (3d3bb014b27f963d4fa01a4ee66a9a8d0468eef1)"
      ],
      "exit": 1,
      "ok": false,
      "refusal": "missing_evidence:gate",
      "operation": null,
-     "detail": "GATE: RED (ef193f0fbb1a9ccd7c71a977cc9178e54f9cb0f6)",
+     "detail": "GATE: RED (3d3bb014b27f963d4fa01a4ee66a9a8d0468eef1)",
      "taxonomy": "missing_evidence"
     },
     "unchanged": false,
@@ -175,11 +175,11 @@
    ],
    "ordinary": {
     "exit": 0,
-    "terminal": "GATE: GREEN (f42d5e7f8eb6d26668730fc5797198811099cb59)",
+    "terminal": "GATE: GREEN (bc28a70bf4617980dcae1d65f84e6ace96467b9b)",
     "stamp": {
-     "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
+     "commit": "bc28a70bf4617980dcae1d65f84e6ace96467b9b",
      "status": "green",
-     "at": "2026-09-24T19:58:11Z",
+     "at": "2026-09-24T20:07:33Z",
      "checks_run": 1,
      "checks_na": 22,
      "veldo_version": null,
@@ -188,8 +188,8 @@
     "last_event": {
      "schema": "veldo.event/v1",
      "type": "gate.passed",
-     "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
-     "at": "2026-09-24T19:58:11Z",
+     "commit": "bc28a70bf4617980dcae1d65f84e6ace96467b9b",
+     "at": "2026-09-24T20:07:33Z",
      "producer": "verify.sh",
      "checks_run": 1
     }
@@ -209,26 +209,26 @@
      "policy_check": "",
      "ok": true,
      "pushed": true,
-     "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+     "candidate": "818c351269e5b3dcb60026a0ad040188fbab58e7",
      "detail": ""
     },
-    "tracked:trunk": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "tracked:trunk": "818c351269e5b3dcb60026a0ad040188fbab58e7",
     "index": {
      "policy_check": "",
      "ok": true,
      "pushed": true,
-     "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+     "candidate": "818c351269e5b3dcb60026a0ad040188fbab58e7",
      "detail": ""
     },
-    "index:trunk": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "index:trunk": "818c351269e5b3dcb60026a0ad040188fbab58e7",
     "untracked": {
      "policy_check": "",
      "ok": true,
      "pushed": true,
-     "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+     "candidate": "818c351269e5b3dcb60026a0ad040188fbab58e7",
      "detail": ""
     },
-    "untracked:trunk": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "untracked:trunk": "818c351269e5b3dcb60026a0ad040188fbab58e7",
     "no-terminal": {
      "skipped": "the gate wrote no external observation"
     },
@@ -242,10 +242,10 @@
    "during_land": {
     "ok": true,
     "detail": [
-     "GATE: GREEN (34e586972eb1848ccd7f515b77c9631e9bf5bdab)"
+     "GATE: GREEN (fc05f9f9eb2d9afd7e72930bd35bd2d4ea6fa8b6)"
     ],
     "exit": 0,
-    "candidate": "34e586972eb1848ccd7f515b77c9631e9bf5bdab"
+    "candidate": "fc05f9f9eb2d9afd7e72930bd35bd2d4ea6fa8b6"
    },
    "live": {
     "tracked": {
@@ -274,20 +274,20 @@
     "policy_check": "",
     "ok": true,
     "pushed": true,
-    "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "candidate": "818c351269e5b3dcb60026a0ad040188fbab58e7",
     "detail": ""
    },
-   "trunk_after": "058bcc33f643880a643223b21f606bfceb0d4db5"
+   "trunk_after": "818c351269e5b3dcb60026a0ad040188fbab58e7"
   },
   "installed_policy": {
    "stub_gate": {
     "gate": {
      "ok": true,
      "detail": [
-      "GATE: GREEN (3f952cd968bcfce8b6c0e8e3a9712059b9e0c611)"
+      "GATE: GREEN (838080f1d66fa0f309d71b87e53e1465d244ea08)"
      ],
      "exit": 0,
-     "candidate": "3f952cd968bcfce8b6c0e8e3a9712059b9e0c611"
+     "candidate": "838080f1d66fa0f309d71b87e53e1465d244ea08"
     },
     "results": null,
     "verifier": null
@@ -296,17 +296,17 @@
     "gate": {
      "ok": true,
      "detail": [
-      "GATE: GREEN (f2b59c9d726afd7dba14f1c04c631dbeca7b26bf)"
+      "GATE: GREEN (990266037dea7498304adb24861cc3520d1e6bbc)"
      ],
      "exit": 0,
-     "candidate": "f2b59c9d726afd7dba14f1c04c631dbeca7b26bf"
+     "candidate": "990266037dea7498304adb24861cc3520d1e6bbc"
     },
     "finalize": [
      {
       "policy_check": "stub policy: accepted",
       "ok": true,
       "pushed": true,
-      "candidate": "f2b59c9d726afd7dba14f1c04c631dbeca7b26bf",
+      "candidate": "990266037dea7498304adb24861cc3520d1e6bbc",
       "detail": ""
      }
     ],
@@ -320,7 +320,7 @@
      "policy_check": "stub policy: accepted",
      "ok": true,
      "pushed": true,
-     "candidate": "9900247eb73b3c528be1c5db7d8a62bae0721f4a",
+     "candidate": "f2bb1a03ad891b2b03e3408374c4b027405c358d",
      "detail": ""
     }
    ],

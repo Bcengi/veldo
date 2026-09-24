@@ -29,13 +29,13 @@
      ],
      "taxonomy": "invalid_input"
     },
-    "trunk": "ad78a9eac93a2d2c5e671069b98419f2c0da80b0"
+    "trunk": "8edc946422511d12f615f8ef980ab640d724fc54"
    },
    "stub_gate": {
     "gate": {
-     "detail": "GATE: RED (abd1cb261dfd7fd632d7c9ac342481313e32290a)",
+     "detail": "GATE: RED (f78eaa8c8a023a3470c7db2ae35bd94ba6f87530)",
      "detail_lines": [
-      "GATE: RED (abd1cb261dfd7fd632d7c9ac342481313e32290a)"
+      "GATE: RED (f78eaa8c8a023a3470c7db2ae35bd94ba6f87530)"
      ],
      "exit": 1,
      "ok": false,
@@ -53,7 +53,7 @@
     "results": {
      "unit": "FAIL"
     },
-    "verifier": "sha256:d044d5977992b8f2560ba6060059ca0a8797818fe07e2d0b7caa3f924729a34e"
+    "verifier": "sha256:801154f6b667e67e89b653529c80266d11098dd22a93b9345ca5b02e30f1019d"
    },
    "stub_policy": {
     "finalize": [
@@ -70,9 +70,9 @@
      }
     ],
     "gate": {
-     "candidate": "551d8a7cea0810cf5d629765a46ecd38caaf37b8",
+     "candidate": "15532d15e18ad8a5f82668e4bc8f1f9d4d9d89b5",
      "detail": [
-      "GATE: GREEN (551d8a7cea0810cf5d629765a46ecd38caaf37b8)"
+      "GATE: GREEN (15532d15e18ad8a5f82668e4bc8f1f9d4d9d89b5)"
      ],
      "exit": 0,
      "ok": true
@@ -81,7 +81,7 @@
    },
    "valid": [
     {
-     "candidate": "2d861b795beb7d04350a5cfdcbde7ea3d9397852",
+     "candidate": "da050ed66fad8acc2c4a3d0ee4b52a8c37bab015",
      "detail": "",
      "ok": true,
      "policy_check": "",
@@ -92,30 +92,30 @@
   "ordinary": {
    "exit": 0,
    "last_event": {
-    "at": "2026-09-24T19:59:24Z",
+    "at": "2026-09-24T20:06:35Z",
     "checks_run": 1,
-    "commit": "c7e1b8248036f1688aaaa72e38531469adb26ed2",
+    "commit": "510f72561ea31f824241f020d0c24368d3374c9f",
     "producer": "verify.sh",
     "schema": "veldo.event/v1",
     "type": "gate.passed"
    },
    "stamp": {
-    "at": "2026-09-24T19:59:24Z",
+    "at": "2026-09-24T20:06:35Z",
     "checks_na": 22,
     "checks_run": 1,
-    "commit": "c7e1b8248036f1688aaaa72e38531469adb26ed2",
+    "commit": "510f72561ea31f824241f020d0c24368d3374c9f",
     "status": "green",
     "tree": "1 dirty path(s)",
     "veldo_version": null
    },
-   "terminal": "GATE: GREEN (c7e1b8248036f1688aaaa72e38531469adb26ed2)"
+   "terminal": "GATE: GREEN (510f72561ea31f824241f020d0c24368d3374c9f)"
   },
   "post_run": {
    "bound": true,
    "during_land": {
-    "detail": "GATE: GREEN (dd2e93e067962d4567d3616e81f190e6f3ffad79)",
+    "detail": "GATE: GREEN (df620bbc0cf59598db6776590f4208567da0becc)",
     "detail_lines": [
-     "GATE: GREEN (dd2e93e067962d4567d3616e81f190e6f3ffad79)"
+     "GATE: GREEN (df620bbc0cf59598db6776590f4208567da0becc)"
     ],
     "exit": 0,
     "ok": false,
@@ -132,7 +132,7 @@
     "untracked": true
    },
    "final": {
-    "candidate": "ad78a9eac93a2d2c5e671069b98419f2c0da80b0",
+    "candidate": "8edc946422511d12f615f8ef980ab640d724fc54",
     "detail": "",
     "ok": true,
     "policy_check": "",
@@ -188,7 +188,7 @@
      ],
      "taxonomy": "missing_evidence"
     },
-    "check-result:trunk": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+    "check-result:trunk": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
     "identity": {
      "detail": "missing_evidence:gate/terminal; missing_evidence:gate/stamp; missing_evidence:gate/event; stale_subject:observation/commit",
      "ok": false,
@@ -203,7 +203,7 @@
      ],
      "taxonomy": "missing_evidence"
     },
-    "identity:trunk": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+    "identity:trunk": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
     "index": {
      "detail": "stale_subject:candidate/changed_after_gate",
      "ok": false,
@@ -215,7 +215,7 @@
      ],
      "taxonomy": "stale_subject"
     },
-    "index:trunk": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+    "index:trunk": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
     "no-terminal": {
      "detail": "missing_evidence:gate/terminal",
      "ok": false,
@@ -227,7 +227,7 @@
      ],
      "taxonomy": "missing_evidence"
     },
-    "no-terminal:trunk": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+    "no-terminal:trunk": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
     "tracked": {
      "detail": "stale_subject:candidate/changed_after_gate",
      "ok": false,
@@ -239,7 +239,7 @@
      ],
      "taxonomy": "stale_subject"
     },
-    "tracked:trunk": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+    "tracked:trunk": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
     "untracked": {
      "detail": "stale_subject:candidate/changed_after_gate",
      "ok": false,
@@ -251,21 +251,21 @@
      ],
      "taxonomy": "stale_subject"
     },
-    "untracked:trunk": "6d937304c5eca76ef2ebea6fd7084871ab0250cd"
+    "untracked:trunk": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191"
    },
-   "trunk_after": "ad78a9eac93a2d2c5e671069b98419f2c0da80b0"
+   "trunk_after": "8edc946422511d12f615f8ef980ab640d724fc54"
   },
   "raised": [],
   "review_write": {
    "appended": [
     {
-     "commit": "42161c9cce001d1563cc84fe2570bad07e5964bf",
+     "commit": "1c11a71870edbe2d4e98f2462109cd384adb2a2c",
      "producer": "events.py reconcile-verdicts",
      "type": "verdict.recorded",
      "verdict_path": "proof/VELDO-9581/verdict-r1.json"
     },
     {
-     "commit": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+     "commit": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
      "producer": "verify.sh",
      "type": "gate.passed"
     }
@@ -273,13 +273,13 @@
    "live": {
     "appended": [
      {
-      "commit": "367693aa0792664f8303b53dfd804d3963909427",
+      "commit": "264964bdfc26a61a9bd3984fc93a4f580adab4a1",
       "producer": "events.py reconcile-verdicts",
       "type": "verdict.recorded",
       "verdict_path": "proof/VELDO-9582/verdict-r1.json"
      },
      {
-      "commit": "0f5e571c420066451ce9773468a3db5fc983615a",
+      "commit": "0d0b44ad8230ef42ec099c466a8fc2ef8a8a5dd1",
       "producer": "verify.sh",
       "type": "gate.passed"
      }
@@ -290,17 +290,17 @@
    },
    "red": {
     "event": {
-     "at": "2026-09-24T19:59:26Z",
+     "at": "2026-09-24T20:06:37Z",
      "checks_run": 1,
-     "commit": "e3ff14518b219f08e476df5d94faccc9b9dac276",
+     "commit": "6c7b19f1152b19ec6b5f901c17b10a05f9a3f7bd",
      "producer": "verify.sh",
      "schema": "veldo.event/v1",
      "type": "gate.failed"
     },
     "gate": {
-     "detail": "GATE: RED (e3ff14518b219f08e476df5d94faccc9b9dac276)",
+     "detail": "GATE: RED (6c7b19f1152b19ec6b5f901c17b10a05f9a3f7bd)",
      "detail_lines": [
-      "GATE: RED (e3ff14518b219f08e476df5d94faccc9b9dac276)"
+      "GATE: RED (6c7b19f1152b19ec6b5f901c17b10a05f9a3f7bd)"
      ],
      "exit": 1,
      "ok": false,
@@ -316,10 +316,10 @@
      "taxonomy": "missing_evidence"
     },
     "stamp": {
-     "at": "2026-09-24T19:59:26Z",
+     "at": "2026-09-24T20:06:37Z",
      "checks_na": 22,
      "checks_run": 1,
-     "commit": "e3ff14518b219f08e476df5d94faccc9b9dac276",
+     "commit": "6c7b19f1152b19ec6b5f901c17b10a05f9a3f7bd",
      "status": "red",
      "tree": "clean",
      "veldo_version": null
@@ -329,7 +329,7 @@
    "valid": {
     "finalize": [
      {
-      "candidate": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+      "candidate": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
       "detail": "",
       "ok": true,
       "policy_check": "",
@@ -337,15 +337,15 @@
      }
     ],
     "gate": {
-     "candidate": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
+     "candidate": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
      "detail": [
-      "GATE: GREEN (6d937304c5eca76ef2ebea6fd7084871ab0250cd)"
+      "GATE: GREEN (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)"
      ],
      "exit": 0,
      "ok": true
     },
-    "trunk_after": "6d937304c5eca76ef2ebea6fd7084871ab0250cd",
-    "trunk_before": "b5ed2bfb5178a3a1bea6ad556e76972a323c7f67"
+    "trunk_after": "9fe97cbf6fe35c6d857bef11aa0de05dbf337191",
+    "trunk_before": "bc4996693bb66b96be57ad34dd945b006ac0a3e4"
    },
    "valid_unchanged": true
   },
@@ -356,7 +356,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     },
     "candidate": {
@@ -364,7 +364,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     },
     "file": {
@@ -372,7 +372,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     },
     "no-sink": {
@@ -380,7 +380,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     },
     "planted-link": {
@@ -388,7 +388,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     },
     "symlink-into": {
@@ -396,7 +396,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     },
     "unwritable": {
@@ -404,7 +404,7 @@
      "exit": 1,
      "not_written": false,
      "refused": true,
-     "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+     "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
      "unchanged": true
     }
    },
@@ -413,29 +413,29 @@
     "exit": 1,
     "not_written": true,
     "refused": false,
-    "terminal": "GATE: RED (6d937304c5eca76ef2ebea6fd7084871ab0250cd)",
+    "terminal": "GATE: RED (9fe97cbf6fe35c6d857bef11aa0de05dbf337191)",
     "unchanged": true
    },
    "ordinary": {
     "exit": 0,
     "last_event": {
-     "at": "2026-09-24T19:59:24Z",
+     "at": "2026-09-24T20:06:35Z",
      "checks_run": 1,
-     "commit": "c7e1b8248036f1688aaaa72e38531469adb26ed2",
+     "commit": "510f72561ea31f824241f020d0c24368d3374c9f",
      "producer": "verify.sh",
      "schema": "veldo.event/v1",
      "type": "gate.passed"
     },
     "stamp": {
-     "at": "2026-09-24T19:59:24Z",
+     "at": "2026-09-24T20:06:35Z",
      "checks_na": 22,
      "checks_run": 1,
-     "commit": "c7e1b8248036f1688aaaa72e38531469adb26ed2",
+     "commit": "510f72561ea31f824241f020d0c24368d3374c9f",
      "status": "green",
      "tree": "1 dirty path(s)",
      "veldo_version": null
     },
-    "terminal": "GATE: GREEN (c7e1b8248036f1688aaaa72e38531469adb26ed2)"
+    "terminal": "GATE: GREEN (510f72561ea31f824241f020d0c24368d3374c9f)"
    },
    "refused_red": {
     "absent": true,
@@ -487,5 +487,5 @@
   ]
  ],
  "suite": "69_veldo_0058_gate_output.py",
- "suite_seconds": 7.222
+ "suite_seconds": 8.577
 }

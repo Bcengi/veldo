@@ -1,5 +1,5 @@
 --- a/scripts/verify.sh
 +++ b/scripts/verify.sh
-@@ -204 +204 @@
+@@ -203 +203 @@
 -  set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"
 +  set -- --repo-root "$(pwd -P)"  # defect: the reconciliation appends to the candidate's own log

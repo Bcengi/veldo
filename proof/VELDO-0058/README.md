@@ -14,8 +14,9 @@ log seeded once from the candidate's committed log) to `<dir>`. A sink that is a
 not writable, the candidate or inside it (symlinks resolved), or that already holds a symlink where an
 output goes is refused before any check runs, RED, with nothing written anywhere; a final write the sink
 refuses is RED. The file carries the interface line `# veldo-gate-interface: candidate-sink/v1`.
-Protected paths: the owner's approval is `approval-dmitry.json` (Telegram 29068 asked, 29069 "Yes
-verify"), scoped to 6984ab9, the one commit that changes them.
+Protected paths: the owner's approval (Telegram 29068 asked, 29069 "Yes verify") is recorded once per
+commit that carries the change: `approval-dmitry.json` for 6984ab9 and `approval-dmitry-2.json` for
+f058090, which only moves the stamp's printf so that suite 14 still reads the stamp's keys from it.
 
 **The ordinary checkout and the landing step are unchanged.** With no arguments the gate verifies the
 checkout it lives in, prints its `GATE:` line and writes `.veldo/last_verify` and appends
