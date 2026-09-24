@@ -1,8 +1,8 @@
 # VELDO-0040 proof: Linux worker groups, caps, stop and exit
 
 Every local worker the launch receiver starts runs in its own systemd scope inside the profile's
-slice, through the user service manager (no root). The profile's caps (runtime, memory, CPU, open
-file size, concurrency) are installed on the scope before the worker runs, an unqualified or
+slice, through the user service manager (no root). The profile's caps (runtime, memory, CPU, file
+size, concurrency) are installed on the scope before the worker runs, an unqualified or
 incomplete profile is refused before any spawn, a stop is cooperative first and then escalates over
 the whole group, the exit is detected from kernel notifications rather than by polling, and the
 dispatch retires only after its group is observed empty. The module is `.veldo/control_containment.py`

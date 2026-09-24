@@ -110,6 +110,12 @@ local service exclusion from 0030. Actual SQLite changes and returned committed 
 required; callback-only evidence is insufficient. Optional legacy status-server/remote
 inspection matrices are deferred; the new authenticated UI API is separately specified.
 
+Handed on by VELDO-0040 (its review, 2026-09-24): the launch receiver refuses every local
+launch whose configuration names no worker profile (invalid_input:profile:absent), and no
+installer writes a receiver configuration today. Installing the authority on this host writes
+the receiver configuration with this host's qualified linux-systemd profile (slice, lock and
+caps).
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff

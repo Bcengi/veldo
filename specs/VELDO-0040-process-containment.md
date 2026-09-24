@@ -34,6 +34,8 @@ footprint:
   - "packs/*/.veldo/runner/veldo-runner*"
   - "scripts/suites/*_veldo_0040_*.py"
   - "scripts/suites/*_veldo_0039_*.py"
+  - "scripts/suites/*_veldo_0049_*.py"
+  - "scripts/suites/*_veldo_0050_*.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -145,4 +147,5 @@ the worker runs, refuses an unqualified or incomplete profile before spawn, stop
 then over the whole group, detects exit from kernel notifications and retires only after an empty
 group; the VELDO-0039 receiver calls it. Suite 63_veldo_0040_containment (20 rows), red at f5aebae,
 22 mutations as finding 40; proof in proof/VELDO-0040/. Merging main required the VELDO-0049 and
-VELDO-0050 suites to give their receiver this host's profile (f6d217e).
+VELDO-0050 suites to give their receiver this host's profile (f6d217e). The footprint names those two suites
+for that reason (review, 2026-09-24).
