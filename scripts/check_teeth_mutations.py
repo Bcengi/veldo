@@ -1474,9 +1474,11 @@ def cases():
                  "        if decision.get('architecture'):\n",
                  "        if False:  # defect: the decision's architecture is not in its observation\n",
                  ['observations'])
+    # VELDO-0134 moved the record check to the schema: the defect now reads any state as accepted there.
     architecture('architecture-unaccepted-record-accepted', 'control_eligibility.py',
-                 "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'",
-                 "        if accepted and (not isinstance(record, dict)",
+                 "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):\n",
+                 "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'),\n"
+                 "                                           dict(record, state='accepted') if isinstance(record, dict) else record):\n",
                  ['record-states'])
     # Review fix: a Gate with no workspace never passes, record or no record.
     architecture('architecture-store-only-passes', 'control_eligibility.py',

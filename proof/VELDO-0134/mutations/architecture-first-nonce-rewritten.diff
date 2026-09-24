@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -416 +416 @@
+-                      nonce=command['nonce'])
++                      nonce='consumed-' + command['nonce'])  # defect: another nonce is consumed

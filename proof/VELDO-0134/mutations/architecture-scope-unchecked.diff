@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -357 +357 @@
+-        if not self.membership.scope_covers(entry.get('scope'), self.ids['repository_uuid']):
++        if False:  # defect: the membership scope is never checked

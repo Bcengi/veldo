@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1068 +1068,2 @@
+-        elif accepted and parsed != accepted['digest']:
++        elif accepted and parsed != accepted['digest'] and parsed not in [
++                e.get('digest') for e in record.get('superseded', [])]:  # defect: replaced bytes pass

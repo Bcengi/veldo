@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -341 +341 @@
+-        key = self.AC.active_key(state['keyring'], principal, now)
++        key = next((k for k in state['keyring'] if k.get('principal') == principal), None)  # defect: revocation ignored

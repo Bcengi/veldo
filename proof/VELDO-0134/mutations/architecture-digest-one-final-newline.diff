@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -112 +112 @@
+-    return 'sha256:' + hashlib.sha256(body).hexdigest()
++    return 'sha256:' + hashlib.sha256(body.rstrip(b'\n') + b'\n').hexdigest()  # defect

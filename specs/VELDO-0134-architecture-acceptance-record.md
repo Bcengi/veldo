@@ -283,3 +283,13 @@ specification to that specification's footprint.
 
 2026-09-24, build: .veldo/init_scaffold.py and its engine and pack copies joined the footprint, because the
 new module .veldo/control_architecture.py is installed by the scaffold like every runtime asset.
+
+2026-09-24, build: landed on build-veldo-0134. The store refuses a write of the record by any other
+operation as entity_owned, the store's existing name for a command writing an entity it does not own,
+where the Notes say transition_refused; the refusal is by name either way and the criteria name none.
+VELDO-0053's suite writes its records through the store's architecture operation with its own
+transition on its own connection, not through the signed accept command, because most of its records
+name the digest of bytes the validator refuses, which the accept command cannot write; this suite
+drives the real command. The front door is control_architecture.py's own command line; routing it
+through bin/veldo would also change engine/bin/veldo, which is outside this footprint, and is left for
+the owner to decide. Evidence: proof/VELDO-0134/.

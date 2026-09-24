@@ -1,0 +1,6 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -401 +401,2 @@
+-        repo = self.store.bound_repository(self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])
++        repo = __import__('os').environ.get('VELDO_ARCHITECTURE_REPOSITORY') or self.store.bound_repository(
++            self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])  # defect: the environment names it
