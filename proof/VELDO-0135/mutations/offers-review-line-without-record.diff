@@ -1,6 +1,6 @@
 --- a/.veldo/frontier.py
 +++ b/.veldo/frontier.py
-@@ -228,2 +228 @@
+@@ -219,2 +219 @@
 -        if word == "review":
 -            # The status line names a station no floor record backs.
 +        if False:  # defect: a review status line with no floor record behind it is offered

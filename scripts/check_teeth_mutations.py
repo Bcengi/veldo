@@ -3799,8 +3799,8 @@ def cases():
     # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
     # further defects, each against the one suite 67 row it names; anchors are exact text in the
     # frontier and work loop the suite installs.
-    def offers(name, old, new, row, module='frontier.py'):
-        add(135, name, '67_veldo_0135_offers.py', module, old, new, ['offers/' + row])
+    def offers(name, old, new, row, module='frontier.py', also=()):
+        add(135, name, '67_veldo_0135_offers.py', module, old, new, ['offers/' + row], also)
 
     # AC1, declared: every lane reads the lane status from the spec file.
     offers('offers-status-line-read', '    lanes.update({sid: e["lane"] for sid, e in entries.items()})\n',
@@ -3835,6 +3835,25 @@ def cases():
            'end-to-end')
     offers('offers-recheck-refuses-review', '            if entry["station"] == unit.get("kind"):\n',
            '            if entry["station"] == "build":  # defect: a review offer never survives its recheck\n',
+           'end-to-end', module='work.py')
+    # The finding path (review of e5b4dad): with the review policy met and the last finding resolved,
+    # the review station hands off without a reviewer; a review is assigned and launched only when the
+    # handoff rule does not pass. And a failed review bars only its station, not the unit's rebuild.
+    handoff_first = ('        if not floor.handoff_refusals(sid):\n'
+                     '            # The review policy is already met and nothing blocks the handoff (the owner resolved the\n'
+                     '            # last open finding): hand off now. A review the policy does not require is never assigned.\n'
+                     '            return self._hand_off(floor, unit, decision, None, None)\n')
+    assignment_refused = '            return self._floor_refused("review", sid, error, "review_assignment", **refused)\n'
+    offers('offers-review-assigned-before-handoff-rule', handoff_first, '', 'finding-path', module='dispatch.py',
+           also=[(assignment_refused, assignment_refused
+                  + '        # defect: the review is assigned before the handoff rule is checked\n' + handoff_first)])
+    offers('offers-reviewer-launched-before-handoff',
+           '            return self._hand_off(floor, unit, decision, None, None)\n',
+           '            with self._launch("review", unit, context, decision) as handle:  # defect: a reviewer still launches\n'
+           '                self._reviewer.review(dict(self._resolve(sid), status="review"), unit, calls=handle)\n'
+           '            return self._hand_off(floor, unit, decision, None, None)\n', 'finding-path', module='dispatch.py')
+    offers('offers-failed-review-bars-rebuild', '            if (u["spec"], u["kind"]) in self._failed:\n',
+           '            if any(spec == u["spec"] for spec, _ in self._failed):  # defect: a failed station bars the unit\n',
            'end-to-end', module='work.py')
     # Observability: the record version, the reason's class and the dispatch join.
     offers('offers-observed-without-version',

@@ -1,11 +1,11 @@
 {
  "command": "-B scripts/check_teeth_mutations.py --finding 135 --jobs 4 --diff-dir proof/VELDO-0135/mutations",
  "summary": {
-  "mutations_rejected": 13,
+  "mutations_rejected": 16,
   "green_suites": {
-   "67_veldo_0135_offers.py": 33
+   "67_veldo_0135_offers.py": 35
   },
-  "driver_seconds": 26.2
+  "driver_seconds": 33.3
  },
  "all_targets_red_by_assertion": true,
  "mutations_per_row": {
@@ -23,7 +23,12 @@
   ],
   "offers/end-to-end": [
    "offers-build-again-after-acceptance",
-   "offers-recheck-refuses-review"
+   "offers-recheck-refuses-review",
+   "offers-failed-review-bars-rebuild"
+  ],
+  "offers/finding-path": [
+   "offers-review-assigned-before-handoff-rule",
+   "offers-reviewer-launched-before-handoff"
   ],
   "offers/observations": [
    "offers-observed-without-version",
@@ -35,13 +40,19 @@
   {
    "module": ".veldo/frontier.py",
    "byte_identical": true,
-   "assertions": 33,
+   "assertions": 35,
    "failed_rows": []
   },
   {
    "module": ".veldo/work.py",
    "byte_identical": true,
-   "assertions": 33,
+   "assertions": 35,
+   "failed_rows": []
+  },
+  {
+   "module": ".veldo/dispatch.py",
+   "byte_identical": true,
+   "assertions": 35,
    "failed_rows": []
   }
  ],
@@ -58,6 +69,7 @@
    "red_rows": [
     "offers/no-reclaim",
     "offers/floor-station",
+    "offers/finding-path",
     "offers/end-to-end",
     "offers/observations"
    ],
@@ -138,6 +150,7 @@
    "baseline": "green",
    "red_rows": [
     "offers/no-reclaim",
+    "offers/finding-path",
     "offers/end-to-end",
     "offers/observations"
    ],
@@ -171,6 +184,7 @@
    "red_rows": [
     "offers/no-reclaim",
     "offers/floor-station",
+    "offers/finding-path",
     "offers/end-to-end",
     "offers/observations"
    ],
@@ -189,6 +203,7 @@
    "red_rows": [
     "offers/no-reclaim",
     "offers/floor-station",
+    "offers/finding-path",
     "offers/end-to-end",
     "offers/observations"
    ],
@@ -205,12 +220,55 @@
    "baseline": "green",
    "red_rows": [
     "offers/no-reclaim",
+    "offers/finding-path",
     "offers/end-to-end",
     "offers/observations"
    ],
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/offers-recheck-refuses-review.diff"
+  },
+  {
+   "mutation": "offers-review-assigned-before-handoff-rule",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "offers/finding-path"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/finding-path"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-review-assigned-before-handoff-rule.diff"
+  },
+  {
+   "mutation": "offers-reviewer-launched-before-handoff",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "offers/finding-path"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/finding-path"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-reviewer-launched-before-handoff.diff"
+  },
+  {
+   "mutation": "offers-failed-review-bars-rebuild",
+   "module": ".veldo/work.py",
+   "target_rows": [
+    "offers/end-to-end"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "offers/end-to-end"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/offers-failed-review-bars-rebuild.diff"
   },
   {
    "mutation": "offers-observed-without-version",

@@ -2,7 +2,7 @@
 
 Only shared ROOT and expect are consumed. One temporary tree holds the installed .veldo copy that the
 frontier, the work loop, the dispatcher, the VELDO-0039 runner and the receiver process all load, so a
-registered mutation of frontier.py or work.py reaches every one of them. Real SQLite store, OpenSSH
+registered mutation of frontier.py, work.py or dispatch.py reaches every one of them. Real SQLite store, OpenSSH
 journal and review signatures, a real enrolled Git repository whose spec files all still say ready (one
 says review), a bare trunk, VELDO-0052's eligibility Gate over that workspace, VELDO-0036 reservations,
 the VELDO-0031 claim transition, VELDO-0049's floor authority and real builder and reviewer processes.
@@ -32,6 +32,7 @@ def _v135_suite():
     PRODUCTION = {
         'frontier.py': ROOT / ".veldo" / "frontier.py",
         'work.py': ROOT / ".veldo" / "work.py",
+        'dispatch.py': ROOT / ".veldo" / "dispatch.py",
     }
     SCHEMA = 'veldo.frontier_floor/v1'
 
@@ -132,11 +133,13 @@ def _v135_suite():
                  'VELDO-9507': 'standard', 'VELDO-9508': 'standard', 'VELDO-9509': 'standard',
                  'VELDO-9511': 'standard'}
         JOURNEY = 'VELDO-9509'
+        FINDING = 'VELDO-9504'
         spec_files = {}
         for sid, risk in UNITS.items():
             spec_files[sid] = work / 'specs' / ('%s-offer-fixture.md' % sid)
             spec_files[sid].write_text(spec_text(sid, risk, 'review' if sid == 'VELDO-9507' else 'ready',
-                                                 'journey' if sid == JOURNEY else 'floor'))
+                                                 'journey' if sid == JOURNEY else
+                                                 'floor, finding' if sid == FINDING else 'floor'))
         # A ready spec the store has not admitted: no execution unit, so the claim authority names it missing.
         spec_files['VELDO-9512'] = work / 'specs' / 'VELDO-9512-offer-fixture.md'
         spec_files['VELDO-9512'].write_text(spec_text('VELDO-9512', 'standard', 'ready', 'floor'))
@@ -589,6 +592,58 @@ sys.stdout.flush()
                       and disposed[0] == 'ok'
                       and after_disposition == dict(now, **{'VELDO-9504': 'review'}))
 
+            with region('offers/finding-path'):
+                # The finding path through the ordinary loop. VELDO-9504 failed its first review, was rebuilt
+                # and passed, its handoff was refused on the open finding, and the owner resolved the finding
+                # above. The review policy is met, so the review station hands it off without launching a
+                # reviewer and it lands; the reviewer offered is the one whose review stands, so a review the
+                # policy does not require could only be refused as a second position.
+                staged_ok = (staged['9504/b'][0] == 'ok' and staged['9504/b'][1].get('status') == 'returned'
+                             and staged['9504/rebuild'][0] == 'ok' and staged['9504/rebuild'][1].get('ok') is True
+                             and staged['9504/c'][0] == 'ok' and staged['9504/c'][1].get('halted_at') == 'handoff'
+                             and str(staged['9504/c'][1].get('reason')).startswith('unresolved_finding')
+                             and disposed[0] == 'ok')
+                before_path = rec(FINDING)
+                finding_reviewer = ProcessReviewer('reviewer-c', 'reviewer-c:pass')
+                path_loop = WK.WorkLoop(REVIEW_WORKER, [], DSP.Dispatcher(
+                    repo_root=str(work), reviewer=finding_reviewer, lander=lander, eligibility=gate, calls=calls,
+                    worker_id=REVIEW_WORKER, authority=floor), scope={'label': 'finding'}, repo_root=str(work),
+                    claims_root=clients[REVIEW_WORKER], eligibility=gate)
+                path_run = run_loop(path_loop)
+                path_again = run_loop(WK.WorkLoop(REVIEW_WORKER, [], Recorder(), scope={'label': 'finding'},
+                                                  repo_root=str(work), claims_root=clients[REVIEW_WORKER],
+                                                  eligibility=gate))
+                after_path = rec(FINDING)
+
+                def reviews_of(record):
+                    return [(r.get('reviewer'), r.get('attempt'), r.get('passes'), r.get('dispatch'))
+                            for r in record.get('reviews') or []]
+                path_summary = (path_run if isinstance(path_run, tuple) else
+                                [(o['unit']['kind'], bool((o['result'] or {}).get('ok')), (o['result'] or {}).get('reason'))
+                                 for o in path_run])
+                observed['finding_path'] = {
+                    'staged': {k: observed['staged'].get(k) for k in ('9504/b', '9504/rebuild', '9504/c')},
+                    'run': path_summary, 'again': path_again if isinstance(path_again, tuple) else len(path_again),
+                    'reviews_before': [r[:3] for r in reviews_of(before_path)],
+                    'reviews_after': [r[:3] for r in reviews_of(after_path)],
+                    'assignments': [len(before_path.get('assignments') or {}), len(after_path.get('assignments') or {})],
+                    'launched': finding_reviewer.launched, 'state': after_path.get('state'),
+                    'handoff': after_path.get('handoff'), 'landed': gate.landed(FINDING)}
+                commit = (after_path.get('source') or {}).get('commit')
+                check('offers/finding-path', staged_ok
+                      and before_path.get('state') == 'review'
+                      and [r[:3] for r in reviews_of(before_path)] == [('reviewer-b', 1, False), ('reviewer-c', 2, True)]
+                      and path_summary == [('review', True, None)]
+                      and finding_reviewer.launched == []
+                      and reviews_of(after_path) == reviews_of(before_path)
+                      and (after_path.get('assignments') or {}) == (before_path.get('assignments') or {})
+                      and after_path.get('state') == 'handoff'
+                      and (after_path.get('handoff') or {}).get('reviewers') == ['reviewer-c']
+                      and (after_path.get('handoff') or {}).get('attempt') == 2
+                      and bool(commit) and (FINDING, commit) in lander.lands and gate.landed(FINDING)
+                      and path_again == []
+                      and spec_files[FINDING].read_bytes() == spec_originals[FINDING])
+
             with region('offers/end-to-end'):
                 # AC3: one enrolled unit through build, review by a separate reviewer, handoff and landing,
                 # driven only by WorkLoop over the frontier. The builder's loop meets the review offer too
@@ -643,7 +698,17 @@ sys.stdout.flush()
                 GP.run(['git', 'init', '-q', '-b', 'main', str(plain)], check=True, capture_output=True)
                 plain_ledger = base / 'plain-ledger'
                 plain_offers = outcome_of(lambda: FR.claimable(repo_root=str(plain), claims_root=str(plain_ledger)))
-                plain_recorder = Recorder()
+                class Returner(Recorder):
+                    """A failing review that sends its unit back to ready, as the unenrolled dispatcher's
+                    fail_status does; every dispatch fails."""
+
+                    def dispatch(self, unit):
+                        got = super().dispatch(unit)
+                        if unit['kind'] == 'review':
+                            path = plain / 'specs' / ('%s-plain.md' % unit['spec'])
+                            path.write_text(path.read_text().replace('status: review', 'status: ready', 1))
+                        return got
+                plain_recorder = Returner()
                 plain_loop = WK.WorkLoop('worker-plain', [], plain_recorder, repo_root=str(plain),
                                          claims_root=str(plain_ledger))
                 plain_run = run_loop(plain_loop)
@@ -652,8 +717,9 @@ sys.stdout.flush()
                 plain_ok = (sorted((u['spec'], u['kind']) for u in plain_units)
                             == [('VELDO-9601', 'build'), ('VELDO-9602', 'review')]
                             and not any('floor' in u for u in plain_units)
+                            # A unit whose review failed is rebuilt in the same run: a failure bars only its station.
                             and sorted((s, k) for s, k, _ in plain_recorder.units)
-                            == [('VELDO-9601', 'build'), ('VELDO-9602', 'review')]
+                            == [('VELDO-9601', 'build'), ('VELDO-9602', 'build'), ('VELDO-9602', 'review')]
                             and not isinstance(plain_run, tuple))
                 check('offers/end-to-end', journey_ok and plain_ok)
                 observed['journey_marks'] = mark

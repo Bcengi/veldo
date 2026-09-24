@@ -104,9 +104,10 @@ class WorkLoop:
         self.scope = scope
         self.repo_root = repo_root
         self.claims_root = claims_root
-        # Units this worker dispatched and that failed: it releases them (for a human or
-        # another worker or a later retry) but does NOT re-claim them itself, so one worker
-        # never hot-loops its own failing unit.
+        # (unit, station) pairs this worker dispatched and that failed: it releases them (for a
+        # human or another worker or a later retry) but does NOT re-claim them at that station
+        # itself, so one worker never hot-loops its own failing unit. Keyed by the station too, so a
+        # unit whose failed review sent it back to build is still rebuilt in the same run.
         self._failed = set()
 
     def _still_claimable(self, unit, gate=None):
@@ -170,7 +171,7 @@ class WorkLoop:
         for u in FR.claimable(worker_caps=self.caps, scope=self.scope,
                               repo_root=self.repo_root, claims_root=self.claims_root,
                               eligibility=gate):
-            if u["spec"] in self._failed:
+            if (u["spec"], u["kind"]) in self._failed:
                 continue
             if gate is not None and not gate.decide("claim", u["spec"], ticket=u.get("eligibility"))["eligible"]:
                 continue
@@ -212,7 +213,7 @@ class WorkLoop:
         if not (result or {}).get("ok"):
             # released above for a human / another worker / a later retry, but this worker
             # will not re-claim it, so it moves on to other work instead of hot-looping.
-            self._failed.add(unit["spec"])
+            self._failed.add((unit["spec"], unit["kind"]))
         return {"unit": unit, "result": result}
 
     def run(self, max_units=10000):

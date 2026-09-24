@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Run the CURRENT suite 67 over the pre-change frontier and work loop and print every VELDO-0135 row.
+"""Run the CURRENT suite 67 over a pre-change frontier, work loop and dispatcher and print every
+VELDO-0135 row.
 
-    python3 -B proof/VELDO-0135/red.py 5ba4a02
+    python3 -B proof/VELDO-0135/red.py e5b4dad
 
-The suite's two production anchors are pointed at the commit's own frontier.py and work.py, byte for
-byte, with no stand-in. Every other module the suite installs is checked byte-identical to the
-commit's copy and reported, so those two files are the only substitution. A failing row reports its
+The suite's three production anchors are pointed at the commit's own frontier.py, work.py and
+dispatch.py, byte for byte, with no stand-in. Every other module the suite installs is checked
+byte-identical to the commit's copy and reported, so those three files are the only substitution. A failing row reports its
 observation, never a crash: each region reds its rows on a raise, and a `ran/` row says whether it
 did. Writes red-<commit>.json beside this file.
 """
@@ -22,7 +23,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 SUITE = ROOT / 'scripts/suites/67_veldo_0135_offers.py'
 HERE = Path(__file__).resolve().parent
-SUBSTITUTED = ('frontier.py', 'work.py')
+SUBSTITUTED = ('frontier.py', 'work.py', 'dispatch.py')
 
 
 def git(*args):
@@ -63,11 +64,11 @@ def main(commit):
         'other_installed_modules_identical_to_commit': not differing, 'differing': differing,
         'failed': [n for n, ok in mine if not ok], 'passed': [n for n, ok in mine if ok],
         'raised': observed.get('raised'),
-        'observed': {k: observed.get(k) for k in ('states', 'offers', 'no_reclaim', 'recheck', 'journey', 'plain')},
+        'observed': {k: observed.get(k) for k in ('states', 'offers', 'no_reclaim', 'recheck', 'finding_path', 'journey', 'plain')},
     }
     (HERE / ('red-%s.json' % commit)).write_text(json.dumps(record, indent=1, default=str) + '\n')
     print(json.dumps({k: record[k] for k in ('failed', 'passed', 'raised', 'differing')}, indent=1))
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else '5ba4a02')
+    main(sys.argv[1] if len(sys.argv) > 1 else 'e5b4dad')

@@ -170,19 +170,10 @@ def _one_read(conn):
 
 
 def _handoff_codes(DSP, repository, record, policy, unit):
-    """The authority's own handoff rule (the handoff transition's handler) asked of a COPY of the record,
-    with the retained review policy and the unit it would read inside the transaction: [] when it would
-    hand the unit off, else every named reason it would refuse (awaiting_reviews, unresolved_finding,
-    missing_authority:review_policy). Nothing is written: the handler returns changes, it commits none."""
-    before = {DSP.review_policy_id(repository): policy} if policy else {}
-    try:
-        DSP._handoff(None, {"repository": repository}, before, DSP.copy_record(record),
-                     dict((unit or {}).get("data") or {}))
-    except DSP.FloorRefused as error:
-        return list(error.codes)
-    except (KeyError, TypeError, AttributeError, ValueError):
-        return ["invalid_input:floor_record/shape"]
-    return []
+    """The authority's own handoff rule asked of a COPY of the record (dispatch.handoff_refusals, the
+    same question the review station asks before it assigns a review): [] when it would hand the unit
+    off, else every named reason it would refuse. Nothing is written."""
+    return DSP.handoff_refusals(repository, record, policy, unit)
 
 
 def _held(entry, reason, lane=None, detail=()):

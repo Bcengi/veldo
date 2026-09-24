@@ -21,6 +21,8 @@ footprint:
   - "engine/.veldo/work.py"
   - ".veldo/work.py"
   - "packs/*/.veldo/work.py"
+  - "engine/.veldo/dispatch.py"
+  - ".veldo/dispatch.py"
   - "scripts/suites/*_veldo_0135_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -120,3 +122,13 @@ path; a returned unit is offered to build (its disposition binds to the rebuilt 
 review count met and a finding open waits, and a claim client's stop about one unadmitted unit is withheld
 by name. Suite 67_veldo_0135_offers (4 assertion rows) is red by assertion at 5ba4a02 and green here; 13
 registered mutations; proof in proof/VELDO-0135/.
+
+2026-09-24: the scoped review of e5b4dad found that after the owner resolves the last open finding the
+unit reaches handoff only through a new review the review policy does not require: the frontier offers the
+review station when the handoff rule passes, but the dispatcher's review station assigned and launched a
+reviewer before it ever asked for the handoff. dispatch.py (both copies) joins this footprint for that
+reason: the review station now asks the authority's handoff rule first (FloorAuthority.handoff_refusals, the
+same question the frontier asks) and hands off without a reviewer when it passes; only when it does not is a
+review assigned and launched. The work loop's failed set is keyed by unit and station, so a unit whose
+review failed is still rebuilt in the same run. New row offers/finding-path (suite 67 now 5 assertion rows),
+red by assertion at e5b4dad; 16 registered mutations.

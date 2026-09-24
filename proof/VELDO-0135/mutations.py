@@ -61,7 +61,7 @@ def main():
                         'diff': 'mutations/%s.diff' % line['mutation']})
     controls = []
     with tempfile.TemporaryDirectory(prefix='v135-noop-') as directory:
-        for module in ('frontier.py', 'work.py'):
+        for module in ('frontier.py', 'work.py', 'dispatch.py'):
             case = next(c for c in cases.values() if c['module'] == module)
             made = teeth.materialize(case, 'noop', Path(directory) / module.replace('.', '-'))
             run = subprocess.run([sys.executable, '-B', 'scripts/check_teeth_mutations.py', '--finding', '135',

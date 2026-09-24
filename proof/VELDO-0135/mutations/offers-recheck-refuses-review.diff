@@ -1,5 +1,5 @@
 --- a/.veldo/work.py
 +++ b/.veldo/work.py
-@@ -126 +126 @@
+@@ -127 +127 @@
 -            if entry["station"] == unit.get("kind"):
 +            if entry["station"] == "build":  # defect: a review offer never survives its recheck

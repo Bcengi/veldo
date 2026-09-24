@@ -1,0 +1,13 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -465,4 +464,0 @@
+-        if not floor.handoff_refusals(sid):
+-            # The review policy is already met and nothing blocks the handoff (the owner resolved the
+-            # last open finding): hand off now. A review the policy does not require is never assigned.
+-            return self._hand_off(floor, unit, decision, None, None)
+@@ -473,0 +470,5 @@
++        # defect: the review is assigned before the handoff rule is checked
++        if not floor.handoff_refusals(sid):
++            # The review policy is already met and nothing blocks the handoff (the owner resolved the
++            # last open finding): hand off now. A review the policy does not require is never assigned.
++            return self._hand_off(floor, unit, decision, None, None)
