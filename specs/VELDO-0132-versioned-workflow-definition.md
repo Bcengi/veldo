@@ -23,6 +23,7 @@ footprint:
   - "scripts/suites/*_veldo_0132_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0132-versioned-workflow-definition.md"
   - "specs/index.md"
   - "proof/VELDO-0132/*"
@@ -171,3 +172,6 @@ loop never let the owner answer again and an owner review after the work was ans
 admission given before it. Each cycle now records the answer an owner wait routed on, and the next
 owner wait takes only a newer one. Row workflow/owner-answer-per-visit, red first at 9409888, and two
 mutations.
+
+2026-09-24, landing: the footprint names scripts/check_teeth_mutations.py, where finding 132's
+mutations are registered (the gate's shape check refused the change without it).
