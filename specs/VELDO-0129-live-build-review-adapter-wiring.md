@@ -120,6 +120,13 @@ Handed on by VELDO-0067 (its review, 2026-09-24): each production local adapter'
 starts with the key custody wrapper (control_keys_custody.confined, naming the protected key
 directory), so a worker cannot read an edge key file directly.
 
+Handed on by VELDO-0042 (its reviews, 2026-09-24): the launch path calls control_clone's
+record_group with the worker's VELDO-0040 group before the engine runs, and uses a new dispatch id
+for every launch, because a clone whose entrance has no recorded group, or was relaunched under the
+same dispatch in a second group, stays in use until the host reboots. Any unconfined Git run over a
+used clone (collecting a result) treats that clone's .git/config as hostile, since a worker can write
+hooks or core.fsmonitor there.
+
 Use canonical engine assets and synchronize installed copies. Resolve the proposed footprint's
 architecture mapping before ready, including the new UI assets where applicable; this draft does
 not amend the architecture contract. Inventory every asset the selected journey installs. Compare

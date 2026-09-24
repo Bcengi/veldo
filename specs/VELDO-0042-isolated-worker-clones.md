@@ -180,3 +180,10 @@ engines confined, every protected target denied, consumer confinement, the real 
 the filed test defects are fixed (the authority target is the source repository's real .git with a git
 update-ref into it; the attachment cache write targets a real cache and is asserted). Finding 42 has 21
 mutations, at least two per row. The criteria, status and risk are unchanged.
+
+2026-09-24, second review of the rework: nothing blocking. The residual of a bound repository's
+Git metadata under the home directory (no new entry directly in the home directory: Claude Code's atomic
+~/.claude.json save, git config --global, new dotfiles, creating ~/.npm) is filed; the production layout
+keeps every protected target under one root outside the home directory (handed to VELDO-0047). Launch-path
+duties (record the group, a new dispatch id per launch, a used clone's .git/config is hostile) are handed
+to VELDO-0129.

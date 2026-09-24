@@ -85,7 +85,14 @@ workers saving at the same moment can lose one update. Codex 0.154.0 is refused 
 is under `~/.codex`. A write-and-rename of a file directly in the home directory (a Python probe standing
 for any tool that saves there that way) is refused. On a first run an engine could not create
 `~/.claude.json` or `~/.codex` if absent; a logged-in owner's home holds them, as the suite's temporary
-HOME does.
+HOME does. The second review (2026-09-24) measured more in the same class when the home directory is on
+the chain: `git config --global` (git's lock and rename of `~/.gitconfig`), any new dotfile directly in the
+home directory (for example `~/.python_history`), and creating `~/.npm` when it does not exist are refused;
+appending to an existing `~/.bash_history`, `~/.cache` and pip's cache still work. **With the production
+layout the lead chose, every one of these works and neither engine is denied anything**: the factory keeps
+its enrolled checkouts, clones, caches, store and keys under one root outside the home directory
+(`/var/lib/veldo`, created once by root at installation; handed to VELDO-0047), so the home directory is
+never on a chain.
 
 **Layout.** No protected target may be beneath a temporary directory (`/tmp`, `/var/tmp`, `/dev/shm`, the
 provisioner's TMPDIR): the constructor and each provision refuse `invalid_input:layout`, because that
