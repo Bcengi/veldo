@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -234 +234 @@
+-        if to == "ready":
++        if to == "never":  # defect: a unit returned to ready is not offered to build

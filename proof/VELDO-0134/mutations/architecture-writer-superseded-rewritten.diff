@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -467 +467 @@
+-            data = dict(prior, contract_version=version + 1, digest=params['digest'], source=source, accepted_by=params['principal'], command_id=params['command_id'], superseded=list(prior['superseded']) + [_entry_of(prior)])
++            data = dict(prior, contract_version=version + 1, digest=params['digest'], source=source, accepted_by=params['principal'], command_id=params['command_id'], superseded=list(prior['superseded']) + [dict(_entry_of(prior), command_id=params['command_id'])])

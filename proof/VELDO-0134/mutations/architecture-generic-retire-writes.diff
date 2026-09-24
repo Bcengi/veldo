@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -363 +363 @@
+-    return operation == ARCHITECTURE_OPERATION
++    return operation in (ARCHITECTURE_OPERATION, "retire_entity")  # defect: the generic retire writes it

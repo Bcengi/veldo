@@ -1,6 +1,6 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -264 +264,10 @@
+@@ -272 +272,10 @@
 -            result = self._submit(command)
 +            if source_kind == 'api_request':  # defect: API messages go to a separate work queue
 +                with __import__('contextlib').suppress(Exception):

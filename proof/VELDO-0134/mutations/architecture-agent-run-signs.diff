@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -353 +353 @@
+-        if entry.get('principal_type') != SIGNER_TYPE:
++        if entry.get('principal_type') not in (SIGNER_TYPE, 'agent_run'):  # defect: an agent_run member signs

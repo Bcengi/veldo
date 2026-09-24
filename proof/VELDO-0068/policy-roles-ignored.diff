@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -190 +190 @@
+-    roles = sorted(set(policy['roles']) | set(terms.get('required_roles') or []))
++    roles = sorted(set(terms.get('required_roles') or []))  # defect: the journey's roles are ignored

@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -508 +508 @@
+@@ -521 +521 @@
 -            if target['data'].get('state') != 'RESOLVED':
 +            if True:  # defect: a resolved inbox proposal is not followed to its objective

@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -406,2 +405,0 @@
+-            if item['data']['state'] not in self.I.PENDING:
+-                raise Refused('request_closed', 'the request is no longer pending')

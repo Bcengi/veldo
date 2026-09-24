@@ -1,0 +1,172 @@
+{
+ "production_at": "8dcdd34",
+ "modules": ".veldo/*.py of 8dcdd34",
+ "failed": [
+  "VELDO-0134 acceptance/first",
+  "VELDO-0134 acceptance/signers",
+  "VELDO-0134 acceptance/signature",
+  "VELDO-0134 acceptance/evidence",
+  "VELDO-0134 acceptance/contract-kinds",
+  "VELDO-0134 acceptance/replay-and-coordinates",
+  "VELDO-0134 acceptance/schema-oracle",
+  "VELDO-0134 acceptance/writer-schema",
+  "VELDO-0134 acceptance/raw-digest-crlf",
+  "VELDO-0134 acceptance/raw-digest-no-final-newline",
+  "VELDO-0134 acceptance/raw-digest-bom",
+  "VELDO-0134 acceptance/version-history",
+  "VELDO-0134 acceptance/replacement-refusals",
+  "VELDO-0134 acceptance/previous-bytes",
+  "VELDO-0134 acceptance/generic-write",
+  "VELDO-0134 acceptance/worker-inputs"
+ ],
+ "passed": [
+  "VELDO-0134 ran/acceptance/first",
+  "VELDO-0134 ran/acceptance/signers",
+  "VELDO-0134 ran/acceptance/signature",
+  "VELDO-0134 ran/acceptance/evidence",
+  "VELDO-0134 ran/acceptance/contract-kinds",
+  "VELDO-0134 ran/acceptance/replay-and-coordinates",
+  "VELDO-0134 ran/acceptance/schema-oracle",
+  "VELDO-0134 ran/acceptance/writer-schema",
+  "VELDO-0134 ran/acceptance/version-history",
+  "VELDO-0134 ran/acceptance/generic-write",
+  "VELDO-0134 ran/acceptance/worker-inputs"
+ ],
+ "observed": {
+  "first": {
+   "front_door": null,
+   "result": "no_writer",
+   "problems": [
+    "no record"
+   ],
+   "gate": [
+    [],
+    [],
+    false
+   ]
+  },
+  "signers": {
+   "type-person": "no_writer",
+   "type-service": "no_writer",
+   "type-policy": "no_writer",
+   "type-agent_run": "no_writer",
+   "role-membership_steward": "no_writer",
+   "role-project_owner": "no_writer",
+   "role-admission_authority": "no_writer",
+   "role-priority_authority": "no_writer",
+   "role-technical_authority": "no_writer",
+   "role-security_authority": "no_writer",
+   "role-operations_authority": "no_writer",
+   "no-role": "no_writer",
+   "universal": "no_writer",
+   "scope-other": "no_writer",
+   "scope-domain": "no_writer"
+  },
+  "schema_oracle": {
+   "fields": [
+    "accepted_by",
+    "command_id",
+    "contract_version",
+    "digest",
+    "repository_uuid",
+    "schema",
+    "source",
+    "state",
+    "superseded"
+   ],
+   "judged": {
+    "valid v1": [],
+    "valid v3": [],
+    "schema: missing #0": [],
+    "schema: another string #0": [],
+    "schema: not a string #0": [],
+    "repository_uuid: missing #0": [],
+    "repository_uuid: not matching the id #0": [],
+    "repository_uuid: not a string #0": [],
+    "state: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "state: any other value #0": [
+     "missing_authority:architecture"
+    ],
+    "state: any other value #1": [
+     "missing_authority:architecture"
+    ],
+    "state: any other value #2": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: missing #0": [],
+    "contract_version: zero #0": [],
+    "contract_version: negative #0": [],
+    "contract_version: a boolean #0": [],
+    "contract_version: not an integer #0": [],
+    "contract_version: not an integer #1": [],
+    "digest: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: no prefix #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: another prefix #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: another prefix #1": [
+     "missing_authority:architecture"
+    ],
+    "digest: uppercase hex #0": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "digest: wrong length #0": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "digest: wrong length #1": [
+     "missing_authority:architecture/unaccepted_artifact"
+    ],
+    "digest: not a string #0": [
+     "missing_authority:architecture"
+    ],
+    "source: missing #0": [],
+    "source: an abbreviated or uppercase commit #0": [],
+    "source: an abbreviated or uppercase commit #1": [],
+    "source: another path #0": [],
+    "source: another path #1": [],
+    "source: an extra key #0": [],
+    "accepted_by: missing #0": [],
+    "accepted_by: not a string #0": [],
+    "accepted_by: not a string #1": [],
+    "command_id: missing #0": [],
+    "command_id: not a string #0": [],
+    "command_id: not a string #1": [],
+    "superseded: missing #0": [],
+    "superseded: out of order #0": [],
+    "superseded: a gap #0": [],
+    "superseded: a gap #1": [],
+    "superseded: an entry with a changed or extra field #0": [],
+    "superseded: an entry with a changed or extra field #1": [],
+    "superseded: an entry with a changed or extra field #2": [],
+    "record: unknown extra field #0": [],
+    "entity kind: architecture_record": [],
+    "entity kind: architecture": []
+   }
+  },
+  "generic_write": {
+   "record_effect architecture:repository-134": "committed",
+   "record_effect architecture:repository-new": "committed",
+   "record_receipt architecture:repository-134": "committed",
+   "record_receipt architecture:repository-new": "committed",
+   "record_receipt shadow:architecture": "committed",
+   "reserve architecture:repository-134": "committed",
+   "reserve architecture:repository-new": "committed",
+   "retire_entity architecture:repository-134": "committed",
+   "retire_entity architecture:repository-new": "committed",
+   "retire_entity shadow:architecture": "committed",
+   "suite_later_write architecture:repository-134": "committed",
+   "suite_later_write architecture:repository-new": "committed",
+   "suite_later_write shadow:architecture": "committed",
+   "upsert_entity architecture:repository-134": "committed",
+   "upsert_entity architecture:repository-new": "committed",
+   "upsert_entity shadow:architecture": "committed"
+  },
+  "raised": []
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "production_at": "5ba4a02",
+ "substituted": {
+  "frontier.py": "5ba4a02:.veldo/frontier.py",
+  "work.py": "5ba4a02:.veldo/work.py"
+ },
+ "other_installed_modules_identical_to_commit": true,
+ "differing": [],
+ "failed": [
+  "VELDO-0135 offers/no-reclaim",
+  "VELDO-0135 offers/floor-station",
+  "VELDO-0135 offers/end-to-end",
+  "VELDO-0135 offers/observations"
+ ],
+ "passed": [
+  "VELDO-0135 ran/offers/floor-station",
+  "VELDO-0135 ran/offers/end-to-end",
+  "VELDO-0135 ran/offers/observations"
+ ],
+ "raised": [],
+ "observed": {
+  "states": {
+   "VELDO-9501": [
+    null,
+    false
+   ],
+   "VELDO-9502": [
+    "review",
+    false
+   ],
+   "VELDO-9503": [
+    "returned",
+    false
+   ],
+   "VELDO-9504": [
+    "review",
+    false
+   ],
+   "VELDO-9505": [
+    "handoff",
+    false
+   ],
+   "VELDO-9506": [
+    "handoff",
+    true
+   ],
+   "VELDO-9507": [
+    null,
+    false
+   ],
+   "VELDO-9508": [
+    null,
+    false
+   ],
+   "VELDO-9509": [
+    null,
+    false
+   ],
+   "VELDO-9511": [
+    null,
+    false
+   ]
+  },
+  "offers": {
+   "at_review": {
+    "VELDO-9501": "build",
+    "VELDO-9502": "build",
+    "VELDO-9503": "build",
+    "VELDO-9504": "build",
+    "VELDO-9505": "build",
+    "VELDO-9506": "build",
+    "VELDO-9508": "build",
+    "VELDO-9511": "build",
+    "VELDO-9507": "review"
+   },
+   "now": {
+    "VELDO-9501": "build",
+    "VELDO-9502": "build",
+    "VELDO-9503": "build",
+    "VELDO-9504": "build",
+    "VELDO-9505": "build",
+    "VELDO-9508": "build",
+    "VELDO-9511": "build",
+    "VELDO-9507": "review"
+   },
+   "withheld": {},
+   "disposed": "ok",
+   "after_disposition": {
+    "VELDO-9501": "build",
+    "VELDO-9502": "build",
+    "VELDO-9503": "build",
+    "VELDO-9504": "build",
+    "VELDO-9505": "build",
+    "VELDO-9508": "build",
+    "VELDO-9511": "build",
+    "VELDO-9507": "review"
+   }
+  },
+  "no_reclaim": {
+   "claimed": [],
+   "drained": [
+    "refused",
+    "explicit_unit_required"
+   ]
+  },
+  "recheck": [],
+  "journey": {
+   "built": [
+    "refused",
+    "explicit_unit_required"
+   ],
+   "reviewed": [
+    "refused",
+    "explicit_unit_required"
+   ],
+   "again": [
+    "refused",
+    "explicit_unit_required"
+   ],
+   "state": null,
+   "handoff": null,
+   "trunk": [
+    "6f81a7d438c9ed7fe0b0793193861ce00bde6bfe",
+    "6f81a7d438c9ed7fe0b0793193861ce00bde6bfe"
+   ],
+   "lands": [
+    [
+     "VELDO-9506",
+     "6f81a7d438c9ed7fe0b0793193861ce00bde6bfe"
+    ]
+   ]
+  },
+  "plain": {
+   "offers": [
+    {
+     "spec": "VELDO-9601",
+     "plan": null,
+     "kind": "build",
+     "requires": []
+    },
+    {
+     "spec": "VELDO-9602",
+     "plan": null,
+     "kind": "review",
+     "requires": []
+    }
+   ],
+   "dispatched": [
+    [
+     "VELDO-9601",
+     "build",
+     null
+    ],
+    [
+     "VELDO-9602",
+     "review",
+     null
+    ]
+   ]
+  }
+ }
+}

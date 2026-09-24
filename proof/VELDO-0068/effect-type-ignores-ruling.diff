@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -562 +562 @@
+-        effect = {'schema': EFFECT_SCHEMA, 'effect_id': eff, 'type': JOURNEY[touchpoint]['effects'][ruling],
++        effect = {'schema': EFFECT_SCHEMA, 'effect_id': eff, 'type': JOURNEY[touchpoint]['effects']['approve'],

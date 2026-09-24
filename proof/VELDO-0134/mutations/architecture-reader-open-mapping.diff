@@ -1,0 +1,4 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -166 +165,0 @@
+-    problems.extend('record carries unknown field %s' % f for f in extra)

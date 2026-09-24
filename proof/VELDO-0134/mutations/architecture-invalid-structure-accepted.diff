@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -447 +447 @@
+-        if load.refused:
++        if load.refused and load.kind != 'invalid_structure':  # defect: the validator's verdict is ignored

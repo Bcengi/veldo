@@ -68,11 +68,32 @@ def _v53_suite():
             return hmac.new(key, message, hashlib.sha256).hexdigest()
 
         serial = [0]
+        # VELDO-0134: the store lets only its architecture operation write architecture:<repository>, so
+        # the record reaches the Gate through that operation, registered here on the suite's own
+        # connection with the suite's own transition (VELDO-0134's suite drives the real signed accept
+        # command). Each record is a complete veldo.architecture_record/v1 carrying the state and digest
+        # a row names; a row that names no digest leaves the field out, so the record-states rows face
+        # schema-invalid records. An earlier store with no such operation takes the generic write.
+        ARCHITECTURE_WRITE = getattr(S, 'ARCHITECTURE_OPERATION', 'upsert_entity')
+        writer.command_registry[ARCHITECTURE_WRITE] = {
+            'transition': lambda params, before: {params['entity_id']: {'kind': params['kind'], 'data': params['data']}},
+            'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+        def architecture_record(identity, data):
+            record = dict(schema='veldo.architecture_record/v1', repository_uuid=identity[len('architecture:'):],
+                          state='accepted', contract_version=1,
+                          source=dict(commit='0' * 40, path='.veldo/architecture.yaml'), accepted_by='owner',
+                          command_id='c%d' % serial[0], superseded=[])
+            record.update(data)
+            return record
 
         def put(identity, kind, data):
             serial[0] += 1
             row = writer.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
-            S.execute(writer, dict(command_id='c%d' % serial[0], principal='owner', operation='upsert_entity',
+            operation = ARCHITECTURE_WRITE if identity.startswith('architecture:') else 'upsert_entity'
+            if identity.startswith('architecture:'):
+                data = architecture_record(identity, data)
+            S.execute(writer, dict(command_id='c%d' % serial[0], principal='owner', operation=operation,
                                    nonce='n%d' % serial[0], artifact_digests=[],
                                    expected_versions={identity: row[0] if row else 0},
                                    parameters=dict(entity_id=identity, kind=kind, data=data)),
@@ -1007,16 +1028,29 @@ def _v53_suite():
                 except Exception as error:  # noqa: BLE001 - recorded by type, asserted below
                     answered[label] = type(error).__name__
             decided, _, _ = judge(dotted, 'dotpy_gate')
-            held_names['empty_name'] = (set(answered.values()) == {'ImportError'} and not dot_marker.exists()
-                                        and outcome(decided, CODES['invalid_structure']))
+            # Each sub-condition by name, beside the value it saw, so a false row says which part went false.
+            empty_parts = {'requests_all_import_error': set(answered.values()) == {'ImportError'},
+                           'dot_py_never_ran': not dot_marker.exists(),
+                           'decisions_invalid_structure': outcome(decided, CODES['invalid_structure'])}
+            empty_seen = {'refusals': sorted({r for d in decided.values() for r in d['refusals']})}
+            held_names['empty_name'] = all(empty_parts.values()) and len(empty_parts) == 3
             piped = engine_copy(top / 'fifo' / '.veldo')
             os.mkfifo(str(piped / 'zz.py'))
             # A reader blocked on the FIFO would wait for a writer forever; this helper opens it for writing,
             # which releases such a reader with an empty read, so a snapshot that reads it cannot hang the suite.
+            # It touches the FIFO only after FIFO_GRACE seconds with the judgement still running. The snapshot's
+            # own open is non-blocking and is held open while it is judged by descriptor, so a write-end open
+            # landing in that window succeeds without any reader having waited; polling from the start counted
+            # that as a release whenever load stretched the window. After the grace, a release means a reader
+            # was still there after the judgement had every chance to finish: a wait.
             import threading
+            import time
+            FIFO_GRACE = 20.0
             stop_helper, unblocked = threading.Event(), []
 
             def release_readers():
+                if stop_helper.wait(FIFO_GRACE):
+                    return
                 while not stop_helper.is_set():
                     try:
                         os.close(os.open(str(piped / 'zz.py'), os.O_WRONLY | os.O_NONBLOCK))
@@ -1028,16 +1062,28 @@ def _v53_suite():
             helper = threading.Thread(target=release_readers, daemon=True)
             helper.start()
             fifo_events = []
+            fifo_started = time.monotonic()
             try:
                 decided, _, _ = judge(piped, 'fifo_gate', events=fifo_events)
             finally:
+                fifo_seconds = time.monotonic() - fifo_started
                 stop_helper.set()
                 helper.join(5)
-            held_names['fifo_is_named_stop'] = (
-                outcome(decided, 'unavailable_service:architecture_validator') and not unblocked
-                and all((d.get('architecture') or {}).get('error') == 'ImportError' for d in decided.values()))
+            fifo_parts = {'decisions_unavailable_validator': outcome(decided, 'unavailable_service:architecture_validator'),
+                          'no_reader_released': not unblocked,
+                          'errors_import_error': all((d.get('architecture') or {}).get('error') == 'ImportError'
+                                                     for d in decided.values())}
+            fifo_seen = {'refusals': sorted({r for d in decided.values() for r in d['refusals']}),
+                         'errors': sorted({str((d.get('architecture') or {}).get('error')) for d in decided.values()}),
+                         'helper_alive_after_join': helper.is_alive(), 'judge_seconds': round(fifo_seconds, 3),
+                         'grace_seconds': FIFO_GRACE}
+            held_names['fifo_is_named_stop'] = all(fifo_parts.values()) and len(fifo_parts) == 3
             reset('valid')
-            observed['snapshot_held_names'] = {'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked)}
+            observed['snapshot_held_names'] = {
+                'requests': answered, 'cases': held_names, 'fifo_readers_released': len(unblocked),
+                'empty_name': dict(parts=empty_parts, seen=empty_seen), 'fifo': dict(parts=fifo_parts, seen=fifo_seen),
+                'false': sorted(case + '/' + part for case, parts in (('empty_name', empty_parts), ('fifo', fifo_parts))
+                                for part, value in parts.items() if not value)}
             check('architecture/snapshot-held-names', all(held_names.values()) and len(held_names) == 2)
 
         with region('architecture/snapshot-file-bounded'):

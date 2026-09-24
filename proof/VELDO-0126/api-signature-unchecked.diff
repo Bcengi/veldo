@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -334 +334 @@
+@@ -347 +347 @@
 -        if not self._edge_verifies(request, signature):
 +        if False:  # defect: the API edge's signature is not checked

@@ -1,0 +1,5 @@
+--- a/.veldo/work.py
++++ b/.veldo/work.py
+@@ -174 +174 @@
+-            if (u["spec"], u["kind"]) in self._failed:
++            if any(spec == u["spec"] for spec, _ in self._failed):  # defect: a failed station bars the unit

@@ -462,6 +462,10 @@ class Dispatcher(WK.Dispatcher):
         if (floor.record(sid) or {}).get("state") == "handoff":
             # A land that failed after the handoff is retried; the reviews it was handed off on stand.
             return self._land_handed_off(floor, unit, decision, None, None)
+        if not floor.handoff_refusals(sid):
+            # The review policy is already met and nothing blocks the handoff (the owner resolved the
+            # last open finding): hand off now. A review the policy does not require is never assigned.
+            return self._hand_off(floor, unit, decision, None, None)
         refused = dict(verdict=None, shipped=False, landed=False)
         try:
             assignment = floor.assign_review(sid, getattr(self._reviewer, "identity", None))
@@ -485,6 +489,11 @@ class Dispatcher(WK.Dispatcher):
         if record["state"] != "review" or not self._verdict_passes(review["body"]):
             return {"ok": False, "kind": "review", "spec": sid, "verdict": verdict, "shipped": False,
                     "landed": False, "status": record["state"], "projection": projection}
+        return self._hand_off(floor, unit, decision, verdict, projection)
+
+    def _hand_off(self, floor, unit, decision, verdict, projection):
+        """The authority's handoff, then the lander. A refused handoff leaves the unit at review."""
+        sid = unit["spec"]
         try:
             floor.handoff(sid)
         except FloorRefused as error:
@@ -1054,6 +1063,21 @@ def _handoff(conn, params, before, record, unit_data):
     return record, unit_data
 
 
+def handoff_refusals(repository, record, policy, unit):
+    """The handoff rule (the handoff transition's own handler) asked of a COPY of `record`, with the
+    retained review `policy` row and the `unit` row it would read inside the transaction: [] when it
+    would hand the unit off, else every named reason it would refuse (awaiting_reviews,
+    unresolved_finding, missing_authority:review_policy). The handler returns changes; nothing is committed."""
+    before = {review_policy_id(repository): policy} if policy else {}
+    try:
+        _handoff(None, {"repository": repository}, before, copy_record(record), dict((unit or {}).get("data") or {}))
+    except FloorRefused as error:
+        return list(error.codes)
+    except (KeyError, TypeError, AttributeError, ValueError):
+        return ["invalid_input:floor_record/shape"]
+    return []
+
+
 class FloorAuthority:
     """One domain and repository's floor records over a real control store connection (VELDO-0049).
     `principal` is the service writing (an active `service` member scoped to the repository),
@@ -1167,6 +1191,15 @@ class FloorAuthority:
     def handoff(self, unit):
         """The unit handed to the lander when the review policy is met and nothing blocks it."""
         return self._run("handoff", unit, {})
+
+    def handoff_refusals(self, unit):
+        """Every named reason the handoff would be refused now ([] when it would pass), asked of the
+        stored record, the retained review policy and the unit through the read path. Nothing is written."""
+        record = self.record(unit)
+        if not isinstance(record, dict) or record.get("state") not in FLOOR_TRANSITIONS["handoff"][0]:
+            return ["transition_refused:%s:handoff" % (record or {}).get("state")]
+        return handoff_refusals(self.repository, record, _row(self.conn, review_policy_id(self.repository)),
+                                _row(self.conn, unit))
 
     def publish(self, unit):
         """The unit's current record published by the Materializer; a refusal is returned, never raised."""

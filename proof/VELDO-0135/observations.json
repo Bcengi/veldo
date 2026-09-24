@@ -1,0 +1,478 @@
+{
+ "failed": 0,
+ "observed": {
+  "finding_path": {
+   "again": 0,
+   "assignments": [
+    2,
+    2
+   ],
+   "handoff": {
+    "attempt": 2,
+    "policy": {
+     "digest": "sha256:b486b68f5aa5a99540bd12923aac09e34c2c00fe025e6b9fb32e0fa797779b52",
+     "version": 1
+    },
+    "proof": {
+     "digest": "sha256:8e6818fa7dc8769deb36dcdde03bf6a372fb7a3cdd7d312b4ad470d994887f13",
+     "path": "proof/VELDO-9504/manifest.json"
+    },
+    "required": 1,
+    "reviewers": [
+     "reviewer-c"
+    ],
+    "risk": "standard",
+    "source": {
+     "commit": "f0e33c7a1f0ec17460cfdcfa63762068e7d982b8",
+     "implementation": "f7391e0ce1f507b4868b83f056cad69dfd6f8b53"
+    }
+   },
+   "landed": true,
+   "launched": [],
+   "reviews_after": [
+    [
+     "reviewer-b",
+     1,
+     false
+    ],
+    [
+     "reviewer-c",
+     2,
+     true
+    ]
+   ],
+   "reviews_before": [
+    [
+     "reviewer-b",
+     1,
+     false
+    ],
+    [
+     "reviewer-c",
+     2,
+     true
+    ]
+   ],
+   "run": [
+    [
+     "review",
+     true,
+     null
+    ]
+   ],
+   "staged": {
+    "9504/b": [
+     "ok",
+     null
+    ],
+    "9504/c": [
+     "ok",
+     "unresolved_finding:VELDO-9504/1/reviewer-b/1/F1"
+    ],
+    "9504/rebuild": [
+     "ok",
+     null
+    ]
+   },
+   "state": "handoff"
+  },
+  "journey": {
+   "again": [],
+   "built": [
+    [
+     "build",
+     true,
+     null
+    ],
+    [
+     "review",
+     false,
+     "reviewer_not_independent"
+    ]
+   ],
+   "handoff": {
+    "attempt": 1,
+    "policy": {
+     "digest": "sha256:b486b68f5aa5a99540bd12923aac09e34c2c00fe025e6b9fb32e0fa797779b52",
+     "version": 1
+    },
+    "proof": {
+     "digest": "sha256:0f0906922079b8da419b2f639016fd16e4b017b21be0ddbd46bb1a933cfa4df7",
+     "path": "proof/VELDO-9509/manifest.json"
+    },
+    "required": 1,
+    "reviewers": [
+     "reviewer-b"
+    ],
+    "risk": "standard",
+    "source": {
+     "commit": "cb48ebe83a41854c8d55ffc713c9447ccccaba56",
+     "implementation": "e640e52e4fd2eb55693261b2dd02cfbcb0673319"
+    }
+   },
+   "lands": [
+    [
+     "VELDO-9506",
+     "cfed3a03f248df9c0cee412cf6a0356041275d6e"
+    ],
+    [
+     "VELDO-9504",
+     "f0e33c7a1f0ec17460cfdcfa63762068e7d982b8"
+    ],
+    [
+     "VELDO-9509",
+     "cb48ebe83a41854c8d55ffc713c9447ccccaba56"
+    ]
+   ],
+   "reviewed": [
+    [
+     "review",
+     true,
+     null
+    ]
+   ],
+   "state": "handoff",
+   "trunk": [
+    "f0e33c7a1f0ec17460cfdcfa63762068e7d982b8",
+    "cb48ebe83a41854c8d55ffc713c9447ccccaba56"
+   ]
+  },
+  "journey_marks": 203,
+  "no_reclaim": {
+   "claimed": [
+    [
+     "VELDO-9501",
+     "build",
+     "worker-q"
+    ],
+    [
+     "VELDO-9503",
+     "build",
+     "worker-q"
+    ],
+    [
+     "VELDO-9502",
+     "review",
+     "worker-q"
+    ],
+    [
+     "VELDO-9508",
+     "review",
+     "worker-q"
+    ]
+   ],
+   "drained": [
+    [
+     "VELDO-9501",
+     "build"
+    ],
+    [
+     "VELDO-9503",
+     "build"
+    ],
+    [
+     "VELDO-9502",
+     "review"
+    ],
+    [
+     "VELDO-9508",
+     "review"
+    ]
+   ]
+  },
+  "offers": {
+   "after_disposition": {
+    "VELDO-9501": "build",
+    "VELDO-9502": "review",
+    "VELDO-9503": "build",
+    "VELDO-9504": "review",
+    "VELDO-9508": "review"
+   },
+   "at_review": {
+    "VELDO-9501": "build",
+    "VELDO-9502": "review",
+    "VELDO-9503": "build",
+    "VELDO-9504": "build",
+    "VELDO-9505": "build",
+    "VELDO-9506": "build",
+    "VELDO-9508": "build",
+    "VELDO-9511": "build"
+   },
+   "disposed": "ok",
+   "now": {
+    "VELDO-9501": "build",
+    "VELDO-9502": "review",
+    "VELDO-9503": "build",
+    "VELDO-9508": "review"
+   },
+   "withheld": {
+    "VELDO-9504": "unresolved_finding",
+    "VELDO-9505": "handoff",
+    "VELDO-9506": "landed",
+    "VELDO-9507": "missing_authority:floor_record",
+    "VELDO-9511": "invalid_input:floor_record/kind",
+    "VELDO-9512": "missing_authority:unit"
+   }
+  },
+  "plain": {
+   "dispatched": [
+    [
+     "VELDO-9601",
+     "build",
+     null
+    ],
+    [
+     "VELDO-9602",
+     "review",
+     null
+    ],
+    [
+     "VELDO-9602",
+     "build",
+     null
+    ]
+   ],
+   "offers": [
+    {
+     "kind": "build",
+     "plan": null,
+     "requires": [],
+     "spec": "VELDO-9601"
+    },
+    {
+     "kind": "review",
+     "plan": null,
+     "requires": [],
+     "spec": "VELDO-9602"
+    }
+   ]
+  },
+  "race": [
+   "ok",
+   {
+    "kind": "build",
+    "ok": true,
+    "projection": {
+     "manifest": {
+      "accepted_commit": "47972ef0b7a47d1defe38e3b2ed1c6c4383bd40e",
+      "domain_uuid": "domain-135",
+      "members": {
+       "proof/VELDO-9508/manifest.json": "sha256:d7bfb5d02ccddb44fad7fabcef3f711707c6654f4afd12938e33ebdc4e69a055",
+       "status/VELDO-9508.json": "sha256:eb89f5ec84504af85046e3fba5d30ec618195c7417948e288be20aaea52bea25"
+      },
+      "repository_uuid": "repository-135",
+      "schema": "veldo.control_snapshot/v1",
+      "snapshot_digest": "sha256:6837df94962de9bb60c6615f68ea3232d66ce6ebe32f68832e39ede28510e60f",
+      "snapshot_id": "floor-projection:repository-135:VELDO-9508:1ec5a6cc9c194c6593d9ba83c04fd8aa",
+      "watermark": 253
+     },
+     "path": "/dev/shm/v135-fdrog648/projections/VELDO-9508/000001",
+     "snapshot": "floor-projection:repository-135:VELDO-9508:1ec5a6cc9c194c6593d9ba83c04fd8aa",
+     "version": 1,
+     "watermark": 253
+    },
+    "result": {
+     "halted_at": null,
+     "human_minutes": 0,
+     "reason": null,
+     "receipt": {
+      "awaiting_human": null,
+      "criteria_proven": [
+       "AC1"
+      ],
+      "gate": "green",
+      "human_minutes": 0,
+      "spec_id": "VELDO-9508",
+      "verdict": null
+     },
+     "state": "built",
+     "steps": [
+      {
+       "name": "resolve",
+       "ok": true
+      },
+      {
+       "name": "eligibility",
+       "ok": true,
+       "reason": null
+      },
+      {
+       "commit": "47972ef0b7a47d1defe38e3b2ed1c6c4383bd40e",
+       "cycle": 1,
+       "name": "build",
+       "ok": true
+      },
+      {
+       "cycle": 1,
+       "detail": "green",
+       "name": "gate",
+       "ok": true
+      },
+      {
+       "cycle": 1,
+       "errors": 0,
+       "name": "proof",
+       "ok": true
+      }
+     ]
+    },
+    "reviewed": false,
+    "spec": "VELDO-9508",
+    "status": "review"
+   }
+  ],
+  "raised": [],
+  "recheck": [
+   {
+    "detail": [],
+    "domain_uuid": "domain-135",
+    "offer": "offer:3e78b015b1084efb95a2808c5ed6801c",
+    "offered_station": "build",
+    "offered_version": 0,
+    "operation": "floor_recheck",
+    "outcome": "withheld",
+    "reason": "stale_version:floor_record",
+    "repository_uuid": "repository-135",
+    "schema": "veldo.frontier_floor/v1",
+    "state": "review",
+    "station": "review",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9508",
+    "version": 1
+   }
+  ],
+  "staged": {
+   "9502": [
+    "ok",
+    null
+   ],
+   "9502/b": [
+    "ok",
+    "awaiting_reviews:1/2"
+   ],
+   "9503": [
+    "ok",
+    null
+   ],
+   "9503/b": [
+    "ok",
+    null
+   ],
+   "9504": [
+    "ok",
+    null
+   ],
+   "9504/b": [
+    "ok",
+    null
+   ],
+   "9504/c": [
+    "ok",
+    "unresolved_finding:VELDO-9504/1/reviewer-b/1/F1"
+   ],
+   "9504/rebuild": [
+    "ok",
+    null
+   ],
+   "9505": [
+    "ok",
+    null
+   ],
+   "9505/b": [
+    "ok",
+    null
+   ],
+   "9506": [
+    "ok",
+    null
+   ],
+   "9506/b": [
+    "ok",
+    null
+   ]
+  },
+  "states": {
+   "VELDO-9501": [
+    null,
+    false
+   ],
+   "VELDO-9502": [
+    "review",
+    false
+   ],
+   "VELDO-9503": [
+    "returned",
+    false
+   ],
+   "VELDO-9504": [
+    "review",
+    false
+   ],
+   "VELDO-9505": [
+    "handoff",
+    false
+   ],
+   "VELDO-9506": [
+    "handoff",
+    true
+   ],
+   "VELDO-9507": [
+    null,
+    false
+   ],
+   "VELDO-9508": [
+    null,
+    false
+   ],
+   "VELDO-9509": [
+    null,
+    false
+   ],
+   "VELDO-9511": [
+    null,
+    false
+   ]
+  }
+ },
+ "passed": 9,
+ "rows": [
+  [
+   "VELDO-0135 offers/no-reclaim",
+   true
+  ],
+  [
+   "VELDO-0135 offers/floor-station",
+   true
+  ],
+  [
+   "VELDO-0135 offers/finding-path",
+   true
+  ],
+  [
+   "VELDO-0135 offers/end-to-end",
+   true
+  ],
+  [
+   "VELDO-0135 offers/observations",
+   true
+  ],
+  [
+   "VELDO-0135 ran/offers/floor-station",
+   true
+  ],
+  [
+   "VELDO-0135 ran/offers/finding-path",
+   true
+  ],
+  [
+   "VELDO-0135 ran/offers/end-to-end",
+   true
+  ],
+  [
+   "VELDO-0135 ran/offers/observations",
+   true
+  ]
+ ],
+ "suite": "67_veldo_0135_offers.py",
+ "suite_seconds": 7.987
+}

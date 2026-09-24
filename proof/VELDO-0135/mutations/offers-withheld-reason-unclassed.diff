@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -152 +152 @@
+-    if reason.split(":", 1)[0] in FLOOR_HOLDS:
++    if True:  # defect: every withheld reason is classed as a hold

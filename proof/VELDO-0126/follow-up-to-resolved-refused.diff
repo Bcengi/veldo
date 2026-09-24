@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -512 +512 @@
+@@ -525 +525 @@
 -            pid = onward
 +            raise Refused('stale_version:clarifies', str(pid))  # defect: a follow-up to a resolved inbox is refused
