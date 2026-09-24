@@ -1,5 +1,5 @@
 --- a/.veldo/control_event_vocabulary.py
 +++ b/.veldo/control_event_vocabulary.py
-@@ -57 +57 @@
+@@ -59 +59 @@
 -    "spec.shipped": JOURNAL_PROJECTION,
 +    "spec.shipped": HAND,  # defect: completion is registered as a hand emission

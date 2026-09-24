@@ -1,16 +1,16 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 51 --jobs 4",
  "exit": 0,
- "seconds": 16.8,
+ "seconds": 22.6,
  "summary": {
-  "mutations_rejected": 18,
+  "mutations_rejected": 22,
   "green_suites": {
-   "66_veldo_0051_events.py": 36
+   "66_veldo_0051_events.py": 37
   }
  },
  "control": {
   "suite": "66_veldo_0051_events.py",
-  "assertions": 36
+  "assertions": 37
  },
  "every_target_red": true,
  "no_ran_row_red": true,
@@ -46,6 +46,12 @@
    "projection-refusal-unobserved",
    "projection-unknown-taxonomy-classified",
    "projection-pending-unlisted"
+  ],
+  "events/spend-recorded": [
+   "spend-records-as-spec-shipped",
+   "vocabulary-forgets-spend-recorded",
+   "judgment-spend-recorded-unkinded",
+   "judgment-historical-spend-unkinded"
   ]
  },
  "mutations": [
@@ -79,7 +85,8 @@
    "row": "events/vocabulary-roundtrip",
    "declared_falsifier_of": null,
    "red_rows": [
-    "events/vocabulary-roundtrip"
+    "events/vocabulary-roundtrip",
+    "events/spend-recorded"
    ],
    "target_red": true,
    "ran_rows_red": [],
@@ -283,6 +290,56 @@
    "target_red": true,
    "ran_rows_red": [],
    "diff": "mutations/projection-pending-unlisted.diff"
+  },
+  {
+   "mutation": "spend-records-as-spec-shipped",
+   "module": "spend.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/vocabulary-roundtrip",
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/spend-records-as-spec-shipped.diff"
+  },
+  {
+   "mutation": "vocabulary-forgets-spend-recorded",
+   "module": "control_event_vocabulary.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/vocabulary-roundtrip",
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/vocabulary-forgets-spend-recorded.diff"
+  },
+  {
+   "mutation": "judgment-spend-recorded-unkinded",
+   "module": "judgment_load.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/judgment-spend-recorded-unkinded.diff"
+  },
+  {
+   "mutation": "judgment-historical-spend-unkinded",
+   "module": "judgment_load.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/judgment-historical-spend-unkinded.diff"
   }
  ]
 }

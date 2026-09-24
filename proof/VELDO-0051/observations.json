@@ -25,6 +25,10 @@
    true
   ],
   [
+   "VELDO-0051 events/spend-recorded",
+   true
+  ],
+  [
    "VELDO-0051 events/unknown-refused",
    true
   ],
@@ -41,7 +45,7 @@
    true
   ]
  ],
- "suite_seconds": 3.19,
+ "suite_seconds": 3.59,
  "observed": {
   "installed": {
    "scaffold": "ok",
@@ -73,7 +77,7 @@
       "dispatch/VELDO-9601/land",
       16,
       "fixture-13",
-      "sha256:f55429288385b53721e7d57e1dfada727d0431093b285ae4192c5c66dec8cef9",
+      "sha256:551494956163908adc31fec0a155a6bf6b0da684aadef30417bd8355374f4e58",
       "receipt:revision_landed:VELDO-9601:0"
      ],
      [
@@ -82,21 +86,21 @@
       "dispatch/VELDO-9602/land",
       31,
       "fixture-22",
-      "sha256:f7321052a298fecb0bcd71d503bbfe9cb935701c351eaa9532fa45fd6b191f0a",
+      "sha256:fa55877256c2a9e4e67f2ba3d42e6037883ea687ed45e602883b3f2ee19b2f7c",
       "receipt:revision_landed:VELDO-9602:1"
      ]
     ],
     "watermark": {
      "domain": "domain-51",
      "log": ".veldo/events.jsonl",
-     "record_digest": "sha256:f7321052a298fecb0bcd71d503bbfe9cb935701c351eaa9532fa45fd6b191f0a",
+     "record_digest": "sha256:fa55877256c2a9e4e67f2ba3d42e6037883ea687ed45e602883b3f2ee19b2f7c",
      "repository": "repository-51",
      "schema": "veldo.event_projection/v1",
      "watermark": 31
     },
     "head": [
      31,
-     "sha256:f7321052a298fecb0bcd71d503bbfe9cb935701c351eaa9532fa45fd6b191f0a"
+     "sha256:fa55877256c2a9e4e67f2ba3d42e6037883ea687ed45e602883b3f2ee19b2f7c"
     ]
    },
    "second": {
@@ -108,21 +112,21 @@
       "dispatch/VELDO-9604/land",
       38,
       "fixture-26",
-      "sha256:7dd0461565f4510e1d4ebe7e19a846c43f36ef902b44743cc9e666aae867d3a6",
+      "sha256:eb9fa06c9e07e11a506ba9e80f3e84468dc7749954b46204e6e31ba6628737ed",
       "receipt:revision_landed:VELDO-9604:0"
      ]
     ],
     "watermark": {
      "domain": "domain-51",
      "log": ".veldo/events.jsonl",
-     "record_digest": "sha256:7dd0461565f4510e1d4ebe7e19a846c43f36ef902b44743cc9e666aae867d3a6",
+     "record_digest": "sha256:eb9fa06c9e07e11a506ba9e80f3e84468dc7749954b46204e6e31ba6628737ed",
      "repository": "repository-51",
      "schema": "veldo.event_projection/v1",
      "watermark": 38
     },
     "head": [
      38,
-     "sha256:7dd0461565f4510e1d4ebe7e19a846c43f36ef902b44743cc9e666aae867d3a6"
+     "sha256:eb9fa06c9e07e11a506ba9e80f3e84468dc7749954b46204e6e31ba6628737ed"
     ]
    },
    "history_kept": [
@@ -156,11 +160,11 @@
      "status": "completed",
      "completed": true,
      "destination": {
-      "authorized_url": "/dev/shm/v51-f7qcdern/origin.git",
+      "authorized_url": "/dev/shm/v51-r0f913_g/origin.git",
       "destinations": [
        {
         "outcome": "at-tip",
-        "url": "/dev/shm/v51-f7qcdern/origin.git"
+        "url": "/dev/shm/v51-r0f913_g/origin.git"
        }
       ]
      }
@@ -170,11 +174,11 @@
      "status": "completed",
      "completed": true,
      "destination": {
-      "authorized_url": "/dev/shm/v51-f7qcdern/origin.git",
+      "authorized_url": "/dev/shm/v51-r0f913_g/origin.git",
       "destinations": [
        {
         "outcome": "at-tip",
-        "url": "/dev/shm/v51-f7qcdern/origin.git"
+        "url": "/dev/shm/v51-r0f913_g/origin.git"
        }
       ]
      }
@@ -184,11 +188,11 @@
      "status": "unknown",
      "completed": false,
      "destination": {
-      "authorized_url": "/dev/shm/v51-f7qcdern/hooked.git",
+      "authorized_url": "/dev/shm/v51-r0f913_g/hooked.git",
       "destinations": [
        {
         "outcome": "not-at-tip",
-        "url": "/dev/shm/v51-f7qcdern/hooked.git"
+        "url": "/dev/shm/v51-r0f913_g/hooked.git"
        }
       ]
      }
@@ -198,21 +202,21 @@
      "status": "completed",
      "completed": true,
      "destination": {
-      "authorized_url": "/dev/shm/v51-f7qcdern/origin.git",
+      "authorized_url": "/dev/shm/v51-r0f913_g/origin.git",
       "destinations": [
        {
         "outcome": "at-tip",
-        "url": "/dev/shm/v51-f7qcdern/origin.git"
+        "url": "/dev/shm/v51-r0f913_g/origin.git"
        }
       ]
      }
     }
    },
    "remote": {
-    "after_p1": "7a077263c1059af78ace9243058880c37bc86f52",
-    "after_p2": "29c1e7791b275f36e1024d325ae0abfe76a8e10a",
-    "after_p4": "1f6e4bec7f1dc668faa1b6c0f4cb29f046e46b72",
-    "hooked": "59c4fb93b73957c62c53be4ffba94296400e88fb"
+    "after_p1": "2a5b74b3de6f2c5229d6879e01be5e43c62c50a3",
+    "after_p2": "8bffc12dedf95868a1a82d6a0dc18733a6f5d4d9",
+    "after_p4": "cd0cf478aeb676477c282967ca1c58d7d77f7211",
+    "hooked": "3668f221482471f7bcceb6406b240276adb66e35"
    },
    "elsewhere": [
     "ok",
@@ -311,6 +315,7 @@
     "spec.blocked",
     "spec.ready",
     "spec.shipped",
+    "spend.recorded",
     "verdict.recorded",
     "work.pulled"
    ],
@@ -340,7 +345,107 @@
     0,
     ""
    ],
-   "registrations_outside": {}
+   "registrations_outside": {},
+   "spend_registration": {
+    "spend.recorded": "spend.py"
+   }
+  },
+  "spend": {
+   "record": [
+    0,
+    "{\"at\": \"2026-09-24T13:44:45Z\", \"correlation_id\": \"VELDO-9601\", \"cost_usd\": 1.92, \"human_minutes\": 6, \"id\": \"2e9485095b13\", \"producer\": \"spend.py\", \"schema\": \"veldo.event/v1\", \"spec_id\": \"VELDO-9601\", \"spend_basis\": \"harness_reported\", \"spend_note\": \"suite 66\", \"tokens\": 48000, \"type\": \"spend.recorde",
+    ""
+   ],
+   "appended": [
+    {
+     "schema": "veldo.event/v1",
+     "id": "2e9485095b13",
+     "type": "spend.recorded",
+     "at": "2026-09-24T13:44:45Z",
+     "producer": "spend.py",
+     "correlation_id": "VELDO-9601",
+     "spec_id": "VELDO-9601",
+     "human_minutes": 6,
+     "tokens": 48000,
+     "cost_usd": 1.92,
+     "spend_basis": "harness_reported",
+     "spend_note": "suite 66"
+    }
+   ],
+   "blank": [
+    1,
+    "refusing to record spend: a spend record carrying no figure at all is indistinguishable from silence, and recording it would inflate the coverage number this ex"
+   ],
+   "blank_appended": false,
+   "validator": [
+    0,
+    ""
+   ],
+   "readers": {
+    "new": {
+     "corpus": [
+      48000,
+      1.92,
+      6,
+      true
+     ],
+     "judgment": [
+      48000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 6,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 48000,
+      "cost_usd": 1.92
+     }
+    },
+    "historical": {
+     "corpus": [
+      1000,
+      0.08,
+      6,
+      true
+     ],
+     "judgment": [
+      1000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 6,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 1000,
+      "cost_usd": 0.08
+     }
+    },
+    "both": {
+     "corpus": [
+      49000,
+      2.0,
+      12,
+      true
+     ],
+     "judgment": [
+      49000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 12,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 49000,
+      "cost_usd": 2.0
+     }
+    }
+   }
   },
   "refusals": {
    "writer": {
@@ -372,11 +477,11 @@
    "validator": {
     "type": [
      1,
-     "  /dev/shm/v51-f7qcdern/bad-type.jsonl: line 1: unknown event type 'verdict.invented'\nveldo contracts: 1 problem(s)\n"
+     "  /dev/shm/v51-r0f913_g/bad-type.jsonl: line 1: unknown event type 'verdict.invented'\nveldo contracts: 1 problem(s)\n"
     ],
     "schema": [
      1,
-     "  /dev/shm/v51-f7qcdern/bad-schema.jsonl: line 1: bad or missing schema (want veldo.event/v1)\nveldo contracts: 1 problem(s)\n"
+     "  /dev/shm/v51-r0f913_g/bad-schema.jsonl: line 1: bad or missing schema (want veldo.event/v1)\nveldo contracts: 1 problem(s)\n"
     ]
    }
   },
