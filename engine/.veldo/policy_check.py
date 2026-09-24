@@ -32,6 +32,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# The policy SOURCE, an input separate from the SUBJECT root (VELDO-0058 AC3). ROOT is the tree being
+# judged; POLICY is the policy.yaml that says which of its paths are protected. Unset (None) it is the
+# subject root's own .veldo/policy.yaml, resolved at the time of the read, so an ordinary run and a
+# caller that points ROOT elsewhere behave exactly as before. The installed-policy runner
+# (control_verification._policy_main) sets it to the installation's policy.yaml: a candidate judged
+# by its own policy.yaml could empty protected_paths and land a protected change with no approval.
+POLICY = None
+
+
+def policy_source():
+    """The policy.yaml this run reads: POLICY when set, else the subject root's own."""
+    return Path(POLICY) if POLICY is not None else ROOT / ".veldo" / "policy.yaml"
+
 # The proof-corpus enumeration (WARP-0727): the one owner of what a corpus path is, shared
 # with .veldo/events.py and .veldo/validate.py. A private glob here would be a THIRD spelling
 # of one set, which is the defect that module exists to make unreachable.
@@ -61,7 +74,7 @@ def _verdict_files():
 
 
 def protected_patterns():
-    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")
+    policy = _Y.read(policy_source())
     rows = policy.get("protected_paths", [])
     if not isinstance(rows, list) or any(not isinstance(r, dict) or not isinstance(r.get("path"), str) for r in rows):
         raise ValueError("policy protected_paths must be a list of path mappings")
