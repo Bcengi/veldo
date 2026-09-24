@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -155 +155 @@
+-            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))
++            blocked = {}

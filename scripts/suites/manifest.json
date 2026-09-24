@@ -556,6 +556,15 @@
    ],
    "regions": "Plain-data graph adapter over the actual LangGraph runtime, no direct graph authority, tracing off and isolated stdlib enforcement",
    "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store in the Git common directory of a real repository with a linked worktree, a stdlib interface stub runner, and the actual LangGraph runtime installed from .veldo/control_graph_lock.py (absent: the runtime rows fail by name with the install command)."
+   },
+   {
+   "name": "59_veldo_0037_aliases",
+   "file": "59_veldo_0037_aliases.py",
+   "requires": [
+    "59_veldo_0037_aliases"
+   ],
+   "regions": "Counter aliases, versioned edits and exact published documents",
+   "requires_note": "Uses only shared ROOT and expect; real SQLite, Git clones, Ed25519 journal signatures, separate allocation and reader processes."
   },
   {
    "name": "58_veldo_0031_claims",
@@ -617,6 +626,15 @@
    ],
    "regions": "Scope coverage of a plain-string inner scope (repository id)",
    "requires_note": "Uses only shared ROOT and expect; loads control_membership by path."
+  },
+  {
+   "name": "62_veldo_0054_decisions",
+   "file": "62_veldo_0054_decisions.py",
+   "requires": [
+    "62_veldo_0054_decisions"
+   ],
+   "regions": "Decision-record dependency evaluation: exact signed bindings, named blockers and scope at every enabled consumer",
+   "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, real OpenSSH Ed25519 settlement signatures and a real enrollment binding."
   }
  ]
 }

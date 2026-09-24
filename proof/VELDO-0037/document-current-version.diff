@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -515 +515 @@
+-            expected = request['expected_version']
++            expected = head_version

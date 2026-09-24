@@ -1,0 +1,5 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -103 +103 @@
+-                                  '--ignore-missing', '--stdin', commit, '--'],
++                                  '--stdin', commit, '--'],

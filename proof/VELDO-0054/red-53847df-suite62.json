@@ -1,0 +1,173 @@
+{
+ "failed": [
+  "VELDO-0054 decisions/malformed-subject-named",
+  "VELDO-0054 decisions/malformed-blocks-held",
+  "VELDO-0054 decisions/invalid-before-unsupported",
+  "VELDO-0054 decisions/status-names-its-stop"
+ ],
+ "observed": {
+  "invalid_order": "TypeError: unhashable type: 'list'",
+  "malformed": {
+   "direct": [
+    "ok",
+    [
+     "invalid_input:decision_reference",
+     "invalid_input:decision:r1/record",
+     "invalid_input:decision:r2/decision_id",
+     "invalid_input:decision:r3/blocks",
+     "invalid_input:decision:r3/revision",
+     "invalid_input:decision:r3/framing_digest",
+     "invalid_input:decision:r3/subject",
+     "invalid_input:decision:r3/scope"
+    ]
+   ],
+   "recorded": [
+    "settlement:malformed-data",
+    "settlement:malformed-decision"
+   ],
+   "status": {
+    "accepted": 248,
+    "blocked": [
+     "VELDO-9402",
+     "VELDO-9403",
+     "VELDO-9404",
+     "VELDO-9405",
+     "VELDO-9407",
+     "VELDO-9408",
+     "VELDO-9411",
+     "VELDO-9412",
+     "VELDO-9413",
+     "VELDO-9421",
+     "VELDO-9422",
+     "VELDO-9423",
+     "VELDO-9424",
+     "VELDO-9425",
+     "VELDO-9426",
+     "VELDO-9427",
+     "VELDO-9428",
+     "VELDO-9431",
+     "VELDO-9432",
+     "VELDO-9433",
+     "VELDO-9434",
+     "VELDO-9435",
+     "VELDO-9436",
+     "VELDO-9441",
+     "VELDO-9442",
+     "VELDO-9443",
+     "VELDO-9444",
+     "VELDO-9445",
+     "VELDO-9446",
+     "VELDO-9448",
+     "VELDO-9471",
+     "VELDO-9472",
+     "VELDO-9473",
+     "VELDO-9474",
+     "VELDO-9475"
+    ],
+    "invalid_records": [
+     "settlement:malformed-data",
+     "settlement:malformed-decision"
+    ],
+    "refused": 569
+   },
+   "sweep": {
+    "VELDO-9401": {
+     "blocks": [],
+     "lens": "ready (frontier)",
+     "run_codes": [],
+     "stations": []
+    },
+    "VELDO-9406": {
+     "blocks": [],
+     "lens": "ready (frontier)",
+     "run_codes": [],
+     "stations": []
+    },
+    "VELDO-9471": {
+     "blocks": [
+      "invalid_input:decision:D-9471/decision_id"
+     ],
+     "lens": "blocked: decision invalid_input:decision:D-9471/decision_id",
+     "run_codes": [
+      "invalid_input:decision:D-9471/decision_id"
+     ],
+     "stations": [
+      "invalid_input:decision:D-9471/decision_id"
+     ]
+    },
+    "VELDO-9472": {
+     "blocks": [
+      "invalid_input:decision:D-9472/revision"
+     ],
+     "lens": "blocked: decision invalid_input:decision:D-9472/revision",
+     "run_codes": [
+      "invalid_input:decision:D-9472/revision"
+     ],
+     "stations": [
+      "invalid_input:decision:D-9472/revision"
+     ]
+    },
+    "VELDO-9473": {
+     "blocks": [
+      "invalid_input:settlement:decision:D-9473:1/settlement"
+     ],
+     "lens": "blocked: decision invalid_input:settlement:decision:D-9473:1/settlement",
+     "run_codes": [
+      "invalid_input:settlement:decision:D-9473:1/settlement"
+     ],
+     "stations": [
+      "invalid_input:settlement:decision:D-9473:1/settlement"
+     ]
+    },
+    "VELDO-9474": {
+     "blocks": [
+      "invalid_input:settlement:decision:D-9474:1/signature"
+     ],
+     "lens": "blocked: decision invalid_input:settlement:decision:D-9474:1/signature",
+     "run_codes": [
+      "invalid_input:settlement:decision:D-9474:1/signature"
+     ],
+     "stations": [
+      "invalid_input:settlement:decision:D-9474:1/signature"
+     ]
+    },
+    "VELDO-9475": {
+     "blocks": [
+      "invalid_input:decision_reference"
+     ],
+     "lens": "blocked: decision invalid_input:decision_reference",
+     "run_codes": [
+      "invalid_input:decision_reference"
+     ],
+     "stations": [
+      "invalid_input:decision_reference"
+     ]
+    }
+   }
+  },
+  "malformed_blocks": {
+   "invalid_records": [
+    "settlement:malformed-data",
+    "settlement:malformed-decision"
+   ],
+   "sweep": "TypeError: unhashable type: 'list'"
+  },
+  "malformed_subject": "TypeError: unhashable type: 'list'",
+  "raised": [],
+  "status_reader": {},
+  "status_stop": [
+   "raised",
+   "TypeError: unhashable type: 'list'"
+  ]
+ },
+ "passed": 19,
+ "production_at": "53847df",
+ "substituted_modules": [
+  ".veldo/control_decision_dependency.py",
+  ".veldo/control_eligibility.py",
+  ".veldo/frontier.py",
+  ".veldo/plan.py",
+  ".veldo/runstatus.py"
+ ],
+ "suite": "62_veldo_0054_decisions.py"
+}

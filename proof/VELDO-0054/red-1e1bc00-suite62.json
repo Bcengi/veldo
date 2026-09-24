@@ -1,0 +1,203 @@
+{
+ "failed": [
+  "VELDO-0054 decisions/consumers-from-call-sites",
+  "VELDO-0054 decisions/status-reader-agrees",
+  "VELDO-0054 decisions/malformed-records-named",
+  "VELDO-0054 decisions/production-gate-verifies",
+  "VELDO-0054 decisions/observations",
+  "VELDO-0054 ran/decisions/production-gate-verifies",
+  "VELDO-0054 ran/decisions/observations"
+ ],
+ "observed": {
+  "malformed": {
+   "direct": [
+    "raised",
+    "TypeError"
+   ],
+   "recorded": [],
+   "status": {
+    "accepted": 196,
+    "blocked": [
+     "VELDO-9402",
+     "VELDO-9403",
+     "VELDO-9404",
+     "VELDO-9405",
+     "VELDO-9407",
+     "VELDO-9408",
+     "VELDO-9411",
+     "VELDO-9412",
+     "VELDO-9413",
+     "VELDO-9421",
+     "VELDO-9422",
+     "VELDO-9423",
+     "VELDO-9424",
+     "VELDO-9425",
+     "VELDO-9426",
+     "VELDO-9427",
+     "VELDO-9428",
+     "VELDO-9431",
+     "VELDO-9432",
+     "VELDO-9433",
+     "VELDO-9434",
+     "VELDO-9435",
+     "VELDO-9436",
+     "VELDO-9441",
+     "VELDO-9442",
+     "VELDO-9443",
+     "VELDO-9444",
+     "VELDO-9445",
+     "VELDO-9446",
+     "VELDO-9448"
+    ],
+    "refused": 348
+   },
+   "sweep": "TypeError: unhashable type: 'dict'"
+  },
+  "raised": [
+   [
+    "decisions/production-gate-verifies",
+    "TypeError(\"unhashable type: 'dict'\")"
+   ],
+   [
+    "decisions/observations",
+    "TypeError(\"unhashable type: 'dict'\")"
+   ]
+  ],
+  "status_reader": {
+   "VELDO-9402": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9402/subject_digest"
+   ],
+   "VELDO-9403": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9403/subject"
+   ],
+   "VELDO-9404": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9404/framing"
+   ],
+   "VELDO-9405": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9405/revision"
+   ],
+   "VELDO-9407": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:P-9403/subject_digest"
+   ],
+   "VELDO-9408": [
+    "ready (frontier)",
+    "blocked: decision decision_ruling:decision:D-9408/reject"
+   ],
+   "VELDO-9411": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9411/framing"
+   ],
+   "VELDO-9412": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9412/framing"
+   ],
+   "VELDO-9413": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9413/framing"
+   ],
+   "VELDO-9421": [
+    "blocked: decision DEC-MISSING",
+    "blocked: decision missing_decision:DEC-MISSING"
+   ],
+   "VELDO-9422": [
+    "blocked: decision DEC-FILE-ONLY",
+    "blocked: decision missing_decision:DEC-FILE-ONLY"
+   ],
+   "VELDO-9423": [
+    "blocked: decision DEC-AMB",
+    "blocked: decision ambiguous_decision:DEC-AMB"
+   ],
+   "VELDO-9424": [
+    "ready (frontier)",
+    "blocked: decision ambiguous_decision:decision:D-9424"
+   ],
+   "VELDO-9425": [
+    "ready (frontier)",
+    "blocked: decision unsupported_decision:decision:D-9425/obligation:tripwire"
+   ],
+   "VELDO-9426": [
+    "ready (frontier)",
+    "blocked: decision unsupported_decision:decision:D-9426/obligation:adversarial_decision_review"
+   ],
+   "VELDO-9427": [
+    "ready (frontier)",
+    "blocked: decision unsupported_decision:decision:D-9427/subject_kind:contract"
+   ],
+   "VELDO-9428": [
+    "ready (frontier)",
+    "blocked: decision unresolved_decision:decision:D-9428"
+   ],
+   "VELDO-9429": [
+    "blocked: decision DEC-9429",
+    "ready (frontier)"
+   ],
+   "VELDO-9431": [
+    "ready (frontier)",
+    "blocked: decision unresolved_decision:decision:D-9431"
+   ],
+   "VELDO-9432": [
+    "ready (frontier)",
+    "blocked: decision unsigned_decision:decision:D-9432"
+   ],
+   "VELDO-9433": [
+    "ready (frontier)",
+    "blocked: decision unsigned_decision:decision:D-9433"
+   ],
+   "VELDO-9434": [
+    "ready (frontier)",
+    "blocked: decision unsigned_decision:decision:D-9434"
+   ],
+   "VELDO-9435": [
+    "blocked: decision D-9435",
+    "blocked: decision unresolved_decision:decision:D-9435"
+   ],
+   "VELDO-9436": [
+    "blocked: decision DEC-INLINE",
+    "blocked: decision missing_decision:DEC-INLINE"
+   ],
+   "VELDO-9441": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9441/subject,unbound_decision:decision:D-9441/scope"
+   ],
+   "VELDO-9442": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9442/decision,unbound_decision:decision:D-9442/framing,unbound_decision:decision:D-9442/subject,unbound_decision:decision:D-9442/scope"
+   ],
+   "VELDO-9443": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9443/scope"
+   ],
+   "VELDO-9444": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9444/scope"
+   ],
+   "VELDO-9445": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9445/scope"
+   ],
+   "VELDO-9446": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:P-9446/subject,unbound_decision:decision:P-9446/scope"
+   ],
+   "VELDO-9448": [
+    "ready (frontier)",
+    "blocked: decision unbound_decision:decision:D-9448/scope"
+   ]
+  }
+ },
+ "passed": 8,
+ "production_at": "1e1bc00",
+ "substituted_modules": [
+  ".veldo/control_decision_dependency.py",
+  ".veldo/control_eligibility.py",
+  ".veldo/frontier.py",
+  ".veldo/plan.py",
+  ".veldo/runstatus.py"
+ ],
+ "suite": "62_veldo_0054_decisions.py"
+}

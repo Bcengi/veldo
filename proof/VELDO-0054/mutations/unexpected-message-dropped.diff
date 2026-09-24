@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -172 +172 @@
+-    return code + '/' + message if message else code
++    return code

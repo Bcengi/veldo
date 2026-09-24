@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -713 +713 @@
+-            elif prior != target:
++            elif False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -388 +388 @@
+-                base = sorted(carrier_records(conn, self.domain_uuid, repository))
++                base = []

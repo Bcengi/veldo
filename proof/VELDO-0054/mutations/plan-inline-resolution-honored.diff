@@ -1,0 +1,5 @@
+--- a/.veldo/plan.py
++++ b/.veldo/plan.py
+@@ -89 +89 @@
+-        if isinstance(d, dict):
++        if isinstance(d, dict) and d.get("status") != "resolved":

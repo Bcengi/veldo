@@ -1,0 +1,6 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -195,2 +195 @@
+-    for name, ok in (('schema', record.get('schema') is None or isinstance(record.get('schema'), str)),
+-                     ('decision_id', record.get('decision_id') is None or isinstance(record.get('decision_id'), str)),
++    for name, ok in (('decision_id', record.get('decision_id') is None or isinstance(record.get('decision_id'), str)),

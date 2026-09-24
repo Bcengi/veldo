@@ -6,6 +6,12 @@ members. A reference beginning '$' resolves from command arguments. Every comman
 consumes its accepted revision, that revision's document inventory, and status entities.
 Only control_store.execute writes. Its BEGIN IMMEDIATE encloses both validation and transition.
 Registrations are connection-local; direct store calls on that connection use the same guard.
+What a command may WRITE is not: attach declares in the store (control_store.declare_owners) that
+only accept_snapshot writes a control_snapshot, so no generic command on any connection to that
+store forges an accepted snapshot, and the ownership another service declared binds a read-set
+command exactly as it binds that command unregistered, whichever registered first. Each
+declaration names this file as the code of accept_snapshot and accept_revision, so the store runs
+either only when the registered transition is this file's code with the bytes it declared.
 Authentication and business authorization remain the registering service's responsibility.
 """
 import copy
@@ -22,6 +28,104 @@ def _snapshots():
 
 
 SN = _snapshots()
+_git_process = SN._git_process
+OWNER = 'VELDO-0035 accepted snapshots'
+SNAPSHOT_KINDS = {'control_snapshot': ('accept_snapshot',)}
+REVISION_OWNER = 'VELDO-0035 accepted revisions'
+REVISION_KINDS = {'accepted_revision': ('accept_revision',), 'accepted_carriers': ('accept_revision',)}
+# Each accepted commit's recorded carrier paths (see Revisions), written only by accept_revision.
+CARRIERS_PREFIX = 'accepted-carriers/'
+REVISION_PREFIXES = {CARRIERS_PREFIX: ('accept_revision',)}
+
+
+def _descends(repo, older, newer):
+    """Whether `newer` has `older` in its history (or is it)."""
+    result = _git_process.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', older, newer],
+                                 capture_output=True, timeout=15)
+    if result.returncode not in (0, 1):
+        raise SN.Refused('missing_authority', 'the accepted history is unreadable')
+    return result.returncode == 0
+
+
+def carriers_id(domain_uuid, repository_uuid, commit):
+    """The store entity holding what an accepted commit of a domain's repository adds."""
+    return '%s%s/%s/%s' % (CARRIERS_PREFIX, domain_uuid, repository_uuid, commit)
+
+
+def carrier_records(conn, domain_uuid, repository_uuid):
+    """{commit: record} for every carrier record of a domain's repository, read on `conn`."""
+    prefix = '%s%s/%s/' % (CARRIERS_PREFIX, domain_uuid, repository_uuid)
+    found = {}
+    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='accepted_carriers' AND substr(id, 1, ?)=?",
+                               (len(prefix), prefix)):
+        data = json.loads(raw)
+        if data.get('domain_uuid') == domain_uuid and data.get('repository_uuid') == repository_uuid:
+            found[data['commit']] = data
+    return found
+
+
+# Repository-local configuration stays authoritative at the Git boundary, so what it could change
+# about which paths `git log --name-only` names is fixed by explicit options. Four are load-bearing
+# on git 2.43, each with a suite row that reds without it: --diff-merges=separate (log.diffMerges=off
+# names nothing a merge adds), --root (log.showRoot=false drops a root commit's paths),
+# --ignore-submodules=none (diff.ignoreSubmodules or submodule.<name>.ignore hide a gitlink) and
+# --no-show-signature (log.showSignature prints signature checks into the output). The other five
+# (--no-renames, --no-relative, --no-ext-diff, --no-color, --no-notes) change nothing that is
+# recorded on git 2.43 under the configurations tried; they are defensive, kept so another Git
+# version or setting cannot change the output. -z keeps core.quotePath from quoting names.
+HISTORY_OPTIONS = ('--diff-merges=separate', '--root', '--no-renames', '--no-relative', '--ignore-submodules=none',
+                   '--no-ext-diff', '--no-color', '--no-notes', '--no-show-signature')
+
+
+def _require_complete_history(repo):
+    """Refuse a shallow repository by name: its boundary commits hide the history before them, so
+    what the history names there is not what the history holds."""
+    result = _git_process.run(['git', '-C', str(repo), 'rev-parse', '--is-shallow-repository'],
+                                 capture_output=True, timeout=15)
+    if result.returncode or result.stdout.decode().strip() != 'false':
+        raise SN.Refused('shallow_repository', '%s is shallow or unreadable: its history is incomplete' % repo)
+
+
+def carrier_paths(repo, commit, base=()):
+    """Every path named by a commit reachable from `commit` and from no commit in `base`, that holds
+    a digit, sorted and distinct: each such commit's changes against every parent (every parent of a
+    merge, renames as a deletion and an addition, a root commit as the creation of its whole tree).
+    A carrier always holds its number's digits, so this is every path any kind's number could be read
+    from, and it is kind-independent because the first revision is accepted before any kind is
+    enabled. With no base it is the whole history, which names every path of the tree, since every
+    tree path was added or changed by some commit of it (a shallow repository, which breaks that,
+    is refused; grafts are a stated limit). A base commit the repository no longer holds excludes
+    nothing, so what it held is listed again."""
+    SN.commit_id(repo, commit)
+    _require_complete_history(repo)
+    # The excluded commits go through stdin, so their number is bounded by nothing on a command line.
+    exclusions = ''.join('^%s\n' % excluded for excluded in base)
+    result = _git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',
+                                  '--ignore-missing', '--stdin', commit, '--'],
+                                 input=exclusions.encode(), capture_output=True, timeout=60)
+    if result.returncode:
+        raise SN.Refused('missing_authority', 'accepted history is unreadable')
+    return sorted({name for name in result.stdout.decode('utf-8', 'surrogateescape').split('\0')
+                   if any(character.isdigit() for character in name)})
+
+
+def root_commits(repo, revision='HEAD'):
+    """Every root commit reachable from a revision, sorted, or None: what an accepted commit is checked
+    to share with its enrolled repository. It is not a checkout's identity; the enrollment binding is."""
+    result = _git_process.run(['git', '-C', str(repo), 'rev-list', '--max-parents=0', revision, '--'],
+                                 capture_output=True, timeout=15)
+    if result.returncode:
+        return None
+    return sorted(line for line in result.stdout.decode().split() if line) or None
+
+
+def _holds(repo, commit):
+    """Whether the Git repository at `repo` holds `commit` as a commit object now."""
+    try:
+        SN.commit_id(repo, commit)
+    except SN.Refused:
+        return False
+    return True
 
 
 class ReadSets:
@@ -196,10 +300,123 @@ class ReadSets:
         return sorted(snapshots - used)
 
 
+class Revisions:
+    """The accepting command for accepted_revision entities, the inputs every read set consumes and
+    VELDO-0037 derives its first numbers from. An accepted revision names an exact commit of an
+    enrolled repository, its documents {output_path: sha256} and statuses {output_path: entity_id},
+    each checked inside the store's transaction exactly as inputs() checks them when consumed; a
+    revision id already accepted moves only to a descendant of its commit. attach_revisions declares
+    in the store that nothing but accept_revision writes an accepted_revision, on any connection.
+
+    WHICH REPOSITORY. attach_revisions binds each repository uuid to its accepted repository in the
+    store (control_store.bind_repositories): the first service to attach, this one or VELDO-0037's
+    allocation authority, fixes it, and another repository for that uuid is refused
+    repository_binding_conflict. The transition reads that binding back inside its transaction and
+    refuses unenrolled_commit when the bound repository does not hold the commit at acceptance time
+    (an unrelated repository's commit, or a clone's unpushed one), whatever path this object was
+    constructed with, so no revision service reading another repository can record a commit the
+    allocation authority cannot read.
+
+    RECORDED CARRIERS. In the same transaction, the first acceptance of a commit records what it
+    ADDS (carrier_paths against every commit already recorded for the repository, read from the
+    bound repository) and its root commits, in an immutable accepted_carriers entity keyed by the
+    domain, repository and commit id. The union of a repository's records is then every path of
+    every accepted commit's history, each named once per commit that changed it, so storage grows
+    with the history, not with its square. VELDO-0037's floor reads that union, never Git, so a
+    branch deleted, pruned or force-pushed after acceptance changes no number a commit held."""
+
+    def __init__(self, store, conn, domain_uuid, repositories):
+        if not isinstance(repositories, dict) or not repositories:
+            raise SN.Refused('invalid_registration', 'repositories map each repository uuid to its accepted repository')
+        self.store, self.conn, self.domain_uuid = store, conn, domain_uuid
+        self.paths = {repository: str(path) for repository, path in repositories.items()}
+
+    def accept(self, revision_id, repository_uuid, commit, principal, documents=None, statuses=None, **signing):
+        version = SN.entity(self.store, self.conn, revision_id)['version']
+        carriers = (carriers_id(self.domain_uuid, repository_uuid, commit)
+                    if isinstance(repository_uuid, str) and isinstance(commit, str) else None)
+        expected = {revision_id: version}
+        if carriers is not None:
+            expected[carriers] = SN.entity(self.store, self.conn, carriers)['version']
+        command_id = 'revision.accept:%s:%d:%s' % (revision_id, version, commit)
+        return self.store.execute(self.conn, {
+            'command_id': command_id, 'principal': principal, 'operation': 'accept_revision',
+            'parameters': {'revision_id': revision_id, 'repository_uuid': repository_uuid, 'commit': commit,
+                           'documents': dict(documents or {}), 'statuses': dict(statuses or {})},
+            'expected_versions': expected, 'artifact_digests': [], 'nonce': command_id + '/nonce'}, **signing)
+
+    def transition(self, conn, parameters, before):
+        try:
+            ReadSets.require_transaction(self, conn)   # the read sets' own guard: this connection, its BEGIN IMMEDIATE
+            if set(parameters) != {'revision_id', 'repository_uuid', 'commit', 'documents', 'statuses'}:
+                raise SN.Refused('invalid_input', 'an accepted revision is revision_id, repository_uuid, commit, documents, statuses')
+            identity, repository, commit = parameters['revision_id'], parameters['repository_uuid'], parameters['commit']
+            if repository not in self.paths:
+                raise SN.Refused('wrong_repository', 'repository is not enrolled in this domain')
+            repo = self.paths[repository]
+            SN.commit_id(repo, commit)
+            bound = self.store.bound_repository(conn, self.domain_uuid, repository)
+            if bound is None or not _holds(bound, commit):
+                raise SN.Refused('unenrolled_commit', '%s is not in the accepted repository %s of this store'
+                                 % (commit, bound or '(none bound)'))
+            documents, statuses = parameters['documents'], parameters['statuses']
+            for path, identity_of_status in statuses.items():
+                SN.safe_path(path)
+                if SN.entity(self.store, conn, identity_of_status)['value'] is None:
+                    raise SN.Refused('missing_authority', identity_of_status)
+            # Every document read at the exact commit, and no two projection paths overlapping.
+            SN.members({'documents': documents, 'statuses': {path: None for path in statuses},
+                        'accepted_commit': commit}, repo)
+            prior = before.get(identity)
+            if prior is not None:
+                data = prior['data']
+                if (prior['kind'] != 'accepted_revision' or data.get('domain_uuid') != self.domain_uuid
+                        or data.get('repository_uuid') != repository):
+                    raise SN.Refused('invalid_input', '%s is not an accepted revision of this repository' % identity)
+                # An accepted revision only moves forward: its history is what VELDO-0037's first
+                # numbers are derived from, and a revision moved back would drop numbers it held.
+                if not _descends(repo, data['commit'], commit):
+                    raise SN.Refused('revision_regression', '%s is at %s; %s does not descend from it'
+                                     % (identity, data['commit'], commit))
+            changes = {identity: {'kind': 'accepted_revision', 'data': {
+                'domain_uuid': self.domain_uuid, 'repository_uuid': repository, 'commit': commit,
+                'documents': documents, 'statuses': statuses}}}
+            # What the commit adds over every commit already recorded, read once from the bound
+            # repository; a record already there is immutable and is only checked to be this commit's.
+            carriers = carriers_id(self.domain_uuid, repository, commit)
+            recorded = before.get(carriers)
+            if recorded is None:
+                base = sorted(carrier_records(conn, self.domain_uuid, repository))
+                changes[carriers] = {'kind': 'accepted_carriers', 'data': {
+                    'domain_uuid': self.domain_uuid, 'repository_uuid': repository, 'commit': commit,
+                    'root_commits': root_commits(bound, commit), 'paths': carrier_paths(bound, commit, base)}}
+            elif (recorded['kind'] != 'accepted_carriers' or recorded['data'].get('commit') != commit
+                  or recorded['data'].get('repository_uuid') != repository):
+                raise SN.Refused('invalid_input', '%s is not the carrier record of %s' % (carriers, commit))
+            return changes
+        except SN.Refused as error:
+            raise self.store.StoreRefused(error.code, error.detail) from error
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise self.store.StoreRefused('invalid_input', 'malformed accepted revision') from error
+
+
+def attach_revisions(store, conn, domain_uuid, repositories):
+    """Register accept_revision on one store connection; returns the accepting service."""
+    if 'accept_revision' in conn.command_registry:
+        raise SN.Refused('invalid_registration', 'connection already accepts revisions')
+    service = Revisions(store, conn, domain_uuid, repositories)
+    store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS, prefixes=REVISION_PREFIXES, module=__file__)
+    store.bind_repositories(conn, domain_uuid, service.paths)
+    conn.command_registry['accept_revision'] = {
+        'transaction_transition': service.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+    return service
+
+
 def attach(store, conn, repo, domain_uuid, repository_uuid):
     if 'accept_snapshot' in conn.command_registry:
         raise SN.Refused('invalid_registration', 'connection already has a snapshot authority')
     reader = ReadSets(store, conn, repo, domain_uuid, repository_uuid)
+    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)
     conn.command_registry['accept_snapshot'] = {
         'transaction_transition': reader.accept, 'writes': ('entities', 'journal', 'commands', 'nonces'),
         'read_set': 'enabled operation declaration plus accepted revision projections'}

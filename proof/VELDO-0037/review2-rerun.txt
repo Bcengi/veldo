@@ -1,0 +1,103 @@
+== rv0037c/t1_floor.py
+A case-only dir: floor 5 | expected 5
+B side branch add+delete, merged: floor 9 | expected 9 | reachable: True
+B2 same, no pathspec: floor 9
+C irregular slug / no slug: floor 8 | expected 8
+D renamed away: floor 6 | expected 6
+exit 0
+== rv0037c/t1b_ours.py
+ours-merge: floor 9 | expected 9
+exit 0
+== rv0037c/t2_corpus.py
+floor from template: 132
+highest VELDO number named in history: 132 ['specs/VELDO-0132-versioned-workflow-definition.md']
+specs/VELDO-* names the template regex skips: []
+exit 0
+== rv0037c/t3_old_revision.py
+first=1 against real revision: below_accepted_history
+generic upsert of accepted_revision on allocation connection refused: entity_owned
+enable naming earlier revision: None | allocated: VELDO-0002
+exit 0
+== rv0037c/t4_shared_root.py
+attach with shared root: None | identities: {'A': ['c684062'], 'B': ['089b8f8', 'c684062']}
+checkout of B at HEAD^1 binds as: None wrong_repository
+same clone enrolled as B binds as: B None | publish A into it: wrong_repository | file: False
+exit 0
+== rv0037c/t5_other_connection.py
+allocation connection: entity_owned
+second connection: rewind entity_owned rewrite entity_owned
+counter 4 -> 4 | VELDO-0001@1 content 'doc 0\n' -> 'doc 0\n'
+exit 0
+== rv0037c/t6_readset_after.py
+accept snapshot: None | snapshot upsert: entity_owned | counter 4 -> 4
+exit 0
+== rv0037c/t6b_order.py
+enable-then-attach: accept None upsert entity_owned counter 4
+exit 0
+== rv0037c/t7_toctou.py
+1 swap before link: unsafe_path | state pending | in outside/: [] | in moved/: ['VELDO-0001-x.md']
+2 symlinked dir at record time: unsafe_path | state pending
+3 hard link v1: ok | v2: ok | victim now b'accepted\n' | declared b'v2\n'
+4 reader through symlinked file: None unsafe_path
+exit 0
+== rv0037c/t8_case.py
+specs/VELDO-{number}.md      vs SPECS/{number}.md                -> None
+specs/VELDO-{number}.md      vs specs/{alias}.md                 -> invalid_registration
+specs/{number}-{slug}.md     vs Specs/{number}-ABC.md            -> invalid_registration
+specs/{alias}.md             vs specs/AAA-{number}.md            -> invalid_registration
+x/{alias}.md                 vs X/AAA-{number}.md/{alias}.md     -> invalid_input
+reserved/unicode .{slug}/{alias}.md       prefix AAA   -> reserved_path
+reserved/unicode x/.Veldo/{alias}.md      prefix AAA   -> reserved_path
+reserved/unicode .gi{slug}/{alias}.md     prefix AAA   -> reserved_path
+reserved/unicode sp\u00e9cs/{alias}.md         prefix AAA   -> invalid_input
+reserved/unicode {slug}/{alias}.md        prefix AAA   -> None
+reserved/unicode {alias}/x.md             prefix .GIT  -> None
+reserved/unicode a/.GiT/{number}          prefix AAA   -> reserved_path
+prefix 'VELD\u00d6' -> invalid_unit_id
+prefix 'VEL\u212aDO' -> invalid_unit_id
+prefix 'VE LDO' -> invalid_unit_id
+exit 0
+== review/r1_symlink_parent.py
+publish: unsafe_path | file outside root exists: False
+reader: None missing_publication
+exit 0
+== review/r2_path_collision.py
+enable refusals: None invalid_registration
+allocated VELDO-0001 docs/0001.md | None None
+publish A: ok | publish B: missing_authority | pending: []
+exit 0
+== review/r3_first_below_history.py
+accepted maximum: 1 | enable refusal: below_accepted_history | allocated: VELDO-0002
+exit 0
+== review/r4_record_without_bytes.py
+record refusal: missing_publication | obligation state: pending | file exists: False | pending: [('repository', 'VELDO-0001', 1)]
+publisher afterwards: None | file exists: True
+exit 0
+== review/r5_exact_bytes.py
+0 b'\xef\xbb\xbfbom\r\n' exact 0o600
+1 b'cr only\rline\r' exact 0o600
+2 b'nul\x00inside\n' exact 0o600
+3 b'\xe2\x80\xa8ls\xe2\x80\xa9ps' exact 0o600
+4 b'\xf0\x9f\x98\x80 astral' exact 0o600
+5 b'' exact 0o600
+6 b'\n' exact 0o600
+7 b'e\xcc\x81 decomposed' exact 0o600
+8 b'\t  trailing  \t' exact 0o600
+9 b'\xff\xfe not utf8' allocate refused invalid_input
+10 b'\xed\xa0\x80 surrogat' allocate refused invalid_input
+exit 0
+== review/r6_generic_upsert.py
+counter before 4 after 4 refusal entity_owned
+next allocation: None 
+exit 0
+== review/r7_cross_repository.py
+publish other: wrong_repository | publish repository: ok | file: b'this repository bytes\n'
+exit 0
+== review/s1_parallel.py
+aliases: 12 errors: []
+after reopen: VELDO-0013 | max before: VELDO-0012
+exit 0
+== review/s2_case_prefix.py
+None invalid_registration: prefix veldo already allocates kind specification specs/VELDO-0001-x.md None
+template into .git accepted: False
+exit 0

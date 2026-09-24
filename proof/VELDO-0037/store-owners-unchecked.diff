@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -464 +464 @@
+-                if hit and command["operation"] not in commands:
++                if False:

@@ -151,7 +151,8 @@ def _burndown(root, eligibility=None):
         for pid in sorted(reg):
             fm = reg[pid]["fm"]
             shipped = PL._shipped_set(fm, status_by_id)
-            blocked = PL._decision_blocks(fm)
+            # VELDO-0054: decisions read through the same Gate plan status reads them through.
+            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))
             work = sorted(PL._work(fm), key=lambda w: (w.get("order") or 0))
             items, frontier = [], []
             for w in work:
@@ -220,10 +221,20 @@ def _burndown_or_stop(root, eligibility, eligibility_stop):
     if eligibility_stop:
         return [], eligibility_stop
     EL = _load("veldo_runstatus_plan", ".veldo/plan.py").EL
+    # The store refusals of the Gate the burn-down reads through, named exactly as its decide names them.
+    store_refusals = tuple(getattr(eligibility, "refusal_types", ()))
     try:
         return _burndown(root, eligibility), None
     except EL.Stopped as stop:
         return [], stop.reason
+    except EL.Refused as refused:
+        return [], "refused:" + refused.code
+    except store_refusals as error:
+        return [], "refused:" + eligibility.refusal_code(error)
+    except Exception as error:  # noqa: BLE001 - a burn-down it cannot build is named, never a crash
+        # VELDO-0054 review: one malformed accepted record must not take the whole read model down;
+        # the stop names what failed and the rest of the model (runs, events, replication) is shown.
+        return [], "burndown_unanswerable:" + type(error).__name__
 
 
 def production_status(root=None, **kwargs):

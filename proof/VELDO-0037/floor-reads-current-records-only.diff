@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -624 +624 @@
+-        union = [path for record in records.values() for path in record['paths']]
++        union = [path for commit in commits if commit in records for path in records[commit]['paths']]

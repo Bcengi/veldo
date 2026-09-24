@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -587 +587 @@
+-        for cell in function.__closure__ or ():
++        for cell in ():

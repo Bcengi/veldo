@@ -1,0 +1,5 @@
+--- a/.veldo/control_document.py
++++ b/.veldo/control_document.py
+@@ -198 +198 @@
+-                    output.write(body)
++                    output.write(body.replace(b'\r\n', b'\n'))

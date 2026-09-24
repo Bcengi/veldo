@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -193 +193 @@
+-        regex += '[^/]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'
++        regex += '[^/\n]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'

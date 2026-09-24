@@ -1,0 +1,227 @@
+{
+  "completed": true,
+  "defect_observations": {
+    "incremental-records": {
+      "descendant-bounded": true,
+      "descendant-paths": [
+        "specs/VELDO-0002-base.md",
+        "specs/VELDO-0004-descendant.md"
+      ],
+      "enable-naming-lost": "wrong_repository",
+      "first-paths": [
+        "specs/VELDO-0002-base.md"
+      ],
+      "next": null,
+      "side-lost": true,
+      "side-paths": [
+        [
+          "specs/VELDO-0002-base.md",
+          "specs/VELDO-0009-first-side.md"
+        ],
+        [
+          "specs/VELDO-0002-base.md",
+          "specs/VELDO-0005-second-side.md",
+          "specs/VELDO-0009-first-side.md"
+        ]
+      ],
+      "union-equals-whole-history": true
+    }
+  },
+  "defect_rows_red": {
+    "aliases/records-hold-only-what-a-commit-adds": true
+  },
+  "failed_rows": [
+    "aliases/records-hold-only-what-a-commit-adds"
+  ],
+  "module_sha256": {
+    "control_alias.py": "8d877765f39ae541fbd5c0b9d300c1252aa84abfacb114e8999f7a4cb1858c98",
+    "control_readset.py": "491ba8a7be58cdaa58967142884d8c14a9494bbbb1d7812a4a710769631d12dc",
+    "control_store.py": "4c5229e50d0bef76063ac6dacff3a7532443d34508137ff738aa4e5cb251dd76"
+  },
+  "reviewed_commit": "7bd70d24a98011fdef0ffa02e791557231eef46c",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      true
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      true
+    ],
+    [
+      "aliases/owned-by-code-not-name",
+      true
+    ],
+    [
+      "aliases/floor-from-recorded-numbers",
+      true
+    ],
+    [
+      "aliases/records-hold-only-what-a-commit-adds",
+      false
+    ]
+  ],
+  "shims": {},
+  "suite_sha256": "3ef3fe120c6dbb3530b1f1b2510fc51d6cde477e424f37c85301fc0a222c31dd",
+  "veldo_history_floors": {
+    "DEC decisions/{alias}-{slug}.md": [
+      1,
+      1
+    ],
+    "N docs/{number}-{slug}.md": [
+      1,
+      1
+    ],
+    "PLAN plans/{alias}-{slug}.md": [
+      21,
+      21
+    ],
+    "VELDO proof/{alias}/README.md": [
+      124,
+      124
+    ],
+    "VELDO specs/{alias}-{slug}.md": [
+      133,
+      133
+    ],
+    "WARP specs/{alias}-{slug}.md": [
+      1712,
+      1712
+    ],
+    "X {alias}.md": [
+      1,
+      1
+    ]
+  },
+  "veldo_history_record_paths": [
+    932,
+    1056,
+    1153,
+    1592
+  ],
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}
