@@ -43,7 +43,7 @@
     true
    ]
   ],
-  "seconds": 2.632
+  "seconds": 2.624
  },
  "controls_green": true,
  "mutants": [
@@ -166,7 +166,7 @@
      true
     ]
    ],
-   "seconds": 2.618,
+   "seconds": 2.631,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   },
   {
@@ -229,7 +229,7 @@
      true
     ]
    ],
-   "seconds": 2.636,
+   "seconds": 2.63,
    "source_sha256": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
   },
   {
@@ -258,8 +258,7 @@
     "VELDO-0073 stale/key-and-configuration detail: a token naming another bot refuses as stale_configuration after getMe",
     "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration",
     "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
-    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept",
-    "VELDO-0073 stale/key-and-configuration detail: metrics and observations: counts, state and pending work, named refusals, no token or text"
+    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept"
    ],
    "diff": "proof/VELDO-0073/presentation-edge-bypasses-gate.diff",
    "failed_rows": [
@@ -317,7 +316,7 @@
      false
     ]
    ],
-   "seconds": 2.333,
+   "seconds": 2.366,
    "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
   },
   {
@@ -331,7 +330,7 @@
     "VELDO-0073 entry-points/enumerated"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "9c2c5036b387cee0c2efeb0b4b1e8e0502e758b4c036eac63115930f117f6364",
+   "mutant_sha256": "5700be6e39a4df3728217ce680abadc5d09859082dbe3219ff1489c80dbbf14a",
    "name": "entry-point-unlisted",
    "named_row_red": true,
    "named_rows": [
@@ -376,8 +375,8 @@
      true
     ]
    ],
-   "seconds": 2.62,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.634,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -389,7 +388,7 @@
     "VELDO-0073 activation/explicit-bound-operates"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "bb0911793516813985d0096f1de8b16f135a667d5ea0b78d28c4b7766e761bb2",
+   "mutant_sha256": "209b36ad95e5e5585f9fe01e0606090ee9eae8a4bd65d471bea749ca4d29dd14",
    "name": "steward-authorizes-owner-edge",
    "named_row_red": true,
    "named_rows": [
@@ -434,8 +433,8 @@
      true
     ]
    ],
-   "seconds": 2.631,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.628,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -447,7 +446,7 @@
     "VELDO-0073 activation/explicit-bound-operates"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "26aa20edef474574905da1bf835aaeef66bdddbab94f4cb7e4e89e20ae982153",
+   "mutant_sha256": "e8fa97f5a7fa248be8a60a48c138d9018f3e728862852ca4bf36d9c2d9f62d27",
    "name": "send-to-any-chat",
    "named_row_red": true,
    "named_rows": [
@@ -492,8 +491,8 @@
      true
     ]
    ],
-   "seconds": 2.623,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.631,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -517,8 +516,7 @@
     "VELDO-0073 stale/key-and-configuration detail: a token naming another bot refuses as stale_configuration after getMe",
     "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration",
     "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
-    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept",
-    "VELDO-0073 stale/key-and-configuration detail: metrics and observations: counts, state and pending work, named refusals, no token or text"
+    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept"
    ],
    "diff": "proof/VELDO-0073/production-acquisition-ungated.diff",
    "failed_rows": [
@@ -574,7 +572,7 @@
      false
     ]
    ],
-   "seconds": 2.124,
+   "seconds": 2.121,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -589,7 +587,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "6ac6747159ef128286c72b952f7b4339e4abcca46bad2508034b23c83331b8dd",
+   "mutant_sha256": "699abc83dffd5c418b306559bf306f3cb37a59c33d9e3e0602330a94d82a1937",
    "name": "fixture-evidence-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -634,8 +632,8 @@
      true
     ]
    ],
-   "seconds": 2.62,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.624,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -647,7 +645,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "75634e5e6de2850b2d7fe49f5517797cdc6950c177580b3ce876835941a764f4",
+   "mutant_sha256": "eb6b260aede4b0565dc7e9de00656b595bbe24ac11e99224a025de8cfd53a81c",
    "name": "tls-host-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -692,8 +690,8 @@
      true
     ]
    ],
-   "seconds": 2.625,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.628,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -705,7 +703,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "913b19ff04f6a2e8137695bf2ab25020fc6c79f97143fcc4e65a322ff36691f1",
+   "mutant_sha256": "5830bcc47e78acad2eefbaccd3bde28dcd816bffb99c1a393aa6b6b6942c9a08",
    "name": "trust-store-from-environment",
    "named_row_red": true,
    "named_rows": [
@@ -750,8 +748,8 @@
      true
     ]
    ],
-   "seconds": 3.123,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 3.127,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -763,7 +761,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "ad7373fa5078e861a184e2a5ac05f960b92d39a4fea8d56470879d5947ab7440",
+   "mutant_sha256": "d398f22c9142d5d1e08240073f43ad8ebe44240ae66c49354a451d89aba456e5",
    "name": "answer-not-the-platform-bytes",
    "named_row_red": true,
    "named_rows": [
@@ -808,8 +806,8 @@
      true
     ]
    ],
-   "seconds": 2.628,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.629,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -866,7 +864,7 @@
      true
     ]
    ],
-   "seconds": 2.627,
+   "seconds": 2.624,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -924,7 +922,7 @@
      true
     ]
    ],
-   "seconds": 2.627,
+   "seconds": 2.622,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -987,7 +985,7 @@
      true
     ]
    ],
-   "seconds": 2.629,
+   "seconds": 3.128,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -996,14 +994,16 @@
     "VELDO-0073 stop/halts-edge detail: a stopped edge sends nothing: a new decision is refused and the platform is not asked",
     "VELDO-0073 stop/halts-edge detail: a stopped edge accepts no answer: wake and acquisition refuse as edge_stopped",
     "VELDO-0073 stop/halts-edge detail: the doorbell refuses too",
-    "VELDO-0073 stop/halts-edge detail: no fresh authority: the pending requests stay pending, unanswered and unsettled"
+    "VELDO-0073 stop/halts-edge detail: no fresh authority: the pending requests stay pending, unanswered and unsettled",
+    "VELDO-0073 stale/key-and-configuration detail: a stale edge can still be stopped by the owner, and stays stopped"
    ],
    "diff": "proof/VELDO-0073/stop-ignored.diff",
    "failed_rows": [
-    "VELDO-0073 stop/halts-edge"
+    "VELDO-0073 stop/halts-edge",
+    "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "e38e27b530b3115399faf8f1ae17982f25c89cb7df4eb097b79f06b6c18850cc",
+   "mutant_sha256": "300bbba1c989aa9a03697e0df76deb9ea91c29add4fd875238c61b4739d8ac50",
    "name": "stop-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1045,11 +1045,11 @@
     ],
     [
      "VELDO-0073 stale/key-and-configuration",
-     true
+     false
     ]
    ],
-   "seconds": 2.625,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.621,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -1062,7 +1062,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "486f3e8cca6230a4e77d7c158bf719be0c4ec60567616b8c37735df40c0be236",
+   "mutant_sha256": "09774a8c9a3d5cfcfe0c5a5db3594254404b8084ea2f6768d7be05ae040f025c",
    "name": "bindings-not-compared",
    "named_row_red": true,
    "named_rows": [
@@ -1107,8 +1107,8 @@
      false
     ]
    ],
-   "seconds": 2.621,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.637,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -1120,7 +1120,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "bfbe953134195b17bc66b03e3b62b658d28374bb41c4d6327106fa21c057979a",
+   "mutant_sha256": "f0a898e57c968fd063538cd0e4359bc0c66ca74b17a199176f6dd9ce65f69c94",
    "name": "origin-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1165,8 +1165,8 @@
      false
     ]
    ],
-   "seconds": 2.628,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.62,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
    "by_assertion": true,
@@ -1223,7 +1223,7 @@
      false
     ]
    ],
-   "seconds": 3.126,
+   "seconds": 3.136,
    "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
   }
  ],
@@ -1268,7 +1268,7 @@
  },
  "noop": {
   "control_channel_activation.py": {
-   "copy_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7",
+   "copy_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1310,8 +1310,8 @@
      true
     ]
    ],
-   "seconds": 2.635,
-   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "seconds": 2.621,
+   "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   "control_channel_attribution.py": {
    "copy_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040",
@@ -1356,7 +1356,7 @@
      true
     ]
    ],
-   "seconds": 2.639,
+   "seconds": 2.623,
    "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
   },
   "control_channel_ingress.py": {
@@ -1402,7 +1402,7 @@
      true
     ]
    ],
-   "seconds": 2.629,
+   "seconds": 2.63,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   "control_channel_presentation.py": {
@@ -1448,7 +1448,7 @@
      true
     ]
    ],
-   "seconds": 2.629,
+   "seconds": 2.636,
    "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
   },
   "control_channel_projection.py": {
@@ -1494,7 +1494,7 @@
      true
     ]
    ],
-   "seconds": 2.622,
+   "seconds": 2.626,
    "source_sha256": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
   },
   "init_scaffold.py": {
@@ -1540,7 +1540,7 @@
      true
     ]
    ],
-   "seconds": 2.625,
+   "seconds": 2.634,
    "source_sha256": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
   },
   "request_doorbell.py": {
@@ -1586,13 +1586,13 @@
      true
     ]
    ],
-   "seconds": 2.625,
+   "seconds": 2.631,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 73",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 71.125,
+ "serial_seconds": 71.687,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py"
 }

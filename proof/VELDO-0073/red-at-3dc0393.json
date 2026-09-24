@@ -64,6 +64,7 @@
   "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration",
   "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
   "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept",
+  "VELDO-0073 stale/key-and-configuration detail: a stale edge can still be stopped by the owner, and stays stopped",
   "VELDO-0073 stale/key-and-configuration detail: metrics and observations: counts, state and pending work, named refusals, no token or text"
  ],
  "failed_rows": [
@@ -80,7 +81,7 @@
  "modules": {
   ".veldo/control_channel_activation.py": {
    "at_commit": null,
-   "now": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+   "now": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   ".veldo/control_channel_attribution.py": {
    "at_commit": "3072e86bb184c6ed36a5b6d324eccb3bd580765b1f3c8301bb68a85c87bd9f70",
@@ -147,7 +148,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.636,
+ "seconds": 1.141,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py",
  "tree": "git archive 3dc0393cc5dcf41e2532970f1f3f6f55db1e7817, unchanged; the current suite file run against it"
