@@ -6,12 +6,16 @@
         > proof/VELDO-0058/red-35be8ff.json
     python3 -B proof/VELDO-0058/red.py b370581 lander.py control_verification.py policy_check.py \
         > proof/VELDO-0058/red-b370581.json
+    python3 -B proof/VELDO-0058/red.py 57ec2b2 lander.py executor.py control_verification.py \
+        > proof/VELDO-0058/red-57ec2b2.json
 
 Module names after the commit choose which production anchors take that commit's bytes (verify.sh,
 lander.py and executor.py when none are named). The second record is the policy-source finding: at
 35be8ff the installed policy_check.py read the protected list from the candidate's own policy.yaml.
 The third is the range-base finding: at b370581 the installed policy computed its push range from the
-candidate workspace's own origin refs, and the candidate's state did not cover its refs.
+candidate workspace's own origin refs, and the candidate's state did not cover its refs. The fourth is
+the sibling-refs finding: at 57ec2b2 every candidate state bound every ref of its repository, so
+LiveLoop.gate over the caller's repository failed when a sibling worktree committed during the gate.
 
 At 932d9b0 scripts/verify.sh has no candidate mode (it verifies the checkout it lives in and writes
 .veldo/last_verify and .veldo/events.jsonl there), GitLandOps.gate runs the candidate's own

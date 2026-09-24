@@ -4290,13 +4290,27 @@ def cases():
     # AC2, the refs: the candidate's state leaves out its refs, so a ref moved during or after the gate
     # is not noticed; or leaves out a symbolic ref's target, so a retargeted origin/HEAD is not.
     gate_output('gate-output-state-without-refs', 'control_verification.py',
-                '    refs, head_target = _refs(root)\n',
-                '    refs, head_target = {}, None  # defect: the refs are not part of the state\n',
+                '    refs = _refs(root) if bind_refs else None\n',
+                '    refs = None  # defect: the refs are not part of the state\n',
                 'refs-bound')
     gate_output('gate-output-state-without-symref-targets', 'control_verification.py',
                 '"--format=%(refname)%00%(objectname)%00%(symref)"',
                 '"--format=%(refname)%00%(objectname)"',
                 'refs-bound')
+    # AC2, the ref binding is the caller's explicit input: LiveLoop binds the refs of the caller's own
+    # repository, so a sibling worktree's commit during its gate fails it; GitLandOps does not bind its
+    # workspace's refs, so a candidate that moves them during the gate is not refused.
+    gate_output('gate-output-live-loop-binds-refs', 'executor.py',
+                '                                                       bind_refs=False)\n',
+                '                                                       bind_refs=True)  # defect: the caller\'s refs are bound\n',
+                'live-loop-siblings')
+    gate_output('gate-output-land-does-not-bind-refs', 'lander.py',
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=True)\n',
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=False)'
+                '  # defect: the workspace\'s refs are not bound\n',
+                'refs-bound',
+                also=[('c["workspace"], c["commit"],\n                                               bind_refs=True)\n',
+                       'c["workspace"], c["commit"],\n                                               bind_refs=False)\n')])
     # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
     # further defects, each against the one suite 67 row it names; anchors are exact text in the
     # frontier and work loop the suite installs.
