@@ -33,6 +33,8 @@ ENGINE_GLOBS = (
     "bin/veldo",
     ".veldo/*.py",
     ".veldo/*.yaml",
+    # VELDO-0045: the non-code runtime assets (license and provenance records) init lays under .veldo.
+    "runtime/*",
     ".github/workflows/veldo-gate.yml",
     "specs/TEMPLATE.md",
     "plans/TEMPLATE.md",
