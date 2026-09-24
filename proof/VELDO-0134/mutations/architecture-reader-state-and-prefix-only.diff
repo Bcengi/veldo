@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1046 +1046,2 @@
+-        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):
++        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'
++                         or not str(record.get('digest')).startswith('sha256:')):  # defect: the reader before the schema

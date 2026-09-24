@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -498 +498 @@
+-            if architecture_entity(eid, kinds) and not architecture_writer(command["operation"]):
++            if False:  # defect: only a named write parameter is checked

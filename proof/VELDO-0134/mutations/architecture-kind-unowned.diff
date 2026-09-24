@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -369 +369 @@
+-    return (isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)) or ARCHITECTURE_KIND in kinds
++    return isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)  # defect: the kind is unowned

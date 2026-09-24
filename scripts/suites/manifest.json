@@ -797,6 +797,15 @@
    ],
    "regions": "One normalized intake command from a Telegram message and an authenticated API request, proposals only, an inbox proposal and a question when the project is unresolved, text kept as written, follow-up clarification, authenticated allowed sources only and one proposal per source request",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal, edge and API request signatures, the VELDO-0066 Acquirer and VELDO-0065 presentation edge over a loopback Bot API, and a loopback ticket host that records requests. Writes only temporary fixtures."
+  },
+  {
+   "name": "68_veldo_0134_acceptance",
+   "file": "68_veldo_0134_acceptance.py",
+   "requires": [
+    "68_veldo_0134_acceptance"
+   ],
+   "regions": "The architecture record's one writer: a signed owner accept command over the bytes at a commit, the record schema the writer and the Gate are held to, replacement as a new version, and no other store operation or worker input writing it",
+   "requires_note": "Uses only shared ROOT and expect. Real Git (a repository with a commit per contract state and a decoy repository), real SQLite stores seeded with membership and OpenSSH keys, commands signed through ssh-keygen -Y sign, the installed validator, the VELDO-0053 Gate and the operating system's sha256sum."
   }
  ]
 }

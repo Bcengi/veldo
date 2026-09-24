@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -223 +223 @@
+-        raise Refused('missing_evidence:commit', 'no commit %s in the bound repository' % commit)
++        return None  # defect: a missing commit reads as a commit with no contract

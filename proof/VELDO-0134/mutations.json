@@ -1,0 +1,551 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 134 --jobs 4 --diff-dir proof/VELDO-0134/mutations",
+ "summary": {
+  "mutations_rejected": 36,
+  "green_suites": {
+   "68_veldo_0134_acceptance.py": 53
+  }
+ },
+ "mutations": [
+  {
+   "mutation": "architecture-agent-run-signs",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/signers"
+   ],
+   "declared_falsifier_of": "AC1",
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/signers",
+    "VELDO-0134 acceptance/worker-inputs"
+   ],
+   "diff": "mutations/architecture-agent-run-signs.diff"
+  },
+  {
+   "mutation": "architecture-any-role-signs",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/signers"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/signers"
+   ],
+   "diff": "mutations/architecture-any-role-signs.diff"
+  },
+  {
+   "mutation": "architecture-scope-unchecked",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/signers"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/signers"
+   ],
+   "diff": "mutations/architecture-scope-unchecked.diff"
+  },
+  {
+   "mutation": "architecture-signature-unverified",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/signature"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/signature"
+   ],
+   "diff": "mutations/architecture-signature-unverified.diff"
+  },
+  {
+   "mutation": "architecture-revoked-key-verifies",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/signature"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/signature"
+   ],
+   "diff": "mutations/architecture-revoked-key-verifies.diff"
+  },
+  {
+   "mutation": "architecture-digest-unchecked",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/evidence"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/evidence"
+   ],
+   "diff": "mutations/architecture-digest-unchecked.diff"
+  },
+  {
+   "mutation": "architecture-missing-commit-as-absent",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/evidence"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/evidence",
+    "VELDO-0134 acceptance/worker-inputs"
+   ],
+   "diff": "mutations/architecture-missing-commit-as-absent.diff"
+  },
+  {
+   "mutation": "architecture-invalid-structure-accepted",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/contract-kinds"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/contract-kinds",
+    "VELDO-0134 acceptance/worker-inputs"
+   ],
+   "diff": "mutations/architecture-invalid-structure-accepted.diff"
+  },
+  {
+   "mutation": "architecture-writer-policy-decides",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/contract-kinds"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/evidence",
+    "VELDO-0134 acceptance/contract-kinds"
+   ],
+   "diff": "mutations/architecture-writer-policy-decides.diff"
+  },
+  {
+   "mutation": "architecture-nonce-not-consumed",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/replay-and-coordinates"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/first",
+    "VELDO-0134 acceptance/replay-and-coordinates"
+   ],
+   "diff": "mutations/architecture-nonce-not-consumed.diff"
+  },
+  {
+   "mutation": "architecture-coordinates-unchecked",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/replay-and-coordinates"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/replay-and-coordinates"
+   ],
+   "diff": "mutations/architecture-coordinates-unchecked.diff"
+  },
+  {
+   "mutation": "architecture-first-nonce-rewritten",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/first"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/first"
+   ],
+   "diff": "mutations/architecture-first-nonce-rewritten.diff"
+  },
+  {
+   "mutation": "architecture-gate-policy-decides",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "acceptance/first",
+    "acceptance/worker-inputs"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/first",
+    "VELDO-0134 acceptance/worker-inputs"
+   ],
+   "diff": "mutations/architecture-gate-policy-decides.diff"
+  },
+  {
+   "mutation": "architecture-reader-open-mapping",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/schema-oracle"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/schema-oracle"
+   ],
+   "diff": "mutations/architecture-reader-open-mapping.diff"
+  },
+  {
+   "mutation": "architecture-reader-uppercase-hex",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/schema-oracle"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/schema-oracle"
+   ],
+   "diff": "mutations/architecture-reader-uppercase-hex.diff"
+  },
+  {
+   "mutation": "architecture-reader-state-and-prefix-only",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "acceptance/schema-oracle"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/schema-oracle"
+   ],
+   "diff": "mutations/architecture-reader-state-and-prefix-only.diff"
+  },
+  {
+   "mutation": "architecture-writer-accepted-by-command",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/writer-schema"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/first",
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-crlf",
+    "VELDO-0134 acceptance/raw-digest-no-final-newline",
+    "VELDO-0134 acceptance/raw-digest-bom",
+    "VELDO-0134 acceptance/version-history"
+   ],
+   "diff": "mutations/architecture-writer-accepted-by-command.diff"
+  },
+  {
+   "mutation": "architecture-writer-superseded-rewritten",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/writer-schema"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-no-final-newline",
+    "VELDO-0134 acceptance/raw-digest-bom",
+    "VELDO-0134 acceptance/version-history"
+   ],
+   "diff": "mutations/architecture-writer-superseded-rewritten.diff"
+  },
+  {
+   "mutation": "architecture-digest-normalizes-line-endings",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/raw-digest-crlf"
+   ],
+   "declared_falsifier_of": "AC2",
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-crlf",
+    "VELDO-0134 acceptance/version-history",
+    "VELDO-0134 acceptance/replacement-refusals",
+    "VELDO-0134 acceptance/previous-bytes"
+   ],
+   "diff": "mutations/architecture-digest-normalizes-line-endings.diff"
+  },
+  {
+   "mutation": "architecture-digest-universal-newlines",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/raw-digest-crlf"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-crlf",
+    "VELDO-0134 acceptance/version-history",
+    "VELDO-0134 acceptance/replacement-refusals",
+    "VELDO-0134 acceptance/previous-bytes"
+   ],
+   "diff": "mutations/architecture-digest-universal-newlines.diff"
+  },
+  {
+   "mutation": "architecture-digest-adds-final-newline",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/raw-digest-no-final-newline"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-no-final-newline"
+   ],
+   "diff": "mutations/architecture-digest-adds-final-newline.diff"
+  },
+  {
+   "mutation": "architecture-digest-one-final-newline",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/raw-digest-no-final-newline"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-no-final-newline"
+   ],
+   "diff": "mutations/architecture-digest-one-final-newline.diff"
+  },
+  {
+   "mutation": "architecture-digest-strips-bom",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/raw-digest-bom"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-bom"
+   ],
+   "diff": "mutations/architecture-digest-strips-bom.diff"
+  },
+  {
+   "mutation": "architecture-digest-decodes-utf8-sig",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/raw-digest-bom"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-bom"
+   ],
+   "diff": "mutations/architecture-digest-decodes-utf8-sig.diff"
+  },
+  {
+   "mutation": "architecture-replacement-in-place",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/version-history"
+   ],
+   "declared_falsifier_of": "AC3",
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-no-final-newline",
+    "VELDO-0134 acceptance/raw-digest-bom",
+    "VELDO-0134 acceptance/version-history"
+   ],
+   "diff": "mutations/architecture-replacement-in-place.diff"
+  },
+  {
+   "mutation": "architecture-superseded-entries-edited",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/version-history"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/writer-schema",
+    "VELDO-0134 acceptance/raw-digest-bom",
+    "VELDO-0134 acceptance/version-history"
+   ],
+   "diff": "mutations/architecture-superseded-entries-edited.diff"
+  },
+  {
+   "mutation": "architecture-current-digest-reaccepted",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/replacement-refusals"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/version-history",
+    "VELDO-0134 acceptance/replacement-refusals"
+   ],
+   "diff": "mutations/architecture-current-digest-reaccepted.diff"
+  },
+  {
+   "mutation": "architecture-changed-retry-replayed",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/replacement-refusals"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/replacement-refusals"
+   ],
+   "diff": "mutations/architecture-changed-retry-replayed.diff"
+  },
+  {
+   "mutation": "architecture-superseded-bytes-accepted",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "acceptance/previous-bytes"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/previous-bytes"
+   ],
+   "diff": "mutations/architecture-superseded-bytes-accepted.diff"
+  },
+  {
+   "mutation": "architecture-first-version-accepted",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "acceptance/previous-bytes"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/schema-oracle",
+    "VELDO-0134 acceptance/raw-digest-no-final-newline",
+    "VELDO-0134 acceptance/raw-digest-bom",
+    "VELDO-0134 acceptance/previous-bytes"
+   ],
+   "diff": "mutations/architecture-first-version-accepted.diff"
+  },
+  {
+   "mutation": "architecture-generic-upsert-writes",
+   "module": ".veldo/control_store.py",
+   "target_rows": [
+    "acceptance/generic-write"
+   ],
+   "declared_falsifier_of": "AC4",
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/generic-write"
+   ],
+   "diff": "mutations/architecture-generic-upsert-writes.diff"
+  },
+  {
+   "mutation": "architecture-generic-retire-writes",
+   "module": ".veldo/control_store.py",
+   "target_rows": [
+    "acceptance/generic-write"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/generic-write"
+   ],
+   "diff": "mutations/architecture-generic-retire-writes.diff"
+  },
+  {
+   "mutation": "architecture-kind-unowned",
+   "module": ".veldo/control_store.py",
+   "target_rows": [
+    "acceptance/generic-write"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/generic-write"
+   ],
+   "diff": "mutations/architecture-kind-unowned.diff"
+  },
+  {
+   "mutation": "architecture-later-operation-writes",
+   "module": ".veldo/control_store.py",
+   "target_rows": [
+    "acceptance/generic-write"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/generic-write"
+   ],
+   "diff": "mutations/architecture-later-operation-writes.diff"
+  },
+  {
+   "mutation": "architecture-repository-from-environment",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/worker-inputs"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/worker-inputs"
+   ],
+   "diff": "mutations/architecture-repository-from-environment.diff"
+  },
+  {
+   "mutation": "architecture-git-inherits-environment",
+   "module": ".veldo/control_architecture.py",
+   "target_rows": [
+    "acceptance/worker-inputs"
+   ],
+   "declared_falsifier_of": null,
+   "baseline": "green",
+   "assertions": 53,
+   "red_rows": [
+    "VELDO-0134 acceptance/worker-inputs"
+   ],
+   "diff": "mutations/architecture-git-inherits-environment.diff"
+  }
+ ]
+}

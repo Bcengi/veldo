@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1043 +1043,2 @@
+-                        'digest': record.get('digest') if isinstance(record, dict) else None}
++                        'digest': (record.get('superseded') or [record])[0].get('digest')
++                        if isinstance(record, dict) else None}  # defect: the first version stays accepted

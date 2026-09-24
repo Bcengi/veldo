@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -399 +399 @@
+-        if current is not None and current['data']['digest'] == command['digest']:
++        if False:  # defect: the current bytes are accepted again

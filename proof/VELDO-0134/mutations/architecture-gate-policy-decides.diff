@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1057 +1057 @@
+-            load, parsed = snapshot.contract(self.workspace, True if accepted else None)
++            load, parsed = snapshot.contract(self.workspace, None)  # defect: the policy decides under a record

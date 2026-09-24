@@ -1474,9 +1474,11 @@ def cases():
                  "        if decision.get('architecture'):\n",
                  "        if False:  # defect: the decision's architecture is not in its observation\n",
                  ['observations'])
+    # VELDO-0134 moved the record check to the schema: the defect now reads any state as accepted there.
     architecture('architecture-unaccepted-record-accepted', 'control_eligibility.py',
-                 "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'",
-                 "        if accepted and (not isinstance(record, dict)",
+                 "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):\n",
+                 "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'),\n"
+                 "                                           dict(record, state='accepted') if isinstance(record, dict) else record):\n",
                  ['record-states'])
     # Review fix: a Gate with no workspace never passes, record or no record.
     architecture('architecture-store-only-passes', 'control_eligibility.py',
@@ -4076,6 +4078,144 @@ def cases():
     offers('offers-dispatch-not-joined', '        if unit.get("floor"):\n            self._observe_dispatch(unit, result)\n',
            '        if False:  # defect: no dispatch is joined to the offer it came from\n'
            '            self._observe_dispatch(unit, result)\n', 'observations', module='work.py')
+    # VELDO-0134: the architecture record's one writer. Each declared falsifier, a second and different
+    # defect of its row, and more where one row covers several refusals.
+    def acceptance(name, module, old, new, rows, also=()):
+        add(134, name, '68_veldo_0134_acceptance.py', module, old, new, ['acceptance/' + r for r in rows], also)
+
+    AR134 = 'control_architecture.py'
+    acceptance('architecture-agent-run-signs', AR134,
+               "        if entry.get('principal_type') != SIGNER_TYPE:\n",
+               "        if entry.get('principal_type') not in (SIGNER_TYPE, 'agent_run'):  # defect: an agent_run member signs\n",
+               ['signers'])
+    acceptance('architecture-any-role-signs', AR134,
+               "        if SIGNER_ROLE not in (entry.get('roles') or []):\n",
+               "        if not (entry.get('roles') or []):  # defect: any role accepts\n", ['signers'])
+    acceptance('architecture-scope-unchecked', AR134,
+               "        if not self.membership.scope_covers(entry.get('scope'), self.ids['repository_uuid']):\n",
+               "        if False:  # defect: the membership scope is never checked\n", ['signers'])
+    acceptance('architecture-signature-unverified', AR134,
+               "        if not verified:\n            raise Refused('not_authorized:signature'",
+               "        if False:  # defect: the verdict is ignored\n            raise Refused('not_authorized:signature'",
+               ['signature'])
+    acceptance('architecture-revoked-key-verifies', AR134,
+               "        key = self.AC.active_key(state['keyring'], principal, now)\n",
+               "        key = next((k for k in state['keyring'] if k.get('principal') == principal), None)  # defect: revocation ignored\n",
+               ['signature'])
+    acceptance('architecture-digest-unchecked', AR134,
+               "        if entry is not None and entry[2] is not None and raw_digest(entry[2]) != command['digest']:\n",
+               "        if False:  # defect: the stated digest is never compared with the bytes\n", ['evidence'],
+               also=[("        if parsed != digest:\n", "        if False:  # defect\n")])
+    acceptance('architecture-missing-commit-as-absent', AR134,
+               "        raise Refused('missing_evidence:commit', 'no commit %s in the bound repository' % commit)\n",
+               "        return None  # defect: a missing commit reads as a commit with no contract\n", ['evidence'])
+    acceptance('architecture-invalid-structure-accepted', AR134,
+               "        if load.refused:\n",
+               "        if load.refused and load.kind != 'invalid_structure':  # defect: the validator's verdict is ignored\n",
+               ['contract-kinds'])
+    acceptance('architecture-writer-policy-decides', AR134,
+               "                load, parsed = validate.entry_contract(str(root), True, arch=validator)\n",
+               "                load, parsed = validate.entry_contract(str(root), None, arch=validator)  # defect: absence is optional\n",
+               ['contract-kinds'])
+    acceptance('architecture-nonce-not-consumed', AR134,
+               "        if self.conn.execute('SELECT 1 FROM nonces WHERE nonce=?', (command['nonce'],)).fetchone():\n",
+               "        if False:  # defect: the signed nonce is not the one consumed\n", ['replay-and-coordinates'],
+               also=[("                      nonce=command['nonce'])\n",
+                      "                      nonce=command['nonce'] + ':' + command['command_id'])\n")])
+    acceptance('architecture-coordinates-unchecked', AR134,
+               "        if any(command[k] != v for k, v in self.ids.items()):\n",
+               "        if False:  # defect: the command's coordinates are not compared\n", ['replay-and-coordinates'])
+    acceptance('architecture-first-nonce-rewritten', AR134,
+               "                      nonce=command['nonce'])\n",
+               "                      nonce='consumed-' + command['nonce'])  # defect: another nonce is consumed\n", ['first'])
+    acceptance('architecture-gate-policy-decides', 'control_eligibility.py',
+               "            load, parsed = snapshot.contract(self.workspace, True if accepted else None)\n",
+               "            load, parsed = snapshot.contract(self.workspace, None)  # defect: the policy decides under a record\n",
+               ['first', 'worker-inputs'])
+    acceptance('architecture-reader-open-mapping', AR134,
+               "    problems.extend('record carries unknown field %s' % f for f in extra)\n", '', ['schema-oracle'])
+    acceptance('architecture-reader-uppercase-hex', AR134,
+               "_DIGEST = re.compile(r'sha256:[0-9a-f]{64}\\Z')\n",
+               "_DIGEST = re.compile(r'sha256:[0-9a-fA-F]{64}\\Z')  # defect: uppercase hex is a digest\n", ['schema-oracle'])
+    acceptance('architecture-reader-state-and-prefix-only', 'control_eligibility.py',
+               "        if accepted and AR.record_problems(item['id'], (item.get('value') or {}).get('kind'), record):\n",
+               "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'\n"
+               "                         or not str(record.get('digest')).startswith('sha256:')):  # defect: the reader before the schema\n",
+               ['schema-oracle'])
+    acceptance('architecture-writer-accepted-by-command', AR134,
+               "source=source, accepted_by=params['principal'],\n                        command_id",
+               "source=source, accepted_by=params['command_id'],  # defect\n                        command_id",
+               ['writer-schema'])
+    acceptance('architecture-writer-superseded-rewritten', AR134,
+               "superseded=list(prior['superseded']) + [_entry_of(prior)])",
+               "superseded=list(prior['superseded']) + [dict(_entry_of(prior), command_id=params['command_id'])])",
+               ['writer-schema'])
+    RAW = "    return 'sha256:' + hashlib.sha256(body).hexdigest()\n"
+    for name, hashed, row in [
+            ('architecture-digest-normalizes-line-endings', "body.replace(b'\\r\\n', b'\\n')", 'raw-digest-crlf'),
+            ('architecture-digest-universal-newlines',
+             "__import__('io').TextIOWrapper(__import__('io').BytesIO(body), encoding='utf-8', errors='surrogateescape', "
+             "newline=None).read().encode('utf-8', 'surrogateescape')", 'raw-digest-crlf'),
+            ('architecture-digest-adds-final-newline', "body if body.endswith(b'\\n') else body + b'\\n'",
+             'raw-digest-no-final-newline'),
+            ('architecture-digest-one-final-newline', "body.rstrip(b'\\n') + b'\\n'", 'raw-digest-no-final-newline'),
+            ('architecture-digest-strips-bom', "body[3:] if body.startswith(b'\\xef\\xbb\\xbf') else body", 'raw-digest-bom'),
+            ('architecture-digest-decodes-utf8-sig',
+             "body.decode('utf-8-sig', 'surrogateescape').encode('utf-8', 'surrogateescape')", 'raw-digest-bom')]:
+        acceptance(name, AR134, RAW, "    return 'sha256:' + hashlib.sha256(%s).hexdigest()  # defect\n" % hashed, [row])
+    acceptance('architecture-replacement-in-place', AR134,
+               "            data = dict(prior, contract_version=version + 1, digest=params['digest'], source=source, "
+               "accepted_by=params['principal'], command_id=params['command_id'], superseded=list(prior['superseded']) "
+               "+ [_entry_of(prior)])\n",
+               "            data = dict(prior, digest=params['digest'], source=source, accepted_by=params['principal'], "
+               "command_id=params['command_id'])  # defect: the current entry is overwritten in place\n",
+               ['version-history'])
+    acceptance('architecture-superseded-entries-edited', AR134,
+               "superseded=list(prior['superseded']) + [_entry_of(prior)])",
+               "superseded=[dict(e, accepted_by=params['principal'] + '-edited') for e in prior['superseded']] "
+               "+ [_entry_of(prior)])  # defect: earlier entries are rewritten",
+               ['version-history'])
+    acceptance('architecture-current-digest-reaccepted', AR134,
+               "        if current is not None and current['data']['digest'] == command['digest']:\n",
+               "        if False:  # defect: the current bytes are accepted again\n", ['replacement-refusals'])
+    acceptance('architecture-changed-retry-replayed', AR134,
+               "            if signed not in json.loads(prior[0]):\n",
+               "            if False:  # defect: a changed retry is answered as the committed command\n",
+               ['replacement-refusals'])
+    acceptance('architecture-superseded-bytes-accepted', 'control_eligibility.py',
+               "        elif accepted and parsed != accepted['digest']:\n",
+               "        elif accepted and parsed != accepted['digest'] and parsed not in [\n"
+               "                e.get('digest') for e in record.get('superseded', [])]:  # defect: replaced bytes pass\n",
+               ['previous-bytes'])
+    acceptance('architecture-first-version-accepted', 'control_eligibility.py',
+               "                        'digest': record.get('digest') if isinstance(record, dict) else None}\n",
+               "                        'digest': (record.get('superseded') or [record])[0].get('digest')\n"
+               "                        if isinstance(record, dict) else None}  # defect: the first version stays accepted\n",
+               ['previous-bytes'])
+    STORE134 = 'control_store.py'
+    WRITER = '    return operation == ARCHITECTURE_OPERATION\n'
+    acceptance('architecture-generic-upsert-writes', STORE134, WRITER,
+               '    return operation in (ARCHITECTURE_OPERATION, "upsert_entity")  # defect: the generic upsert writes it\n',
+               ['generic-write'])
+    acceptance('architecture-generic-retire-writes', STORE134, WRITER,
+               '    return operation in (ARCHITECTURE_OPERATION, "retire_entity")  # defect: the generic retire writes it\n',
+               ['generic-write'])
+    acceptance('architecture-kind-unowned', STORE134,
+               '    return (isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)) or ARCHITECTURE_KIND in kinds\n',
+               '    return isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)  # defect: the kind is unowned\n',
+               ['generic-write'])
+    acceptance('architecture-later-operation-writes', STORE134,
+               '            if architecture_entity(eid, kinds) and not architecture_writer(command["operation"]):\n',
+               '            if False:  # defect: only a named write parameter is checked\n', ['generic-write'])
+    acceptance('architecture-repository-from-environment', AR134,
+               "        repo = self.store.bound_repository(self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])\n",
+               "        repo = __import__('os').environ.get('VELDO_ARCHITECTURE_REPOSITORY') or self.store.bound_repository(\n"
+               "            self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])  # defect: the environment names it\n",
+               ['worker-inputs'])
+    acceptance('architecture-git-inherits-environment', AR134,
+               "        return _git_process.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)\n",
+               "        return subprocess.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)  # defect\n",
+               ['worker-inputs'])
     return result
 
 

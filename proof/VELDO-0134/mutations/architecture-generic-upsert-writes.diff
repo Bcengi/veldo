@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -363 +363 @@
+-    return operation == ARCHITECTURE_OPERATION
++    return operation in (ARCHITECTURE_OPERATION, "upsert_entity")  # defect: the generic upsert writes it

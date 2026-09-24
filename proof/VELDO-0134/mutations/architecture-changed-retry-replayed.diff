@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -383 +383 @@
+-            if signed not in json.loads(prior[0]):
++            if False:  # defect: a changed retry is answered as the committed command

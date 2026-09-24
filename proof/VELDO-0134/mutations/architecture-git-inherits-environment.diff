@@ -1,0 +1,5 @@
+--- a/.veldo/control_architecture.py
++++ b/.veldo/control_architecture.py
+@@ -213 +213 @@
+-        return _git_process.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)
++        return subprocess.run(['git', '-C', str(repo)] + list(args), capture_output=True, timeout=60)  # defect
