@@ -122,6 +122,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the canonical gate runs against a landing candidate and writes its stamp, its gate
+  events and its review-event reconciliation to a trusted sink outside the candidate, never into the
+  candidate's tracked tree. GitLandOps.gate and LiveLoop.gate each produce an external trusted
+  observation that binds the exact candidate commit and the verification that ran, with the tree
+  unchanged after the run. The enforcement and policy process that judges the candidate is the
+  installed one, not code from the candidate, and a valid candidate verifies without its own receipt
+  being added to its tree. The owner approved changing scripts/verify.sh for this (Telegram 29068
+  asked, 29069 "Yes verify", 2026-09-24).
+- Threat model: candidate code that writes its own stamp or events into its tree, replaces the
+  installed enforcement or policy process, changes the tree during the run, or passes without an
+  observation bound to its exact commit; a missing or partial gate result read as success. The
+  owner's account, the installed engine and Git are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); gate process
+  kill qualification (Release 2, see History); a hostile gate process reaching the caller through the
+  same account (the same-account class filed by VELDO-0040 and VELDO-0067); files planted in the
+  installed directory.
+
 ## Notes
 
 All existing trusted gate-output, installed policy and post-run equality obligations remain.
