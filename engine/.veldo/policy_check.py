@@ -45,6 +45,17 @@ def policy_source():
     """The policy.yaml this run reads: POLICY when set, else the subject root's own."""
     return Path(POLICY) if POLICY is not None else ROOT / ".veldo" / "policy.yaml"
 
+
+# The range BASE, an input separate from the subject's own refs (VELDO-0058 AC3). Unset (None), the
+# base of "what is this push" is computed from the subject root's refs exactly as _range_specs
+# describes, so an ordinary run is unchanged. The installed-policy runner
+# (control_verification._policy_main) sets it to the trunk commit the lander synced and gated against:
+# a candidate whose code runs inside the gate can move its own refs/remotes/origin/main to HEAD, and a
+# range computed from those refs is then empty, so a protected change would land with no approval.
+# When set, every range read is exactly BASE..HEAD, and one that Git cannot answer is an error, never
+# an empty range.
+BASE = None
+
 # The proof-corpus enumeration (WARP-0727): the one owner of what a corpus path is, shared
 # with .veldo/events.py and .veldo/validate.py. A private glob here would be a THIRD spelling
 # of one set, which is the defect that module exists to make unreachable.
@@ -96,6 +107,8 @@ def _range_specs():
     guess makes the three agree. The guess stays last, for a repository with no origin at all, but
     it is now the exception rather than the thing that answers whenever tracking is not configured.
     """
+    if BASE is not None:
+        return [str(BASE) + "..HEAD"]
     specs = ["@{upstream}..HEAD"]
     for ref in ("origin/HEAD", "origin/main"):
         r = _git_process.run(["git", "rev-parse", "--verify", "--quiet", ref],
@@ -113,6 +126,8 @@ def changed_files():
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
             return [f for f in r.stdout.splitlines() if f]
+    if BASE is not None:
+        raise RuntimeError("the push range %s..HEAD cannot be read" % BASE)
     return []
 
 
@@ -129,6 +144,8 @@ def push_range_commits():
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
             return [c for c in r.stdout.splitlines() if c]
+    if BASE is not None:
+        raise RuntimeError("the push range %s..HEAD cannot be read" % BASE)
     return []
 
 
