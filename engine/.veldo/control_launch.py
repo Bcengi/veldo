@@ -751,7 +751,7 @@ class Receiver:
         group, watch = getattr(worker, 'group', None), getattr(worker, 'heartbeat', None)
         stop = C.Stop(group, worker.pid, *self._graces()) if group is not None else None
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
-        settle = None
+        settle, emptied = None, (None, None)
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
         poller = select.poll()
         poller.register(output, select.POLLIN)
@@ -778,7 +778,7 @@ class Receiver:
                 begin('requested')
             while True:
                 if code is not None and (group is None or not group.populated()):
-                    empty = True
+                    empty, emptied = True, (time.time(), time.monotonic())
                     break
                 if stop is not None and stop.stage == 'abandoned':
                     empty = False
@@ -848,8 +848,7 @@ class Receiver:
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
                             'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
                                         'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),
-                            'empty_at': time.time() if empty else None,
-                            'empty_monotonic': time.monotonic() if empty else None, 'result': result,
+                            'empty_at': emptied[0], 'empty_monotonic': emptied[1], 'result': result,
                             'group': group.report() if group is not None else None,
                             'heartbeat': watch.summary() if watch is not None else None}
         if group is not None and empty:
