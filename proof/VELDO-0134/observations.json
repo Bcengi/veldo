@@ -1,0 +1,548 @@
+{
+ "failed": 0,
+ "observed": {
+  "authority_status": [
+   {
+    "accepted": 1,
+    "contract_version": 1,
+    "digest": "sha256:e0f2cd2490bdd278ee2b3252673df5072e270ad5cf4285f25183470be40de02e",
+    "refusals": {},
+    "refused": 0,
+    "repository_uuid": "repository-134"
+   },
+   {
+    "accepted": 1,
+    "contract_version": 1,
+    "digest": "sha256:e0f2cd2490bdd278ee2b3252673df5072e270ad5cf4285f25183470be40de02e",
+    "refusals": {},
+    "refused": 0,
+    "repository_uuid": "repository-134"
+   },
+   {
+    "accepted": 0,
+    "contract_version": null,
+    "digest": null,
+    "refusals": {
+     "not_authorized:principal_type": 1
+    },
+    "refused": 1,
+    "repository_uuid": "repository-134"
+   }
+  ],
+  "contract_kinds": {
+   "absent": "missing_evidence:contract",
+   "list": "invalid_contract:parse_failure",
+   "outside": "invalid_contract:parse_failure",
+   "symlink": "invalid_contract:unreadable",
+   "tree": "invalid_contract:unreadable",
+   "wrong_fields": "invalid_contract:invalid_structure"
+  },
+  "evidence": {
+   "a tree, not a commit": "missing_evidence:commit",
+   "abbreviated commit": "invalid_input:commit",
+   "commit that does not exist": "missing_evidence:commit",
+   "commit with no contract": "missing_evidence:contract",
+   "digest of other bytes": "invalid_input:digest_mismatch",
+   "uppercase commit": "invalid_input:commit"
+  },
+  "first": {
+   "gate": [
+    [],
+    [
+     "missing_evidence:architecture/required_absence"
+    ],
+    true
+   ],
+   "problems": [],
+   "result": "accepted"
+  },
+  "generic_write": {
+   "record_effect architecture:repository-134": "entity_owned",
+   "record_effect architecture:repository-new": "entity_owned",
+   "record_receipt architecture:repository-134": "entity_owned",
+   "record_receipt architecture:repository-new": "entity_owned",
+   "record_receipt shadow:architecture": "entity_owned",
+   "reserve architecture:repository-134": "entity_owned",
+   "reserve architecture:repository-new": "entity_owned",
+   "retire_entity architecture:repository-134": "entity_owned",
+   "retire_entity architecture:repository-new": "entity_owned",
+   "retire_entity shadow:architecture": "entity_owned",
+   "suite_later_write architecture:repository-134": "entity_owned",
+   "suite_later_write architecture:repository-new": "entity_owned",
+   "suite_later_write shadow:architecture": "entity_owned",
+   "upsert_entity architecture:repository-134": "entity_owned",
+   "upsert_entity architecture:repository-new": "entity_owned",
+   "upsert_entity shadow:architecture": "entity_owned"
+  },
+  "history": [
+   {
+    "refused": {
+     "a changed retry": "command_content_conflict",
+     "a replaced version that is not current": "stale_subject",
+     "none when a record exists": "stale_subject",
+     "the digest already current": "invalid_input:current_digest"
+    },
+    "replay": "replayed",
+    "result": "accepted",
+    "step": 1
+   },
+   {
+    "refused": {
+     "a changed retry": "command_content_conflict",
+     "a replaced version that is not current": "stale_subject",
+     "none when a record exists": "stale_subject",
+     "the digest already current": "invalid_input:current_digest"
+    },
+    "replay": "replayed",
+    "result": "replaced",
+    "step": 2
+   },
+   {
+    "refused": {
+     "a changed retry": "command_content_conflict",
+     "a replaced version that is not current": "stale_subject",
+     "none when a record exists": "stale_subject",
+     "the digest already current": "invalid_input:current_digest"
+    },
+    "replay": "replayed",
+    "result": "replaced",
+    "step": 3
+   }
+  ],
+  "raised": [],
+  "replay": {
+   "another domain": "invalid_input:coordinates",
+   "another repository": "invalid_input:coordinates",
+   "another store": "invalid_input:coordinates",
+   "consumed nonce": "nonce_consumed"
+  },
+  "schema_oracle": {
+   "fields": [
+    "accepted_by",
+    "command_id",
+    "contract_version",
+    "digest",
+    "repository_uuid",
+    "schema",
+    "source",
+    "state",
+    "superseded"
+   ],
+   "judged": {
+    "accepted_by: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "accepted_by: not a string #0": [
+     "missing_authority:architecture"
+    ],
+    "accepted_by: not a string #1": [
+     "missing_authority:architecture"
+    ],
+    "command_id: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "command_id: not a string #0": [
+     "missing_authority:architecture"
+    ],
+    "command_id: not a string #1": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: a boolean #0": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: negative #0": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: not an integer #0": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: not an integer #1": [
+     "missing_authority:architecture"
+    ],
+    "contract_version: zero #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: another prefix #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: another prefix #1": [
+     "missing_authority:architecture"
+    ],
+    "digest: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: no prefix #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: not a string #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: uppercase hex #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: wrong length #0": [
+     "missing_authority:architecture"
+    ],
+    "digest: wrong length #1": [
+     "missing_authority:architecture"
+    ],
+    "entity kind: architecture": [
+     "missing_authority:architecture"
+    ],
+    "entity kind: architecture_record": [
+     "missing_authority:architecture"
+    ],
+    "record: unknown extra field #0": [
+     "missing_authority:architecture"
+    ],
+    "repository_uuid: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "repository_uuid: not a string #0": [
+     "missing_authority:architecture"
+    ],
+    "repository_uuid: not matching the id #0": [
+     "missing_authority:architecture"
+    ],
+    "schema: another string #0": [
+     "missing_authority:architecture"
+    ],
+    "schema: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "schema: not a string #0": [
+     "missing_authority:architecture"
+    ],
+    "source: an abbreviated or uppercase commit #0": [
+     "missing_authority:architecture"
+    ],
+    "source: an abbreviated or uppercase commit #1": [
+     "missing_authority:architecture"
+    ],
+    "source: an extra key #0": [
+     "missing_authority:architecture"
+    ],
+    "source: another path #0": [
+     "missing_authority:architecture"
+    ],
+    "source: another path #1": [
+     "missing_authority:architecture"
+    ],
+    "source: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "state: any other value #0": [
+     "missing_authority:architecture"
+    ],
+    "state: any other value #1": [
+     "missing_authority:architecture"
+    ],
+    "state: any other value #2": [
+     "missing_authority:architecture"
+    ],
+    "state: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "superseded: a gap #0": [
+     "missing_authority:architecture"
+    ],
+    "superseded: a gap #1": [
+     "missing_authority:architecture"
+    ],
+    "superseded: an entry with a changed or extra field #0": [
+     "missing_authority:architecture"
+    ],
+    "superseded: an entry with a changed or extra field #1": [
+     "missing_authority:architecture"
+    ],
+    "superseded: an entry with a changed or extra field #2": [
+     "missing_authority:architecture"
+    ],
+    "superseded: missing #0": [
+     "missing_authority:architecture"
+    ],
+    "superseded: out of order #0": [
+     "missing_authority:architecture"
+    ],
+    "valid v1": [],
+    "valid v3": []
+   }
+  },
+  "signature": {
+   "another key": "not_authorized:signature",
+   "changed after signing": "not_authorized:signature",
+   "revoked key": "not_authorized:key"
+  },
+  "signers": {
+   "no-role": "not_authorized:role",
+   "role-admission_authority": "not_authorized:role",
+   "role-membership_steward": "not_authorized:role",
+   "role-operations_authority": "not_authorized:role",
+   "role-priority_authority": "not_authorized:role",
+   "role-project_owner": "accepted",
+   "role-security_authority": "not_authorized:role",
+   "role-technical_authority": "not_authorized:role",
+   "scope-domain": "not_authorized:scope",
+   "scope-other": "not_authorized:scope",
+   "type-agent_run": "not_authorized:principal_type",
+   "type-person": "accepted",
+   "type-policy": "not_authorized:principal_type",
+   "type-service": "not_authorized:principal_type",
+   "universal": "accepted"
+  },
+  "worker_inputs": {
+   "environment": {
+    "GIT_ALLOW_PROTOCOL": "missing_evidence:commit",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES": "missing_evidence:commit",
+    "GIT_ASKPASS": "missing_evidence:commit",
+    "GIT_AUTHOR_EMAIL": "missing_evidence:commit",
+    "GIT_AUTHOR_NAME": "missing_evidence:commit",
+    "GIT_CEILING_DIRECTORIES": "missing_evidence:commit",
+    "GIT_COMMITTER_EMAIL": "missing_evidence:commit",
+    "GIT_COMMITTER_NAME": "missing_evidence:commit",
+    "GIT_COMMON_DIR": "missing_evidence:commit",
+    "GIT_CONFIG": "missing_evidence:commit",
+    "GIT_CONFIG_COUNT": "missing_evidence:commit",
+    "GIT_CONFIG_GLOBAL": "missing_evidence:commit",
+    "GIT_CONFIG_NOSYSTEM": "missing_evidence:commit",
+    "GIT_CONFIG_PARAMETERS": "missing_evidence:commit",
+    "GIT_CONFIG_SYSTEM": "missing_evidence:commit",
+    "GIT_DIR": "missing_evidence:commit",
+    "GIT_DISCOVERY_TIMEOUT": "missing_evidence:commit",
+    "GIT_EDITOR": "missing_evidence:commit",
+    "GIT_ENVIRONMENT": "missing_evidence:commit",
+    "GIT_EXEC_PATH": "missing_evidence:commit",
+    "GIT_HTTP_LOW_SPEED_LIMIT": "missing_evidence:commit",
+    "GIT_HTTP_LOW_SPEED_TIME": "missing_evidence:commit",
+    "GIT_HTTP_MAX_REQUESTS": "missing_evidence:commit",
+    "GIT_HTTP_PROXY_AUTHMETHOD": "missing_evidence:commit",
+    "GIT_HTTP_USER_AGENT": "missing_evidence:commit",
+    "GIT_INDEX_FILE": "missing_evidence:commit",
+    "GIT_NAMESPACE": "missing_evidence:commit",
+    "GIT_NO_REPLACE_OBJECTS": "missing_evidence:commit",
+    "GIT_OBJECT_DIRECTORY": "missing_evidence:commit",
+    "GIT_PROTOCOL_FROM_USER": "missing_evidence:commit",
+    "GIT_PROXY_COMMAND": "missing_evidence:commit",
+    "GIT_PROXY_SSL_CAINFO": "missing_evidence:commit",
+    "GIT_PROXY_SSL_CERT": "missing_evidence:commit",
+    "GIT_PROXY_SSL_CERT_PASSWORD_PROTECTED": "missing_evidence:commit",
+    "GIT_PROXY_SSL_KEY": "missing_evidence:commit",
+    "GIT_REPLACE_REF_BASE": "missing_evidence:commit",
+    "GIT_SECONDS": "missing_evidence:commit",
+    "GIT_SSH": "missing_evidence:commit",
+    "GIT_SSH_COMMAND": "missing_evidence:commit",
+    "GIT_SSH_VARIANT": "missing_evidence:commit",
+    "GIT_SSL_CAINFO": "missing_evidence:commit",
+    "GIT_SSL_CAPATH": "missing_evidence:commit",
+    "GIT_SSL_CERT": "missing_evidence:commit",
+    "GIT_SSL_CERT_PASSWORD_PROTECTED": "missing_evidence:commit",
+    "GIT_SSL_CIPHER_LIST": "missing_evidence:commit",
+    "GIT_SSL_KEY": "missing_evidence:commit",
+    "GIT_SSL_NO_VERIFY": "missing_evidence:commit",
+    "GIT_SSL_VERSION": "missing_evidence:commit",
+    "GIT_STEP_SECONDS": "missing_evidence:commit",
+    "GIT_TEMPLATE_DIR": "missing_evidence:commit",
+    "GIT_TERMINAL_PROMPT": "missing_evidence:commit",
+    "GIT_WORK_TREE": "missing_evidence:commit",
+    "HOME": "missing_evidence:commit",
+    "VELDO_ACCOUNT": "missing_evidence:commit",
+    "VELDO_CAPABILITIES": "missing_evidence:commit",
+    "VELDO_CAPSULE_COMMIT": "missing_evidence:commit",
+    "VELDO_CAPSULE_DIR": "missing_evidence:commit",
+    "VELDO_CLONE": "missing_evidence:commit",
+    "VELDO_CONTROL_DB": "missing_evidence:commit",
+    "VELDO_CONTROL_KILL_AT": "missing_evidence:commit",
+    "VELDO_CONTROL_TEST_HARNESS": "missing_evidence:commit",
+    "VELDO_DENIAL_WRITE_FAIL": "missing_evidence:commit",
+    "VELDO_DIR": "missing_evidence:commit",
+    "VELDO_DISPATCH_ACCEPTANCE": "missing_evidence:commit",
+    "VELDO_DISPATCH_ID": "missing_evidence:commit",
+    "VELDO_EMERGENCY": "missing_evidence:commit",
+    "VELDO_INTAKE": "missing_evidence:commit",
+    "VELDO_OWNER_PORTS": "missing_evidence:commit",
+    "VELDO_REPLICA_KILL_AT": "missing_evidence:commit",
+    "VELDO_RUNS_ROOT": "missing_evidence:commit",
+    "VELDO_SCOPE": "missing_evidence:commit",
+    "VELDO_STATUSES": "missing_evidence:commit",
+    "VELDO_STEP_KINDS": "missing_evidence:commit",
+    "VELDO_WORKER_ID": "missing_evidence:commit",
+    "VELDO_WORKTREE_DIR": "missing_evidence:commit"
+   },
+   "workspace": {
+    "contract deleted": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     [
+      "missing_evidence:architecture/required_absence"
+     ]
+    ],
+    "contract edited": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     [
+      "missing_authority:architecture/unaccepted_artifact"
+     ]
+    ],
+    "contract replaced by a symlink": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     [
+      "missing_authority:architecture/unaccepted_artifact"
+     ]
+    ],
+    "policy absent": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     []
+    ],
+    "policy optional": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     []
+    ],
+    "policy unreadable": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     []
+    ],
+    "signed by agent": "not_authorized:principal_type",
+    "signed by service": "not_authorized:principal_type",
+    "validator copy replaced by a success stub": [
+     "missing_evidence:commit",
+     "invalid_contract:invalid_structure",
+     [
+      "invalid_input:architecture/invalid_structure"
+     ]
+    ]
+   }
+  },
+  "writer": {
+   "problems": {
+    "bom": [],
+    "crlf": [],
+    "nofinal": []
+   },
+   "rows": {
+    "bom": true,
+    "crlf": true,
+    "nofinal": true
+   }
+  }
+ },
+ "passed": 27,
+ "rows": [
+  [
+   "VELDO-0134 acceptance/first",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/signers",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/signature",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/evidence",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/contract-kinds",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/replay-and-coordinates",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/schema-oracle",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/writer-schema",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/raw-digest-crlf",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/raw-digest-no-final-newline",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/raw-digest-bom",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/version-history",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/replacement-refusals",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/previous-bytes",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/generic-write",
+   true
+  ],
+  [
+   "VELDO-0134 acceptance/worker-inputs",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/first",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/signers",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/signature",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/evidence",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/contract-kinds",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/replay-and-coordinates",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/schema-oracle",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/writer-schema",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/version-history",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/generic-write",
+   true
+  ],
+  [
+   "VELDO-0134 ran/acceptance/worker-inputs",
+   true
+  ]
+ ],
+ "suite": "68_veldo_0134_acceptance.py",
+ "suite_seconds": 3.626
+}
