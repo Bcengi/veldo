@@ -6,6 +6,8 @@ choose either. Authentication is a fresh Ed25519 challenge proof under a separat
 registered connection key; channel comes from that registration, never JSON claims.
 This is a core API, not the W32 installer or live platform evidence acquisition (E).
 The authority's accepted store contains captured evidence and edge source records.
+An identity naming an enrolled channel edge key (VELDO-0067) is served by
+control_signer_answers, which signs only canonical answer assertions for that edge.
 """
 import hashlib
 import importlib.util

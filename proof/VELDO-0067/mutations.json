@@ -1,0 +1,1654 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0067 install/assets",
+    true
+   ],
+   [
+    "VELDO-0067 enrollment/schema-and-possession",
+    true
+   ],
+   [
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    true
+   ],
+   [
+    "VELDO-0067 enrollment/current-member-only",
+    true
+   ],
+   [
+    "VELDO-0067 signer/purpose-refusal",
+    true
+   ],
+   [
+    "VELDO-0067 signer/delegation-dimensions",
+    true
+   ],
+   [
+    "VELDO-0067 signer/canonical-evidence",
+    true
+   ],
+   [
+    "VELDO-0067 acceptance/current-edge-and-actor",
+    true
+   ],
+   [
+    "VELDO-0067 custody/worker-cannot-read-key",
+    true
+   ]
+  ],
+  "seconds": 5.688
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 install/assets detail: .veldo/control_channel_enrollment.py installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0067/edge-enrollment-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0067 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "1b948768a8ed42693bcb41a979a336b0aadf3abb20cf273e748e45254d3e8264",
+   "name": "edge-enrollment-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.497,
+   "source_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 install/assets detail: .veldo/control_keys_custody.py installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0067/edge-custody-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0067 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "d49aec04c9c1211d9d0c3a31fdfd55e7c092d9896254d58326f1c693c3844673",
+   "name": "edge-custody-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.489,
+   "source_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: no possession proof (key_possession_unproven) [observed: accepted, None, 1 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a possession proof by the steward's key (key_possession_unproven) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: the edge key's proof over another envelope (key_possession_unproven) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: the edge key's proof in the command namespace (key_possession_unproven) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a parameter outside the schema (roles) (invalid_enrollment) [observed: refused, invalid_enrollment, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: no connection key (invalid_enrollment) [observed: refused, invalid_enrollment, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: another edge key id than the channel's (invalid_enrollment) [observed: refused, invalid_enrollment, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a channel outside this release (jira) (invalid_enrollment) [observed: refused, invalid_enrollment, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: the connection key equal to the signing key (invalid_enrollment) [observed: refused, invalid_enrollment, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a key that is not Ed25519 (invalid_enrollment) [observed: refused, invalid_enrollment, 0 record(s) written]",
+    "VELDO-0067 enrollment/schema-and-possession detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+    "VELDO-0067 enrollment/schema-and-possession detail: the recorded possession proof is the edge key's own signature over the recorded envelope, in its namespace",
+    "VELDO-0067 enrollment/schema-and-possession detail: each admission is observed: operation, authority, channel, key id, signer, versions, outcome, named refusal",
+    "VELDO-0067 enrollment/schema-and-possession detail: metrics: the unenrolled channel is the pending work, and after enrollment it is enrolled",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the public key substituted after signing, with its own possession proof (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the connection key substituted after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the scope widened after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the edge principal changed after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another domain after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another repository after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another store after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed for another store (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed against a stale membership version (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an expired envelope (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the steward's envelope signed by another member's key (signature_invalid) [observed: refused, signature_invalid, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the accepted enrollment replayed is refused (its nonce is consumed) and writes nothing",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a revoked steward (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a principal never enrolled (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed: refused, policy_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a service (not_a_person) [observed: refused, not_a_person, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward enrolled as the edge (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the edge key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the connection key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: another member's key as the edge key (key_in_use) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: an existing member as the edge principal (principal_exists) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: control: the steward's signed enrollment with the edge key's own proof is accepted"
+   ],
+   "diff": "proof/VELDO-0067/edge-possession-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0067 enrollment/schema-and-possession",
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    "VELDO-0067 enrollment/current-member-only"
+   ],
+   "module": ".veldo/control_channel_enrollment.py",
+   "mutant_sha256": "36c56bf861997f851c488971ac05df42afc4e2e002ca7f5380bd80d1ac266d3c",
+   "name": "edge-possession-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/schema-and-possession"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     false
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.556,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled record has exactly the channel schema's fields",
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+    "VELDO-0067 enrollment/schema-and-possession detail: the recorded envelope's digest is the digest of the command with the recorded key and parameters",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the committed key is exactly the signed key and connection key; no substituted key is anywhere",
+    "VELDO-0067 signer/purpose-refusal detail: control: the actual signer signs the canonical answer, and the signature verifies with the enrolled key",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for a key path (key-path) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for a membership command as the assertion (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for a membership command envelope as the assertion (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for a membership operation (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for a request field outside the answer purpose (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for an answer carrying a command field (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for an assertion kind the delegation does not permit (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for arbitrary bytes (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for the evidence receipt purpose (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature, and nothing stored revealed, for a caller without the edge's connection key",
+    "VELDO-0067 signer/purpose-refusal detail: the signer's diagnostic names operation, channel, edge, actor, request, presentation, evidence, delegation and versions, never text or a signature",
+    "VELDO-0067 signer/delegation-dimensions detail: control: the valid answer under its own current delegation is signed",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation binding another edge key (edge-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another assertion kind (forbidden-purpose) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another channel (channel-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another presentation version (presentation-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another request version (request-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another scope (scope-refused) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a revoked delegation (delegation-refused) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a stale delegation version (stale-delegation) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a superseded delegation (stale-delegation) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for an expired delegation (delegation-expired) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another actor, under that actor's delegation (actor-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another authority (wrong-authority) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another channel (channel-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another edge key (edge-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another edge principal (edge-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another enrolled person as the actor (actor-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another presentation digest (presentation-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another presentation version (presentation-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another principal's delegation (actor-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another published presentation, named consistently (presentation-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another request (request-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another request version (request-mismatch) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another scope (scope-refused) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for no delegation (delegation-refused) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: control: the answer bound to its undecided canonical evidence is signed",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for an unknown evidence id (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for no evidence id (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for text only, no platform evidence (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's bot_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's chat_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's chat_type altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's evidence_digest altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's evidence_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's platform_message_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's platform_timestamp altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's reply_to_message_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's sender_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's sender_type altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's update_id altered (missing-evidence) [observed: unsigned, signing-unavailable]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the same answer once its evidence is decided (missing-evidence)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: a valid current Telegram answer is signed by the protected signer and accepted by the presenter",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the edge asked the signer through its adapter under the owner's one current delegation, in a signer process of its own",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its actor was revoked is refused at acceptance (owner_not_current)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the signer signs nothing more for the revoked actor (actor-not-current)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the steward's signed retirement of the edge key is accepted",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its key was retired is refused at acceptance (not_authorized)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the signer signs nothing more with the retired key (revoked-key)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: a new reply after retirement is not signed, so it is not accepted",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the retired key keeps its enrollment and records when and by whom it was retired",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: metrics: the retired channel is pending work again"
+   ],
+   "diff": "proof/VELDO-0067/edge-record-drops-connection-key.diff",
+   "failed_rows": [
+    "VELDO-0067 enrollment/schema-and-possession",
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    "VELDO-0067 signer/purpose-refusal",
+    "VELDO-0067 signer/delegation-dimensions",
+    "VELDO-0067 signer/canonical-evidence",
+    "VELDO-0067 acceptance/current-edge-and-actor"
+   ],
+   "module": ".veldo/control_channel_enrollment.py",
+   "mutant_sha256": "631937cedd30ca31fe7096543e41d1683699da8ed3986f361f7a0379ec8614d2",
+   "name": "edge-record-drops-connection-key",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/schema-and-possession"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     false
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     false
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     false
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     false
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.135,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 enrollment/schema-and-possession detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+    "VELDO-0067 enrollment/schema-and-possession detail: the recorded possession proof is the edge key's own signature over the recorded envelope, in its namespace",
+    "VELDO-0067 enrollment/schema-and-possession detail: the committed keyring resolves the channel's edge key to the enrolled key, as answer acceptance reads it",
+    "VELDO-0067 enrollment/schema-and-possession detail: the published allowed_signers file is the accepted projection and names the edge key",
+    "VELDO-0067 enrollment/schema-and-possession detail: each admission is observed: operation, authority, channel, key id, signer, versions, outcome, named refusal",
+    "VELDO-0067 enrollment/schema-and-possession detail: metrics: the unenrolled channel is the pending work, and after enrollment it is enrolled",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the public key substituted after signing, with its own possession proof (envelope_refused) [observed: accepted, None, 1 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the connection key substituted after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the scope widened after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the edge principal changed after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another domain after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another repository after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another store after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed for another store (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed against a stale membership version (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an expired envelope (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the steward's envelope signed by another member's key (signature_invalid) [observed: refused, signature_invalid, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the committed key is exactly the signed key and connection key; no substituted key is anywhere",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the accepted enrollment replayed is refused (its nonce is consumed) and writes nothing",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a revoked steward (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a principal never enrolled (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed: refused, policy_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a service (not_a_person) [observed: refused, not_a_person, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward enrolled as the edge (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the edge key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the connection key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: another member's key as the edge key (key_in_use) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: an existing member as the edge principal (principal_exists) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: a valid current Telegram answer is signed by the protected signer and accepted by the presenter",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its actor was revoked is refused at acceptance (owner_not_current)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the retired key keeps its enrollment and records when and by whom it was retired"
+   ],
+   "diff": "proof/VELDO-0067/edge-digest-omits-public-key.diff",
+   "failed_rows": [
+    "VELDO-0067 enrollment/schema-and-possession",
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    "VELDO-0067 enrollment/current-member-only",
+    "VELDO-0067 acceptance/current-edge-and-actor"
+   ],
+   "module": ".veldo/authority_contract.py",
+   "mutant_sha256": "d7da4af8b358807583c4a031dcf328eacf88c91b3cacfa77ec0a20fd760654ad",
+   "name": "edge-digest-omits-public-key",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/binds-key-and-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     false
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     false
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.53,
+   "source_sha256": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 enrollment/schema-and-possession detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+    "VELDO-0067 enrollment/schema-and-possession detail: the recorded possession proof is the edge key's own signature over the recorded envelope, in its namespace",
+    "VELDO-0067 enrollment/schema-and-possession detail: each admission is observed: operation, authority, channel, key id, signer, versions, outcome, named refusal",
+    "VELDO-0067 enrollment/schema-and-possession detail: metrics: the unenrolled channel is the pending work, and after enrollment it is enrolled",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the public key substituted after signing, with its own possession proof (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the connection key substituted after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the scope widened after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the edge principal changed after signing (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another domain after signing (envelope_refused) [observed: refused, signature_invalid, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another repository after signing (envelope_refused) [observed: refused, signature_invalid, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another store after signing (envelope_refused) [observed: refused, signature_invalid, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed for another store (envelope_refused) [observed: accepted, None, 1 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed against a stale membership version (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an expired envelope (envelope_refused) [observed: refused, envelope_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the steward's envelope signed by another member's key (signature_invalid) [observed: refused, signature_invalid, 0 record(s) written]",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the accepted enrollment replayed is refused (its nonce is consumed) and writes nothing",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a revoked steward (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a principal never enrolled (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed: refused, policy_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a service (not_a_person) [observed: refused, not_a_person, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward enrolled as the edge (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the edge key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the connection key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: another member's key as the edge key (key_in_use) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: an existing member as the edge principal (principal_exists) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: control: the steward's signed enrollment with the edge key's own proof is accepted"
+   ],
+   "diff": "proof/VELDO-0067/edge-authority-from-envelope.diff",
+   "failed_rows": [
+    "VELDO-0067 enrollment/schema-and-possession",
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    "VELDO-0067 enrollment/current-member-only"
+   ],
+   "module": ".veldo/control_channel_enrollment.py",
+   "mutant_sha256": "cf73b81b57b2c9ef61b62381f8153ba7850bcd0d77cb5d74343d05976b0d1e74",
+   "name": "edge-authority-from-envelope",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/binds-key-and-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     false
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.657,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 enrollment/schema-and-possession detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+    "VELDO-0067 enrollment/schema-and-possession detail: the edge principal is a new service member with no roles, the enrolled scope and its channel",
+    "VELDO-0067 enrollment/schema-and-possession detail: the recorded possession proof is the edge key's own signature over the recorded envelope, in its namespace",
+    "VELDO-0067 enrollment/schema-and-possession detail: each admission is observed: operation, authority, channel, key id, signer, versions, outcome, named refusal",
+    "VELDO-0067 enrollment/schema-and-possession detail: metrics: the unenrolled channel is the pending work, and after enrollment it is enrolled",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the accepted enrollment replayed is refused (its nonce is consumed) and writes nothing",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a revoked steward (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a principal never enrolled (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed: accepted, None, 1 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a service (not_a_person) [observed: refused, not_a_person, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward enrolled as the edge (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the edge key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the connection key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: another member's key as the edge key (key_in_use) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: an existing member as the edge principal (principal_exists) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: control: the steward's signed enrollment with the edge key's own proof is accepted"
+   ],
+   "diff": "proof/VELDO-0067/edge-steward-role-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0067 enrollment/schema-and-possession",
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    "VELDO-0067 enrollment/current-member-only"
+   ],
+   "module": ".veldo/control_channel_enrollment.py",
+   "mutant_sha256": "71972f36fbeee625a7e57af67eb096fba6bd0fc47476791d62078f5b0aef3c5e",
+   "name": "edge-steward-role-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/current-member-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     false
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.637,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 enrollment/schema-and-possession detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+    "VELDO-0067 enrollment/schema-and-possession detail: the recorded possession proof is the edge key's own signature over the recorded envelope, in its namespace",
+    "VELDO-0067 enrollment/schema-and-possession detail: the committed keyring resolves the channel's edge key to the enrolled key, as answer acceptance reads it",
+    "VELDO-0067 enrollment/schema-and-possession detail: the published allowed_signers file is the accepted projection and names the edge key",
+    "VELDO-0067 enrollment/schema-and-possession detail: each admission is observed: operation, authority, channel, key id, signer, versions, outcome, named refusal",
+    "VELDO-0067 enrollment/schema-and-possession detail: metrics: the unenrolled channel is the pending work, and after enrollment it is enrolled",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the committed key is exactly the signed key and connection key; no substituted key is anywhere",
+    "VELDO-0067 enrollment/binds-key-and-authority detail: the accepted enrollment replayed is refused (its nonce is consumed) and writes nothing",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a revoked steward (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a principal never enrolled (not_current_member) [observed: refused, not_current_member, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed: refused, policy_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a service (not_a_person) [observed: refused, not_a_person, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward enrolled as the edge (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the edge key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the connection key (self_grant_refused) [observed: refused, self_grant_refused, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: another member's key as the edge key (key_in_use) [observed: accepted, None, 1 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: an existing member as the edge principal (principal_exists) [observed: refused, already_enrolled, 0 record(s) written]",
+    "VELDO-0067 enrollment/current-member-only detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: a valid current Telegram answer is signed by the protected signer and accepted by the presenter",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its actor was revoked is refused at acceptance (owner_not_current)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the retired key keeps its enrollment and records when and by whom it was retired"
+   ],
+   "diff": "proof/VELDO-0067/edge-key-in-use-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0067 enrollment/schema-and-possession",
+    "VELDO-0067 enrollment/binds-key-and-authority",
+    "VELDO-0067 enrollment/current-member-only",
+    "VELDO-0067 acceptance/current-edge-and-actor"
+   ],
+   "module": ".veldo/control_channel_enrollment.py",
+   "mutant_sha256": "77ade70090bf9f2038359d35094f1ec2339db33430c932184078d7090d8d92d3",
+   "name": "edge-key-in-use-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/current-member-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     false
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     false
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     false
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.646,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 signer/purpose-refusal detail: no signature for a membership command as the assertion (forbidden-purpose) [observed: signed, None]",
+    "VELDO-0067 signer/purpose-refusal detail: no signature for an answer carrying a command field (forbidden-purpose) [observed: signed, None]",
+    "VELDO-0067 signer/purpose-refusal detail: the signer's diagnostic names operation, channel, edge, actor, request, presentation, evidence, delegation and versions, never text or a signature"
+   ],
+   "diff": "proof/VELDO-0067/signer-signs-membership-command.diff",
+   "failed_rows": [
+    "VELDO-0067 signer/purpose-refusal"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "8224bd09e5779d33fa7572b66685dc285443a65eeabcad0baedff3b55cfe6373",
+   "name": "signer-signs-membership-command",
+   "named_row_red": true,
+   "named_rows": [
+    "signer/purpose-refusal"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     false
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.512,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 signer/purpose-refusal detail: no signature for an answer carrying a command field (forbidden-purpose) [observed: signed, None]",
+    "VELDO-0067 signer/purpose-refusal detail: the signer's diagnostic names operation, channel, edge, actor, request, presentation, evidence, delegation and versions, never text or a signature"
+   ],
+   "diff": "proof/VELDO-0067/signer-extra-fields-accepted.diff",
+   "failed_rows": [
+    "VELDO-0067 signer/purpose-refusal"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "cd5603ec498abaf15d94da38d4557c9670dda0993a14c9302c3084929f260f88",
+   "name": "signer-extra-fields-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "signer/purpose-refusal"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     false
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.573,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another scope (scope-refused) [observed: signed, None]"
+   ],
+   "diff": "proof/VELDO-0067/signer-delegation-scope-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0067 signer/delegation-dimensions"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "1d07c6d87b8d28c5bc9b7e2f072b99140e77712a2d8858991a62c38d358f83da",
+   "name": "signer-delegation-scope-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "signer/delegation-dimensions"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     false
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.531,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 signer/delegation-dimensions detail: no signature for another published presentation, named consistently (presentation-mismatch) [observed: signed, None]"
+   ],
+   "diff": "proof/VELDO-0067/signer-presentation-not-from-evidence.diff",
+   "failed_rows": [
+    "VELDO-0067 signer/delegation-dimensions"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "ad5751321028880d7d17080cbf93bd8f63946e282c202dc2be26d155ee6bc9c8",
+   "name": "signer-presentation-not-from-evidence",
+   "named_row_red": true,
+   "named_rows": [
+    "signer/delegation-dimensions"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     false
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.478,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's bot_id altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's chat_id altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's chat_type altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's evidence_digest altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's platform_message_id altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's platform_timestamp altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's reply_to_message_id altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's sender_id altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's sender_type altered (missing-evidence) [observed: signed, None]",
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's update_id altered (missing-evidence) [observed: signed, None]"
+   ],
+   "diff": "proof/VELDO-0067/signer-attribution-unbound.diff",
+   "failed_rows": [
+    "VELDO-0067 signer/canonical-evidence"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "793405fd273c36d4473272488ac85c6a9e6e2e97628786c07d04627b986a2c2b",
+   "name": "signer-attribution-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "signer/canonical-evidence"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     false
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.721,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 signer/canonical-evidence detail: no signature for the same answer once its evidence is decided (missing-evidence)"
+   ],
+   "diff": "proof/VELDO-0067/signer-decided-evidence-resigned.diff",
+   "failed_rows": [
+    "VELDO-0067 signer/canonical-evidence"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "f0af5cdeeb353b7421253fdf30ce225fa9e8875b7465c184db1f281cf1e71962",
+   "name": "signer-decided-evidence-resigned",
+   "named_row_red": true,
+   "named_rows": [
+    "signer/canonical-evidence"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     false
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.742,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its key was retired is refused at acceptance (not_authorized)"
+   ],
+   "diff": "proof/VELDO-0067/acceptance-retired-edge-current.diff",
+   "failed_rows": [
+    "VELDO-0067 acceptance/current-edge-and-actor"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "75346916f22b796e11b7cb2511f7d5f87e8bf44f733770a7bca85ce347141a95",
+   "name": "acceptance-retired-edge-current",
+   "named_row_red": true,
+   "named_rows": [
+    "acceptance/current-edge-and-actor"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     false
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.663,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its key was retired is refused at acceptance (not_authorized)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: the signer signs nothing more with the retired key (revoked-key)",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: a new reply after retirement is not signed, so it is not accepted",
+    "VELDO-0067 acceptance/current-edge-and-actor detail: metrics: the retired channel is pending work again"
+   ],
+   "diff": "proof/VELDO-0067/retirement-dated-in-the-future.diff",
+   "failed_rows": [
+    "VELDO-0067 acceptance/current-edge-and-actor"
+   ],
+   "module": ".veldo/control_channel_enrollment.py",
+   "mutant_sha256": "fa37c32675ed1a42b0e95c9d76e6437c2f13155a4ed0dfdff1293940ac7ac36c",
+   "name": "retirement-dated-in-the-future",
+   "named_row_red": true,
+   "named_rows": [
+    "acceptance/current-edge-and-actor"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     false
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.583,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 custody/worker-cannot-read-key detail: the confined worker tool's read of the private edge key is denied by the kernel (EACCES)",
+    "VELDO-0067 custody/worker-cannot-read-key detail: the confined worker cannot link the key out of the protected directory",
+    "VELDO-0067 custody/worker-cannot-read-key detail: the private edge key reaches no output, observation, store or file outside its custody"
+   ],
+   "diff": "proof/VELDO-0067/custody-protected-directory-granted.diff",
+   "failed_rows": [
+    "VELDO-0067 custody/worker-cannot-read-key"
+   ],
+   "module": ".veldo/control_keys_custody.py",
+   "mutant_sha256": "0fe032283123e6fc4c1b082f9864c8ff67f563e2c7930d15fafbe39392f0ed50",
+   "name": "custody-protected-directory-granted",
+   "named_row_red": true,
+   "named_rows": [
+    "custody/worker-cannot-read-key"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     false
+    ]
+   ],
+   "seconds": 5.532,
+   "source_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0067 custody/worker-cannot-read-key detail: the confined worker tool's read of the private edge key is denied by the kernel (EACCES)",
+    "VELDO-0067 custody/worker-cannot-read-key detail: the confined worker cannot link the key out of the protected directory",
+    "VELDO-0067 custody/worker-cannot-read-key detail: the private edge key reaches no output, observation, store or file outside its custody"
+   ],
+   "diff": "proof/VELDO-0067/custody-not-restricted.diff",
+   "failed_rows": [
+    "VELDO-0067 custody/worker-cannot-read-key"
+   ],
+   "module": ".veldo/control_keys_custody.py",
+   "mutant_sha256": "53efbb145f2808a2c3ae3bddc8b902626bd838d43a14da6dad277d9dd5034979",
+   "name": "custody-not-restricted",
+   "named_row_red": true,
+   "named_rows": [
+    "custody/worker-cannot-read-key"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     false
+    ]
+   ],
+   "seconds": 5.445,
+   "source_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
+  }
+ ],
+ "mutations_per_row": {
+  "acceptance/current-edge-and-actor": [
+   "acceptance-retired-edge-current",
+   "retirement-dated-in-the-future"
+  ],
+  "custody/worker-cannot-read-key": [
+   "custody-protected-directory-granted",
+   "custody-not-restricted"
+  ],
+  "enrollment/binds-key-and-authority": [
+   "edge-digest-omits-public-key",
+   "edge-authority-from-envelope"
+  ],
+  "enrollment/current-member-only": [
+   "edge-steward-role-unchecked",
+   "edge-key-in-use-unchecked"
+  ],
+  "enrollment/schema-and-possession": [
+   "edge-possession-unchecked",
+   "edge-record-drops-connection-key"
+  ],
+  "install/assets": [
+   "edge-enrollment-not-scaffolded",
+   "edge-custody-not-scaffolded"
+  ],
+  "signer/canonical-evidence": [
+   "signer-attribution-unbound",
+   "signer-decided-evidence-resigned"
+  ],
+  "signer/delegation-dimensions": [
+   "signer-delegation-scope-unchecked",
+   "signer-presentation-not-from-evidence"
+  ],
+  "signer/purpose-refusal": [
+   "signer-signs-membership-command",
+   "signer-extra-fields-accepted"
+  ]
+ },
+ "noop": {
+  "authority_contract.py": {
+   "copy_sha256": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.548,
+   "source_sha256": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3"
+  },
+  "control_channel_enrollment.py": {
+   "copy_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.494,
+   "source_sha256": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  "control_channel_presentation.py": {
+   "copy_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.548,
+   "source_sha256": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  "control_keys_custody.py": {
+   "copy_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.541,
+   "source_sha256": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
+  },
+  "control_signer_answers.py": {
+   "copy_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.615,
+   "source_sha256": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0067 install/assets",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/schema-and-possession",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/binds-key-and-authority",
+     true
+    ],
+    [
+     "VELDO-0067 enrollment/current-member-only",
+     true
+    ],
+    [
+     "VELDO-0067 signer/purpose-refusal",
+     true
+    ],
+    [
+     "VELDO-0067 signer/delegation-dimensions",
+     true
+    ],
+    [
+     "VELDO-0067 signer/canonical-evidence",
+     true
+    ],
+    [
+     "VELDO-0067 acceptance/current-edge-and-actor",
+     true
+    ],
+    [
+     "VELDO-0067 custody/worker-cannot-read-key",
+     true
+    ]
+   ],
+   "seconds": 5.487,
+   "source_sha256": "92f74a8e473a70c0e173aa416ec9b881207cf0daa205f569a85857747bcedb32"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 67",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 138.848,
+ "spec_id": "VELDO-0067",
+ "suite": "scripts/suites/65_veldo_0067_edges.py"
+}

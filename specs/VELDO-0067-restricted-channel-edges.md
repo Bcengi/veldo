@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0067_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0067-restricted-channel-edges.md"
   - "specs/index.md"
   - "proof/VELDO-0067/*"
@@ -144,3 +145,21 @@ rotation/restart/failover moved to Release 2; AC1/AC2 plural-channel coverage mo
 4. Jira-specific enrollment is dropped. Restricted Telegram edge and current authorization
 remain. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 67 of the existing teeth mutation driver, as
+VELDO-0065 and VELDO-0066 registered theirs. The criteria, status and risk are unchanged.
+
+2026-09-24, implementation: `.veldo/control_channel_enrollment.py` admits one signed enrollment of
+the Telegram edge key: the steward's OpenSSH envelope binds the key, the connection key and every
+authority parameter through the authority contract's command digest, the edge key's own signature
+over that envelope proves possession, and one transition writes the edge's service membership and
+its key at the id the authority contract names, where VELDO-0065 acceptance reads it. It also
+admits the signed retirement of that key. `.veldo/control_signer_answers.py` is the protected
+signer's one purpose for an enrolled edge: it signs only a canonical answer assertion bound to its
+undecided VELDO-0066 evidence, its published presentation, its actor and a current delegation in
+every dimension. `.veldo/control_keys_custody.py`, from the earlier work in progress, confines a
+worker with Landlock so it cannot read the protected key directory. Rows, the red record at 574ec36
+and the finding 67 mutations are in `proof/VELDO-0067/`. Every answer runs against a loopback Bot
+API server in the platform's documented shapes, not the Telegram service; enrollment activates no
+ingress (VELDO-0073). The criteria, status and risk are unchanged.

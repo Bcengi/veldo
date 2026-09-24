@@ -2458,6 +2458,83 @@ def cases():
     attribution('service-member-as-person',
                 "        if entry.get('principal_type') != 'person':\n            return 'not_a_person'\n", "",
                 'attribution/person-only-authority')
+    # VELDO-0067: each criterion's declared falsifier, and a second, different defect for every named row.
+    def edges(name, module, old, new, row):
+        add(67, name, '65_veldo_0067_edges.py', module, old, new, [row])
+
+    # Installation: each module this change installs is laid down by the scaffold.
+    edges('edge-enrollment-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_channel_enrollment.py",\n', '',
+          'install/assets')
+    edges('edge-custody-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_keys_custody.py",\n', '',
+          'install/assets')
+    # AC1: the possession proof is required, and the enrolled record is the channel schema.
+    edges('edge-possession-unchecked', 'control_channel_enrollment.py',
+          "            if not ok:\n                raise Refused('key_possession_unproven',",
+          "            if False:\n                raise Refused('key_possession_unproven',",
+          'enrollment/schema-and-possession')
+    edges('edge-record-drops-connection-key', 'control_channel_enrollment.py',
+          "           'connection_public_key': _key_text(signed['connection_public_key']), 'scope': list(signed['scope']),\n",
+          "           'scope': list(signed['scope']),\n", 'enrollment/schema-and-possession')
+    # AC1 (declared falsifier): the public key left out of the enrollment command digest, so a key
+    # substituted after the steward signed is accepted; then authority coordinates taken from the envelope.
+    edges('edge-digest-omits-public-key', 'authority_contract.py',
+          '    payload = {k: command.get(k) for k in COMMAND_FIELDS}\n',
+          '    payload = {k: command.get(k) for k in COMMAND_FIELDS}\n'
+          '    if payload.get("operation") == "enroll_channel_edge":\n'
+          '        payload["parameters"] = {k: v for k, v in (payload.get("parameters") or {}).items() if k != "public_key"}\n',
+          'enrollment/binds-key-and-authority')
+    edges('edge-authority-from-envelope', 'control_channel_enrollment.py',
+          "                         delegation_version=state['delegation_version'])\n",
+          "                         delegation_version=state['delegation_version'])\n"
+          "        authority.update({f: envelope.get(f) for f in ('domain_uuid', 'repository_uuid', 'store_uuid')})\n",
+          'enrollment/binds-key-and-authority')
+    # AC1: a current steward only, and never a key someone already holds.
+    edges('edge-steward-role-unchecked', 'control_channel_enrollment.py',
+          "        if CM.STEWARD_ROLE not in (entry.get('roles') or []):\n", "        if False:\n",
+          'enrollment/current-member-only')
+    edges('edge-key-in-use-unchecked', 'control_channel_enrollment.py',
+          "            if any(_key_text(params[f]) in held for f in ('public_key', 'connection_public_key')):\n",
+          "            if False:\n", 'enrollment/current-member-only')
+    # AC2 (declared falsifier): the edge permitted to sign a membership command; then an answer with a
+    # field more than the canonical answer's.
+    edges('signer-signs-membership-command', 'control_signer_answers.py',
+          "        answer = request.get('assertion')\n        if shape_problems(answer):\n",
+          "        answer = request.get('assertion')\n"
+          "        if isinstance(answer, dict) and answer.get('operation') in CM.ADMIN_OPERATIONS:\n"
+          "            return signed(answer)\n"
+          "        if shape_problems(answer):\n", 'signer/purpose-refusal')
+    edges('signer-extra-fields-accepted', 'control_signer_answers.py',
+          "    if not isinstance(a, dict) or set(a) != set(ANSWER_FIELDS):\n",
+          "    if not isinstance(a, dict) or not set(ANSWER_FIELDS) <= set(a):\n", 'signer/purpose-refusal')
+    # AC2: the delegation's scope, and the presentation the canonical evidence actually replies to.
+    edges('signer-delegation-scope-unchecked', 'control_signer_answers.py',
+          "    if not CM.scope_covers(d.get('authority_scope'), a['authority_scope']):\n", "    if False:\n",
+          'signer/delegation-dimensions')
+    edges('signer-presentation-not-from-evidence', 'control_signer_answers.py',
+          "    if (f['chat_id'] != receipt['chat_id'] or f['reply_chat_id'] != receipt['chat_id']\n",
+          "    if False and (f['chat_id'] != receipt['chat_id'] or f['reply_chat_id'] != receipt['chat_id']\n",
+          'signer/delegation-dimensions')
+    # AC2: the attribution is the evidence's own, and evidence is signed for once, before it is decided.
+    edges('signer-attribution-unbound', 'control_signer_answers.py', "    if attribution != wanted:\n", "    if False:\n",
+          'signer/canonical-evidence')
+    edges('signer-decided-evidence-resigned', 'control_signer_answers.py',
+          "    if record.get('outcome') != 'acquired':\n", "    if False:\n", 'signer/canonical-evidence')
+    # AC3 (declared falsifier): an answer accepted with a retired edge key; then a retirement that does
+    # not end the key.
+    edges('acceptance-retired-edge-current', 'control_channel_presentation.py',
+          "        return self.AC.active_key(keys, edge, now)\n",
+          "        return self.AC.active_key([dict(k, retired_at=None) for k in keys], edge, now)\n",
+          'acceptance/current-edge-and-actor')
+    edges('retirement-dated-in-the-future', 'control_channel_enrollment.py',
+          "    return {kid: {'kind': 'verification_key', 'data': dict(data, retired_at=at, retired_by=params['retired_by'])},\n",
+          "    return {kid: {'kind': 'verification_key', 'data': dict(data, retired_at=at + 86400, retired_by=params['retired_by'])},\n",
+          'acceptance/current-edge-and-actor')
+    # AC3: a worker tool cannot read the private edge key.
+    edges('custody-protected-directory-granted', 'control_keys_custody.py', "    chain = set(protected)\n",
+          "    chain = set()\n", 'custody/worker-cannot-read-key')
+    edges('custody-not-restricted', 'control_keys_custody.py',
+          "        if libc.syscall(ctypes.c_long(restrict_self), ctypes.c_int(ruleset), ctypes.c_uint32(0)) < 0:\n",
+          "        if False:\n", 'custody/worker-cannot-read-key')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

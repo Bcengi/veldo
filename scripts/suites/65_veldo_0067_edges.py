@@ -289,7 +289,8 @@ def _v67_checks(base):
             params = dict({f: params[f] for f in keep if f in params}, key_id=params.get('edge_key_id'))
             operation = legacy
         return {'command_id': next_id('edge'), 'operation': operation,
-                'target': 'channel:%s' % params.get('channel', 'telegram_chat'), 'parameters': params}
+                'target': 'channel:%s' % params.get('channel', 'telegram_chat'), 'parameters': params,
+                'artifact_digests': [], 'expected_versions': {}}
 
     def written():
         return conn.execute('SELECT count(*) FROM journal').fetchone()[0]
@@ -321,6 +322,14 @@ def _v67_checks(base):
 
     def refused(result, name):
         return result.get('outcome') == 'refused' and result.get('refusal') == name and result.get('wrote') == 0
+
+    def observed(result):
+        """What happened instead, for a failing check's label: the outcome, the refusal and what was written."""
+        return ' [observed: %s, %s, %s record(s) written]' % (result.get('outcome'), result.get('refusal'), result.get('wrote'))
+
+    def expect_refused(row, label, result, name):
+        ok = refused(result, name) and unwritten()
+        check(row, 'refused with nothing written: %s (%s)' % (label, name) + ('' if ok else observed(result)), ok)
 
     def unwritten():
         entities = S.materialized_state(conn)['entities']
@@ -374,7 +383,7 @@ def _v67_checks(base):
                      submit('steward', dict(valid, connection_public_key=public['edge'])), 'invalid_enrollment'),
                     ('a key that is not Ed25519', submit('steward', dict(valid, public_key='ssh-rsa AAAAB3NzaC1yc2E')),
                      'invalid_enrollment')):
-                check(SP, 'refused with nothing written: %s (%s)' % (label, name), refused(result, name) and unwritten())
+                expect_refused(SP, label, result, name)
         with section(BK):
             for label, result, name in (
                     ('the public key substituted after signing, with its own possession proof',
@@ -398,7 +407,7 @@ def _v67_checks(base):
                     ('an expired envelope', submit('steward', valid, over={'expires_at': _v67_time.time() - 1}), 'envelope_refused'),
                     ('the steward\'s envelope signed by another member\'s key', submit('steward', valid, signer_key='member'),
                      'signature_invalid')):
-                check(BK, 'refused with nothing written: %s (%s)' % (label, name), refused(result, name) and unwritten())
+                expect_refused(BK, label, result, name)
         with section(MO):
             for label, result, name in (
                     ('a revoked steward', submit('steward2', valid), 'not_current_member'),
@@ -415,7 +424,7 @@ def _v67_checks(base):
                      submit('steward', dict(valid, public_key=public['owner']), possession='owner'), 'key_in_use'),
                     ('an existing member as the edge principal', submit('steward', dict(valid, edge_principal='owner')),
                      'principal_exists')):
-                check(MO, 'refused with nothing written: %s (%s)' % (label, name), refused(result, name) and unwritten())
+                expect_refused(MO, label, result, name)
 
         with section(SP, BK, MO):
             pending_before = enrollment.metrics() if enrollment is not None else {}
@@ -686,6 +695,11 @@ def _v67_checks(base):
         def no_signature(result, name):
             return not result.get('accepted') and 'signature' not in result and result.get('refusal') == name
 
+        def expect_unsigned(row, label, result, name):
+            ok = no_signature(result, name)
+            seen = ' [observed: %s, %s]' % ('signed' if 'signature' in result else 'unsigned', result.get('refusal'))
+            check(row, 'no signature for %s (%s)' % (label, name) + ('' if ok else seen), ok)
+
         with section(PR):
             control = probes.get('control') or {}
             a = probes.get('valid') or {}
@@ -694,7 +708,7 @@ def _v67_checks(base):
                   control.get('accepted') is True
                   and verifies('telegram-edge', public['edge'], canonical(a), control.get('signature'), 'veldo-command'))
             for label, (result, name) in sorted((probes.get('purpose') or {}).items()):
-                check(PR, 'no signature for %s (%s)' % (label, name), no_signature(result, name))
+                expect_unsigned(PR, label, result, name)
             check(PR, 'the probes covered every forbidden purpose', len(probes.get('purpose') or {}) == 9)
             unauthenticated = probes.get('unauthenticated') or {}
             check(PR, 'no signature, and nothing stored revealed, for a caller without the edge\'s connection key',
@@ -717,12 +731,12 @@ def _v67_checks(base):
         with section(DD):
             check(DD, 'control: the valid answer under its own current delegation is signed', (probes.get('control') or {}).get('accepted'))
             for label, (result, name) in sorted((probes.get('dimensions') or {}).items()):
-                check(DD, 'no signature for %s (%s)' % (label, name), no_signature(result, name))
+                expect_unsigned(DD, label, result, name)
             check(DD, 'every delegation dimension and every assertion dimension was mutated', len(probes.get('dimensions') or {}) == 24)
         with section(CE):
             check(CE, 'control: the answer bound to its undecided canonical evidence is signed', (probes.get('control') or {}).get('accepted'))
             for label, (result, name) in sorted((probes.get('evidence') or {}).items()):
-                check(CE, 'no signature for %s (%s)' % (label, name), no_signature(result, name))
+                expect_unsigned(CE, label, result, name)
             check(CE, 'every attribution field was altered', len(probes.get('evidence') or {}) == 14)
             check(CE, 'no signature for the same answer once its evidence is decided (missing-evidence)',
                   no_signature(probes.get('decided') or {}, 'missing-evidence'))
