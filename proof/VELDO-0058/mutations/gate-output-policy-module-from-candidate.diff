@@ -1,8 +1,10 @@
 --- a/.veldo/control_verification.py
 +++ b/.veldo/control_verification.py
-@@ -404 +404 @@
+@@ -406 +406 @@
 -    policy = root / POLICY_PATH
 +    policy = Path(candidate) / POLICY_PATH  # defect: the candidate's policy module is run
-@@ -407 +407 @@
+@@ -409 +409 @@
 -    if inside(policy, candidate):
 +    if False:
+@@ -423,0 +424 @@
++    return None  # defect: any policy source

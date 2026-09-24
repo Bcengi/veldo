@@ -42,7 +42,7 @@ the observation last, before anything is pushed. **LiveLoop** (`executor.py`): `
 of the base commit `resolve` found (or a named `installation`); the observation keeps the VELDO-0050
 shape, so `ProofService.record_observation` and `accept` read it unchanged.
 
-## Rows (suite `69_veldo_0058_gate_output`, 8 rows: 4 assertions and 4 `ran/` rows, about 7 s)
+## Rows (suite `69_veldo_0058_gate_output`, 10 rows: 5 assertions and 5 `ran/` rows, about 9 s)
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
@@ -50,6 +50,7 @@ shape, so `ProofService.record_observation` and `accept` read it unchanged.
 | `gate-output/sink-refusals` | AC1 | `gate-output-sink-failure-still-green`, `gate-output-sink-inside-candidate-accepted` |
 | `gate-output/post-run-mutation` | AC2 | `gate-output-acceptance-skips-tree-equality`, `gate-output-run-equality-not-judged`, `gate-output-observation-content-not-judged` |
 | `gate-output/installed-policy` | AC3 | `gate-output-candidate-policy-launched`, `gate-output-policy-module-from-candidate` |
+| `gate-output/installed-policy-list` | AC3 | `gate-output-policy-source-not-set`, `gate-output-protected-list-from-subject-root` |
 
 **review-write**: a land (GitLandOps) and an executor gate (LiveLoop) over committed candidates carrying
 a pass verdict: green, the candidate byte-identical before and after, the sink holding the verdict event
@@ -65,9 +66,16 @@ unmoved; a separate process changing each of the three during the run refuses (L
 the installed gate's real check; a candidate touching a protected path with a rejected approval and a
 stub `policy_check.py` is refused by the installed policy; the observation moved under the candidate or
 altered is refused; the valid candidate then publishes with no stamp or event added to its tree.
+**installed-policy-list**: the protected list is the installation's `.veldo/policy.yaml`, never the
+candidate's: a candidate that empties `protected_paths` and adds `auth/login.py` is refused by the
+trunk's list, naming `auth/login.py (protected by auth/**)`, with the trunk unmoved; the same change
+without the edit is refused the same way; an unprotected change then publishes.
 
 ## Evidence
 
-`drive.py` wrote `observations.json`; `mutations.py` wrote `mutations.json` and `mutations/` (9
+`drive.py` wrote `observations.json`; `mutations.py` wrote `mutations.json` and `mutations/` (11
 mutations, every named row red by assertion, three unmutated controls green); `red.py 932d9b0` wrote
-`red-932d9b0.json`: all four rows red by assertion there, no region raised.
+`red-932d9b0.json`: all four rows red by assertion there, no region raised. `red.py 35be8ff
+control_verification.py policy_check.py` wrote `red-35be8ff.json`: at 35be8ff, the code before the
+policy-source fix, `gate-output/installed-policy-list` is the one red row, by assertion (the emptied
+candidate was pushed), no region raised.

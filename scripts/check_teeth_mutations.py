@@ -4068,7 +4068,11 @@ def cases():
                 '    policy = Path(candidate) / POLICY_PATH  # defect: the candidate\'s policy module is run\n',
                 'installed-policy',
                 also=[('    if inside(policy, candidate):\n        return None, "missing_authority:policy/in_candidate"\n',
-                       '    if False:\n        return None, "missing_authority:policy/in_candidate"\n')])
+                       '    if False:\n        return None, "missing_authority:policy/in_candidate"\n'),
+                      # The candidate's module brings the candidate's policy.yaml beside it; the source
+                      # refusal would stop that run before the candidate's stub is asked.
+                      ('def _policy_source_refusal(policy, candidate):\n',
+                       'def _policy_source_refusal(policy, candidate):\n    return None  # defect: any policy source\n')])
     # AC3, the policy source: the installed policy's protected list is read from the candidate's own
     # policy.yaml, so a candidate that empties protected_paths lands a protected change unapproved.
     gate_output('gate-output-policy-source-not-set', 'control_verification.py',

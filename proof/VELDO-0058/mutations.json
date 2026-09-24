@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 58 --jobs 4 --diff-dir proof/VELDO-0058/mutations",
  "summary": {
-  "mutations_rejected": 9,
+  "mutations_rejected": 11,
   "green_suites": {
-   "69_veldo_0058_gate_output.py": 34
+   "69_veldo_0058_gate_output.py": 36
   },
-  "driver_seconds": 23.8
+  "driver_seconds": 28.4
  },
  "all_targets_red_by_assertion": true,
  "mutations_per_row": {
@@ -25,6 +25,10 @@
   "gate-output/installed-policy": [
    "gate-output-candidate-policy-launched",
    "gate-output-policy-module-from-candidate"
+  ],
+  "gate-output/installed-policy-list": [
+   "gate-output-policy-source-not-set",
+   "gate-output-protected-list-from-subject-root"
   ]
  },
  "every_row_has_two_or_more": true,
@@ -32,23 +36,30 @@
   {
    "module": "scripts/verify.sh",
    "identical_bytes": true,
-   "rows": 8,
+   "rows": 10,
    "failed_rows": [],
-   "seconds": 8.0
+   "seconds": 9.3
   },
   {
    "module": ".veldo/control_verification.py",
    "identical_bytes": true,
-   "rows": 8,
+   "rows": 10,
    "failed_rows": [],
-   "seconds": 8.5
+   "seconds": 9.3
   },
   {
    "module": ".veldo/lander.py",
    "identical_bytes": true,
-   "rows": 8,
+   "rows": 10,
    "failed_rows": [],
-   "seconds": 8.5
+   "seconds": 9.3
+  },
+  {
+   "module": ".veldo/policy_check.py",
+   "identical_bytes": true,
+   "rows": 10,
+   "failed_rows": [],
+   "seconds": 9.3
   }
  ],
  "mutations": [
@@ -80,6 +91,7 @@
     "gate-output/review-write",
     "gate-output/post-run-mutation",
     "gate-output/installed-policy",
+    "gate-output/installed-policy-list",
     "ran/gate-output/post-run-mutation",
     "ran/gate-output/installed-policy"
    ],
@@ -173,7 +185,8 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
-    "gate-output/installed-policy"
+    "gate-output/installed-policy",
+    "gate-output/installed-policy-list"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -185,14 +198,45 @@
    "target_rows": [
     "gate-output/installed-policy"
    ],
-   "edits": 2,
+   "edits": 3,
    "baseline": "green",
    "red_rows": [
-    "gate-output/installed-policy"
+    "gate-output/installed-policy",
+    "gate-output/installed-policy-list"
    ],
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/gate-output-policy-module-from-candidate.diff"
+  },
+  {
+   "mutation": "gate-output-policy-source-not-set",
+   "module": ".veldo/control_verification.py",
+   "target_rows": [
+    "gate-output/installed-policy-list"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/installed-policy-list"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-policy-source-not-set.diff"
+  },
+  {
+   "mutation": "gate-output-protected-list-from-subject-root",
+   "module": ".veldo/policy_check.py",
+   "target_rows": [
+    "gate-output/installed-policy-list"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/installed-policy-list"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-protected-list-from-subject-root.diff"
   }
  ]
 }
