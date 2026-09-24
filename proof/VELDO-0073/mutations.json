@@ -43,7 +43,7 @@
     true
    ]
   ],
-  "seconds": 3.155
+  "seconds": 2.632
  },
  "controls_green": true,
  "mutants": [
@@ -102,7 +102,7 @@
      true
     ]
    ],
-   "seconds": 2.636,
+   "seconds": 2.625,
    "source_sha256": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
   },
   {
@@ -166,7 +166,7 @@
      true
     ]
    ],
-   "seconds": 3.146,
+   "seconds": 2.618,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   },
   {
@@ -229,7 +229,7 @@
      true
     ]
    ],
-   "seconds": 2.648,
+   "seconds": 2.636,
    "source_sha256": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
   },
   {
@@ -317,7 +317,7 @@
      false
     ]
    ],
-   "seconds": 2.824,
+   "seconds": 2.333,
    "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
   },
   {
@@ -376,7 +376,7 @@
      true
     ]
    ],
-   "seconds": 3.166,
+   "seconds": 2.62,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -434,7 +434,7 @@
      true
     ]
    ],
-   "seconds": 3.673,
+   "seconds": 2.631,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -492,7 +492,7 @@
      true
     ]
    ],
-   "seconds": 2.688,
+   "seconds": 2.623,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -574,7 +574,7 @@
      false
     ]
    ],
-   "seconds": 2.235,
+   "seconds": 2.124,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -634,7 +634,7 @@
      true
     ]
    ],
-   "seconds": 2.665,
+   "seconds": 2.62,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -692,7 +692,65 @@
      true
     ]
    ],
-   "seconds": 2.649,
+   "seconds": 2.625,
+   "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 qualification/real-platform-proof detail: a TLS stand-in trusted only through SSL_CERT_FILE is refused and records no peer [verified]"
+   ],
+   "diff": "proof/VELDO-0073/trust-store-from-environment.diff",
+   "failed_rows": [
+    "VELDO-0073 qualification/real-platform-proof"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "913b19ff04f6a2e8137695bf2ab25020fc6c79f97143fcc4e65a322ff36691f1",
+   "name": "trust-store-from-environment",
+   "named_row_red": true,
+   "named_rows": [
+    "qualification/real-platform-proof"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ]
+   ],
+   "seconds": 3.123,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -750,7 +808,7 @@
      true
     ]
    ],
-   "seconds": 2.654,
+   "seconds": 2.628,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -808,7 +866,7 @@
      true
     ]
    ],
-   "seconds": 2.639,
+   "seconds": 2.627,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -866,7 +924,7 @@
      true
     ]
    ],
-   "seconds": 2.656,
+   "seconds": 2.627,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -929,7 +987,7 @@
      true
     ]
    ],
-   "seconds": 2.652,
+   "seconds": 2.629,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   {
@@ -990,7 +1048,7 @@
      true
     ]
    ],
-   "seconds": 2.659,
+   "seconds": 2.625,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -1049,7 +1107,7 @@
      false
     ]
    ],
-   "seconds": 2.642,
+   "seconds": 2.621,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -1107,7 +1165,7 @@
      false
     ]
    ],
-   "seconds": 2.645,
+   "seconds": 2.628,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   {
@@ -1165,7 +1223,7 @@
      false
     ]
    ],
-   "seconds": 2.637,
+   "seconds": 3.126,
    "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
   }
  ],
@@ -1192,6 +1250,7 @@
   "qualification/real-platform-proof": [
    "fixture-evidence-accepted",
    "tls-host-unchecked",
+   "trust-store-from-environment",
    "answer-not-the-platform-bytes"
   ],
   "settlement/production-construction": [
@@ -1251,7 +1310,7 @@
      true
     ]
    ],
-   "seconds": 3.176,
+   "seconds": 2.635,
    "source_sha256": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
   },
   "control_channel_attribution.py": {
@@ -1297,7 +1356,7 @@
      true
     ]
    ],
-   "seconds": 3.206,
+   "seconds": 2.639,
    "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
   },
   "control_channel_ingress.py": {
@@ -1343,7 +1402,7 @@
      true
     ]
    ],
-   "seconds": 3.181,
+   "seconds": 2.629,
    "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
   },
   "control_channel_presentation.py": {
@@ -1389,7 +1448,7 @@
      true
     ]
    ],
-   "seconds": 3.185,
+   "seconds": 2.629,
    "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
   },
   "control_channel_projection.py": {
@@ -1435,7 +1494,7 @@
      true
     ]
    ],
-   "seconds": 2.673,
+   "seconds": 2.622,
    "source_sha256": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
   },
   "init_scaffold.py": {
@@ -1481,7 +1540,7 @@
      true
     ]
    ],
-   "seconds": 2.631,
+   "seconds": 2.625,
    "source_sha256": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
   },
   "request_doorbell.py": {
@@ -1527,13 +1586,13 @@
      true
     ]
    ],
-   "seconds": 2.639,
+   "seconds": 2.625,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 73",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 73.36,
+ "serial_seconds": 71.125,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py"
 }

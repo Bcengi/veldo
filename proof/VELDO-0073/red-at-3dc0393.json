@@ -41,6 +41,7 @@
   "VELDO-0073 qualification/real-platform-proof detail: control: with TLS facts for api.telegram.org the same legs prove the platform",
   "VELDO-0073 qualification/real-platform-proof detail: an answer whose evidence is not the bytes of a recorded getUpdates answer is answer_unproven",
   "VELDO-0073 qualification/real-platform-proof detail: a Telegram run fed fixture exchanges records no qualification (fixture_only_evidence)",
+  "VELDO-0073 qualification/real-platform-proof detail: a TLS stand-in trusted only through SSL_CERT_FILE is refused and records no peer [None]",
   "VELDO-0073 qualification/real-platform-proof detail: the stand-in qualification never activates the Telegram origin",
   "VELDO-0073 settlement/production-construction detail: the ingress holds the VELDO-0068 settlement service on its own store connection",
   "VELDO-0073 settlement/production-construction detail: the owner's answer was signed by the actual protected signer process",
@@ -146,7 +147,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.662,
+ "seconds": 1.636,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py",
  "tree": "git archive 3dc0393cc5dcf41e2532970f1f3f6f55db1e7817, unchanged; the current suite file run against it"
