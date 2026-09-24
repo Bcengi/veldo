@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -304 +304 @@
+-        for item in judged:
++        for item in [i for i in judged if not i['refusals']]:  # defect: a refused receipt is not observed

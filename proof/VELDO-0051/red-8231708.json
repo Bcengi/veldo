@@ -1,0 +1,253 @@
+{
+ "production_at": "8231708",
+ "substituted": {
+  "control_event_vocabulary.py": "proof/VELDO-0051/prefix/control_event_vocabulary.py (absent at 8231708)",
+  "control_event_projection.py": "proof/VELDO-0051/prefix/control_event_projection.py (absent at 8231708)"
+ },
+ "new_modules_present_at_commit": [],
+ "installed_from_commit": 169,
+ "engine_templates_from_commit": 326,
+ "failed": [
+  "VELDO-0051 events/installed-assets",
+  "VELDO-0051 events/projection-prefix",
+  "VELDO-0051 events/confirmed-landing-only",
+  "VELDO-0051 events/completion-owner",
+  "VELDO-0051 events/observations",
+  "VELDO-0051 events/vocabulary-roundtrip",
+  "VELDO-0051 events/spend-recorded",
+  "VELDO-0051 events/unknown-refused"
+ ],
+ "passed": [
+  "VELDO-0051 ran/events/installed-assets",
+  "VELDO-0051 ran/events/projection-prefix",
+  "VELDO-0051 ran/events/vocabulary-roundtrip"
+ ],
+ "raised": [],
+ "observed": {
+  "validator_over_the_owners_events": [
+   1,
+   "  /dev/shm/v51-1vgquapz/roundtrip.jsonl: line 17: unknown event type 'run.aborted'\n  /dev/shm/v51-1vgquapz/roundtrip.jsonl: line 18: unknown event type 'run.blocked'\n  /dev/shm/v51-1vgquapz/roundtrip.jsonl: line 19: unknown event type 'run.done'\n  /dev/shm/v51-1vgquapz/roundtrip.jsonl: line 20: unknown event type 'run.resumed'\n  /dev/shm/v51-1vgquapz/roundtrip.jsonl: line 21: unknown event type 'run.started'\nveldo contracts: 5 problem(s)\n"
+  ],
+  "journey_at_commit": [
+   "approval.recorded",
+   "emergency.closed",
+   "emergency.push",
+   "gate.failed",
+   "gate.passed",
+   "incident.diagnosed",
+   "incident.opened",
+   "index.updated",
+   "merge.completed",
+   "plan.approved",
+   "plan.created",
+   "plan.revised",
+   "proof.recorded",
+   "remedy.proposed",
+   "review.requested",
+   "run.aborted",
+   "run.blocked",
+   "run.done",
+   "run.resumed",
+   "run.started",
+   "spec.blocked",
+   "spec.ready",
+   "spend.recorded",
+   "verdict.recorded",
+   "work.pulled"
+  ],
+  "owners_missing_from_the_round_trip": [
+   "spend.recorded"
+  ],
+  "spend_type_and_its_registered_owner": {
+   "spec.shipped": "control_event_projection.py"
+  },
+  "spend_recorder": {
+   "record": [
+    0,
+    "{\"at\": \"2026-09-24T13:43:37Z\", \"correlation_id\": \"VELDO-9601\", \"cost_usd\": 1.92, \"human_minutes\": 6, \"id\": \"f00a5fedc611\", \"producer\": \"events.py\", \"schema\": \"veldo.event/v1\", \"spec_id\": \"VELDO-9601\", \"spend_basis\": \"harness_reported\", \"spend_note\": \"suite 66\", \"tokens\": 48000, \"type\": \"spec.shipped",
+    ""
+   ],
+   "appended": [
+    {
+     "schema": "veldo.event/v1",
+     "id": "f00a5fedc611",
+     "type": "spec.shipped",
+     "at": "2026-09-24T13:43:37Z",
+     "producer": "events.py",
+     "correlation_id": "VELDO-9601",
+     "spec_id": "VELDO-9601",
+     "human_minutes": 6,
+     "tokens": 48000,
+     "cost_usd": 1.92,
+     "spend_basis": "harness_reported",
+     "spend_note": "suite 66"
+    }
+   ],
+   "blank": [
+    1,
+    "refusing to record spend: a spend record carrying no figure at all is indistinguishable from silence, and recording it would inflate the coverage number this ex"
+   ],
+   "blank_appended": false,
+   "validator": [
+    0,
+    ""
+   ],
+   "readers": {
+    "new": {
+     "corpus": [
+      0,
+      0.0,
+      0,
+      false
+     ],
+     "judgment": [
+      0,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 0,
+       "other": 0
+      }
+     ],
+     "budget": null
+    },
+    "historical": {
+     "corpus": [
+      1000,
+      0.08,
+      6,
+      true
+     ],
+     "judgment": [
+      1000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 6,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 1000,
+      "cost_usd": 0.08
+     }
+    },
+    "both": {
+     "corpus": [
+      1000,
+      0.08,
+      6,
+      true
+     ],
+     "judgment": [
+      1000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 6,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 1000,
+      "cost_usd": 0.08
+     }
+    }
+   }
+  },
+  "substitution_at_the_writer": [
+   0,
+   "{\"schema\": \"veldo.event/v1\", \"id\": \"6dd253ffd0e0\", \"type\": \"gate.passed\", \"at\": \"2026-09-24T13:43:37Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9601\","
+  ],
+  "substitution_in_process": {
+   "emit-extra": [
+    "ok",
+    "{'schema': 'veldo.event/v1', 'id': 'c4cc916f9788', 'type': 'proof.recorded', 'at': '2026-09-24T13:43:37Z', 'producer': 'events.py', 'correlation_id': 'VELDO-960"
+   ],
+   "executor-hook": [
+    "ok",
+    "{'schema': 'veldo.event/v1', 'id': '2821851e8a9c', 'type': 'approval.recorded', 'at': '2026-09-24T13:43:37Z', 'producer': 'executor.py', 'correlation_id': 'VELD"
+   ]
+  },
+  "direct_spec_shipped_after_build_only": {
+   "cli": [
+    0,
+    "{\"schema\": \"veldo.event/v1\", \"id\": \"1e9cac5529d9\", \"type\": \"spec.shipped\", \"at\": \"2026-09-24T13:43:36Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9600\""
+   ],
+   "cli-field-type": [
+    0,
+    "{\"schema\": \"veldo.event/v1\", \"id\": \"22ba6383ec7d\", \"type\": \"spec.shipped\", \"at\": \"2026-09-24T13:43:36Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9600\""
+   ],
+   "cli-projection-producer": [
+    0,
+    "{\"schema\": \"veldo.event/v1\", \"id\": \"7092b472fd07\", \"type\": \"proof.recorded\", \"at\": \"2026-09-24T13:43:36Z\", \"producer\": \"control_event_projection.py\", \"correlati"
+   ]
+  },
+  "direct_log_unchanged": false,
+  "projection": {
+   "first": {
+    "exit": 0,
+    "appended": [],
+    "watermark": {},
+    "head": [
+     31,
+     "sha256:bd1e022afd818d140487d62216c4605f0b4f2f3199bc4ba161f0706fe68bc823"
+    ]
+   },
+   "second": {
+    "outcome": "ok",
+    "appended": [],
+    "watermark": {},
+    "head": [
+     38,
+     "sha256:264e7960cb8c585d06864a95126b90dfd7ff406f4f7fa100631de0d2a3fa1425"
+    ]
+   }
+  },
+  "installed": {
+   "scaffold": "ok",
+   "identical": {
+    "control_event_vocabulary.py": false,
+    "control_event_projection.py": false,
+    "events.py": true,
+    "validate.py": true,
+    "completion_contract.py": true,
+    "control_store.py": true,
+    "git_process.py": true,
+    "verdict_corpus.py": true
+   },
+   "green": 0,
+   "red": 1,
+   "laid_validator": 0,
+   "laid_projector": [
+    2,
+    ""
+   ]
+  },
+  "observations": {
+   "receipts": 0,
+   "refused": 0,
+   "publish": [],
+   "pending": {
+    "accepted": 0,
+    "refused": 0,
+    "watermark": 0,
+    "head": null,
+    "pending_records": 0,
+    "pending_events": []
+   },
+   "settled": {
+    "accepted": 0,
+    "refused": 0,
+    "watermark": 0,
+    "head": null,
+    "pending_records": 0,
+    "pending_events": []
+   },
+   "counts": {
+    "accepted": 0,
+    "refused": 0
+   }
+  }
+ }
+}

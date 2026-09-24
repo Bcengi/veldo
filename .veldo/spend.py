@@ -33,7 +33,17 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SCHEMA_EVENT_TYPE = "spec.shipped"
+
+# THE EVENT A SPEND RECORD IS, AND WHY IT IS NOT spec.shipped (VELDO-0051). Spend is not completion.
+# A spend record is `spend.recorded`, owned by this module in the one canonical vocabulary
+# (.veldo/control_event_vocabulary.py) that the emitter and the gate's event validator both load, and
+# written with this module's own producer. Before VELDO-0051 each record was written as a spec.shipped
+# line. Those lines stay in the append-only log, valid under that historical spelling, and every reader
+# of spend actuals reads both types. This module never writes spec.shipped: completion is the journal
+# projection's alone, derived from a confirmed landing receipt, and the writer refuses it from here.
+SCHEMA_EVENT_TYPE = "spend.recorded"
+HISTORICAL_EVENT_TYPES = ("spec.shipped",)
+PRODUCER = "spend.py"
 
 # HOW THE NUMBER WAS ARRIVED AT. Required, because a token count with no stated provenance is one a
 # later analysis will over-trust. Ordered loosely from most to least trustworthy.
@@ -97,7 +107,7 @@ def record(spec_id, basis, tokens=None, cost_usd=None, human_minutes=None, note=
         extra["spend_note"] = note
     fn = emit if emit is not None else _events().emit
     return fn(SCHEMA_EVENT_TYPE, spec=spec_id, tokens=tokens, cost_usd=cost_usd,
-              human_minutes=human_minutes, extra=extra)
+              human_minutes=human_minutes, producer=PRODUCER, extra=extra)
 
 
 def _cli(argv):

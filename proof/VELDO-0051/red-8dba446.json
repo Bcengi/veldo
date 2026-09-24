@@ -1,0 +1,284 @@
+{
+ "production_at": "8dba446",
+ "substituted": {},
+ "new_modules_present_at_commit": [
+  "control_event_vocabulary.py",
+  "control_event_projection.py"
+ ],
+ "installed_from_commit": 171,
+ "engine_templates_from_commit": 328,
+ "failed": [
+  "VELDO-0051 events/vocabulary-roundtrip",
+  "VELDO-0051 events/spend-recorded"
+ ],
+ "passed": [
+  "VELDO-0051 events/installed-assets",
+  "VELDO-0051 events/projection-prefix",
+  "VELDO-0051 events/confirmed-landing-only",
+  "VELDO-0051 events/completion-owner",
+  "VELDO-0051 events/observations",
+  "VELDO-0051 events/unknown-refused",
+  "VELDO-0051 ran/events/installed-assets",
+  "VELDO-0051 ran/events/projection-prefix",
+  "VELDO-0051 ran/events/vocabulary-roundtrip"
+ ],
+ "raised": [],
+ "observed": {
+  "validator_over_the_owners_events": [
+   0,
+   ""
+  ],
+  "journey_at_commit": [
+   "approval.recorded",
+   "emergency.closed",
+   "emergency.push",
+   "gate.failed",
+   "gate.passed",
+   "incident.diagnosed",
+   "incident.opened",
+   "index.updated",
+   "merge.completed",
+   "plan.approved",
+   "plan.created",
+   "plan.revised",
+   "proof.recorded",
+   "remedy.proposed",
+   "review.requested",
+   "run.aborted",
+   "run.blocked",
+   "run.done",
+   "run.resumed",
+   "run.started",
+   "spec.blocked",
+   "spec.ready",
+   "spec.shipped",
+   "verdict.recorded",
+   "work.pulled"
+  ],
+  "owners_missing_from_the_round_trip": [],
+  "spend_type_and_its_registered_owner": {
+   "spec.shipped": "control_event_projection.py"
+  },
+  "spend_recorder": {
+   "record": [
+    1,
+    "",
+    "'spec.shipped' is DERIVED, never emitted: the journal projection (control_event_projection.py) derives it from a confirmed landing receipt for its exact unit and dispatch, never from a hand emission. Refused whatever --producer says, since the caller chooses that string."
+   ],
+   "appended": [],
+   "blank": [
+    1,
+    "refusing to record spend: a spend record carrying no figure at all is indistinguishable from silence, and recording it would inflate the coverage number this ex"
+   ],
+   "blank_appended": false,
+   "validator": [
+    0,
+    ""
+   ],
+   "readers": {
+    "new": {
+     "corpus": [
+      0,
+      0.0,
+      0,
+      false
+     ],
+     "judgment": [
+      0,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 0,
+       "other": 0
+      }
+     ],
+     "budget": null
+    },
+    "historical": {
+     "corpus": [
+      1000,
+      0.08,
+      6,
+      true
+     ],
+     "judgment": [
+      1000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 6,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 1000,
+      "cost_usd": 0.08
+     }
+    },
+    "both": {
+     "corpus": [
+      1000,
+      0.08,
+      6,
+      true
+     ],
+     "judgment": [
+      1000,
+      {
+       "review": 0,
+       "approval": 0,
+       "ship_bulk": 6,
+       "other": 0
+      }
+     ],
+     "budget": {
+      "tokens": 1000,
+      "cost_usd": 0.08
+     }
+    }
+   }
+  },
+  "substitution_at_the_writer": [
+   2,
+   "type substitution: 'spec.ready' was requested and the written line would carry 'gate.passed'"
+  ],
+  "substitution_in_process": {
+   "emit-extra": [
+    "refused",
+    "ValueError: type substitution: 'spec.ready' was requested and the written line would carry 'proof.recorded'"
+   ],
+   "executor-hook": [
+    "refused",
+    "ValueError: type substitution: 'review.requested' was requested and the written line would carry 'approval.recorded'"
+   ]
+  },
+  "direct_spec_shipped_after_build_only": {
+   "cli": [
+    2,
+    "'spec.shipped' is DERIVED, never emitted: the journal projection (control_event_projection.py) derives it from a confirmed landing receipt for its exact unit an"
+   ],
+   "cli-field-type": [
+    2,
+    "'spec.shipped' is DERIVED, never emitted: the journal projection (control_event_projection.py) derives it from a confirmed landing receipt for its exact unit an"
+   ],
+   "cli-projection-producer": [
+    2,
+    "'control_event_projection.py' is a projection's OWN producer: a line may declare it only on the projection's own append path"
+   ]
+  },
+  "direct_log_unchanged": true,
+  "projection": {
+   "first": {
+    "exit": 0,
+    "appended": [
+     [
+      "spec.shipped",
+      "VELDO-9601",
+      "dispatch/VELDO-9601/land",
+      16,
+      "fixture-13",
+      "sha256:cc9f4ad4ea343cabf8db09b229c08c4300c71a9aeb7de1f0192e7b7e4af5ba72",
+      "receipt:revision_landed:VELDO-9601:0"
+     ],
+     [
+      "spec.shipped",
+      "VELDO-9602",
+      "dispatch/VELDO-9602/land",
+      31,
+      "fixture-22",
+      "sha256:62532017c3f28b98c7dc7adbbe92811896bd455a591d0b65a673fafd4d1f869a",
+      "receipt:revision_landed:VELDO-9602:1"
+     ]
+    ],
+    "watermark": {
+     "domain": "domain-51",
+     "log": ".veldo/events.jsonl",
+     "record_digest": "sha256:62532017c3f28b98c7dc7adbbe92811896bd455a591d0b65a673fafd4d1f869a",
+     "repository": "repository-51",
+     "schema": "veldo.event_projection/v1",
+     "watermark": 31
+    },
+    "head": [
+     31,
+     "sha256:62532017c3f28b98c7dc7adbbe92811896bd455a591d0b65a673fafd4d1f869a"
+    ]
+   },
+   "second": {
+    "outcome": "ok",
+    "appended": [
+     [
+      "spec.shipped",
+      "VELDO-9604",
+      "dispatch/VELDO-9604/land",
+      38,
+      "fixture-26",
+      "sha256:66cd72a7aad84d221509e696e3ee099aabdbf9f996d40f01072c90b0351bdf46",
+      "receipt:revision_landed:VELDO-9604:0"
+     ]
+    ],
+    "watermark": {
+     "domain": "domain-51",
+     "log": ".veldo/events.jsonl",
+     "record_digest": "sha256:66cd72a7aad84d221509e696e3ee099aabdbf9f996d40f01072c90b0351bdf46",
+     "repository": "repository-51",
+     "schema": "veldo.event_projection/v1",
+     "watermark": 38
+    },
+    "head": [
+     38,
+     "sha256:66cd72a7aad84d221509e696e3ee099aabdbf9f996d40f01072c90b0351bdf46"
+    ]
+   }
+  },
+  "installed": {
+   "scaffold": "ok",
+   "identical": {
+    "control_event_vocabulary.py": true,
+    "control_event_projection.py": true,
+    "events.py": true,
+    "validate.py": true,
+    "completion_contract.py": true,
+    "control_store.py": true,
+    "git_process.py": true,
+    "verdict_corpus.py": true
+   },
+   "green": 0,
+   "red": 1,
+   "laid_validator": 0,
+   "laid_projector": [
+    2,
+    "{\"refused\": \"unavailable_service:store\", \"taxonomy\": \"unavailable_service\", \"observations\": []}\n"
+   ]
+  },
+  "observations": {
+   "receipts": 8,
+   "refused": 4,
+   "publish": [
+    31,
+    38
+   ],
+   "pending": {
+    "accepted": 0,
+    "refused": 0,
+    "watermark": 31,
+    "head": 38,
+    "pending_records": 7,
+    "pending_events": [
+     "6c42b070e639"
+    ]
+   },
+   "settled": {
+    "accepted": 2,
+    "refused": 0,
+    "watermark": 38,
+    "head": 38,
+    "pending_records": 0,
+    "pending_events": []
+   },
+   "counts": {
+    "accepted": 2,
+    "refused": 0
+   }
+  }
+ }
+}

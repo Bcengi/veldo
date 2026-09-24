@@ -1,0 +1,5 @@
+--- a/.veldo/spend.py
++++ b/.veldo/spend.py
+@@ -44 +44 @@
+-SCHEMA_EVENT_TYPE = "spend.recorded"
++SCHEMA_EVENT_TYPE = "spec.shipped"  # defect: a spend record is written as completion

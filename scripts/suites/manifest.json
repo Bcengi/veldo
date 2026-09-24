@@ -743,6 +743,15 @@
    ],
    "regions": "Authority service installation with a fixed executable, protected configuration and this host's receiver profile, key directory placement, one instance under the store's stable lock, signed IPC commands committed to the configured store, and named refusal with nothing started while the service is absent",
    "requires_note": "Uses only shared ROOT and expect. Real enrolled Git clones, OpenSSH enrollment, request, command and journal signatures, the configured SQLite store read through a separate connection, the owner's systemd user manager (a unit of the run's own in the runtime unit directory, uninstalled at its end), the kernel's lock and socket tables and the real claim client. Writes only temporary fixtures."
+  },
+  {
+   "name": "66_veldo_0051_events",
+   "file": "66_veldo_0051_events.py",
+   "requires": [
+    "66_veldo_0051_events"
+   ],
+   "regions": "One canonical event vocabulary for every enabled producer and the validator, the journal projection published in order at an explicit watermark, and spec.shipped only from a confirmed landing receipt for its exact unit and dispatch",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a scaffolded Git repository running its own canonical gate and push guard, real publications by the VELDO-0028 effect executor process to bare remotes, the installed emitter CLI, executor hook, review projection and validator in separate processes, and the journal projector. Writes only temporary fixtures."
   }
  ]
 }

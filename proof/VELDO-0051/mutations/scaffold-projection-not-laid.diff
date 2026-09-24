@@ -1,0 +1,4 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -136 +135,0 @@
+-    ".veldo/control_event_projection.py",
