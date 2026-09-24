@@ -1,0 +1,360 @@
+{
+  "specification": "VELDO-0066",
+  "criterion": "AC1",
+  "run": "live Telegram Bot API, 2026-09-24",
+  "ran_at_utc": "2026-09-24T13:18:34Z",
+  "tree": {
+    "head": "da9127b886083ee77683f002cb26740bb7842afc",
+    "attribution_module_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d",
+    "attribution_module_matches_head": true
+  },
+  "platform": {
+    "endpoint": "https://api.telegram.org",
+    "bot": "the test bot the owner provided for this run; its id is withheld because a Bot API token begins with it",
+    "getme_is_a_bot": true,
+    "getme_id_is_the_bot_the_token_names": true
+  },
+  "saved_response": {
+    "how": "one getUpdates call with no parameters (no offset, so nothing confirmed), before pass A",
+    "bytes": 1494,
+    "sha256": "95452b9433f3f7c4ba2079046befea12577d7a2f9516466169db418d9e4b1853",
+    "update_ids": [
+      575938980,
+      575938981,
+      575938982,
+      575938983
+    ]
+  },
+  "pass_a": {
+    "store": "fresh; the owner enrolled at his stable Telegram user id as the one person member",
+    "bot_api_calls": [
+      {
+        "method": "getMe",
+        "parameters": {}
+      },
+      {
+        "method": "getUpdates",
+        "parameters": {
+          "offset": 0,
+          "limit": 100,
+          "timeout": 0,
+          "allowed_updates": [
+            "message",
+            "edited_message"
+          ]
+        }
+      }
+    ],
+    "live_update_ids": [
+      575938980,
+      575938981,
+      575938982,
+      575938983
+    ],
+    "live_response_identical_to_saved": true,
+    "acquire_refusals": [],
+    "metrics": {
+      "accepted": 4,
+      "refused": 4,
+      "pending": 0,
+      "answered": 0,
+      "refused_by_reason": {
+        "missing_reply_reference": 3,
+        "forwarded_message": 1
+      }
+    },
+    "answers_recorded": 0,
+    "observations_hold_no_text_name_or_token": true
+  },
+  "pass_b": {
+    "store": "fresh; the same person is a member, nobody is enrolled",
+    "transcript_probe": {
+      "served": "a text-only transcript of the same messages as the getUpdates body",
+      "results": [
+        [
+          "refused",
+          "invalid_platform_answer"
+        ]
+      ],
+      "evidence_kept": 0
+    },
+    "bot_api_calls": [
+      {
+        "method": "getMe",
+        "parameters": {}
+      },
+      {
+        "method": "getUpdates",
+        "parameters": {
+          "offset": 0,
+          "limit": 100,
+          "timeout": 0,
+          "allowed_updates": [
+            "message",
+            "edited_message"
+          ]
+        }
+      },
+      {
+        "method": "getMe",
+        "parameters": {}
+      },
+      {
+        "method": "getUpdates",
+        "parameters": {
+          "offset": 0,
+          "limit": 100,
+          "timeout": 0,
+          "allowed_updates": [
+            "message",
+            "edited_message"
+          ]
+        }
+      }
+    ],
+    "acquire_refusals": [],
+    "metrics": {
+      "accepted": 4,
+      "refused": 5,
+      "pending": 0,
+      "answered": 0,
+      "refused_by_reason": {
+        "unknown_sender": 3,
+        "forwarded_message": 1
+      }
+    },
+    "answers_recorded": 0,
+    "every_update_refused_none_attributed": true,
+    "observations_hold_no_text_name_or_token": true
+  },
+  "presenter_edge_calls_in_both_passes": 0,
+  "updates": [
+    {
+      "update_id": 575938980,
+      "message_id": 1,
+      "sent_utc": "2026-09-24 12:53:03",
+      "owner_account": "opening bot command, sent by the client when the chat was started (not one of the three)",
+      "in_saved_response": true,
+      "in_live_response": true,
+      "update_type": "message",
+      "message_field_names": [
+        "chat",
+        "date",
+        "entities",
+        "from",
+        "message_id",
+        "text"
+      ],
+      "entity_types": [
+        "bot_command"
+      ],
+      "canonical_fields_present": {
+        "update_id": true,
+        "update_kind": true,
+        "message_id": true,
+        "date": true,
+        "chat_id": true,
+        "chat_type": true,
+        "sender_id": true,
+        "sender_is_bot": true,
+        "reply_to_message_id": false,
+        "reply_chat_id": false,
+        "reply_date": false
+      },
+      "required_fields_missing": [],
+      "automation_markers_present": [],
+      "automation_reason_found": false,
+      "forward_fields_present": [],
+      "is_forward": false,
+      "sender_is_person_account": true,
+      "sender_is_owner_stable_id": true,
+      "private_chat_of_sender": true,
+      "pass_a": {
+        "outcome": "refused",
+        "reason": "missing_reply_reference",
+        "principal": "owner"
+      },
+      "pass_b": {
+        "outcome": "refused",
+        "reason": "unknown_sender",
+        "principal": null
+      },
+      "same_evidence_in_both_passes": true,
+      "evidence_fields_hold_no_name_or_text": true
+    },
+    {
+      "update_id": 575938981,
+      "message_id": 2,
+      "sent_utc": "2026-09-24 12:53:06",
+      "owner_account": "message 1: a plain message",
+      "in_saved_response": true,
+      "in_live_response": true,
+      "update_type": "message",
+      "message_field_names": [
+        "chat",
+        "date",
+        "from",
+        "message_id",
+        "text"
+      ],
+      "entity_types": [],
+      "canonical_fields_present": {
+        "update_id": true,
+        "update_kind": true,
+        "message_id": true,
+        "date": true,
+        "chat_id": true,
+        "chat_type": true,
+        "sender_id": true,
+        "sender_is_bot": true,
+        "reply_to_message_id": false,
+        "reply_chat_id": false,
+        "reply_date": false
+      },
+      "required_fields_missing": [],
+      "automation_markers_present": [],
+      "automation_reason_found": false,
+      "forward_fields_present": [],
+      "is_forward": false,
+      "sender_is_person_account": true,
+      "sender_is_owner_stable_id": true,
+      "private_chat_of_sender": true,
+      "pass_a": {
+        "outcome": "refused",
+        "reason": "missing_reply_reference",
+        "principal": "owner"
+      },
+      "pass_b": {
+        "outcome": "refused",
+        "reason": "unknown_sender",
+        "principal": null
+      },
+      "same_evidence_in_both_passes": true,
+      "evidence_fields_hold_no_name_or_text": true
+    },
+    {
+      "update_id": 575938982,
+      "message_id": 3,
+      "sent_utc": "2026-09-24 12:54:13",
+      "owner_account": "message 2: sent after the owner changed his first name",
+      "in_saved_response": true,
+      "in_live_response": true,
+      "update_type": "message",
+      "message_field_names": [
+        "chat",
+        "date",
+        "from",
+        "message_id",
+        "text"
+      ],
+      "entity_types": [],
+      "canonical_fields_present": {
+        "update_id": true,
+        "update_kind": true,
+        "message_id": true,
+        "date": true,
+        "chat_id": true,
+        "chat_type": true,
+        "sender_id": true,
+        "sender_is_bot": true,
+        "reply_to_message_id": false,
+        "reply_chat_id": false,
+        "reply_date": false
+      },
+      "required_fields_missing": [],
+      "automation_markers_present": [],
+      "automation_reason_found": false,
+      "forward_fields_present": [],
+      "is_forward": false,
+      "sender_is_person_account": true,
+      "sender_is_owner_stable_id": true,
+      "private_chat_of_sender": true,
+      "pass_a": {
+        "outcome": "refused",
+        "reason": "missing_reply_reference",
+        "principal": "owner"
+      },
+      "pass_b": {
+        "outcome": "refused",
+        "reason": "unknown_sender",
+        "principal": null
+      },
+      "same_evidence_in_both_passes": true,
+      "evidence_fields_hold_no_name_or_text": true
+    },
+    {
+      "update_id": 575938983,
+      "message_id": 4,
+      "sent_utc": "2026-09-24 12:54:56",
+      "owner_account": "message 3: forwarded from another chat",
+      "in_saved_response": true,
+      "in_live_response": true,
+      "update_type": "message",
+      "message_field_names": [
+        "chat",
+        "date",
+        "forward_date",
+        "forward_from",
+        "forward_origin",
+        "from",
+        "message_id",
+        "text"
+      ],
+      "entity_types": [],
+      "canonical_fields_present": {
+        "update_id": true,
+        "update_kind": true,
+        "message_id": true,
+        "date": true,
+        "chat_id": true,
+        "chat_type": true,
+        "sender_id": true,
+        "sender_is_bot": true,
+        "reply_to_message_id": false,
+        "reply_chat_id": false,
+        "reply_date": false
+      },
+      "required_fields_missing": [],
+      "automation_markers_present": [],
+      "automation_reason_found": false,
+      "forward_fields_present": [
+        "forward_origin",
+        "forward_from",
+        "forward_date"
+      ],
+      "is_forward": true,
+      "sender_is_person_account": true,
+      "sender_is_owner_stable_id": true,
+      "private_chat_of_sender": true,
+      "pass_a": {
+        "outcome": "refused",
+        "reason": "forwarded_message",
+        "principal": null
+      },
+      "pass_b": {
+        "outcome": "refused",
+        "reason": "forwarded_message",
+        "principal": null
+      },
+      "same_evidence_in_both_passes": true,
+      "evidence_fields_hold_no_name_or_text": true,
+      "forward": {
+        "origin_type": "user",
+        "origin_is_the_sender_himself": true,
+        "evidence_sender_is_the_message_sender": true,
+        "attributed_to_anyone": false
+      }
+    }
+  ],
+  "rename": {
+    "updates": [
+      575938981,
+      575938982
+    ],
+    "first_name_differ": false,
+    "first_names_identical_across_all_updates": true,
+    "pass_a_same_principal": true,
+    "pass_a_principal": "owner"
+  },
+  "privacy": "no message text, display name, username, chat title, token, bot id, user id or raw update; checked by the driver against every string value in the platform data before writing"
+}
