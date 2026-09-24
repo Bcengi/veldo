@@ -3270,6 +3270,124 @@ def cases():
     proof('proof-unknown-taxonomy-classified', '    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")\n',
           '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
           'observations')
+    # VELDO-0132: each criterion's declared falsifier and further defects, each against the one suite 65
+    # row it names. Anchors are exact text in the three production modules suite 65 installs.
+    def workflow(name, old, new, row, module='control_workflow.py', also=()):
+        add(132, name, '65_veldo_0132_workflow.py', module, old, new, ['workflow/' + row], also)
+
+    cycle = 'control_workflow_cycle.py'
+    # AC1, declared: an edge to a nonexistent node is accepted.
+    workflow('workflow-dangling-edge-accepted', '        if source not in nodes or target not in nodes:\n',
+             '        if source not in nodes:  # defect: an edge to a nonexistent node is accepted\n', 'validation')
+    workflow('workflow-unbounded-cycle-accepted',
+             "        if 'max' not in edge:\n            graph.setdefault(edge['from'], []).append(edge['to'])\n",
+             "        if False:  # defect: a ring of unbounded transitions is not looked for\n"
+             "            graph.setdefault(edge['from'], []).append(edge['to'])\n", 'validation')
+    workflow('workflow-references-unresolved', '            if not resolve(kind, ref):\n',
+             '            if False:  # defect: a configuration reference is never looked up in the store\n', 'validation')
+    workflow('workflow-editor-unchecked',
+             "    problem = editor_problem(conn, params.get('principal'), repository, params.get('now'))\n",
+             '    problem = None  # defect: the editor is not judged\n', 'authorized-editor')
+    workflow('workflow-editor-role-ignored', "            or not set(entry.get('roles') or []) & set(EDITOR_ROLES)\n", '',
+             'authorized-editor')
+    workflow('workflow-revision-kinds-unowned',
+             '        store.declare_owners(conn, OWNER, kinds={REVISION_KIND: (SAVE,), HEAD_KIND: (SAVE,)}, module=__file__)\n',
+             '        pass  # defect: nothing declares who alone writes workflow revisions\n', 'revisions-immutable')
+    workflow('workflow-stale-base-accepted', "    if params.get('base') != current:\n",
+             '    if False:  # defect: an edit that did not see the head is accepted\n', 'revisions-immutable')
+    workflow('workflow-load-returns-head',
+             '            if version is None:\n                version = head_version(self.conn, self.domain, self.repository, workflow)\n',
+             '            if True:  # defect: an earlier revision cannot be read back\n'
+             '                version = head_version(self.conn, self.domain, self.repository, workflow)\n',
+             'revisions-immutable')
+    workflow('workflow-layout-reaches-runner', "    text = WF.canonical(revision['definition']).decode()\n",
+             "    text = WF.canonical(dict(revision['definition'], layout=revision['layout'])).decode()  # defect: the layout reaches execution\n",
+             'canvas-round-trip', module=cycle)
+    workflow('workflow-layout-dropped', "    definition, layout = params.get('definition'), params.get('layout')\n",
+             "    definition, layout = params.get('definition'), {}  # defect: the canvas layout is not kept\n",
+             'canvas-round-trip')
+    # AC3, declared: a worker is launched while an edge is saved.
+    workflow('workflow-save-launches-worker',
+             "        row = _entity_row(self.conn, rid)\n        answer = {'workflow': workflow,",
+             "        __import__('subprocess').run([__import__('sys').executable, '-c', 'pass'], check=False)  # defect: a worker is launched while the edge is saved\n"
+             "        row = _entity_row(self.conn, rid)\n        answer = {'workflow': workflow,",
+             'edit-without-execution')
+    workflow('workflow-load-activates-runtime',
+             '            row, data = verified_revision(self.store, self.conn, self.domain, self.repository, workflow, version)\n'
+             '        except (Refused, sqlite3.Error) as error:\n',
+             '            row, data = verified_revision(self.store, self.conn, self.domain, self.repository, workflow, version)\n'
+             "            _organ('control_runtime').activation()  # defect: loading asks the graph runtime\n"
+             '        except (Refused, sqlite3.Error) as error:\n',
+             'edit-without-execution')
+    # AC2, declared: an active cycle reads the canvas's current revision instead of its binding.
+    workflow('workflow-cycle-reads-canvas-head',
+             "                                         binding['version'])\n"
+             "        if (row['id'], row['digest'], data['definition_digest']) != (binding['revision'], binding['entity_digest'],\n"
+             "                                                                     binding['digest']):\n",
+             "                                         WF.head_version(self.conn, self.domain, self.repository, binding['id']))  # defect: the canvas's current revision\n"
+             "        if False:\n",
+             'pinned-revision', module=cycle)
+    workflow('workflow-cycle-binds-first-revision',
+             '        version = WF.head_version(conn, domain, repository, workflow) if WF._identifier(workflow) else 0\n',
+             '        version = 1 if WF._identifier(workflow) and WF.head_version(conn, domain, repository, workflow) else 0  # defect: a new cycle binds the first revision\n',
+             'pinned-revision', module=cycle)
+    workflow('workflow-runner-unregistered',
+             "    block = '\\n' + (HERE / STEPS).read_text() + '\\nveldo_register_workflow(%r, %d)\\n' % (text, revision['version'])\n",
+             "    block = '\\n' + (HERE / STEPS).read_text() + '\\n'  # defect: the runner registers no revision\n",
+             'actual-langgraph', module=cycle)
+    workflow('workflow-cancel-without-graph', "            if record['resume'] is not None:\n",
+             '            if False:  # defect: a cycle is canceled without asking the graph\n', 'actual-langgraph', module=cycle)
+    # Review finding: every visit to an owner wait needs an answer newer than the one the cycle last used.
+    workflow('workflow-owner-answer-reused', "            if used is not None and answer['version'] <= used['version']:\n",
+             '            if False:  # defect: an owner wait routes on an answer an earlier visit already used\n',
+             'owner-answer-per-visit', module=cycle)
+    workflow('workflow-owner-answer-not-spent',
+             "                record = dict(record, answered={'version': used['version'], 'digest': used['digest']})\n",
+             '                pass  # defect: the answer a visit routed on is not recorded as spent\n',
+             'owner-answer-per-visit', module=cycle)
+    workflow('workflow-role-unchecked', '        problem = self.role_problem(definition, node)\n',
+             '        problem = None  # defect: the assignment\'s role is not judged\n', 'ordinary-authorization', module=cycle)
+    workflow('workflow-gate-not-asked', "        decision = self.gate.decide(STATION, record['subject'])\n",
+             "        decision = {'eligible': True, 'refusals': [], 'decision_id': None, 'watermark': None}  # defect: the Gate is not asked\n",
+             'ordinary-authorization', module=cycle)
+    workflow('workflow-budget-unchecked', "            if record['steps'] >= definition['budget']['steps']:\n",
+             '            if False:  # defect: the cycle budget is not enforced\n', 'ordinary-authorization', module=cycle)
+    workflow('workflow-loop-bound-unchecked', "            if 'max' in taken and visits[taken['id']] > taken['max']:\n",
+             '            if False:  # defect: a loop bound is not enforced\n', 'ordinary-authorization', module=cycle)
+    workflow('workflow-completion-unvalidated',
+             '        if not received or received not in evidence or not evidence <= offered:\n',
+             '        if False:  # defect: an asserted completion is not checked against an accepted result\n',
+             'ordinary-authorization', module=cycle)
+    # AC4, declared: a terminal graph node sets the specification shipped directly.
+    shipped_anchor = ("            return self._refuse(record, 'missing_evidence:completion', node=position, graph=command)\n"
+                      "        record = dict(record, state='proposed', steps=record['steps'] + 1,\n")
+    workflow('workflow-terminal-ships-spec', shipped_anchor,
+             "            return self._refuse(record, 'missing_evidence:completion', node=position, graph=command)\n"
+             "        for spec in Path(self.gate.workspace).glob('specs/%s-*.md' % record['subject']):  # defect: the terminal node ships the spec\n"
+             "            spec.write_text(spec.read_text().replace('status: ready', 'status: shipped'))\n"
+             "        record = dict(record, state='proposed', steps=record['steps'] + 1,\n",
+             'no-workflow-authority', module=cycle)
+    workflow('workflow-terminal-writes-unit', shipped_anchor,
+             "            return self._refuse(record, 'missing_evidence:completion', node=position, graph=command)\n"
+             "        unit = _entity_row(self.conn, record['subject'])  # defect: the terminal node writes the unit itself\n"
+             "        self.store.execute(self.conn, {'command_id': 'shipped/' + record['cycle'], 'principal': self.principal,\n"
+             "                                       'operation': 'upsert_entity', 'artifact_digests': [], 'nonce': 'shipped/' + record['cycle'],\n"
+             "                                       'parameters': {'entity_id': record['subject'], 'kind': 'execution_unit',\n"
+             "                                                      'data': dict(unit['data'], state='SHIPPED')},\n"
+             "                                       'expected_versions': {record['subject']: unit['version']}},\n"
+             "                           self.signer, self.sign, self.generation)\n"
+             "        record = dict(record, state='proposed', steps=record['steps'] + 1,\n",
+             'no-workflow-authority', module=cycle)
+    workflow('workflow-cycle-refusal-unobserved', '        self.observations.append(event)\n        self.observe(event)\n',
+             "        self.observations.append(event)\n        if outcome != 'refused':  # defect: a refusal is not observed\n"
+             '            self.observe(event)\n', 'observations', module=cycle)
+    workflow('workflow-save-refusal-unclassified',
+             "        self.observe(dict(event, outcome='refused', refusal=error.code, refusals=codes, taxonomy=taxonomy(error.code)))\n",
+             "        self.observe(dict(event, outcome='refused', refusal=error.code, refusals=codes, taxonomy=None))  # defect: unclassified\n",
+             'observations')
+    workflow('workflow-pending-unlisted', "(self.domain, self.repository) and data['state'] == 'waiting':\n",
+             "(self.domain, self.repository) and data['state'] == 'running':  # defect: waiting work is not listed\n",
+             'observations', module=cycle)
     return result
 
 

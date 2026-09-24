@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -543 +543 @@
+-                record = dict(record, answered={'version': used['version'], 'digest': used['digest']})
++                pass  # defect: the answer a visit routed on is not recorded as spent

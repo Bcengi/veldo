@@ -709,6 +709,15 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, a scaffolded enrolled Git repository running its own canonical gate, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
   },
   {
+   "name": "65_veldo_0132_workflow",
+   "file": "65_veldo_0132_workflow.py",
+   "requires": [
+    "65_veldo_0132_workflow"
+   ],
+   "regions": "Versioned workflow definitions validated as plain data, immutable revisions, canvas save and load without execution, and LangGraph cycles bound to one exact revision acting only through ordinary checks",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store with OpenSSH journal signatures, a real Git workspace and VELDO-0035 snapshot, the eligibility Gate, the VELDO-0043 adapter on the VELDO-0045 activated LangGraph runtime staged into a temporary directory, and a child process audited for launches and network. Writes only temporary fixtures."
+  },
+  {
    "name": "65_veldo_0067_edges",
    "file": "65_veldo_0067_edges.py",
    "requires": [
