@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -323 +323 @@
+-            "checks": list((build or {}).get("checks") or []),
++            "checks": list((build or {}).get("checks") or [{"name": "unit", "status": "passed"}]),  # defect: a default passed check

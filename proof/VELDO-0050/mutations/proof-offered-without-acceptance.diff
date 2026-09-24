@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -710 +710 @@
+-            accepted = self.hooks.accept_proof(spec, build, g, proof, context=self.context)
++            accepted = None  # defect: the build is offered with its proof never accepted

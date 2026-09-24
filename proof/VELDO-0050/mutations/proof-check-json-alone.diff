@@ -1,0 +1,11 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -347,6 +347,2 @@
+-            try:
+-                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),
+-                                              manifest=proof, observation=observation, builder=builder)
+-            except CP.Refused as error:
+-                return {"ok": False, "problems": list(error.codes), "bundle": None}
+-            return dict(accepted, ok=True, problems=[])
++            ok, errors = self.validate_proof(proof)  # defect: check_json alone decides the proof
++            return {"ok": ok, "problems": [] if ok else ["validate_proof:%s" % errors], "bundle": None}

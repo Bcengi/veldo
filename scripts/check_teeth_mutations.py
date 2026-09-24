@@ -2886,6 +2886,102 @@ def cases():
           '            pass  # defect: a refusal is not observed\n', 'observations')
     floor('floor-finding-taxonomy-unknown', '    "unresolved_finding": "missing_evidence",\n', '',
           'observations')
+    # VELDO-0050: each criterion's declared falsifier and further defects, each against the one suite 64
+    # row it names. Anchors are exact text in the production modules suite 64 installs.
+    def proof(name, old, new, row, also=(), module='control_proof.py'):
+        add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
+
+    accept_block = ('        if self.proofs is not None:\n'
+                    '            try:\n'
+                    '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
+                    '                                              manifest=proof, observation=observation, builder=builder)\n'
+                    '            except CP.Refused as error:\n'
+                    '                return {"ok": False, "problems": list(error.codes), "bundle": None}\n'
+                    '            return dict(accepted, ok=True, problems=[])\n')
+    # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
+    proof('proof-kept-in-temporary-storage', accept_block,
+          '        if self.proofs is not None:\n'
+          '            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=True) as held:\n'
+          '                held.write(json.dumps(proof))  # defect: the manifest is kept only in temporary validation storage\n'
+          '                held.flush()\n'
+          '            return {"ok": True, "problems": [], "bundle": None}\n',
+          'fresh-reviewer-resolves', module='executor.py')
+    proof('proof-implementation-is-the-built-commit',
+          '              "implementation": {"commit": implementation}, "spec": spec,\n',
+          '              "implementation": {"commit": commit}, "spec": spec,  # defect: the built commit named as the implementation\n',
+          'fresh-reviewer-resolves')
+    proof('proof-offered-without-acceptance',
+          '            accepted = self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n',
+          '            accepted = None  # defect: the build is offered with its proof never accepted\n',
+          'accepted-before-offer', module='executor.py')
+    proof('proof-bundle-rewritable',
+          '    if before.get(rid) is not None:\n        raise Refused("proof_immutable", rid)\n',
+          '    pass  # defect: an accepted bundle may be rewritten\n', 'accepted-before-offer')
+    proof('proof-kinds-unowned',
+          '        store.declare_owners(conn, OWNER, kinds={BUNDLE_KIND: (ACCEPT,), OBSERVATION_KIND: (OBSERVE,)}, module=__file__)\n',
+          '        pass  # defect: nothing declares who alone writes accepted proof\n', 'accepted-before-offer')
+    # AC2, declared: check_json alone decides an empty-criteria proof naming a nonexistent commit.
+    proof('proof-check-json-alone', accept_block,
+          '        if self.proofs is not None:\n'
+          '            ok, errors = self.validate_proof(proof)  # defect: check_json alone decides the proof\n'
+          '            return {"ok": ok, "problems": [] if ok else ["validate_proof:%s" % errors], "bundle": None}\n',
+          'contextual-refusals', module='executor.py')
+    proof('proof-duplicates-uncounted',
+          '    problems.extend("invalid_input:criteria/duplicate:%s" % cid for cid in sorted({i for i in ids if ids.count(i) > 1}, key=str))\n',
+          '    pass  # defect: a criterion mapped twice is not noticed\n', 'contextual-refusals')
+    proof('proof-spec-revision-unread', '    if manifest.get("spec_revision") != spec["revision"]:\n',
+          '    if False:  # defect: the proof\'s spec revision is not compared with the accepted one\n',
+          'contextual-refusals')
+    proof('proof-criteria-from-manifest',
+          '    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in spec["criteria"] if cid not in ids)\n',
+          '    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in ids if cid not in ids)  # defect: the manifest names its own universe\n',
+          'contextual-refusals')
+    # AC3, declared: a default passed unit check is inserted when observations are absent.
+    proof('proof-default-passed-check', '            "checks": list((build or {}).get("checks") or []),\n',
+          '            "checks": list((build or {}).get("checks") or [{"name": "unit", "status": "passed"}]),  # defect: a default passed check\n',
+          'no-default-success', module='executor.py')
+    proof('proof-terminal-not-required',
+          '        if terminal != "GATE: GREEN (%s)" % commit:\n            problems.append("missing_evidence:observation/terminal")\n',
+          '        pass  # defect: a gate that printed no terminal result is not refused for it\n', 'no-default-success')
+    proof('proof-absent-check-passes', '            if results.get(name) is None:\n',
+          '            if False:  # defect: a check the gate never printed is not missing\n', 'no-default-success')
+    proof('proof-observation-digest-unbound', '    elif stored["digest"] != reference.get("digest"):\n',
+          '    elif False:  # defect: an altered observation reference is believed\n', 'no-default-success')
+    proof('proof-checks-from-claims', '              "checks": checks, "producer": producer,',
+          '              "checks": [dict(c) for c in claims if isinstance(c, dict)], "producer": producer,  # defect: the claims recorded as checks\n             ',
+          'actual-checks')
+    proof('proof-gate-exit-unrecorded',
+          '                               "observed": "   %s: pass" % name, "gate_exit": observation.get("exit"),\n',
+          '                               "observed": "   %s: pass" % name, "gate_exit": None,  # defect: the gate exit is not recorded\n',
+          'actual-checks')
+    # AC4, declared: the executor emits verdict.recorded itself.
+    proof('proof-executor-emits-verdict', '            if gate is None:\n                # The pre-factory loop',
+          '            if True:  # defect: the executor emits verdict.recorded itself\n                # The pre-factory loop',
+          'owning-services', module='executor.py')
+    proof('proof-executor-emits-gate-event',
+          '                   **({"observation": seen["id"]} if seen.get("id") else {}))\n',
+          '                   **({"observation": seen["id"]} if seen.get("id") else {}))\n'
+          '            if gate_green:\n'
+          '                self.hooks.emit("gate.passed", spec=spec.get("id"), commit=build.get("commit"))  # defect: the gate\'s own event\n',
+          'owning-services', module='executor.py')
+    proof('proof-build-only-lands',
+          '                # Exactly one build/gate/proof cycle ran; verdict stays None.\n',
+          '                # Exactly one build/gate/proof cycle ran; verdict stays None.\n'
+          '                self.hooks.emit("merge.completed", spec=spec.get("id"), commit=build.get("commit"))  # defect: a landing\n',
+          'build-only-no-landing', module='executor.py')
+    proof('proof-build-only-reviews', '            if stop_after == "proof":\n',
+          '            if stop_after == "proof" and False:  # defect: a build-only run goes on into review\n',
+          'build-only-no-landing', module='executor.py')
+    proof('proof-module-not-installed', '    ".veldo/control_proof.py",\n', '', 'installed-assets', module='init_scaffold.py')
+    proof('proof-closure-not-installed', '    ".veldo/control_membership.py",\n', '', 'installed-assets',
+          module='init_scaffold.py')
+    proof('proof-refusal-not-observed',
+          '            self.observe(dict(event, outcome="refused", refusal=error.code, refusals=codes,\n'
+          '                              taxonomy=taxonomy(error.code)))\n',
+          '            pass  # defect: a refusal is not observed\n', 'observations')
+    proof('proof-unknown-taxonomy-classified', '    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")\n',
+          '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
+          'observations')
     return result
 
 

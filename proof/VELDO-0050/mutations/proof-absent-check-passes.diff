@@ -1,0 +1,5 @@
+--- a/.veldo/control_proof.py
++++ b/.veldo/control_proof.py
+@@ -443 +443 @@
+-            if results.get(name) is None:
++            if False:  # defect: a check the gate never printed is not missing

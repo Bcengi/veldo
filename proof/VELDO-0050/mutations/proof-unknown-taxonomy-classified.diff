@@ -1,0 +1,5 @@
+--- a/.veldo/control_proof.py
++++ b/.veldo/control_proof.py
+@@ -114 +114 @@
+-    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")
++    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified

@@ -1,0 +1,5 @@
+--- a/.veldo/control_proof.py
++++ b/.veldo/control_proof.py
+@@ -408 +408 @@
+-    problems.extend("invalid_input:criteria/duplicate:%s" % cid for cid in sorted({i for i in ids if ids.count(i) > 1}, key=str))
++    pass  # defect: a criterion mapped twice is not noticed

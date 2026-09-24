@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0050_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0050-durable-contextual-proof.md"
   - "specs/index.md"
   - "proof/VELDO-0050/*"
