@@ -24,6 +24,7 @@ footprint:
   - ".veldo/control_claim.py"
   - "packs/*/.veldo/control_claim.py"
   - "scripts/suites/*_veldo_0133_*.py"
+  - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -259,3 +260,9 @@ named; the intake is driven through its own real operation, not a fixture of it.
 2026-09-23: new draft for PLAN-0019 revision 3, Release 1 stage 3, answering VELDO-0064's open
 question under owner Telegram 28934, with the no-person case recommended in 28935 and agreed in
 28936. The simple function is in this release; recovery, reminders and reassignment are Release 2.
+2026-09-24: built on build-veldo-0133. The inbox opens the disposition question in the decline or cancel
+transaction, `ask` and `dispose` are new inbox commands, `unpark` is a new claim organ transition, and
+suite 69_veldo_0133_dispositions carries the rows, with the red record at 3e00de0 and finding 133 in
+proof/VELDO-0133/. The footprint gains scripts/suites/60_veldo_0064_inbox.py: its parked-units row
+declines a unit parked on the owner's assignment, and under AC1 that decline now asks the owner, so the
+row reads that unit as awaiting_disposition instead of declined. Only that expectation changed.
