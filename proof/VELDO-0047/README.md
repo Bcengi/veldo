@@ -16,7 +16,7 @@ AUTHORITY_UNAVAILABLE refusal and stale inspection. Both are installed by `.veld
 
 ## Rows
 
-Suite `scripts/suites/66_veldo_0047_authority.py`: 28 rows, 14 assertion rows and 14 rows saying each
+Suite `scripts/suites/66_veldo_0047_authority.py`: 30 rows, 15 assertion rows and 15 rows saying each
 region ran to its end. Real enrolled Git clones, OpenSSH signatures, this host's trust file, the
 configured SQLite store read back through the suite's own connection, the owner's systemd user
 manager, the kernel's lock and socket tables, the real claim client, and a real launch through the
@@ -24,12 +24,12 @@ installed receiver whose worker runs in a transient scope of this run's own slic
 
 | Criterion | Rows |
 |-|-|
-| AC1 install, start, stop, one instance | authority/installed-fixed-and-protected, authority/one-instance-under-the-lock, authority/key-directory-placement, authority/key-directory-location-before-existence, authority/key-directory-guidance-changes-no-directory, authority/key-directory-relative-refused, authority/receiver-configured-with-host-profile, authority/installed-receiver-launches |
+| AC1 install, start, stop, one instance | authority/installed-fixed-and-protected, authority/one-instance-under-the-lock, authority/key-directory-placement, authority/key-directory-location-before-existence, authority/key-directory-guidance-changes-no-directory, authority/key-directory-relative-refused, authority/receiver-configured-with-host-profile, authority/installed-receiver-launches, authority/installation-refuses-an-underivable-closure |
 | AC2 signed commands reach the configured store | authority/mutation-reaches-the-configured-store, authority/wrong-coordinates-or-actor-refused |
 | AC3 absent and exited service | authority/absent-service-refuses-by-name, authority/unexpected-exit-waits-for-an-operator |
 | Observability and installation | authority/observations, authority/installed-assets |
 
-One recorded run: `observations.json` (28 passed, 0 failed, about 5 s), written by `drive.py`.
+One recorded run: `observations.json` (30 passed, 0 failed, about 6.5 s), written by `drive.py`.
 
 ## The fixed executable
 
@@ -42,12 +42,14 @@ validator files `control_eligibility.VALIDATOR_ROLES` declares (the snapshot loa
 module name, not through a load any source spells, so its files come from the declaration of the
 module that loads them). From there it follows every sibling load to a fixed point: the location of
 each `spec_from_file_location` call, each call of a loader helper whose location is built from a
-parameter (`organ(name)`, `_organ(name, path)`), called directly or bound with `functools.partial`,
-and each import. A load naming a module the engine directory lacks, or a load site whose module no
-literal names, refuses installation by name (`invalid_input:closure:absent`,
-`invalid_input:closure:unresolved`), so the installed program is never short of a module it loads.
-Here it installs 45 modules where the hand list had 25. The scaffold's `REQUIRED_SUBSTRATE` is not a
-seed: it declares a repository's gate rather than what the snapshot loads, and `init_scaffold.py` is
+parameter (`organ(name)`, `_organ(name, path)`), called directly, bound with `functools.partial` or
+through another module's helper assigned to a name (`_load = _runner()._load`), and each import. A
+variable names a file only when every binding of it in its module is a plain assignment naming one. A
+load naming a module the engine directory lacks, a load site whose module this reading cannot name
+for certain, or a loader helper handed on as a value, refuses installation by name
+(`invalid_input:closure:absent`, `invalid_input:closure:unresolved`), so the installed program is
+never short of a module it loads. Here it installs 45 modules where the hand list had 25. The
+scaffold's `REQUIRED_SUBSTRATE` is not a seed: it declares a repository's gate rather than what the snapshot loads, and `init_scaffold.py` is
 not laid down in an adopter's tree, where this installer runs too. `supervisor.py`, which the
 installer loads for its default unit directory, is now laid down by the scaffolder.
 
@@ -58,6 +60,9 @@ scope in the profile's slice with the profile's memory and task caps, then its s
 scope is gone. `authority/installed-assets` lays down exactly the `.veldo` modules the scaffolder lists
 into a fresh tree, an adopter's, and requires that tree's installer to derive the same closure with
 nothing absent and to find its default unit directory.
+`authority/installation-refuses-an-underivable-closure` installs from two engine copies, one whose
+receiver loads a module by a computed name and one whose receiver loads a module the engine lacks,
+and requires each refused by name with nothing laid down.
 
 ## The key directory
 
@@ -83,23 +88,24 @@ Both records run the CURRENT suite over earlier production code, written by `red
 suite's four production anchors (the service, the client, the scaffolder and the unit template) at the
 commit's own copies and checks every other installed module byte-identical to the commit's.
 
-`red-7ed08fb.json`, before the review fixes: the seven new or changed rows fail by assertion, nothing
+`red-7ed08fb.json`, before the review fixes: the eight new or changed rows fail by assertion, nothing
 raised, and every region row passes. The installed receiver refuses the launch as
 `unavailable_service:architecture_validator` and no worker runs; the installed executable holds none
 of the validator's files; an adopter's tree derives no closure and has no `supervisor.py`; absent key
 directories under `/tmp`, the home and a worker directory are refused as absent, the first with the
 step `sudo install -d -m 0755 /tmp`; the printed step, run, turns the suite's own 1777 ancestor into
-0755; the mode and owner refusals print `chmod` and `chown`; and a relative key directory is resolved
-against the working directory, where it installs.
+0755; the mode and owner refusals print `chmod` and `chown`; a relative key directory is resolved
+against the working directory, where it installs; and both underivable engines install, short of what
+their receiver loads.
 
-`red-b738c79.json`, before the service existed: all 14 assertion rows fail by assertion, nothing
-raised, and all 14 region rows pass. Substituted there: `control_client.py` and `init_scaffold.py` at
+`red-b738c79.json`, before the service existed: all 15 assertion rows fail by assertion, nothing
+raised, and all 15 region rows pass. Substituted there: `control_client.py` and `init_scaffold.py` at
 b738c79, and the stand-ins `prefix/control_service.py` and `prefix/veldo-authority.service` (neither
 exists there; the stand-in installs, starts and refuses nothing).
 
 ## Mutations
 
-36 registered as finding 47 in `scripts/check_teeth_mutations.py`, each diff in `mutations/`, the run
+38 registered as finding 47 in `scripts/check_teeth_mutations.py`, each diff in `mutations/`, the run
 in `mutations.json` (`python3 -B scripts/check_teeth_mutations.py --finding 47 --jobs 4 --diff-dir
 proof/VELDO-0047/mutations`): every target row red by assertion with its region completing, baseline
 green. The declared falsifiers: `authority-two-schedulers` (AC1, one-instance-under-the-lock),
@@ -111,11 +117,13 @@ assets rows too). Every assertion row has at least two mutations: installed-rece
 `authority-receiver-workspace-omitted`; the key directory rows have existence judged alone, an absent
 directory not located, guidance naming the parent or the first existing ancestor, a `chmod` step, a
 relative directory made absolute and a relative directory not refused; installed-assets has
-`authority-supervisor-not-installed` with the two it had.
+`authority-supervisor-not-installed` with the two it had; installation-refuses-an-underivable-closure
+has `authority-closure-unresolved-installed` and `authority-closure-absent-installed`.
 
 ## Costs
 
-The suite adds about 5 s to the gate. Finding 47's mutations take about 54 s with 4 jobs.
+The suite adds about 6.5 s to the gate (about 4 s before these fixes). Finding 47's mutations take
+about 75 s with 4 jobs.
 
 ## Not done here
 

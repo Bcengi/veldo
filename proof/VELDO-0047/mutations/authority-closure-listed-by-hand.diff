@@ -1,6 +1,6 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -612 +612,8 @@
+@@ -666 +666,8 @@
 -    fixed = {name: (HERE / name).read_bytes() for name in closure()}
 +    fixed = {name: (HERE / name).read_bytes() for name in (  # defect: the installed modules listed by hand
 +        'authority_contract.py', 'claim.py', 'completion_contract.py', 'control_channel_attribution.py',

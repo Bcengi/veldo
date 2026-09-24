@@ -14,7 +14,8 @@
   "VELDO-0047 authority/unexpected-exit-waits-for-an-operator",
   "VELDO-0047 authority/observations",
   "VELDO-0047 authority/installed-receiver-launches",
-  "VELDO-0047 authority/installed-assets"
+  "VELDO-0047 authority/installed-assets",
+  "VELDO-0047 authority/installation-refuses-an-underivable-closure"
  ],
  "observed": {
   "absent": {
@@ -23,7 +24,7 @@
    "mutation": {
     "code": null,
     "last_watermark": null,
-    "service": "store4789b20ebd",
+    "service": "store476b6d7cc8",
     "unit": null
    },
    "socket_exists": false,
@@ -42,7 +43,7 @@
    "adopter": {
     "closure": 0,
     "errors": {
-     "load": "FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/v47-j0vdltc9/laid/.veldo/control_service.py'"
+     "load": "FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/v47-8m8np_w9/laid/.veldo/control_service.py'"
     }
    },
    "installed": 0,
@@ -78,7 +79,7 @@
     "ancestor_before": "0o1777",
     "existing_named": [],
     "expected": [
-     "/dev/shm/v47-j0vdltc9/shared/keys"
+     "/dev/shm/v47-8m8np_w9/shared/keys"
     ],
     "intermediate_modes": [],
     "key_mode": null,
@@ -95,9 +96,9 @@
     "ancestor_before": "0o755",
     "existing_named": [],
     "expected": [
-     "/dev/shm/v47-j0vdltc9/deep/veldo",
-     "/dev/shm/v47-j0vdltc9/deep/veldo/keys",
-     "/dev/shm/v47-j0vdltc9/deep/veldo/keys/svc"
+     "/dev/shm/v47-8m8np_w9/deep/veldo",
+     "/dev/shm/v47-8m8np_w9/deep/veldo/keys",
+     "/dev/shm/v47-8m8np_w9/deep/veldo/keys/svc"
     ],
     "intermediate_modes": [
      null,
@@ -177,19 +178,19 @@
   "located": {
    "directly-under-tmp": {
     "left": [],
-    "path": "/tmp/veldo-keys-47-89b20ebd",
+    "path": "/tmp/veldo-keys-47-6b6d7cc8",
     "refused": null,
     "report": false
    },
    "under-a-worker-directory": {
     "left": [],
-    "path": "/dev/shm/v47-j0vdltc9/work/keys-47",
+    "path": "/dev/shm/v47-8m8np_w9/work/keys-47",
     "refused": null,
     "report": false
    },
    "under-the-home": {
     "left": [],
-    "path": "/home/dmitry/.veldo-keys-47-89b20ebd/authority",
+    "path": "/home/dmitry/.veldo-keys-47-6b6d7cc8/authority",
     "refused": null,
     "report": false
    }
@@ -212,12 +213,12 @@
    "answer_accepted": null,
    "claim": {
     "coordinates": {
-     "address": "/dev/shm/v47-j0vdltc9/authority/authority.sock",
+     "address": "/dev/shm/v47-8m8np_w9/authority/authority.sock",
      "as_of": null,
      "last_watermark": null,
-     "service": "store4789b20ebd",
-     "store": "/dev/shm/v47-j0vdltc9/authority/control.sqlite3",
-     "workspace": "/dev/shm/v47-j0vdltc9/clone-a"
+     "service": "store476b6d7cc8",
+     "store": "/dev/shm/v47-8m8np_w9/authority/control.sqlite3",
+     "workspace": "/dev/shm/v47-8m8np_w9/clone-a"
     },
     "stopped": "authority_unavailable"
    },
@@ -306,14 +307,30 @@
    "names-nothing": {
     "judged_acceptable_absolute": null,
     "left": [],
-    "path": "veldo-keys-47-89b20ebd",
+    "path": "veldo-keys-47-6b6d7cc8",
     "refused": null,
     "report": false
    },
    "resolves-to-an-acceptable-directory": {
     "judged_acceptable_absolute": null,
     "left": [],
-    "path": "../../../../../dev/shm/v47-j0vdltc9/relkeys/authority",
+    "path": "../../../../../dev/shm/v47-8m8np_w9/relkeys/authority",
+    "refused": null,
+    "report": false
+   }
+  },
+  "underivable": {
+   "absent": {
+    "expected": "invalid_input:closure:absent",
+    "left": [],
+    "names": "control_never_shipped.py",
+    "refused": null,
+    "report": false
+   },
+   "unresolved": {
+    "expected": "invalid_input:closure:unresolved",
+    "left": [],
+    "names": "control_launch.py:",
     "refused": null,
     "report": false
    }
@@ -334,7 +351,8 @@
   "VELDO-0047 ran/authority/unexpected-exit-waits-for-an-operator",
   "VELDO-0047 ran/authority/observations",
   "VELDO-0047 ran/authority/installed-receiver-launches",
-  "VELDO-0047 ran/authority/installed-assets"
+  "VELDO-0047 ran/authority/installed-assets",
+  "VELDO-0047 ran/authority/installation-refuses-an-underivable-closure"
  ],
  "production_at": "b738c79",
  "raised": [],

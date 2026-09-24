@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -725 +725 @@
+@@ -779 +779 @@
 -        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
 +        pass  # defect: a second instance takes scheduling authority too

@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -651 +651 @@
+@@ -705 +705 @@
 -        _write(config_path, _json(config), 0o600)
 +        _write(config_path, _json(config), 0o644)  # defect: the configuration is readable by everyone

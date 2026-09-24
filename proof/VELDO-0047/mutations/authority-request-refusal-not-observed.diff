@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -917 +917 @@
+@@ -971 +971 @@
 -        if isinstance(response, dict) and response.get('accepted') is False:
 +        if False:  # defect: a request refused before apply leaves no observation

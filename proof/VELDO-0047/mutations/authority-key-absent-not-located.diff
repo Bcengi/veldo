@@ -1,6 +1,6 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -379 +379,2 @@
+@@ -433 +433,2 @@
 -    if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):
 +    if os.path.lexists(text) and any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real)
 +                                     for root in writable):  # defect: an absent directory is not located

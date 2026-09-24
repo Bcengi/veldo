@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 47 --jobs 4 --diff-dir proof/VELDO-0047/mutations",
  "summary": {
-  "mutations_rejected": 36,
+  "mutations_rejected": 38,
   "green_suites": {
-   "66_veldo_0047_authority.py": 54
+   "66_veldo_0047_authority.py": 56
   },
-  "driver_seconds": 53.9
+  "driver_seconds": 74.8
  },
  "all_targets_red_by_assertion": true,
  "mutations": [
@@ -271,7 +271,8 @@
    "red_rows": [
     "authority/installed-fixed-and-protected",
     "authority/installed-receiver-launches",
-    "authority/installed-assets"
+    "authority/installed-assets",
+    "authority/installation-refuses-an-underivable-closure"
    ],
    "target_red": true,
    "target_region_completed": true,
@@ -311,11 +312,42 @@
     "authority/unexpected-exit-waits-for-an-operator",
     "authority/observations",
     "authority/installed-receiver-launches",
+    "authority/installation-refuses-an-underivable-closure",
     "ran/authority/receiver-configured-with-host-profile"
    ],
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/authority-closure-ignores-loader-helpers.diff"
+  },
+  {
+   "mutation": "authority-closure-unresolved-installed",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/installation-refuses-an-underivable-closure"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installation-refuses-an-underivable-closure"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-closure-unresolved-installed.diff"
+  },
+  {
+   "mutation": "authority-closure-absent-installed",
+   "module": ".veldo/control_service.py",
+   "target_rows": [
+    "authority/installation-refuses-an-underivable-closure"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "authority/installation-refuses-an-underivable-closure"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/authority-closure-absent-installed.diff"
   },
   {
    "mutation": "authority-receiver-workspace-omitted",

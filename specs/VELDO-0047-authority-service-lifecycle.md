@@ -188,9 +188,10 @@ control_eligibility.VALIDATOR_ROLES declares, following every sibling load to a 
 by name a load of an absent module or one no literal names; `supervisor.py`, which the installer loads,
 is laid down by the scaffolder. The key directory is refused as relative before anything resolves it,
 judged by location before existence, and its one-time step creates only the directories missing below
-the first existing ancestor and changes no existing directory. Suite 66 has 28 rows:
+the first existing ancestor and changes no existing directory. Suite 66 has 30 rows:
 authority/installed-receiver-launches (a real launch through the installed receiver),
+authority/installation-refuses-an-underivable-closure,
 authority/key-directory-location-before-existence, authority/key-directory-guidance-changes-no-directory
 and authority/key-directory-relative-refused are new, and installed-fixed-and-protected,
 installed-assets and key-directory-placement judge the derived closure, an adopter's laid tree and the
-new guidance; all seven are red by assertion at 7ed08fb. Finding 47 has 36 mutations.
+new guidance; all eight are red by assertion at 7ed08fb. Finding 47 has 38 mutations.

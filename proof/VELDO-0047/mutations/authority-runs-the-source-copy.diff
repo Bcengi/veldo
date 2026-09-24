@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -610 +610 @@
+@@ -664 +664 @@
 -              'PYTHON': python, 'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}
 +              'PYTHON': python, 'EXECUTABLE': str(HERE / 'control_service.py'), 'CONFIG': config_path}  # defect: the unit runs the source copy

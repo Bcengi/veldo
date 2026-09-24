@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -430 +430 @@
+@@ -484 +484 @@
 -        return 'it is open to others; a key directory is one of its own, so ' + elsewhere
 +        return 'close it to everyone else: chmod 0700 %s' % path  # defect: the guidance changes an existing directory

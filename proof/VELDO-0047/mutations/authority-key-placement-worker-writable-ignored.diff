@@ -1,6 +1,6 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -379,2 +379 @@
+@@ -433,2 +433 @@
 -    if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):
 -        problems.append('invalid_input:key_directory:worker_writable')
 +    pass  # defect: a directory workers write into may hold the keys

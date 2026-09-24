@@ -1,5 +1,6 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -268 +268 @@
--            if not candidates:
+@@ -311 +311,2 @@
+-            if not options:
 +            if True:  # defect: what a loader helper loads (organ('x')) is not followed
++                accounted.add(id(target))

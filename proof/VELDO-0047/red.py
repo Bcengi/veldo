@@ -96,7 +96,7 @@ def main(commit):
         'raised': observed.get('raised'),
         'observed': {k: observed.get(k) for k in ('placement', 'located', 'guided', 'relative', 'install', 'receiver',
                                                    'lock', 'mutation', 'refusals', 'absent', 'exit', 'observations',
-                                                   'launch', 'assets')},
+                                                   'launch', 'assets', 'underivable')},
     }, indent=1, sort_keys=True, default=str))
 
 

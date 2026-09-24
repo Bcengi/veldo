@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -722,0 +723,2 @@
+@@ -776,0 +777,2 @@
 +    with contextlib.suppress(OSError):
 +        os.unlink(str(path))  # defect: the lock file is replaced, so each instance locks its own
