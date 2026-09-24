@@ -752,8 +752,8 @@
    ],
    "regions": "The trusted wrapper's heartbeat while a model call is blocked, in a session of its own and on a channel the engine does not hold, claim renewal on each heartbeat and the missed-heartbeat stop, an accepted stop's bounded escalation over the whole group, and a retirement that follows actual termination, keeps each open obligation, is retried by the runner once an obligation is completed and releases the slot once",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory."
-   },
-   {
+  },
+  {
    "name": "66_veldo_0051_events",
    "file": "66_veldo_0051_events.py",
    "requires": [
@@ -770,6 +770,15 @@
    ],
    "regions": "Landing candidates built in a disposable detached workspace from a fixed watermark with the implementation, evidence and projections, every Git failure and missing evidence on the candidate path refused by name before the gate, and a red gate, invalid proof, unresolved finding, rejected approval or repository policy objection leaving local and remote trunk unchanged",
    "requires_note": "Uses only shared ROOT and expect. Real Git (a bare fixture remote with a nondefault trunk, the caller's clone with the trunk held by a second worktree, a builder clone), a scaffolded repository running its own canonical gate, real SQLite store with OpenSSH journal and review signatures, the VELDO-0050 proof service, the VELDO-0049 floor authority, the VELDO-0052 eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition and VELDO-0039 dispatch records for real builder and reviewer child processes. Writes only temporary fixtures."
+  },
+  {
+   "name": "68_veldo_0137_policy_revision",
+   "file": "68_veldo_0137_policy_revision.py",
+   "requires": [
+    "68_veldo_0137_policy_revision"
+   ],
+   "regions": "policy_check's stale-proof check over digest-form and integer-form spec revisions",
+   "requires_note": "Uses only shared ROOT and expect; a temporary Git repository laid from .veldo/ modules, driven through git_process."
   }
  ]
 }

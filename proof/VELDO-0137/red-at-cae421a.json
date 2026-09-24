@@ -1,0 +1,35 @@
+{
+ "observed": {
+  "absent_commit": [
+   "VELDO-9137"
+  ],
+  "after_history": [
+   "VELDO-9137"
+  ],
+  "fresh": [
+   "VELDO-9137"
+  ],
+  "raised": [
+   "VELDO-9137",
+   "VELDO-9138"
+  ],
+  "short_commit": [
+   "VELDO-9137"
+  ],
+  "wrong_digest": [
+   "VELDO-9137"
+  ]
+ },
+ "production_at": "cae421a (origin/main before VELDO-0137)",
+ "rows": [
+  [
+   "VELDO-0137 policy/digest-revision-current",
+   false
+  ],
+  [
+   "VELDO-0137 policy/digest-revision-stale",
+   true
+  ]
+ ],
+ "suite": "the current suite 68 from the change"
+}
