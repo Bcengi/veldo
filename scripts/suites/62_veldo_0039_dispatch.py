@@ -179,6 +179,11 @@ raw = sys.stdin.buffer.read()
 packet = json.loads(raw) if raw.strip() else {}
 (markers / ('%d.packet' % os.getpid())).write_text(json.dumps(packet))
 payload = packet.get('payload') or {}
+if payload.get('close_stdout'):
+    # A worker that closes its output and keeps running: the receiver must still hold it to its deadline.
+    os.close(1)
+    time.sleep(payload.get('hold', 0))
+    sys.exit(0)
 if payload.get('release'):
     end = time.time() + 60
     while not Path(payload['release']).exists() and time.time() < end:
@@ -542,6 +547,35 @@ sys.exit(payload.get('code', 0))
                     'one_identity_each': identity_ok}
                 check('dispatch/launch-results', accepted_ok and spawn_ok and withdrawn_ok and unknown_ok and wrapped_ok
                       and identity_ok)
+
+            with region('dispatch/deadline-after-closed-output', 'dispatch/remote-stop-holds-unit'):
+                # A worker that closes its output early is still stopped at its deadline, and recorded as
+                # stopped, not as a clean exit.
+                uc = admitted('VELDO-9321')
+                started = time.time()
+                closing = runner.submit(uc, 'build', **dict(job(deadline=2), payload={
+                    'task': 'build the unit', 'close_stdout': True, 'hold': 8}))
+                ec = runner.wait(closing) or {}
+                elapsed = time.time() - started
+                rc = rec(closing.dispatch_id)
+                term = rc.get('termination') or {}
+                observed['closed_output'] = {'result': closing.result, 'state': rc.get('state'), 'termination': term,
+                                             'elapsed': round(elapsed, 2)}
+                check('dispatch/deadline-after-closed-output',
+                      closing.result == 'accepted' and rc.get('state') == 'exited' and term.get('deadline_stop') is True
+                      and term.get('returncode') is None and elapsed < 6)
+                # Through the wrapper (a remote engine), stopping the local transport at the deadline does not
+                # show the far engine ended: the outcome is unknown and the unit stays held.
+                ur = admitted('VELDO-9322')
+                remote = runner.submit(ur, 'build', **job(release='never-9322', adapter='wrapped-engine', deadline=2))
+                runner.wait(remote)
+                rr = rec(remote.dispatch_id)
+                again = runner.submit(ur, 'build', **job(adapter='wrapped-engine'))
+                observed['remote_stop'] = {'result': remote.result, 'state': rr.get('state'), 'reason': rr.get('reason'),
+                                           'again': [again.result, getattr(again, 'refusal', None)]}
+                check('dispatch/remote-stop-holds-unit',
+                      remote.result == 'accepted' and rr.get('state') == 'unknown'
+                      and rr.get('reason') == 'remote_stop_unconfirmed' and again.result == 'refused')
 
             with region('dispatch/unknown-never-relaunched'):
                 before = dispatches.version(lost.dispatch_id)
