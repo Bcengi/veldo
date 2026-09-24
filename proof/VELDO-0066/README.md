@@ -37,7 +37,10 @@ No answer was recorded in either pass.
 
 **What did not match the criterion.** The rename is not in the platform's data: the first name is the
 same on all four updates, so one principal for the plain and renamed messages shows nothing about
-renaming, and AC1's rename is still owed live. There was no second Telegram account, so the unknown
+renaming. The owner waived the live rename (Telegram 29052, 2026-09-24: "we should rely on id"):
+attribution reads only the stable sender id, never a display name, and the suite's
+`display-name-as-identity` mutation reds if a display name is ever used as identity. There was no
+second Telegram account, so the unknown
 actor was the owner's own account with nobody enrolled, and a stranger copying his display name was
 not tried live. The forward's origin (`forward_origin` type user) is the owner himself, so this run
 cannot tell the sender from the origin. The reply fields and AC2's binding were not exercised. Pass A's

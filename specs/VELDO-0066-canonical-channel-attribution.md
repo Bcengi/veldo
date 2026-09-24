@@ -146,3 +146,8 @@ presenter unchanged. Rows, the red record at 894fa12 and the finding 66 mutation
 shapes, not the Telegram service. Pending, not done: AC1's live Telegram sandbox run is still owed
 and needs the owner to provide a Telegram test-environment bot. The criteria, status and risk are
 unchanged.
+
+2026-09-24, live run: AC1 was driven against the real Bot API with the owner's test bot
+(proof/VELDO-0066/live-2026-09-24.json): every required identity field present, membership mapped only by
+the stable sender id, every update refused with nobody enrolled, the forward refused. The owner waived the
+live display-name rename (Telegram 29052: "we should rely on id").
