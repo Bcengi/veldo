@@ -2,7 +2,7 @@
 """The canonical event vocabulary (PLAN-0019 W36, VELDO-0051).
 
 WHAT THIS MODULE IS. The ONE registry of event types every producer writes and every validator
-recognises, and the schema spellings a line may carry. The emitter (.veldo/events.py) and the gate's
+recognizes, and the schema spellings a line may carry. The emitter (.veldo/events.py) and the gate's
 event validator (.veldo/validate.py) both load it by sibling path, so neither holds a second list:
 before this module the emitter declared 31 types and the validator 21, and a run.done the emitter
 wrote was refused by the validator reading the same log.

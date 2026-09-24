@@ -532,7 +532,7 @@ def check_spec_plan_binding(spec_path, fm, registry):
 
 
 # THE ONE CANONICAL EVENT VOCABULARY (VELDO-0051), the module the emitter (.veldo/events.py) loads
-# too, so the gate recognises exactly what the enabled producers write: the loop's steps, the run
+# too, so the gate recognizes exactly what the enabled producers write: the loop's steps, the run
 # milestones, the incident lifecycle (incident.py INCIDENT_EVENT_TYPES) and the request lifecycle
 # (request.py REQUEST_EVENT_TYPES). Before it this module held its own 21-type list against the
 # emitter's 31, and refused a run.done the emitter wrote. EVENT_TYPES and EVENT_SCHEMAS are THIS

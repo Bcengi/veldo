@@ -142,5 +142,5 @@ function. No specification status or historical proof was changed.
 falsifiers are registered as finding 51, and scripts/suites/11_inbound_command_receipt_reconcile.py,
 whose WARP-1208 row pinned the validator's vocabulary as an exact set. One canonical vocabulary
 necessarily adds the run, request and decision types the emitter already wrote, so that row now
-requires the previously recognised set to be kept (an inclusion), which is the additivity it
+requires the previously recognized set to be kept (an inclusion), which is the additivity it
 states. No criterion, status or historical proof changed.

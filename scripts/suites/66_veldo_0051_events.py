@@ -130,7 +130,7 @@ def _v51_suite():
         work = base / 'work'
         work_log = work / '.veldo' / 'events.jsonl'
         try:
-            # ---- The destination repository, laid by the installed scaffolder -----------------------
+            # The destination repository, laid by the installed scaffolder.
             with region('events/installed-assets'):
                 work.mkdir()
                 _git_process.run(['git', 'init', '-q', '-b', 'main', str(work)], check=True, capture_output=True)
@@ -175,7 +175,7 @@ def _v51_suite():
                       and laid_projector.returncode == 2
                       and json.loads(laid_projector.stdout or '{}').get('refused') == 'unavailable_service:store')
 
-            # ---- The store, the publications, the receipts and the projection -----------------------
+            # The store, the publications, the receipts and the projection.
             with region('events/projection-prefix', 'events/confirmed-landing-only', 'events/completion-owner',
                         'events/observations'):
                 private = base / 'private'
@@ -513,7 +513,7 @@ def _v51_suite():
                       and not any(chunk in json.dumps(observations) for chunk in keytext.split() if len(chunk) > 40))
                 writer.close()
 
-            # ---- AC1: every enabled owner's events, serialised to JSONL, validated in another process -
+            # AC1: every enabled owner's events, serialized to JSONL, validated in another process.
             with region('events/vocabulary-roundtrip', 'events/unknown-refused'):
                 # The owners each writes; an owner is enabled when the installer lays its file.
                 registry = dict(VOC.EVENTS)

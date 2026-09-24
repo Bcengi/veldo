@@ -3292,7 +3292,7 @@ def cases():
         add(51, name, '66_veldo_0051_events.py', module, old, new, ['events/' + row], also)
 
     vocabulary = 'control_event_vocabulary.py'
-    # AC1, declared: the validator no longer recognises run.done while the emitter still writes it.
+    # AC1, declared: the validator no longer recognizes run.done while the emitter still writes it.
     events51('events-validator-forgets-run-done', 'EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES)\n',
              'EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES) - {"run.done"}  # defect: the validator forgets run.done\n',
              'vocabulary-roundtrip', module='validate.py')
