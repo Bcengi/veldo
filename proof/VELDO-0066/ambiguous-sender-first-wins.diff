@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -480,2 +479,0 @@
+-        if len(principals) > 1:
+-            return 'ambiguous_sender', known

@@ -1,0 +1,5 @@
+--- a/.veldo/tracker_bridge.py
++++ b/.veldo/tracker_bridge.py
+@@ -256 +256 @@
+-        self._refuse_enrolled(repo)
++        # defect: a direct write reaches an enrolled repository

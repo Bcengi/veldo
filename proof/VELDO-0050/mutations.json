@@ -1,0 +1,403 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 50 --jobs 4 --diff-dir proof/VELDO-0050/mutations",
+ "summary": {
+  "mutations_rejected": 24,
+  "green_suites": {
+   "64_veldo_0050_proof.py": 40
+  },
+  "driver_seconds": 39.6
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations": [
+  {
+   "mutation": "proof-kept-in-temporary-storage",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/fresh-reviewer-resolves"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer",
+    "proof/actual-checks",
+    "proof/build-only-no-landing",
+    "proof/fresh-reviewer-resolves",
+    "proof/contextual-refusals",
+    "proof/owning-services",
+    "proof/no-default-success",
+    "proof/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-kept-in-temporary-storage.diff"
+  },
+  {
+   "mutation": "proof-implementation-is-the-built-commit",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/fresh-reviewer-resolves"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/fresh-reviewer-resolves"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-implementation-is-the-built-commit.diff"
+  },
+  {
+   "mutation": "proof-offered-without-acceptance",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer",
+    "proof/actual-checks",
+    "proof/build-only-no-landing",
+    "proof/fresh-reviewer-resolves",
+    "proof/owning-services",
+    "proof/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-offered-without-acceptance.diff"
+  },
+  {
+   "mutation": "proof-unstored-accepted",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-unstored-accepted.diff"
+  },
+  {
+   "mutation": "proof-bundle-rewritable",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer",
+    "proof/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-bundle-rewritable.diff"
+  },
+  {
+   "mutation": "proof-kinds-unowned",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/accepted-before-offer"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer",
+    "proof/build-only-no-landing",
+    "proof/fresh-reviewer-resolves"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-kinds-unowned.diff"
+  },
+  {
+   "mutation": "proof-check-json-alone",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/contextual-refusals"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer",
+    "proof/actual-checks",
+    "proof/build-only-no-landing",
+    "proof/fresh-reviewer-resolves",
+    "proof/contextual-refusals",
+    "proof/owning-services",
+    "proof/no-default-success",
+    "proof/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-check-json-alone.diff"
+  },
+  {
+   "mutation": "proof-duplicates-uncounted",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/contextual-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/contextual-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-duplicates-uncounted.diff"
+  },
+  {
+   "mutation": "proof-spec-revision-unread",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/contextual-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/contextual-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-spec-revision-unread.diff"
+  },
+  {
+   "mutation": "proof-criteria-from-manifest",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/contextual-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/contextual-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-criteria-from-manifest.diff"
+  },
+  {
+   "mutation": "proof-default-passed-check",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/no-default-success"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/no-default-success"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-default-passed-check.diff"
+  },
+  {
+   "mutation": "proof-terminal-not-required",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/no-default-success"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/no-default-success"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-terminal-not-required.diff"
+  },
+  {
+   "mutation": "proof-absent-check-passes",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/no-default-success"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/no-default-success"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-absent-check-passes.diff"
+  },
+  {
+   "mutation": "proof-observation-digest-unbound",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/no-default-success"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/no-default-success"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-observation-digest-unbound.diff"
+  },
+  {
+   "mutation": "proof-checks-from-claims",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/actual-checks"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/actual-checks",
+    "proof/fresh-reviewer-resolves",
+    "proof/owning-services"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-checks-from-claims.diff"
+  },
+  {
+   "mutation": "proof-gate-exit-unrecorded",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/actual-checks"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/actual-checks"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-gate-exit-unrecorded.diff"
+  },
+  {
+   "mutation": "proof-executor-emits-verdict",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/owning-services"
+   ],
+   "declared_falsifier_of": "AC4",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/owning-services"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-executor-emits-verdict.diff"
+  },
+  {
+   "mutation": "proof-executor-emits-gate-event",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/owning-services"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/owning-services"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-executor-emits-gate-event.diff"
+  },
+  {
+   "mutation": "proof-build-only-lands",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/build-only-no-landing"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/build-only-no-landing"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-build-only-lands.diff"
+  },
+  {
+   "mutation": "proof-build-only-reviews",
+   "module": ".veldo/executor.py",
+   "target_rows": [
+    "proof/build-only-no-landing"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/accepted-before-offer",
+    "proof/build-only-no-landing",
+    "proof/fresh-reviewer-resolves"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-build-only-reviews.diff"
+  },
+  {
+   "mutation": "proof-module-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "proof/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-module-not-installed.diff"
+  },
+  {
+   "mutation": "proof-closure-not-installed",
+   "module": ".veldo/init_scaffold.py",
+   "target_rows": [
+    "proof/installed-assets"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/installed-assets"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-closure-not-installed.diff"
+  },
+  {
+   "mutation": "proof-refusal-not-observed",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-refusal-not-observed.diff"
+  },
+  {
+   "mutation": "proof-unknown-taxonomy-classified",
+   "module": ".veldo/control_proof.py",
+   "target_rows": [
+    "proof/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "proof/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/proof-unknown-taxonomy-classified.diff"
+  }
+ ]
+}

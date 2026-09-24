@@ -981,6 +981,22 @@ work:
     order: 11134
     release: 1
     stage: 1
+  - item: W98
+    spec: VELDO-0135
+    title: Enrolled work is offered from its authoritative floor state, not the spec status line
+    feature_refs: [F3]
+    depends_on: [VELDO-0049, VELDO-0052]
+    order: 11135
+    release: 1
+    stage: 1
+  - item: W99
+    spec: VELDO-0136
+    title: Tell the owner to reply to the request when an answer does not reply to a presentation
+    feature_refs: [F5]
+    depends_on: [VELDO-0065, VELDO-0066]
+    order: 13136
+    release: 1
+    stage: 3
 
 regression:
   journeys:
@@ -1261,6 +1277,8 @@ These are writing-only allocations; no specification status or existing evidence
 | W95 | VELDO-0132 | 1 | 4 |
 | W96 | VELDO-0133 | 1 | 3 |
 | W97 | VELDO-0134 | 1 | 1 |
+| W98 | VELDO-0135 | 1 | 1 |
+| W99 | VELDO-0136 | 1 | 3 |
 
 ## Related baseline and follow-up disposition
 
@@ -1297,3 +1315,8 @@ architecture:<repository> that makes the architecture contract required, and not
 whether the contract was required still came from the workspace's editable policy (R50). W97 adds
 the signed owner command that is its only writer and the written schema both writer and reader
 are checked against, and depends on VELDO-0053.
+
+2026-09-24: W98 adds VELDO-0135 and W99 adds VELDO-0136 as Release 1 drafts, both from scoped reviews
+that night. W98: the frontier and the work loop read the spec status line, which VELDO-0049 stopped
+writing for enrolled work, so the enrolled journey stalls after build acceptance. W99: an owner who answers
+without pressing Reply gets silence (VELDO-0066's review).

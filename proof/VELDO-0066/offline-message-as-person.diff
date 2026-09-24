@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -166,2 +165,0 @@
+-    if message.get('is_from_offline'):
+-        return 'sent by an implicit action'

@@ -122,6 +122,9 @@ _FILES = [
     # VELDO-0054: exact decision-record dependency evaluation control_eligibility.py loads; a runtime
     # asset, no validator import, not substrate.
     ".veldo/control_decision_dependency.py",
+    # VELDO-0050: accepted proof bundles and complete contextual proof validation, which executor.py
+    # loads; a runtime asset, no validator import, not substrate.
+    ".veldo/control_proof.py",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
@@ -140,6 +143,8 @@ _FILES = [
     ".veldo/control_channel_projection.py",
     # VELDO-0065: versioned presentation receipts and presentation-bound answers; no validator loads it.
     ".veldo/control_channel_presentation.py",
+    # VELDO-0066: canonical Telegram acquisition and sender attribution; no validator loads it.
+    ".veldo/control_channel_attribution.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.

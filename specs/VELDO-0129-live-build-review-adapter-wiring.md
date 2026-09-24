@@ -108,6 +108,14 @@ and LiveReviewer.review in .veldo/dispatch.py refuse without injected implementa
 qualification alone does not connect these entry points. This concern wires the production
 default; it does not relax their refusal when no qualified configuration exists.
 
+Handed on by VELDO-0050 (its review, 2026-09-24): the proof service (.veldo/control_proof.py) is
+built but no production path wires one yet, so the dispatcher's default LiveLoop stops every floor
+build at proof with missing_authority:proof_service. This concern wires a ProofService into the
+dispatcher's LiveLoop; makes the floor's accept_build in .veldo/dispatch.py resolve the stored
+bundle rather than the committed manifest alone; makes the executor refuse, with the floor
+enabled, a hook set whose accept_proof returns nothing; and has the real build adapter's proof
+carry spec_revision and evidence entries that name a path and a digest.
+
 Use canonical engine assets and synchronize installed copies. Resolve the proposed footprint's
 architecture mapping before ready, including the new UI assets where applicable; this draft does
 not amend the architecture contract. Inventory every asset the selected journey installs. Compare

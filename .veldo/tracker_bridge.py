@@ -51,6 +51,14 @@ already-drafted question by the intake_source link, allocates a spec id, and wri
 draft). So the gate drives it with a FakeTracker and an in-memory FakeSpecStore, no network and no
 filesystem. Tracker content stays untrusted input; the intake already sanitizes front matter.
 
+ENROLLED FACTORY WORK IS NOT DRAFTED OR PROMOTED HERE (VELDO-0049). The owner dropped tracker intake
+for the factory (Telegram 28857 and 28859): work for a repository enrolled with the authority
+(VELDO-0029) arrives through Telegram or the authenticated API, and its lifecycle is the authority's.
+So both reconcilers skip an enrolled repository by name (ENROLLED_SKIP) and write nothing, and the
+store's own write_spec and promote_spec refuse one (SpecStoreError tracker_intake_disabled), so no
+caller of the store reaches an enrolled repository's specs through this bridge. Unenrolled
+repositories keep the two-stage gate unchanged.
+
   python3 .veldo/tracker_bridge.py selfcheck   # drive the bridge over the fake tracker + fake store
 """
 import argparse
@@ -84,6 +92,11 @@ _intake = importlib.util.module_from_spec(_ikspec)
 _ikspec.loader.exec_module(_intake)
 draft_spec_from_item = _intake.draft_spec_from_item
 render_spec_markdown = _intake.render_spec_markdown
+
+
+# VELDO-0049: the named reason an enrolled repository's ticket is skipped by both reconcilers.
+ENROLLED_SKIP = ("tracker_intake_disabled: the repository is enrolled factory work; its work arrives through "
+                 "Telegram or the authenticated API and its lifecycle is the authority's")
 
 
 class SpecStoreError(ValueError):
@@ -203,7 +216,21 @@ class SpecStore:
     def _promote_spec(self, repo, spec_id):
         raise NotImplementedError
 
+    def _enrolled(self, repo):
+        """Whether `repo` is enrolled factory work (VELDO-0049). A store with no repository on disk
+        has none enrolled; the filesystem store asks the repository's enrollment binding."""
+        return False
+
     # --- public surface (validated by name) ---------------------------------
+    def enrolled(self, repo):
+        """Whether the bridge must leave `repo` alone: enrolled factory work is never drafted or
+        promoted through the tracker (VELDO-0049)."""
+        return bool(self._enrolled(_require(repo, "repo")))
+
+    def _refuse_enrolled(self, repo):
+        if self.enrolled(repo):
+            raise SpecStoreError(ENROLLED_SKIP)
+
     def spec_id_for_source(self, repo, source):
         """The spec id already drafted for this ticket's intake_source link, or None. Read-only; this
         is the idempotency oracle - a hit means the ticket was already drafted and must not be redrafted."""
@@ -226,6 +253,7 @@ class SpecStore:
         _require_source(source)
         if not isinstance(markdown, str) or not markdown.strip():
             raise SpecStoreError("write_spec needs the rendered draft markdown")
+        self._refuse_enrolled(repo)
         return self._write_spec(repo, spec_id, tuple(source), markdown)
 
     def markdown_for(self, repo, spec_id):
@@ -243,6 +271,7 @@ class SpecStore:
         re-run over an already-promoted spec leaves it byte-identical."""
         _require(repo, "repo")
         _require(spec_id, "spec_id")
+        self._refuse_enrolled(repo)
         return bool(self._promote_spec(repo, spec_id))
 
 
@@ -321,6 +350,15 @@ class FakeSpecStore(SpecStore):
                           sort_keys=True)
 
 
+def _skip_enrolled(store, repo, iid, result):
+    """VELDO-0049: enrolled factory work is neither drafted nor promoted from the tracker. Its ticket
+    is skipped by name (ENROLLED_SKIP) and nothing is written."""
+    if not store.enrolled(repo):
+        return False
+    result["skipped"][iid] = ENROLLED_SKIP
+    return True
+
+
 def reconcile_drafts(adapter, config, store, owner="unassigned"):
     """Reconcile the tracker's Agent-assigned, repo-tagged tickets into spec DRAFTS and surface each on
     its ticket, idempotently. Pure control logic over the injected adapter seam and SpecStore seam.
@@ -345,8 +383,10 @@ def reconcile_drafts(adapter, config, store, owner="unassigned"):
                 result["skipped"][iid] = ("not a draft candidate (assignee is not the Agent user, or "
                                           "the repo tag does not resolve to a known repo)")
             continue
-        result["candidates"] += 1
         repo = cand.repo
+        if _skip_enrolled(store, repo, iid, result):
+            continue
+        result["candidates"] += 1
         source = _source_link(item)
 
         # STAGE 1 - DRAFT, idempotent by the durable intake_source link (never a second spec).
@@ -401,8 +441,10 @@ def reconcile_promotions(adapter, config, store):
                                           "status is not in the ready-for-dev set, or the repo tag "
                                           "does not resolve to a known repo)")
             continue
-        result["eligible"] += 1
         repo = elig.repo
+        if _skip_enrolled(store, repo, iid, result):
+            continue
+        result["eligible"] += 1
         spec_id = store.spec_id_for_source(repo, _source_link(item))
         if spec_id is None:
             if iid is not None:
@@ -428,6 +470,16 @@ class FilesystemSpecStore(SpecStore):
         self._prefix = id_prefix
         self._start = start
         self._V = None
+
+    def _enrolled(self, repo):
+        """The repository's own enrollment binding decides (control_eligibility.enrolled): a Git that
+        cannot answer where a repository is present is a named stop, never 'not enrolled'."""
+        root = self._specs_dir(repo).parent
+        if getattr(self, "_EL", None) is None:
+            espec = importlib.util.spec_from_file_location("veldo_eligibility_bridge", _HERE / "control_eligibility.py")
+            self._EL = importlib.util.module_from_spec(espec)
+            espec.loader.exec_module(self._EL)
+        return self._EL.enrolled(str(root))
 
     def _validate_mod(self):
         if self._V is None:

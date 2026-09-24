@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1021 +1021 @@
+-    if body["ruling"] == "resolved":
++    if body["ruling"] in RULINGS:  # defect: a rejected ruling resolves the finding

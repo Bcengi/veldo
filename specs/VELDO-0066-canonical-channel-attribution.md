@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0066_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0066-canonical-channel-attribution.md"
   - "specs/index.md"
   - "proof/VELDO-0066/*"
@@ -95,6 +96,18 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an owner answers a presented decision request in Telegram; the edge acquires the reply
+  with the platform's own sender, message, chat and time fields, binds it to the exact presentation it
+  replies to, and the authority accepts it only from the current enrolled person.
+- Threat model: another Telegram user, including one who copies the owner's display name, a reply in
+  another chat or to another presentation, an automation or bot sender, and caller-supplied actor
+  labels. The owner's account, the edge's credentials and our store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a compromised
+  Telegram account or bot token; Telegram outages and redelivery recovery (Release 2); forged rows in
+  our own store.
+
 ## Notes
 
 Canonical Telegram evidence comes from the authenticated platform exchange, never pasted
@@ -119,3 +132,17 @@ and AC1/AC2 email history breadth moved to Release 4; interrupted history qualif
 to Release 2. Jira acquisition/normalizer work is dropped. Canonical Telegram identity and
 answer binding remain. The criteria, declared evidence universe, Context and Notes above now
 carry only the retained function. No specification status or historical proof was changed.
+
+2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 66 of the existing teeth mutation driver, as
+VELDO-0065 registered finding 65. The criteria, status and risk are unchanged.
+
+2026-09-23, implementation: `.veldo/control_channel_attribution.py` acquires updates through the
+Bot API getUpdates exchange, keeps each as immutable canonical evidence, attributes the sender by
+the stable user id mapped to one valid enrollment and a current person member, binds a reply only
+to the presentation part it replies to as published, and hands the answer to the VELDO-0065
+presenter unchanged. Rows, the red record at 894fa12 and the finding 66 mutations are in
+`proof/VELDO-0066/`. Every row runs against a loopback Bot API server in the platform's documented
+shapes, not the Telegram service. Pending, not done: AC1's live Telegram sandbox run is still owed
+and needs the owner to provide a Telegram test-environment bot. The criteria, status and risk are
+unchanged.

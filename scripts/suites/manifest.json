@@ -565,8 +565,8 @@
    ],
    "regions": "Plain-data graph adapter over the actual LangGraph runtime, no direct graph authority, tracing off and isolated stdlib enforcement",
    "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store in the Git common directory of a real repository with a linked worktree, a stdlib interface stub runner, and the actual LangGraph runtime installed from .veldo/control_graph_lock.py (absent: the runtime rows fail by name with the install command)."
-   },
-   {
+  },
+  {
    "name": "59_veldo_0037_aliases",
    "file": "59_veldo_0037_aliases.py",
    "requires": [
@@ -644,8 +644,8 @@
    ],
    "regions": "Pinned isolated LangGraph runtime: registry license and provenance records, altered hashes and wheels, omitted dependencies and assets, the traced journey and enforcement with the runtime hidden",
    "requires_note": "Uses only shared ROOT and expect. A reference installation laid by the production scaffolder, real control_runtime.py commands traced by an audit hook, copies of the account runtime changed with a throwaway environment's bundled pip (offline, --no-index) and judged by pip check, and the isolated -I -S harness with the runtime directory hidden."
-   },
-   {
+  },
+  {
    "name": "62_veldo_0054_decisions",
    "file": "62_veldo_0054_decisions.py",
    "requires": [
@@ -653,8 +653,8 @@
    ],
    "regions": "Decision-record dependency evaluation: exact signed bindings, named blockers and scope at every enabled consumer",
    "requires_note": "Uses only shared ROOT and expect. One temporary repository that is also the installed .veldo copy; real SQLite store, real OpenSSH Ed25519 settlement signatures and a real enrollment binding."
-   },
-   {
+  },
+  {
    "name": "62_veldo_0065_presentations",
    "file": "62_veldo_0065_presentations.py",
    "requires": [
@@ -662,8 +662,8 @@
    ],
    "regions": "Versioned Telegram presentation receipts, visible supersession and presentation-bound answers",
    "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and loopback HTTP."
-   },
-   {
+  },
+  {
    "name": "62_veldo_0039_dispatch",
    "file": "62_veldo_0039_dispatch.py",
    "requires": [
@@ -680,6 +680,33 @@
    ],
    "regions": "Each Linux worker in its dispatch's own systemd scope and cgroup under the trusted wrapper, declared caps installed and holding, whole-group stop escalation and OS-notified exit before retirement",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the owner's systemd user manager (transient scopes in slices of the run's own, stopped at its end) and real receiver, wrapper, worker and descendant processes. Writes only temporary fixtures."
+  },
+  {
+   "name": "63_veldo_0066_attribution",
+   "file": "63_veldo_0066_attribution.py",
+   "requires": [
+    "63_veldo_0066_attribution"
+   ],
+   "regions": "Canonical Telegram acquisition, stable-id sender attribution, presentation-bound answers and person-only authority",
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, Ed25519 signatures and a loopback Bot API over HTTP."
+  },
+  {
+   "name": "63_veldo_0049_floor",
+   "file": "63_veldo_0049_floor.py",
+   "requires": [
+    "63_veldo_0049_floor"
+   ],
+   "regions": "Enrolled build acceptance, independent review, finding dispositions and handoff through the authority's transitions, with materialized status projections",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0035 materialization and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+  },
+  {
+   "name": "64_veldo_0050_proof",
+   "file": "64_veldo_0050_proof.py",
+   "requires": [
+    "64_veldo_0050_proof"
+   ],
+   "regions": "Proof accepted as immutable evidence before a build is offered, complete contextual validation, observed gate checks and event ownership",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, a scaffolded enrolled Git repository running its own canonical gate, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
   }
  ]
 }

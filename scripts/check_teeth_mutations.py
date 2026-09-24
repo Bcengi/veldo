@@ -2403,6 +2403,61 @@ def cases():
                  "        return not isinstance(revoked, dict)\n", 'answer/owner-ledger-revoked-silent')
     presentation('bindings-ledger-unread', "\n                or self._ledger_revokes(state, c['owner'])):\n", "):\n",
                  'answer/owner-ledger-revoked-silent')
+    # VELDO-0066: the three declared falsifiers plus at least one different defect per named row.
+    def attribution(name, old, new, row):
+        add(66, name, '63_veldo_0066_attribution.py', 'control_channel_attribution.py', old, new, [row])
+
+    # AC1 acquisition: every canonical field is the platform's own, and a kept update is confirmed.
+    attribution('platform-date-from-clock',
+                "            'message_id': _int(message.get('message_id')), 'date': _int(message.get('date')),\n",
+                "            'message_id': _int(message.get('message_id')), 'date': int(time.time()),\n",
+                'acquisition/platform-fields-retained')
+    attribution('cursor-not-advanced',
+                "                                                    'next_offset': record['update_id'] + 1}}}\n",
+                "                                                    'next_offset': cursor.get('next_offset', 0)}}}\n",
+                'acquisition/platform-fields-retained')
+    # AC1 identity (declared falsifier): the display name as principal identity misattributes the
+    # stranger who copies the owner's name and loses the renamed owner.
+    attribution('display-name-as-identity',
+                "    return sorted(principal for principal, chat in enrollments.items() if chat == sender['id'])\n",
+                "    return sorted(principal for principal, chat in enrollments.items()\n"
+                "                  if principal == str(sender.get('first_name', '')).casefold())\n",
+                'attribution/stable-sender-identity')
+    attribution('ambiguous-sender-first-wins',
+                "        if len(principals) > 1:\n            return 'ambiguous_sender', known\n", "",
+                'attribution/stable-sender-identity')
+    # AC2 (declared falsifier): a chat and message id alone accept a reply to another presentation.
+    attribution('replied-content-unchecked',
+                "    if reply.get('text') != part.get('text') or reply.get('date') != part.get('date'):\n",
+                "    if False:\n", 'attribution/binds-replied-presentation')
+    attribution('replied-sender-unchecked',
+                "    if _map(reply.get('from')).get('id') != bot or _map(reply.get('from')).get('is_bot') is not True:\n",
+                "    if False:\n", 'attribution/binds-replied-presentation')
+    attribution('reply-chat-unchecked',
+                "        if fields['reply_chat_id'] != fields['chat_id']:\n            return 'reply_in_another_chat', known\n", "",
+                'attribution/binds-replied-presentation')
+    attribution('evidence-digest-unchecked',
+                "    if record['source_digest'] != source_digest(record['source']):\n", "    if False:\n",
+                'attribution/binds-replied-presentation')
+    attribution('evidence-fields-unchecked',
+                "    if record['fields'] != fields:\n", "    if False:\n", 'attribution/binds-replied-presentation')
+    # AC3 (declared falsifier): an automation sender treated as the enrolled owner, then each kind alone.
+    attribution('automation-sender-as-owner',
+                "    if _map(message.get('from')).get('is_bot') is not False:\n",
+                "    return None\n    if _map(message.get('from')).get('is_bot') is not False:\n",
+                'attribution/person-only-authority')
+    attribution('inline-bot-as-owner',
+                "    if message.get('via_bot') is not None:\n        return 'sent through an inline bot'\n", "",
+                'attribution/person-only-authority')
+    attribution('business-bot-as-owner',
+                "    if message.get('sender_business_bot') is not None:\n        return 'sent by a business bot'\n", "",
+                'attribution/person-only-authority')
+    attribution('offline-message-as-person',
+                "    if message.get('is_from_offline'):\n        return 'sent by an implicit action'\n", "",
+                'attribution/person-only-authority')
+    attribution('service-member-as-person',
+                "        if entry.get('principal_type') != 'person':\n            return 'not_a_person'\n", "",
+                'attribution/person-only-authority')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
@@ -2776,6 +2831,266 @@ def cases():
             'observations')
     contain('containment-not-installed', 'init_scaffold.py',
             '    ".veldo/control_containment.py",\n', '', 'installed-assets')
+    # VELDO-0049: each criterion's declared falsifier and further defects, each against the one
+    # suite row it names. Anchors are exact text in the production modules suite 63 installs.
+    def floor(name, old, new, row, also=(), module='dispatch.py'):
+        add(49, name, '63_veldo_0049_floor.py', module, old, new, ['floor/' + row], also)
+
+    guard = ('        if self._authority is not None or EL.enrolled(self.repo_root):\n'
+             '            raise EL.Stopped("status_projection_owned")\n')
+    unguarded = '        pass  # defect: an enrolled unit\'s status is written here\n'
+    # AC1, declared: a review status written directly, without accepted proof; the build skips the
+    # authority and its status write is not refused, so the spec file says review.
+    floor('floor-status-written-directly',
+          '        if floor is not None:\n            return self._accept_build(floor, unit, result)\n',
+          '        if floor is not None and False:  # defect: the build writes its review status itself\n'
+          '            return self._accept_build(floor, unit, result)\n',
+          'authority-to-projection', also=[(guard, unguarded)])
+    floor('floor-projection-before-acceptance',
+          '        try:\n            floor.accept_build(sid, commit=',
+          '        floor.publish(sid)  # defect: published before the authority accepted the build\n'
+          '        try:\n            floor.accept_build(sid, commit=',
+          'authority-to-projection',
+          also=[('        projection = floor.publish(sid)\n        return {"ok": True, "kind": "build"',
+                 '        projection = {}\n        return {"ok": True, "kind": "build"')])
+    floor('floor-proof-not-judged', '    problems = proof_problems(manifest, unit)\n',
+          '    problems = []  # defect: the proof is not judged\n', 'build-acceptance')
+    floor('floor-gate-not-required', '    if not isinstance(gate, dict) or gate.get("green") is not True:\n',
+          '    if False:  # defect: the gate\'s answer is not required\n', 'build-acceptance')
+    floor('floor-stale-proof-accepted',
+          '    if changed is None or any(not p.startswith(evidence) for p in changed):\n',
+          '    if changed is None:  # defect: what changed after the proof\'s commit is not read\n', 'build-acceptance')
+    floor('floor-claim-holder-unbound',
+          '    if status != "owned" or not _text(holder) or claim.get("holder") != holder:\n',
+          '    if status != "owned":  # defect: any holder may hand a build to review\n', 'build-acceptance')
+    floor('floor-status-guard-removed', guard, unguarded, 'status-write-sites')
+    floor('floor-status-write-unregistered', '    ("Dispatcher._dispatch_review", "shipped"),\n', '',
+          'status-write-sites')
+    floor('floor-authority-not-required',
+          '            if EL.enrolled(self.repo_root):\n                raise EL.Stopped("authority_required")\n',
+          '            pass  # defect: an enrolled repository runs without its authority\n', 'status-write-sites')
+    floor('floor-rebuild-while-held',
+          '            if state not in FLOOR_TRANSITIONS["accept_build"][0]:\n',
+          '            if False:  # defect: a unit the authority holds in review is built again\n',
+          'build-acceptance')
+    floor('floor-land-retry-reassigns',
+          '        if (floor.record(sid) or {}).get("state") == "handoff":\n',
+          '        if False:  # defect: a failed land is not retried from its handoff\n',
+          'land-retry-from-handoff')
+    # AC2, declared: the builder is accepted as its own reviewer (both places the authority asks).
+    floor('floor-builder-reviews-itself',
+          '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
+          '    if reviewer in (record.get("builders") or [record["builder"]]):\n'
+          '        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")\n',
+          '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
+          '    # defect: the builder may be assigned as its own reviewer\n',
+          'review-independence',
+          also=[('        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
+                 '    if reviewer in (record.get("builders") or [record["builder"]]):\n'
+                 '        raise FloorRefused("reviewer_not_independent", "a builder of this unit cannot review it")\n',
+                 '        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
+                 '    # defect: the builder\'s own receipt is accepted\n')])
+    floor('floor-review-signature-unchecked',
+          '    if not _signed_by(conn, reviewer, params["now"], body, signature):\n',
+          '    if False:  # defect: the receipt\'s signature is not verified\n', 'review-independence')
+    floor('floor-review-source-unbound',
+          '    if body.get("source") != record["source"]["commit"]:\n'
+          '        raise FloorRefused("binding_mismatch:source", "the receipt reviewed another commit")\n',
+          '    pass  # defect: the receipt may review another commit\n', 'review-binding')
+    floor('floor-review-proof-unbound',
+          '    if body.get("proof") != record["proof"]["digest"]:\n',
+          '    if False:  # defect: the receipt may review another proof\n', 'review-binding')
+    floor('floor-review-output-unbound',
+          '    if (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
+          '    if False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
+    floor('floor-review-context-unbound', '    if given.get("payload") != payload:\n',
+          '    if False:  # defect: the reviewer may be launched with more than its assignment\n', 'review-binding')
+    floor('floor-review-dispatch-source-unbound',
+          '    if (contract.get("source") or {}).get("commit") != record["source"]["commit"]:\n',
+          '    if False:  # defect: the reviewer may be launched at another commit\n', 'review-binding')
+    floor('floor-duplicate-reviewer',
+          '    if any(r["reviewer"] == reviewer and r["attempt"] == attempt for r in record["reviews"]):\n',
+          '    if False:  # defect: one principal may fill a second review position\n', 'review-policy-count')
+    floor('floor-policy-count-ignored', '    if len(passing) < need:\n',
+          '    if len(passing) < 1:  # defect: one review hands off whatever the policy requires\n',
+          'review-policy-count')
+    # A builder of an EARLIER attempt is a builder of the unit: independence is not only from the latest.
+    floor('floor-earlier-builder-reviews',
+          '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
+          '    if reviewer in (record.get("builders") or [record["builder"]]):\n',
+          '        raise FloorRefused("not_authorized:reviewer", str(reviewer))\n'
+          '    if reviewer == record["builder"]:  # defect: only the latest attempt\'s builder is refused\n',
+          'no-builder-reviews',
+          also=[('        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
+                 '    if reviewer in (record.get("builders") or [record["builder"]]):\n',
+                 '        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
+                 '    if reviewer == record["builder"]:  # defect: only the latest attempt\'s builder is refused\n')])
+    # Review of d46451c, B1: a blocking review dimension and a finding-less failing verdict stay open.
+    floor('floor-dimension-block-not-kept',
+          '        if dimension.dimension_blocks(body):\n            blocking.append({"dimension": label, "block": body.get(label)})\n',
+          '        if False:  # defect: a blocking dimension returns the unit but opens no finding\n            blocking.append({"dimension": label, "block": body.get(label)})\n',
+          'blocking-verdicts-stay-open')
+    floor('floor-bare-fail-not-kept',
+          '    if body.get("verdict") not in EX.PASSING_VERDICTS and not blocking:\n',
+          '    if False:  # defect: a failing verdict with no listed finding opens nothing\n',
+          'blocking-verdicts-stay-open')
+    floor('floor-notes-counted-as-blocking',
+          '    blocking = list(PC.blocking_findings(body))\n',
+          '    blocking = list(PC.blocking_findings(body)) + list(body.get("findings") or [])  # defect: every note blocks\n',
+          'blocking-verdicts-stay-open')
+    # AC3, declared: a later pass discards the unresolved finding.
+    floor('floor-pass-erases-finding', '    findings = dict(record["findings"])\n',
+          '    findings = {} if verdict_passes(body) else dict(record["findings"])  # defect: a pass discards findings\n',
+          'finding-not-erased')
+    floor('floor-handoff-ignores-findings',
+          '    codes.extend("unresolved_finding:" + fid for fid in unresolved)\n',
+          '    codes.extend([])  # defect: an open finding does not block the handoff\n', 'finding-not-erased')
+    floor('floor-findings-forgotten-on-rebuild',
+          '    unresolved = sorted(fid for fid, f in record["findings"].items() if not f.get("resolved"))\n',
+          '    unresolved = sorted(fid for fid, f in record["findings"].items() if not f.get("resolved")\n'
+          '                        and f.get("attempt") == attempt)  # defect: a rebuild forgets earlier findings\n',
+          'finding-not-erased')
+    floor('floor-any-member-disposes',
+          '    if builder or member is None or (member.get("principal_type") != "person" and by != finding["raised_by"]):\n',
+          '    if member is None:  # defect: any member, the builder included, disposes a finding\n',
+          'finding-not-erased')
+    floor('floor-rejected-ruling-resolves', '    if body["ruling"] == "resolved":\n',
+          '    if body["ruling"] in RULINGS:  # defect: a rejected ruling resolves the finding\n', 'finding-not-erased')
+    floor('floor-land-without-handoff', '            if state != "handoff":\n',
+          '            if False:  # defect: an enrolled unit lands without its handoff\n', 'finding-not-erased')
+    floor('floor-dispatcher-establishes-completion',
+          '        return {"ok": True, "kind": "review", "spec": sid, "verdict": verdict, "shipped": False,\n'
+          '                "landed": True, "status": "handoff", "land": land, "projection": projection}\n',
+          '        receipt = "receipt:revision_landed:" + sid  # defect: the dispatcher records the landing itself\n'
+          '        floor.store.execute(floor.conn, dict(\n'
+          '            command_id="landed/" + sid, principal=floor.principal, operation="upsert_entity",\n'
+          '            nonce="landed/" + sid, artifact_digests=[], expected_versions={receipt: 0},\n'
+          '            parameters=dict(entity_id=receipt, kind="completion_receipt",\n'
+          '                            data={"fact": "revision_landed", "subject": {"id": sid, "revision": 1}})),\n'
+          '            floor.signer, floor.sign, floor.generation)\n'
+          '        return {"ok": True, "kind": "review", "spec": sid, "verdict": verdict, "shipped": False,\n'
+          '                "landed": True, "status": "handoff", "land": land, "projection": projection}\n',
+          'completion-by-lander-only')
+    floor('floor-handoff-completes', '    record["state"] = "handoff"\n',
+          '    record["state"] = "completed"  # defect: the handoff establishes completion\n',
+          'completion-by-lander-only')
+    # Tracker intake stays disabled for enrolled work.
+    floor('floor-tracker-enrollment-unread', '        return self._EL.enrolled(str(root))\n',
+          '        return False  # defect: the repository\'s enrollment is not asked\n',
+          'tracker-disabled-when-enrolled', module='tracker_bridge.py')
+    floor('floor-tracker-write-unguarded',
+          '            raise SpecStoreError("write_spec needs the rendered draft markdown")\n'
+          '        self._refuse_enrolled(repo)\n',
+          '            raise SpecStoreError("write_spec needs the rendered draft markdown")\n'
+          '        # defect: a direct write reaches an enrolled repository\n',
+          'tracker-disabled-when-enrolled', module='tracker_bridge.py')
+    floor('floor-refusal-not-observed',
+          '            self.observe(dict(event, outcome="refused", refusal=error.code, refusals=codes,\n'
+          '                              taxonomy=floor_taxonomy(error.code)))\n',
+          '            pass  # defect: a refusal is not observed\n', 'observations')
+    floor('floor-finding-taxonomy-unknown', '    "unresolved_finding": "missing_evidence",\n', '',
+          'observations')
+    # VELDO-0050: each criterion's declared falsifier and further defects, each against the one suite 64
+    # row it names. Anchors are exact text in the production modules suite 64 installs.
+    def proof(name, old, new, row, also=(), module='control_proof.py'):
+        add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
+
+    accept_block = ('        if self.proofs is not None:\n'
+                    '            try:\n'
+                    '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
+                    '                                              manifest=proof, observation=observation, builder=builder)\n'
+                    '            except CP.Refused as error:\n'
+                    '                return {"ok": False, "problems": list(error.codes), "bundle": None}\n'
+                    '            return dict(accepted, ok=True, problems=[])\n')
+    # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
+    proof('proof-kept-in-temporary-storage', accept_block,
+          '        if self.proofs is not None:\n'
+          '            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=True) as held:\n'
+          '                held.write(json.dumps(proof))  # defect: the manifest is kept only in temporary validation storage\n'
+          '                held.flush()\n'
+          '            return {"ok": True, "problems": [], "bundle": None}\n',
+          'fresh-reviewer-resolves', module='executor.py')
+    proof('proof-implementation-is-the-built-commit',
+          '              "implementation": {"commit": implementation}, "spec": spec,\n',
+          '              "implementation": {"commit": commit}, "spec": spec,  # defect: the built commit named as the implementation\n',
+          'fresh-reviewer-resolves')
+    proof('proof-offered-without-acceptance',
+          '            accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n'
+          '                        if gate is not None else None)\n',
+          '            accepted = None  # defect: the build is offered with its proof never accepted\n',
+          'accepted-before-offer', module='executor.py')
+    proof('proof-unstored-accepted',
+          '        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}\n',
+          '        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted\n',
+          'accepted-before-offer', module='executor.py')
+    proof('proof-bundle-rewritable',
+          '    if before.get(rid) is not None:\n        raise Refused("proof_immutable", rid)\n',
+          '    pass  # defect: an accepted bundle may be rewritten\n', 'accepted-before-offer')
+    proof('proof-kinds-unowned',
+          '        store.declare_owners(conn, OWNER, kinds={BUNDLE_KIND: (ACCEPT,), OBSERVATION_KIND: (OBSERVE,)}, module=__file__)\n',
+          '        pass  # defect: nothing declares who alone writes accepted proof\n', 'accepted-before-offer')
+    # AC2, declared: check_json alone decides an empty-criteria proof naming a nonexistent commit.
+    proof('proof-check-json-alone', accept_block,
+          '        if self.proofs is not None:\n'
+          '            ok, errors = self.validate_proof(proof)  # defect: check_json alone decides the proof\n'
+          '            return {"ok": ok, "problems": [] if ok else ["validate_proof:%s" % errors], "bundle": None}\n',
+          'contextual-refusals', module='executor.py')
+    proof('proof-duplicates-uncounted',
+          '    problems.extend("invalid_input:criteria/duplicate:%s" % cid for cid in sorted({i for i in ids if ids.count(i) > 1}, key=str))\n',
+          '    pass  # defect: a criterion mapped twice is not noticed\n', 'contextual-refusals')
+    proof('proof-spec-revision-unread', '    if manifest.get("spec_revision") != spec["revision"]:\n',
+          '    if False:  # defect: the proof\'s spec revision is not compared with the accepted one\n',
+          'contextual-refusals')
+    proof('proof-criteria-from-manifest',
+          '    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in spec["criteria"] if cid not in ids)\n',
+          '    problems.extend("missing_evidence:criteria/omitted:%s" % cid for cid in ids if cid not in ids)  # defect: the manifest names its own universe\n',
+          'contextual-refusals')
+    # AC3, declared: a default passed unit check is inserted when observations are absent.
+    proof('proof-default-passed-check', '            "checks": list((build or {}).get("checks") or []),\n',
+          '            "checks": list((build or {}).get("checks") or [{"name": "unit", "status": "passed"}]),  # defect: a default passed check\n',
+          'no-default-success', module='executor.py')
+    proof('proof-terminal-not-required',
+          '        if terminal != "GATE: GREEN (%s)" % commit:\n            problems.append("missing_evidence:observation/terminal")\n',
+          '        pass  # defect: a gate that printed no terminal result is not refused for it\n', 'no-default-success')
+    proof('proof-absent-check-passes', '            if results.get(name) is None:\n',
+          '            if False:  # defect: a check the gate never printed is not missing\n', 'no-default-success')
+    proof('proof-observation-digest-unbound', '    elif stored["digest"] != reference.get("digest"):\n',
+          '    elif False:  # defect: an altered observation reference is believed\n', 'no-default-success')
+    proof('proof-checks-from-claims', '              "checks": checks, "producer": producer,',
+          '              "checks": [dict(c) for c in claims if isinstance(c, dict)], "producer": producer,  # defect: the claims recorded as checks\n             ',
+          'actual-checks')
+    proof('proof-gate-exit-unrecorded',
+          '                               "observed": "   %s: pass" % name, "gate_exit": observation.get("exit"),\n',
+          '                               "observed": "   %s: pass" % name, "gate_exit": None,  # defect: the gate exit is not recorded\n',
+          'actual-checks')
+    # AC4, declared: the executor emits verdict.recorded itself.
+    proof('proof-executor-emits-verdict', '            if gate is None:\n                # The pre-factory loop',
+          '            if True:  # defect: the executor emits verdict.recorded itself\n                # The pre-factory loop',
+          'owning-services', module='executor.py')
+    proof('proof-executor-emits-gate-event',
+          '                   **({"observation": seen["id"]} if seen.get("id") else {}))\n',
+          '                   **({"observation": seen["id"]} if seen.get("id") else {}))\n'
+          '            if gate_green:\n'
+          '                self.hooks.emit("gate.passed", spec=spec.get("id"), commit=build.get("commit"))  # defect: the gate\'s own event\n',
+          'owning-services', module='executor.py')
+    proof('proof-build-only-lands',
+          '                # Exactly one build/gate/proof cycle ran; verdict stays None.\n',
+          '                # Exactly one build/gate/proof cycle ran; verdict stays None.\n'
+          '                self.hooks.emit("merge.completed", spec=spec.get("id"), commit=build.get("commit"))  # defect: a landing\n',
+          'build-only-no-landing', module='executor.py')
+    proof('proof-build-only-reviews', '            if stop_after == "proof":\n',
+          '            if stop_after == "proof" and False:  # defect: a build-only run goes on into review\n',
+          'build-only-no-landing', module='executor.py')
+    proof('proof-module-not-installed', '    ".veldo/control_proof.py",\n', '', 'installed-assets', module='init_scaffold.py')
+    proof('proof-closure-not-installed', '    ".veldo/control_membership.py",\n', '', 'installed-assets',
+          module='init_scaffold.py')
+    proof('proof-refusal-not-observed',
+          '            self.observe(dict(event, outcome="refused", refusal=error.code, refusals=codes,\n'
+          '                              taxonomy=taxonomy(error.code)))\n',
+          '            pass  # defect: a refusal is not observed\n', 'observations')
+    proof('proof-unknown-taxonomy-classified', '    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")\n',
+          '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
+          'observations')
     return result
 
 

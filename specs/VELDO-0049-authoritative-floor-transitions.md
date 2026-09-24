@@ -26,6 +26,7 @@ footprint:
   - "scripts/suites/*_veldo_0049_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0049-authoritative-floor-transitions.md"
   - "specs/index.md"
   - "proof/VELDO-0049/*"
@@ -92,6 +93,19 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the dispatcher moves an enrolled unit from build to review to handoff only through the
+  authority's transitions; a build is accepted only with accepted proof and a green gate; review runs as a
+  separate eligible principal in a fresh context bound to the exact source and proof; a pass cannot clear
+  an unresolved blocking finding; only the lander establishes completion.
+- Threat model: a builder that reviews its own work or claims review, a stale or wrong proof or source, a
+  later pass that tries to erase an earlier blocking finding, and a direct status write that skips the
+  authority. The owner's account, the store and the gate are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); Jira tracker
+  intake (dropped by the owner, 28857 and 28859); crash recovery between transitions (Release 2); forged
+  rows in our own store.
+
 ## Notes
 
 Dispatcher._dispatch_build/_set_status and _dispatch_review/_verdict_passes use authority
@@ -116,3 +130,20 @@ crash/replay races moved to Release 2; AC3 tracker drafting/promotion integratio
 by 28857/28859. Authoritative transitions and independent review remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-24 implementation: `.veldo/dispatch.py` (with its engine mirror) gains the floor authority,
+one registered store command `floor_transition` (accept_build, assign_review, record_review,
+dispose_finding, handoff), and the Materializer, VELDO-0035's ordinary materialization of each
+record version. In an enrolled repository the dispatcher's status writes refuse and every build,
+review, disposition and handoff goes through the authority. The authority judges the committed
+proof, the gate, the claim, the build's and the reviewer's own VELDO-0039 dispatches, the reviewer's
+signature and the stored review policy. No transition establishes completion. The tracker bridge's
+drafting and promotion skip and refuse enrolled repositories and are not extended. The footprint
+adds `scripts/check_teeth_mutations.py`, the registry of the 33 finding-49 negative controls, as
+VELDO-0031, 0035 and 0039 did. Suite 63 has 18 rows, each assertion row recorded red by assertion at
+0083c85 (`proof/VELDO-0049/`). Deferred and stated there: the frontier and work loop reading the
+projection instead of the spec status line, and projection recovery (Release 2).
+
+2026-09-24, scoped review of d46451c: one blocking defect fixed (a blocking review dimension and a
+finding-less failing verdict now stay open as findings), with a new row and two mutations. The frontier and
+work loop still read the spec status line (VELDO-0052's footprint): a missing-spec ticket is filed.

@@ -1,0 +1,4 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -157,0 +158 @@
++    return None
