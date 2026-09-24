@@ -80,3 +80,6 @@ measured inside the gate. Activation 0.2 s, qualification 2.1 s, enforcement 0.6
 - Hidden means the audit hook refuses open, list and launch under the runtime directory; a stat is
   not an audit event.
 - The records are for linux x86_64 CPython 3.12, the lock's platform. The Mac needs its own.
+- `enforcement` judges an installation's gate. This repository's own gate also runs development
+  scripts (scripts/selftest.py and others) that import scripts/ siblings the harness does not allow,
+  so the command is not meant for this checkout and was not run here.
