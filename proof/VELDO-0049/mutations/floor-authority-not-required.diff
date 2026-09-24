@@ -1,0 +1,6 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -231,2 +231 @@
+-            if EL.enrolled(self.repo_root):
+-                raise EL.Stopped("authority_required")
++            pass  # defect: an enrolled repository runs without its authority

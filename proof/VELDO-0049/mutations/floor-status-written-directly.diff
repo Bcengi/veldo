@@ -1,0 +1,9 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -290,2 +290 @@
+-        if self._authority is not None or EL.enrolled(self.repo_root):
+-            raise EL.Stopped("status_projection_owned")
++        pass  # defect: an enrolled unit's status is written here
+@@ -382 +381 @@
+-        if floor is not None:
++        if floor is not None and False:  # defect: the build writes its review status itself

@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -975 +975 @@
+-    findings = dict(record["findings"])
++    findings = {} if verdict_passes(body) else dict(record["findings"])  # defect: a pass discards findings

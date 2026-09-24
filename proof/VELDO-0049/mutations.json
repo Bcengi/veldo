@@ -1,0 +1,563 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 49 --jobs 4 --diff-dir proof/VELDO-0049/mutations",
+ "summary": {
+  "mutations_rejected": 33,
+  "green_suites": {
+   "63_veldo_0049_floor.py": 44
+  },
+  "driver_seconds": 50.2
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations": [
+  {
+   "mutation": "floor-status-written-directly",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/authority-to-projection"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "floor/status-write-sites",
+    "floor/build-acceptance",
+    "floor/review-independence",
+    "floor/review-binding",
+    "floor/land-retry-from-handoff",
+    "floor/review-policy-count",
+    "floor/no-builder-reviews",
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-status-written-directly.diff"
+  },
+  {
+   "mutation": "floor-projection-before-acceptance",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/authority-to-projection"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance",
+    "floor/authority-to-projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-projection-before-acceptance.diff"
+  },
+  {
+   "mutation": "floor-proof-not-judged",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/build-acceptance"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-proof-not-judged.diff"
+  },
+  {
+   "mutation": "floor-gate-not-required",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/build-acceptance"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-gate-not-required.diff"
+  },
+  {
+   "mutation": "floor-stale-proof-accepted",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/build-acceptance"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-stale-proof-accepted.diff"
+  },
+  {
+   "mutation": "floor-claim-holder-unbound",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/build-acceptance"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-claim-holder-unbound.diff"
+  },
+  {
+   "mutation": "floor-status-guard-removed",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/status-write-sites"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/status-write-sites",
+    "floor/build-acceptance",
+    "floor/completion-by-lander-only",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-status-guard-removed.diff"
+  },
+  {
+   "mutation": "floor-status-write-unregistered",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/status-write-sites"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/status-write-sites"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-status-write-unregistered.diff"
+  },
+  {
+   "mutation": "floor-authority-not-required",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/status-write-sites"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/status-write-sites",
+    "floor/build-acceptance",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-authority-not-required.diff"
+  },
+  {
+   "mutation": "floor-rebuild-while-held",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/build-acceptance"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/build-acceptance"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-rebuild-while-held.diff"
+  },
+  {
+   "mutation": "floor-land-retry-reassigns",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/land-retry-from-handoff"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/land-retry-from-handoff",
+    "floor/review-policy-count",
+    "floor/completion-by-lander-only"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-land-retry-reassigns.diff"
+  },
+  {
+   "mutation": "floor-builder-reviews-itself",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-independence"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-independence",
+    "floor/no-builder-reviews",
+    "floor/finding-not-erased",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-builder-reviews-itself.diff"
+  },
+  {
+   "mutation": "floor-review-signature-unchecked",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-independence"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-independence",
+    "floor/review-binding",
+    "floor/review-policy-count"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-review-signature-unchecked.diff"
+  },
+  {
+   "mutation": "floor-review-source-unbound",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-binding"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-binding"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-review-source-unbound.diff"
+  },
+  {
+   "mutation": "floor-review-proof-unbound",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-binding"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-binding"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-review-proof-unbound.diff"
+  },
+  {
+   "mutation": "floor-review-output-unbound",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-binding"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-binding"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-review-output-unbound.diff"
+  },
+  {
+   "mutation": "floor-review-context-unbound",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-binding"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-binding"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-review-context-unbound.diff"
+  },
+  {
+   "mutation": "floor-review-dispatch-source-unbound",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-binding"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-binding"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-review-dispatch-source-unbound.diff"
+  },
+  {
+   "mutation": "floor-duplicate-reviewer",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-policy-count"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-policy-count"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-duplicate-reviewer.diff"
+  },
+  {
+   "mutation": "floor-policy-count-ignored",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/review-policy-count"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/review-binding",
+    "floor/land-retry-from-handoff",
+    "floor/review-policy-count",
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-policy-count-ignored.diff"
+  },
+  {
+   "mutation": "floor-earlier-builder-reviews",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/no-builder-reviews"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "floor/no-builder-reviews",
+    "floor/finding-not-erased"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-earlier-builder-reviews.diff"
+  },
+  {
+   "mutation": "floor-pass-erases-finding",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/finding-not-erased"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-pass-erases-finding.diff"
+  },
+  {
+   "mutation": "floor-handoff-ignores-findings",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/finding-not-erased"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-handoff-ignores-findings.diff"
+  },
+  {
+   "mutation": "floor-findings-forgotten-on-rebuild",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/finding-not-erased"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-findings-forgotten-on-rebuild.diff"
+  },
+  {
+   "mutation": "floor-any-member-disposes",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/finding-not-erased"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-any-member-disposes.diff"
+  },
+  {
+   "mutation": "floor-rejected-ruling-resolves",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/finding-not-erased"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-rejected-ruling-resolves.diff"
+  },
+  {
+   "mutation": "floor-land-without-handoff",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/finding-not-erased"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-land-without-handoff.diff"
+  },
+  {
+   "mutation": "floor-dispatcher-establishes-completion",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/completion-by-lander-only"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/completion-by-lander-only"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-dispatcher-establishes-completion.diff"
+  },
+  {
+   "mutation": "floor-handoff-completes",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/completion-by-lander-only"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/land-retry-from-handoff",
+    "floor/review-policy-count",
+    "floor/finding-not-erased",
+    "floor/completion-by-lander-only",
+    "floor/authority-to-projection",
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-handoff-completes.diff"
+  },
+  {
+   "mutation": "floor-tracker-enrollment-unread",
+   "module": ".veldo/tracker_bridge.py",
+   "target_rows": [
+    "floor/tracker-disabled-when-enrolled"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/tracker-disabled-when-enrolled"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-tracker-enrollment-unread.diff"
+  },
+  {
+   "mutation": "floor-tracker-write-unguarded",
+   "module": ".veldo/tracker_bridge.py",
+   "target_rows": [
+    "floor/tracker-disabled-when-enrolled"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/tracker-disabled-when-enrolled"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-tracker-write-unguarded.diff"
+  },
+  {
+   "mutation": "floor-refusal-not-observed",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-refusal-not-observed.diff"
+  },
+  {
+   "mutation": "floor-finding-taxonomy-unknown",
+   "module": ".veldo/dispatch.py",
+   "target_rows": [
+    "floor/observations"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "floor/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/floor-finding-taxonomy-unknown.diff"
+  }
+ ]
+}

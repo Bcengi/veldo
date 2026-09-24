@@ -1,0 +1,4 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -589 +588,0 @@
+-    "unresolved_finding": "missing_evidence",
