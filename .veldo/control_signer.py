@@ -6,6 +6,8 @@ choose either. Authentication is a fresh Ed25519 challenge proof under a separat
 registered connection key; channel comes from that registration, never JSON claims.
 This is a core API, not the W32 installer or live platform evidence acquisition (E).
 The authority's accepted store contains captured evidence and edge source records.
+An identity naming an enrolled channel edge key (VELDO-0067) is served by
+control_signer_answers, which signs only canonical answer assertions for that edge.
 """
 import hashlib
 import importlib.util
@@ -186,6 +188,22 @@ def _payload(state, request, channel, now, authority_ids):
     return payload
 
 
+def edge_answers(state, identity):
+    """VELDO-0067: the answer purpose of an enrolled channel edge, when `identity` names one.
+
+    An enrolled edge key is a verification key recorded by control_channel_enrollment, never a
+    signing key of this module's lifecycle, so the two paths cannot both claim one identity. The
+    purpose module is loaded only for such an identity; where it is not installed, the identity is
+    judged below as any other and refuses.
+    """
+    entity = state['entities'].get(identity) if isinstance(identity, str) else None
+    path = Path(__file__).with_name('control_signer_answers.py')
+    if not entity or entity.get('kind') != 'verification_key' or not path.is_file():
+        return None
+    answers = organ('control_signer_answers')
+    return answers if answers.edge_entry(state, identity) is not None else None
+
+
 def issue(config, request, challenge, identity, authentication):
     """Authenticate, validate and sign under the same lock as lifecycle transitions.
 
@@ -199,6 +217,11 @@ def issue(config, request, challenge, identity, authentication):
         conn.execute('BEGIN IMMEDIATE')
         now = time.time()
         state = CM.authority_state(S, conn)
+        answers = edge_answers(state, identity)
+        if answers is not None:
+            # An enrolled channel edge is judged by its one purpose, whatever it asks for.
+            return answers.issue(state, config, request, challenge, identity, authentication, now,
+                                 canonical, digest, sign_bytes, AUTH_NAMESPACE)
         channel = authenticate(state, challenge, request, identity, authentication, now)
         diagnostic['delegation_revision'] = state['delegation_version']
         source = state['entities'].get(request.get('source_id'), {}).get('data', {})

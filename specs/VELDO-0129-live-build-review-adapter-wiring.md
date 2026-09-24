@@ -116,6 +116,10 @@ bundle rather than the committed manifest alone; makes the executor refuse, with
 enabled, a hook set whose accept_proof returns nothing; and has the real build adapter's proof
 carry spec_revision and evidence entries that name a path and a digest.
 
+Handed on by VELDO-0067 (its review, 2026-09-24): each production local adapter's configured argv
+starts with the key custody wrapper (control_keys_custody.confined, naming the protected key
+directory), so a worker cannot read an edge key file directly.
+
 Use canonical engine assets and synchronize installed copies. Resolve the proposed footprint's
 architecture mapping before ready, including the new UI assets where applicable; this draft does
 not amend the architecture contract. Inventory every asset the selected journey installs. Compare

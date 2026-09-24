@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -295,0 +296,2 @@
++        if isinstance(answer, dict) and answer.get('operation') in CM.ADMIN_OPERATIONS:
++            return signed(answer)
