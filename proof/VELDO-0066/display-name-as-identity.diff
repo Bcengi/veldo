@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -181 +181,2 @@
+-    return sorted(principal for principal, chat in enrollments.items() if chat == sender['id'])
++    return sorted(principal for principal, chat in enrollments.items()
++                  if principal == str(sender.get('first_name', '')).casefold())

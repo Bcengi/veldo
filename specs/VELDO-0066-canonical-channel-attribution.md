@@ -136,3 +136,13 @@ carry only the retained function. No specification status or historical proof wa
 2026-09-23, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
 declared falsifiers can be registered as finding 66 of the existing teeth mutation driver, as
 VELDO-0065 registered finding 65. The criteria, status and risk are unchanged.
+
+2026-09-23, implementation: `.veldo/control_channel_attribution.py` acquires updates through the
+Bot API getUpdates exchange, keeps each as immutable canonical evidence, attributes the sender by
+the stable user id mapped to one valid enrollment and a current person member, binds a reply only
+to the presentation part it replies to as published, and hands the answer to the VELDO-0065
+presenter unchanged. Rows, the red record at 894fa12 and the finding 66 mutations are in
+`proof/VELDO-0066/`. Every row runs against a loopback Bot API server in the platform's documented
+shapes, not the Telegram service. Pending, not done: AC1's live Telegram sandbox run is still owed
+and needs the owner to provide a Telegram test-environment bot. The criteria, status and risk are
+unchanged.

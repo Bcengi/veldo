@@ -1,0 +1,698 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0066 install/assets",
+    true
+   ],
+   [
+    "VELDO-0066 acquisition/platform-fields-retained",
+    true
+   ],
+   [
+    "VELDO-0066 attribution/stable-sender-identity",
+    true
+   ],
+   [
+    "VELDO-0066 attribution/binds-replied-presentation",
+    true
+   ],
+   [
+    "VELDO-0066 attribution/person-only-authority",
+    true
+   ]
+  ],
+  "seconds": 1.608
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 acquisition/platform-fields-retained detail: every canonical field is the platform's own value in that response (message, date, chat, sender, replied message)",
+    "VELDO-0066 attribution/binds-replied-presentation detail: the canonical-binding check holds for it: the answer is bound by its evidence to the presentation it names",
+    "VELDO-0066 attribution/binds-replied-presentation detail: control: A and C are answered by their own replies, each bound by its evidence to its own presentation",
+    "VELDO-0066 attribution/person-only-authority detail: a message missing the sender id, the sender or the date is refused (missing_canonical_field), labels or not"
+   ],
+   "diff": "proof/VELDO-0066/platform-date-from-clock.diff",
+   "failed_rows": [
+    "VELDO-0066 acquisition/platform-fields-retained",
+    "VELDO-0066 attribution/binds-replied-presentation",
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "2af97afa40d4c9e3b778b9cd0ef00347a93a6570d7ca152bd5ce4e6dbc77b5ee",
+   "name": "platform-date-from-clock",
+   "named_row_red": true,
+   "named_rows": [
+    "acquisition/platform-fields-retained"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.616,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 acquisition/platform-fields-retained detail: the next run asks from the update after the last one kept, so the platform confirms them, and decides nothing again"
+   ],
+   "diff": "proof/VELDO-0066/cursor-not-advanced.diff",
+   "failed_rows": [
+    "VELDO-0066 acquisition/platform-fields-retained"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "665b3354663bddc147e34b8e9d2aaf4f6527d540ad12b06bab03f65c68ae5236",
+   "name": "cursor-not-advanced",
+   "named_row_red": true,
+   "named_rows": [
+    "acquisition/platform-fields-retained"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.617,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/stable-sender-identity detail: a stranger who copies the owner's display name is attributed to its own stable id's principal, never the owner",
+    "VELDO-0066 attribution/stable-sender-identity detail: an unenrolled account with the owner's display name is attributed to nobody, even pasting a transcript",
+    "VELDO-0066 attribution/stable-sender-identity detail: the owner renamed (new first, last and user name) is still the owner, by the same stable id",
+    "VELDO-0066 attribution/stable-sender-identity detail: two principals enrolled on one Telegram account are ambiguous, so neither is attributed",
+    "VELDO-0066 attribution/person-only-authority detail: an enrolled automation identity (a service member on an ordinary account) is refused (not_a_person)",
+    "VELDO-0066 attribution/person-only-authority detail: an owner no longer a current member is refused (not_current_member) and records nothing"
+   ],
+   "diff": "proof/VELDO-0066/display-name-as-identity.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/stable-sender-identity",
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "578d5016517abb360bfc8ec1864b9d34039edc21c518817360a27a8576d78683",
+   "name": "display-name-as-identity",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/stable-sender-identity"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.606,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/stable-sender-identity detail: two principals enrolled on one Telegram account are ambiguous, so neither is attributed"
+   ],
+   "diff": "proof/VELDO-0066/ambiguous-sender-first-wins.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/stable-sender-identity"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "a43a2bdacfa990b035fb2aa9898a35600a373a3a1e69ef4123c9443176d63752",
+   "name": "ambiguous-sender-first-wins",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/stable-sender-identity"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.605,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/binds-replied-presentation detail: a reply whose reference names another presentation than the part it carries is refused (presentation_mismatch)",
+    "VELDO-0066 attribution/binds-replied-presentation detail: none of them recorded an answer to A or C",
+    "VELDO-0066 attribution/binds-replied-presentation detail: a reply in the second bot's chat is never taken as an answer to the first bot's presentation with the same ids",
+    "VELDO-0066 attribution/binds-replied-presentation detail: control: A and C are answered by their own replies, each bound by its evidence to its own presentation"
+   ],
+   "diff": "proof/VELDO-0066/replied-content-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/binds-replied-presentation"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "4b08f535e4800372ada4af2dedde77785f9bac6110d089c1a2c3620140931733",
+   "name": "replied-content-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/binds-replied-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.613,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/binds-replied-presentation detail: a reply to a message the platform says another bot sent is refused (presentation_mismatch)",
+    "VELDO-0066 attribution/binds-replied-presentation detail: none of them recorded an answer to A or C",
+    "VELDO-0066 attribution/binds-replied-presentation detail: control: A and C are answered by their own replies, each bound by its evidence to its own presentation"
+   ],
+   "diff": "proof/VELDO-0066/replied-sender-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/binds-replied-presentation"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "adab8c7cd5b88416bd5c355f1a56147b0d7ed3f5d93f0cd96526b5e03359a7a0",
+   "name": "replied-sender-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/binds-replied-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.581,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/binds-replied-presentation detail: a reply whose replied message the platform places in another chat is refused (reply_in_another_chat)",
+    "VELDO-0066 attribution/binds-replied-presentation detail: none of them recorded an answer to A or C",
+    "VELDO-0066 attribution/binds-replied-presentation detail: control: A and C are answered by their own replies, each bound by its evidence to its own presentation"
+   ],
+   "diff": "proof/VELDO-0066/reply-chat-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/binds-replied-presentation"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "9ce752ea9b6772914f4b44c7d5d36b64fa8d5a3ceab8501dc99cff25ecc43a15",
+   "name": "reply-chat-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/binds-replied-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.62,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/binds-replied-presentation detail: evidence altered after acquisition (the text) is refused and binds no answer"
+   ],
+   "diff": "proof/VELDO-0066/evidence-digest-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/binds-replied-presentation"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "07e25e1e9536d908e98c514f817709f1eb5f48b85ea05a3841394ac44a2b6388",
+   "name": "evidence-digest-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/binds-replied-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.632,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/binds-replied-presentation detail: evidence altered after acquisition (its recorded sender field) is refused and binds no answer"
+   ],
+   "diff": "proof/VELDO-0066/evidence-fields-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/binds-replied-presentation"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "aaeaab201fcb36be249148c734009911d2fc71011e32c2c88dc92193563b9561",
+   "name": "evidence-fields-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/binds-replied-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     false
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.588,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by an inline bot, from the owner's account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by a business bot, from the owner's account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by an away, greeting or scheduled message of the owner's account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by a bot account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by an anonymous administrator signed as the owner is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: none of them recorded an answer or sent anything back",
+    "VELDO-0066 attribution/person-only-authority detail: a message missing the sender id, the sender or the date is refused (missing_canonical_field), labels or not",
+    "VELDO-0066 attribution/person-only-authority detail: an assertion that labels the owner as principal over another sender is refused by the presenter (not_owner)",
+    "VELDO-0066 attribution/person-only-authority detail: control: the owner's own reply, in person, is the owner's answer"
+   ],
+   "diff": "proof/VELDO-0066/automation-sender-as-owner.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "175a8ab1e405ec579e33813a885cff13e8316467400bc9af76c4e7fc0045e6a8",
+   "name": "automation-sender-as-owner",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/person-only-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.605,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by an inline bot, from the owner's account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: none of them recorded an answer or sent anything back",
+    "VELDO-0066 attribution/person-only-authority detail: a message missing the sender id, the sender or the date is refused (missing_canonical_field), labels or not",
+    "VELDO-0066 attribution/person-only-authority detail: an assertion that labels the owner as principal over another sender is refused by the presenter (not_owner)",
+    "VELDO-0066 attribution/person-only-authority detail: control: the owner's own reply, in person, is the owner's answer"
+   ],
+   "diff": "proof/VELDO-0066/inline-bot-as-owner.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "e61536a11c21b685812335a381aa2e648601e0d033f9507f51978719b239cf8b",
+   "name": "inline-bot-as-owner",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/person-only-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.59,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by a business bot, from the owner's account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: none of them recorded an answer or sent anything back",
+    "VELDO-0066 attribution/person-only-authority detail: a message missing the sender id, the sender or the date is refused (missing_canonical_field), labels or not",
+    "VELDO-0066 attribution/person-only-authority detail: an assertion that labels the owner as principal over another sender is refused by the presenter (not_owner)",
+    "VELDO-0066 attribution/person-only-authority detail: control: the owner's own reply, in person, is the owner's answer"
+   ],
+   "diff": "proof/VELDO-0066/business-bot-as-owner.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "9dfe1f8ecb969871321255cd0c7f9152ef3013dfbaea947137667ea15702af95",
+   "name": "business-bot-as-owner",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/person-only-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.644,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/person-only-authority detail: a message sent by an away, greeting or scheduled message of the owner's account is refused as automation_sender",
+    "VELDO-0066 attribution/person-only-authority detail: none of them recorded an answer or sent anything back",
+    "VELDO-0066 attribution/person-only-authority detail: a message missing the sender id, the sender or the date is refused (missing_canonical_field), labels or not",
+    "VELDO-0066 attribution/person-only-authority detail: an assertion that labels the owner as principal over another sender is refused by the presenter (not_owner)",
+    "VELDO-0066 attribution/person-only-authority detail: control: the owner's own reply, in person, is the owner's answer"
+   ],
+   "diff": "proof/VELDO-0066/offline-message-as-person.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "d52521d3197c4ab85ec1b9b80e327c00825fd6e54d79288cc578460ba9829e79",
+   "name": "offline-message-as-person",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/person-only-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.797,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0066 attribution/person-only-authority detail: an enrolled automation identity (a service member on an ordinary account) is refused (not_a_person)"
+   ],
+   "diff": "proof/VELDO-0066/service-member-as-person.diff",
+   "failed_rows": [
+    "VELDO-0066 attribution/person-only-authority"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "4235253ad83225ad8746398d4e23ad9e5cc4acd54f31bc12b7fd8f077d838178",
+   "name": "service-member-as-person",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/person-only-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     false
+    ]
+   ],
+   "seconds": 1.54,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  }
+ ],
+ "noop": {
+  "control_channel_attribution.py": {
+   "copy_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0066 install/assets",
+     true
+    ],
+    [
+     "VELDO-0066 acquisition/platform-fields-retained",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/stable-sender-identity",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/binds-replied-presentation",
+     true
+    ],
+    [
+     "VELDO-0066 attribution/person-only-authority",
+     true
+    ]
+   ],
+   "seconds": 1.58,
+   "source_sha256": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 66",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 25.842,
+ "spec_id": "VELDO-0066",
+ "suite": "scripts/suites/63_veldo_0066_attribution.py"
+}

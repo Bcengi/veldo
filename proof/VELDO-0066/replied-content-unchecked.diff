@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -198 +198 @@
+-    if reply.get('text') != part.get('text') or reply.get('date') != part.get('date'):
++    if False:

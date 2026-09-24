@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -240 +240 @@
+-                                                    'next_offset': record['update_id'] + 1}}}
++                                                    'next_offset': cursor.get('next_offset', 0)}}}
