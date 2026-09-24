@@ -1,0 +1,153 @@
+{
+ "by_assertion": true,
+ "commit": "3dc0393cc5dcf41e2532970f1f3f6f55db1e7817",
+ "details": [
+  "VELDO-0073 install/assets detail: .veldo/control_channel_activation.py installed by the scaffold",
+  "VELDO-0073 install/assets detail: .veldo/control_channel_activation.py engine copy identical",
+  "VELDO-0073 install/assets detail: .veldo/control_channel_activation.py laid by the installer",
+  "VELDO-0073 install/assets detail: .veldo/control_channel_ingress.py installed by the scaffold",
+  "VELDO-0073 install/assets detail: .veldo/control_channel_ingress.py engine copy identical",
+  "VELDO-0073 install/assets detail: .veldo/control_channel_ingress.py laid by the installer",
+  "VELDO-0073 entry-points/enumerated detail: the activation module names the installed entry points",
+  "VELDO-0073 entry-points/enumerated detail: every Bot API call site in the installed source is a named entry point [sites: ['TelegramAcquisitionEdge._call', 'TelegramEdge.send', 'TelegramPresentationEdge.send', 'TelegramSink.send']]",
+  "VELDO-0073 entry-points/enumerated detail: every Bot API call site opens through the activation gate, never urlopen",
+  "VELDO-0073 activation/no-implicit detail: TelegramAcquisitionEdge.get_me at the Telegram origin with a resolving token and no gate refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramAcquisitionEdge.get_me with the gate and no activation record (edge key and chat enrolled) refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramAcquisitionEdge.get_updates at the Telegram origin with a resolving token and no gate refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramAcquisitionEdge.get_updates with the gate and no activation record (edge key and chat enrolled) refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramEdge.send with the gate and no activation record (edge key and chat enrolled) refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramPresentationEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramPresentationEdge.send with the gate and no activation record (edge key and chat enrolled) refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramSink.send with a token that resolves and no activation refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: TelegramSink.send with the gate and no activation record refuses as not_activated",
+  "VELDO-0073 activation/no-implicit detail: no connection beyond the loopback interface was attempted [6]",
+  "VELDO-0073 activation/explicit-bound-operates detail: the activated ingress is installed",
+  "VELDO-0073 activation/explicit-bound-operates detail: before any record: the production presentation refuses and sends nothing [None]",
+  "VELDO-0073 activation/explicit-bound-operates detail: before any record: acquisition and wake refuse as not_activated and ask the platform nothing",
+  "VELDO-0073 activation/explicit-bound-operates detail: a steward cannot authorize the owner's edge (not_owner) and a service cannot (not_a_person)",
+  "VELDO-0073 activation/explicit-bound-operates detail: an origin that is neither Telegram nor a loopback stand-in is refused",
+  "VELDO-0073 activation/explicit-bound-operates detail: the owner's signed qualification run is recorded, bound to his enrollment and the edge key",
+  "VELDO-0073 activation/explicit-bound-operates detail: inside the run the presentation is published to the owner's enrolled chat",
+  "VELDO-0073 activation/explicit-bound-operates detail: a send to any chat but the owner's enrolled one refuses as chat_not_enrolled",
+  "VELDO-0073 activation/explicit-bound-operates detail: the owner's answer is acquired and the unenrolled sender is refused as unknown_sender",
+  "VELDO-0073 activation/explicit-bound-operates detail: the answer settled once through the production settlement service",
+  "VELDO-0073 activation/explicit-bound-operates detail: the owner's signed activation names the committed qualification and binds its bot",
+  "VELDO-0073 activation/explicit-bound-operates detail: the activated edge operates: a new decision is published to the enrolled chat",
+  "VELDO-0073 qualification/real-platform-proof detail: the stand-in run is recorded [refused: None]",
+  "VELDO-0073 qualification/real-platform-proof detail: the stand-in run is recorded as stand-in qualification, every leg bound",
+  "VELDO-0073 qualification/real-platform-proof detail: stand-in exchanges relabeled as Telegram are fixture_only_evidence",
+  "VELDO-0073 qualification/real-platform-proof detail: TLS naming another host is fixture_only_evidence",
+  "VELDO-0073 qualification/real-platform-proof detail: control: with TLS facts for api.telegram.org the same legs prove the platform",
+  "VELDO-0073 qualification/real-platform-proof detail: an answer whose evidence is not the bytes of a recorded getUpdates answer is answer_unproven",
+  "VELDO-0073 qualification/real-platform-proof detail: a Telegram run fed fixture exchanges records no qualification (fixture_only_evidence)",
+  "VELDO-0073 qualification/real-platform-proof detail: the stand-in qualification never activates the Telegram origin",
+  "VELDO-0073 settlement/production-construction detail: the ingress holds the VELDO-0068 settlement service on its own store connection",
+  "VELDO-0073 settlement/production-construction detail: the owner's answer was signed by the actual protected signer process",
+  "VELDO-0073 settlement/production-construction detail: the settlement carries the platform message: id, sender, chat, date and the presentation replied to",
+  "VELDO-0073 settlement/production-construction detail: no host trust installed: the ingress is not constructed",
+  "VELDO-0073 settlement/production-construction detail: a decision signer the host does not trust for settlements is refused",
+  "VELDO-0073 settlement/production-construction detail: a token file others can read is refused",
+  "VELDO-0073 notification/wakes-only detail: an invented notification payload wakes acquisition and is kept only as its digest",
+  "VELDO-0073 notification/wakes-only detail: the payload settles nothing: no answer, no settlement, the request still pending",
+  "VELDO-0073 notification/wakes-only detail: an ordinary platform event is acquired with its platform message id preserved",
+  "VELDO-0073 notification/wakes-only detail: the request settles from the acquired platform evidence, not the payload",
+  "VELDO-0073 stop/halts-edge detail: the owner's signed stop is recorded",
+  "VELDO-0073 stop/halts-edge detail: a stopped edge sends nothing: a new decision is refused and the platform is not asked",
+  "VELDO-0073 stop/halts-edge detail: a stopped edge accepts no answer: wake and acquisition refuse as edge_stopped",
+  "VELDO-0073 stop/halts-edge detail: the doorbell refuses too",
+  "VELDO-0073 stop/halts-edge detail: no fresh authority: the pending requests stay pending, unanswered and unsettled",
+  "VELDO-0073 stop/halts-edge detail: an explicit activation resumes the edge and the kept pending request then settles",
+  "VELDO-0073 stale/key-and-configuration detail: an edge configured with another origin refuses as stale_configuration and reaches nothing",
+  "VELDO-0073 stale/key-and-configuration detail: a token naming another bot refuses as stale_configuration after getMe",
+  "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration",
+  "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
+  "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept",
+  "VELDO-0073 stale/key-and-configuration detail: metrics and observations: counts, state and pending work, named refusals, no token or text"
+ ],
+ "failed_rows": [
+  "VELDO-0073 install/assets",
+  "VELDO-0073 entry-points/enumerated",
+  "VELDO-0073 activation/no-implicit",
+  "VELDO-0073 activation/explicit-bound-operates",
+  "VELDO-0073 qualification/real-platform-proof",
+  "VELDO-0073 settlement/production-construction",
+  "VELDO-0073 notification/wakes-only",
+  "VELDO-0073 stop/halts-edge",
+  "VELDO-0073 stale/key-and-configuration"
+ ],
+ "modules": {
+  ".veldo/control_channel_activation.py": {
+   "at_commit": null,
+   "now": "5d9a1ce1d5d4804849140f34076a302883968f40e568f0548816c47e28340ab7"
+  },
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": "3072e86bb184c6ed36a5b6d324eccb3bd580765b1f3c8301bb68a85c87bd9f70",
+   "now": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
+  },
+  ".veldo/control_channel_ingress.py": {
+   "at_commit": null,
+   "now": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "f6f76e5858aff9276fe322f1273318b1d5b9e2c9133410b427c7b4f54223b87c",
+   "now": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
+  },
+  ".veldo/control_channel_projection.py": {
+   "at_commit": "eda1c4006a5350ce6020d7a8582ddc57779f6526d401ad9041385006e290a188",
+   "now": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "52cb67a5ac0d8cfa65c2474291108ff7c4ce7dd7b51826b41a9b855a80853d47",
+   "now": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
+  },
+  ".veldo/request_doorbell.py": {
+   "at_commit": "a9e58e8b45f7629fe91c8b4f5177f54e9ef44b4c9aecad371942cfa3ffa2613a",
+   "now": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0073 install/assets",
+   false
+  ],
+  [
+   "VELDO-0073 entry-points/enumerated",
+   false
+  ],
+  [
+   "VELDO-0073 activation/no-implicit",
+   false
+  ],
+  [
+   "VELDO-0073 activation/explicit-bound-operates",
+   false
+  ],
+  [
+   "VELDO-0073 qualification/real-platform-proof",
+   false
+  ],
+  [
+   "VELDO-0073 settlement/production-construction",
+   false
+  ],
+  [
+   "VELDO-0073 notification/wakes-only",
+   false
+  ],
+  [
+   "VELDO-0073 stop/halts-edge",
+   false
+  ],
+  [
+   "VELDO-0073 stale/key-and-configuration",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.662,
+ "spec_id": "VELDO-0073",
+ "suite": "scripts/suites/70_veldo_0073_activation.py",
+ "tree": "git archive 3dc0393cc5dcf41e2532970f1f3f6f55db1e7817, unchanged; the current suite file run against it"
+}

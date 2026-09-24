@@ -1,0 +1,4 @@
+--- a/.veldo/control_channel_attribution.py
++++ b/.veldo/control_channel_attribution.py
+@@ -300 +299,0 @@
+-        self.P.gated_bot(self.activation, result['id'])

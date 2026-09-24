@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_ingress.py
++++ b/.veldo/control_channel_ingress.py
+@@ -92,0 +93,2 @@
++        if isinstance(notification, dict) and type(notification.get('update_id')) is int:  # defect
++            self.acquirer._keep(self.acquirer.edge.get_me()['id'], notification, notification_digest(notification))

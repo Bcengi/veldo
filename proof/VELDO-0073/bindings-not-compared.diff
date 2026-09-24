@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -378 +378 @@
+-        for field in BOUND:
++        for field in ():  # defect: bound versions never compared

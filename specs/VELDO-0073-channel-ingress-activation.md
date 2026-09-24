@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W58
 plan_revision: 3
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0126]
+depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0126]
 placement: [tracker, engine, contracts, distribution]
 protected_paths: [.veldo/policy.yaml]
 footprint:
@@ -29,6 +29,16 @@ footprint:
   - "engine/.veldo/control_channel_activation*.py"
   - ".veldo/control_channel_activation*.py"
   - "packs/*/.veldo/control_channel_activation*.py"
+  - "engine/.veldo/control_channel_projection.py"
+  - ".veldo/control_channel_projection.py"
+  - "packs/*/.veldo/control_channel_projection.py"
+  - "engine/.veldo/control_channel_presentation.py"
+  - ".veldo/control_channel_presentation.py"
+  - "packs/*/.veldo/control_channel_presentation.py"
+  - "engine/.veldo/control_channel_attribution.py"
+  - ".veldo/control_channel_attribution.py"
+  - "packs/*/.veldo/control_channel_attribution.py"
+  - "scripts/suites/support/v73_*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -159,3 +169,22 @@ Release 2; additional channels moved to Release 4. Jira activation is dropped. R
 activation/send/receive/canonical answers remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-24, implementation: every installed Telegram send and receive entry point now asks the
+activation gate before each exchange (control_channel_activation.ENTRY_POINTS: TelegramEdge.send,
+TelegramPresentationEdge.send, TelegramAcquisitionEdge getMe and getUpdates, and the doorbell's
+TelegramSink.send), so the footprint gains the three VELDO-0064 to VELDO-0066 edge modules whose
+exchange lines changed; nothing else in them changed. It also gains
+scripts/suites/support/v73_*.py, the real authority the suite and the live qualification runner
+share, so the runner exercises exactly what the rows exercise. Only a loopback stand-in Bot API is
+reached without a gate, which keeps the earlier suites' stand-ins working unchanged.
+
+2026-09-24, review finding from VELDO-0069: nothing in production constructed the VELDO-0068
+settlement service, so a real Telegram answer had no production path to one authoritative settlement.
+control_channel_ingress.open_ingress now constructs the ingress from host configuration (the store,
+the journal signer, the host trust whose settlement signers VELDO-0054 readers verify against, the
+VELDO-0067 protected answer signer and the token file), with the settlement service on the same
+connection, and a row drives that construction. VELDO-0069 is added to depends_on: its optional
+decision signer is named in the configuration, must be one of the host's settlement signers, and is
+refused as unavailable_service until the protected signer has a decision purpose after VELDO-0069
+lands on main.
