@@ -39,6 +39,22 @@ effect, is never counted, and settling again refuses as already_settled; listing
 A second settlement of the same version, from any surface, is refused and writes nothing;
 concurrent settlements commit once.
 
+THE GOVERNING BINDING (VELDO-0069). A request whose terms target a governing decision (target kind
+GOVERNING_TARGET, settled through the decision_disposition touchpoint) names the exact question the
+owner is asked: the governing record, its decision id and revision, and the digests of its framing,
+its subject (kind, id, digest) and its scope, with the digest of that question. Settling it writes, in
+the SAME transaction as the settlement, effect, receipt and terminal request state, the governing
+binding: a `decision_settlement` record keyed by the decision and the revision ruled on, carrying the
+chosen option, the decider, the time and a body signed by the configured decision signer under the
+VELDO-0054 settlement namespace. The body binds what the owner was shown, never what the record says
+at settlement time, so a stale framing, another subject or an older revision is bound faithfully and
+every VELDO-0054 consumer names it (unbound_decision:<id>/framing, /subject, /revision) instead of
+unblocking. A governed subject kind this release does not bind (anything but spec or plan), an absent
+governing record or no configured decision signer stops the settlement by name: nothing is written, so
+a receipt is never committed without its binding. A later revision's binding supersedes an earlier
+one, since the consumers read only the binding of the record's current revision; one revision is
+bound once.
+
 PUBLISHED STATE. `publish` records the settled requests as statuses of a VELDO-0035 accepted revision
 (`.veldo/settlements/<alias>.json` the settlement, `<alias>.request.json` the terminal request) and
 materializes an accepted snapshot; readers take request state from those statuses only.
@@ -60,6 +76,11 @@ EFFECT_SCHEMA = 'veldo.settlement_effect/v1'
 RECEIPT_SCHEMA = 'veldo.settlement_receipt/v1'
 API_SCHEMA = 'veldo.settlement_api_answer/v1'
 SETTLEMENT_KIND, EFFECT_KIND, RECEIPT_KIND = 'request_settlement', 'settlement_effect', 'settlement_receipt'
+# VELDO-0069: the governing binding a settlement of a governing decision question writes, the target kind
+# that names such a question, the touchpoint it is settled through and the fields the owner rules on.
+DECISION_SETTLEMENT_KIND, GOVERNING_RECORD_KIND = 'decision_settlement', 'decision'
+GOVERNING_TARGET, GOVERNING_TOUCHPOINT = 'governing_decision', 'decision_disposition'
+GOVERNING_FIELDS = ('decision_id', 'revision', 'framing_digest', 'subject', 'scope_digest')
 TERMS_KIND, API_KIND = 'settlement_terms', 'settlement_api_answer'
 SETTLE, TERMS, API = 'request_settle', 'settlement_terms_record', 'settlement_api_answer'
 OWNER = 'VELDO-0068 request settlement'
@@ -116,6 +137,7 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'unmatched_choice': 'invalid_input
             'request_closed': 'stale_subject', 'stale_subject': 'stale_subject', 'already_answered': 'stale_subject',
             'missing_terms': 'missing_evidence', 'unsupported_touchpoint': 'missing_evidence',
             'no_answer': 'missing_evidence', 'missing_evidence': 'missing_evidence',
+            'missing_decision': 'missing_evidence', 'unsupported_subject': 'invalid_input',
             'unavailable_service': 'unavailable_service'}
 
 
@@ -152,6 +174,11 @@ def effect_id(request, version):
 
 def receipt_id(request, version):
     return 'settlement-receipt:%s:%d' % (request, version)
+
+
+def binding_id(decision, revision):
+    """THE governing binding key (VELDO-0069): one per governing record and revision ruled on."""
+    return 'decision-settlement:%s:%d' % (decision, revision)
 
 
 def terms_id(repository_uuid, name):
@@ -203,6 +230,39 @@ def _sibling(alias, name):
     return module
 
 
+DD = _sibling('settlement_decision_dependency', 'control_decision_dependency.py')
+
+
+def governing_question(target):
+    """The exact question a governing target asks the owner to rule on."""
+    return {k: target.get(k) for k in GOVERNING_FIELDS}
+
+
+def governing_target(decision, record):
+    """The terms target a requester opens a governing decision question with: the record's entity id and
+    the decision, revision, framing, subject and scope it asks about, with the digest of that question."""
+    record = record if isinstance(record, dict) else {}
+    question = {'decision_id': record.get('decision_id'), 'revision': record.get('revision'),
+                'framing_digest': record.get('framing_digest'), 'subject': dict(record.get('subject') or {}),
+                'scope_digest': DD.scope_digest(record.get('scope'))}
+    return dict(question, kind=GOVERNING_TARGET, ref=decision, digest=digest(question))
+
+
+def governing_problem(target):
+    """Why a governing target is not a question this release binds, as (code, detail), or None."""
+    q = governing_question(target)
+    subject = q['subject']
+    if not (_is_str(q['decision_id']) and type(q['revision']) is int and q['revision'] >= 1
+            and _is_str(q['framing_digest']) and _is_str(q['scope_digest']) and isinstance(subject, dict)
+            and set(subject) == {'kind', 'id', 'digest'} and all(_is_str(subject[k]) for k in subject)):
+        return 'invalid_input', 'a governing target names its decision, revision, framing, subject and scope'
+    if target.get('digest') != digest(q):
+        return 'invalid_input', 'the governing target digest is not the digest of the question it names'
+    if subject['kind'] not in DD.SUBJECT_KINDS:
+        return 'unsupported_subject', 'subject kind %r is not bound in this release' % subject['kind']
+    return None
+
+
 class Settlement:
     """The settlement service on one control store connection.
 
@@ -210,13 +270,19 @@ class Settlement:
     control_assignment and control_channel_presentation modules; `inbox` and `presenter` are the
     VELDO-0064 Inbox and VELDO-0065 Presenter on the same connection. `api_edge` names the
     authenticated API edge's service principal. `sign(bytes) -> text` signs journal records as
-    `journal_signer`."""
+    `journal_signer`. `decision_signer` is (principal, sign) for governing bindings (VELDO-0069): `sign`
+    signs a binding body under the VELDO-0054 settlement namespace as `principal`, a signer the hosts
+    that read eligibility trust. Without it a governing decision question is never settled."""
 
     def __init__(self, store, membership, inbox, presenter, conn, journal_signer, sign, *, assignment, presentation,
-                 api_edge=None, authority_generation=1, clock=time.time):
+                 api_edge=None, authority_generation=1, clock=time.time, decision_signer=None):
         if not hasattr(conn, 'command_registry') or inbox.conn is not conn or presenter.conn is not conn:
             raise Refused('invalid_input', 'settlement has one authority: the control store connection the inbox '
                                            'and the presenter use')
+        if decision_signer is not None and not (isinstance(decision_signer, tuple) and len(decision_signer) == 2
+                                                and _is_str(decision_signer[0]) and callable(decision_signer[1])):
+            raise Refused('invalid_input', 'a decision signer is (principal, sign)')
+        self.decision_signer = decision_signer
         self.store, self.membership, self.AC = store, membership, membership.AC
         self.inbox, self.presenter, self.I, self.V = inbox, presenter, assignment, presentation
         self.conn, self.ids = conn, dict(inbox.ids)
@@ -228,7 +294,8 @@ class Settlement:
         conn.command_registry[TERMS] = {'transition': self._new_transition, 'writes': WRITES}
         conn.command_registry[API] = {'transition': self._new_transition, 'writes': WRITES}
         store.declare_owners(conn, OWNER, kinds={SETTLEMENT_KIND: (SETTLE,), EFFECT_KIND: (SETTLE,),
-                                                 RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,), API_KIND: (API,)},
+                                                 RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,), API_KIND: (API,),
+                                                 DECISION_SETTLEMENT_KIND: (SETTLE,)},
                              module=__file__)
 
     # reading
@@ -324,10 +391,19 @@ class Settlement:
             if not ok:
                 raise refused('transition_refused', why)
         terminal = dict(data, state=TERMINAL_STATE, answer=params['answer'], settlement=params['reference'])
-        return {sid: {'kind': SETTLEMENT_KIND, 'data': params['settlement']},
-                eid: {'kind': EFFECT_KIND, 'data': params['effect']},
-                rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},
-                request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}
+        changes = {sid: {'kind': SETTLEMENT_KIND, 'data': params['settlement']},
+                   eid: {'kind': EFFECT_KIND, 'data': params['effect']},
+                   rid: {'kind': RECEIPT_KIND, 'data': params['receipt']},
+                   request: {'kind': self.I.ENTITY_KIND, 'data': terminal}}
+        binding = params.get('binding')
+        if binding is not None:
+            # VELDO-0069: the governing binding commits with the receipt or not at all.
+            if binding['binding_id'] in before:
+                raise refused('stale_subject', 'this decision revision is settled')
+            if (before.get(binding['decision']) or {}).get('kind') != GOVERNING_RECORD_KIND:
+                raise refused('stale_subject', 'the governing decision is not recorded')
+            changes[binding['binding_id']] = {'kind': DECISION_SETTLEMENT_KIND, 'data': binding}
+        return changes
 
     # terms: what a request settles and what it requires
 
@@ -346,6 +422,12 @@ class Settlement:
             target = c['target']
             if not isinstance(target, dict) or not all(_is_str(target.get(k)) for k in ('kind', 'ref', 'digest')):
                 raise Refused('invalid_input', 'the target names its kind, ref and digest')
+            if target['kind'] == GOVERNING_TARGET:
+                if c['touchpoint'] != GOVERNING_TOUCHPOINT:
+                    raise Refused('unsupported_touchpoint', 'a governing decision is settled through decision disposition')
+                problem = governing_problem(target)
+                if problem:
+                    raise Refused(*problem)
             roles = c['required_roles']
             if not isinstance(roles, list) or not all(r in self.AC.ROLES for r in roles):
                 raise Refused('invalid_input', 'required_roles lists authority roles')
@@ -550,6 +632,8 @@ class Settlement:
         receipt = self.presenter.receipt(winner['presentation_id'])
         eff, rec = effect_id(request, version), receipt_id(request, version)
         ruling, choice = winner['ruling'], winner['choice']
+        bound = (self._binding(terms, request, version, principals, winner, now)
+                 if terms['target'].get('kind') == GOVERNING_TARGET else None)
         settlement = {'schema': SCHEMA, 'settlement_id': sid, 'request_id': request, 'request_version': version,
                       'request_digest': receipt['request_digest'], 'touchpoint': touchpoint,
                       'terms_id': terms['terms_id'], 'terms_digest': digest(terms), 'requirement': need,
@@ -559,6 +643,8 @@ class Settlement:
                       'presentation_id': receipt['presentation_id'], 'presentation_digest': receipt['brief_digest'],
                       'presentation_version': receipt['presentation_version'], 'not_counted': listed,
                       'effect_id': eff, 'receipt_id': rec, 'nonce': sid, 'settled_at': now}
+        if bound is not None:
+            settlement['binding_id'] = bound['data']['binding_id']
         effect = {'schema': EFFECT_SCHEMA, 'effect_id': eff, 'type': JOURNEY[touchpoint]['effects'][ruling],
                   'touchpoint': touchpoint, 'target': terms['target'],
                   'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,
@@ -568,6 +654,8 @@ class Settlement:
                         'settlement_digest': digest(settlement), 'effect_ids': [eff], 'request_id': request,
                         'request_version': version, 'terminal_state': TERMINAL_STATE, 'nonce': sid,
                         'originating_channel': channel, 'settled_at': now}
+        if bound is not None:
+            receipt_data['binding_id'] = bound['data']['binding_id']
         answer = {'principal': winner['principal'], 'ruling': choice, 'request_version': version,
                   'command_id': winner_id, 'command': winner['assertion'], 'signature': winner['signature'],
                   'key_id': winner.get('edge_key_id') or winner.get('edge_principal'), 'accepted_at': winner['accepted_at']}
@@ -580,10 +668,62 @@ class Settlement:
         expected.update({eid: ver for eid, ver, _c, _a in answers})
         params = dict(request_id=request, request_version=version, settlement=settlement, effect=effect,
                       receipt=receipt_data, answer=answer, reference=reference, answers=[e for e, _v, _c, _a in answers])
+        extra = {}
+        if bound is not None:
+            params['binding'] = bound['data']
+            expected.update(bound['expected'])
+            extra = dict(binding_id=bound['data']['binding_id'], decision=bound['data']['decision'],
+                         binding_current=not bound['currency'], binding_refusals=bound['currency'])
         self._commit(SETTLE, sid, params, expected)
         return self._observe('settle', request, expected, 'settled', None, settlement_id=sid, receipt_id=rec,
                              effect_id=eff, touchpoint=touchpoint, ruling=ruling, originating_channel=channel,
-                             not_counted=len(listed))
+                             not_counted=len(listed), **extra)
+
+    def _binding(self, terms, request, version, principals, winner, now):
+        """VELDO-0069: the governing binding of a settled governing decision question, signed, with the
+        versions it pins and the named blockers the consumers will raise against it now (empty when it is
+        the record's current exact binding). The body is the question the owner was shown, never the
+        record as it stands at settlement. Refused by name, before anything is written, when the question
+        or record is not one this release binds or no decision signer is configured."""
+        target = terms['target']
+        problem = governing_problem(target)
+        if problem:
+            raise Refused(*problem)
+        if self.decision_signer is None:
+            raise Refused('unavailable_service', 'no decision signer is configured: a governing decision is never '
+                                                 'settled without its binding')
+        rid, question = target['ref'], governing_question(target)
+        found = self._entity(rid)
+        record = found['data'] if found is not None and found['kind'] == GOVERNING_RECORD_KIND else None
+        if not isinstance(record, dict) or record.get('schema') != DD.GOVERNING_SCHEMA or DD.record_invalid(rid, record):
+            raise Refused('missing_decision', 'the request names no recorded governing decision')
+        kind = record['subject']['kind']
+        if kind not in DD.SUBJECT_KINDS:
+            raise Refused('unsupported_subject', 'the governed subject kind %r is not bound in this release' % kind)
+        bid = binding_id(rid, question['revision'])
+        if self._entity(bid) is not None:
+            raise Refused('already_settled', 'this decision revision is settled')
+        at = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now))
+        body = {'schema': DD.SETTLEMENT_SCHEMA, 'domain_uuid': self.ids['domain_uuid'],
+                'decision_id': question['decision_id'], 'decision_revision': question['revision'],
+                'framing_digest': question['framing_digest'], 'subject': dict(question['subject']),
+                'scope_digest': question['scope_digest'], 'ruling': winner['ruling'], 'request_id': request,
+                'request_version': version, 'principals': list(principals), 'settled_at': at}
+        principal, sign = self.decision_signer
+        signature = sign(DD.settlement_bytes(body))
+        if not _is_str(signature):
+            raise Refused('unavailable_service', 'the decision signer returned no signature')
+        data = {'schema': DD.SETTLEMENT_SCHEMA, 'binding_id': bid, 'decision': rid, 'settlement': body,
+                'signer': principal, 'signature': signature, 'choice': winner['choice'],
+                'decided_by': list(principals), 'decided_at': at, 'settlement_id': settlement_id(request, version),
+                'receipt_id': receipt_id(request, version), 'terms_id': terms['terms_id']}
+        if question['revision'] != record['revision']:
+            currency = ['unbound_decision:%s/revision' % rid]
+        else:
+            subject = self._entity(DD.subject_entity(record['subject']))
+            current = DD.subject_digest(kind, subject['data'] if subject is not None else None)
+            currency = DD.binding_problems(rid, record, body, current, self.ids['domain_uuid'])
+        return {'data': data, 'expected': {bid: 0, rid: found['version']}, 'currency': currency}
 
     # the published state
 
@@ -632,7 +772,8 @@ class Settlement:
                 pending += 1
                 reason = last.get(entry['id']) or 'not_attempted'
                 blocked[reason] = blocked.get(reason, 0) + 1
-        return dict(self.counts, settled=len(self.settlements()), pending=pending, pending_by_reason=blocked)
+        bound = self.conn.execute('SELECT count(*) FROM entities WHERE kind=?', (DECISION_SETTLEMENT_KIND,)).fetchone()[0]
+        return dict(self.counts, settled=len(self.settlements()), bound=bound, pending=pending, pending_by_reason=blocked)
 
 
 def published_state(members, alias):
