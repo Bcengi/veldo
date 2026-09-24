@@ -1,0 +1,5 @@
+--- a/.veldo/events.py
++++ b/.veldo/events.py
+@@ -448 +448 @@
+-PROJECTION_OWNED = frozenset(_VOCAB.PROJECTIONS)
++PROJECTION_OWNED = frozenset(_VOCAB.PROJECTIONS) - {"spec.shipped"}  # defect: spec.shipped is hand-emittable

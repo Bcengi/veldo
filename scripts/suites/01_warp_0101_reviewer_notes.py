@@ -1085,12 +1085,17 @@ _spspec = importlib.util.spec_from_file_location("veldo_spend", ROOT / ".veldo/s
 SP = importlib.util.module_from_spec(_spspec); _spspec.loader.exec_module(SP)
 
 # AC1: records through the ONE writer, with the emitter INJECTED so this never touches the real
-# append-only log. A test that writes to the real log would be permanent.
+# append-only log. A test that writes to the real log would be permanent. AN INJECTED EMITTER ADMITS
+# ANY TYPE, which is how a recorder whose type the real writer refused stayed green here after
+# VELDO-0051 made spec.shipped projection-owned. So the type is also bound to what the REAL writer
+# admits: in the vocabulary and owned by no projection. Suite 66 runs the real CLI end to end.
 _sp_seen = []
 _sp_ev = SP.record("WARP-9733", "harness_reported", tokens=48000, cost_usd=1.92, human_minutes=6,
                    emit=lambda t, **k: (_sp_seen.append((t, k)) or dict(k, type=t)))
 expect("WARP-0733 AC1: a spend record carries the figures against the named spec, as the event type the vocabulary already declares",
-       _sp_ev["type"] == "spec.shipped" and _sp_ev["tokens"] == 48000
+       _sp_ev["type"] == "spend.recorded" and _sp_ev["producer"] == "spend.py"
+       and _sp_ev["type"] in EV.EVENT_TYPES and _sp_ev["type"] not in EV.PROJECTION_OWNED
+       and _sp_ev["tokens"] == 48000
        and _sp_ev["cost_usd"] == 1.92 and _sp_ev["human_minutes"] == 6
        and _sp_ev["spec"] == "WARP-9733"
        and _sp_ev["extra"]["spend_basis"] == "harness_reported")

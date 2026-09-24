@@ -730,8 +730,11 @@ expect("WARP-1407 AC5 NEGATIVE CONTROL: minutes on a verdict or an approval DO s
        _JL_ROWS["WARP-9402"]["split_known"] is True)
 expect("WARP-1407 AC5: the kind map is bound to the recorder's own event type (a drift guard: if "
        "spend.py changes what it writes, this fails rather than silently mis-splitting)",
-       JLSP.SCHEMA_EVENT_TYPE == "spec.shipped"
+       JLSP.SCHEMA_EVENT_TYPE == "spend.recorded"
        and JL.KIND_BY_EVENT[JLSP.SCHEMA_EVENT_TYPE] == "ship_bulk"
+       # VELDO-0051: the type the recorder wrote before is still read as the same bulk kind
+       and JLSP.HISTORICAL_EVENT_TYPES == ("spec.shipped",)
+       and all(JL.KIND_BY_EVENT[t] == "ship_bulk" for t in JLSP.HISTORICAL_EVENT_TYPES)
        and JL.KIND_BY_EVENT["verdict.recorded"] == "review"
        and JL.KIND_BY_EVENT["approval.recorded"] == "approval")
 expect("WARP-1407 AC5 NEGATIVE CONTROL: an event type the map does not know carries its minutes "

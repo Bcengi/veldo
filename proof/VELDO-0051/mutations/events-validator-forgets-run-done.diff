@@ -1,0 +1,5 @@
+--- a/.veldo/validate.py
++++ b/.veldo/validate.py
+@@ -544 +544 @@
+-EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES)
++EVENT_TYPES = set(_EVENT_VOCABULARY.EVENT_TYPES) - {"run.done"}  # defect: the validator forgets run.done

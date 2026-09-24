@@ -1,0 +1,5 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -190,2 +189,0 @@
+-    # VELDO-0051: the canonical event vocabulary events.py and validate.py both load.
+-    ".veldo/control_event_vocabulary.py",

@@ -31,10 +31,10 @@ type=verdict.recorded` on a shipped flag put it on the dict AFTER the check, and
 So the ONE function here that puts bytes in the log is also the one that decides, and it reads the
 FINAL dict. Eligibility has three legs, all on the bytes: the type must be in the vocabulary (an
 argument check missed `--field type=`, which wrote a line no validator recognises into a log nothing
-may rewrite); a projection-owned type is written only on THE PROJECTION'S OWN APPEND PATH, which is
-the single call site that passes the writer's `entitled` flag, so entitlement is no string a caller
-can supply and emit(), --field type= and every other route cannot land such a line whatever they
-declare (WARP-0731 narrowed this from a per-key git enumeration to the flag, because WARP-0730
+may rewrite); a projection-owned type is written only on ITS PROJECTION'S OWN APPEND PATH, which is
+a call site that passes the writer's `entitled` flag (the review projection's, and since VELDO-0051
+the journal projection's), so entitlement is no string a caller can supply and emit(), --field type=
+and every other route cannot land such a line whatever they declare (WARP-0731 narrowed this from a per-key git enumeration to the flag, because WARP-0730
 retired the property the enumeration defended); and every RESERVED key (schema, id, type, at,
 producer) must hold a value the envelope's own invariants ADMIT, which is SHAPE and not
 non-settability - `--field id=aaaaaaaaaaaa` still LANDS at exit 0 with the caller's value, while
@@ -89,7 +89,8 @@ ROOT = Path(__file__).resolve().parent.parent
 # /veldo:init scaffold, a fixture) reads what to copy WITH it. A lone copy raises at import: with no
 # corpus owner there is no domain, and an empty one would fail OPEN.
 CORPUS_MODULE = "verdict_corpus.py"
-SIBLING_MODULES = ("git_process.py", CORPUS_MODULE,)
+VOCABULARY_MODULE = "control_event_vocabulary.py"
+SIBLING_MODULES = ("git_process.py", CORPUS_MODULE, VOCABULARY_MODULE,)
 
 # THE ONE OWNER OF WHAT A PROOF-CORPUS PATH IS, loaded by path (the tracker-resolver precedent in
 # validate.py). ONE WAY, so no cycle, and the contract validator loads the SAME module for the SAME
@@ -101,43 +102,26 @@ _vcspec.loader.exec_module(_VC)
 VELDO_DIR = _VC.VELDO_DIR          # the engine directory, in the owner's one spelling
 LOG = ROOT / VELDO_DIR / "events.jsonl"
 
+# THE ONE CANONICAL VOCABULARY (VELDO-0051), loaded by sibling path: the registry of every event
+# type and its owner, and the schema spellings. .veldo/validate.py loads the SAME module, so the
+# emitter and the gate's event validator cannot hold two lists (they held 31 and 21 before it).
+_evspec = importlib.util.spec_from_file_location(
+    "veldo_event_vocabulary", Path(__file__).resolve().with_name(VOCABULARY_MODULE))
+_VOCAB = importlib.util.module_from_spec(_evspec)
+_evspec.loader.exec_module(_VOCAB)
+
 # THE ENVELOPE'S OWN CONSTANTS (WARP-0723): the schema the gate's event validator requires, the width
 # of the id this module mints, and the keys the writer takes no caller's value for - defined ONCE, so
-# the mint and the guard below cannot drift apart.
-SCHEMA = "veldo.event/v1"
+# the mint and the guard below cannot drift apart. The schema is the vocabulary's current spelling.
+SCHEMA = _VOCAB.SCHEMA
 EVENT_ID_LEN = 12
 RESERVED_ENVELOPE_KEYS = ("schema", "id", "type", "at", "producer")
 
-# The fixed vocabulary: the loop's actual steps. Adding a type is a conscious
-# contract change, not an ad-hoc string, so metrics can rely on it.
-EVENT_TYPES = {
-    "plan.created", "plan.approved", "plan.revised", "work.pulled",
-    "spec.ready", "spec.shipped", "spec.blocked",
-    "gate.passed", "gate.failed",
-    "proof.recorded", "review.requested", "verdict.recorded",
-    "approval.recorded",
-    "emergency.push", "emergency.closed",
-    "merge.completed", "index.updated",
-    # Run Lens durable milestones (PLAN-0005). High-volume run.step and
-    # run.heartbeat are live-only (run folder live.jsonl), never committed here.
-    "run.started", "run.blocked", "run.resumed", "run.done", "run.aborted",
-    # The incident lifecycle (PLAN-0012 W1): an incident opens, is diagnosed from
-    # artifacts, a remediation is proposed, and the incident is closed by
-    # reconciliation. The contract that owns this vocabulary is .veldo/incident.py
-    # (INCIDENT_EVENT_TYPES); a selftest binds the two so they cannot drift. These
-    # types are emitted and validated as incidents actually flow through the
-    # compressed loop (WARP-1208, W8); W1 only introduces the vocabulary.
-    "incident.opened", "incident.diagnosed", "remedy.proposed", "incident.closed",
-    # The human-touchpoint request lifecycle (PLAN-0016 W2): a request opens on the
-    # surface and settles as accepted, rejected, or superseded; decision.decided marks a
-    # settled decision-choice, which had no event before this surface. The contract that
-    # owns this vocabulary is .veldo/request.py (REQUEST_EVENT_TYPES); a selftest binds
-    # the two so they cannot drift. Emission and gate event-validator recognition are
-    # wired when requests flow through the inbound edge (WARP-0619, W5); W2 only
-    # introduces the vocabulary (a conscious contract change).
-    "request.opened", "request.accepted", "request.rejected", "request.superseded",
-    "decision.decided",
-}
+# The fixed vocabulary: the loop's actual steps, from the canonical registry. Adding a type is a
+# conscious contract change in control_event_vocabulary.py, not an ad-hoc string, so metrics can rely
+# on it. The run milestones, the incident lifecycle (incident.py INCIDENT_EVENT_TYPES) and the request
+# lifecycle (request.py REQUEST_EVENT_TYPES) are members; selftests bind those owners to this set.
+EVENT_TYPES = set(_VOCAB.EVENT_TYPES)
 
 
 def now_iso():
@@ -212,10 +196,17 @@ def refuse_projection_owned(etype):
     because this is the same kind of error: a name the writer is not entitled to use."""
     if etype in PROJECTION_OWNED:
         raise ValueError(
-            "%r is DERIVED, never emitted: the review projection owns it and reconciles "
-            "it from the committed verdict artifact, so commit the verdict and let the "
-            "gate's review-events stage record it. Refused whatever --producer says, "
-            "since the caller chooses that string." % etype)
+            "%r is DERIVED, never emitted: %s. Refused whatever --producer says, since the "
+            "caller chooses that string." % (etype, _PROJECTION_SOURCES.get(etype, "a projection owns it")))
+
+
+def refuse_substitution(ev, requested):
+    """Raise when the assembled line's type is not the type the caller asked for: an extra field or
+    a CLI `--field type=` naming ANOTHER type substitutes one event for another (VELDO-0051). Read
+    off the assembled dict, after the vocabulary and projection refusals, so their messages win."""
+    if requested is not None and ev.get("type") != requested:
+        raise ValueError("type substitution: %r was requested and the written line would carry %r"
+                         % (requested, ev.get("type")))
 
 
 def _is_event_id(s):
@@ -263,12 +254,17 @@ def refuse_reserved_envelope(ev, entitled=False):
         if not ok:
             raise ValueError("reserved envelope key %s is %r, not %s, and this log is APPEND-ONLY"
                              % (key, ev.get(key), want))
-    if ev["producer"] == RECONCILE_PRODUCER and not entitled:
-        raise ValueError("%r is the review projection's OWN producer: a line may declare it only "
+    if ev["producer"] in PROJECTION_PRODUCERS and not entitled:
+        raise ValueError("%r is a projection's OWN producer: a line may declare it only "
                          "on the projection's own append path" % ev["producer"])
+    # A projected line carries ITS projection's producer: the verdict projection writes no
+    # spec.shipped and the journal projection no verdict.recorded (VELDO-0051).
+    owner = _VOCAB.PROJECTIONS.get(ev.get("type"))
+    if entitled and owner is not None and ev["producer"] != owner:
+        raise ValueError("%r is projected by %r, not by %r" % (ev.get("type"), owner, ev["producer"]))
 
 
-def _append_events(fh, events, entitled=False):
+def _append_events(fh, events, entitled=False, requested=None):
     """THE ONE FUNCTION IN THIS MODULE THAT PUTS BYTES IN THE LOG, AND THE ONE PLACE
     ELIGIBILITY IS DECIDED. The two are the same function ON PURPOSE, and the selftest binds
     that WITHOUT WRITING DOWN EITHER SIDE: it discovers the scopes whose writes resolve to the
@@ -290,11 +286,12 @@ def _append_events(fh, events, entitled=False):
     what is about to be written.
 
     WHY THE PARAMETER AND NOT THE PRODUCER STRING. `producer` is author-written and buys nothing:
-    any caller can declare any name. `entitled` cannot be supplied from outside this module - it is
-    set True on exactly one code path, the reconciler's own append, and every other caller reaches
-    this function with the default False. So the rule it carries is "only the projection writes
-    projection-owned events", and that rule holds against emit(), against --field type=, and against
-    any flag combination, because none of them can reach the one call site that passes True.
+    any caller can declare any name. `entitled` is set True on exactly two code paths, the
+    reconciler's own append and append_journal_projection (VELDO-0051, which admits only the journal
+    projection's types), and every other caller reaches this function with the default False. So the
+    rule it carries is "only a projection writes projection-owned events", and that rule holds against
+    emit(), against --field type=, and against any flag combination, because none of them can reach a
+    call site that passes True. An entitled line also carries its own projection's producer.
 
     WARP-0731 NARROWED WHAT THIS CLAIMS, DELIBERATELY. It used to be a frozenset of content keys
     derived from git, so a line was admitted only when the artifact behind it was TRACKED in the
@@ -303,6 +300,8 @@ def _append_events(fh, events, entitled=False):
     mattering at WARP-0730, which removed verdict authority from the agent, and the guard's own
     docstring had always declared that a shell append or a hand-edited log defeats it anyway.
 
+    `requested` is the type emit() was asked for: a line carrying another is a substitution.
+
     Every event is checked BEFORE any is written, so a batch carrying one ineligible line
     appends none of it. APPEND-ONLY: never rewritten, truncated or sorted."""
     for ev in events:
@@ -310,6 +309,7 @@ def _append_events(fh, events, entitled=False):
         refuse_unknown_type(etype)
         if etype in PROJECTION_OWNED and not entitled:
             refuse_projection_owned(etype)
+        refuse_substitution(ev, requested)
         refuse_reserved_envelope(ev, entitled)
     for ev in events:
         fh.write(json.dumps(ev) + "\n")
@@ -327,8 +327,20 @@ def emit(etype, **kw):
     the check on an argument."""
     ev = make_event(etype, **kw)
     with open(LOG, "a") as f:
-        _append_events(f, [ev])
+        _append_events(f, [ev], requested=etype)
     return ev
+
+
+def append_journal_projection(fh, events):
+    """THE JOURNAL PROJECTION'S APPEND PATH (VELDO-0051): control_event_projection.py hands the
+    handle to its destination log and the events it derived from the committed journal. Only the
+    journal projection's own types are admitted here, each carrying that projection's producer; every
+    other refusal of the writer applies unchanged. The derivation (a confirmed landing receipt for
+    its exact unit and dispatch) is the projector's; emit() and the CLI reach none of this."""
+    for ev in events:
+        if _VOCAB.PROJECTIONS.get(ev.get("type")) != _VOCAB.JOURNAL_PROJECTION:
+            raise ValueError("%r is not a journal-projected type" % (ev.get("type"),))
+    return _append_events(fh, events, True)
 
 
 # ---------------------------------------------------------------------------
@@ -397,7 +409,8 @@ def emit(etype, **kw):
 #     are both NAMED and skipped rather than guessed at. The second is what makes a
 #     shallow clone append nothing here instead of duplicating the whole backfill.
 #   ONE WRITER OF PROJECTION-OWNED EVENTS - reconcile_verdicts is the only caller that may
-#     append a verdict.recorded, enforced at the writer by a flag no other route can set.
+#     append a verdict.recorded, enforced at the writer by a flag no other route can set (the
+#     journal projection's append path admits only its own spec.shipped).
 #     WARP-0731 removed the stronger rule that used to sit here (each derived key had to be a
 #     MEMBER of the enumeration the log's own repository produces) because WARP-0730 retired
 #     the property it defended. See the note where log_entitlement used to live.
@@ -422,7 +435,7 @@ def emit(etype, **kw):
 # a DIRECTORY under `:(top,literal)`. The owner carries the measurement.
 corpus_pathspec = _VC.corpus_pathspec
 VERDICT_EVENT = "verdict.recorded"
-RECONCILE_PRODUCER = "events.py reconcile-verdicts"
+RECONCILE_PRODUCER = _VOCAB.VERDICT_PROJECTION
 HEX40 = set("0123456789abcdef")
 # The index modes of a REGULAR FILE, re-exported from the corpus owner that reads the index and
 # applies them: a tracked symlink or gitlink at a verdict path is DEFERRED with its mode named.
@@ -432,7 +445,16 @@ INDEX_FILE_MODES = _VC.INDEX_FILE_MODES
 # ONLY when the line's own content key is one that pass derived. The `producer` field is
 # never consulted, because it is a string the caller supplies (the CLI even takes it as a
 # flag) and teeth held by the constrained party are not teeth.
-PROJECTION_OWNED = frozenset({VERDICT_EVENT})
+PROJECTION_OWNED = frozenset(_VOCAB.PROJECTIONS)
+# THE PRODUCER EACH PROJECTION WRITES: a hand emission may declare none of them (VELDO-0051 adds the
+# journal projection's, which writes spec.shipped from a confirmed landing receipt).
+PROJECTION_PRODUCERS = frozenset(_VOCAB.PROJECTIONS.values())
+_PROJECTION_SOURCES = {
+    VERDICT_EVENT: "the review projection owns it and reconciles it from the committed verdict "
+                   "artifact, so commit the verdict and let the gate's review-events stage record it",
+    "spec.shipped": "the journal projection (control_event_projection.py) derives it from a confirmed "
+                    "landing receipt for its exact unit and dispatch, never from a hand emission",
+}
 # THE TWO SUPPORTED RESOLVERS FOR AN OLD-FORM EVENT, DECLARED AS A VOCABULARY so that a
 # reader, a report and a test can name which one answered WITHOUT anything requiring a
 # particular one to run. Both are supported, a selftest proves they agree, and which one

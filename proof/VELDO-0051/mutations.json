@@ -1,0 +1,345 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 51 --jobs 4",
+ "exit": 0,
+ "seconds": 22.6,
+ "summary": {
+  "mutations_rejected": 22,
+  "green_suites": {
+   "66_veldo_0051_events.py": 37
+  }
+ },
+ "control": {
+  "suite": "66_veldo_0051_events.py",
+  "assertions": 37
+ },
+ "every_target_red": true,
+ "no_ran_row_red": true,
+ "mutations_per_row": {
+  "events/vocabulary-roundtrip": [
+   "events-validator-forgets-run-done",
+   "events-emitter-forgets-run-done",
+   "events-historical-spelling-dropped"
+  ],
+  "events/unknown-refused": [
+   "events-substitution-admitted",
+   "events-unknown-schema-validates"
+  ],
+  "events/projection-prefix": [
+   "projection-skips-committed-event",
+   "projection-rewrites-history",
+   "projection-watermark-unbound"
+  ],
+  "events/completion-owner": [
+   "events-direct-spec-shipped",
+   "vocabulary-spec-shipped-hand-owned"
+  ],
+  "events/confirmed-landing-only": [
+   "projection-dispatch-unit-unjoined",
+   "projection-confirmation-unrequired",
+   "projection-duplicate-republished"
+  ],
+  "events/installed-assets": [
+   "scaffold-vocabulary-not-laid",
+   "scaffold-projection-not-laid"
+  ],
+  "events/observations": [
+   "projection-refusal-unobserved",
+   "projection-unknown-taxonomy-classified",
+   "projection-pending-unlisted"
+  ],
+  "events/spend-recorded": [
+   "spend-records-as-spec-shipped",
+   "vocabulary-forgets-spend-recorded",
+   "judgment-spend-recorded-unkinded",
+   "judgment-historical-spend-unkinded"
+  ]
+ },
+ "mutations": [
+  {
+   "mutation": "events-validator-forgets-run-done",
+   "module": "validate.py",
+   "row": "events/vocabulary-roundtrip",
+   "declared_falsifier_of": "AC1",
+   "red_rows": [
+    "events/vocabulary-roundtrip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/events-validator-forgets-run-done.diff"
+  },
+  {
+   "mutation": "events-emitter-forgets-run-done",
+   "module": "events.py",
+   "row": "events/vocabulary-roundtrip",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/vocabulary-roundtrip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/events-emitter-forgets-run-done.diff"
+  },
+  {
+   "mutation": "events-historical-spelling-dropped",
+   "module": "control_event_vocabulary.py",
+   "row": "events/vocabulary-roundtrip",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/vocabulary-roundtrip",
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/events-historical-spelling-dropped.diff"
+  },
+  {
+   "mutation": "events-substitution-admitted",
+   "module": "events.py",
+   "row": "events/unknown-refused",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/unknown-refused"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/events-substitution-admitted.diff"
+  },
+  {
+   "mutation": "events-unknown-schema-validates",
+   "module": "control_event_vocabulary.py",
+   "row": "events/unknown-refused",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/unknown-refused"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/events-unknown-schema-validates.diff"
+  },
+  {
+   "mutation": "projection-skips-committed-event",
+   "module": "control_event_projection.py",
+   "row": "events/projection-prefix",
+   "declared_falsifier_of": "AC2",
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-skips-committed-event.diff"
+  },
+  {
+   "mutation": "projection-rewrites-history",
+   "module": "control_event_projection.py",
+   "row": "events/projection-prefix",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/observations",
+    "events/vocabulary-roundtrip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-rewrites-history.diff"
+  },
+  {
+   "mutation": "projection-watermark-unbound",
+   "module": "control_event_projection.py",
+   "row": "events/projection-prefix",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-watermark-unbound.diff"
+  },
+  {
+   "mutation": "events-direct-spec-shipped",
+   "module": "events.py",
+   "row": "events/completion-owner",
+   "declared_falsifier_of": "AC3",
+   "red_rows": [
+    "events/completion-owner",
+    "events/vocabulary-roundtrip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/events-direct-spec-shipped.diff"
+  },
+  {
+   "mutation": "vocabulary-spec-shipped-hand-owned",
+   "module": "control_event_vocabulary.py",
+   "row": "events/completion-owner",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/completion-owner",
+    "events/observations",
+    "events/vocabulary-roundtrip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/vocabulary-spec-shipped-hand-owned.diff"
+  },
+  {
+   "mutation": "projection-dispatch-unit-unjoined",
+   "module": "control_event_projection.py",
+   "row": "events/confirmed-landing-only",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-dispatch-unit-unjoined.diff"
+  },
+  {
+   "mutation": "projection-confirmation-unrequired",
+   "module": "control_event_projection.py",
+   "row": "events/confirmed-landing-only",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-confirmation-unrequired.diff"
+  },
+  {
+   "mutation": "projection-duplicate-republished",
+   "module": "control_event_projection.py",
+   "row": "events/confirmed-landing-only",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/projection-prefix",
+    "events/confirmed-landing-only",
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-duplicate-republished.diff"
+  },
+  {
+   "mutation": "scaffold-vocabulary-not-laid",
+   "module": "init_scaffold.py",
+   "row": "events/installed-assets",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/installed-assets"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/scaffold-vocabulary-not-laid.diff"
+  },
+  {
+   "mutation": "scaffold-projection-not-laid",
+   "module": "init_scaffold.py",
+   "row": "events/installed-assets",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/installed-assets",
+    "events/vocabulary-roundtrip"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/scaffold-projection-not-laid.diff"
+  },
+  {
+   "mutation": "projection-refusal-unobserved",
+   "module": "control_event_projection.py",
+   "row": "events/observations",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-refusal-unobserved.diff"
+  },
+  {
+   "mutation": "projection-unknown-taxonomy-classified",
+   "module": "control_event_projection.py",
+   "row": "events/observations",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-unknown-taxonomy-classified.diff"
+  },
+  {
+   "mutation": "projection-pending-unlisted",
+   "module": "control_event_projection.py",
+   "row": "events/observations",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/observations"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/projection-pending-unlisted.diff"
+  },
+  {
+   "mutation": "spend-records-as-spec-shipped",
+   "module": "spend.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/vocabulary-roundtrip",
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/spend-records-as-spec-shipped.diff"
+  },
+  {
+   "mutation": "vocabulary-forgets-spend-recorded",
+   "module": "control_event_vocabulary.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/vocabulary-roundtrip",
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/vocabulary-forgets-spend-recorded.diff"
+  },
+  {
+   "mutation": "judgment-spend-recorded-unkinded",
+   "module": "judgment_load.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/judgment-spend-recorded-unkinded.diff"
+  },
+  {
+   "mutation": "judgment-historical-spend-unkinded",
+   "module": "judgment_load.py",
+   "row": "events/spend-recorded",
+   "declared_falsifier_of": null,
+   "red_rows": [
+    "events/spend-recorded"
+   ],
+   "target_red": true,
+   "ran_rows_red": [],
+   "diff": "mutations/judgment-historical-spend-unkinded.diff"
+  }
+ ]
+}

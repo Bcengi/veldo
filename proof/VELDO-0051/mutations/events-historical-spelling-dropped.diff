@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_vocabulary.py
++++ b/.veldo/control_event_vocabulary.py
+@@ -26 +26 @@
+-SCHEMAS = (SCHEMA,) + HISTORICAL_SCHEMAS
++SCHEMAS = (SCHEMA,)  # defect: the historical schema spelling is no longer accepted

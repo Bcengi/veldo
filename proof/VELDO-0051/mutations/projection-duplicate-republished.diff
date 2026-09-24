@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -293 +293 @@
+-            fresh = [e for e in events if e['id'] not in present]
++            fresh = list(events)  # defect: a landing already in the log is published again

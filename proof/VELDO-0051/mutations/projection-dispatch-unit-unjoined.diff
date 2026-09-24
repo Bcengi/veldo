@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -218 +218 @@
+-            if publication.get('unit') != unit:
++            if False:  # defect: the dispatch is not joined to the receipt's unit
