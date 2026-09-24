@@ -54,6 +54,17 @@ A declaration is immutable: the same declaration again is a no-op, a different o
 kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
 that entities already occupy, because they were written while nobody owned them.
 
+THE ARCHITECTURE RECORD HAS ONE WRITER (VELDO-0134, R50). An entity whose id begins with
+ARCHITECTURE_PREFIX, or whose kind (before or after the write) is ARCHITECTURE_KIND, is written by
+the operation named ARCHITECTURE_OPERATION and by nothing else: execute refuses entity_owned for any
+other operation whose parameters name such an id as the row it writes (WRITE_IDENTITY_PARAMETERS),
+and for any other operation whose transition would change such an entity. The rule is here, in the
+command path, not in a declaration, so it binds every operation registered now or later, the
+generic upsert_entity and retire_entity among them, on every connection, with or without the
+accepting service attached. It names an operation, not code: which transition a connection
+registers under that name is that connection's owner's business (VELDO-0134's accept command in
+production, a suite's own writer of deliberately invalid records on the suite's own connection).
+
 ACCEPTED REPOSITORIES. A service that reads an enrolled repository's commits BINDS each repository
 uuid of a domain to the local Git repository it reads, with bind_repositories, and the binding is
 persisted beside the declarations (the repository_bindings table, created by the first binding).
@@ -97,6 +108,15 @@ REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conf
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
             "ownership_conflict", "repository_binding_conflict", "foreign_transition")
 DURABILITY_GRADES = ("off_host", "protocol_only")
+
+# VELDO-0134: the architecture record and the one operation that writes it (see the module docstring).
+ARCHITECTURE_OPERATION = "accept_architecture"
+ARCHITECTURE_KIND = "architecture_contract"
+ARCHITECTURE_PREFIX = "architecture:"
+# The parameters by which a command names the row it writes (an entity, a receipt, a reservation or
+# an effect); a command naming the architecture record through one of them is refused before its
+# transition runs.
+WRITE_IDENTITY_PARAMETERS = ("entity_id", "receipt_id", "reservation_id", "effect_id")
 
 _DDL = (
     "CREATE TABLE IF NOT EXISTS entities (id TEXT PRIMARY KEY, kind TEXT NOT NULL, version INTEGER NOT NULL, digest TEXT NOT NULL, data TEXT NOT NULL)",
@@ -338,6 +358,17 @@ COMMAND_REGISTRY = {
 }
 
 
+def architecture_writer(operation):
+    """Whether `operation` may write the architecture record (VELDO-0134): the accept operation alone."""
+    return operation == ARCHITECTURE_OPERATION
+
+
+def architecture_entity(entity_id, kinds=()):
+    """Whether an entity is the architecture record's: its id has ARCHITECTURE_PREFIX or one of its
+    kinds (before or after a write) is ARCHITECTURE_KIND."""
+    return (isinstance(entity_id, str) and entity_id.startswith(ARCHITECTURE_PREFIX)) or ARCHITECTURE_KIND in kinds
+
+
 def command_problems(command, registry=None):
     """Why a command is malformed, by name: a missing field, a blank id or principal, an
     operation outside the registry, expected_versions not a mapping of ids to positive integers,
@@ -416,6 +447,11 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         raise StoreRefused("malformed_command", "; ".join(problems))
     if not _is_str(signer) or not isinstance(authority_generation, int) or isinstance(authority_generation, bool) or authority_generation < 1:
         raise StoreRefused("malformed_command", "signer must be named and authority_generation a positive integer")
+    if not architecture_writer(command["operation"]):
+        named = sorted(k for k in WRITE_IDENTITY_PARAMETERS if architecture_entity(command["parameters"].get(k)))
+        if named:
+            raise StoreRefused("entity_owned", "%s may not write %s: the architecture record is written only by %s"
+                               % (command["operation"], command["parameters"][named[0]], ARCHITECTURE_OPERATION))
     cdigest = command_digest(command)
     receipt_refs = list(receipt_refs or ())  # materialized ONCE: an iterator consumed twice signs one list and stores another
     if not all(_is_str(r) for r in receipt_refs):
@@ -459,6 +495,9 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
                 raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
         for eid, new in changes.items():
             kinds = {new["kind"], before.get(eid, {}).get("kind")}
+            if architecture_entity(eid, kinds) and not architecture_writer(command["operation"]):
+                raise StoreRefused("entity_owned", "%s may not write %s: the architecture record is written only by %s"
+                                   % (command["operation"], eid, ARCHITECTURE_OPERATION))
             for selector, value, owner, commands, _module, _digest in owners:
                 hit = value in kinds if selector == "kind" else eid.startswith(value)
                 if hit and command["operation"] not in commands:

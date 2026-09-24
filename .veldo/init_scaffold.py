@@ -127,6 +127,9 @@ _FILES = [
     # VELDO-0054: exact decision-record dependency evaluation control_eligibility.py loads; a runtime
     # asset, no validator import, not substrate.
     ".veldo/control_decision_dependency.py",
+    # VELDO-0134: the architecture record's schema and its one writer, which control_eligibility.py
+    # loads; a runtime asset, no validator import at load, not substrate.
+    ".veldo/control_architecture.py",
     # VELDO-0050: accepted proof bundles and complete contextual proof validation, which executor.py
     # loads; a runtime asset, no validator import, not substrate.
     ".veldo/control_proof.py",

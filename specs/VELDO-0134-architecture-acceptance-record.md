@@ -25,6 +25,9 @@ footprint:
   - ".veldo/control_eligibility*.py"
   - "packs/*/.veldo/control_eligibility*.py"
   - "bin/veldo"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0134_*.py"
   - "scripts/suites/*_veldo_0053_*.py"
   - "scripts/suites/manifest.json"
@@ -277,3 +280,6 @@ change adds its work item (W97) to the plan, and the shape gate holds a change t
 specification to that specification's footprint.
 
 2026-09-24: the owner marked this specification ready (Telegram 29041).
+
+2026-09-24, build: .veldo/init_scaffold.py and its engine and pack copies joined the footprint, because the
+new module .veldo/control_architecture.py is installed by the scaffold like every runtime asset.
