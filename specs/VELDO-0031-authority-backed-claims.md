@@ -136,3 +136,15 @@ immediately before finalize and retains heartbeat ownership stops before publica
 uncertain ownership is a liveness bound (5 s to 30 s, the thread join 1 s to 10 s); under the gate's
 parallel mutation stage, with heavier suites beside it, the 5 s bound turned a slow thread into a false
 baseline row. The stage restricted to finding 31 passed 23 of 23 with the old bound, so nothing else changed.
+
+2026-09-24, fix-flake-0031: the review-r3 false baselines were not a slow thread, and the earlier entry's
+cause is withdrawn. The claim receiver reads state, pins the versions it read, verifies the signature and
+then commits; a write landing in between (here the fixture making the claim unanswerable, in production
+a unit transition or a membership change) made the store refuse the renew stale_version, the client read
+that as not owned, and the lander stopped with ownership_uncertain instead of the stop the ledger gave.
+Slow fsync widens the window, which is why only the gate saw it: under fsync pressure the old code was
+false in 269 of 400 and 93 of 400 stressed runs, every one with the renew answered stale_version, and
+0 of 400 after. The receiver now reads again and decides on the current state when a version it pinned
+moved (at most 16 times, then the conflict is the answer), the fixture's own write rereads the same way,
+review-r3 asserts both outcomes of a forced race, a new mutation (review-r3-contention-as-answer) reds it,
+and a false row carries what it saw after its colon, which the mutation workers keep as failed_details.

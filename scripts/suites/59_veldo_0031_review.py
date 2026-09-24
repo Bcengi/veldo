@@ -294,6 +294,17 @@ def review_r3(f):
         seen_log.append((round(time.monotonic() - t0, 3), 'returned', value))
         return value
     client.heartbeat = observed
+    request = client.request
+    def answered(operation, *args, **kwargs):
+        # The authority's own answer to every renew, beside what the heartbeat made of it.
+        try:
+            result = request(operation, *args, **kwargs)
+        except Exception as exc:
+            seen_log.append((round(time.monotonic() - t0, 3), operation + ' raised', repr(exc)))
+            raise
+        seen_log.append((round(time.monotonic() - t0, 3), operation + ' answered', result.get('reason')))
+        return result
+    client.request = answered
     gate_saw = {}
     class HeartbeatOps(Ops):
         def gate(self):
