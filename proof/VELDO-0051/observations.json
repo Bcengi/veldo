@@ -41,7 +41,7 @@
    true
   ]
  ],
- "suite_seconds": 3.12,
+ "suite_seconds": 3.19,
  "observed": {
   "installed": {
    "scaffold": "ok",
@@ -73,7 +73,7 @@
       "dispatch/VELDO-9601/land",
       16,
       "fixture-13",
-      "sha256:5c192bf406c8f0d0e3d27e472a6d2214a43ced54e7df77389359ec39fc7c6ee1",
+      "sha256:f55429288385b53721e7d57e1dfada727d0431093b285ae4192c5c66dec8cef9",
       "receipt:revision_landed:VELDO-9601:0"
      ],
      [
@@ -82,21 +82,21 @@
       "dispatch/VELDO-9602/land",
       31,
       "fixture-22",
-      "sha256:bfa1ca1bb16b636b96dea833d876862226d5efa83c43faa7450fd3108e5f4fe6",
+      "sha256:f7321052a298fecb0bcd71d503bbfe9cb935701c351eaa9532fa45fd6b191f0a",
       "receipt:revision_landed:VELDO-9602:1"
      ]
     ],
     "watermark": {
      "domain": "domain-51",
      "log": ".veldo/events.jsonl",
-     "record_digest": "sha256:bfa1ca1bb16b636b96dea833d876862226d5efa83c43faa7450fd3108e5f4fe6",
+     "record_digest": "sha256:f7321052a298fecb0bcd71d503bbfe9cb935701c351eaa9532fa45fd6b191f0a",
      "repository": "repository-51",
      "schema": "veldo.event_projection/v1",
      "watermark": 31
     },
     "head": [
      31,
-     "sha256:bfa1ca1bb16b636b96dea833d876862226d5efa83c43faa7450fd3108e5f4fe6"
+     "sha256:f7321052a298fecb0bcd71d503bbfe9cb935701c351eaa9532fa45fd6b191f0a"
     ]
    },
    "second": {
@@ -108,21 +108,21 @@
       "dispatch/VELDO-9604/land",
       38,
       "fixture-26",
-      "sha256:9eefd96baa37585e570672952777281412549fa5bbe7df6cfbbff96e7942ad3c",
+      "sha256:7dd0461565f4510e1d4ebe7e19a846c43f36ef902b44743cc9e666aae867d3a6",
       "receipt:revision_landed:VELDO-9604:0"
      ]
     ],
     "watermark": {
      "domain": "domain-51",
      "log": ".veldo/events.jsonl",
-     "record_digest": "sha256:9eefd96baa37585e570672952777281412549fa5bbe7df6cfbbff96e7942ad3c",
+     "record_digest": "sha256:7dd0461565f4510e1d4ebe7e19a846c43f36ef902b44743cc9e666aae867d3a6",
      "repository": "repository-51",
      "schema": "veldo.event_projection/v1",
      "watermark": 38
     },
     "head": [
      38,
-     "sha256:9eefd96baa37585e570672952777281412549fa5bbe7df6cfbbff96e7942ad3c"
+     "sha256:7dd0461565f4510e1d4ebe7e19a846c43f36ef902b44743cc9e666aae867d3a6"
     ]
    },
    "history_kept": [
@@ -156,11 +156,11 @@
      "status": "completed",
      "completed": true,
      "destination": {
-      "authorized_url": "/dev/shm/v51-0xag98ca/origin.git",
+      "authorized_url": "/dev/shm/v51-f7qcdern/origin.git",
       "destinations": [
        {
         "outcome": "at-tip",
-        "url": "/dev/shm/v51-0xag98ca/origin.git"
+        "url": "/dev/shm/v51-f7qcdern/origin.git"
        }
       ]
      }
@@ -170,11 +170,11 @@
      "status": "completed",
      "completed": true,
      "destination": {
-      "authorized_url": "/dev/shm/v51-0xag98ca/origin.git",
+      "authorized_url": "/dev/shm/v51-f7qcdern/origin.git",
       "destinations": [
        {
         "outcome": "at-tip",
-        "url": "/dev/shm/v51-0xag98ca/origin.git"
+        "url": "/dev/shm/v51-f7qcdern/origin.git"
        }
       ]
      }
@@ -184,11 +184,11 @@
      "status": "unknown",
      "completed": false,
      "destination": {
-      "authorized_url": "/dev/shm/v51-0xag98ca/hooked.git",
+      "authorized_url": "/dev/shm/v51-f7qcdern/hooked.git",
       "destinations": [
        {
         "outcome": "not-at-tip",
-        "url": "/dev/shm/v51-0xag98ca/hooked.git"
+        "url": "/dev/shm/v51-f7qcdern/hooked.git"
        }
       ]
      }
@@ -198,21 +198,21 @@
      "status": "completed",
      "completed": true,
      "destination": {
-      "authorized_url": "/dev/shm/v51-0xag98ca/origin.git",
+      "authorized_url": "/dev/shm/v51-f7qcdern/origin.git",
       "destinations": [
        {
         "outcome": "at-tip",
-        "url": "/dev/shm/v51-0xag98ca/origin.git"
+        "url": "/dev/shm/v51-f7qcdern/origin.git"
        }
       ]
      }
     }
    },
    "remote": {
-    "after_p1": "8c12d10fae3140a00c22b5dcf8700f71dcab634f",
-    "after_p2": "066937c8e8668e36a5caa75283e910e36b4465d5",
-    "after_p4": "36d0bf4943dda19aad69f652a4074e82f93a601b",
-    "hooked": "4ab3dc336bf06d15e3cd1cc3677272e7b109b47f"
+    "after_p1": "7a077263c1059af78ace9243058880c37bc86f52",
+    "after_p2": "29c1e7791b275f36e1024d325ae0abfe76a8e10a",
+    "after_p4": "1f6e4bec7f1dc668faa1b6c0f4cb29f046e46b72",
+    "hooked": "59c4fb93b73957c62c53be4ffba94296400e88fb"
    },
    "elsewhere": [
     "ok",
@@ -372,11 +372,11 @@
    "validator": {
     "type": [
      1,
-     "  /dev/shm/v51-0xag98ca/bad-type.jsonl: line 1: unknown event type 'verdict.invented'\nveldo contracts: 1 problem(s)\n"
+     "  /dev/shm/v51-f7qcdern/bad-type.jsonl: line 1: unknown event type 'verdict.invented'\nveldo contracts: 1 problem(s)\n"
     ],
     "schema": [
      1,
-     "  /dev/shm/v51-0xag98ca/bad-schema.jsonl: line 1: bad or missing schema (want veldo.event/v1)\nveldo contracts: 1 problem(s)\n"
+     "  /dev/shm/v51-f7qcdern/bad-schema.jsonl: line 1: bad or missing schema (want veldo.event/v1)\nveldo contracts: 1 problem(s)\n"
     ]
    }
   },
