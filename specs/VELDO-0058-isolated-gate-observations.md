@@ -172,3 +172,10 @@ registered, because each criterion's falsifier is a registered mutation of findi
 AC1 falsifier mutates scripts/verify.sh, which the driver could not reach: it mutated only .veldo/
 modules. The driver gains one optional case field naming the directory a module lives in, and the
 cases of every other finding are unchanged.
+
+2026-09-24, build (branch build-veldo-0058): scripts/verify.sh gains candidate mode (owner approval
+proof/VELDO-0058/approval-dmitry.json, Telegram 29068/29069), .veldo/control_verification.py runs the
+trusted installation's verifier and policy against a candidate and accepts its external observation,
+and GitLandOps.gate/finalize and LiveLoop.gate use it. The ordinary checkout gate and the landing step's
+inputs are unchanged. Suite 69 carries the four rows; proof/VELDO-0058/README.md has the evidence. No
+status was changed.
