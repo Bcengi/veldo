@@ -3168,6 +3168,122 @@ def cases():
     proof('proof-unknown-taxonomy-classified', '    return TAXONOMY.get(str(code).split(":", 1)[0], "unknown_outcome")\n',
           '    return TAXONOMY.get(str(code).split(":", 1)[0], "missing_evidence")  # defect: an unknown code is classified\n',
           'observations')
+
+    # VELDO-0047: each criterion's declared falsifier and further defects, each against the one suite
+    # row it names. The unit template is a production file like the modules beside it.
+    def service(name, module, old, new, row, also=()):
+        add(47, name, '66_veldo_0047_authority.py', module, old, new, ['authority/' + row], also)
+
+    # AC1: the key directory is placed where no worker writes directly.
+    service('authority-key-placement-worker-writable-ignored', 'control_service.py',
+            "    if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):\n"
+            "        problems.append('invalid_input:key_directory:worker_writable')\n",
+            "    pass  # defect: a directory workers write into may hold the keys\n", 'key-directory-placement')
+    service('authority-key-placement-mode-ignored', 'control_service.py',
+            "    if stat.S_IMODE(info.st_mode) & 0o077:\n        problems.append('invalid_input:key_directory:mode')\n",
+            "    pass  # defect: a key directory others can enter is accepted\n", 'key-directory-placement')
+    service('authority-key-placement-link-followed', 'control_service.py',
+            "    keys = os.path.abspath(str(key_directory)) if key_directory else",
+            "    keys = os.path.realpath(str(key_directory)) if key_directory else", 'key-directory-placement')
+    # AC1: the launch receiver's configuration carries this host's qualified worker profile.
+    service('authority-receiver-profile-omitted', 'control_service.py',
+            "                                'profile': profile, 'adapters': adapters}), 0o600)\n",
+            "                                'adapters': adapters}), 0o600)  # defect: the receiver gets no worker profile\n",
+            'receiver-configured-with-host-profile')
+    service('authority-profile-not-qualified', 'control_service.py',
+            "    if not qualification['qualified']:\n"
+            "        raise Refused(qualification['refusal'], 'the worker profile is not qualified on this host')\n",
+            "    pass  # defect: an unqualified worker profile is installed\n", 'receiver-configured-with-host-profile')
+    # AC1: a fixed executable and a protected configuration, and installation starts nothing.
+    service('authority-config-readable', 'control_service.py',
+            "        _write(config_path, _json(config), 0o600)\n",
+            "        _write(config_path, _json(config), 0o644)  # defect: the configuration is readable by everyone\n",
+            'installed-fixed-and-protected')
+    service('authority-install-starts-it', 'control_service.py',
+            "    reload_rc, _out, _err = runner.run(['daemon-reload'])\n",
+            "    reload_rc, _out, _err = runner.run(['daemon-reload'])\n"
+            "    runner.run(['start', unit])  # defect: installation starts the authority\n", 'installed-fixed-and-protected')
+    service('authority-runs-the-source-copy', 'control_service.py',
+            "'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}\n",
+            "'EXECUTABLE': str(HERE / 'control_service.py'), 'CONFIG': config_path}  # defect: the unit runs the source copy\n",
+            'installed-fixed-and-protected')
+    service('authority-unit-starts-at-login', 'services/veldo-authority.service',
+            "TimeoutStopSec=15\n", "TimeoutStopSec=15\n\n[Install]\nWantedBy=default.target\n",
+            'installed-fixed-and-protected')
+    # AC1, declared: two instances acquire scheduling authority.
+    service('authority-two-schedulers', 'control_service.py',
+            "        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n",
+            "        pass  # defect: a second instance takes scheduling authority too\n", 'one-instance-under-the-lock')
+    service('authority-lock-file-replaced', 'control_service.py',
+            "    fd = os.open(str(path), os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)\n",
+            "    with contextlib.suppress(OSError):\n"
+            "        os.unlink(str(path))  # defect: the lock file is replaced, so each instance locks its own\n"
+            "    fd = os.open(str(path), os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)\n",
+            'one-instance-under-the-lock')
+    # AC2, declared: a success is returned without changing the configured store.
+    service('authority-callback-success', 'control_service.py',
+            "        receipt = S.execute(self.conn, {k: command.get(k) for k in S.COMMAND_FIELDS}, self.principal, self.sign,\n"
+            "                            self.generation)\n",
+            "        receipt = {'committed': True, 'command_id': command.get('command_id'), 'seq': self.watermark() + 1,\n"
+            "                   'record_digest': 'sha256:' + '0' * 64}  # defect: success without a commit\n",
+            'mutation-reaches-the-configured-store')
+    service('authority-serves-another-store', 'control_service.py',
+            "        conn = S.open_store(config['store_path'])\n",
+            "        conn = S.open_store(config['store_path'] + '-local')  # defect: the service keeps a store of its own\n",
+            'mutation-reaches-the-configured-store')
+    # AC2: the wrong coordinates or the wrong actor refuse.
+    service('authority-command-signature-unchecked', 'control_service.py',
+            "        if not verified:\n            raise Refused('not_authorized', 'the command signature is not the principal\\'s')\n",
+            "        pass  # defect: the command's own signature is not checked\n", 'wrong-coordinates-or-actor-refused')
+    service('authority-command-coordinates-unchecked', 'control_service.py',
+            "        if any(command.get(k) != v for k, v in expected.items()):\n"
+            "            raise Refused('invalid_input:coordinates', 'the command names another domain, store or repository')\n",
+            "        pass  # defect: the command's own coordinates are not compared\n", 'wrong-coordinates-or-actor-refused')
+    # AC3, declared: a client starts the service on a missing socket.
+    unavailable = '            seen = last_seen(enrollment, workspace, binding)\n            raise RoutingRefused("authority_unavailable",'
+
+    def starts_on(error):
+        return ("            if isinstance(e, %s) and not getattr(send, 'starting', False):\n"
+                "                import subprocess  # defect: a client starts the authority itself\n"
+                "                subprocess.run(['systemctl', '--user', 'start', service_unit(binding)], capture_output=True,\n"
+                "                               timeout=30)\n"
+                "                send.starting = True\n"
+                "                try:\n"
+                "                    return send(workspace, command, enrollment, verify, sign, host_identity, timeout, seen_at)\n"
+                "                finally:\n"
+                "                    send.starting = False\n" % error + unavailable)
+    service('authority-client-starts-missing-service', 'control_client.py', unavailable, starts_on('FileNotFoundError'),
+            'absent-service-refuses-by-name')
+    service('authority-client-queues-locally', 'control_client.py', unavailable,
+            "            queue = os.path.join(os.path.dirname(seen_path(enrollment, workspace)), 'pending.jsonl')\n"
+            "            os.makedirs(os.path.dirname(queue), exist_ok=True)\n"
+            "            with open(queue, 'a') as pending:  # defect: a client keeps the command until the authority returns\n"
+            "                pending.write(json.dumps(command) + '\\n')\n"
+            "            return {'schema': RESPONSE_SCHEMA, 'accepted': True, 'store_uuid': binding['store_uuid'],\n"
+            "                    'watermark': None, 'result': {'ok': True, 'queued': True}}\n" + unavailable,
+            'absent-service-refuses-by-name')
+    # AC3: an unexpected exit stays stopped until an operator starts it.
+    service('authority-unit-restarts-on-failure', 'services/veldo-authority.service',
+            "Restart=no\n", "Restart=on-failure\nRestartSec=100ms\n", 'unexpected-exit-waits-for-an-operator')
+    service('authority-client-starts-dead-service', 'control_client.py', unavailable,
+            starts_on('ConnectionRefusedError'), 'unexpected-exit-waits-for-an-operator')
+    # Observability: every refusal is observed by name and class.
+    service('authority-refusal-not-observed', 'control_service.py',
+            "        self._count(observation)\n        return result\n",
+            "        if ok:  # defect: a refused command leaves no observation\n"
+            "            self._count(observation)\n        return result\n", 'observations')
+    service('authority-request-refusal-not-observed', 'control_service.py',
+            "        if isinstance(response, dict) and response.get('accepted') is False:\n",
+            "        if False:  # defect: a request refused before apply leaves no observation\n", 'observations')
+    service('authority-unknown-classified', 'control_service.py',
+            "    return head if head in CLASSES else NAMED.get(head, 'unknown_outcome')\n",
+            "    return head if head in CLASSES else NAMED.get(head, 'missing_evidence')  # defect: an unknown code is classified\n",
+            'observations')
+    # Distribution: the service and its unit template are installed assets.
+    service('authority-service-not-installed', 'init_scaffold.py', '    ".veldo/control_service.py",\n', '',
+            'installed-assets')
+    service('authority-unit-template-not-installed', 'init_scaffold.py',
+            '    ".veldo/services/veldo-authority.service",\n', '', 'installed-assets')
     return result
 
 

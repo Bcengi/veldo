@@ -241,15 +241,18 @@ def _v47_suite():
             return [line for line in text.splitlines()[1:] if line.split() and line.split()[-1] == str(address)]
 
         def flock_holders(path):
+            """Every flock on the file, from the kernel's own lock table: (mode, pid), matched by device
+            and inode."""
             try:
-                inode = os.stat(str(path)).st_ino
+                info = os.stat(str(path))
                 text = Path('/proc/locks').read_text()
             except OSError:
                 return None
+            identity = '%02x:%02x:%d' % (os.major(info.st_dev), os.minor(info.st_dev), info.st_ino)
             holders = []
             for line in text.splitlines():
                 parts = line.split()
-                if len(parts) >= 6 and parts[1] == 'FLOCK' and parts[5].rsplit(':', 1)[-1] == str(inode):
+                if len(parts) >= 6 and parts[1] == 'FLOCK' and parts[5] == identity:
                     holders.append((parts[3], int(parts[4])))
             return holders
 
@@ -337,7 +340,11 @@ def _v47_suite():
             # AC1: the key directory is placed outside every directory a worker writes into directly
             with region('authority/key-directory-placement'):
                 user = pwd.getpwuid(os.getuid()).pw_name
-                home = pwd.getpwuid(os.getuid()).pw_dir
+                # A directory the ENVIRONMENT names as home, never the real one: a defective build that
+                # accepted it would write a key there.
+                home = base / 'home'
+                home.mkdir(mode=0o700)
+                writable_for = getattr(CS, 'worker_writable', lambda environment=None: [])
                 in_temp = base / 'tempkeys'
                 in_temp.mkdir(mode=0o700)
                 loose = base / 'loose'
@@ -347,7 +354,8 @@ def _v47_suite():
                 linked.symlink_to(keys)
                 cases = {
                     'absent': (attempt(key_directory=None), 'missing_authority:key_directory:absent'),
-                    'home': (attempt(key_directory=home, writable=None), 'invalid_input:key_directory:worker_writable'),
+                    'home': (attempt(key_directory=str(home), writable=writable_for({'HOME': str(home)})),
+                             'invalid_input:key_directory:worker_writable'),
                     'temporary': (attempt(key_directory=str(in_temp), writable=None),
                                   'invalid_input:key_directory:worker_writable'),
                     'mode': (attempt(key_directory=str(loose)), 'invalid_input:key_directory:mode'),
@@ -360,7 +368,10 @@ def _v47_suite():
                       and 'sudo install -d -m 0700 -o %s' % user in (absent.get('guidance') or '')
                       and '/var/lib/veldo/keys/' in (absent.get('guidance') or '')
                       and 'chmod 0700' in (cases['mode'][0].get('guidance') or '')
-                      and not list(in_temp.iterdir()) and not list(loose.iterdir()))
+                      and not list(in_temp.iterdir()) and not list(loose.iterdir()) and not list(home.iterdir())
+                      and os.path.realpath(pwd.getpwuid(os.getuid()).pw_dir) in writable_for({})
+                      and os.path.realpath(str(home)) in writable_for({'HOME': str(home)})
+                      and all(os.path.realpath(t) in writable_for({}) for t in ('/tmp', '/var/tmp', tempfile.gettempdir())))
 
             # The installation itself: one instance, into this run's own unit in the runtime unit directory
             with region('authority/installed-fixed-and-protected'):
@@ -475,7 +486,7 @@ def _v47_suite():
                                           stdin=subprocess.DEVNULL, env=tools)
                 children.append(second)
                 try:
-                    code = second.wait(timeout=4)
+                    code = second.wait(timeout=8)
                 except subprocess.TimeoutExpired:
                     code = 'still running'
                 holders_during = flock_holders(lock)
