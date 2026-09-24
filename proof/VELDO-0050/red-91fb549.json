@@ -1,0 +1,141 @@
+{
+ "production_at": "91fb549",
+ "substituted": {
+  "executor.py": "proof/VELDO-0050/prefix/executor.py",
+  "control_proof.py": "proof/VELDO-0050/prefix/control_proof.py (absent at 91fb549)",
+  "init_scaffold.py": "91fb549:.veldo/init_scaffold.py"
+ },
+ "prefix_begins_with_the_commit_bytes": true,
+ "other_installed_modules_identical_to_commit": true,
+ "differing": [],
+ "failed": [
+  "VELDO-0050 proof/accepted-before-offer",
+  "VELDO-0050 proof/actual-checks",
+  "VELDO-0050 proof/build-only-no-landing",
+  "VELDO-0050 proof/fresh-reviewer-resolves",
+  "VELDO-0050 proof/contextual-refusals",
+  "VELDO-0050 proof/owning-services",
+  "VELDO-0050 proof/no-default-success",
+  "VELDO-0050 proof/installed-assets",
+  "VELDO-0050 proof/observations"
+ ],
+ "passed": [
+  "VELDO-0050 ran/proof/accepted-before-offer",
+  "VELDO-0050 ran/proof/contextual-refusals",
+  "VELDO-0050 ran/proof/owning-services",
+  "VELDO-0050 ran/proof/no-default-success",
+  "VELDO-0050 ran/proof/installed-assets"
+ ],
+ "raised": [],
+ "observed": {
+  "accepted_before_offer": {
+   "dispatch": {
+    "ok": false,
+    "status": null,
+    "halted_at": "proof",
+    "reason": "proof did not validate (2 problem(s))"
+   },
+   "proof_step": {
+    "name": "proof",
+    "ok": false,
+    "cycle": 1,
+    "errors": 2
+   },
+   "seqs": {
+    "observation": null,
+    "acceptance": null,
+    "floor": null
+   },
+   "again": [
+    "ok",
+    null
+   ],
+   "forged": [
+    "ok",
+    {
+     "committed": true,
+     "command_id": "setup-34",
+     "seq": 49,
+     "record_digest": "sha256:8fcb31b7133dba54620ea99f3a7f510b342cea68d004001fc4e40fc2c6cd044a",
+     "after_versions": {
+      "proof-bundle:[\"domain-50\",\"repository-50\",\"VELDO-9501\",\"52afbfff53ae687118688aab930d995d9a998136\"]": 1
+     },
+     "effects": [],
+     "reservations": [],
+     "result_digest": "sha256:a8c427bcdf04e13dbb13a563466867b52c526d1a9d358a8300bf7d696490a334",
+     "replayed": false
+    }
+   ]
+  },
+  "actual_checks": {
+   "checks": null,
+   "exit": null,
+   "terminal": []
+  },
+  "build_only": {
+   "completion": {
+    "attempt_finished": false,
+    "artifact_accepted": false,
+    "revision_landed": false,
+    "objective_satisfied": false
+   },
+   "pid": 2064988,
+   "receipts": 0,
+   "floor": {},
+   "bundle": {
+    "refused": "absent"
+   }
+  },
+  "fresh_reviewer": {},
+  "contextual_accepted_by_the_old_check": [
+   "absent_artifact",
+   "duplicate",
+   "empty",
+   "empty_nonexistent",
+   "invented",
+   "missing_observation",
+   "nonexistent_commit",
+   "omitted",
+   "other_producer",
+   "required_kind",
+   "wrong_digest",
+   "wrong_spec_revision"
+  ],
+  "owning_services": {
+   "run": "halted",
+   "raised": null,
+   "events": []
+  },
+  "no_default_success": {
+   "assembled_checks": [
+    {
+     "name": "unit",
+     "status": "passed"
+    }
+   ],
+   "direct": [],
+   "altered": [],
+   "foreign": []
+  },
+  "installed": {
+   "created": false,
+   "probe": " 1128, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1186, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/v50-t5m_nva4/work/.veldo/control_proof.py'\n",
+   "closure": {
+    "control_proof.py": false,
+    "executor.py": true,
+    "git_process.py": true,
+    "validate.py": true,
+    "authority_contract.py": true,
+    "control_membership.py": true,
+    "control_store.py": true,
+    "yamlish.py": true
+   }
+  },
+  "observations": {
+   "accepted": 0,
+   "refused": 0,
+   "proven": [],
+   "pending": []
+  }
+ }
+}
