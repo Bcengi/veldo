@@ -33,6 +33,7 @@ footprint:
   - "scripts/suites/*_veldo_0068_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0068-atomic-cross-channel-settlement.md"
   - "specs/index.md"
   - "proof/VELDO-0068/*"
@@ -157,3 +158,7 @@ crash/replica/cross-channel matrix and AC3 restart/materialization recovery move
 atomic terminal state/effects and applicable authority remain, including one Telegram/UI
 conflict check. The criteria, declared evidence universe, Context and Notes above now carry
 only the retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 68 of the existing teeth mutation driver, as
+VELDO-0065, VELDO-0066 and VELDO-0067 registered theirs. The criteria, status and risk are unchanged.
