@@ -54,7 +54,15 @@ def _v132_suite():
     emitted, raised, regions = set(), [], []
 
     def check(label, condition):
+        """A row. `condition` may be a predicate: an exception while judging a malformed answer is a
+        failed condition, recorded, never a raise."""
         emitted.add(label)
+        if callable(condition):
+            try:
+                condition = condition()
+            except Exception as error:  # noqa: BLE001
+                observed.setdefault('condition_errors', []).append((label, repr(error)))
+                condition = False
         expect('VELDO-0132 ' + label, bool(condition))
 
     @contextlib.contextmanager
@@ -220,10 +228,14 @@ def _v132_suite():
                 return {'refused': getattr(error, 'code', type(error).__name__),
                         'codes': list(getattr(error, 'codes', None) or [])}
 
+        def ok(answer):
+            value = answer.get('ok') if isinstance(answer, dict) else None
+            return value if isinstance(value, dict) else {}
+
         try:
             # AC1: every problem of the schema's fields refused by name through the save interface.
             with region('workflow/validation'):
-                good = definition()
+                good = definition('probe')
                 bad = {}
 
                 def case(name, mutate, layout=None):
@@ -291,10 +303,10 @@ def _v132_suite():
                     results[name] = attempt(workflows.save, document, principal='owner', base=0)
                 named = {name: any(code.startswith(expected[name]) for code in (r.get('codes') or [r.get('refused') or '']))
                          for name, r in results.items()}
-                unchanged = journal_seq() == seq_before and WF.head_version(writer, DOMAIN, REPOSITORY, 'delivery') == 0
-                valid = WF.definition_problems(good) == [] and set(bad) == set(expected)
+                unchanged = journal_seq() == seq_before and WF.head_version(writer, DOMAIN, REPOSITORY, 'probe') == 0
+                valid = WF.definition_problems(definition()) == [] and set(bad) == set(expected)
                 observed['validation'] = {'results': results, 'named': named}
-                check('workflow/validation', valid and all(named.values()) and unchanged
+                check('workflow/validation', lambda: valid and all(named.values()) and unchanged
                       and all(WF.taxonomy(r['refused']) == 'unsupported_configuration' for r in results.values()))
 
             # AC1: only an authorized editor saves, and nothing is written for anyone else.
@@ -302,15 +314,16 @@ def _v132_suite():
                 seq_before = journal_seq()
                 who = {'unknown': 'nobody', 'no_role': 'reader-person', 'agent': 'agent-editor',
                        'other_scope': 'elsewhere-owner', 'revoked': 'former-owner'}
-                refused = {k: attempt(workflows.save, {'definition': definition()}, principal=p, base=0) for k, p in who.items()}
+                refused = {k: attempt(workflows.save, {'definition': definition('guarded')}, principal=p, base=0)
+                           for k, p in who.items()}
                 wanted = {'unknown': 'unauthenticated:editor', 'no_role': 'missing_authority:editor',
                           'agent': 'missing_authority:editor', 'other_scope': 'missing_authority:editor',
                           'revoked': 'missing_authority:editor'}
-                nothing = journal_seq() == seq_before and WF.head_version(writer, DOMAIN, REPOSITORY, 'delivery') == 0
+                nothing = journal_seq() == seq_before and WF.head_version(writer, DOMAIN, REPOSITORY, 'guarded') == 0
                 architect = attempt(workflows.save, {'definition': definition('reviewed')}, principal='architect', base=0)
                 observed['editors'] = {'refused': refused, 'architect': architect}
-                check('workflow/authorized-editor', nothing and all(refused[k].get('refused') == wanted[k] for k in who)
-                      and (architect.get('ok') or {}).get('version') == 1)
+                check('workflow/authorized-editor', lambda: nothing and all(refused[k].get('refused') == wanted[k] for k in who)
+                      and ok(architect).get('version') == 1)
 
             # AC1 and AC3: new revisions keep every earlier byte; the canvas document round-trips with its
             # layout separated from the execution identity.
@@ -319,42 +332,46 @@ def _v132_suite():
                            'transitions': {'t-groomed': {'points': [[60.5, 10], [120, 22.75]]}},
                            'viewport': {'x': -20.5, 'y': 4, 'zoom': 1.375}}
                 document1 = {'definition': definition('canvas'), 'layout': layout1}
-                first = workflows.save(document1, principal='owner', base=0)
-                row1 = entity(first['revision'])
-                loaded1 = workflows.load('canvas', 1)
+                first = ok(attempt(workflows.save, document1, principal='owner', base=0))
+                row1 = entity(first.get('revision', '-'))
+                loaded1 = ok(attempt(workflows.load, 'canvas', 1))
                 layout2 = dict(layout1, viewport={'x': 4321.0625, 'y': -8.5, 'zoom': 0.5})
-                second = workflows.save({'definition': definition('canvas'), 'layout': layout2}, principal='owner', base=1)
+                second = ok(attempt(workflows.save, {'definition': definition('canvas'), 'layout': layout2},
+                                    principal='owner', base=1))
                 stale = attempt(workflows.save, {'definition': definition('canvas', budget=10)}, principal='owner', base=1)
                 overwrite = attempt(S.execute, writer, dict(
                     command_id='overwrite-1', principal='owner', operation='upsert_entity', nonce='overwrite-1',
-                    artifact_digests=[], expected_versions={first['revision']: 1},
-                    parameters=dict(entity_id=first['revision'], kind='workflow_revision',
-                                    data=dict(row1['data'], definition=definition('canvas', budget=3)))), 'owner', sign, 1)
-                again = entity(first['revision'])
-                reloaded1, loaded2 = workflows.load('canvas', 1), workflows.load('canvas')
-                history = workflows.history('canvas')
+                    artifact_digests=[], expected_versions={first.get('revision', '-'): 1},
+                    parameters=dict(entity_id=first.get('revision', '-'), kind='workflow_revision',
+                                    data=dict((row1 or {}).get('data') or {}, definition=definition('canvas', budget=3)))),
+                    'owner', sign, 1)
+                again = entity(first.get('revision', '-'))
+                reloaded1, loaded2 = ok(attempt(workflows.load, 'canvas', 1)), ok(attempt(workflows.load, 'canvas'))
+                listed = attempt(workflows.history, 'canvas').get('ok')
+                versions = [h.get('version') for h in listed] if isinstance(listed, list) else None
                 check('workflow/revisions-immutable',
-                      first['version'] == 1 and second['version'] == 2 and again == row1
-                      and canon(reloaded1) == canon(loaded1)
+                      lambda: first.get('version') == 1 and second.get('version') == 2 and row1 is not None and again == row1
+                      and reloaded1 and canon(reloaded1) == canon(loaded1)
                       and stale.get('refused') == 'stale_version' and overwrite.get('refused') == 'entity_owned'
-                      and [h['version'] for h in history] == [1, 2]
-                      and loaded2['previous'] == {'version': 1, 'revision': first['revision'], 'digest': sha(canon(row1['data']))}
+                      and versions == [1, 2]
+                      and loaded2.get('previous') == {'version': 1, 'revision': first.get('revision'),
+                                                      'digest': sha(canon(row1['data']))}
                       and WF.head_version(writer, DOMAIN, REPOSITORY, 'canvas') == 2)
                 # The layout is canvas metadata only: the layout-only edit is a new revision with the same
                 # definition digest, and neither runner carries any layout.
-                source1 = CY.runner_source(workflows.load('canvas', 1))
-                source2 = CY.runner_source(loaded2)
+                source1 = attempt(CY.runner_source, loaded1).get('ok') or ''
+                source2 = attempt(CY.runner_source, loaded2).get('ok') or ''
                 text = canon(document1['definition']).decode()
                 registration = 'veldo_register_workflow(%r, %d)' % (text, 1)
                 observed['canvas'] = {'first': first, 'second': second, 'stale': stale, 'overwrite': overwrite}
                 check('workflow/canvas-round-trip',
-                      canon(loaded1['definition']) == canon(document1['definition'])
-                      and canon(loaded1['layout']) == canon(layout1)
-                      and loaded1['definition_digest'] == sha(canon(document1['definition'])) == first['definition_digest']
-                      and loaded1['layout_digest'] == sha(canon(layout1))
-                      and second['definition_digest'] == first['definition_digest']
-                      and second['layout_digest'] != first['layout_digest']
-                      and canon(loaded2['layout']) == canon(layout2)
+                      lambda: bool(loaded1) and canon(loaded1.get('definition')) == canon(document1['definition'])
+                      and canon(loaded1.get('layout')) == canon(layout1)
+                      and loaded1.get('definition_digest') == sha(canon(document1['definition'])) == first.get('definition_digest')
+                      and loaded1.get('layout_digest') == sha(canon(layout1))
+                      and second.get('definition_digest') == first.get('definition_digest')
+                      and second.get('layout_digest') != first.get('layout_digest')
+                      and canon(loaded2.get('layout')) == canon(layout2)
                       and source1.count(registration) == 1
                       and source2.replace('%r, %d)' % (text, 2), '%r, %d)' % (text, 1)) == source1
                       and not any(token in source1 + source2 for token in ('viewport', '4321.0625', '1234.5625', '22.75')))
@@ -414,7 +431,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 observed['edit'] = {'result': {k: result.get(k) for k in ('launches', 'network', 'files', 'signed', 'failed')},
                                     'records': [r[0] for r in records], 'kinds': sorted(kinds)}
                 check('workflow/edit-without-execution',
-                      'failed' not in result and result['launches'] == [] and result['network'] == []
+                      lambda: 'failed' not in result and result['launches'] == [] and result['network'] == []
                       and not forbidden & set(result['files']) and result['signed'] == 1
                       and result['saved']['version'] == 3 and canon(result['loaded']['definition']) == canon(edited)
                       and [h['version'] for h in result['history']] == [1, 2, 3]
@@ -429,7 +446,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                     "SELECT id, kind, version, digest FROM entities WHERE kind NOT IN "
                     "('workflow_revision', 'workflow_head', 'workflow_cycle')")}
                 seq_cycles = journal_seq()
-                saves = {name: workflows.save({'definition': body}, principal='owner', base=0) for name, body in {
+                saves = {name: attempt(workflows.save, {'definition': body}, principal='owner', base=0) for name, body in {
                     'delivery': definition(), 'intruding': definition('intruding', role='intruder'),
                     'tight': definition('tight', budget=4),
                     'asserting': {'schema': 'veldo.workflow/v1', 'id': 'asserting', 'entry': 'groom',
@@ -491,7 +508,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                     return {json.dumps(e.get('runtime'), sort_keys=True) for e in steps if e['cycle'] == cycle}
 
                 evidence = json.dumps(load('v132_graph', mods / 'control_graph.py').runtime_evidence(), sort_keys=True)
-                stored1, stored2 = workflows.load('delivery', 1), workflows.load('delivery', 2)
+                stored1, stored2 = ok(attempt(workflows.load, 'delivery', 1)), ok(attempt(workflows.load, 'delivery', 2))
 
                 def within(record, stored):
                     # Every step of the trace is a transition of the stored revision; a proposal only at a terminal.
@@ -500,11 +517,11 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                     return bool(trace) and all(tuple(e) in edges or (e[1] == 'proposed' and e[0] in stored['definition']['terminal'])
                                                for e in trace)
 
-                ident1 = {'id': 'delivery', 'version': 1, 'digest': stored1['definition_digest']}
-                ident2 = {'id': 'delivery', 'version': 2, 'digest': stored2['definition_digest']}
+                ident1 = {'id': 'delivery', 'version': 1, 'digest': stored1.get('definition_digest')}
+                ident2 = {'id': 'delivery', 'version': 2, 'digest': stored2.get('definition_digest')}
                 ra, rb = records['cycle-a'], records['cycle-b']
-                kinds_a = {stored1['definition']['nodes'][e[0]]['kind'] for e in ra.get('trace') or []
-                           if e[0] in stored1['definition']['nodes']}
+                nodes1 = (stored1.get('definition') or {}).get('nodes') or {}
+                kinds_a = {nodes1[e[0]].get('kind') for e in ra.get('trace') or [] if e[0] in nodes1}
                 observed['cycles'] = {'records': {k: {f: v.get(f) for f in ('state', 'trace', 'refusal', 'binding', 'steps',
                                                                              'proposals', 'waiting')}
                                                   for k, v in records.items()},
@@ -512,7 +529,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                                                   dict(a1=a1, a2=a2, a3=a3, b1=b1, c1=c1, c2=c2, v2=v2, **refusals).items()},
                                       'seconds': round(cycle_seconds, 2)}
                 check('workflow/pinned-revision',
-                      (v2.get('ok') or {}).get('version') == 2
+                      lambda: (v2.get('ok') or {}).get('version') == 2
                       and ra.get('binding') == dict(ident1, revision=stored1['revision'], entity_digest=stored1['entity_digest'])
                       and ra.get('state') == 'proposed' and within(ra, stored1)
                       and [e[0] for e in ra['trace']] == ['groom', 'owner', 'assign', 'handle']
@@ -527,14 +544,14 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 # Every exchange ran the actual locked LangGraph, from the bound revision's own staged runner.
                 staged = sorted((stage / 'runners').glob('*.py')) if (stage / 'runners').is_dir() else []
                 staged_text = [p.read_text() for p in staged]
-                texts = {canon(workflows.load(w, v)['definition']).decode(): (w, v) for w, v in (
+                texts = {canon(ok(attempt(workflows.load, w, v)).get('definition')).decode(): (w, v) for w, v in (
                     ('delivery', 1), ('delivery', 2), ('intruding', 1), ('tight', 1), ('asserting', 1))}
                 registered = [[(w, v) for t, (w, v) in texts.items() if 'veldo_register_workflow(%r, %d)' % (t, v) in s]
                               for s in staged_text]
                 production = (mods / 'control_graph_langgraph.py').read_text().split("\nif __name__ == '__main__':\n")[0]
                 rc = records['cycle-c']
                 check('workflow/actual-langgraph',
-                      all(labels(c) == {evidence} for c in ('cycle-a', 'cycle-b', 'cycle-c'))
+                      lambda: all(labels(c) == {evidence} for c in ('cycle-a', 'cycle-b', 'cycle-c'))
                       and staged and all(s.startswith(production) for s in staged_text)
                       and all(len(r) == 1 for r in registered)
                       and {r[0] for r in registered} == set(texts.values())
@@ -552,12 +569,15 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                          and not records[cycle].get('proposals') and not records[cycle].get('waiting')
                          for name, (cycle, code) in wanted.items()}
                 observed['authorization'] = {'ran': ran, 'named': named}
+
+                def status_now():
+                    return cycles.status()
                 check('workflow/ordinary-authorization',
-                      all(ran.values()) and all(named.values())
+                      lambda: all(ran.values()) and all(named.values())
                       and records['cycle-intruder'].get('assignment') is None
                       and records['cycle-blocked'].get('assignment') is None
                       and records['cycle-tight'].get('steps') == 4
-                      and not [p for p in cycles.status()['pending'] if p['cycle'] in {c for c, _ in wanted.values()}])
+                      and not [p for p in status_now()['pending'] if p['cycle'] in {c for c, _ in wanted.values()}])
                 # No workflow authority: every domain record is what the suite itself wrote, every journal
                 # record the cycles and saves wrote is a workflow record, no unit completed or shipped.
                 non_workflow_after = {r[0]: (r[1], r[2], r[3]) for r in writer.execute(
@@ -577,7 +597,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 observed['authority'] = {'foreign': foreign, 'spec_changed': sorted(n for n in specs_now
                                                                                     if specs_now[n] != spec_bytes.get(n))}
                 check('workflow/no-workflow-authority',
-                      ra.get('state') == 'proposed' and not foreign and non_workflow_after == expected_after
+                      lambda: ra.get('state') == 'proposed' and not foreign and non_workflow_after == expected_after
                       and all(not any(v.values()) for v in completion.values())
                       and all(entity(sid)['data']['state'] == 'READY' for sid in UNITS)
                       and specs_now == spec_bytes and git('rev-parse', 'HEAD') == commit
@@ -586,7 +606,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                       and writer.execute('SELECT COUNT(*) FROM effects').fetchone()[0] == 0)
                 # Observations: every operation reported with its identities and taxonomy class; the counts and
                 # the pending work are what the store holds.
-                status = cycles.status()
+                status = ok(attempt(cycles.status))
                 refused_events = [e for e in events if e.get('outcome') == 'refused']
                 classes = {'unauthenticated', 'unauthorized', 'stale_version', 'unsupported_configuration',
                            'unavailable_service', 'missing_evidence', 'unknown_outcome'}
@@ -595,7 +615,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 text = json.dumps(events, default=str)
                 observed['observations'] = {'status': status, 'events': len(events), 'refused': len(refused_events)}
                 check('workflow/observations',
-                      events and all(all(k in e for k in fields) for e in events)
+                      lambda: events and all(all(k in e for k in fields) for e in events)
                       and all(e.get('taxonomy') in classes and e.get('refusal') for e in refused_events)
                       and all(e.get('actor') for e in events if e['operation'] in ('save', 'start', 'step', 'wait'))
                       and {e['operation'] for e in cycle_events} >= {'start', 'step', 'wait', 'propose', 'refuse', 'cancel'}

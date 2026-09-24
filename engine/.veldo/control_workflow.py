@@ -315,7 +315,8 @@ def _ring(nodes, edges):
     graph = {name: [] for name in nodes}
     for edge in edges:
         if 'max' not in edge:
-            graph[edge['from']].append(edge['to'])
+            graph.setdefault(edge['from'], []).append(edge['to'])
+            graph.setdefault(edge['to'], [])
     state, path = {}, []
     for start in sorted(graph):
         if state.get(start):
