@@ -171,6 +171,11 @@ def _v56_suite():
         holder = base / 'holder'
         git(caller, 'worktree', 'add', '-q', str(holder), TRUNK)
         git(caller, 'remote', 'add', 'gone', str(base / 'no-such-remote.git'))
+        # No background maintenance may touch the fixture repositories while their bytes are compared.
+        for repo in (caller, remote):
+            git(repo, 'config', 'gc.auto', '0')
+            git(repo, 'config', 'maintenance.auto', 'false')
+        git(remote, 'config', 'receive.autogc', 'false')
         builder_repo = base / 'builder'
         GP.run(['git', 'clone', '-q', '-b', TRUNK, str(remote), str(builder_repo)], check=True, capture_output=True)
 
@@ -534,7 +539,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                 scratch = Path(tempfile.mkdtemp(prefix='regenerate-', dir=str(base)))
                 archive = GP.run(['git', '-C', str(ws), 'archive', '--format=tar', merged], capture_output=True, check=True).stdout
                 with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-                    tar.extractall(str(scratch), filter='data')
+                    tar.extractall(str(scratch), **({'filter': 'data'} if hasattr(tarfile, 'data_filter') else {}))
                 regenerate(scratch)
                 info['regenerated'] = (scratch / 'specs' / 'index.md').read_bytes()
                 shutil.rmtree(scratch)
@@ -598,7 +603,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                                        for sid, m in made.items()}
                 untouched = ('caller_git', 'caller_work', 'holder_work', 'remote', 'remote_trunk', 'local_trunk', 'heads')
                 check('candidate/rejection-leaves-trunk',
-                      all(c['result'].get('ok') is False and c['moved'] == [] and c['leftover'] == []
+                      all(c['result'].get('ok') is False and c['moved'] == [] and c['leftover'] == [] and c['writes'] == []
                           and c['before']['remote_trunk'] == c['after']['remote_trunk']
                           and c['before']['local_trunk'] == c['after']['local_trunk'] for c in cases.values())
                       and cases['red_gate']['stage'] == 'gate' and cases['red_gate']['finalize'] is False
