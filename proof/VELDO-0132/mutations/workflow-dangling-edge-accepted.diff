@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -289 +289 @@
+-        if source not in nodes or target not in nodes:
++        if source not in nodes:  # defect: an edge to a nonexistent node is accepted

@@ -1,0 +1,160 @@
+{
+ "production_at": "5a5dfcd",
+ "substituted": {
+  "control_workflow.py": "proof/VELDO-0132/prefix/control_workflow.py (absent at 5a5dfcd)",
+  "control_workflow_cycle.py": "proof/VELDO-0132/prefix/control_workflow_cycle.py (absent at 5a5dfcd)",
+  "control_workflow_langgraph.py": "proof/VELDO-0132/prefix/control_workflow_langgraph.py (absent at 5a5dfcd)"
+ },
+ "new_modules_present_at_commit": [],
+ "installed_from_commit": 162,
+ "installed_tree": "git show 5a5dfcd:<path> for each of .veldo/*.py and .veldo/runtime/*",
+ "failed": [
+  "VELDO-0132 workflow/validation",
+  "VELDO-0132 workflow/authorized-editor",
+  "VELDO-0132 workflow/revisions-immutable",
+  "VELDO-0132 workflow/canvas-round-trip",
+  "VELDO-0132 workflow/edit-without-execution",
+  "VELDO-0132 workflow/pinned-revision",
+  "VELDO-0132 workflow/actual-langgraph",
+  "VELDO-0132 workflow/owner-answer-per-visit",
+  "VELDO-0132 workflow/ordinary-authorization",
+  "VELDO-0132 workflow/no-workflow-authority",
+  "VELDO-0132 workflow/observations"
+ ],
+ "passed": [
+  "VELDO-0132 ran/workflow/validation",
+  "VELDO-0132 ran/workflow/authorized-editor",
+  "VELDO-0132 ran/workflow/revisions-immutable",
+  "VELDO-0132 ran/workflow/edit-without-execution",
+  "VELDO-0132 ran/workflow/pinned-revision"
+ ],
+ "raised": [],
+ "condition_errors": null,
+ "observed": {
+  "validation_accepted_by_the_old_write": [
+   "dangling_edge",
+   "dangling_source",
+   "duplicate_transition",
+   "invalid_bound",
+   "invalid_budget",
+   "invalid_config",
+   "layout_names_no_node",
+   "missing_reference",
+   "missing_transition",
+   "not_plain",
+   "reserved_node",
+   "schema",
+   "stale_reference",
+   "terminal_mismatch",
+   "unbounded_cycle",
+   "unknown_entry",
+   "unknown_field",
+   "unknown_port",
+   "unknown_step_kind",
+   "unreachable_node",
+   "unresolved_reference",
+   "unused_reference",
+   "wrong_kind_reference"
+  ],
+  "editors_accepted": [
+   "agent",
+   "no_role",
+   "other_scope",
+   "revoked",
+   "unknown"
+  ],
+  "canvas": {
+   "stale": {
+    "ok": {
+     "workflow": "canvas",
+     "version": 3,
+     "revision": "workflow:canvas",
+     "seq": 75
+    }
+   },
+   "overwrite": {
+    "refused": "stale_version",
+    "codes": []
+   }
+  },
+  "edit": [
+   "workflow-write-canvas-1-3e15ce908a4d"
+  ],
+  "cycles": {
+   "cycle-a": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-b": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-c": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-blocked": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-intruder": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-tight": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-asserting": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-loop": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   },
+   "cycle-rework": {
+    "state": "failure",
+    "refusal": "unsupported_workflow"
+   }
+  },
+  "authority": {
+   "foreign": [
+    [
+     "workflow-write-delivery-33-7148d8c3ed46",
+     "workflow"
+    ],
+    [
+     "workflow-write-intruding-34-16e856b72454",
+     "workflow"
+    ],
+    [
+     "workflow-write-tight-35-afbbdf313201",
+     "workflow"
+    ],
+    [
+     "workflow-write-rework-36-e93c3f9b061e",
+     "workflow"
+    ],
+    [
+     "workflow-write-asserting-37-12b9071b88e0",
+     "workflow"
+    ],
+    [
+     "workflow-write-delivery-38-09d36b3982f3",
+     "workflow"
+    ]
+   ],
+   "spec_changed": []
+  },
+  "observations": {
+   "status": {
+    "accepted": 0,
+    "refused": 0,
+    "pending": []
+   },
+   "events": 0,
+   "refused": 0
+  }
+ }
+}

@@ -1,0 +1,10 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -568,0 +569,7 @@
++        unit = _entity_row(self.conn, record['subject'])  # defect: the terminal node writes the unit itself
++        self.store.execute(self.conn, {'command_id': 'shipped/' + record['cycle'], 'principal': self.principal,
++                                       'operation': 'upsert_entity', 'artifact_digests': [], 'nonce': 'shipped/' + record['cycle'],
++                                       'parameters': {'entity_id': record['subject'], 'kind': 'execution_unit',
++                                                      'data': dict(unit['data'], state='SHIPPED')},
++                                       'expected_versions': {record['subject']: unit['version']}},
++                           self.signer, self.sign, self.generation)

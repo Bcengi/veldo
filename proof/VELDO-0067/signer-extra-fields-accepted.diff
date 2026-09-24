@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -110 +110 @@
+-    if not isinstance(a, dict) or set(a) != set(ANSWER_FIELDS):
++    if not isinstance(a, dict) or not set(ANSWER_FIELDS) <= set(a):

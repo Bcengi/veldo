@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -546 +546 @@
+-        store.declare_owners(conn, OWNER, kinds={REVISION_KIND: (SAVE,), HEAD_KIND: (SAVE,)}, module=__file__)
++        pass  # defect: nothing declares who alone writes workflow revisions

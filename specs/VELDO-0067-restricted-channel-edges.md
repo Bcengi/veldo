@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0067_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0067-restricted-channel-edges.md"
   - "specs/index.md"
   - "proof/VELDO-0067/*"
@@ -113,12 +114,14 @@ No automatic recovery, extra channel activation or broader host qualification is
   self-grant, or an enrollment by someone who is not a current member; the edge asked to sign outside
   its purpose (a membership command, arbitrary bytes) or for another channel, actor, request,
   presentation or scope, or after expiry; an answer signed by a retired edge or for a revoked actor;
-  and a worker process trying to read the private edge key. The owner's account outside workers, the
-  protected signing and membership services, and the store are trusted.
+  and a worker process trying to read the private edge key file directly. The owner's account outside
+  workers, the protected signing and membership services, and the store are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); key
   rotation, restart and failover (Release 2); more than one channel (Release 4); Jira enrollment
   (dropped by the owner); activating ingress (VELDO-0073); forged rows in our own store and files
-  planted in the installed directory.
+  planted in the installed directory; a worker reading the key through the owner's own unconfined
+  processes (the user service manager, shell startup files, ssh to this host), which only a separate
+  worker account closes (Release 2: no second operating-system account for now, Telegram 28578/28580).
 
 ## Notes
 
@@ -144,3 +147,27 @@ rotation/restart/failover moved to Release 2; AC1/AC2 plural-channel coverage mo
 4. Jira-specific enrollment is dropped. Restricted Telegram edge and current authorization
 remain. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
+declared falsifiers can be registered as finding 67 of the existing teeth mutation driver, as
+VELDO-0065 and VELDO-0066 registered theirs. The criteria, status and risk are unchanged.
+
+2026-09-24, implementation: `.veldo/control_channel_enrollment.py` admits one signed enrollment of
+the Telegram edge key: the steward's OpenSSH envelope binds the key, the connection key and every
+authority parameter through the authority contract's command digest, the edge key's own signature
+over that envelope proves possession, and one transition writes the edge's service membership and
+its key at the id the authority contract names, where VELDO-0065 acceptance reads it. It also
+admits the signed retirement of that key. `.veldo/control_signer_answers.py` is the protected
+signer's one purpose for an enrolled edge: it signs only a canonical answer assertion bound to its
+undecided VELDO-0066 evidence, its published presentation, its actor and a current delegation in
+every dimension. `.veldo/control_keys_custody.py`, from the earlier work in progress, confines a
+worker with Landlock so it cannot read the protected key directory. Rows, the red record at 574ec36
+and the finding 67 mutations are in `proof/VELDO-0067/`. Every answer runs against a loopback Bot
+API server in the platform's documented shapes, not the Telegram service; enrollment activates no
+ingress (VELDO-0073). The criteria, status and risk are unchanged.
+
+2026-09-24, review: the reviewer reproduced a confined worker reading the key through the owner's
+user service manager. The threat model above now names direct reads, and reads through the owner's own
+unconfined processes are out of review scope with the reason, consistent with VELDO-0027's custody ruling
+(Telegram 28578/28580) and the group escape filed by VELDO-0040's review. Wiring workers behind the wrapper
+is handed to VELDO-0129 and the key directory's placement to VELDO-0047.

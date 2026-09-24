@@ -1,0 +1,4 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -592,0 +593 @@
++        __import__('subprocess').run([__import__('sys').executable, '-c', 'pass'], check=False)  # defect: a worker is launched while the edge is saved

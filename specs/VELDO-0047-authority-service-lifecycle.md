@@ -137,6 +137,10 @@ installer writes a receiver configuration today. Installing the authority on thi
 the receiver configuration with this host's qualified linux-systemd profile (slice, lock and
 caps).
 
+Handed on by VELDO-0067 (its review, 2026-09-24): installation places the protected key
+directory outside the home and temporary directories, because the custody wrapper denies a confined
+worker every file created directly in an ancestor of that directory after the worker starts.
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff

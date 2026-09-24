@@ -1,0 +1,210 @@
+{
+ "by_assertion": true,
+ "commit": "574ec363059cf35f9c38145ab6ed34023c59c85f",
+ "details": [
+  "VELDO-0067 install/assets detail: .veldo/control_channel_enrollment.py installed by the scaffold",
+  "VELDO-0067 install/assets detail: .veldo/control_channel_enrollment.py engine copy identical",
+  "VELDO-0067 install/assets detail: .veldo/control_channel_enrollment.py laid by the installer",
+  "VELDO-0067 install/assets detail: .veldo/control_signer_answers.py installed by the scaffold",
+  "VELDO-0067 install/assets detail: .veldo/control_signer_answers.py engine copy identical",
+  "VELDO-0067 install/assets detail: .veldo/control_signer_answers.py laid by the installer",
+  "VELDO-0067 install/assets detail: .veldo/control_keys_custody.py installed by the scaffold",
+  "VELDO-0067 install/assets detail: .veldo/control_keys_custody.py engine copy identical",
+  "VELDO-0067 install/assets detail: .veldo/control_keys_custody.py laid by the installer",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: no possession proof (key_possession_unproven) [observed: accepted, None, 1 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a possession proof by the steward's key (key_possession_unproven) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: the edge key's proof over another envelope (key_possession_unproven) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: the edge key's proof in the command namespace (key_possession_unproven) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a parameter outside the schema (roles) (invalid_enrollment) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: no connection key (invalid_enrollment) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: another edge key id than the channel's (invalid_enrollment) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a channel outside this release (jira) (invalid_enrollment) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: the connection key equal to the signing key (invalid_enrollment) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: refused with nothing written: a key that is not Ed25519 (invalid_enrollment) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/schema-and-possession detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+  "VELDO-0067 enrollment/schema-and-possession detail: the edge key is a verification key at the id the authority contract gives the Telegram channel",
+  "VELDO-0067 enrollment/schema-and-possession detail: the enrolled record has exactly the channel schema's fields",
+  "VELDO-0067 enrollment/schema-and-possession detail: the enrolled values are the signed ones: channel, edge principal, both keys, scope, signer, command",
+  "VELDO-0067 enrollment/schema-and-possession detail: the edge principal is a new service member with no roles, the enrolled scope and its channel",
+  "VELDO-0067 enrollment/schema-and-possession detail: the recorded possession proof is the edge key's own signature over the recorded envelope, in its namespace",
+  "VELDO-0067 enrollment/schema-and-possession detail: the recorded envelope's digest is the digest of the command with the recorded key and parameters",
+  "VELDO-0067 enrollment/schema-and-possession detail: the committed keyring resolves the channel's edge key to the enrolled key, as answer acceptance reads it",
+  "VELDO-0067 enrollment/schema-and-possession detail: the published allowed_signers file is the accepted projection and names the edge key",
+  "VELDO-0067 enrollment/schema-and-possession detail: each admission is observed: operation, authority, channel, key id, signer, versions, outcome, named refusal",
+  "VELDO-0067 enrollment/schema-and-possession detail: metrics: the unenrolled channel is the pending work, and after enrollment it is enrolled",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the public key substituted after signing, with its own possession proof (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the connection key substituted after signing (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the scope widened after signing (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the edge principal changed after signing (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another domain after signing (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another repository after signing (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the envelope moved to another store after signing (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed for another store (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an envelope signed against a stale membership version (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: an expired envelope (envelope_refused) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: refused with nothing written: the steward's envelope signed by another member's key (signature_invalid) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+  "VELDO-0067 enrollment/binds-key-and-authority detail: the accepted enrollment replayed is refused (its nonce is consumed) and writes nothing",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a revoked steward (not_current_member) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a principal never enrolled (not_current_member) [observed: refused, command-authentication, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed: refused, membership-steward-required, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: a service (not_a_person) [observed: refused, membership-steward-required, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward enrolled as the edge (self_grant_refused) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the edge key (self_grant_refused) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: the steward's own key as the connection key (self_grant_refused) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: another member's key as the edge key (key_in_use) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: refused with nothing written: an existing member as the edge principal (principal_exists) [observed: refused, transition_refused, 0 record(s) written]",
+  "VELDO-0067 enrollment/current-member-only detail: control: the steward's signed enrollment with the edge key's own proof is accepted",
+  "VELDO-0067 enrollment/current-member-only detail: a second enrollment of the channel is refused (rotation is Release 2) and writes nothing",
+  "VELDO-0067 signer/purpose-refusal detail: control: the actual signer signs the canonical answer, and the signature verifies with the enrolled key",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for a membership command as the assertion (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for a membership command envelope as the assertion (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for a membership operation (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for a request field outside the answer purpose (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for an answer carrying a command field (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for an assertion kind the delegation does not permit (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for arbitrary bytes (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/purpose-refusal detail: no signature for the evidence receipt purpose (forbidden-purpose) [observed: unsigned, missing-attribution]",
+  "VELDO-0067 signer/purpose-refusal detail: the signer's diagnostic names operation, channel, edge, actor, request, presentation, evidence, delegation and versions, never text or a signature",
+  "VELDO-0067 signer/delegation-dimensions detail: control: the valid answer under its own current delegation is signed",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation binding another edge key (edge-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another assertion kind (forbidden-purpose) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another channel (channel-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another presentation version (presentation-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another request version (request-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a delegation for another scope (scope-refused) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a revoked delegation (delegation-refused) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a stale delegation version (stale-delegation) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for a superseded delegation (stale-delegation) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for an expired delegation (delegation-expired) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another actor, under that actor's delegation (actor-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another authority (wrong-authority) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another channel (channel-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another edge key (edge-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another edge principal (edge-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another enrolled person as the actor (actor-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another presentation digest (presentation-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another presentation version (presentation-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another principal's delegation (actor-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another published presentation, named consistently (presentation-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another request (request-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another request version (request-mismatch) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for another scope (scope-refused) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/delegation-dimensions detail: no signature for no delegation (delegation-refused) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: control: the answer bound to its undecided canonical evidence is signed",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for an unknown evidence id (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for no evidence id (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for text only, no platform evidence (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's bot_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's chat_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's chat_type altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's evidence_digest altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's evidence_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's platform_message_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's platform_timestamp altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's reply_to_message_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's sender_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's sender_type altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the attribution's update_id altered (missing-evidence) [observed: unsigned, forbidden-arbitrary-signing]",
+  "VELDO-0067 signer/canonical-evidence detail: no signature for the same answer once its evidence is decided (missing-evidence)",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: a valid current Telegram answer is signed by the protected signer and accepted by the presenter",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: the edge asked the signer through its adapter under the owner's one current delegation, in a signer process of its own",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its actor was revoked is refused at acceptance (owner_not_current)",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: the signer signs nothing more for the revoked actor (actor-not-current)",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: the steward's signed retirement of the edge key is accepted",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: an answer the edge signed before its key was retired is refused at acceptance (not_authorized)",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: the signer signs nothing more with the retired key (revoked-key)",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: a new reply after retirement is not signed, so it is not accepted",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: the retired key keeps its enrollment and records when and by whom it was retired",
+  "VELDO-0067 acceptance/current-edge-and-actor detail: metrics: the retired channel is pending work again",
+  "VELDO-0067 custody/worker-cannot-read-key detail: the confined worker tool's read of the private edge key is denied by the kernel (EACCES)",
+  "VELDO-0067 custody/worker-cannot-read-key detail: the confined worker cannot link the key out of the protected directory",
+  "VELDO-0067 custody/worker-cannot-read-key detail: a wrapper that cannot confine starts no worker and names its refusal without a path",
+  "VELDO-0067 custody/worker-cannot-read-key detail: the private edge key reaches no output, observation, store or file outside its custody"
+ ],
+ "failed_rows": [
+  "VELDO-0067 install/assets",
+  "VELDO-0067 enrollment/schema-and-possession",
+  "VELDO-0067 enrollment/binds-key-and-authority",
+  "VELDO-0067 enrollment/current-member-only",
+  "VELDO-0067 signer/purpose-refusal",
+  "VELDO-0067 signer/delegation-dimensions",
+  "VELDO-0067 signer/canonical-evidence",
+  "VELDO-0067 acceptance/current-edge-and-actor",
+  "VELDO-0067 custody/worker-cannot-read-key"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3",
+   "now": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3"
+  },
+  ".veldo/control_channel_enrollment.py": {
+   "at_commit": null,
+   "now": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670",
+   "now": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  ".veldo/control_keys_custody.py": {
+   "at_commit": null,
+   "now": "f8924daf044ad9ff999de3558288eb08d1738506b5ab101d45defb8e6bfb56be"
+  },
+  ".veldo/control_signer.py": {
+   "at_commit": "a076d156cfb064e21134a9ceb2379e9d5b6471a456367a3571cac9feb72f8493",
+   "now": "45853641c3387a5c1268f253096829466e031685bfc563dd548085a11f0234bb"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": null,
+   "now": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "6292c1378051cf7cdfc42c6bd4181769a8a038386404bc98d4c8b84ad3116b9b",
+   "now": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0067 install/assets",
+   false
+  ],
+  [
+   "VELDO-0067 enrollment/schema-and-possession",
+   false
+  ],
+  [
+   "VELDO-0067 enrollment/binds-key-and-authority",
+   false
+  ],
+  [
+   "VELDO-0067 enrollment/current-member-only",
+   false
+  ],
+  [
+   "VELDO-0067 signer/purpose-refusal",
+   false
+  ],
+  [
+   "VELDO-0067 signer/delegation-dimensions",
+   false
+  ],
+  [
+   "VELDO-0067 signer/canonical-evidence",
+   false
+  ],
+  [
+   "VELDO-0067 acceptance/current-edge-and-actor",
+   false
+  ],
+  [
+   "VELDO-0067 custody/worker-cannot-read-key",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.612,
+ "spec_id": "VELDO-0067",
+ "suite": "scripts/suites/65_veldo_0067_edges.py",
+ "tree": "git archive 574ec363059cf35f9c38145ab6ed34023c59c85f, unchanged; the current suite file run against it"
+}

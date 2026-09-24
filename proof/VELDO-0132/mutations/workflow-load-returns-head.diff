@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow.py
++++ b/.veldo/control_workflow.py
+@@ -610 +610 @@
+-            if version is None:
++            if True:  # defect: an earlier revision cannot be read back

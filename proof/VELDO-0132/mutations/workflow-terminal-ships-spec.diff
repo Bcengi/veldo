@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -568,0 +569,2 @@
++        for spec in Path(self.gate.workspace).glob('specs/%s-*.md' % record['subject']):  # defect: the terminal node ships the spec
++            spec.write_text(spec.read_text().replace('status: ready', 'status: shipped'))

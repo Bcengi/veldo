@@ -1,0 +1,6 @@
+--- a/.veldo/control_workflow_cycle.py
++++ b/.veldo/control_workflow_cycle.py
+@@ -273 +273,2 @@
+-        self.observe(event)
++        if outcome != 'refused':  # defect: a refusal is not observed
++            self.observe(event)
