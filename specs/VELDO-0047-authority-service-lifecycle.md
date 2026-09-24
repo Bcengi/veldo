@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0047_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0047-authority-service-lifecycle.md"
   - "specs/index.md"
   - "proof/VELDO-0047/*"
@@ -175,3 +176,6 @@ worker directories explicitly, because this account can create nothing outside t
 directories without root. Suite 66_veldo_0047_authority (20 rows), red at b738c79, 24 mutations as
 finding 47; scripts/check_teeth_mutations.py, outside the footprint, is touched only to register them.
 Proof in proof/VELDO-0047/.
+
+2026-09-24, landing: the footprint names scripts/check_teeth_mutations.py, where finding 47's
+mutations are registered (the gate's shape check refuses a path no footprint names).
