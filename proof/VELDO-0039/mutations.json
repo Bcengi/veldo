@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 39 --jobs 4 --diff-dir proof/VELDO-0039/mutations",
  "summary": {
-  "mutations_rejected": 23,
+  "mutations_rejected": 24,
   "green_suites": {
    "62_veldo_0039_dispatch.py": 44
   },
-  "driver_seconds": 16.2
+  "driver_seconds": 17.0
  },
  "all_targets_red_by_assertion": true,
  "mutations": [
@@ -99,19 +99,20 @@
    "diff": "mutations/dispatch-new-dispatch-for-unknown.diff"
   },
   {
-   "mutation": "dispatch-receiver-takes-unprepared",
-   "module": ".veldo/control_launch.py",
+   "mutation": "dispatch-unknown-frees-unit",
+   "module": ".veldo/control_dispatch.py",
    "target_rows": [
     "dispatch/unknown-never-relaunched"
    ],
    "edits": 1,
    "baseline": "green",
    "red_rows": [
-    "dispatch/unknown-never-relaunched"
+    "dispatch/unknown-never-relaunched",
+    "dispatch/observations"
    ],
    "target_red": true,
    "target_region_completed": true,
-   "diff": "mutations/dispatch-receiver-takes-unprepared.diff"
+   "diff": "mutations/dispatch-unknown-frees-unit.diff"
   },
   {
    "mutation": "dispatch-lost-answer-as-refused",
@@ -258,6 +259,22 @@
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/dispatch-exited-moves-again.diff"
+  },
+  {
+   "mutation": "dispatch-ended-state-ignored",
+   "module": ".veldo/control_dispatch.py",
+   "target_rows": [
+    "dispatch/transitions-from-schema"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "dispatch/transitions-from-schema",
+    "dispatch/observations"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/dispatch-ended-state-ignored.diff"
   },
   {
    "mutation": "dispatch-unknown-after-exit",

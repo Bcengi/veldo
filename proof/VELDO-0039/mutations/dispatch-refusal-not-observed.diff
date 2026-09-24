@@ -1,5 +1,5 @@
 --- a/.veldo/control_dispatch.py
 +++ b/.veldo/control_dispatch.py
-@@ -470 +470 @@
+@@ -471 +471 @@
 -            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))
 +            pass  # defect: a refusal is not observed

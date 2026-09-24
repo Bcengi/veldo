@@ -15,7 +15,8 @@ configuration), reservation (the worker slot of the same identity, by version an
 (holder and generation), deadline and authority generation. An index entity holds one active
 dispatch per unit and station; only `exited` or `refused` frees it, never `unknown`. Every later
 observation must carry its dispatch's contract digest, and an exit the process identity `run`
-recorded. Only an active `service` member whose scope covers the repository writes a record.
+recorded; a refusal or unknown that names the state it ends is refused once the record has moved
+on. Only an active `service` member whose scope covers the repository writes a record.
 
 **The runner and the receiver** (`.veldo/control_launch.py`). The runner decides the station,
 reserves the slot, resolves the source from real Git and commits the contract; only then does it
@@ -49,7 +50,8 @@ attempt again (`not_prepared`), recording nothing.
 
 **AC3.** `dispatch/transitions-from-schema`: the matrix is derived from `STATES` and `TRANSITIONS`;
 every allowed transition was walked by a real record (including a running dispatch whose receiver is
-killed), every disallowed one is refused `transition_refused` with the record unchanged.
+killed), every disallowed one is refused `transition_refused` with the record unchanged, and so is
+a refusal naming a state the record has left.
 `dispatch/result-binding`: one worker's result applied to another running dispatch is refused
 `binding_mismatch` and neither record moves. `dispatch/terminal-not-completion`: a worker that exits
 0 claiming it landed, naming another dispatch, leaves no completion receipt, a completion reader
@@ -70,7 +72,7 @@ observation is accepted and changes nothing.
 
 ## Mutations
 
-23 registered as finding 39 in `scripts/check_teeth_mutations.py`; `mutations.py` drives them and
+24 registered as finding 39 in `scripts/check_teeth_mutations.py`; `mutations.py` drives them and
 writes `mutations.json`, with each diff in `mutations/`. Every one turns its named row red with that
 row's region completing. The declared falsifiers: `dispatch-spawn-before-contract` (AC1, two edits,
 because the fixed code guards the order in the runner and in the receiver),
@@ -80,8 +82,8 @@ least one further mutation.
 ## Costs
 
 Suite 62: about 2.2 s (three runs, 2.16 to 2.30 s, host load average 15 on 20 cores);
-`observations.json` has one run's `suite_seconds`. Finding 39 with 4 jobs: 23 mutations in 16.2 s
-(46 suite runs). Regression runs on this branch, all zero failures: 58_veldo_0028_effects (77),
+`observations.json` has one run's `suite_seconds`. Finding 39 with 4 jobs: 24 mutations in 17.0 s
+(48 suite runs). Regression runs on this branch, all zero failures: 58_veldo_0028_effects (77),
 58_veldo_0036_reservations (36), 60_veldo_0052_eligibility (80), 53_veldo_0123_mutations,
 26_veldo_0009_install_stamp, 58_veldo_0046_notifications, 60_veldo_0064_inbox and
 14_warp_0717_subset_runner; `validate.py all`, template sync, lint and generated checks pass. The full

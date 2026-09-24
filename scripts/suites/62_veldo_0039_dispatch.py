@@ -614,14 +614,21 @@ sys.exit(payload.get('code', 0))
                                 'unknown': lambda: receiving.unknown(target, digest_, 'probe', now=time.time())}[action]
                         refusals[(state, action)] = attempt(call)
                         unchanged &= dispatches.version(target) == version
+                # An observation that names the state it ends is refused once the record has left it.
+                moved_version = dispatches.version(accepted_only['dispatch_id'])
+                moved = attempt(lambda: receiving.refuse(accepted_only['dispatch_id'], D.digest(accepted_only), 'probe',
+                                                         now=time.time(), expected_state='prepared'))
+                unchanged &= dispatches.version(accepted_only['dispatch_id']) == moved_version
                 expected_refusals = {(state, action): ('refused', 'duplicate_dispatch' if action == 'prepare'
                                                        else 'transition_refused:%s:%s' % (state, action))
                                      for (state, action) in refusals}
                 observed['transitions'] = {'derived': sorted(map(str, derived)), 'walked_by_real_records': sorted(map(str, walked)),
                                            'disallowed': {'%s/%s' % k: v for k, v in sorted(refusals.items())},
                                            'running_lost': r7.get('state')}
+                observed['transitions']['moved_on'] = moved
                 check('dispatch/transitions-from-schema',
-                      set(D.STATES) == {'prepared', 'accepted', 'running', 'exited', 'refused', 'unknown'}
+                      moved == ('refused', 'transition_refused:accepted:refuse')
+                      and set(D.STATES) == {'prepared', 'accepted', 'running', 'exited', 'refused', 'unknown'}
                       and derived == walked and len(derived) >= 8 and all(to in D.STATES for _, _, to in derived)
                       and refusals == expected_refusals and len(refusals) == len(D.TRANSITIONS) * len(D.STATES) - (len(derived) - 1)
                       and unchanged and r7.get('state') == 'unknown' and r7.get('reason') == 'outcome_unknown'

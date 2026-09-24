@@ -78,8 +78,8 @@ class Dispatches:
     def exit(self, dispatch_id, contract_digest, process, termination, *, now):
         return None
 
-    def refuse(self, dispatch_id, contract_digest, refusal, *, now):
+    def refuse(self, dispatch_id, contract_digest, refusal, *, now, expected_state=None):
         return None
 
-    def unknown(self, dispatch_id, contract_digest, reason, *, now):
+    def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None):
         return None

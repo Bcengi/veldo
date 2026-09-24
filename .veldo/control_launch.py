@@ -260,9 +260,11 @@ class Launch:
         state = (record or {}).get('state')
         digest = (record or {}).get('contract_digest')
         if lost and state == 'prepared':
-            record = self.dispatches.refuse(self.dispatch_id, digest, 'receiver_unavailable', now=self.clock())
+            record = self.dispatches.refuse(self.dispatch_id, digest, 'receiver_unavailable', now=self.clock(),
+                                            expected_state='prepared')
         elif lost and state == 'accepted':
-            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock())
+            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),
+                                             expected_state='accepted')
         state = (record or {}).get('state')
         self.record = record
         self.result = {'running': 'accepted', 'exited': 'accepted', 'refused': 'refused'}.get(state, 'unknown')
@@ -305,7 +307,7 @@ class Launch:
         if record and record['state'] == 'running':
             # The receiver that owned the worker has ended without recording its end.
             record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'], 'outcome_unknown',
-                                             now=self.clock())
+                                             now=self.clock(), expected_state='running')
         self.record = record
         return record
 
@@ -382,14 +384,21 @@ class Receiver:
         else:
             refusal = self._recheck(contract)
         if refusal:
-            self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time())
+            self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
+                                   expected_state='prepared')
             self.emit({'event': 'refused', 'refusal': refusal})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
         try:
             self.dispatches.accept(dispatch_id, contract_digest, me, now=time.time())
         except D.Refused as error:
-            self.dispatches.refuse(dispatch_id, record['contract_digest'], error.code, now=time.time())
+            current = (self.dispatches.record(dispatch_id) or {}).get('state')
+            if current != 'prepared':
+                # Another invocation moved it on: not this receiver's to refuse or launch.
+                self.emit({'event': 'refused', 'refusal': 'not_prepared:%s' % current})
+                return
+            self.dispatches.refuse(dispatch_id, record['contract_digest'], error.code, now=time.time(),
+                                   expected_state='prepared')
             self.emit({'event': 'refused', 'refusal': error.code})
             return
         acceptance = self.dispatches.receipt(dispatch_id, 'accept')
@@ -398,7 +407,7 @@ class Receiver:
             worker = self._spawn(dispatch_id, acceptance, adapter)
         except OSError as error:
             refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)
-            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time())
+            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')
             self.emit({'event': 'refused', 'refusal': refusal})
             return
         carry = b''
@@ -407,14 +416,16 @@ class Receiver:
                 process, refusal, carry = self._reported(worker, contract)
                 if refusal:
                     worker.wait()
-                    self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time())
+                    self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(),
+                                           expected_state='accepted')
                     self.emit({'event': 'refused', 'refusal': refusal})
                     return
             else:
                 process = process_identity(worker.pid)
         except (OSError, ValueError, IndexError, subprocess.SubprocessError):
             self._stop(worker)
-            self.dispatches.unknown(dispatch_id, contract_digest, 'process_identity_unreadable', now=time.time())
+            self.dispatches.unknown(dispatch_id, contract_digest, 'process_identity_unreadable', now=time.time(),
+                                    expected_state='accepted')
             self.emit({'event': 'unknown'})
             return
         try:

@@ -1259,13 +1259,15 @@ def cases():
              "HOLDING = ('prepared', 'accepted', 'running', 'unknown')\n",
              "HOLDING = ('prepared', 'accepted', 'running')  # defect: an unknown outcome frees its unit\n",
              'unknown-never-relaunched')
-    dispatch('dispatch-receiver-takes-unprepared', 'control_launch.py',
-             "        if record is None or record['state'] != 'prepared':\n",
-             "        if record is None or record['state'] not in ('prepared', 'unknown', 'exited'):  # defect\n",
+    dispatch('dispatch-unknown-frees-unit', 'control_dispatch.py',
+             "    if target not in HOLDING:\n",
+             "    if target not in HOLDING or target == 'unknown':  # defect: an unknown outcome releases its unit\n",
              'unknown-never-relaunched')
     dispatch('dispatch-lost-answer-as-refused', 'control_launch.py',
-             "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock())\n",
-             "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock())\n",
+             "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
+             "                                             expected_state='accepted')\n",
+             "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
+             "                                            expected_state='accepted')\n",
              'launch-results')
     dispatch('dispatch-receiver-identity-recorded', 'control_launch.py',
              "            process = process_identity(worker.pid)\n",
@@ -1273,9 +1275,9 @@ def cases():
              'launch-results')
     dispatch('dispatch-spawn-failure-as-unknown', 'control_launch.py',
              "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
-             "            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time())\n",
+             "            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n",
              "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
-             "            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time())\n",
+             "            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n",
              'launch-results')
     dispatch('dispatch-identity-from-worker-output', 'control_launch.py',
              "        line, _, carry = pending.partition(b'\\n')\n        message = json.loads(line)\n",
@@ -1304,9 +1306,13 @@ def cases():
              "        raise Refused('binding_mismatch:contract_digest', 'this observation belongs to another dispatch')\n",
              "    pass  # defect: an observation is not held to its dispatch's contract\n",
              'result-binding')
-    dispatch('dispatch-exited-moves-again', 'control_dispatch.py',
-             "    if record['state'] not in allowed:\n",
-             "    if record['state'] not in allowed and record['state'] != 'exited':  # defect\n",
+    guard = "    if record['state'] not in allowed or params.get('expected_state') not in (None, record['state']):\n"
+    dispatch('dispatch-exited-moves-again', 'control_dispatch.py', guard,
+             "    if (record['state'] not in allowed and record['state'] != 'exited')"
+             " or params.get('expected_state') not in (None, record['state']):  # defect\n",
+             'transitions-from-schema')
+    dispatch('dispatch-ended-state-ignored', 'control_dispatch.py', guard,
+             "    if record['state'] not in allowed:  # defect: the state an observation ends is not checked\n",
              'transitions-from-schema')
     dispatch('dispatch-unknown-after-exit', 'control_dispatch.py',
              "    'unknown': (('accepted', 'running'), 'unknown'),\n",

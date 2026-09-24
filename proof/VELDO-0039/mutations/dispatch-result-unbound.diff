@@ -1,6 +1,6 @@
 --- a/.veldo/control_dispatch.py
 +++ b/.veldo/control_dispatch.py
-@@ -356,2 +356 @@
+@@ -357,2 +357 @@
 -        if params.get('process') != record['process']:
 -            raise Refused('binding_mismatch:process', 'this termination belongs to another process')
 +        record['process'] = params.get('process')  # defect: the result's own process is taken as bound

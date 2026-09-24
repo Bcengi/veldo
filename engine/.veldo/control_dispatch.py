@@ -335,7 +335,8 @@ def transition(conn, params, before):
         raise Refused('missing_dispatch', rid)
     record = copy.deepcopy(current['data'])
     allowed, target = TRANSITIONS[action]
-    if record['state'] not in allowed:
+    if record['state'] not in allowed or params.get('expected_state') not in (None, record['state']):
+        # An observation that names the state it ends is refused once the record has moved on.
         raise Refused('transition_refused:%s:%s' % (record['state'], action))
     if params.get('contract_digest') != record['contract_digest']:
         raise Refused('binding_mismatch:contract_digest', 'this observation belongs to another dispatch')
@@ -494,10 +495,16 @@ class Dispatches:
         return self._run('exit', dispatch_id, {'contract_digest': contract_digest, 'process': process,
                                                'termination': termination}, now)
 
-    def refuse(self, dispatch_id, contract_digest, refusal, *, now):
-        """A launch that conclusively did not happen, by name."""
-        return self._run('refuse', dispatch_id, {'contract_digest': contract_digest, 'refusal': refusal}, now)
+    def refuse(self, dispatch_id, contract_digest, refusal, *, now, expected_state=None):
+        """A launch that conclusively did not happen, by name, ending `expected_state` when named."""
+        fields = {'contract_digest': contract_digest, 'refusal': refusal}
+        if expected_state is not None:
+            fields['expected_state'] = expected_state
+        return self._run('refuse', dispatch_id, fields, now)
 
-    def unknown(self, dispatch_id, contract_digest, reason, *, now):
+    def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None):
         """A launch or outcome that cannot be established: the dispatch stops with a stop owed."""
-        return self._run('unknown', dispatch_id, {'contract_digest': contract_digest, 'reason': reason}, now)
+        fields = {'contract_digest': contract_digest, 'reason': reason}
+        if expected_state is not None:
+            fields['expected_state'] = expected_state
+        return self._run('unknown', dispatch_id, fields, now)

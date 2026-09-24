@@ -39,7 +39,7 @@
    }
   },
   "contract": {
-   "acceptance_record": "sha256:8e305676b7c18f9898742036e07d4cfb5d86af9ab2b15157241250acf7995fb6",
+   "acceptance_record": "sha256:6f7a8a74c214490c169dde2fe971dbe7bf3adcb52e657bbcca01fd2976377d5c",
    "bindings": {
     "capability": true,
     "claim": true,
@@ -49,7 +49,7 @@
     "reservation": true,
     "source": true
    },
-   "birth_acceptance": "sha256:8e305676b7c18f9898742036e07d4cfb5d86af9ab2b15157241250acf7995fb6",
+   "birth_acceptance": "sha256:6f7a8a74c214490c169dde2fe971dbe7bf3adcb52e657bbcca01fd2976377d5c",
    "journal_order": [
     15,
     16,
@@ -57,7 +57,7 @@
    ],
    "second": [
     "refused",
-    "active_dispatch:dispatch/VELDO-9301/58688b4b164543a08c1db430d9ad0282"
+    "active_dispatch:dispatch/VELDO-9301/01c690f1af07404c966f4f3b93ba7f19"
    ],
    "seen_at_start": "running",
    "workers": 1
@@ -66,14 +66,14 @@
    {
     "accepted_versions": {
      "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 0,
-     "dispatch:dispatch/VELDO-9306/6638e11225014d399505dea49929a32a": 0
+     "dispatch:dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75": 0
     },
-    "dispatch_id": "dispatch/VELDO-9306/6638e11225014d399505dea49929a32a",
+    "dispatch_id": "dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75",
     "domain": "domain-39",
     "operation": "prepare",
     "outcome": "accepted",
     "repository": "repository-39",
-    "request": "dispatch/prepare/dispatch/VELDO-9306/6638e11225014d399505dea49929a32a/c8a6f708101cd02f1b66b71d",
+    "request": "dispatch/prepare/dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75/609e8adaff7b13a8f6ccf9de",
     "schema": "veldo.dispatch/v1",
     "state": "prepared",
     "station": "build",
@@ -83,14 +83,14 @@
    {
     "accepted_versions": {
      "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 1,
-     "dispatch:dispatch/VELDO-9306/6638e11225014d399505dea49929a32a": 2
+     "dispatch:dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75": 2
     },
-    "dispatch_id": "dispatch/VELDO-9306/6638e11225014d399505dea49929a32a",
+    "dispatch_id": "dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75",
     "domain": "domain-39",
     "operation": "unknown",
     "outcome": "accepted",
     "repository": "repository-39",
-    "request": "dispatch/unknown/dispatch/VELDO-9306/6638e11225014d399505dea49929a32a/2393a114c2d1c52597357398",
+    "request": "dispatch/unknown/dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75/d2a50089180d5151eaf4e285",
     "schema": "veldo.dispatch/v1",
     "state": "unknown",
     "station": "build",
@@ -106,9 +106,9 @@
     "domain": "domain-39",
     "operation": "prepare",
     "outcome": "refused",
-    "refusal": "dispatch_outcome_unknown:dispatch/VELDO-9306/6638e11225014d399505dea49929a32a",
+    "refusal": "dispatch_outcome_unknown:dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75",
     "repository": "repository-39",
-    "request": "dispatch/prepare/dispatch/VELDO-9306/fresh/d1fb1915669ddb6a3b02b672",
+    "request": "dispatch/prepare/dispatch/VELDO-9306/fresh/351c0be18f75cd4e3be67314",
     "schema": "veldo.dispatch/v1",
     "station": "build",
     "taxonomy": "unknown_outcome",
@@ -117,15 +117,15 @@
    {
     "accepted_versions": {
      "dispatch-active:[\"domain-39\",\"repository-39\",\"VELDO-9306\",\"build\"]": 1,
-     "dispatch:dispatch/VELDO-9306/6638e11225014d399505dea49929a32a": 3
+     "dispatch:dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75": 3
     },
-    "dispatch_id": "dispatch/VELDO-9306/6638e11225014d399505dea49929a32a",
+    "dispatch_id": "dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75",
     "domain": "domain-39",
     "operation": "prepare",
     "outcome": "refused",
     "refusal": "duplicate_dispatch",
     "repository": "repository-39",
-    "request": "dispatch/prepare/dispatch/VELDO-9306/6638e11225014d399505dea49929a32a/fbec10c558d6e2c1e0369cb3",
+    "request": "dispatch/prepare/dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75/6b136aaa219451ec6e4294fd",
     "schema": "veldo.dispatch/v1",
     "station": "build",
     "taxonomy": "invalid_input",
@@ -134,20 +134,20 @@
   ],
   "launch_results": {
    "accepted": {
-    "proc_start": "191895535",
-    "receiver_pid": 1150369,
+    "proc_start": "191917916",
+    "receiver_pid": 1615878,
     "result": "accepted",
     "stored_process": {
      "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
      "host": "dmitry-pc",
-     "pid": 1150425,
+     "pid": 1615933,
      "platform": "linux",
-     "start": "191895535"
+     "start": "191917916"
     },
     "worker_reported": {
      "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
-     "pid": 1150425,
-     "start": "191895535"
+     "pid": 1615933,
+     "start": "191917916"
     }
    },
    "one_identity_each": true,
@@ -183,19 +183,19 @@
      "refused",
      "spawn_failed:ENOENT"
     ],
-    "proc_start": "191895598",
+    "proc_start": "191917962",
     "result": "accepted",
     "stored_process": {
      "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
      "host": "dmitry-pc",
-     "pid": 1150900,
+     "pid": 1616116,
      "platform": "linux",
-     "start": "191895598"
+     "start": "191917962"
     },
     "worker_reported": {
      "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
-     "pid": 1150900,
-     "start": "191895598"
+     "pid": 1616116,
+     "start": "191917962"
     }
    }
   },
@@ -203,8 +203,8 @@
   "status": {
    "accepted": 15,
    "pending": [
-    "dispatch/VELDO-9308/72149a871aca4d988d3105877e2f8965",
-    "dispatch/VELDO-9309/71742d05b7774b5c9e4aba34fe02f579"
+    "dispatch/VELDO-9308/264751bec03b4ddf9f0a3b3ccdbe426a",
+    "dispatch/VELDO-9309/022ed6d441944c6aa013a62b56923df3"
    ],
    "refused": 8,
    "states": {
@@ -216,8 +216,8 @@
     "unknown": 2
    },
    "stopped": [
-    "dispatch/VELDO-9306/6638e11225014d399505dea49929a32a",
-    "dispatch/VELDO-9307/e2f695c89c644f3a8121f4788d7d6f4d"
+    "dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75",
+    "dispatch/VELDO-9307/60a9facdaed9470bbe77b710c78a77e1"
    ]
   },
   "terminal": {
@@ -231,16 +231,16 @@
    "termination": {
     "deadline_stop": false,
     "output_bytes": 196,
-    "output_digest": "sha256:2d2d554545d9806f6ab0df2abdb65ee074a6e05236fd4060f8dcf118823cb5f0",
+    "output_digest": "sha256:282f62ee5bcc888da6752eed654e07841f7548ff6987a6d8059761864727818b",
     "returncode": 0,
     "signal": null
    },
    "worker_printed": {
-    "dispatch_id": "dispatch/VELDO-9311/3396167a51284039b0e6ec684025f98e",
+    "dispatch_id": "dispatch/VELDO-9311/c281ef6d72c74632b389921fbe44caff",
     "landed": true,
-    "revision_landed": "claimed-landed-8b9c4d061965",
+    "revision_landed": "claimed-landed-e5e282d0a790",
     "status": "completed",
-    "worker_token": "35b26d344ae1fb47"
+    "worker_token": "15e9ff6a947d646e"
    }
   },
   "transitions": {
@@ -372,6 +372,10 @@
      "transition_refused:unknown:unknown"
     ]
    },
+   "moved_on": [
+    "refused",
+    "transition_refused:accepted:refuse"
+   ],
    "running_lost": "unknown",
    "walked_by_real_records": [
     "('accepted', 'refuse', 'refused')",
@@ -387,7 +391,7 @@
   "uniqueness": {
    "direct": [
     "refused",
-    "active_dispatch:dispatch/VELDO-9301/58688b4b164543a08c1db430d9ad0282"
+    "active_dispatch:dispatch/VELDO-9301/01c690f1af07404c966f4f3b93ba7f19"
    ],
    "race": [
     [
@@ -404,7 +408,7 @@
    "race_workers": 1,
    "second": [
     "refused",
-    "active_dispatch:dispatch/VELDO-9301/58688b4b164543a08c1db430d9ad0282"
+    "active_dispatch:dispatch/VELDO-9301/01c690f1af07404c966f4f3b93ba7f19"
    ],
    "third": "ok",
    "third_attempt": 2
@@ -412,7 +416,7 @@
   "unknown_relaunch": {
    "direct": [
     "refused",
-    "dispatch_outcome_unknown:dispatch/VELDO-9306/6638e11225014d399505dea49929a32a"
+    "dispatch_outcome_unknown:dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75"
    ],
    "reinvoke": [
     "refused",
@@ -425,7 +429,7 @@
    ],
    "resubmit": [
     "refused",
-    "dispatch_outcome_unknown:dispatch/VELDO-9306/6638e11225014d399505dea49929a32a"
+    "dispatch_outcome_unknown:dispatch/VELDO-9306/215c9be1c5294148b4f787f0a41b2e75"
    ]
   }
  },
@@ -505,5 +509,5 @@
   ]
  ],
  "suite": "62_veldo_0039_dispatch.py",
- "suite_seconds": 3.205
+ "suite_seconds": 2.197
 }

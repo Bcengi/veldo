@@ -1,5 +1,7 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -265 +265 @@
--            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock())
-+            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock())
+@@ -266,2 +266,2 @@
+-            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),
+-                                             expected_state='accepted')
++            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),
++                                            expected_state='accepted')

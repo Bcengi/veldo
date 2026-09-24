@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -373 +373 @@
+-    if target not in HOLDING:
++    if target not in HOLDING or target == 'unknown':  # defect: an unknown outcome releases its unit
