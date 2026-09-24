@@ -1199,9 +1199,10 @@ def cases():
     floor('eligibility-recheck-ignores-collections', 'control_eligibility.py',
           '            elif old != new:',
           "            elif 'members' not in (old or new or {}) and old != new:", 'stale-input')
+    # Re-anchored 2026-09-24: VELDO-0135 rewrote the frontier; the selection check now holds the unit by name.
     floor('eligibility-frontier-bypass', 'frontier.py',
-          '            if not decision["eligible"]:\n                return\n',
-          '            if False:\n                return\n', 'entry-frontier')
+          '            if not decision["eligible"]:\n                return _hold(sid, decision["refusals"][0], decision["refusals"])\n',
+          '            if False:\n                return _hold(sid, decision["refusals"][0], decision["refusals"])\n', 'entry-frontier')
     floor('eligibility-executor-bypass', 'executor.py',
           '        return gate.decide("direct_execution", sid, context=self.context, ticket=ticket)',
           '        return dict(gate.decide("direct_execution", sid, context=self.context, ticket=ticket),\n'
@@ -1239,9 +1240,15 @@ def cases():
                '        facts = gate.completion(sid) if gate is not None else None',
                '        facts = (dict(gate.completion(sid), revision_landed=bool(concluded(entry, base, vc=vc, passing=passing)))\n'
                '                 if gate is not None else None)', 'readers-agree')
-    completion('completion-frontier-reads-status-text', 'frontier.py',
-               '    status = EL.completion_status(EL.gate_for(repo_root or ROOT, eligibility), _status_map(idx))',
-               '    status = _status_map(idx)', 'readers-agree')
+    # Re-anchored 2026-09-24: VELDO-0135 split the frontier's completion read across its two readers; both read
+    # status text in the defect.
+    add(52, 'completion-frontier-reads-status-text', '60_veldo_0052_eligibility.py', 'frontier.py',
+        '    # VELDO-0052 AC3: with the floor enabled, "shipped" means a landed revision, never status text.\n'
+        '    status = EL.completion_status(gate, _status_map(idx))\n',
+        '    # VELDO-0052 AC3: with the floor enabled, "shipped" means a landed revision, never status text.\n'
+        '    status = _status_map(idx)\n', ['completion/readers-agree'],
+        [('    idx = _spec_index(repo_root)\n    status = EL.completion_status(gate, _status_map(idx))\n',
+          '    idx = _spec_index(repo_root)\n    status = _status_map(idx)\n')])
     completion('completion-any-revision-lands', 'control_eligibility.py',
                "            if CC.fact_problems('revision_landed', r, subject):",
                "            if CC.fact_problems('revision_landed', r, None):", 'readers-agree')
