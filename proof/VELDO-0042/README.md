@@ -159,7 +159,7 @@ each probe, each engine's requests and state files, the groups, and the chain co
 ## Costs
 
 Suite about 1.5 s (1.49 to 1.56 s over three runs through `scripts/selftest.py --suite`). Finding 42 with
-`--jobs 4`: about 9 s. The drive (baseline, three no-op copies, 21 mutants, serial) is about 32 s. Each
+`--jobs 4`: about 8 s. The drive (baseline, three no-op copies, 21 mutants, serial) is about 32 s. Each
 red run is about 2 s, the engine measurement about 3 s. Committed proof is under 1 MB, no full gate logs.
 
 ## Out of review scope (filed, not blocking)

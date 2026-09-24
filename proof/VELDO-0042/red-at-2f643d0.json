@@ -11,7 +11,7 @@
  "modules": {
   ".veldo/control_clone.py": {
    "at_commit": "9520dcab75ab271a1c3335a22b09ceacd0f8adea5cc6c133a6d0633cf30bf227",
-   "now": "e798bbcbf7b69adb7c6fd0f1bab30550639bba817baddbb5b08154ff962d590e"
+   "now": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
   },
   ".veldo/env_provision.py": {
    "at_commit": "efc127ddbcb326b796a2d514bdd4206e5482ff704d4be13618ffefa2443a232c",
@@ -19,7 +19,7 @@
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "eeab6a41edf882a62621b5597d7816b6a71bf93ab8910f05006df81e954070fd",
-   "now": "eeab6a41edf882a62621b5597d7816b6a71bf93ab8910f05006df81e954070fd"
+   "now": "7af3e5bdb623502494afd83c6dc02c973f8d07c7edb0a7ef20a923ab7d1ed571"
   }
  },
  "preamble_rows": 26,
@@ -107,7 +107,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.617,
+ "seconds": 1.438,
  "spec_id": "VELDO-0042",
  "suite": "scripts/suites/66_veldo_0042_clones.py",
  "tree": "git archive 2f643d0f1bbb8044676f252686ab3e3aec61f108, unchanged; the current suite run against it with every module the commit's own"

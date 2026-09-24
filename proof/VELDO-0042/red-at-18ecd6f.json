@@ -17,7 +17,7 @@
  "modules": {
   ".veldo/control_clone.py": {
    "at_commit": null,
-   "now": "e798bbcbf7b69adb7c6fd0f1bab30550639bba817baddbb5b08154ff962d590e"
+   "now": "eefab7ab4a6f8dab75815f904d0bab0e5f359751749fa21f1fa4b3694fb78ba2"
   },
   ".veldo/env_provision.py": {
    "at_commit": "7fa171c301949a908ed3d89dc89e3973f4c4d69d3c0138dc10211bb6ab1c0135",
@@ -25,7 +25,7 @@
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "2ccd7fcd8229940410ee1dea0591bc756ca403a75726eae37d520381887229b3",
-   "now": "eeab6a41edf882a62621b5597d7816b6a71bf93ab8910f05006df81e954070fd"
+   "now": "7af3e5bdb623502494afd83c6dc02c973f8d07c7edb0a7ef20a923ab7d1ed571"
   }
  },
  "preamble_rows": 26,
@@ -113,7 +113,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.276,
+ "seconds": 0.215,
  "spec_id": "VELDO-0042",
  "suite": "scripts/suites/66_veldo_0042_clones.py",
  "tree": "git archive 18ecd6f777583d1629b907b25f69494ca5c18e9e, unchanged; the current suite run against it with control_clone absent (proof/VELDO-0042/prefix/control_clone.py stands in)"
