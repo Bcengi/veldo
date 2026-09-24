@@ -1,0 +1,7 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -722 +722,3 @@
+-                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"])
++                pc = subprocess.run([sys.executable, "-B", *POLICY_COMMAND], cwd=c["workspace"], capture_output=True,
++                                    text=True, stdin=subprocess.DEVNULL)  # defect: the candidate's policy decides
++                returncode, policy_out = pc.returncode, pc.stdout.strip()

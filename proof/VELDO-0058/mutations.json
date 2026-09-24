@@ -1,0 +1,198 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 58 --jobs 4 --diff-dir proof/VELDO-0058/mutations",
+ "summary": {
+  "mutations_rejected": 9,
+  "green_suites": {
+   "69_veldo_0058_gate_output.py": 34
+  },
+  "driver_seconds": 22.7
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations_per_row": {
+  "gate-output/review-write": [
+   "gate-output-reconcile-writes-candidate",
+   "gate-output-stamp-written-to-candidate"
+  ],
+  "gate-output/sink-refusals": [
+   "gate-output-sink-failure-still-green",
+   "gate-output-sink-inside-candidate-accepted"
+  ],
+  "gate-output/post-run-mutation": [
+   "gate-output-acceptance-skips-tree-equality",
+   "gate-output-run-equality-not-judged",
+   "gate-output-observation-content-not-judged"
+  ],
+  "gate-output/installed-policy": [
+   "gate-output-candidate-policy-launched",
+   "gate-output-policy-module-from-candidate"
+  ]
+ },
+ "every_row_has_two_or_more": true,
+ "unmutated_controls": [
+  {
+   "module": "scripts/verify.sh",
+   "identical_bytes": true,
+   "rows": 8,
+   "failed_rows": [],
+   "seconds": 7.8
+  },
+  {
+   "module": ".veldo/control_verification.py",
+   "identical_bytes": true,
+   "rows": 8,
+   "failed_rows": [],
+   "seconds": 7.7
+  },
+  {
+   "module": ".veldo/lander.py",
+   "identical_bytes": true,
+   "rows": 8,
+   "failed_rows": [],
+   "seconds": 7.5
+  }
+ ],
+ "mutations": [
+  {
+   "mutation": "gate-output-reconcile-writes-candidate",
+   "module": "scripts/verify.sh",
+   "target_rows": [
+    "gate-output/review-write"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/review-write"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-reconcile-writes-candidate.diff"
+  },
+  {
+   "mutation": "gate-output-stamp-written-to-candidate",
+   "module": "scripts/verify.sh",
+   "target_rows": [
+    "gate-output/review-write"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/review-write",
+    "gate-output/post-run-mutation",
+    "gate-output/installed-policy",
+    "ran/gate-output/post-run-mutation",
+    "ran/gate-output/installed-policy"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-stamp-written-to-candidate.diff"
+  },
+  {
+   "mutation": "gate-output-sink-failure-still-green",
+   "module": "scripts/verify.sh",
+   "target_rows": [
+    "gate-output/sink-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/sink-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-sink-failure-still-green.diff"
+  },
+  {
+   "mutation": "gate-output-sink-inside-candidate-accepted",
+   "module": "scripts/verify.sh",
+   "target_rows": [
+    "gate-output/sink-refusals"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/sink-refusals"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-sink-inside-candidate-accepted.diff"
+  },
+  {
+   "mutation": "gate-output-acceptance-skips-tree-equality",
+   "module": ".veldo/control_verification.py",
+   "target_rows": [
+    "gate-output/post-run-mutation"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/post-run-mutation"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-acceptance-skips-tree-equality.diff"
+  },
+  {
+   "mutation": "gate-output-run-equality-not-judged",
+   "module": ".veldo/control_verification.py",
+   "target_rows": [
+    "gate-output/post-run-mutation"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/post-run-mutation"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-run-equality-not-judged.diff"
+  },
+  {
+   "mutation": "gate-output-observation-content-not-judged",
+   "module": ".veldo/control_verification.py",
+   "target_rows": [
+    "gate-output/post-run-mutation"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/post-run-mutation"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-observation-content-not-judged.diff"
+  },
+  {
+   "mutation": "gate-output-candidate-policy-launched",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "gate-output/installed-policy"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/installed-policy"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-candidate-policy-launched.diff"
+  },
+  {
+   "mutation": "gate-output-policy-module-from-candidate",
+   "module": ".veldo/control_verification.py",
+   "target_rows": [
+    "gate-output/installed-policy"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "gate-output/installed-policy"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/gate-output-policy-module-from-candidate.diff"
+  }
+ ]
+}

@@ -4007,6 +4007,64 @@ def cases():
     intake('member-when-sent-read-at-processing-time',
            "self._member_when_sent(principal, command['provenance'].get('date'))",
            "self._member_when_sent(principal, self.clock())", 'authenticated-sources-only')
+
+    # VELDO-0058: each criterion's declared falsifier and a further defect, each against the one suite 69
+    # row it names. verify.sh is the production gate script (scripts/, case field `dir`); the rest are
+    # exact text in the .veldo modules suite 69 installs.
+    def gate_output(name, module, old, new, row, also=(), directory=None):
+        add(58, name, '69_veldo_0058_gate_output.py', module, old, new, ['gate-output/' + row], also)
+        if directory:
+            result[-1]['dir'] = directory
+
+    # AC1, declared: the reconciliation still writes the candidate's own .veldo/events.jsonl while the
+    # stamp goes to the sink.
+    gate_output('gate-output-reconcile-writes-candidate', 'verify.sh',
+                '  set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"\n',
+                '  set -- --repo-root "$(pwd -P)"  # defect: the reconciliation appends to the candidate\'s own log\n',
+                'review-write', directory='scripts')
+    gate_output('gate-output-stamp-written-to-candidate', 'verify.sh',
+                '     && mv -f "$VELDO_OUT/.last_verify.$$" "$VELDO_OUT/last_verify" 2>/dev/null \\\n',
+                '     && mv -f "$VELDO_OUT/.last_verify.$$" .veldo/last_verify 2>/dev/null \\\n',
+                'review-write', directory='scripts')
+    # AC1: a sink that refuses the final write, and a sink inside the candidate.
+    gate_output('gate-output-sink-failure-still-green', 'verify.sh',
+                '    echo "== gate output: NOT WRITTEN - the sink refused the stamp or the gate event; this run is not trusted success"\n'
+                '    FAIL=1\n',
+                '    echo "== gate output: NOT WRITTEN - the sink refused the stamp or the gate event; this run is not trusted success"\n'
+                '    : # defect: a sink that refused the write is still trusted success\n',
+                'sink-refusals', directory='scripts')
+    gate_output('gate-output-sink-inside-candidate-accepted', 'verify.sh',
+                '    case "$_veldo_sink/" in "$_veldo_root"/*) VELDO_REFUSE="the sink resolves inside the candidate" ;; esac\n',
+                '    : # defect: a sink that resolves inside the candidate is accepted\n',
+                'sink-refusals', directory='scripts')
+    # AC2, declared: no post-run tree equality at acceptance, so a tracked file written after the final
+    # check is accepted.
+    gate_output('gate-output-acceptance-skips-tree-equality', 'control_verification.py',
+                '    if now["head"] != commit or now["digest"] != (observation.get("candidate") or {}).get("state"):\n',
+                '    if False:  # defect: no post-run tree equality at acceptance\n',
+                'post-run-mutation')
+    gate_output('gate-output-run-equality-not-judged', 'control_verification.py',
+                '    if post.get("equal") is not True or post.get("state") != candidate.get("state"):\n',
+                '    if False:  # defect: a candidate changed during the run is judged green\n',
+                'post-run-mutation')
+    gate_output('gate-output-observation-content-not-judged', 'control_verification.py',
+                '    problems = judge(observation)\n    if observation.get("commit") != commit:\n',
+                '    problems = []  # defect: the observation\'s content is not judged again at acceptance\n'
+                '    if observation.get("commit") != commit:\n',
+                'post-run-mutation')
+    # AC3, declared: finalize launches the candidate's policy_check.py, a success stub.
+    gate_output('gate-output-candidate-policy-launched', 'lander.py',
+                '                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"])\n',
+                '                pc = subprocess.run([sys.executable, "-B", *POLICY_COMMAND], cwd=c["workspace"], capture_output=True,\n'
+                '                                    text=True, stdin=subprocess.DEVNULL)  # defect: the candidate\'s policy decides\n'
+                '                returncode, policy_out = pc.returncode, pc.stdout.strip()\n',
+                'installed-policy')
+    gate_output('gate-output-policy-module-from-candidate', 'control_verification.py',
+                '    policy = root / POLICY_PATH\n',
+                '    policy = Path(candidate) / POLICY_PATH  # defect: the candidate\'s policy module is run\n',
+                'installed-policy',
+                also=[('    if inside(policy, candidate):\n        return None, "missing_authority:policy/in_candidate"\n',
+                       '    if False:\n        return None, "missing_authority:policy/in_candidate"\n')])
     return result
 
 

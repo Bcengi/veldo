@@ -1,0 +1,342 @@
+{
+ "production_at": "932d9b0",
+ "substituted": {
+  "verify.sh": "932d9b0:scripts/verify.sh",
+  "lander.py": "932d9b0:.veldo/lander.py",
+  "executor.py": "932d9b0:.veldo/executor.py"
+ },
+ "installed_only_now": [
+  "control_verification.py"
+ ],
+ "other_installed_modules_identical_to_commit": false,
+ "differing": [
+  "init_scaffold.py"
+ ],
+ "failed": [
+  "VELDO-0058 gate-output/review-write",
+  "VELDO-0058 gate-output/sink-refusals",
+  "VELDO-0058 gate-output/post-run-mutation",
+  "VELDO-0058 gate-output/installed-policy"
+ ],
+ "passed": [
+  "VELDO-0058 ran/gate-output/review-write",
+  "VELDO-0058 ran/gate-output/sink-refusals",
+  "VELDO-0058 ran/gate-output/post-run-mutation",
+  "VELDO-0058 ran/gate-output/installed-policy"
+ ],
+ "raised": [],
+ "observed": {
+  "ordinary": {
+   "exit": 0,
+   "terminal": "GATE: GREEN (f42d5e7f8eb6d26668730fc5797198811099cb59)",
+   "stamp": {
+    "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
+    "status": "green",
+    "at": "2026-09-24T19:58:11Z",
+    "checks_run": 1,
+    "checks_na": 22,
+    "veldo_version": null,
+    "tree": "1 dirty path(s)"
+   },
+   "last_event": {
+    "schema": "veldo.event/v1",
+    "type": "gate.passed",
+    "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
+    "at": "2026-09-24T19:58:11Z",
+    "producer": "verify.sh",
+    "checks_run": 1
+   }
+  },
+  "review_write": {
+   "valid": {
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f)"
+     ],
+     "exit": 0,
+     "candidate": "2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f"
+    },
+    "finalize": [
+     {
+      "policy_check": "",
+      "ok": true,
+      "pushed": true,
+      "candidate": "2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f",
+      "detail": ""
+     }
+    ],
+    "trunk_before": "d4503f92966e625af4a261f435920bfd99aecf85",
+    "trunk_after": "2b1d3ba69d20ae0f98eb13ac2788f52a0cdec25f"
+   },
+   "valid_unchanged": false,
+   "appended": [],
+   "live": {
+    "green": true,
+    "unchanged": false,
+    "appended": [],
+    "refusals": null
+   },
+   "red": {
+    "gate": {
+     "detail_lines": [
+      "GATE: RED (ef193f0fbb1a9ccd7c71a977cc9178e54f9cb0f6)"
+     ],
+     "exit": 1,
+     "ok": false,
+     "refusal": "missing_evidence:gate",
+     "operation": null,
+     "detail": "GATE: RED (ef193f0fbb1a9ccd7c71a977cc9178e54f9cb0f6)",
+     "taxonomy": "missing_evidence"
+    },
+    "unchanged": false,
+    "stamp": null,
+    "event": null
+   }
+  },
+  "sink_refusals": {
+   "cases": {
+    "absent": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    },
+    "file": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    },
+    "unwritable": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    },
+    "symlink-into": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    },
+    "candidate": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    },
+    "planted-link": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    },
+    "no-sink": {
+     "exit": 1,
+     "terminal": "GATE: RED (no-git)",
+     "refused": false,
+     "not_written": false,
+     "checks_ran": true,
+     "unchanged": true
+    }
+   },
+   "final_write": {
+    "exit": 1,
+    "terminal": "GATE: RED (no-git)",
+    "refused": false,
+    "not_written": false,
+    "checks_ran": true,
+    "unchanged": true
+   },
+   "refused_red": {
+    "absent": false,
+    "file": false,
+    "unwritable": false,
+    "symlink-into": false,
+    "candidate": false,
+    "planted-link": false,
+    "no-sink": false
+   },
+   "written": [
+    "events.jsonl"
+   ],
+   "ordinary": {
+    "exit": 0,
+    "terminal": "GATE: GREEN (f42d5e7f8eb6d26668730fc5797198811099cb59)",
+    "stamp": {
+     "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
+     "status": "green",
+     "at": "2026-09-24T19:58:11Z",
+     "checks_run": 1,
+     "checks_na": 22,
+     "veldo_version": null,
+     "tree": "1 dirty path(s)"
+    },
+    "last_event": {
+     "schema": "veldo.event/v1",
+     "type": "gate.passed",
+     "commit": "f42d5e7f8eb6d26668730fc5797198811099cb59",
+     "at": "2026-09-24T19:58:11Z",
+     "producer": "verify.sh",
+     "checks_run": 1
+    }
+   }
+  },
+  "post_run": {
+   "refused": {
+    "tracked": false,
+    "index": false,
+    "untracked": false,
+    "no-terminal": false,
+    "check-result": false,
+    "identity": false
+   },
+   "tampered": {
+    "tracked": {
+     "policy_check": "",
+     "ok": true,
+     "pushed": true,
+     "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+     "detail": ""
+    },
+    "tracked:trunk": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "index": {
+     "policy_check": "",
+     "ok": true,
+     "pushed": true,
+     "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+     "detail": ""
+    },
+    "index:trunk": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "untracked": {
+     "policy_check": "",
+     "ok": true,
+     "pushed": true,
+     "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+     "detail": ""
+    },
+    "untracked:trunk": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "no-terminal": {
+     "skipped": "the gate wrote no external observation"
+    },
+    "check-result": {
+     "skipped": "the gate wrote no external observation"
+    },
+    "identity": {
+     "skipped": "the gate wrote no external observation"
+    }
+   },
+   "during_land": {
+    "ok": true,
+    "detail": [
+     "GATE: GREEN (34e586972eb1848ccd7f515b77c9631e9bf5bdab)"
+    ],
+    "exit": 0,
+    "candidate": "34e586972eb1848ccd7f515b77c9631e9bf5bdab"
+   },
+   "live": {
+    "tracked": {
+     "green": true,
+     "refusals": null,
+     "changed": null
+    },
+    "index": {
+     "green": true,
+     "refusals": null,
+     "changed": null
+    },
+    "untracked": {
+     "green": true,
+     "refusals": null,
+     "changed": null
+    }
+   },
+   "during_refused": {
+    "tracked": false,
+    "index": false,
+    "untracked": false
+   },
+   "bound": false,
+   "final": {
+    "policy_check": "",
+    "ok": true,
+    "pushed": true,
+    "candidate": "058bcc33f643880a643223b21f606bfceb0d4db5",
+    "detail": ""
+   },
+   "trunk_after": "058bcc33f643880a643223b21f606bfceb0d4db5"
+  },
+  "installed_policy": {
+   "stub_gate": {
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (3f952cd968bcfce8b6c0e8e3a9712059b9e0c611)"
+     ],
+     "exit": 0,
+     "candidate": "3f952cd968bcfce8b6c0e8e3a9712059b9e0c611"
+    },
+    "results": null,
+    "verifier": null
+   },
+   "stub_policy": {
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (f2b59c9d726afd7dba14f1c04c631dbeca7b26bf)"
+     ],
+     "exit": 0,
+     "candidate": "f2b59c9d726afd7dba14f1c04c631dbeca7b26bf"
+    },
+    "finalize": [
+     {
+      "policy_check": "stub policy: accepted",
+      "ok": true,
+      "pushed": true,
+      "candidate": "f2b59c9d726afd7dba14f1c04c631dbeca7b26bf",
+      "detail": ""
+     }
+    ],
+    "stub_exit": 0
+   },
+   "moved": {
+    "skipped": "the gate wrote no external observation"
+   },
+   "valid": [
+    {
+     "policy_check": "stub policy: accepted",
+     "ok": true,
+     "pushed": true,
+     "candidate": "9900247eb73b3c528be1c5db7d8a62bae0721f4a",
+     "detail": ""
+    }
+   ],
+   "changed_paths": [
+    ".veldo/policy_check.py",
+    "auth/login.py",
+    "proof/VELDO-9586/manifest.json",
+    "proof/VELDO-9587/approval-dmitry.json",
+    "proof/VELDO-9587/manifest.json",
+    "proof/VELDO-9588/manifest.json",
+    "scripts/verify.sh",
+    "src/stub_gate.py",
+    "src/stub_policy.py",
+    "src/valid.py"
+   ]
+  },
+  "raised": []
+ }
+}

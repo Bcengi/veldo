@@ -114,6 +114,11 @@ def _v58_suite():
             return {'head': git(root, 'rev-parse', 'HEAD'), 'index': git(root, 'ls-files', '-s', '-v'),
                     'files': files}
 
+        def inside(path, root):
+            """This suite's own test: `path`, symlinks resolved, is `root` or below it."""
+            path, root = os.path.realpath(str(path)), os.path.realpath(str(root))
+            return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
         def gate_text(text):
             """The production gate with this fixture's catalog: one required check, the rest not applicable."""
             def declare(match):
@@ -215,8 +220,11 @@ def _v58_suite():
             """sync, reconcile, gate and finalize one unit through GitLandOps, recording the candidate's
             state (this suite's own reading) around the gate; `between` runs after the gate and before
             finalize, and may return False to finalize no further."""
-            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity=LANDER,
-                                observations=observations)
+            # The class is handed exactly the arguments its constructor takes (a pre-change lander has
+            # no observations directory), so a red row is an assertion, never a TypeError.
+            accepts = __import__('inspect').signature(LD.GitLandOps.__init__).parameters
+            extra = {'observations': observations} if 'observations' in accepts else {}
+            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity=LANDER, **extra)
             out = {'trunk_before': remote_tip()}
             out['sync'] = ops.sync_main()
             out['reconcile'] = ops.reconcile(unit)
@@ -258,7 +266,7 @@ def _v58_suite():
             _branch, _implementation, evidence = build(unit, files, verdict=verdict, repo=work)
             before = snapshot(work)
             result = live.gate()
-            return {'result': result, 'commit': evidence, 'base': live.base, 'before': before, 'after': snapshot(work),
+            return {'result': result, 'commit': evidence, 'base': getattr(live, 'base', None), 'before': before, 'after': snapshot(work),
                     'observation': result.get('observation') or {}}
 
         def reset_work():
@@ -302,7 +310,7 @@ def _v58_suite():
                   and ((obs.get('outputs') or {}).get('last_verify') or {}).get('commit') == commit
                   and ((obs.get('outputs') or {}).get('last_verify') or {}).get('status') == 'green'
                   and blob(remote, commit, '.veldo/events.jsonl') == blob(remote, WATERMARK, '.veldo/events.jsonl')
-                  and not LD.verification_organ().inside((obs.get('outputs') or {}).get('sink', ''), valid['workspace'])
+                  and not inside((obs.get('outputs') or {}).get('sink', ''), valid['workspace'])
                   and valid['finalize'][-1].get('pushed') is True and valid['trunk_after'] == commit
                   and live['result'].get('green') is True and live['before'] == live['after']
                   and lobs.get('commit') == live['commit']
@@ -377,8 +385,8 @@ def _v58_suite():
             def tamper(ops, out):
                 c = ops.candidate
                 ws = Path(c['workspace'])
-                reference = dict(c['gate']['observation'])
-                original = Path(reference['path']).read_bytes()
+                reference = dict((c.get('gate') or {}).get('observation') or {})
+                original = Path(reference['path']).read_bytes() if reference.get('path') else None
 
                 def attempt(name, restore):
                     tampered[name] = ops.finalize(U['tamper'])
@@ -394,6 +402,9 @@ def _v58_suite():
                 attempt('untracked', lambda: (ws / 'late.out').unlink())
 
                 def rewrite(name, change):
+                    if original is None:
+                        tampered[name] = {'skipped': 'the gate wrote no external observation'}
+                        return
                     body = json.loads(original)
                     change(body)
                     body['stdout_digest'] = sha(body['stdout'].encode('utf-8', 'surrogateescape'))
@@ -441,7 +452,7 @@ def _v58_suite():
                      and (obs.get('gate') or {}).get('digest') == sha(gate_blob)
                      and (obs.get('gate') or {}).get('installation') == 'commit:' + trunk_now
                      and (obs.get('command') or [None])[0] == 'bash'
-                     and not LD.verification_organ().inside((obs.get('command') or ['', ''])[1], landed['workspace'])
+                     and not inside((obs.get('command') or ['', ''])[1], landed['workspace'])
                      and (obs.get('command') or [])[2:] == ['--candidate', os.path.realpath(landed['workspace']),
                                                             '--sink', (obs.get('outputs') or {}).get('sink')]
                      and required == ['unit'] and (obs.get('catalog') or {}).get('required') == required
@@ -490,7 +501,10 @@ def _v58_suite():
 
             def move(ops, out):
                 c = ops.candidate
-                reference = dict(c['gate']['observation'])
+                reference = dict((c.get('gate') or {}).get('observation') or {})
+                if not reference.get('path'):
+                    moved['skipped'] = 'the gate wrote no external observation'
+                    return
                 inner = Path(c['workspace']) / '.git' / 'observation.json'
                 shutil.copyfile(reference['path'], inner)
                 c['gate']['observation'] = dict(reference, path=str(inner))
