@@ -143,3 +143,7 @@ adds `scripts/check_teeth_mutations.py`, the registry of the 33 finding-49 negat
 VELDO-0031, 0035 and 0039 did. Suite 63 has 18 rows, each assertion row recorded red by assertion at
 0083c85 (`proof/VELDO-0049/`). Deferred and stated there: the frontier and work loop reading the
 projection instead of the spec status line, and projection recovery (Release 2).
+
+2026-09-24, scoped review of d46451c: one blocking defect fixed (a blocking review dimension and a
+finding-less failing verdict now stay open as findings), with a new row and two mutations. The frontier and
+work loop still read the spec status line (VELDO-0052's footprint): a missing-spec ticket is filed.

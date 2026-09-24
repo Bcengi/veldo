@@ -2766,6 +2766,15 @@ def cases():
                  '    if reviewer in (record.get("builders") or [record["builder"]]):\n',
                  '        raise FloorRefused("binding_mismatch:reviewer", "the receipt names another reviewer")\n'
                  '    if reviewer == record["builder"]:  # defect: only the latest attempt\'s builder is refused\n')])
+    # Review of d46451c, B1: a blocking review dimension and a finding-less failing verdict stay open.
+    floor('floor-dimension-block-not-kept',
+          '        if dimension.dimension_blocks(body):\n            blocking.append({"dimension": label, "block": body.get(label)})\n',
+          '        if False:  # defect: a blocking dimension returns the unit but opens no finding\n            blocking.append({"dimension": label, "block": body.get(label)})\n',
+          'blocking-verdicts-stay-open')
+    floor('floor-bare-fail-not-kept',
+          '    if body.get("verdict") not in EX.PASSING_VERDICTS and not blocking:\n',
+          '    if False:  # defect: a failing verdict with no listed finding opens nothing\n',
+          'blocking-verdicts-stay-open')
     # AC3, declared: a later pass discards the unresolved finding.
     floor('floor-pass-erases-finding', '    findings = dict(record["findings"])\n',
           '    findings = {} if verdict_passes(body) else dict(record["findings"])  # defect: a pass discards findings\n',

@@ -110,3 +110,20 @@ committed transition whose projection fails is returned as `projection.refused` 
 (recovery is Release 2). The scaffolder does not install dispatch.py, before or after this change
 (VELDO-0059). dispatch.py is now 1240 lines, over the advisory 1000-line budget (review lane).
 Not run here: the Mac and the full gate.
+
+## Review of d46451c (scoped, 2026-09-24)
+
+One blocking defect in this unit, fixed: a blocking security or shape-fit dimension, and a failing verdict
+that listed no finding, returned the unit without opening a finding, so after a rebuild one pass handed it
+off. Now each opens a finding that only a signed disposition closes. Row
+`floor/blocking-verdicts-stay-open` (two new units with an insecure and a finding-less failing review): red
+by assertion before the fix (both units landed), green after (both stay pending with one open finding).
+Mutations `floor-dimension-block-not-kept` and `floor-bare-fail-not-kept`. `--finding 49 --jobs 4`: 35 of
+35 rejected, suite 46 assertions green.
+
+Owed by another spec (not this footprint): the frontier and the work loop read the spec file's status
+line, which an enrolled unit never changes, so a live enrolled run offers no review unit after build
+acceptance. `.veldo/frontier.py` and `.veldo/work.py` are in VELDO-0052's footprint; a missing-spec ticket
+is filed. Filed from the same review: nothing in normal use carries a disposition yet (intake's job); a
+disposer is any active person member, not specifically the unit's owner; the reviewer also receives the
+capability configuration; a landed record stays in handoff.
