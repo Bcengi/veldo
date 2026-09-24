@@ -3633,8 +3633,11 @@ def cases():
             "        'control_keys_custody.py', 'control_launch.py', 'control_membership.py', 'control_reservations.py',\n"
             "        'control_service.py', 'control_signer.py', 'control_signer_answers.py', 'control_snapshot.py',\n"
             "        'control_store.py', 'git_process.py')}\n", 'installed-fixed-and-protected')
-    service('authority-closure-omits-the-validator', 'control_service.py', seeds,
-            "    seeds = set(ENTRY_POINTS)  # defect: the validator the receiver's recheck runs is not installed\n",
+    # Re-aimed 2026-09-24: VELDO-0134 made control_eligibility load control_architecture, which loads the
+    # validator, so the seed alone no longer decides it; the defect is the installed set lacking the validator.
+    service('authority-closure-omits-the-validator', 'control_service.py',
+            '        return sorted(members)\n',
+            "        return sorted(members - {name for _role, name in EL.VALIDATOR_ROLES})  # defect: the validator the receiver's recheck runs is not installed\n",
             'installed-receiver-launches')
     service('authority-closure-ignores-loader-helpers', 'control_service.py',
             "            if not options:\n                continue\n",
