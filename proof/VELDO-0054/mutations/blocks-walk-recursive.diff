@@ -1,0 +1,9 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -138,0 +139,6 @@
++    stack = []
++    current = value
++    if isinstance(current, list):
++        for item in current:
++            yield from _named(item)
++        return

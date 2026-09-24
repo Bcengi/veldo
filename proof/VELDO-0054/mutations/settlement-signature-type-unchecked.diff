@@ -1,0 +1,5 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -259 +259 @@
+-    for name in ('signature', 'signer'):
++    for name in ('signer',):

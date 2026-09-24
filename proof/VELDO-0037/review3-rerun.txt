@@ -1,0 +1,114 @@
+=== p1_generic.py
+{
+ "case-kind-new": "committed",
+ "case-prefix": "committed",
+ "prefix-no-slash": "committed",
+ "kind-mismatch-owned-prefix": "entity_owned",
+ "owned-kind-foreign-id": "entity_owned",
+ "rewind": "entity_owned",
+ "relabel-revision": "entity_owned",
+ "retire-revision": "entity_owned",
+ "retire-counter": "entity_owned",
+ "receipt-over-counter": "entity_owned",
+ "receipt-over-revision": "entity_owned",
+ "accept_snapshot-at-owned-prefix": "unregistered_inputs",
+ "accept_revision-at-counter": "invalid_input",
+ "accept_revision-new-at-alias-prefix": "stale_version",
+ "unowned": "committed"
+}
+counter next after: 1
+exit 0
+=== p2_names.py
+accept_snapshot at owned prefix: entity_owned
+self-registered enable_artifact_kind rewinds counter: foreign_transition -> next = 1
+self-registered accept_revision forges a revision with a commit not in the repository: foreign_transition
+exit 0
+=== p3_foreign_revision.py
+enable before: True
+Traceback (most recent call last):
+  File "<probe>/p3_foreign_revision.py", line 9, in <module>
+    acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(other_repo)})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 404, in attach_revisions
+    store.bind_repositories(conn, domain_uuid, service.paths)
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 714, in bind_repositories
+    raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
+p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpd725zez1/origin in this store, not <probe>/tmpd725zez1/unrelated/origin
+exit 1
+=== p3a_foreign_revision_direct.py
+enable before: True
+attach to the unrelated repository: refused repository_binding_conflict
+direct accept_revision of the foreign commit: refused unenrolled_commit
+enable after: committed
+exit 0
+=== p3b_clone_revision.py
+Traceback (most recent call last):
+  File "<probe>/p3b_clone_revision.py", line 8, in <module>
+    c3 = st.open_store(db); acc2 = rs.attach_revisions(st, c3, 'domain', {'repository': str(clone)})
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_readset.py", line 404, in attach_revisions
+    store.bind_repositories(conn, domain_uuid, service.paths)
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 714, in bind_repositories
+    raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
+p_control_store.StoreRefused: repository_binding_conflict: repository repository of domain domain is read from <probe>/tmpo9azu8ua/origin in this store, not <probe>/tmpo9azu8ua/clone
+exit 1
+=== p3ba_clone_revision_direct.py
+attach to the clone: refused repository_binding_conflict
+direct accept_revision of the unpushed commit: refused unenrolled_commit
+after it reaches the bound repository: True
+enable: committed
+exit 0
+=== p4_declare.py
+Traceback (most recent call last):
+  File "<probe>/p4_declare.py", line 25, in <module>
+    st.declare_owners(c, 'evil', prefixes={'artifact-kind/repository/': ('upsert_entity',)})
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 646, in declare_owners
+    rows = _ownership_rows(owner, kinds, prefixes, module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0037/.veldo/control_store.py", line 609, in _ownership_rows
+    raise StoreRefused("malformed_command", "an ownership declaration names the module file whose code writes what it owns")
+p_control_store.StoreRefused: malformed_command: an ownership declaration names the module file whose code writes what it owns
+exit 1
+=== p4a_declare_module.py
+{
+ "squat-prefix": "malformed_command",
+ "rightful-attach-after-squat": "ok",
+ "squat-left-generic-writer": "entity_owned",
+ "squat-longer": "malformed_command",
+ "rightful-attach-after-longer": "ok",
+ "generic-under-longer": "entity_owned",
+ "excluding-squat-declare": "malformed_command",
+ "owner-under-excluding-squat": "ok",
+ "attach-readset-after-prewrite": "ownership_conflict",
+ "redeclare-kind-more-commands": "malformed_command",
+ "redeclare-same": "ok",
+ "declare-empty-commands": "malformed_command",
+ "declare-empty-prefix": "malformed_command",
+ "declare-single-char-prefix-occupied": "malformed_command",
+ "declare-unoccupied-short-prefix": "malformed_command",
+ "after-raw-delete-generic-write": "committed",
+ "reattach-after-drop": "ownership_conflict"
+}
+exit 0
+=== p5_toctou.py
+A (slow write, started first): committed | B (declare, during A): malformed_command | owners: 0 | snapshots: [('x/1',)]
+Traceback (most recent call last):
+  File "<probe>/p5_toctou.py", line 35, in <module>
+    b.execute("INSERT INTO entity_owners VALUES ('kind','control_snapshot','o','[\"accept_snapshot\"]')")
+sqlite3.OperationalError: table entity_owners has 6 columns but 4 values were supplied
+exit 1
+=== p5a_toctou_module.py
+A (slow write, started first): committed | B (declare, during A): ownership_conflict | owners: 0 | snapshots: [('x/1',)]
+A (generic write while declaration in flight, committed after): entity_owned
+exit 0
+=== p6_rawsql_oldcopy.py
+old store copy rewinds counter: committed -> next 1
+BUG(limit): enforcement is code in execute, not a property of the store file; a pre-change copy writes owned entities
+raw SQL rewinds counter -> next 1
+entity_owners in journal/replay state parts: False
+exit 0
+=== q7_lost_commit.py (builder probe, not the reviewer's)
+side revision accepted at f6ba691759a4
+bound repository still holds it: False
+enable: committed, next = 10 floor_commits = ['a9a4c597bf62', 'f6ba691759a4']
+exit 0

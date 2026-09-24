@@ -623,6 +623,216 @@ def cases():
           '        try:\n            finished = _wait_unreaped(proc.pid, timeout)\n        finally:\n            _end_group(proc)\n',
           '        finished = _wait_unreaped(proc.pid, timeout)\n        if not finished:\n            _end_group(proc)\n'
           '        else:\n            proc.wait()\n        if True:\n', 'boundary/process-group')
+    # VELDO-0037: each declared falsifier and a distinct second mutation turn the same named
+    # row red; the gate additionally drives an unchanged copy. Two further rows get one each.
+    def aliases(name, module, old, new, row):
+        add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row])
+
+    aliases('alias-checkout-maximum', 'control_alias.py',
+            "        number = kind['next']\n",
+            "        number = 1 + maximum([p.relative_to(request['workspace']).as_posix()"
+            " for p in Path(request['workspace']).rglob('*')], kind)\n", 'aliases/stale-checkouts')
+    aliases('alias-counter-not-advanced', 'control_alias.py',
+            'dict(kind, next=number + 1)', 'dict(kind, next=number)', 'aliases/stale-checkouts')
+    aliases('document-ignore-digest', 'control_alias.py',
+            "        if current['digest'] != p['expected_digest']:", '        if False:',
+            'documents/stale-overwrite')
+    aliases('document-current-version', 'control_alias.py',
+            "            expected = request['expected_version']\n", '            expected = head_version\n',
+            'documents/stale-overwrite')
+    aliases('publication-altered-bytes', 'control_document.py',
+            '                    output.write(body)\n                    output.flush()\n'
+            '                    os.fsync(output.fileno())\n'
+            '                observed = SN.digest(_read_at(parent, temporary, path))\n',
+            "                    output.write(body + b'.')\n                    output.flush()\n"
+            '                    os.fsync(output.fileno())\n                observed = digest\n',
+            'publication/accepted-documents')
+    aliases('publication-normalized-newlines', 'control_document.py',
+            '                output.write(body)\n',
+            "                output.write(body.replace(b'\\r\\n', b'\\n'))\n", 'publication/accepted-documents')
+    aliases('reader-trusts-record', 'control_document.py',
+            '    observed = SN.digest(body)\n', "    observed = obligation['observed_digest']\n",
+            'publication/tampered-refused')
+    # Review defects: every row gets its reintroducing mutation and a second, distinct one.
+    aliases('publication-follow-parent-symlink', 'control_document.py',
+            "_DIRECTORY = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, 'O_CLOEXEC', 0)",
+            "_DIRECTORY = os.O_RDONLY | os.O_DIRECTORY | getattr(os, 'O_CLOEXEC', 0)",
+            'publication/no-symlink-escape')
+    aliases('reader-follows-links', 'control_document.py',
+            "        body = read_exact(os.path.realpath(root), data['path'])\n",
+            "        body = (Path(root) / data['path']).read_bytes()\n", 'publication/no-symlink-escape')
+    aliases('alias-overlap-unchecked', 'control_alias.py',
+            '            if _meet(_items(data), _items(other)):', '            if False:', 'aliases/one-path-per-kind')
+    aliases('alias-overlap-ignores-directories', 'control_alias.py',
+            'def _meet(first, second, directories=True):', 'def _meet(first, second, directories=False):',
+            'aliases/one-path-per-kind')
+    aliases('alias-trusts-first-number', 'control_alias.py',
+            '        elif first < floor:', '        elif False:', 'aliases/historical-floor')
+    # Since the recorded-numbers fix the history is read once, at acceptance, by
+    # control_readset.carrier_paths; this is the same defect at the code that now reads it: the
+    # commit's tree listed instead of its history.
+    aliases('alias-floor-ignores-history', 'control_readset.py',
+            "    result = _git_process.run(['git', '-C', str(repo), 'log', *HISTORY_OPTIONS, '-z', '--format=', '--name-only',\n"
+            "                                  '--ignore-missing', '--stdin', commit, '--'],",
+            "    result = _git_process.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--name-only', commit],",
+            'aliases/historical-floor')
+    aliases('alias-owners-undeclared', 'control_alias.py',
+            '    store.declare_owners(conn, OWNER, kinds=OWNED_KINDS, prefixes=OWNED_PREFIXES, module=__file__)', '    pass',
+            'aliases/generic-writes-refused')
+    aliases('store-owner-by-new-kind-only', 'control_store.py',
+            '                hit = value in kinds if selector == "kind" else eid.startswith(value)',
+            '                hit = selector == "kind" and value == new["kind"]', 'aliases/generic-writes-refused')
+    aliases('publisher-any-repository', 'control_document.py',
+            '            if repository != self.repository:', '            if False:', 'publication/bound-to-repository')
+    aliases('reader-any-checkout', 'control_document.py',
+            '    if enrolled_repository(root, store_file(conn), domain_uuid, verify, host_identity) != repository:',
+            '    if False:', 'publication/bound-to-repository')
+    aliases('record-trusts-supplied-digest', 'control_alias.py',
+            "            visible = publisher.visible_digest(data['path'])", "            visible = p['observed_digest']",
+            'publication/recorded-only-by-publisher')
+    aliases('record-missing-file-accepted', 'control_alias.py',
+            "        if visible is None:\n            self._refuse('missing_publication', '%s is not in the bound checkout' % data['path'])",
+            "        if visible is None:\n            visible = data['digest']", 'publication/recorded-only-by-publisher')
+    aliases('alias-prefix-case-sensitive', 'control_alias.py',
+            "            if other['prefix'].casefold() == data['prefix'].casefold():",
+            "            if other['prefix'] == data['prefix']:", 'aliases/case-insensitive-names')
+    aliases('alias-paths-case-sensitive', 'control_alias.py',
+            '    return [(frozenset(character), False) for character in text.casefold()]',
+            '    return [(frozenset(character), False) for character in text]', 'aliases/case-insensitive-names')
+    aliases('alias-reserved-unchecked', 'control_alias.py',
+            '        problem = _reserved_problem(data)\n', '        problem = None\n', 'aliases/reserved-directories')
+    aliases('alias-reserved-literal-only', 'control_alias.py',
+            '            if _meet(items, _literal(name), directories=False):', '            if component == name:',
+            'aliases/reserved-directories')
+    aliases('alias-skip-unit-id', 'control_alias.py',
+            "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
+            'aliases/invalid-unit-id')
+    # Second review (2026-09-23): each row's reintroducing mutation, then a second, distinct one.
+    # The history walk no longer narrows by a pathspec (it records every path holding a digit), so
+    # the case-sensitive pathspec this replaced has no code left; the carrier pattern's case is
+    # what now decides whether Specs/ counts for specs/.
+    aliases('alias-floor-carrier-case-sensitive', 'control_alias.py',
+            '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.DOTALL)',
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-slug-grammar', 'control_alias.py',
+            "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'",
+            "    regex += '([0-9]+)(?![0-9])-[a-z0-9]+(?:-[a-z0-9]+)*[.][a-z]+'", 'aliases/floor-counts-every-carrier')
+    aliases('store-owners-only-where-registered', 'control_store.py',
+            '        owners = entity_owners(conn)\n', '        owners = entity_owners(conn) if conn.command_registry else []\n',
+            'aliases/owned-on-every-connection')
+    aliases('store-owners-unchecked', 'control_store.py',
+            '                if hit and command["operation"] not in commands:', '                if False:',
+            'aliases/owned-on-every-connection')
+    aliases('store-owners-skip-registered-transitions', 'control_store.py',
+            '        owners = entity_owners(conn)\n',
+            '        owners = [] if "transaction_transition" in reg else entity_owners(conn)\n',
+            'aliases/owned-whatever-registration-order')
+    aliases('alias-floor-named-revision-only', 'control_alias.py',
+            "        union = [path for record in records.values() for path in record['paths']]\n",
+            "        union = list((records.get(accepted['commit']) or {}).get('paths', []))\n",
+            'aliases/floor-from-every-accepted-revision')
+    aliases('revision-regression-allowed', 'control_readset.py',
+            "                if not _descends(repo, data['commit'], commit):", '                if False:',
+            'aliases/floor-from-every-accepted-revision')
+    aliases('publisher-infers-root-commits', 'control_document.py',
+            '        repository = enrolled_repository(self.root, store_file(service.conn), service.domain_uuid, verify, host_identity)\n',
+            '        repository = next((r for r, roots in service.identities.items() if roots == AL.root_commits(self.root)), None)\n',
+            'publication/bound-by-enrollment')
+    aliases('binding-signature-unchecked', 'control_document.py',
+            '        problems = EN.verify_binding(root, binding, verify, host_identity, domain_uuid=domain_uuid)',
+            '        problems = EN.verify_binding(root, binding, lambda message, signature: True, host_identity, domain_uuid=domain_uuid)',
+            'publication/bound-by-enrollment')
+    aliases('readset-snapshots-undeclared', 'control_readset.py',
+            '    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)\n', '',
+            'aliases/owned-whatever-registration-order')
+    # Third review (2026-09-23): each row's reintroducing mutation, then distinct second ones.
+    aliases('revision-any-repository', 'control_readset.py',
+            '            if bound is None or not _holds(bound, commit):', '            if False:',
+            'aliases/revision-in-enrolled-repository')
+    aliases('enable-reads-unbound-repository', 'control_alias.py',
+            '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
+            'aliases/revision-in-enrolled-repository')
+    aliases('repository-binding-unchecked', 'control_store.py',
+            '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
+    aliases('store-owner-by-name', 'control_store.py',
+            '        if origin is not None:', '        if False:', 'aliases/owned-by-code-not-name')
+    aliases('store-owner-ignores-digest', 'control_store.py',
+            '    if module_digest(module) != digest:', '    if False:', 'aliases/owned-by-code-not-name')
+    aliases('store-owner-outer-code-only', 'control_store.py',
+            '        for cell in function.__closure__ or ():', '        for cell in ():', 'aliases/owned-by-code-not-name')
+    aliases('owners-may-name-generic-commands', 'control_store.py',
+            '            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))', '            builtin = []',
+            'aliases/owned-by-code-not-name')
+    # Recorded numbers (2026-09-23): the floor reads what accept_revision recorded, and a revision
+    # recorded before that rule whose commit is gone is refused by name, never skipped.
+    aliases('floor-rederives-ignoring-record', 'control_alias.py',
+            '            if commit in records:\n                continue\n', '', 'aliases/floor-from-recorded-numbers')
+    aliases('legacy-lost-commit-skipped', 'control_alias.py',
+            "            else:\n                self._refuse('accepted_revision_unavailable',",
+            "            elif False:\n                self._refuse('accepted_revision_unavailable',", 'aliases/floor-from-recorded-numbers')
+    aliases('acceptance-records-no-paths', 'control_readset.py',
+            "'paths': carrier_paths(bound, commit, base)}}", "'paths': []}}",
+            'aliases/floor-from-recorded-numbers')
+    # Incremental records (2026-09-23): each record holds what its commit adds over every recorded
+    # commit, and the floor reads the union of every record.
+    aliases('floor-reads-current-records-only', 'control_alias.py',
+            "        union = [path for record in records.values() for path in record['paths']]\n",
+            "        union = [path for commit in commits if commit in records for path in records[commit]['paths']]\n",
+            'aliases/records-hold-only-what-a-commit-adds')
+    aliases('increment-against-head', 'control_readset.py',
+            '                base = sorted(carrier_records(conn, self.domain_uuid, repository))',
+            "                base = ['HEAD']", 'aliases/records-hold-only-what-a-commit-adds')
+    aliases('named-revision-reads-git', 'control_alias.py',
+            "        if named is not None:\n            roots = named['root_commits']",
+            "        if False:\n            roots = named['root_commits']", 'aliases/records-hold-only-what-a-commit-adds')
+    # Fourth check (2026-09-23): what acceptance reads does not follow repository configuration, an
+    # increment after a lost recorded commit, and a shallow bound repository refused.
+    aliases('history-merges-by-config', 'control_readset.py',
+            "HISTORY_OPTIONS = ('--diff-merges=separate', '--root',", "HISTORY_OPTIONS = ('-m', '--root',",
+            'aliases/history-read-whatever-repository-config')
+    aliases('history-root-by-config', 'control_readset.py',
+            "'--diff-merges=separate', '--root', '--no-renames',", "'--diff-merges=separate', '--no-renames',",
+            'aliases/history-read-whatever-repository-config')
+    aliases('increment-without-ignore-missing', 'control_readset.py',
+            "'--ignore-missing', '--stdin', commit, '--'],", "'--stdin', commit, '--'],",
+            'aliases/increment-after-a-lost-record')
+    aliases('increment-ignores-recorded-base', 'control_readset.py',
+            '                base = sorted(carrier_records(conn, self.domain_uuid, repository))', '                base = []',
+            'aliases/increment-after-a-lost-record')
+    aliases('shallow-accepted', 'control_readset.py',
+            '    _require_complete_history(repo)\n', '', 'aliases/shallow-repository-refused')
+    aliases('shallow-check-reads-bare', 'control_readset.py',
+            "'rev-parse', '--is-shallow-repository'],", "'rev-parse', '--is-bare-repository'],",
+            'aliases/shallow-repository-refused')
+    # Fifth check (2026-09-23): a newline below the number, a gitlink under ignored submodules, and
+    # a signed history under log.showSignature.
+    aliases('alias-floor-carrier-single-line', 'control_alias.py',
+            '    return re.compile(regex, re.IGNORECASE | re.DOTALL)', '    return re.compile(regex, re.IGNORECASE)',
+            'aliases/floor-counts-every-carrier')
+    # Sixth check (2026-09-23): a newline at every other carrier position the pattern reads.
+    aliases('alias-floor-component-single-line', 'control_alias.py',
+            "    regex += '([0-9]+)(?![0-9])[^/]*(?:/.*)?'", "    regex += '([0-9]+)(?![0-9])[^/\\n]*(?:/.*)?'",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-prefix-single-line', 'control_alias.py',
+            "        regex += '[^/]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'",
+            "        regex += '[^/\\n]*?(?<![a-z0-9])' + re.escape(kind['prefix']) + '-'",
+            'aliases/floor-counts-every-carrier')
+    aliases('alias-floor-slug-directory-single-line', 'control_alias.py',
+            "    return ''.join('[^/]*' if part == '{slug}' else re.escape(part)",
+            "    return ''.join('[^/\\n]*' if part == '{slug}' else re.escape(part)",
+            'aliases/floor-counts-every-carrier')
+    aliases('history-submodules-by-config', 'control_readset.py',
+            "'--no-relative', '--ignore-submodules=none',", "'--no-relative',",
+            'aliases/gitlink-carrier-whatever-submodule-config')
+    aliases('history-ignores-all-submodules', 'control_readset.py',
+            "'--ignore-submodules=none',", "'--ignore-submodules=all',",
+            'aliases/gitlink-carrier-whatever-submodule-config')
+    aliases('history-signatures-by-config', 'control_readset.py',
+            "'--no-notes', '--no-show-signature')", "'--no-notes')",
+            'aliases/signed-history-whatever-signature-config')
+    aliases('history-shows-signatures', 'control_readset.py',
+            "'--no-notes', '--no-show-signature')", "'--no-notes', '--show-signature')",
+            'aliases/signed-history-whatever-signature-config')
     # VELDO-0031: each declared falsifier and an independent defect per criterion.
     def claims(name, module, old, new, row):
         add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
@@ -801,6 +1011,11 @@ def cases():
            '    except EL.Stopped as stop:\n        return [], stop.reason',
            '    except EL.Stopped as stop:\n        return [], None  # defect: the stop reads as an empty burn-down',
            'completion/status-reader-agrees')
+    # VELDO-0054 review A: veldo status reads decisions through the Gate, as plan status does.
+    review('status-reader-decisions-inline', 'runstatus.py',
+           "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'completion/status-reader-agrees')
+    review('status-reader-decisions-dropped', 'runstatus.py',
+           "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'completion/status-reader-agrees')
     review('dispatch-without-identity', 'control_eligibility.py',
            '        dispatch = self.open_dispatch(unit, context=context)\n',
            "        dispatch = (context or {}).get('dispatch')  # defect: an identity nobody reserved\n",
@@ -1417,6 +1632,209 @@ def cases():
     inbox('inbox-parked-refusal-shown-ready', 'control_assignment.py',
           "reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'",
           "reason = 'ready_to_resume'", 'inbox/parked-units-visible')
+    # VELDO-0054: every declared falsifier and a second, different defect for its row, plus a
+    # driven defect for every other row suite 62 asserts.
+    def decisions(name, module, old, new, row):
+        add(54, name, '62_veldo_0054_decisions.py', module, old, new, ['decisions/' + row])
+
+    framing = "    if not _is_str(framing) or framing != record.get('framing_digest'):\n"
+    decisions('framing-receipt-without-digest', 'control_decision_dependency.py', framing,
+              "    if framing is not None and framing != record.get('framing_digest'):\n", 'wrong-framing')
+    decisions('framing-shape-only', 'control_decision_dependency.py', framing,
+              "    if not _is_str(framing):\n", 'wrong-framing')
+    decisions('subject-currency-ignored', 'control_decision_dependency.py',
+              "    if current is None or subject.get('digest') != current:\n", "    if False:\n", 'exact-binding')
+    decisions('floor-stations-skip-decisions', 'control_eligibility.py',
+              "            return self._decision_codes(unit, inputs)\n", "            return []\n", 'exact-binding')
+    decisions('inline-status-as-ruling', 'control_decision_dependency.py',
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n",
+              "    if isinstance(record, dict) and record.get('state') == 'settled':\n        return []\n"
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n",
+              'unsigned-resolution')
+    decisions('unsigned-settlement-accepted', 'control_decision_dependency.py',
+              "        if verify is None or not isinstance(body, dict) or not _is_str(signature) or not _is_str(signer):\n"
+              "            continue\n",
+              "        if isinstance(body, dict) and not _is_str(signature):\n            verified.append(body)\n            continue\n"
+              "        if verify is None or not isinstance(body, dict) or not _is_str(signer):\n            continue\n",
+              'unsigned-resolution')
+    decisions('plan-inline-resolution-honored', 'plan.py',
+              '        if isinstance(d, dict):\n            for s in d.get("blocks") or []:\n',
+              '        if isinstance(d, dict) and d.get("status") != "resolved":\n            for s in d.get("blocks") or []:\n',
+              'unsigned-resolution')
+    decisions('ambiguous-settlement-first', 'control_decision_dependency.py',
+              "    if len(current) > 1:\n        return ['ambiguous_decision:' + rid]\n", "", 'named-blockers')
+    decisions('unsupported-obligation-presumed', 'control_decision_dependency.py',
+              "SUPPORTED_OBLIGATIONS = ()", "SUPPORTED_OBLIGATIONS = ('tripwire', 'adversarial_decision_review')",
+              'named-blockers')
+    decisions('missing-reference-ignored', 'control_decision_dependency.py',
+              "            codes.append('missing_decision:%s' % ref)\n", "            pass\n", 'named-blockers')
+    decisions('frontier-inline-decisions', 'frontier.py',
+              "        blocked = PL._decision_blocks(fm, gate)\n", "        blocked = PL._decision_blocks(fm)\n",
+              'named-blockers')
+    decisions('run-check-ignores-file-references', 'plan.py',
+              '        reasons.extend("decision refused: %s" % r for r in gate.decision_blockers(spec_id, references=refs)\n'
+              '                       if r not in decision["refusals"])\n', '', 'named-blockers')
+    decisions('scope-binding-ignored', 'control_decision_dependency.py',
+              "    problems = []\n    if body.get('subject') != record.get('subject'):\n",
+              "    return []\n    problems = []\n    if body.get('subject') != record.get('subject'):\n", 'scope-binding')
+    decisions('scope-target-may-differ', 'control_decision_dependency.py',
+              "    if body.get('scope_digest') != scope_digest(record.get('scope')) \\\n"
+              "            or (record.get('scope') or {}).get('target') != (record.get('subject') or {}).get('id'):\n",
+              "    if body.get('scope_digest') != scope_digest(record.get('scope')):\n", 'scope-binding')
+    decisions('consumer-unregistered', 'control_decision_dependency.py',
+              "    ('control_eligibility.py', 'Gate.decision_blockers'),\n", "", 'consumers-from-call-sites')
+    decisions('production-trust-not-wired', 'control_eligibility.py',
+              "                settlement_trust=settlements)\n", "                settlement_trust=None)\n",
+              'production-gate-verifies')
+    decisions('taxonomy-unbound-unknown', 'control_eligibility.py',
+              "    'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',\n",
+              "    'decision_ruling': 'missing_authority',\n", 'observations')
+    decisions('status-reader-inline-decisions', 'runstatus.py',
+              "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = PL._decision_blocks(fm)\n", 'status-reader-agrees')
+    decisions('status-reader-ignores-decisions', 'runstatus.py',
+              "            blocked = PL._decision_blocks(fm, PL.EL.gate_for(Path(root), eligibility))\n", "            blocked = {}\n", 'status-reader-agrees')
+    # VELDO-0054 review B: malformed records are named invalid_input for the unit they concern.
+    decisions('invalid-record-not-observed', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'decision')\n", "                pass\n",
+              'malformed-records-named')
+    decisions('record-invalid-ignored', 'control_decision_dependency.py',
+              "    if invalid:\n        return invalid\n", "", 'malformed-records-named')
+    decisions('settlement-invalid-ignored', 'control_decision_dependency.py',
+              "    if malformed:\n        return malformed\n", "", 'malformed-records-named')
+    decisions('reference-invalid-dropped', 'control_decision_dependency.py',
+              "            codes.append('invalid_input:decision_reference')\n", "            continue\n",
+              'malformed-records-named')
+    # VELDO-0054 review 2, item 1: an unhashable subject field is named; veldo status names its stop.
+    decisions('subject-digest-type-unchecked', 'control_decision_dependency.py',
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))",
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id'))", 'malformed-subject-named')
+    decisions('subject-kind-type-unchecked', 'control_decision_dependency.py',
+              "all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))",
+              "all(_is_str(subject.get(k)) for k in ('id', 'digest'))", 'malformed-subject-named')
+    decisions('status-stop-crashes', 'runstatus.py',
+              '    except Exception as error:  # noqa: BLE001 - a burn-down it cannot build is named, never a crash\n',
+              '    except ZeroDivisionError as error:  # defect: any other failure escapes\n', 'status-names-its-stop')
+    decisions('status-stop-unnamed', 'runstatus.py',
+              '        return [], "burndown_unanswerable:" + type(error).__name__\n',
+              '        return [], None\n', 'status-names-its-stop')
+    # Item 2: a malformed blocks holds the unit it names and is recorded.
+    decisions('malformed-blocks-govern-nothing', 'control_decision_dependency.py',
+              "    named = _named_ids(blocks) if blocks_malformed(record) else set(blocks)\n",
+              "    named = set(blocks) if _str_list(blocks) else set()\n", 'malformed-blocks-held')
+    decisions('malformed-blocks-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'blocks')\n", "                pass\n",
+              'malformed-blocks-held')
+    # Item 3: a wrong-typed schema is invalid_input, decided before unsupported and unresolved.
+    decisions('schema-type-unchecked', 'control_decision_dependency.py',
+              "    for name, ok in (('schema', record.get('schema') is None or isinstance(record.get('schema'), str)),\n"
+              "                     ('decision_id',",
+              "    for name, ok in (('decision_id',", 'invalid-before-unsupported')
+    decisions('invalid-after-unresolved', 'control_decision_dependency.py',
+              "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n"
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n"
+              "    if not mine:\n        return ['unresolved_decision:' + rid]\n",
+              "    mine = [(sid, s) for sid, s in settlements if isinstance(s, dict) and s.get('decision') == rid]\n"
+              "    if not mine:\n        return ['unresolved_decision:' + rid]\n"
+              "    problems = record_problems(rid, record) if not record_invalid(rid, record) else []\n"
+              "    if problems:\n        return problems\n"
+              "    invalid = record_invalid(rid, record)\n    if invalid:\n        return invalid\n",
+              'invalid-before-unsupported')
+    # VELDO-0054 review 3, item 1: blocks walked without recursion; unexpected faults named.
+    decisions('blocks-walk-recursive', 'control_decision_dependency.py',
+              "    stack = [value]\n    while stack:\n        current = stack.pop()\n",
+              "    stack = []\n    current = value\n    if isinstance(current, list):\n"
+              "        for item in current:\n            yield from _named(item)\n        return\n"
+              "    stack = [value]\n    while stack:\n        current = stack.pop()\n",
+              'deep-blocks-named')
+    decisions('decide-raises-unexpected', 'control_eligibility.py',
+              "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
+              "            decision['refusals'] = [unexpected(error)]\n", "", 'deep-blocks-named')
+    decisions('blockers-raise-unexpected', 'control_eligibility.py',
+              "        except Exception as error:  # noqa: BLE001 - VELDO-0054: an unexpected fault is named, never raised\n"
+              "            codes = [unexpected(error)]\n", "", 'deep-blocks-named')
+    # Item 2: veldo status names a store refusal by its code, as decide does.
+    decisions('status-store-refusal-generic', 'runstatus.py',
+              '    except store_refusals as error:\n        return [], "refused:" + eligibility.refusal_code(error)\n',
+              '', 'status-names-store-refusal')
+    decisions('status-store-refusal-code-dropped', 'runstatus.py',
+              '        return [], "refused:" + eligibility.refusal_code(error)\n',
+              '        return [], "refused:" + type(error).__name__\n', 'status-names-store-refusal')
+    decisions('blockers-store-refusal-renamed', 'control_eligibility.py',
+              "            codes = [self.refusal_code(error)]\n", "            codes = ['invalid_input:' + error.code]\n",
+              'status-names-store-refusal')
+    # Item 3: a malformed settlement is invalid_input before its record is judged unsupported.
+    decisions('unsupported-before-settlement-invalid', 'control_decision_dependency.py',
+              "    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]\n"
+              "    if malformed:\n        return malformed\n"
+              "    problems = record_problems(rid, record)\n    if problems:\n        return problems\n",
+              "    problems = record_problems(rid, record)\n    if problems:\n        return problems\n"
+              "    malformed = [code for sid, s in mine for code in settlement_invalid(sid, s)]\n"
+              "    if malformed:\n        return malformed\n",
+              'settlement-invalid-before-unsupported')
+    decisions('settlement-signature-type-unchecked', 'control_decision_dependency.py',
+              "    for name in ('signature', 'signer'):\n", "    for name in ('signer',):\n",
+              'settlement-invalid-before-unsupported')
+    # Minor: a blocks string names every id it lists; malformed references are recorded.
+    decisions('blocks-string-not-split', 'control_decision_dependency.py',
+              "        ids.update(text.replace(',', ' ').split())\n", "        pass\n", 'minor-shapes')
+    decisions('plan-reference-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(inputs['plan']['id'], 'open_decisions')\n", "                pass\n",
+              'minor-shapes')
+    decisions('decision-id-unrecorded', 'control_eligibility.py',
+              "                self._invalid_record(identity, 'decision_id')\n", "                pass\n", 'minor-shapes')
+    # VELDO-0054 review 4, item 1: signer and signature text the verifier cannot be handed is named.
+    decisions('settlement-nul-passed', 'control_decision_dependency.py',
+              "    if '\\x00' in text:\n        return False\n", "", 'settlement-text-encodable')
+    decisions('settlement-unencodable-passed', 'control_decision_dependency.py',
+              "    try:\n        text.encode('utf-8')\n    except UnicodeEncodeError:\n        return False\n", "",
+              'settlement-text-encodable')
+    # Item 2: a named stop under decide propagates as the stop it is.
+    decisions('decide-holds-a-stop', 'control_eligibility.py',
+              "            decision['refusals'] = ['unavailable_service:store']\n        except Stopped:\n"
+              "            raise  # a named stop is the caller's, never a unit hold\n",
+              "            decision['refusals'] = ['unavailable_service:store']\n", 'stops-propagate')
+    decisions('blockers-hold-a-stop', 'control_eligibility.py',
+              "            codes = ['unavailable_service:store']\n        except Stopped:\n"
+              "            raise  # a named stop is the caller's, never a unit hold\n",
+              "            codes = ['unavailable_service:store']\n", 'stops-propagate')
+    # Item 3: an unexpected fault is named with its message, bounded and on one line.
+    decisions('unexpected-message-dropped', 'control_eligibility.py',
+              "    return code + '/' + message if message else code\n", "    return code\n", 'unexpected-message')
+    decisions('unexpected-message-unbounded', 'control_eligibility.py',
+              "    message = message[:UNEXPECTED_MESSAGE_LIMIT]\n", "", 'unexpected-message')
+    decisions('unexpected-message-multiline', 'control_eligibility.py',
+              "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = text.replace(';', ',')\n",
+              'unexpected-message')
+    # VELDO-0054 review 5, item 1: what reaches the verifier is bounded.
+    bound = "        return len(text) <= SIGNER_LIMIT and not any(ord(c) < 32 or ord(c) == 127 for c in text)\n"
+    decisions('signer-unbounded', 'control_decision_dependency.py', bound, "        return True\n",
+              'verifier-input-bounded')
+    decisions('signer-controls-allowed', 'control_decision_dependency.py', bound,
+              "        return len(text) <= SIGNER_LIMIT\n", 'verifier-input-bounded')
+    # Review 6: the bounds refuse nothing real (a quoted principal with a space, 256 characters, an
+    # RSA-4096 signature); a tightened limit reds the same row.
+    decisions('signer-whitespace-refused', 'control_decision_dependency.py', bound,
+              "        return len(text) <= SIGNER_LIMIT and not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in text)\n",
+              'verifier-input-bounded')
+    decisions('signature-limit-1024', 'control_decision_dependency.py', "SIGNATURE_LIMIT = 16384\n",
+              "SIGNATURE_LIMIT = 1024\n", 'verifier-input-bounded')
+    decisions('signer-limit-exclusive', 'control_decision_dependency.py', bound,
+              bound.replace('len(text) <= SIGNER_LIMIT', 'len(text) < SIGNER_LIMIT'), 'verifier-input-bounded')
+    decisions('signature-unbounded', 'control_decision_dependency.py',
+              "    return len(text) <= SIGNATURE_LIMIT\n", "    return True\n", 'verifier-input-bounded')
+    # Item 2: an unexpected fault's message is plain, separator-free and always obtainable.
+    decisions('unexpected-controls-kept', 'control_eligibility.py',
+              "    message = ''.join('\\\\x%02x' % ord(c) if ord(c) < 32 or ord(c) == 127 else c for c in message)\n",
+              "", 'unexpected-message')
+    decisions('unexpected-separator-kept', 'control_eligibility.py',
+              "    message = ' '.join(text.split()).replace(';', ',')\n", "    message = ' '.join(text.split())\n",
+              'unexpected-message')
+    decisions('unexpected-str-unguarded', 'control_eligibility.py',
+              "    try:\n        text = str(error)\n    except Exception:  # noqa: BLE001 - an exception whose own text raises is still named\n"
+              "        text = '<unprintable>'\n", "    text = str(error)\n", 'unexpected-message')
+    decisions('verifier-unavailable-as-unsigned', 'control_decision_dependency.py',
+              "            if not verified and str(detail).startswith('ssh-keygen unavailable'):\n",
+              "            if False:\n", 'observations')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

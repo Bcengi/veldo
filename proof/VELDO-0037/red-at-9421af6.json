@@ -1,0 +1,248 @@
+{
+  "completed": true,
+  "defect_observations": {
+    "carriers": {
+      "case-directory": 1,
+      "irregular-slug": 1,
+      "missing-slug": 1,
+      "not-carriers": 1,
+      "number-template": 2
+    },
+    "connections": {
+      "counter": 1,
+      "next": null,
+      "opened-before-attach": null,
+      "relabel-version": null,
+      "retire-reservation": null,
+      "rewind-counter": null,
+      "rewrite-version": null,
+      "unrelated": null,
+      "version-content": null
+    },
+    "enrollment": {
+      "A-checkout": "invalid_registration",
+      "A-file-in-B": false,
+      "enrolled-pre-merge": "invalid_registration",
+      "enrolled-then-moved": "invalid_registration",
+      "forged-binding": "B",
+      "other-store": "invalid_registration",
+      "pre-merge-unenrolled": "A",
+      "publish-A": false,
+      "publish-A-into-B": null,
+      "read-A": null,
+      "read-A-from-B": "missing_publication"
+    },
+    "generic": {
+      "next": "VELDO-0003",
+      "owned-kind-elsewhere": "allocation_owned",
+      "receipt-over-version": "allocation_owned",
+      "retire-reservation": "allocation_owned",
+      "rewind-counter": "allocation_owned",
+      "unrelated": null
+    },
+    "registration-order": {
+      "readset-after-attach": {
+        "counter": [
+          null,
+          null
+        ],
+        "counter-after": 1,
+        "forged-snapshot": null,
+        "registered": [
+          null,
+          null
+        ],
+        "unowned": [
+          null,
+          null
+        ]
+      },
+      "readset-before-attach": {
+        "counter": [
+          null,
+          "allocation_owned"
+        ],
+        "counter-after": 4,
+        "forged-snapshot": null,
+        "registered": [
+          null,
+          null
+        ],
+        "unowned": [
+          null,
+          null
+        ]
+      }
+    },
+    "revisions": {
+      "allocated": "VELDO-0001",
+      "derived": "stale_version",
+      "first-1": null,
+      "generic-new": null,
+      "generic-rewrite": null,
+      "older-revision": null,
+      "regression": null
+    }
+  },
+  "defect_rows_red": {
+    "aliases/floor-counts-every-carrier": true,
+    "aliases/floor-from-every-accepted-revision": true,
+    "aliases/owned-on-every-connection": true,
+    "aliases/owned-whatever-registration-order": true,
+    "publication/bound-by-enrollment": true
+  },
+  "failed_rows": [
+    "aliases/generic-writes-refused",
+    "aliases/floor-counts-every-carrier",
+    "aliases/owned-on-every-connection",
+    "aliases/owned-whatever-registration-order",
+    "aliases/floor-from-every-accepted-revision",
+    "publication/bound-by-enrollment"
+  ],
+  "module_sha256": {
+    "control_alias.py": "6d5fd41237300f6c0f84c49a0fc4e383a985813b7b20ec8897ee04780baba6ed",
+    "control_document.py": "c2381be80a40b479e56176365f6b4039cc1ccecc0d34b1c6934f871c69367335",
+    "control_readset.py": "54fcc82c8bab498316a918bc02162622d25ae35af3893dcbd239d940223a782c",
+    "control_store.py": "14b171ff343b7424770564e3f6c6422cc7bf5cd4d666fd96db2103cc6d2634d4"
+  },
+  "renamed_rows_red": {
+    "aliases/generic-writes-refused": true
+  },
+  "reviewed_commit": "9421af67d15acd59c48c0608df2af6ddb1b5f559",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      false
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      false
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      false
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      false
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      false
+    ],
+    [
+      "publication/bound-by-enrollment",
+      false
+    ]
+  ],
+  "shims": {
+    "control_document.py": "\n\n# --- red-record shim (entry points only): 9421af6 took no enrollment arguments ----------------\n_RecordedPublisher = Publisher\n\n\nclass Publisher(_RecordedPublisher):\n    def __init__(self, service, root, verify=None, host_identity=None):\n        super().__init__(service, root)\n\n\n_recorded_read_published = read_published\n\n\ndef read_published(store, conn, repository, alias, root, verify=None, host_identity=None, domain_uuid=None):\n    return _recorded_read_published(store, conn, repository, alias, root)\n",
+    "control_readset.py": "\n\n# --- red-record shim (entry point only): 9421af6 wrote accepted revisions with upsert_entity ----\nclass Revisions:\n    def __init__(self, store, conn, domain_uuid, repositories):\n        self.store, self.conn, self.domain_uuid = store, conn, domain_uuid\n\n    def accept(self, revision_id, repository_uuid, commit, principal, documents=None, statuses=None, **signing):\n        version = SN.entity(self.store, self.conn, revision_id)['version']\n        command_id = 'revision.accept:%s:%d:%s' % (revision_id, version, commit)\n        return self.store.execute(self.conn, {\n            'command_id': command_id, 'principal': principal, 'operation': 'upsert_entity',\n            'parameters': {'entity_id': revision_id, 'kind': 'accepted_revision', 'data': {\n                'domain_uuid': self.domain_uuid, 'repository_uuid': repository_uuid, 'commit': commit,\n                'documents': dict(documents or {}), 'statuses': dict(statuses or {})}},\n            'expected_versions': {revision_id: version}, 'artifact_digests': [], 'nonce': command_id + '/nonce'}, **signing)\n\n\ndef attach_revisions(store, conn, domain_uuid, repositories):\n    return Revisions(store, conn, domain_uuid, repositories)\n"
+  },
+  "suite_sha256": "1bf9d9f4297516abf1101aba448adcebed14ab53f02b581aa882060fb46bf43b",
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}

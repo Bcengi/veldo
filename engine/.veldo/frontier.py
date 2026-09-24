@@ -222,7 +222,7 @@ def _in_scope(fm, plan_id, scope):
     return True
 
 
-def _plan_build_candidates(repo_root, status):
+def _plan_build_candidates(repo_root, status, gate=None):
     """Yield (spec_id, plan_id) for every ready spec an ACTIVE plan's own work graph has reached:
     the work item's declared dependencies are shipped within that plan and no open decision
     blocks it. Only ready/in_progress plans are active - a draft (unapproved) plan yields nothing
@@ -235,7 +235,8 @@ def _plan_build_candidates(repo_root, status):
         if fm.get("status") not in ("ready", "in_progress"):
             continue
         shipped = PL._shipped_set(fm, status)
-        blocked = PL._decision_blocks(fm)
+        # VELDO-0054: with the floor enabled an inline decision entry is a reference the Gate resolves.
+        blocked = PL._decision_blocks(fm, gate)
         for w in PL._work(fm):
             sid = w.get("spec")
             if (PL.item_state(w, status, shipped, blocked).endswith("(frontier)")
@@ -314,7 +315,7 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
     # BUILD work from every ACTIVE plan's frontier (the plan's ordering question, in
     # _plan_build_candidates), then from the standalone lane, then review work. Every one of
     # them goes through _add, which is where the spec's own declared depends_on is asked.
-    for sid, plan_id in _plan_build_candidates(repo_root, status):
+    for sid, plan_id in _plan_build_candidates(repo_root, status, gate):
         _add(sid, plan_id, "build")
     # BUILD work from standalone/bug specs: a ready spec in the standalone lane, which no plan
     # orders. This loop SELECTS the lane's candidates and nothing more - the dependency rule is

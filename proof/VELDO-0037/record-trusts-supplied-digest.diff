@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -726 +726 @@
+-            visible = publisher.visible_digest(data['path'])
++            visible = p['observed_digest']

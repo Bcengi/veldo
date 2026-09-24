@@ -1,0 +1,4 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -418 +417,0 @@
+-    store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)

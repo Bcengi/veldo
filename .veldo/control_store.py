@@ -22,6 +22,46 @@ Veldo organ: signing and verification are callables passed in, so the store neve
 material. Replication is W9; the checkpoint adapter's tables are not created here. Standard
 library only.
 
+ENTITY OWNERSHIP. A service whose commands alone may write some entities (VELDO-0035's snapshots
+and accepted revisions, VELDO-0037's alias counters, reservations and immutable document versions)
+DECLARES that with declare_owners: for each owned entity kind, and for each owned entity id prefix,
+the commands allowed to write it, and the one module file whose code those commands are, with the
+sha256 of that file's bytes. The declaration is persisted in the store itself (the
+entity_owners table, created by the first declaration, so a store nobody declared into has none),
+and execute reads it inside every command's own BEGIN IMMEDIATE, so it binds EVERY connection to
+the file: one another process opened, one opened before the declaration, one whose module copy
+registered nothing, and one on which a later registration replaced an earlier one. A command
+writing an entity refuses entity_owned unless it is allowed by every declaration matching that
+entity: its kind after the write, its kind before it, and every declared prefix of its id. So
+where a command is registered, and in what order, decides nothing about what it may write.
+Nor does its NAME: before an owned command's transition runs, execute requires that the callable
+registered for it, and every function its closure holds, was compiled from exactly the declared
+module file, and that the file's bytes still have the declared digest; a same-named registration
+from any other code, a genuine wrapper around a foreign body, or an edited module is refused
+foreign_transition and nothing is written.
+No declaration may name one of the store's own generic commands (COMMAND_REGISTRY): they are what
+ownership keeps out, and binding one to a module would refuse it for every entity.
+STATED LIMITS, not claims. Enforcement is code in execute, under a same-account threat model: raw
+SQL on the file, a copy of this module from before the rule, and deleting entity_owners all write
+owned entities, and code that deliberately compiles a function under the declared file name, or
+patches the owning module's globals in the same process, passes the origin check. The declaration
+names one file and its bytes, so the owning service runs only from that copy as it was when it
+first attached: an upgraded module, or the same module attached from another checkout's copy, is
+refused ownership_conflict at attach, and Release 1 has no re-declaration path (Release 2).
+Declarations and repository bindings are not part of the journal, so a store rebuilt from its
+journal carries neither (Release 2 recovery).
+A declaration is immutable: the same declaration again is a no-op, a different one for a declared
+kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
+that entities already occupy, because they were written while nobody owned them.
+
+ACCEPTED REPOSITORIES. A service that reads an enrolled repository's commits BINDS each repository
+uuid of a domain to the local Git repository it reads, with bind_repositories, and the binding is
+persisted beside the declarations (the repository_bindings table, created by the first binding).
+The first binding wins and is immutable: the same path again is a no-op and another path refuses
+repository_binding_conflict, so every service on every connection to this store reads one
+repository for one uuid. Transitions read it back inside their own transaction with
+bound_repository. Neither table is part of the journal.
+
 CRASH POINTS. For the SIGKILL matrix the spec requires, a writer process may be told through the
 environment to kill itself at a durable boundary (before COMMIT, inside COMMIT through the
 progress handler, or after COMMIT before replying). The hooks act only when
@@ -54,7 +94,8 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
-            "read_only_handle", "publication_backfill_required", "no_explicit_store_path")
+            "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
+            "ownership_conflict", "repository_binding_conflict", "foreign_transition")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 _DDL = (
@@ -77,6 +118,19 @@ _DDL = (
     "durability TEXT, dispatched_at REAL, backfilled INTEGER NOT NULL DEFAULT 0)",
     "CREATE TABLE IF NOT EXISTS publication_control (id INTEGER PRIMARY KEY CHECK (id = 1), paused_reason TEXT, paused_at REAL)",
 )
+
+# Entity ownership (see the module docstring). Not part of _DDL: the first declaration creates it, so
+# a store into which nothing was ever declared carries exactly the DOMAIN_TABLES and no owner rule.
+OWNERS_TABLE = "entity_owners"
+_OWNERS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owners (selector TEXT NOT NULL CHECK (selector IN ('kind', 'prefix')), "
+               "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, module TEXT NOT NULL, "
+               "module_digest TEXT NOT NULL, PRIMARY KEY (selector, value))")
+
+
+# Accepted repositories (see the module docstring), created by the first binding like entity_owners.
+BINDINGS_TABLE = "repository_bindings"
+_BINDINGS_DDL = ("CREATE TABLE IF NOT EXISTS repository_bindings (domain_uuid TEXT NOT NULL, repository_uuid TEXT NOT NULL, "
+                 "path TEXT NOT NULL, PRIMARY KEY (domain_uuid, repository_uuid))")
 
 
 class StoreRefused(Exception):
@@ -389,6 +443,13 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         reg = registry[command["operation"]]
         if "snapshot_id" in command["parameters"] and "transaction_transition" not in reg:
             raise StoreRefused("unregistered_inputs", "snapshot command requires a connection-local guard")
+        owners = entity_owners(conn)
+        # An owned command runs only the code its declaration names, whoever registered it.
+        origin = owning_modules(owners).get(command["operation"])
+        if origin is not None:
+            problem = transition_origin_problem(reg.get("transaction_transition", reg.get("transition")), *origin)
+            if problem is not None:
+                raise StoreRefused("foreign_transition", "%s is owned by the code in %s: %s" % (command["operation"], origin[0], problem))
         if "transaction_transition" in reg:
             changes = reg["transaction_transition"](conn, command["parameters"], before)
         else:
@@ -396,6 +457,13 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         for eid in changes:
             if eid not in command["expected_versions"]:
                 raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
+        for eid, new in changes.items():
+            kinds = {new["kind"], before.get(eid, {}).get("kind")}
+            for selector, value, owner, commands, _module, _digest in owners:
+                hit = value in kinds if selector == "kind" else eid.startswith(value)
+                if hit and command["operation"] not in commands:
+                    raise StoreRefused("entity_owned", "%s may not write %s: %s %r belongs to %s, written only by %s"
+                                       % (command["operation"], eid, selector, value, owner, ", ".join(commands)))
         before_versions = {eid: before.get(eid, {}).get("version", 0) for eid in sorted(set(before) | set(changes))}
         after_versions = dict(before_versions)
         transition = {}
@@ -467,6 +535,190 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
 
     finally:
         conn.command_transaction = False
+
+
+# ---------------------------------------------------------------------------------------------
+# Entity ownership: declared once per store, enforced by execute on every connection.
+# ---------------------------------------------------------------------------------------------
+
+def entity_owners(conn):
+    """Every persisted declaration as (selector, value, owner, commands, module, module_digest), or
+    [] when none exists."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (OWNERS_TABLE,)).fetchone():
+        return []
+    return [(r[0], r[1], r[2], tuple(json.loads(r[3])), r[4], r[5]) for r in conn.execute(
+        "SELECT selector, value, owner, commands, module, module_digest FROM entity_owners ORDER BY selector, value")]
+
+
+def owning_modules(owners):
+    """{command: (module, module_digest)} for every command a declaration names."""
+    return {command: (row[4], row[5]) for row in owners for command in row[3]}
+
+
+def module_digest(path):
+    """sha256 of a module file's bytes, or None when it cannot be read."""
+    try:
+        with open(path, "rb") as handle:
+            return "sha256:" + hashlib.sha256(handle.read()).hexdigest()
+    except OSError:
+        return None
+
+
+def transition_files(transition):
+    """The resolved source file of every function a registered transition is, or holds: through
+    bound methods and closure cells. None stands for a callable with no Python function code (a
+    builtin, a partial, a callable object), whose source nothing here names, so it is never the
+    declared module."""
+    files, seen, pending = set(), set(), [transition]
+    while pending:
+        function = pending.pop()
+        if id(function) in seen:
+            continue
+        seen.add(id(function))
+        if hasattr(function, "__func__") and hasattr(function, "__self__"):
+            pending.append(function.__func__)
+            continue
+        code = getattr(function, "__code__", None)
+        if code is None or not hasattr(code, "co_filename") or not hasattr(function, "__closure__"):
+            if callable(function) and not isinstance(function, type):
+                files.add(None)
+            continue
+        files.add(os.path.realpath(code.co_filename))
+        for cell in function.__closure__ or ():
+            try:
+                pending.append(cell.cell_contents)
+            except ValueError:
+                continue
+    return files
+
+
+def transition_origin_problem(transition, module, digest):
+    """Why a registered transition is not the declared module's code, or None when it is."""
+    files = transition_files(transition)
+    if files != {module}:
+        return "the registered transition runs code from %s" % ", ".join(sorted(str(f) for f in files - {module}) or ["nowhere"])
+    if module_digest(module) != digest:
+        return "%s no longer has the declared bytes %s" % (module, digest)
+    return None
+
+
+def _ownership_rows(owner, kinds, prefixes, module):
+    if not _is_str(owner):
+        raise StoreRefused("malformed_command", "an ownership declaration names its owner")
+    if not _is_str(module):
+        raise StoreRefused("malformed_command", "an ownership declaration names the module file whose code writes what it owns")
+    module = os.path.realpath(module)
+    digest = module_digest(module)
+    if digest is None:
+        raise StoreRefused("malformed_command", "the owning module %s cannot be read" % module)
+    rows = []
+    for selector, table in (("kind", kinds or {}), ("prefix", prefixes or {})):
+        if not isinstance(table, dict):
+            raise StoreRefused("malformed_command", "owned %ss map each value to its writing commands" % selector)
+        for value, commands in table.items():
+            if not _is_str(value) or isinstance(commands, str) or not commands or not all(_is_str(c) for c in commands):
+                raise StoreRefused("malformed_command", "owned %s %r needs a value and at least one command" % (selector, value))
+            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))
+            if builtin:
+                # The store's own generic commands are what ownership keeps out; binding one to a
+                # service's module would refuse it for every entity on every connection.
+                raise StoreRefused("malformed_command", "owned %s %r names the store's generic command %s, which no service owns"
+                                   % (selector, value, ", ".join(builtin)))
+            rows.append((selector, value, owner, tuple(sorted(set(commands))), module, digest))
+    if not rows:
+        raise StoreRefused("malformed_command", "an ownership declaration owns at least one kind or prefix")
+    return rows
+
+
+def _occupied(conn, selector, value):
+    if selector == "kind":
+        return conn.execute("SELECT 1 FROM entities WHERE kind=? LIMIT 1", (value,)).fetchone() is not None
+    return conn.execute("SELECT 1 FROM entities WHERE substr(id, 1, ?)=? LIMIT 1", (len(value), value)).fetchone() is not None
+
+
+def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
+    """Persist that the entities of each kind in `kinds`, and every entity whose id begins with a
+    prefix in `prefixes`, are written only by the commands mapped to it, and that those commands are
+    the code in the file `module` (the caller's own __file__), whose bytes the store digests now.
+    Idempotent for the same declaration; ownership_conflict for a different one, for a command
+    another declaration binds to other code, or for a first declaration of a kind or prefix that
+    entities already occupy. Its own transaction, like the publication cursor's writes."""
+    rows = _ownership_rows(owner, kinds, prefixes, module)
+    if set(rows) <= set(entity_owners(conn)):
+        return rows
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot declare ownership (%s)" % e)
+    try:
+        conn.execute(_OWNERS_DDL)
+        declared = {(r[0], r[1]): r for r in entity_owners(conn)}
+        bound = owning_modules(declared.values())
+        for row in rows:
+            for command in row[3]:
+                if bound.get(command, row[4:]) != row[4:]:
+                    raise StoreRefused("ownership_conflict", "%s is bound to the code in %s (%s); %s declares %s (%s)"
+                                       % (command, bound[command][0], bound[command][1], owner, row[4], row[5]))
+            prior = declared.get(row[:2])
+            if prior is not None:
+                if prior != row:
+                    raise StoreRefused("ownership_conflict", "%s %r is owned by %s (written only by %s); %s declares %s"
+                                       % (row[0], row[1], prior[2], ", ".join(prior[3]), owner, ", ".join(row[3])))
+                continue
+            if _occupied(conn, row[0], row[1]):
+                raise StoreRefused("ownership_conflict", "entities of %s %r exist already, written while nobody owned them"
+                                   % (row[0], row[1]))
+            conn.execute("INSERT INTO entity_owners (selector, value, owner, commands, module, module_digest) VALUES (?,?,?,?,?,?)",
+                         (row[0], row[1], owner, json.dumps(list(row[3])), row[4], row[5]))
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return rows
+
+
+def bound_repository(conn, domain_uuid, repository_uuid):
+    """The resolved path of the local repository bound to a domain's repository uuid, or None."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (BINDINGS_TABLE,)).fetchone():
+        return None
+    row = conn.execute("SELECT path FROM repository_bindings WHERE domain_uuid=? AND repository_uuid=?",
+                       (domain_uuid, repository_uuid)).fetchone()
+    return row[0] if row else None
+
+
+def bind_repositories(conn, domain_uuid, repositories):
+    """Persist that each repository uuid of `domain_uuid` in `repositories` is read from the Git
+    repository at its path (resolved), all of them or none. Idempotent for the same paths;
+    repository_binding_conflict for another path, because the first binding is the one every
+    accepted commit of that repository has been checked against. Its own transaction, like
+    declare_owners."""
+    if not _is_str(domain_uuid) or not isinstance(repositories, dict) or not repositories or not all(
+            _is_str(r) and _is_str(p) for r, p in repositories.items()):
+        raise StoreRefused("malformed_command", "a repository binding names its domain and maps each repository to a path")
+    targets = {repository: os.path.realpath(path) for repository, path in sorted(repositories.items())}
+    if all(bound_repository(conn, domain_uuid, r) == t for r, t in targets.items()):
+        return targets
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot bind a repository (%s)" % e)
+    try:
+        conn.execute(_BINDINGS_DDL)
+        for repository, target in targets.items():
+            prior = bound_repository(conn, domain_uuid, repository)
+            if prior is None:
+                conn.execute("INSERT INTO repository_bindings (domain_uuid, repository_uuid, path) VALUES (?,?,?)",
+                             (domain_uuid, repository, target))
+            elif prior != target:
+                raise StoreRefused("repository_binding_conflict", "repository %s of domain %s is read from %s in this store, not %s"
+                                   % (repository, domain_uuid, prior, target))
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return targets
 
 
 # ---------------------------------------------------------------------------------------------

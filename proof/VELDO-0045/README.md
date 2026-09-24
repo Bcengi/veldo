@@ -78,8 +78,8 @@ measured inside the gate. Activation 0.2 s, qualification 2.1 s, enforcement 0.6
 - Filed: `records.py` leaves out only `.data/scripts/` rows on the wheel side while activation skips
   every `../` row, so a future locked wheel with other `.data` members (data, headers, purelib,
   platlib) would be refused as `content_mismatch` on a correct install. None of today's 38 wheels has one.
-- Filed: `enforcement_entries` keeps only lowercase-word arguments, so an entry with an option such as
-  `--json` or a path argument would run with it dropped. Today's installed entries are unaffected.
+- Filed: `enforcement_entries` keeps only lowercase-word arguments, so an entry with an option flag or
+  a path argument would run with it dropped. Today's installed entries are unaffected.
 - Activation gates `control_runtime.adapter()`. `control_graph.Adapter.installed()` (VELDO-0043's
   footprint) does not call it, so a caller that builds an adapter directly skips activation. Filed
   for VELDO-0043; no production caller exists yet.

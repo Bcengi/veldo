@@ -1,0 +1,623 @@
+{
+  "allocations": {
+    "distinct": {
+      "id": "VELDO-0008",
+      "revision": "VELDO-0009",
+      "role-decision": "VELDO-DEC-0005",
+      "role-label": "VELDO-0010",
+      "role-plan": "PLAN-0003",
+      "system": "VELDO-0007"
+    },
+    "independent": [
+      {
+        "alias": "VELDO-0004",
+        "reused": false,
+        "seq": 6
+      },
+      {
+        "alias": "VELDO-0005",
+        "reused": false,
+        "seq": 7
+      },
+      {
+        "alias": "VELDO-0006",
+        "reused": false,
+        "seq": 8
+      }
+    ]
+  },
+  "counts": {
+    "accepted": 25,
+    "refused": 16,
+    "reused": 1
+  },
+  "defects": {
+    "accept-after-lost-record": {
+      "accept-after-loss": null,
+      "enable": null,
+      "next": 12,
+      "record": [
+        "specs/VELDO-0011-next.md"
+      ],
+      "side": null,
+      "side-lost": true
+    },
+    "carriers": {
+      "case-directory": 5,
+      "irregular-slug": 7,
+      "missing-slug": 8,
+      "newline-below-directory": 60,
+      "newline-below-number": 61,
+      "not-carriers": 1,
+      "number-template": 9
+    },
+    "case": {
+      "counter": 3,
+      "lower-directory": "invalid_registration",
+      "non-ascii": "invalid_input",
+      "prefix-case": "invalid_registration",
+      "specification": null,
+      "upper-directory": null
+    },
+    "configuration-independent": {
+      "enable": null,
+      "next": 91,
+      "oracle-next": 91,
+      "record": [
+        "specs/VELDO-0030-root.md",
+        "specs/VELDO-0090-resolution.md"
+      ]
+    },
+    "connections": {
+      "counter": 3,
+      "next": "VELDO-0003",
+      "opened-before-attach": "entity_owned",
+      "relabel-version": "entity_owned",
+      "retire-reservation": "entity_owned",
+      "rewind-counter": "entity_owned",
+      "rewrite-version": "entity_owned",
+      "unrelated": null,
+      "version-content": "connection 1\n"
+    },
+    "cross-repository": {
+      "files_after": [
+        "README.md"
+      ],
+      "publish_other_here": "wrong_repository",
+      "read_here_from_other": "wrong_repository",
+      "read_other_here": "wrong_repository",
+      "stray_publisher": "wrong_repository"
+    },
+    "enrolled-repository": {
+      "allocated": "VELDO-0008",
+      "allocation-attach-elsewhere": "repository_binding_conflict",
+      "allocation-direct-elsewhere": "wrong_repository",
+      "clone-after-push": null,
+      "clone-attach": "repository_binding_conflict",
+      "clone-unpushed": "unenrolled_commit",
+      "enable-after": null,
+      "enable-beside-raw": "accepted_revision_unavailable",
+      "foreign-attach": "repository_binding_conflict",
+      "foreign-direct": "unenrolled_commit",
+      "plan-enabled-beside-raw": false,
+      "plan-floor-commits": true
+    },
+    "enrollment": {
+      "A-checkout": "A",
+      "A-file-in-B": false,
+      "enrolled-pre-merge": "B",
+      "enrolled-then-moved": "wrong_repository",
+      "forged-binding": "wrong_repository",
+      "other-store": "wrong_repository",
+      "pre-merge-unenrolled": "wrong_repository",
+      "publish-A": true,
+      "publish-A-into-B": "wrong_repository",
+      "read-A": "A document\n",
+      "read-A-from-B": "wrong_repository"
+    },
+    "generic": {
+      "next": "VELDO-0003",
+      "owned-kind-elsewhere": "entity_owned",
+      "receipt-over-version": "entity_owned",
+      "retire-reservation": "entity_owned",
+      "rewind-counter": "entity_owned",
+      "unrelated": null
+    },
+    "gitlink-carrier": {
+      "enable": null,
+      "next": 21,
+      "record": [
+        "proof/VELDO-0020",
+        "specs/VELDO-0001-base.md"
+      ]
+    },
+    "history": {
+      "allocated": "VELDO-0003",
+      "derived": null,
+      "first-1": "below_accepted_history",
+      "first-2-deleted": "below_accepted_history",
+      "unaccepted-revision": "missing_authority"
+    },
+    "incremental-records": {
+      "descendant-bounded": true,
+      "descendant-paths": [
+        "specs/VELDO-0004-descendant.md"
+      ],
+      "enable-naming-lost": null,
+      "first-paths": [
+        "specs/VELDO-0002-base.md"
+      ],
+      "next": 10,
+      "side-lost": true,
+      "side-paths": [
+        [
+          "specs/VELDO-0009-first-side.md"
+        ],
+        [
+          "specs/VELDO-0005-second-side.md"
+        ]
+      ],
+      "union-equals-whole-history": true
+    },
+    "overlap": {
+      "directory-of": "invalid_registration",
+      "disjoint": null,
+      "first": null,
+      "kinds": [
+        "memo",
+        "specification"
+      ],
+      "same-path": "invalid_registration",
+      "slug-meets-number": "invalid_registration"
+    },
+    "owned-code": {
+      "altered-after-edit": "foreign_transition",
+      "altered-before-edit": null,
+      "altered-restored": null,
+      "counter-after": 3,
+      "declare-generic-command": "malformed_command",
+      "declared": true,
+      "forged-accept-revision": "foreign_transition",
+      "forged-accept-snapshot": "foreign_transition",
+      "forged-enable": "foreign_transition",
+      "generic-after": null,
+      "genuine-other-connection": "VELDO-0003",
+      "wrapped-foreign-body": "foreign_transition"
+    },
+    "owned-code-copy-attach": "ownership_conflict",
+    "record-without-bytes": {
+      "no-file": "missing_publication",
+      "no-publisher": "missing_authority",
+      "other-bytes": "publication_mismatch",
+      "published-then": true
+    },
+    "recorded-numbers": {
+      "allocated": "VELDO-0010",
+      "decision-enabled": false,
+      "enable-after-loss": null,
+      "legacy-held-enable": null,
+      "legacy-held-next": 6,
+      "legacy-lost": true,
+      "legacy-lost-enable": "accepted_revision_unavailable",
+      "legacy-lost-names-commit": true,
+      "next-after-loss": 10,
+      "side-accepted": null,
+      "side-lost": true
+    },
+    "registration-order": {
+      "readset-after-attach": {
+        "counter": [
+          null,
+          "entity_owned"
+        ],
+        "counter-after": 4,
+        "forged-snapshot": "entity_owned",
+        "registered": [
+          null,
+          null
+        ],
+        "unowned": [
+          null,
+          null
+        ]
+      },
+      "readset-before-attach": {
+        "counter": [
+          null,
+          "entity_owned"
+        ],
+        "counter-after": 4,
+        "forged-snapshot": "entity_owned",
+        "registered": [
+          null,
+          null
+        ],
+        "unowned": [
+          null,
+          null
+        ]
+      }
+    },
+    "reserved": {
+      "git": "reserved_path",
+      "github-allowed": null,
+      "mixed-case-veldo": "reserved_path",
+      "nested-upper-git": "reserved_path",
+      "slug-makes-git": "reserved_path",
+      "veldo-ledger": "reserved_path"
+    },
+    "revisions": {
+      "allocated": "VELDO-0002",
+      "derived": null,
+      "first-1": "below_accepted_history",
+      "generic-new": "entity_owned",
+      "generic-rewrite": "entity_owned",
+      "older-revision": null,
+      "regression": "revision_regression"
+    },
+    "shallow-repository": {
+      "deepened-accept": null,
+      "enable": null,
+      "next": 81,
+      "oracle-next": 81,
+      "shallow-accept": "shallow_repository",
+      "shallow-record": false
+    },
+    "signed-history": {
+      "enable": null,
+      "next": 51,
+      "record": [
+        "specs/VELDO-0001-base.md",
+        "specs/VELDO-0050-signed.md"
+      ]
+    },
+    "symlink": {
+      "outside": [],
+      "publish": "unsafe_path",
+      "reader_file_link": "unsafe_path",
+      "reader_parent_link": "unsafe_path"
+    }
+  },
+  "elapsed_seconds": 17.29344977508299,
+  "pending": [
+    [
+      "other",
+      "VELDO-0001",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0004",
+      4
+    ],
+    [
+      "repository",
+      "VELDO-0006",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0007",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0008",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0009",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0010",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0010",
+      2
+    ],
+    [
+      "repository",
+      "VELDO-0011",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0012",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0013",
+      1
+    ],
+    [
+      "repository",
+      "VELDO-0014",
+      1
+    ]
+  ],
+  "readers": {
+    "missing": {
+      "refusal": "missing_publication"
+    },
+    "tampered": {
+      "refusal": "document_mismatch"
+    },
+    "v1": {
+      "PLAN-0003": {
+        "digest": "sha256:7879c78d1f8a7aa8e55cabdd47dea98d964ae18a4779eff9160f09bfb69a1f92",
+        "path": "plans/PLAN-0003-journey-plan.md",
+        "role": "plan",
+        "source": {
+          "id": "msg-100",
+          "revision": "r1",
+          "system": "telegram"
+        },
+        "version": 1
+      },
+      "VELDO-0004": {
+        "digest": "sha256:ec10f285df22074dcf95bca9fee6340e7f7456529fa51d30f07c095736ba80cd",
+        "path": "specs/VELDO-0004-api-contract.md",
+        "role": "specification/api",
+        "source": {
+          "id": "msg-100",
+          "revision": "r1",
+          "system": "telegram"
+        },
+        "version": 1
+      },
+      "VELDO-DEC-0005": {
+        "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
+        "path": "decisions/0005-store-choice.yaml",
+        "role": "decision",
+        "source": {
+          "id": "msg-100",
+          "revision": "r1",
+          "system": "telegram"
+        },
+        "version": 1
+      }
+    }
+  },
+  "refusal_log": [
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "invalid_unit_id",
+    "stale_version",
+    "wrong_repository",
+    "publication_conflict",
+    "source_content_conflict",
+    "source_content_conflict",
+    "stale_version",
+    "stale_version",
+    "stale_document",
+    "stale_document",
+    "publication_order",
+    "publication_conflict"
+  ],
+  "refusals": {
+    "invalid-unit-id": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "stale-overwrite": {
+      "aba-stale-version": "stale_version",
+      "old-version": "stale_version",
+      "unknown-digest": "stale_document",
+      "wrong-digest": "stale_document"
+    }
+  },
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
+      true
+    ],
+    [
+      "aliases/floor-counts-every-carrier",
+      true
+    ],
+    [
+      "aliases/owned-on-every-connection",
+      true
+    ],
+    [
+      "aliases/owned-whatever-registration-order",
+      true
+    ],
+    [
+      "aliases/floor-from-every-accepted-revision",
+      true
+    ],
+    [
+      "publication/bound-by-enrollment",
+      true
+    ],
+    [
+      "aliases/revision-in-enrolled-repository",
+      true
+    ],
+    [
+      "aliases/owned-by-code-not-name",
+      true
+    ],
+    [
+      "aliases/floor-from-recorded-numbers",
+      true
+    ],
+    [
+      "aliases/records-hold-only-what-a-commit-adds",
+      true
+    ],
+    [
+      "aliases/history-read-whatever-repository-config",
+      true
+    ],
+    [
+      "aliases/increment-after-a-lost-record",
+      true
+    ],
+    [
+      "aliases/shallow-repository-refused",
+      true
+    ],
+    [
+      "aliases/gitlink-carrier-whatever-submodule-config",
+      true
+    ],
+    [
+      "aliases/signed-history-whatever-signature-config",
+      true
+    ]
+  ],
+  "veldo-history-floors": {
+    "DEC decisions/{alias}-{slug}.md": [
+      1,
+      1
+    ],
+    "N docs/{number}-{slug}.md": [
+      1,
+      1
+    ],
+    "PLAN plans/{alias}-{slug}.md": [
+      21,
+      21
+    ],
+    "VELDO proof/{alias}/README.md": [
+      124,
+      124
+    ],
+    "VELDO specs/{alias}-{slug}.md": [
+      133,
+      133
+    ],
+    "WARP specs/{alias}-{slug}.md": [
+      1712,
+      1712
+    ],
+    "X {alias}.md": [
+      1,
+      1
+    ]
+  },
+  "veldo-history-record-paths": [
+    939,
+    143,
+    256,
+    488
+  ],
+  "verification": "Diagnostic observations; only bash scripts/verify.sh verifies the change."
+}

@@ -1,0 +1,831 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 54 --diff-dir proof/VELDO-0054/mutations",
+ "summary": {
+  "mutations_rejected": 59,
+  "green_suites": {
+   "62_veldo_0054_decisions.py": 65
+  }
+ },
+ "wall_seconds_here": 34.92,
+ "mutations": [
+  {
+   "mutation": "framing-receipt-without-digest",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/wrong-framing"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/wrong-framing",
+    "decisions/observations"
+   ],
+   "diff": "mutations/framing-receipt-without-digest.diff",
+   "declared_falsifier_of": "AC1"
+  },
+  {
+   "mutation": "framing-shape-only",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/wrong-framing"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/exact-binding",
+    "decisions/wrong-framing",
+    "decisions/scope-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/framing-shape-only.diff",
+   "second_mutation_of": "AC1"
+  },
+  {
+   "mutation": "subject-currency-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/exact-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/exact-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/subject-currency-ignored.diff"
+  },
+  {
+   "mutation": "floor-stations-skip-decisions",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/exact-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/consumers-from-call-sites",
+    "decisions/exact-binding",
+    "decisions/wrong-framing",
+    "decisions/named-blockers",
+    "decisions/unsigned-resolution",
+    "decisions/scope-binding",
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/malformed-blocks-held",
+    "decisions/invalid-before-unsupported",
+    "decisions/production-gate-verifies",
+    "decisions/observations",
+    "decisions/settlement-invalid-before-unsupported",
+    "decisions/minor-shapes",
+    "decisions/settlement-text-encodable",
+    "decisions/verifier-input-bounded",
+    "decisions/deep-blocks-named",
+    "decisions/stops-propagate",
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/floor-stations-skip-decisions.diff"
+  },
+  {
+   "mutation": "inline-status-as-ruling",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unsigned-resolution",
+    "decisions/observations"
+   ],
+   "diff": "mutations/inline-status-as-ruling.diff",
+   "declared_falsifier_of": "AC2"
+  },
+  {
+   "mutation": "unsigned-settlement-accepted",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unsigned-resolution",
+    "decisions/observations"
+   ],
+   "diff": "mutations/unsigned-settlement-accepted.diff",
+   "second_mutation_of": "AC2"
+  },
+  {
+   "mutation": "plan-inline-resolution-honored",
+   "module": ".veldo/plan.py",
+   "target_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unsigned-resolution"
+   ],
+   "diff": "mutations/plan-inline-resolution-honored.diff",
+   "second_mutation_of": "AC2"
+  },
+  {
+   "mutation": "ambiguous-settlement-first",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/observations"
+   ],
+   "diff": "mutations/ambiguous-settlement-first.diff"
+  },
+  {
+   "mutation": "unsupported-obligation-presumed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/observations"
+   ],
+   "diff": "mutations/unsupported-obligation-presumed.diff"
+  },
+  {
+   "mutation": "missing-reference-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/unsigned-resolution",
+    "decisions/observations"
+   ],
+   "diff": "mutations/missing-reference-ignored.diff"
+  },
+  {
+   "mutation": "frontier-inline-decisions",
+   "module": ".veldo/frontier.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers"
+   ],
+   "diff": "mutations/frontier-inline-decisions.diff"
+  },
+  {
+   "mutation": "run-check-ignores-file-references",
+   "module": ".veldo/plan.py",
+   "target_rows": [
+    "decisions/named-blockers"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/named-blockers",
+    "decisions/unsigned-resolution"
+   ],
+   "diff": "mutations/run-check-ignores-file-references.diff"
+  },
+  {
+   "mutation": "scope-binding-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/scope-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/exact-binding",
+    "decisions/scope-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/scope-binding-ignored.diff",
+   "declared_falsifier_of": "AC3"
+  },
+  {
+   "mutation": "scope-target-may-differ",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/scope-binding"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/scope-binding",
+    "decisions/observations"
+   ],
+   "diff": "mutations/scope-target-may-differ.diff",
+   "second_mutation_of": "AC3"
+  },
+  {
+   "mutation": "consumer-unregistered",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/consumers-from-call-sites"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/consumers-from-call-sites"
+   ],
+   "diff": "mutations/consumer-unregistered.diff"
+  },
+  {
+   "mutation": "production-trust-not-wired",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/production-gate-verifies"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/production-gate-verifies"
+   ],
+   "diff": "mutations/production-trust-not-wired.diff"
+  },
+  {
+   "mutation": "taxonomy-unbound-unknown",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/observations"
+   ],
+   "diff": "mutations/taxonomy-unbound-unknown.diff"
+  },
+  {
+   "mutation": "status-reader-inline-decisions",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-reader-agrees"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-reader-agrees",
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named"
+   ],
+   "diff": "mutations/status-reader-inline-decisions.diff",
+   "review_item": "A"
+  },
+  {
+   "mutation": "status-reader-ignores-decisions",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-reader-agrees"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/consumers-from-call-sites",
+    "decisions/status-reader-agrees",
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/status-names-its-stop"
+   ],
+   "diff": "mutations/status-reader-ignores-decisions.diff",
+   "review_item": "A"
+  },
+  {
+   "mutation": "invalid-record-not-observed",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/malformed-records-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named"
+   ],
+   "diff": "mutations/invalid-record-not-observed.diff",
+   "review_item": "B"
+  },
+  {
+   "mutation": "record-invalid-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-records-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named",
+    "decisions/malformed-subject-named",
+    "decisions/malformed-blocks-held",
+    "decisions/invalid-before-unsupported",
+    "decisions/observations",
+    "decisions/minor-shapes",
+    "decisions/deep-blocks-named"
+   ],
+   "diff": "mutations/record-invalid-ignored.diff",
+   "review_item": "B"
+  },
+  {
+   "mutation": "settlement-invalid-ignored",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-records-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named",
+    "decisions/settlement-invalid-before-unsupported",
+    "decisions/settlement-text-encodable",
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/settlement-invalid-ignored.diff",
+   "review_item": "B"
+  },
+  {
+   "mutation": "reference-invalid-dropped",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-records-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named",
+    "decisions/minor-shapes"
+   ],
+   "diff": "mutations/reference-invalid-dropped.diff",
+   "review_item": "B"
+  },
+  {
+   "mutation": "subject-digest-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "diff": "mutations/subject-digest-type-unchecked.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "subject-kind-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-subject-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-subject-named",
+    "decisions/observations"
+   ],
+   "diff": "mutations/subject-kind-type-unchecked.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "status-stop-crashes",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "diff": "mutations/status-stop-crashes.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "status-stop-unnamed",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-its-stop"
+   ],
+   "diff": "mutations/status-stop-unnamed.diff",
+   "review_item": "2.1"
+  },
+  {
+   "mutation": "malformed-blocks-govern-nothing",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/malformed-blocks-held"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-blocks-held",
+    "decisions/minor-shapes",
+    "decisions/deep-blocks-named"
+   ],
+   "diff": "mutations/malformed-blocks-govern-nothing.diff",
+   "review_item": "2.2"
+  },
+  {
+   "mutation": "malformed-blocks-unrecorded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/malformed-blocks-held"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-blocks-held",
+    "decisions/minor-shapes"
+   ],
+   "diff": "mutations/malformed-blocks-unrecorded.diff",
+   "review_item": "2.2"
+  },
+  {
+   "mutation": "schema-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/invalid-before-unsupported"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/invalid-before-unsupported"
+   ],
+   "diff": "mutations/schema-type-unchecked.diff",
+   "review_item": "2.3"
+  },
+  {
+   "mutation": "invalid-after-unresolved",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/invalid-before-unsupported"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named",
+    "decisions/malformed-blocks-held",
+    "decisions/invalid-before-unsupported",
+    "decisions/settlement-invalid-before-unsupported",
+    "decisions/minor-shapes",
+    "decisions/deep-blocks-named"
+   ],
+   "diff": "mutations/invalid-after-unresolved.diff",
+   "review_item": "2.3"
+  },
+  {
+   "mutation": "blocks-walk-recursive",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/deep-blocks-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/deep-blocks-named"
+   ],
+   "diff": "mutations/blocks-walk-recursive.diff",
+   "review_item": "3.1"
+  },
+  {
+   "mutation": "decide-raises-unexpected",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/deep-blocks-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/deep-blocks-named",
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/decide-raises-unexpected.diff",
+   "review_item": "3.1"
+  },
+  {
+   "mutation": "blockers-raise-unexpected",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/deep-blocks-named"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/deep-blocks-named",
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/blockers-raise-unexpected.diff",
+   "review_item": "3.1"
+  },
+  {
+   "mutation": "status-store-refusal-generic",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-names-store-refusal"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-store-refusal"
+   ],
+   "diff": "mutations/status-store-refusal-generic.diff",
+   "review_item": "3.2"
+  },
+  {
+   "mutation": "status-store-refusal-code-dropped",
+   "module": ".veldo/runstatus.py",
+   "target_rows": [
+    "decisions/status-names-store-refusal"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-store-refusal"
+   ],
+   "diff": "mutations/status-store-refusal-code-dropped.diff",
+   "review_item": "3.2"
+  },
+  {
+   "mutation": "blockers-store-refusal-renamed",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/status-names-store-refusal"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/status-names-store-refusal"
+   ],
+   "diff": "mutations/blockers-store-refusal-renamed.diff",
+   "review_item": "3.2"
+  },
+  {
+   "mutation": "unsupported-before-settlement-invalid",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/settlement-invalid-before-unsupported"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/settlement-invalid-before-unsupported"
+   ],
+   "diff": "mutations/unsupported-before-settlement-invalid.diff",
+   "review_item": "3.3"
+  },
+  {
+   "mutation": "settlement-signature-type-unchecked",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/settlement-invalid-before-unsupported"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/malformed-records-named",
+    "decisions/settlement-invalid-before-unsupported",
+    "decisions/settlement-text-encodable",
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/settlement-signature-type-unchecked.diff",
+   "review_item": "3.3"
+  },
+  {
+   "mutation": "blocks-string-not-split",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/minor-shapes"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/minor-shapes"
+   ],
+   "diff": "mutations/blocks-string-not-split.diff",
+   "review_item": "3.minor"
+  },
+  {
+   "mutation": "plan-reference-unrecorded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/minor-shapes"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/minor-shapes"
+   ],
+   "diff": "mutations/plan-reference-unrecorded.diff",
+   "review_item": "3.minor"
+  },
+  {
+   "mutation": "decision-id-unrecorded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/minor-shapes"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/minor-shapes"
+   ],
+   "diff": "mutations/decision-id-unrecorded.diff",
+   "review_item": "3.minor"
+  },
+  {
+   "mutation": "settlement-nul-passed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "diff": "mutations/settlement-nul-passed.diff",
+   "review_item": "4.1"
+  },
+  {
+   "mutation": "settlement-unencodable-passed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/settlement-text-encodable"
+   ],
+   "diff": "mutations/settlement-unencodable-passed.diff",
+   "review_item": "4.1"
+  },
+  {
+   "mutation": "decide-holds-a-stop",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/stops-propagate"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/stops-propagate"
+   ],
+   "diff": "mutations/decide-holds-a-stop.diff",
+   "review_item": "4.2"
+  },
+  {
+   "mutation": "blockers-hold-a-stop",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/stops-propagate"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/stops-propagate"
+   ],
+   "diff": "mutations/blockers-hold-a-stop.diff",
+   "review_item": "4.2"
+  },
+  {
+   "mutation": "unexpected-message-dropped",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-message-dropped.diff",
+   "review_item": "4.3"
+  },
+  {
+   "mutation": "unexpected-message-unbounded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-message-unbounded.diff",
+   "review_item": "4.3"
+  },
+  {
+   "mutation": "unexpected-message-multiline",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-message-multiline.diff",
+   "review_item": "4.3"
+  },
+  {
+   "mutation": "signer-unbounded",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-unbounded.diff",
+   "review_item": "5.1"
+  },
+  {
+   "mutation": "signer-controls-allowed",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-controls-allowed.diff",
+   "review_item": "5.1"
+  },
+  {
+   "mutation": "signer-whitespace-refused",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-whitespace-refused.diff",
+   "review_item": "6.1"
+  },
+  {
+   "mutation": "signature-limit-1024",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signature-limit-1024.diff",
+   "review_item": "6.2"
+  },
+  {
+   "mutation": "signer-limit-exclusive",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signer-limit-exclusive.diff",
+   "review_item": "6.2"
+  },
+  {
+   "mutation": "signature-unbounded",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/verifier-input-bounded"
+   ],
+   "diff": "mutations/signature-unbounded.diff",
+   "review_item": "5.1"
+  },
+  {
+   "mutation": "unexpected-controls-kept",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-controls-kept.diff",
+   "review_item": "5.2"
+  },
+  {
+   "mutation": "unexpected-separator-kept",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-separator-kept.diff",
+   "review_item": "5.2"
+  },
+  {
+   "mutation": "unexpected-str-unguarded",
+   "module": ".veldo/control_eligibility.py",
+   "target_rows": [
+    "decisions/unexpected-message"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/unexpected-message"
+   ],
+   "diff": "mutations/unexpected-str-unguarded.diff",
+   "review_item": "5.2"
+  },
+  {
+   "mutation": "verifier-unavailable-as-unsigned",
+   "module": ".veldo/control_decision_dependency.py",
+   "target_rows": [
+    "decisions/observations"
+   ],
+   "baseline": "green",
+   "red_rows": [
+    "decisions/observations"
+   ],
+   "diff": "mutations/verifier-unavailable-as-unsigned.diff"
+  }
+ ]
+}

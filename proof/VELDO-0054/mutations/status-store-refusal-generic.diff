@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -232,2 +231,0 @@
+-    except store_refusals as error:
+-        return [], "refused:" + eligibility.refusal_code(error)

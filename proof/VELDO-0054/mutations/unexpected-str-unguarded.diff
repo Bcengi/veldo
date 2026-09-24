@@ -1,0 +1,8 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -164,4 +164 @@
+-    try:
+-        text = str(error)
+-    except Exception:  # noqa: BLE001 - an exception whose own text raises is still named
+-        text = '<unprintable>'
++    text = str(error)

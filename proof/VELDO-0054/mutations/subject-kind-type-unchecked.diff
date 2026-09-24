@@ -1,0 +1,5 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -207 +207 @@
+-                     ('subject', isinstance(subject, dict) and all(_is_str(subject.get(k)) for k in ('kind', 'id', 'digest'))),
++                     ('subject', isinstance(subject, dict) and all(_is_str(subject.get(k)) for k in ('id', 'digest'))),
