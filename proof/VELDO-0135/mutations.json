@@ -5,7 +5,7 @@
   "green_suites": {
    "67_veldo_0135_offers.py": 33
   },
-  "driver_seconds": 24.5
+  "driver_seconds": 26.2
  },
  "all_targets_red_by_assertion": true,
  "mutations_per_row": {

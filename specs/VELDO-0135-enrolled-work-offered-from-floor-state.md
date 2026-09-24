@@ -113,3 +113,10 @@ Read the floor record through the authority's read path, never by opening the st
 acceptance because the frontier and work loop read the spec status line).
 
 2026-09-24: the owner marked this specification ready (Telegram 29041).
+
+2026-09-24: built on branch build-veldo-0135 from 5ba4a02, finishing a work in progress cut off by a usage
+limit. The frontier and the work loop read each enrolled unit's floor record through the authority's read
+path; a returned unit is offered to build (its disposition binds to the rebuilt commit), a unit with the
+review count met and a finding open waits, and a claim client's stop about one unadmitted unit is withheld
+by name. Suite 67_veldo_0135_offers (4 assertion rows) is red by assertion at 5ba4a02 and green here; 13
+registered mutations; proof in proof/VELDO-0135/.

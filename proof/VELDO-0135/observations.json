@@ -22,7 +22,7 @@
      "version": 1
     },
     "proof": {
-     "digest": "sha256:0ebf5a2b0f19adb76903903e47d60df04f9f7b0d266b4f952117976b76af6447",
+     "digest": "sha256:9398e1f98534722c6c074f6c93f5fb45a1634a3e29925d4d83971908f46d42ce",
      "path": "proof/VELDO-9509/manifest.json"
     },
     "required": 1,
@@ -31,18 +31,18 @@
     ],
     "risk": "standard",
     "source": {
-     "commit": "db78fcef7e69c256a2f3d53ea13e520c089cc66d",
-     "implementation": "53a76629a42229fdbb18ad3fe381ed69e3566406"
+     "commit": "206b23b99261ad5b9c89e4899b31949f79640a50",
+     "implementation": "7a9e5c3bbe8405ad2511b1f4ccae574911ae3e05"
     }
    },
    "lands": [
     [
      "VELDO-9506",
-     "5a6cc73da9952f35c714ab9aa6e38244281ca0b1"
+     "5822797503842629f5ab282ecd09f44078ae6126"
     ],
     [
      "VELDO-9509",
-     "db78fcef7e69c256a2f3d53ea13e520c089cc66d"
+     "206b23b99261ad5b9c89e4899b31949f79640a50"
     ]
    ],
    "reviewed": [
@@ -54,8 +54,8 @@
    ],
    "state": "handoff",
    "trunk": [
-    "5a6cc73da9952f35c714ab9aa6e38244281ca0b1",
-    "db78fcef7e69c256a2f3d53ea13e520c089cc66d"
+    "5822797503842629f5ab282ecd09f44078ae6126",
+    "206b23b99261ad5b9c89e4899b31949f79640a50"
    ]
   },
   "journey_marks": 191,
@@ -170,22 +170,22 @@
     "ok": true,
     "projection": {
      "manifest": {
-      "accepted_commit": "fe5bc0cde9574bb93e8ee4227c5293ee162e068d",
+      "accepted_commit": "270a08a350bf41dab770689c2dbf3ed4004b7f91",
       "domain_uuid": "domain-135",
       "members": {
-       "proof/VELDO-9508/manifest.json": "sha256:cc8079f28305ed3d4405eb2835f040677955410b4294877742938b92108069b0",
-       "status/VELDO-9508.json": "sha256:b79491def5b84e81f62fa647e5e5da63eb9054d227b4238085f908df48f1d66f"
+       "proof/VELDO-9508/manifest.json": "sha256:20081f1478a4d97b198073342008fe5abda4555925743aefebcaa720d06f7c1f",
+       "status/VELDO-9508.json": "sha256:fd6af45f97939c29d97e2375772fe8028c68bd4e944134c73e76754b4ec2dd97"
       },
       "repository_uuid": "repository-135",
       "schema": "veldo.control_snapshot/v1",
-      "snapshot_digest": "sha256:c32ca218ccc5e9c3669bf830dcfc3b87d97d86b1151c5426256c94f10bbb980f",
-      "snapshot_id": "floor-projection:repository-135:VELDO-9508:df9423bb2ffa478988a219c3f27bdcc7",
-      "watermark": 246
+      "snapshot_digest": "sha256:209ac99e96ee1e35a8271da73e152c2cfe11a91818c8b8bb5ea738ed77609745",
+      "snapshot_id": "floor-projection:repository-135:VELDO-9508:432937549428453d9249e4ce83c2e8e9",
+      "watermark": 253
      },
-     "path": "/dev/shm/v135-c6wcfjpu/projections/VELDO-9508/000001",
-     "snapshot": "floor-projection:repository-135:VELDO-9508:df9423bb2ffa478988a219c3f27bdcc7",
+     "path": "/dev/shm/v135-ejx2t7pt/projections/VELDO-9508/000001",
+     "snapshot": "floor-projection:repository-135:VELDO-9508:432937549428453d9249e4ce83c2e8e9",
      "version": 1,
-     "watermark": 246
+     "watermark": 253
     },
     "result": {
      "halted_at": null,
@@ -213,7 +213,7 @@
        "reason": null
       },
       {
-       "commit": "fe5bc0cde9574bb93e8ee4227c5293ee162e068d",
+       "commit": "270a08a350bf41dab770689c2dbf3ed4004b7f91",
        "cycle": 1,
        "name": "build",
        "ok": true
@@ -242,7 +242,7 @@
    {
     "detail": [],
     "domain_uuid": "domain-135",
-    "offer": "offer:edd19895f3e747f7bd9c6a099495a9fa",
+    "offer": "offer:61a2b7e43fec4a1ebcbc9ed3a82fe57e",
     "offered_station": "build",
     "offered_version": 0,
     "operation": "floor_recheck",
@@ -382,5 +382,5 @@
   ]
  ],
  "suite": "67_veldo_0135_offers.py",
- "suite_seconds": 5.96
+ "suite_seconds": 6.327
 }
