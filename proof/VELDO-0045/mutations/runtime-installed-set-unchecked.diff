@@ -1,0 +1,6 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -316,2 +316 @@
+-            problems.append('missing_dependency:' + name)
+-            continue
++            continue  # defect: a locked distribution may be absent

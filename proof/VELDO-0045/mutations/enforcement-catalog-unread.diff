@@ -1,0 +1,7 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -488,2 +488,2 @@
+-            if declared and not declared.group(1).startswith('required:'):
+-                continue
++            if declared:
++                continue  # defect: a required catalog slot is not an entry

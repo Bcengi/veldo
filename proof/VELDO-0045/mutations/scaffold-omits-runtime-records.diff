@@ -1,0 +1,5 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -250 +250 @@
+-_RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]
++_RUNTIME_ASSETS = []  # defect: the records are never laid down

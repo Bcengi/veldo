@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -296 +296 @@
+-    if content_digest(kept) != entry['content'].get('sha256'):
++    if False:  # defect: hash enforcement bypassed, the genuine wheel's content is never compared

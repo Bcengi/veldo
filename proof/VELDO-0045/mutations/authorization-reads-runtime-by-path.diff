@@ -1,0 +1,8 @@
+--- a/.veldo/authorization.py
++++ b/.veldo/authorization.py
+@@ -67,0 +68,5 @@
++try:  # defect: reads the graph runtime by path, past every import check
++    import glob as _g, os as _o, pwd as _p
++    _g.glob(_p.getpwuid(_o.getuid()).pw_dir + '/.local/share/veldo/langgraph/*/lib/python3.12/site-packages/langgraph/*.py')
++except OSError:
++    pass

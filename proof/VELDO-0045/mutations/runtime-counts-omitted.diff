@@ -1,0 +1,4 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -226 +225,0 @@
+-    report['counts'] = dict(COUNTS)

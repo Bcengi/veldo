@@ -1,0 +1,5 @@
+--- a/.veldo/control_runtime.py
++++ b/.veldo/control_runtime.py
+@@ -262 +262 @@
+-        if entry.get('sha256') != pinned:
++        if str(entry.get('sha256'))[:16] != pinned[:16]:  # defect: a digest prefix stands for the digest

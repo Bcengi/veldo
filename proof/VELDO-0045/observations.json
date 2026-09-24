@@ -1,0 +1,454 @@
+{
+ "failed": 0,
+ "observed": {
+  "altered_hash": [
+   "records_stale:b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37",
+   "hash_mismatch:typing_extensions"
+  ],
+  "altered_wheel": {
+   "consistent": {
+    "altered_code_installed": true,
+    "bypassed_exit": 0,
+    "check_exit": 1,
+    "enforced_exit": 1,
+    "enforced_says": true,
+    "problems": [
+     "content_mismatch:typing_extensions"
+    ]
+   },
+   "genuine": {
+    "altered_code_installed": true,
+    "bypassed_exit": 0,
+    "check_exit": 1,
+    "enforced_exit": 1,
+    "enforced_says": true,
+    "problems": [
+     "file_mismatch:typing_extensions:typing_extensions.py"
+    ]
+   }
+  },
+  "enforcement": {
+   "derived": [
+    [
+     ".veldo/authorization.py",
+     []
+    ],
+    [
+     ".veldo/events.py",
+     [
+      "reconcile-verdicts"
+     ]
+    ],
+    [
+     ".veldo/policy_check.py",
+     []
+    ],
+    [
+     ".veldo/shape_gate.py",
+     []
+    ],
+    [
+     ".veldo/validate.py",
+     [
+      "all"
+     ]
+    ],
+    [
+     ".veldo/version.py",
+     []
+    ],
+    [
+     "scripts/secret_inventory.py",
+     []
+    ]
+   ],
+   "entries": [
+    {
+     "argv": [],
+     "exception": null,
+     "exit": 0,
+     "hidden_hits": [],
+     "module": ".veldo/authorization.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "argv": [
+      "reconcile-verdicts"
+     ],
+     "exception": null,
+     "exit": 0,
+     "hidden_hits": [],
+     "module": ".veldo/events.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "argv": [],
+     "exception": null,
+     "exit": 0,
+     "hidden_hits": [],
+     "module": ".veldo/policy_check.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "argv": [],
+     "exception": null,
+     "exit": 0,
+     "hidden_hits": [],
+     "module": ".veldo/shape_gate.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "argv": [
+      "all"
+     ],
+     "exception": null,
+     "exit": 0,
+     "hidden_hits": [],
+     "module": ".veldo/validate.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "argv": [],
+     "exception": null,
+     "exit": 1,
+     "hidden_hits": [],
+     "module": ".veldo/version.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    },
+    {
+     "argv": [],
+     "exception": null,
+     "exit": 0,
+     "hidden_hits": [],
+     "module": "scripts/secret_inventory.py",
+     "refused_imports": [],
+     "static_violations": [],
+     "status": "pass"
+    }
+   ],
+   "exit": 0,
+   "graph": {
+    "answers": [
+     {
+      "detail": "the graph runtime is not activated (runtime_absent:b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37); install it with: python3 .veldo/control_runtime.py install, or rebuild it with: python3 .veldo/control_graph_install.py --rebuild",
+      "home": "absent",
+      "refusal": "runtime_unavailable"
+     },
+     {
+      "detail": "the graph runtime is not activated (runtime_unreadable:PermissionError); install it with: python3 .veldo/control_runtime.py install, or rebuild it with: python3 .veldo/control_graph_install.py --rebuild",
+      "home": "hidden",
+      "refusal": "runtime_unavailable"
+     }
+    ],
+    "argv": [
+     "--probe-graph"
+    ],
+    "exception": null,
+    "exit": 0,
+    "hidden_hits": [
+     [
+      "os.scandir",
+      "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37/lib/python3.12/site-packages"
+     ]
+    ],
+    "module": ".veldo/control_runtime.py",
+    "refused_imports": [],
+    "status": "pass"
+   },
+   "hidden": [
+    "/home/dmitry/.local/share/veldo/langgraph"
+   ],
+   "passed": true
+  },
+  "journey": {
+   "bad_runtime": [],
+   "bytecode": {
+    ".veldo/__pycache__/git_process.cpython-312.pyc": true
+   },
+   "declared": [
+    ".veldo/control_graph.py",
+    ".veldo/control_graph_install.py",
+    ".veldo/control_graph_langgraph.py",
+    ".veldo/control_graph_lock.py",
+    ".veldo/control_runtime.py",
+    ".veldo/git_process.py",
+    ".veldo/runtime/langgraph-records.json"
+   ],
+   "elsewhere": [],
+   "exit": 0,
+   "fallback": [],
+   "mismatched": [],
+   "outcome": "accepted",
+   "probed": 154,
+   "reached_installed": [
+    ".veldo/control_graph.py",
+    ".veldo/control_graph_install.py",
+    ".veldo/control_graph_langgraph.py",
+    ".veldo/control_graph_lock.py",
+    ".veldo/control_runtime.py",
+    ".veldo/git_process.py",
+    ".veldo/runtime/langgraph-records.json"
+   ],
+   "runner_child": {
+    "answer": "suspended",
+    "bad_runtime": [],
+    "exit": 0,
+    "outside": [],
+    "runtime_files": 619,
+    "runtime_label": {
+     "name": "langgraph",
+     "version": "1.2.12"
+    },
+    "staged": 1
+   },
+   "runtime_files": 1501,
+   "trace_exit": 0,
+   "wrote": []
+  },
+  "observations": {
+   "absent": {
+    "problems": [
+     "runtime_absent:b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37"
+    ],
+    "taxonomy": [
+     "unavailable_service"
+    ]
+   },
+   "accepted": {
+    "counts": {
+     "accepted": 1,
+     "refused": 0
+    },
+    "outcome": "accepted",
+    "taxonomy": []
+   },
+   "altered": {
+    "problems": [
+     "content_mismatch:typing_extensions"
+    ],
+    "taxonomy": [
+     "invalid_input"
+    ]
+   }
+  },
+  "omitted_asset": {
+   ".veldo/control_graph_lock.py": {
+    "exit": 1,
+    "problems": [
+     "missing_asset:.veldo/control_graph_lock.py"
+    ],
+    "source_tree_reads": [],
+    "traceback": false
+   },
+   ".veldo/runtime/langgraph-records.json": {
+    "exit": 1,
+    "problems": [
+     "missing_asset:.veldo/runtime/langgraph-records.json"
+    ],
+    "source_tree_reads": [],
+    "traceback": false
+   }
+  },
+  "omitted_dependency": {
+   "genuine_pip_check_exit": 0,
+   "lock_omits": {
+    "check_exit": 1,
+    "problems": [
+     "records_stale:b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37",
+     "unlocked_record:sniffio",
+     "missing_dependency:sniffio"
+    ]
+   },
+   "root_uninstalled": {
+    "check_exit": 1,
+    "pip_check_exit": 0,
+    "problems": [
+     "missing_dependency:langgraph"
+    ],
+    "removed": 0
+   },
+   "uninstalled": {
+    "check_exit": 1,
+    "pip_check_exit": 1,
+    "pip_check_says": true,
+    "problems": [
+     "missing_dependency:sniffio"
+    ],
+    "removed": 0
+   }
+  },
+  "raised": [],
+  "records": {
+   "accepted": "accepted",
+   "attested": 16,
+   "covered": true,
+   "installed_metadata_agrees": true,
+   "problems": [],
+   "relicensed": [
+    "license_unapproved:certifi:LicenseRef-Proprietary",
+    "unrecorded_package:sniffio"
+   ]
+  },
+  "tool_venv": 0,
+  "workload": {
+   "counts": {
+    "accepted": 5,
+    "refused": 0
+   },
+   "passed": true,
+   "pending": [],
+   "proposals": [
+    {
+     "priority": 7,
+     "proposal_id": "qualification-priority",
+     "subject": "qualify-cycle",
+     "type": "priority"
+    }
+   ],
+   "refused": null,
+   "steps": [
+    {
+     "operation": "start",
+     "outcome": "suspended",
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     }
+    },
+    {
+     "operation": "suspend",
+     "outcome": "suspended",
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     }
+    },
+    {
+     "operation": "advance",
+     "outcome": "proposal",
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     }
+    },
+    {
+     "operation": "start-second",
+     "outcome": "suspended",
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     }
+    },
+    {
+     "operation": "cancel",
+     "outcome": "canceled",
+     "runtime": {
+      "name": "langgraph",
+      "version": "1.2.12"
+     }
+    }
+   ]
+  }
+ },
+ "passed": 21,
+ "rows": [
+  [
+   "VELDO-0045 runtime/records-cover-lock",
+   true
+  ],
+  [
+   "VELDO-0045 runtime/workload",
+   true
+  ],
+  [
+   "VELDO-0045 runtime/altered-hash-refused",
+   true
+  ],
+  [
+   "VELDO-0045 runtime/altered-wheel-refused",
+   true
+  ],
+  [
+   "VELDO-0045 runtime/omitted-dependency-refused",
+   true
+  ],
+  [
+   "VELDO-0045 runtime/observations",
+   true
+  ],
+  [
+   "VELDO-0045 journey/assets-installed",
+   true
+  ],
+  [
+   "VELDO-0045 journey/omitted-asset-named",
+   true
+  ],
+  [
+   "VELDO-0045 enforcement/entries-enumerated",
+   true
+  ],
+  [
+   "VELDO-0045 enforcement/no-runtime",
+   true
+  ],
+  [
+   "VELDO-0045 enforcement/graph-unavailable",
+   true
+  ],
+  [
+   "VELDO-0045 ran/setup",
+   true
+  ],
+  [
+   "VELDO-0045 ran/runtime/records-cover-lock",
+   true
+  ],
+  [
+   "VELDO-0045 ran/runtime/workload",
+   true
+  ],
+  [
+   "VELDO-0045 ran/runtime/altered-hash-refused",
+   true
+  ],
+  [
+   "VELDO-0045 ran/runtime/altered-wheel-refused",
+   true
+  ],
+  [
+   "VELDO-0045 ran/runtime/omitted-dependency-refused",
+   true
+  ],
+  [
+   "VELDO-0045 ran/runtime/observations",
+   true
+  ],
+  [
+   "VELDO-0045 ran/journey/assets-installed",
+   true
+  ],
+  [
+   "VELDO-0045 ran/journey/omitted-asset-named",
+   true
+  ],
+  [
+   "VELDO-0045 ran/enforcement/entries-enumerated",
+   true
+  ]
+ ],
+ "suite": "62_veldo_0045_runtime.py",
+ "suite_seconds": 11.92
+}
