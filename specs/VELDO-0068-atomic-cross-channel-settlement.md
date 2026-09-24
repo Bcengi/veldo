@@ -162,3 +162,18 @@ only the retained function. No specification status or historical proof was chan
 2026-09-24, implementation: `scripts/check_teeth_mutations.py` was added to the footprint so the
 declared falsifiers can be registered as finding 68 of the existing teeth mutation driver, as
 VELDO-0065, VELDO-0066 and VELDO-0067 registered theirs. The criteria, status and risk are unchanged.
+
+2026-09-24, implementation: `.veldo/control_request_settlement.py` is the one settlement service on the
+control store. The journey's five enabled touchpoints and their role, count and independence predicates
+are its `JOURNEY` configuration; a request names its touchpoint and its own required roles and quorum
+through requester-signed terms bound as the assignment's subject. Telegram answers are the VELDO-0065
+presenter's accepted answers; the authenticated API edge's answers are accepted under the same
+presentation rules. One registered transaction, keyed and nonced by request and version, writes the
+settlement (offered choice, ruling, the owner's reasoning, the signed assertion), the typed effect, the
+receipt and the terminal request state; the earliest binding answer wins and every other is named. The
+requirement is the conjunction of the journey policy and the request's terms, and a count or an
+independence above one blocks as unsupported. Terminal state is published through a VELDO-0035
+accepted revision and snapshot. Rows, the red record at 335d996 and the finding 68 mutations are in
+`proof/VELDO-0068/`. Every Telegram answer runs against a loopback Bot API server, not the Telegram
+service. The criteria, status and risk are unchanged.
+

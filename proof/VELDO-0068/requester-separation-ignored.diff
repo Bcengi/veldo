@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -494 +494 @@
+-        if need['min_independence'] >= 1:
++        if False:  # defect: the requester may answer its own request

@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -101 +101 @@
+-SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}
++SUPPORTED = {'count': (1,), 'min_independence': (0, 1, 2)}  # defect

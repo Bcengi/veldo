@@ -1,0 +1,4 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -340,0 +341 @@
++    ".veldo/control_request_settlement.py",  # defect: claimed as substrate

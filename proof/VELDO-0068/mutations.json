@@ -1,0 +1,1273 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0068 install/assets",
+    true
+   ],
+   [
+    "VELDO-0068 ruling/offered-choice-and-reasoning",
+    true
+   ],
+   [
+    "VELDO-0068 settlement/one-winner",
+    true
+   ],
+   [
+    "VELDO-0068 settlement/one-transaction",
+    true
+   ],
+   [
+    "VELDO-0068 terminal/materialized-settlement",
+    true
+   ],
+   [
+    "VELDO-0068 authority/roles-and-independence",
+    true
+   ],
+   [
+    "VELDO-0068 authority/owner-and-presentation",
+    true
+   ],
+   [
+    "VELDO-0068 authority/unsupported-quorum-blocks",
+    true
+   ]
+  ],
+  "seconds": 7.436
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 install/assets detail: .veldo/control_request_settlement.py installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0068/settlement-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0068 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "7326fdc4cce2f02b8d0ff927724d245ccf5e7c85f7eb4381ced1e09447f4165b",
+   "name": "settlement-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     false
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.307,
+   "source_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 install/assets detail: .veldo/control_request_settlement.py not claimed as validator substrate"
+   ],
+   "diff": "proof/VELDO-0068/settlement-claimed-as-substrate.diff",
+   "failed_rows": [
+    "VELDO-0068 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "137f188165b18477ef6d990da4aedea5923828a30169e9bd8f46929bb02e4e5e",
+   "name": "settlement-claimed-as-substrate",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     false
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.619,
+   "source_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered accept: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered accept: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered reject: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered return_for_elaboration: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered accept: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered accept: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered reject: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered return_for_elaboration: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered accept: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered accept: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered reject: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered return_for_elaboration: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered accept: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered accept: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered reject: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered return_for_elaboration: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered accept: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered accept: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered reject: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered return_for_elaboration: the settlement carries the offered choice, its ruling and the owner's own words",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 settlement/one-winner detail: the earliest answer wins: the Telegram accept, attributed to its channel, with an approving effect",
+    "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree",
+    "VELDO-0068 terminal/materialized-settlement detail: another process reads the published snapshot: the accepted request is terminal at version 1 with its exact settlement, settlement version and receipt",
+    "VELDO-0068 terminal/materialized-settlement detail: another process reads the published snapshot: the rejected request is terminal at version 1 with its exact settlement, settlement version and receipt",
+    "VELDO-0068 authority/roles-and-independence detail: R-valid-accept: policy and request roles both held, so it settles (approve) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: R-valid-reject: policy and request roles both held, so it settles (reject) [observed: settled, None]"
+   ],
+   "diff": "proof/VELDO-0068/chosen-option-generic.diff",
+   "failed_rows": [
+    "VELDO-0068 ruling/offered-choice-and-reasoning",
+    "VELDO-0068 settlement/one-winner",
+    "VELDO-0068 terminal/materialized-settlement",
+    "VELDO-0068 authority/roles-and-independence"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "468115bd0f4bd96264b1d942ecd19f5962c7dd8dd099ea18f6c0703969b6df54",
+   "name": "chosen-option-generic",
+   "named_row_red": true,
+   "named_rows": [
+    "ruling/offered-choice-and-reasoning"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     false
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     false
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 8.014,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: admission answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: decision_disposition answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: finding_disposition answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: grooming answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered reject: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: priority answered return_for_elaboration: one typed effect, the touchpoint's for that ruling, carrying the choice, ruling, reasoning, target and (on approval only) the proposal",
+    "VELDO-0068 ruling/offered-choice-and-reasoning detail: every touchpoint and ruling has its own effect type"
+   ],
+   "diff": "proof/VELDO-0068/effect-type-ignores-ruling.diff",
+   "failed_rows": [
+    "VELDO-0068 ruling/offered-choice-and-reasoning"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "774dbdccf0b6788c5e82a5ad96dec499bbaa33a53b5277022a82bf22cad8f2dc",
+   "name": "effect-type-ignores-ruling",
+   "named_row_red": true,
+   "named_rows": [
+    "ruling/offered-choice-and-reasoning"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 6.851,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-winner detail: the earliest answer wins: the Telegram accept, attributed to its channel, with an approving effect",
+    "VELDO-0068 settlement/one-winner detail: the conflicting API answer is listed, not counted and not settled"
+   ],
+   "diff": "proof/VELDO-0068/latest-answer-wins.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-winner"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "88fce8e7e756c63f3bad8ba6ba3f6850852a6aedf22bd8759ef75ae4615cf988",
+   "name": "latest-answer-wins",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/one-winner"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 9.157,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-winner detail: the conflicting API answer is listed, not counted and not settled",
+    "VELDO-0068 authority/roles-and-independence detail: one principal on two surfaces is one principal: settled once, the second answer a duplicate [observed: settled, None]"
+   ],
+   "diff": "proof/VELDO-0068/conflicting-answer-unrecorded.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-winner",
+    "VELDO-0068 authority/roles-and-independence"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "1bb78c5cb7d793894e76df7c7db1b9b3cd77fb5003b7804476977d1eb5be319e",
+   "name": "conflicting-answer-unrecorded",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/one-winner"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     false
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 10.843,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-transaction detail: C1: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: C1: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: C1: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: C1: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: C2: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: C2: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: C2: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: C2: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-accept: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-accept: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-reject: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-reject: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-accept: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-accept: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-reject: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-reject: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-return_for_elaboration: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-return_for_elaboration: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-accept: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-accept: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-reject: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-reject: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-return_for_elaboration: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-return_for_elaboration: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-accept: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-accept: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-reject: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-reject: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-return_for_elaboration: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-return_for_elaboration: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-accept: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-accept: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-reject: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-reject: no later record changed the terminal request state",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-return_for_elaboration: the counted answer is evidence committed before the settlement",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-return_for_elaboration: no later record changed the terminal request state"
+   ],
+   "diff": "proof/VELDO-0068/receipt-separate-transaction.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-transaction"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "b46deaa5091a69d0ee9c3d5d5a879157776b99c6c85f4618f479c8ab4b655e71",
+   "name": "receipt-separate-transaction",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/one-transaction"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     false
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 8.23,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-transaction detail: C1: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: C2: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-return_for_elaboration: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-accept: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-reject: that record consumed the settlement's own nonce (the request version)",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-return_for_elaboration: that record consumed the settlement's own nonce (the request version)"
+   ],
+   "diff": "proof/VELDO-0068/settlement-nonce-per-answer.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-transaction"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "a219b6d7e66484774aa1866abdd88da85adb1dd879080c7c52536b96d0442445",
+   "name": "settlement-nonce-per-answer",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/one-transaction"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     false
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.058,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-winner detail: the terminal request state names this one settlement",
+    "VELDO-0068 settlement/one-winner detail: settling the version again, and a later API answer, are refused by name and write nothing",
+    "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree",
+    "VELDO-0068 settlement/one-transaction detail: C1: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: C2: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-admission-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-decision_disposition-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-finding_disposition-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-grooming-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-accept: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-reject: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 settlement/one-transaction detail: T-priority-return_for_elaboration: one journal record wrote the settlement, the effect, the receipt and the terminal request state together",
+    "VELDO-0068 terminal/materialized-settlement detail: the accepted request is terminal in the inbox with its exact settlement and receipt",
+    "VELDO-0068 terminal/materialized-settlement detail: the rejected request is terminal in the inbox with its exact settlement and receipt",
+    "VELDO-0068 terminal/materialized-settlement detail: another process reads the published snapshot: the accepted request is terminal at version 1 with its exact settlement, settlement version and receipt",
+    "VELDO-0068 terminal/materialized-settlement detail: another process reads the published snapshot: the rejected request is terminal at version 1 with its exact settlement, settlement version and receipt",
+    "VELDO-0068 terminal/materialized-settlement detail: an API answer to the settled request is refused as closed",
+    "VELDO-0068 terminal/materialized-settlement detail: nothing was reapplied: no settlement, effect, receipt or evidence changed, and settling again touches neither request"
+   ],
+   "diff": "proof/VELDO-0068/request-left-open.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-winner",
+    "VELDO-0068 settlement/one-transaction",
+    "VELDO-0068 terminal/materialized-settlement"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "614f240528eca8017e2ae126ad1008db12cce1b9e80063b749877d925fc79da7",
+   "name": "request-left-open",
+   "named_row_red": true,
+   "named_rows": [
+    "terminal/materialized-settlement"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     false
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     false
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.554,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-winner detail: settling the version again, and a later API answer, are refused by name and write nothing",
+    "VELDO-0068 terminal/materialized-settlement detail: an API answer to the settled request is refused as closed"
+   ],
+   "diff": "proof/VELDO-0068/closed-request-answered-by-api.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-winner",
+    "VELDO-0068 terminal/materialized-settlement"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "4e71e06b9373b89a10e77944b194e8aed33e898ba54500602d706990c8faf176",
+   "name": "closed-request-answered-by-api",
+   "named_row_red": true,
+   "named_rows": [
+    "terminal/materialized-settlement"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     false
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 6.963,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 authority/roles-and-independence detail: R-strong-accept: the answer is accepted evidence, and settlement blocks by name (role_not_satisfied) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: R-strong-reject: the answer is accepted evidence, and settlement blocks by name (role_not_satisfied) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: R-valid-accept: policy and request roles both held, so it settles (approve) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: R-valid-reject: policy and request roles both held, so it settles (reject) [observed: settled, None]",
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: metrics: accepted and refused counts, settled versions and the blocked pending work by reason"
+   ],
+   "diff": "proof/VELDO-0068/request-roles-ignored.diff",
+   "failed_rows": [
+    "VELDO-0068 authority/roles-and-independence",
+    "VELDO-0068 authority/unsupported-quorum-blocks"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "75fa787c52053ee90a76001ce58163ea3f6d52060b40235f496d7ebf68be8f93",
+   "name": "request-roles-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/roles-and-independence"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     false
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     false
+    ]
+   ],
+   "seconds": 7.155,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 settlement/one-winner detail: the settlement is one consistent result: its winning answer, ruling, effect, receipt and terminal state agree",
+    "VELDO-0068 authority/roles-and-independence detail: R-policy: the answer is accepted evidence, and settlement blocks by name (role_not_satisfied) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: R-valid-accept: policy and request roles both held, so it settles (approve) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: R-valid-reject: policy and request roles both held, so it settles (reject) [observed: settled, None]",
+    "VELDO-0068 authority/roles-and-independence detail: the counted requirement is the journey's own grooming predicate (role, count, independence)",
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: every touchpoint's own predicate is derived from the journey configuration and is settleable",
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: metrics: accepted and refused counts, settled versions and the blocked pending work by reason"
+   ],
+   "diff": "proof/VELDO-0068/policy-roles-ignored.diff",
+   "failed_rows": [
+    "VELDO-0068 settlement/one-winner",
+    "VELDO-0068 authority/roles-and-independence",
+    "VELDO-0068 authority/unsupported-quorum-blocks"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "d8ba6f59123adcfedd662b5d2d4e1cf51e7f3dcc17d4d6ebbf26d712f26c0197",
+   "name": "policy-roles-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/roles-and-independence"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     false
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     false
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     false
+    ]
+   ],
+   "seconds": 7.085,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 authority/roles-and-independence detail: R-self: the answer is accepted evidence, and settlement blocks by name (independence_not_met) [observed: settled, None]",
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: metrics: accepted and refused counts, settled versions and the blocked pending work by reason"
+   ],
+   "diff": "proof/VELDO-0068/requester-separation-ignored.diff",
+   "failed_rows": [
+    "VELDO-0068 authority/roles-and-independence",
+    "VELDO-0068 authority/unsupported-quorum-blocks"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "a993e83c54db9aa2de8a3f64c389a2782ccc5dd7c3d1fdeb81e9372ee8c9f4c5",
+   "name": "requester-separation-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/roles-and-independence"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     false
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     false
+    ]
+   ],
+   "seconds": 7.156,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 authority/owner-and-presentation detail: an API answer by a current person who is not the owner is refused (not_owner) and writes nothing [observed: refused, not_owner]",
+    "VELDO-0068 authority/owner-and-presentation detail: an API answer not signed by the API edge's key is refused (not_authorized) and writes nothing [observed: refused, not_authorized]"
+   ],
+   "diff": "proof/VELDO-0068/api-answer-owner-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0068 authority/owner-and-presentation"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "944e0cf8a5137fca082b82cf332b3df8faf4162124bdceafaea94294b502c66f",
+   "name": "api-answer-owner-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/owner-and-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     false
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.085,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 authority/owner-and-presentation detail: an API answer by a current person who is not the owner is refused (not_owner) and writes nothing [observed: refused, not_owner]",
+    "VELDO-0068 authority/owner-and-presentation detail: an API answer not signed by the API edge's key is refused (not_authorized) and writes nothing [observed: settled, None]"
+   ],
+   "diff": "proof/VELDO-0068/api-edge-signature-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0068 authority/owner-and-presentation"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "8fd68717ca6d8a8f051aee615f09e9662870aa0e23979daf41dfa43ed1b2900a",
+   "name": "api-edge-signature-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/owner-and-presentation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     false
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.267,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: Q-two: the owner's answer is accepted and settlement blocks as unsupported_quorum [observed: settled, None]",
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: metrics: accepted and refused counts, settled versions and the blocked pending work by reason"
+   ],
+   "diff": "proof/VELDO-0068/request-quorum-weakened.diff",
+   "failed_rows": [
+    "VELDO-0068 authority/unsupported-quorum-blocks"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "0be5082978542b57c948520286ae3012d3adb73d8193506f60ce9345e9541388",
+   "name": "request-quorum-weakened",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/unsupported-quorum-blocks"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     false
+    ]
+   ],
+   "seconds": 6.705,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: Q-independence: the owner's answer is accepted and settlement blocks as unsupported_quorum [observed: refused, independence_not_met]",
+    "VELDO-0068 authority/unsupported-quorum-blocks detail: metrics: accepted and refused counts, settled versions and the blocked pending work by reason"
+   ],
+   "diff": "proof/VELDO-0068/independence-above-one-accepted.diff",
+   "failed_rows": [
+    "VELDO-0068 authority/unsupported-quorum-blocks"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "591635661d9cbe1b70cee4b2f8b8d46a4ac55b1fc7307ecb093d0c9e17044ed0",
+   "name": "independence-above-one-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/unsupported-quorum-blocks"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     false
+    ]
+   ],
+   "seconds": 6.964,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  }
+ ],
+ "mutations_per_row": {
+  "authority/owner-and-presentation": [
+   "api-answer-owner-unchecked",
+   "api-edge-signature-unchecked"
+  ],
+  "authority/roles-and-independence": [
+   "request-roles-ignored",
+   "policy-roles-ignored",
+   "requester-separation-ignored"
+  ],
+  "authority/unsupported-quorum-blocks": [
+   "request-quorum-weakened",
+   "independence-above-one-accepted"
+  ],
+  "install/assets": [
+   "settlement-not-scaffolded",
+   "settlement-claimed-as-substrate"
+  ],
+  "ruling/offered-choice-and-reasoning": [
+   "chosen-option-generic",
+   "effect-type-ignores-ruling"
+  ],
+  "settlement/one-transaction": [
+   "receipt-separate-transaction",
+   "settlement-nonce-per-answer"
+  ],
+  "settlement/one-winner": [
+   "latest-answer-wins",
+   "conflicting-answer-unrecorded"
+  ],
+  "terminal/materialized-settlement": [
+   "request-left-open",
+   "closed-request-answered-by-api"
+  ]
+ },
+ "noop": {
+  "control_request_settlement.py": {
+   "copy_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 6.723,
+   "source_sha256": "98471f34764de7eb6e234a2c5b6ae6461d4c259326dbac70154fc7a6b4edb561"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0068 install/assets",
+     true
+    ],
+    [
+     "VELDO-0068 ruling/offered-choice-and-reasoning",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-winner",
+     true
+    ],
+    [
+     "VELDO-0068 settlement/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0068 terminal/materialized-settlement",
+     true
+    ],
+    [
+     "VELDO-0068 authority/roles-and-independence",
+     true
+    ],
+    [
+     "VELDO-0068 authority/owner-and-presentation",
+     true
+    ],
+    [
+     "VELDO-0068 authority/unsupported-quorum-blocks",
+     true
+    ]
+   ],
+   "seconds": 7.131,
+   "source_sha256": "bf6bef53ed0667ccec7bd1e04936c892c1c3436ac5016751689850532aaa2612"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 68",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 150.303,
+ "spec_id": "VELDO-0068",
+ "suite": "scripts/suites/69_veldo_0068_settlement.py"
+}
