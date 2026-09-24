@@ -115,8 +115,8 @@ green with 41 assertions. Declared falsifiers:
 
 - **API and editor.** AC3's API and editor legs are VELDO-0130 and VELDO-0131. Here AC3 runs
   through the `save`/`load` interface they call.
-- **Scaffold.** `init_scaffold.py` is outside this footprint, so the scaffold does not yet lay the
-  three modules. No validator loads them.
+- **Scaffold.** The scaffold lays the three modules (the footprint names `init_scaffold.py`). No
+  validator loads them.
 - **Gate registration.** The cycle's `selection` decision is a proposal-time check, not a
   registered floor entry. `control_eligibility.REGISTRATIONS` is outside this footprint, and the
   dispatcher's registered `build` decision still governs any launch.

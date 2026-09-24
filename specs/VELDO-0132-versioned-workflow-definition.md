@@ -17,6 +17,9 @@ footprint:
   - "engine/.veldo/control_workflow*.py"
   - ".veldo/control_workflow*.py"
   - "packs/*/.veldo/control_workflow*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0132_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -158,3 +161,7 @@ scripts/check_teeth_mutations.py registers 26 mutations, among them each criteri
 falsifier, all rejected. scripts/suites/manifest.json gains suite 65, and requires.json is
 regenerated. Every row was recorded red at 5a5dfcd, and one defect found during the build was
 recorded red before its fix. The status stays ready. Proof: proof/VELDO-0132/.
+
+2026-09-24, completion by the lead after the builder was cut off by a usage limit: the footprint
+names init_scaffold.py, and the scaffold lays the three workflow modules, so an installed factory has
+them.

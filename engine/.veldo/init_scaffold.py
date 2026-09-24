@@ -95,6 +95,11 @@ _FILES = [
     ".veldo/control_graph_lock.py",
     ".veldo/control_graph_install.py",
     ".veldo/control_graph_langgraph.py",
+    # VELDO-0132: versioned workflow definitions and their revisions, cycles bound to one exact
+    # revision, and the step kinds spliced into the LangGraph runner. No validator import.
+    ".veldo/control_workflow.py",
+    ".veldo/control_workflow_cycle.py",
+    ".veldo/control_workflow_langgraph.py",
     # VELDO-0045: activation of that runtime against its license and provenance records (laid down
     # from _RUNTIME_ASSETS below), the qualification workload and the no-runtime enforcement check.
     # Runtime asset; no validator import, so not REQUIRED_SUBSTRATE.
