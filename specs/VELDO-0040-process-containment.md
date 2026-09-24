@@ -138,3 +138,11 @@ aggregate resource-exhaustion qualification and AC4 authority-loss/PID-reuse rec
 Release 2; other host kinds moved to Release 4. Linux launch/caps/stop/exit remain, Mac in
 0124. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation (branch build-veldo-0040): `.veldo/control_containment.py` runs each local
+worker in its own systemd user scope in the profile's slice with the profile's caps installed before
+the worker runs, refuses an unqualified or incomplete profile before spawn, stops cooperatively and
+then over the whole group, detects exit from kernel notifications and retires only after an empty
+group; the VELDO-0039 receiver calls it. Suite 63_veldo_0040_containment (20 rows), red at f5aebae,
+22 mutations as finding 40; proof in proof/VELDO-0040/. Merging main required the VELDO-0049 and
+VELDO-0050 suites to give their receiver this host's profile (f6d217e).

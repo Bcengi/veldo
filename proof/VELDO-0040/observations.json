@@ -1,0 +1,984 @@
+{
+ "failed": 0,
+ "observed": {
+  "caps": {
+   "concurrency": {
+    "after_one_ended": "accepted",
+    "first": "accepted",
+    "live_while_two_ran": [
+     {
+      "description": "Veldo dispatch dispatch/VELDO-9408/a98a337f005e44a9a436b01846d00d60",
+      "unit": "veldo-dispatch-52d9e0d8f4355bcfba020c7281ebc1ed.scope"
+     },
+     {
+      "description": "Veldo dispatch dispatch/VELDO-9409/941e04159dd04baeb931930b0e201d5e",
+      "unit": "veldo-dispatch-bf19e270e92fcfc5303391c15c210ea1.scope"
+     }
+    ],
+    "second": "accepted",
+    "third": [
+     "refused",
+     "unavailable_service:concurrency",
+     [
+      "prepared",
+      "accepted",
+      "refused"
+     ]
+    ]
+   },
+   "cpu": {
+    "nr_throttled": 11,
+    "usage_usec": 323928,
+    "wall": 1.0963103771209717
+   },
+   "memory": {
+    "cause": "memory_cap",
+    "empty": true,
+    "empty_at": 1790236355.4662557,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-ecb92b94eaa9fbc263d9a3e2b930451d.scope",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-ecb92b94eaa9fbc263d9a3e2b930451d.scope"
+    },
+    "result": "oom-kill",
+    "steps": [
+     {
+      "at": 1790236355.4583976,
+      "step": "terminate"
+     }
+    ]
+   },
+   "settings": {
+    "concurrency": {
+     "declared": null,
+     "installed": null,
+     "live": true,
+     "mechanism": "the receiver counts the populated dispatch groups of the profile slice and creates its own under one exclusive lock (flock), refusing at the cap"
+    },
+    "cpu_percent": {
+     "declared": "150000 100000",
+     "installed": "150000 100000",
+     "live": true,
+     "mechanism": "cgroup v2 cpu.max (CPUQuota) across every descendant; with the runtime cap it bounds cumulative CPU time to runtime_seconds x cpu_percent / 100"
+    },
+    "file_bytes": {
+     "declared": [
+      [
+       8388608,
+       8388608
+      ],
+      [
+       8388608,
+       8388608
+      ],
+      "refused:27",
+      8388608
+     ],
+     "installed": [
+      [
+       8388608,
+       8388608
+      ],
+      [
+       8388608,
+       8388608
+      ],
+      "refused:27",
+      8388608
+     ],
+     "live": true,
+     "mechanism": "RLIMIT_FSIZE, soft and hard, set by the trusted wrapper before the engine runs and inherited by every descendant, which cannot raise it"
+    },
+    "kill_grace_seconds": {
+     "declared": [
+      600000,
+      "control-group"
+     ],
+     "installed": [
+      600000,
+      "control-group"
+     ],
+     "live": null,
+     "mechanism": "the receiver kills the group with cgroup.kill this long after it terminates it; systemd TimeoutStopSec for the stops systemd makes"
+    },
+    "memory_bytes": {
+     "declared": [
+      "268435456",
+      "0",
+      "stop"
+     ],
+     "installed": [
+      "268435456",
+      "0",
+      "stop"
+     ],
+     "live": true,
+     "mechanism": "cgroup v2 memory.max (MemoryMax) with memory.swap.max 0 (MemorySwapMax), charged across every descendant; OOMPolicy=stop ends the group on a breach"
+    },
+    "runtime_seconds": {
+     "declared": 60000000,
+     "installed": 60000000,
+     "live": null,
+     "mechanism": "systemd RuntimeMaxSec on the dispatch scope: the user manager stops the whole group at the cap whether or not the receiver runs; TimeoutStopSec then escalates to SIGKILL"
+    },
+    "stop_grace_seconds": {
+     "declared": null,
+     "installed": null,
+     "live": null,
+     "mechanism": "the receiver: after a cooperative stop it sends SIGTERM to every process in the group this long later"
+    },
+    "tasks_max": {
+     "declared": "128",
+     "installed": "128",
+     "live": null,
+     "mechanism": "cgroup v2 pids.max (TasksMax) across every descendant"
+    }
+   },
+   "unbounded": {
+    "controls_owner": "the group and its controls belong to the owner account the worker runs as (a distinct worker identity through the runner helper, Release 2)",
+    "storage_total": "aggregate writable bytes and inodes across all files: no unprivileged mechanism on this profile (a per-dispatch filesystem from the runner helper, Release 2)"
+   }
+  },
+  "cooperative": {
+   "asked": true,
+   "flushed": {
+    "at": 1790236357.377745
+   },
+   "owned_term": [],
+   "owned_usr1": [
+    1790236357.377343
+   ],
+   "retirement": {
+    "basis": "worker_reaped",
+    "cleaned": true,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-54a95e8be5ec10b1481b21e3c3614d26.scope",
+     "observed": "absent",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-54a95e8be5ec10b1481b21e3c3614d26.scope"
+    },
+    "observed_at": 1790236357.3883579,
+    "observer": "launch_runner",
+    "outcome": "cancelled",
+    "supervision": {
+     "cause": "requested",
+     "empty": true,
+     "empty_at": 1790236357.3814201,
+     "group": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-54a95e8be5ec10b1481b21e3c3614d26.scope",
+      "slice": "v406f36d243a.slice",
+      "unit": "veldo-dispatch-54a95e8be5ec10b1481b21e3c3614d26.scope"
+     },
+     "result": "success",
+     "steps": [
+      {
+       "at": 1790236357.3770087,
+       "step": "cooperative"
+      }
+     ]
+    },
+    "terminated": true
+   },
+   "state": "exited",
+   "supervision": {
+    "cause": "requested",
+    "empty": true,
+    "empty_at": 1790236357.3814201,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-54a95e8be5ec10b1481b21e3c3614d26.scope",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-54a95e8be5ec10b1481b21e3c3614d26.scope"
+    },
+    "result": "success",
+    "steps": [
+     {
+      "at": 1790236357.3770087,
+      "step": "cooperative"
+     }
+    ]
+   },
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 0,
+    "signal": null
+   }
+  },
+  "escalation": {
+   "asked": true,
+   "descendant_alive_after": false,
+   "descendant_last_beat": 1.19,
+   "descendant_terms": [
+    0.6
+   ],
+   "group_after": null,
+   "reason": null,
+   "retirement": {
+    "basis": "worker_reaped",
+    "cleaned": true,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9aa68d030cfae9b4307b137a5786d42a.scope",
+     "observed": "absent",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-9aa68d030cfae9b4307b137a5786d42a.scope"
+    },
+    "observed_at": 1790236358.8459277,
+    "observer": "launch_runner",
+    "outcome": "cancelled",
+    "supervision": {
+     "cause": "requested",
+     "empty": true,
+     "empty_at": 1790236358.838949,
+     "group": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9aa68d030cfae9b4307b137a5786d42a.scope",
+      "slice": "v406f36d243a.slice",
+      "unit": "veldo-dispatch-9aa68d030cfae9b4307b137a5786d42a.scope"
+     },
+     "result": "success",
+     "steps": [
+      {
+       "at": 1790236357.6324737,
+       "step": "cooperative"
+      },
+      {
+       "at": 1790236358.2333605,
+       "step": "terminate"
+      },
+      {
+       "at": 1790236358.8342466,
+       "step": "kill"
+      }
+     ]
+    },
+    "terminated": true
+   },
+   "state": "exited",
+   "supervision": {
+    "cause": "requested",
+    "empty": true,
+    "empty_at": 1790236358.838949,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9aa68d030cfae9b4307b137a5786d42a.scope",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-9aa68d030cfae9b4307b137a5786d42a.scope"
+    },
+    "result": "success",
+    "steps": [
+     {
+      "at": 1790236357.6324737,
+      "step": "cooperative"
+     },
+     {
+      "at": 1790236358.2333605,
+      "step": "terminate"
+     },
+     {
+      "at": 1790236358.8342466,
+      "step": "kill"
+     }
+    ]
+   },
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": null,
+    "signal": 9
+   },
+   "worker_last_beat": 1.17,
+   "worker_terms": [
+    0.0,
+    0.6
+   ]
+  },
+  "exit_notified": {
+   "exit_at": 1790236355.1576931,
+   "idle_worker_alive_in_window": true,
+   "latency": 0.006,
+   "receiver_wakes": 0,
+   "recorded_at": 1790236355.1641867,
+   "window_seconds": 1.5
+  },
+  "group": {
+   "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+   "identity": {
+    "helper": "systemd user manager (no OS privileges)",
+    "privileged_helper": false,
+    "worker_gid": 1000,
+    "worker_uid": 1000
+   },
+   "members": [
+    511740,
+    511749,
+    511750,
+    511752,
+    511754
+   ],
+   "other": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-6950e1f82d0a41f89c17a5f8b0dc695a.scope",
+   "processes": {
+    "child": {
+     "caps": {
+      "CapAmb": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+     },
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "fsize": [
+      8388608,
+      8388608
+     ],
+     "pgid": 511740,
+     "pid": 511749,
+     "sid": 511740,
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ]
+    },
+    "daemon": {
+     "caps": {
+      "CapAmb": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+     },
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "fsize": [
+      8388608,
+      8388608
+     ],
+     "pgid": 511753,
+     "pid": 511754,
+     "sid": 511753,
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ]
+    },
+    "pgroup": {
+     "caps": {
+      "CapAmb": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+     },
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "fsize": [
+      8388608,
+      8388608
+     ],
+     "pgid": 511752,
+     "pid": 511752,
+     "sid": 511740,
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ]
+    },
+    "session": {
+     "caps": {
+      "CapAmb": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+     },
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "fsize": [
+      8388608,
+      8388608
+     ],
+     "pgid": 511750,
+     "pid": 511750,
+     "sid": 511750,
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ]
+    },
+    "worker": {
+     "caps": {
+      "CapAmb": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+     },
+     "cgroup_now": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "fsize": [
+      8388608,
+      8388608
+     ],
+     "pgid": 511740,
+     "pid": 511740,
+     "sid": 511740,
+     "uid": [
+      "1000",
+      "1000",
+      "1000",
+      "1000"
+     ]
+    }
+   },
+   "reported": {
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+    "slice": "v406f36d243a.slice",
+    "unit": "veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope"
+   },
+   "systemd": {
+    "ActiveState": "active",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+    "Description": "Veldo dispatch dispatch/VELDO-9401/e74903fd23af47b785e9e4a36d4afe75",
+    "Slice": "v406f36d243a.slice"
+   },
+   "unit": "veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope"
+  },
+  "observations": {
+   "joined": true,
+   "pending_after": [],
+   "taxonomy": {
+    "containment_not_empty": "unknown_outcome",
+    "invalid_input:profile:absent": "invalid_input",
+    "invalid_input:profile:memory_bytes:absent": "invalid_input",
+    "invalid_input:profile:runtime_seconds:invalid": "invalid_input",
+    "invalid_input:profile:unknown:memory_limit": "invalid_input",
+    "spawn_failed:containment:group": "unavailable_service",
+    "unavailable_service:concurrency": "unavailable_service",
+    "unavailable_service:profile:kind": "unavailable_service",
+    "unavailable_service:profile:systemd_run": "unavailable_service"
+   },
+   "trace": [
+    "accepted",
+    "running",
+    "exited"
+   ]
+  },
+  "ordinary_exit": {
+   "alive_after": {
+    "child": false,
+    "daemon": false,
+    "pgroup": false,
+    "session": false,
+    "worker": false
+   },
+   "group_after": null,
+   "retirement": {
+    "basis": "worker_reaped",
+    "cleaned": true,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "observed": "absent",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope"
+    },
+    "observed_at": 1790236353.1596215,
+    "observer": "launch_runner",
+    "outcome": "completed",
+    "supervision": {
+     "cause": "exit",
+     "empty": true,
+     "empty_at": 1790236353.1529076,
+     "group": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+      "slice": "v406f36d243a.slice",
+      "unit": "veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope"
+     },
+     "result": "success",
+     "steps": [
+      {
+       "at": 1790236353.1489077,
+       "step": "terminate"
+      }
+     ]
+    },
+    "terminated": true
+   },
+   "state": "exited",
+   "supervision": {
+    "cause": "exit",
+    "empty": true,
+    "empty_at": 1790236353.1529076,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-9754a91a60b67023fb90073a8203665f.scope"
+    },
+    "result": "success",
+    "steps": [
+     {
+      "at": 1790236353.1489077,
+      "step": "terminate"
+     }
+    ]
+   },
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 0,
+    "signal": null
+   },
+   "two": [
+    "exited",
+    {
+     "cause": null,
+     "empty": true,
+     "empty_at": 1790236353.6371484,
+     "group": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-6950e1f82d0a41f89c17a5f8b0dc695a.scope",
+      "slice": "v406f36d243a.slice",
+      "unit": "veldo-dispatch-6950e1f82d0a41f89c17a5f8b0dc695a.scope"
+     },
+     "result": "success",
+     "steps": []
+    }
+   ]
+  },
+  "raised": [],
+  "required_settings": {
+   "matrix": {
+    "concurrency": [
+     [
+      null,
+      "invalid_input:profile:concurrency:absent"
+     ],
+     [
+      "0",
+      "invalid_input:profile:concurrency:invalid"
+     ],
+     [
+      "-1",
+      "invalid_input:profile:concurrency:invalid"
+     ],
+     [
+      "1.5",
+      "invalid_input:profile:concurrency:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:concurrency:invalid"
+     ],
+     [
+      "'2'",
+      "invalid_input:profile:concurrency:invalid"
+     ]
+    ],
+    "cpu_percent": [
+     [
+      null,
+      "invalid_input:profile:cpu_percent:absent"
+     ],
+     [
+      "0",
+      "invalid_input:profile:cpu_percent:invalid"
+     ],
+     [
+      "-5",
+      "invalid_input:profile:cpu_percent:invalid"
+     ],
+     [
+      "1000000",
+      "invalid_input:profile:cpu_percent:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:cpu_percent:invalid"
+     ],
+     [
+      "1.5",
+      "invalid_input:profile:cpu_percent:invalid"
+     ]
+    ],
+    "file_bytes": [
+     [
+      null,
+      "invalid_input:profile:file_bytes:absent"
+     ],
+     [
+      "0",
+      "invalid_input:profile:file_bytes:invalid"
+     ],
+     [
+      "1",
+      "invalid_input:profile:file_bytes:invalid"
+     ],
+     [
+      "-4096",
+      "invalid_input:profile:file_bytes:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:file_bytes:invalid"
+     ],
+     [
+      "4096.0",
+      "invalid_input:profile:file_bytes:invalid"
+     ]
+    ],
+    "kill_grace_seconds": [
+     [
+      "0",
+      "invalid_input:profile:kill_grace_seconds:invalid"
+     ],
+     [
+      "-1",
+      "invalid_input:profile:kill_grace_seconds:invalid"
+     ],
+     [
+      "inf",
+      "invalid_input:profile:kill_grace_seconds:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:kill_grace_seconds:invalid"
+     ],
+     [
+      "'1'",
+      "invalid_input:profile:kill_grace_seconds:invalid"
+     ]
+    ],
+    "memory_bytes": [
+     [
+      null,
+      "invalid_input:profile:memory_bytes:absent"
+     ],
+     [
+      "0",
+      "invalid_input:profile:memory_bytes:invalid"
+     ],
+     [
+      "1",
+      "invalid_input:profile:memory_bytes:invalid"
+     ],
+     [
+      "-4096",
+      "invalid_input:profile:memory_bytes:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:memory_bytes:invalid"
+     ],
+     [
+      "4096.0",
+      "invalid_input:profile:memory_bytes:invalid"
+     ]
+    ],
+    "runtime_seconds": [
+     [
+      null,
+      "invalid_input:profile:runtime_seconds:absent"
+     ],
+     [
+      "0",
+      "invalid_input:profile:runtime_seconds:invalid"
+     ],
+     [
+      "-1",
+      "invalid_input:profile:runtime_seconds:invalid"
+     ],
+     [
+      "inf",
+      "invalid_input:profile:runtime_seconds:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:runtime_seconds:invalid"
+     ],
+     [
+      "'1'",
+      "invalid_input:profile:runtime_seconds:invalid"
+     ]
+    ],
+    "stop_grace_seconds": [
+     [
+      "0",
+      "invalid_input:profile:stop_grace_seconds:invalid"
+     ],
+     [
+      "-1",
+      "invalid_input:profile:stop_grace_seconds:invalid"
+     ],
+     [
+      "inf",
+      "invalid_input:profile:stop_grace_seconds:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:stop_grace_seconds:invalid"
+     ],
+     [
+      "'1'",
+      "invalid_input:profile:stop_grace_seconds:invalid"
+     ]
+    ],
+    "tasks_max": [
+     [
+      "0",
+      "invalid_input:profile:tasks_max:invalid"
+     ],
+     [
+      "-1",
+      "invalid_input:profile:tasks_max:invalid"
+     ],
+     [
+      "1.5",
+      "invalid_input:profile:tasks_max:invalid"
+     ],
+     [
+      "True",
+      "invalid_input:profile:tasks_max:invalid"
+     ],
+     [
+      "'2'",
+      "invalid_input:profile:tasks_max:invalid"
+     ]
+    ]
+   },
+   "qualified": true,
+   "required": [
+    "concurrency",
+    "cpu_percent",
+    "file_bytes",
+    "memory_bytes",
+    "runtime_seconds"
+   ]
+  },
+  "retire_after_empty": {
+   "after_empty": [
+    true,
+    true,
+    {
+     "basis": "probe",
+     "cleaned": true,
+     "group": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-8fed91987bcfb64fce878525647d0fec.scope",
+      "observed": "absent",
+      "slice": "v406f36d243a.slice",
+      "unit": "veldo-dispatch-8fed91987bcfb64fce878525647d0fec.scope"
+     },
+     "observed_at": 1790236358.913067,
+     "observer": "launch_runner",
+     "outcome": "cancelled",
+     "supervision": null,
+     "terminated": true
+    }
+   ],
+   "runner_observations": [
+    {
+     "dispatch_id": "dispatch/VELDO-9412/0b5b9cc162f5436f890fc32f33edac36",
+     "operation": "retire",
+     "outcome": "refused",
+     "refusal": "cleanup_incomplete"
+    },
+    {
+     "dispatch_id": "dispatch/VELDO-9412/0b5b9cc162f5436f890fc32f33edac36",
+     "operation": "retire",
+     "outcome": "retired"
+    }
+   ],
+   "while_populated": [
+    false,
+    false
+   ]
+  },
+  "runtime_cap": {
+   "last_beat_after_running": 1.63,
+   "running_at": 1790236352.4719164,
+   "state": "exited",
+   "supervision": {
+    "cause": "runtime_cap",
+    "empty": true,
+    "empty_at": 1790236354.1409621,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v406f36d243a.slice/veldo-dispatch-0e9f3dbd237e39bbc29aed8a6baa2c14.scope",
+     "slice": "v406f36d243a.slice",
+     "unit": "veldo-dispatch-0e9f3dbd237e39bbc29aed8a6baa2c14.scope"
+    },
+    "result": "timeout",
+    "steps": [
+     {
+      "at": 1790236353.6342063,
+      "step": "terminate"
+     },
+     {
+      "at": 1790236354.1344085,
+      "step": "kill"
+     }
+    ]
+   },
+   "termination": {
+    "deadline_stop": true,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 143,
+    "signal": null
+   },
+   "terms": [
+    1790236353.6335838,
+    1790236353.6345532
+   ],
+   "unit_after": "not-found"
+  },
+  "unqualified": {
+   "absent": {
+    "expected": "invalid_input:profile:absent",
+    "refusal": "invalid_input:profile:absent",
+    "retired": true,
+    "states": [
+     "prepared",
+     "refused"
+    ],
+    "unit": "not-found",
+    "worker": false
+   },
+   "invalid_value": {
+    "expected": "invalid_input:profile:runtime_seconds:invalid",
+    "refusal": "invalid_input:profile:runtime_seconds:invalid",
+    "retired": true,
+    "states": [
+     "prepared",
+     "refused"
+    ],
+    "unit": "not-found",
+    "worker": false
+   },
+   "missing_systemd_run": {
+    "expected": "unavailable_service:profile:systemd_run",
+    "refusal": "unavailable_service:profile:systemd_run",
+    "retired": true,
+    "states": [
+     "prepared",
+     "refused"
+    ],
+    "unit": "not-found",
+    "worker": false
+   },
+   "other_host_kind": {
+    "expected": "unavailable_service:profile:kind",
+    "refusal": "unavailable_service:profile:kind",
+    "retired": true,
+    "states": [
+     "prepared",
+     "refused"
+    ],
+    "unit": "not-found",
+    "worker": false
+   },
+   "required_absent": {
+    "expected": "invalid_input:profile:memory_bytes:absent",
+    "refusal": "invalid_input:profile:memory_bytes:absent",
+    "retired": true,
+    "states": [
+     "prepared",
+     "refused"
+    ],
+    "unit": "not-found",
+    "worker": false
+   },
+   "unknown_setting": {
+    "expected": "invalid_input:profile:unknown:memory_limit",
+    "refusal": "invalid_input:profile:unknown:memory_limit",
+    "retired": true,
+    "states": [
+     "prepared",
+     "refused"
+    ],
+    "unit": "not-found",
+    "worker": false
+   }
+  }
+ },
+ "passed": 20,
+ "rows": [
+  [
+   "VELDO-0040 containment/dedicated-group",
+   true
+  ],
+  [
+   "VELDO-0040 containment/ordinary-exit",
+   true
+  ],
+  [
+   "VELDO-0040 containment/unqualified-profile-refused",
+   true
+  ],
+  [
+   "VELDO-0040 containment/required-settings-refused",
+   true
+  ],
+  [
+   "VELDO-0040 containment/exit-notified",
+   true
+  ],
+  [
+   "VELDO-0040 containment/caps-installed",
+   true
+  ],
+  [
+   "VELDO-0040 containment/runtime-cap",
+   true
+  ],
+  [
+   "VELDO-0040 containment/cooperative-stop",
+   true
+  ],
+  [
+   "VELDO-0040 containment/stop-escalation",
+   true
+  ],
+  [
+   "VELDO-0040 containment/retire-after-empty",
+   true
+  ],
+  [
+   "VELDO-0040 containment/observations",
+   true
+  ],
+  [
+   "VELDO-0040 containment/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/dedicated-group",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/unqualified-profile-refused",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/exit-notified",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/caps-installed",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/runtime-cap",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/cooperative-stop",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/retire-after-empty",
+   true
+  ],
+  [
+   "VELDO-0040 ran/containment/observations",
+   true
+  ]
+ ],
+ "suite": "63_veldo_0040_containment.py",
+ "suite_seconds": 6.813
+}
