@@ -1,0 +1,6 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -748 +748,2 @@
+-        record = self.floor.record(sid) if self.floor is not None else None
++        record = {"state": "handoff", "handoff": {"source": {"commit": candidate["evidence"]},
++                  "proof": dict(candidate.get("proof") or {})}}  # defect: the review obligations are not read

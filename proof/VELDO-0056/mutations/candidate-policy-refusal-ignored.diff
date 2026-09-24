@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -691 +691 @@
+-        if refusals:
++        if False:  # defect: a policy refusal is not a refusal

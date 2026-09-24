@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -449 +449 @@
+-                self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),
++                self._git(self.repo_root, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),  # defect: the fetch writes the caller's refs
