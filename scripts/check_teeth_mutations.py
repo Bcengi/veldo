@@ -3183,8 +3183,39 @@ def cases():
             "    if stat.S_IMODE(info.st_mode) & 0o077:\n        problems.append('invalid_input:key_directory:mode')\n",
             "    pass  # defect: a key directory others can enter is accepted\n", 'key-directory-placement')
     service('authority-key-placement-link-followed', 'control_service.py',
-            "    keys = os.path.abspath(str(key_directory)) if key_directory else",
+            "    keys = str(key_directory) if key_directory else",
             "    keys = os.path.realpath(str(key_directory)) if key_directory else", 'key-directory-placement')
+    # AC1: an absent key directory is judged by where it would be before whether it exists.
+    service('authority-key-existence-judged-alone', 'control_service.py',
+            "        return problems + ['missing_authority:key_directory:absent']\n",
+            "        return ['missing_authority:key_directory:absent']  # defect: an absent directory is judged by existence alone\n",
+            'key-directory-location-before-existence')
+    service('authority-key-absent-not-located', 'control_service.py',
+            "    if any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real) for root in writable):\n",
+            "    if os.path.lexists(text) and any(_within(real, os.path.realpath(root)) or _within(os.path.realpath(root), real)\n"
+            "                                     for root in writable):  # defect: an absent directory is not located\n",
+            'key-directory-location-before-existence')
+    # AC1: the one-time step creates only what is missing and changes no directory that exists.
+    service('authority-key-guidance-names-the-parent', 'control_service.py',
+            "        missing = _missing_below(path)\n",
+            "        missing = [os.path.dirname(str(path)), str(path)]  # defect: the parent is named, and its mode set, whether or not it exists\n",
+            'key-directory-guidance-changes-no-directory')
+    service('authority-key-guidance-includes-the-ancestor', 'control_service.py',
+            "    return list(reversed(missing))\n",
+            "    return list(reversed(missing + [current]))  # defect: the first existing ancestor is named too\n",
+            'key-directory-guidance-changes-no-directory')
+    service('authority-key-guidance-changes-the-mode', 'control_service.py',
+            "        return 'it is open to others; a key directory is one of its own, so ' + elsewhere\n",
+            "        return 'close it to everyone else: chmod 0700 %s' % path  # defect: the guidance changes an existing directory\n",
+            'key-directory-guidance-changes-no-directory')
+    # AC1: a relative key directory is refused as relative before anything resolves it.
+    service('authority-key-directory-made-absolute', 'control_service.py',
+            "    keys = str(key_directory) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)\n",
+            "    keys = os.path.abspath(str(key_directory)) if key_directory else os.path.join(DEFAULT_KEY_ROOT, service)  # defect: resolved first\n",
+            'key-directory-relative-refused')
+    service('authority-key-relative-not-refused', 'control_service.py',
+            "    if not os.path.isabs(text):\n        return ['invalid_input:key_directory:relative']\n",
+            "    pass  # defect: a relative key directory is judged wherever it resolves\n", 'key-directory-relative-refused')
     # AC1: the launch receiver's configuration carries this host's qualified worker profile.
     service('authority-receiver-profile-omitted', 'control_service.py',
             "                                'profile': profile, 'adapters': adapters}), 0o600)\n",
@@ -3210,6 +3241,31 @@ def cases():
     service('authority-unit-starts-at-login', 'services/veldo-authority.service',
             "TimeoutStopSec=15\n", "TimeoutStopSec=15\n\n[Install]\nWantedBy=default.target\n",
             'installed-fixed-and-protected')
+    # AC1: the fixed executable holds what its programs load, the validator the receiver's recheck runs
+    # included, so the installed receiver launches (the review's blocking finding).
+    seeds = "    seeds = set(ENTRY_POINTS) | {name for _role, name in EL.VALIDATOR_ROLES}\n"
+    # The defect the review found, restored: the hand list the installer copied before closure() existed.
+    service('authority-closure-listed-by-hand', 'control_service.py',
+            "    fixed = {name: (HERE / name).read_bytes() for name in closure()}\n",
+            "    fixed = {name: (HERE / name).read_bytes() for name in (  # defect: the installed modules listed by hand\n"
+            "        'authority_contract.py', 'claim.py', 'completion_contract.py', 'control_channel_attribution.py',\n"
+            "        'control_channel_enrollment.py', 'control_channel_presentation.py', 'control_channel_projection.py',\n"
+            "        'control_claim.py', 'control_client.py', 'control_containment.py', 'control_decision_dependency.py',\n"
+            "        'control_dispatch.py', 'control_eligibility.py', 'control_enrollment.py', 'control_keys.py',\n"
+            "        'control_keys_custody.py', 'control_launch.py', 'control_membership.py', 'control_reservations.py',\n"
+            "        'control_service.py', 'control_signer.py', 'control_signer_answers.py', 'control_snapshot.py',\n"
+            "        'control_store.py', 'git_process.py')}\n", 'installed-fixed-and-protected')
+    service('authority-closure-omits-the-validator', 'control_service.py', seeds,
+            "    seeds = set(ENTRY_POINTS)  # defect: the validator the receiver's recheck runs is not installed\n",
+            'installed-receiver-launches')
+    service('authority-closure-ignores-loader-helpers', 'control_service.py',
+            "            if not candidates:\n                continue\n            found = set()\n",
+            "            if True:  # defect: what a loader helper loads (organ('x')) is not followed\n"
+            "                continue\n            found = set()\n", 'installed-receiver-launches')
+    service('authority-receiver-workspace-omitted', 'control_service.py',
+            "'authority_generation': first['authority_generation'], 'workspace': members[0],\n",
+            "'authority_generation': first['authority_generation'], 'workspace': None,  # defect: the receiver judges no workspace\n",
+            'installed-receiver-launches')
     # AC1, declared: two instances acquire scheduling authority.
     service('authority-two-schedulers', 'control_service.py',
             "        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n",
@@ -3284,6 +3340,8 @@ def cases():
             'installed-assets')
     service('authority-unit-template-not-installed', 'init_scaffold.py',
             '    ".veldo/services/veldo-authority.service",\n', '', 'installed-assets')
+    service('authority-supervisor-not-installed', 'init_scaffold.py', '    ".veldo/supervisor.py",\n', '',
+            'installed-assets')
     return result
 
 

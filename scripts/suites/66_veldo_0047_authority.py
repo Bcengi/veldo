@@ -885,36 +885,50 @@ def _v47_suite():
                                     repository_uuid=REPOSITORY)), HOLDER, journal_sign, 1)
                 receiver_config_path = ((report.get('receiver') or {}).get('configs') or {}).get(REPOSITORY)
                 installed_receiver = (report.get('receiver') or {}).get('executable')
-                IL = load('v47_installed_receiver', installed_receiver)
-                dispatches = IL.D.Dispatches(S, launch_writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
-                                             signer='runner', sign=journal_sign)
-                gate = EL.Gate(S, launch_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(A))
-                runner = IL.Runner(gate, reservations, dispatches,
-                                   lambda contract: IL.invoke(receiver_config_path, contract, dispatches, accept_seconds=20),
-                                   account=ACCOUNT)
-                launch = runner.submit(LAUNCH_UNIT, 'build', holder=HOLDER, source=str(A), revision='HEAD', payload={},
-                                       adapter='engine', configuration={'tools': ['Read'], 'model': 'm'},
-                                       deadline=time.time() + 60)
-                launches.append(launch)
-                result, refusal, group = launch.result, launch.refusal, dict(launch.group or {})
-                record = runner.wait(launch, timeout=30) if result == 'accepted' else (launch.record or {})
+                IL, runner, launch, errors = None, None, None, {}
+                result, refusal, group, record = None, None, {}, {}
+                # An installed receiver that cannot even be loaded, or a launch that cannot be submitted, is the
+                # finding, recorded by name, never a raise.
+                try:
+                    IL = load('v47_installed_receiver', installed_receiver)
+                except Exception as error:  # noqa: BLE001
+                    errors['load'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+                if IL is not None:
+                    try:
+                        dispatches = IL.D.Dispatches(S, launch_writer, domain=DOMAIN, repository=REPOSITORY,
+                                                     principal='runner', signer='runner', sign=journal_sign)
+                        gate = EL.Gate(S, launch_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(A))
+                        runner = IL.Runner(gate, reservations, dispatches,
+                                           lambda contract: IL.invoke(receiver_config_path, contract, dispatches,
+                                                                      accept_seconds=20),
+                                           account=ACCOUNT)
+                        launch = runner.submit(LAUNCH_UNIT, 'build', holder=HOLDER, source=str(A), revision='HEAD',
+                                               payload={}, adapter='engine', configuration={'tools': ['Read'], 'model': 'm'},
+                                               deadline=time.time() + 60)
+                        launches.append(launch)
+                        result, refusal, group = launch.result, launch.refusal, dict(launch.group or {})
+                        record = runner.wait(launch, timeout=30) if result == 'accepted' else (launch.record or {})
+                    except Exception as error:  # noqa: BLE001
+                        errors['launch'] = '%s: %s' % (type(error).__name__, str(error)[:300])
                 record = record or {}
                 ran = json.loads(marker.read_text()) if marker.is_file() else {}
-                scope = C.unit_name(launch.dispatch_id)
+                scope = C.unit_name(launch.dispatch_id) if launch is not None else None
                 termination = record.get('termination') or {}
-                observed['launch'] = {'receiver': IL.RECEIVER, 'result': result, 'refusal': refusal, 'group': group,
+                observed['launch'] = {'receiver': getattr(IL, 'RECEIVER', None), 'errors': errors, 'result': result,
+                                      'refusal': refusal, 'group': group,
                                       'state': record.get('state'), 'record_refusal': record.get('refusal'),
                                       'termination': {k: termination.get(k) for k in ('returncode', 'signal', 'deadline_stop')},
                                       'process_pid': (record.get('process') or {}).get('pid'), 'worker': ran,
-                                      'scope': scope, 'scope_after': show(scope).get('ActiveState'),
-                                      'retired': [o.get('outcome') for o in runner.observations if o.get('operation') == 'retire']}
+                                      'scope': scope, 'scope_after': show(scope).get('ActiveState') if scope else None,
+                                      'retired': [o.get('outcome') for o in getattr(runner, 'observations', [])
+                                                  if o.get('operation') == 'retire']}
                 check('authority/installed-receiver-launches',
-                      IL.RECEIVER == str(home_dir / 'bin' / 'control_launch.py') == installed_receiver
+                      not errors and getattr(IL, 'RECEIVER', None) == str(home_dir / 'bin' / 'control_launch.py') == installed_receiver
                       and receiver_config_path == str(receiver_path)
                       and result == 'accepted' and refusal is None and record.get('state') == 'exited'
                       and termination.get('returncode') == 0 and termination.get('deadline_stop') is False
                       and bool(ran) and ran.get('pid') == (record.get('process') or {}).get('pid')
-                      and ran.get('dispatch') == launch.dispatch_id
+                      and ran.get('dispatch') == getattr(launch, 'dispatch_id', False)
                       and ran.get('cgroup', '').endswith('/%s/%s' % (PROFILE['slice'], scope))
                       and group.get('slice') == PROFILE['slice'] and group.get('unit') == scope
                       and ran.get('memory.max') == str(PROFILE['memory_bytes']) and ran.get('pids.max') == str(PROFILE['tasks_max'])
@@ -932,13 +946,17 @@ def _v47_suite():
                 for rel in sorted(files):
                     if rel.startswith('.veldo/') and (rel.endswith('.py') or rel.endswith('.service')) and (mods / rel[len('.veldo/'):]).is_file():
                         shutil.copyfile(mods / rel[len('.veldo/'):], laid / rel[len('.veldo/'):])
-                adopter = {}
-                try:
-                    LCS = load('v47_laid_service', laid / 'control_service.py')
-                    adopter['closure'] = LCS.closure()
-                    adopter['unit_dir'] = LCS.default_unit_dir()
-                except Exception as error:  # noqa: BLE001 - an adopter's installer that cannot answer is the finding
-                    adopter['error'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+                adopter, LCS = {}, None
+                # Each question an adopter's installer must answer, asked on its own: a failure to answer is
+                # the finding, recorded by name, never a raise.
+                for question in ('load', 'closure', 'unit_dir'):
+                    try:
+                        if question == 'load':
+                            LCS = load('v47_laid_service', laid / 'control_service.py')
+                        elif LCS is not None:
+                            adopter[question] = LCS.closure() if question == 'closure' else LCS.default_unit_dir()
+                    except Exception as error:  # noqa: BLE001
+                        adopter.setdefault('errors', {})[question] = '%s: %s' % (type(error).__name__, str(error)[:300])
                 installed_closure = sorted(recorded)
                 observed['assets'] = {'adopter': dict(adopter, closure=len(adopter.get('closure') or [])),
                                       'installed': len(installed_closure),
@@ -946,7 +964,7 @@ def _v47_suite():
                 check('authority/installed-assets',
                       '.veldo/control_service.py' in files and '.veldo/services/veldo-authority.service' in files
                       and bool(installed_closure) and all('.veldo/' + name in files for name in installed_closure)
-                      and 'error' not in adopter and adopter.get('closure') == installed_closure
+                      and LCS is not None and 'errors' not in adopter and adopter.get('closure') == installed_closure
                       and isinstance(adopter.get('unit_dir'), str) and os.path.isabs(adopter['unit_dir'])
                       and adopter['unit_dir'].endswith(os.path.join('systemd', 'user')))
         finally:
