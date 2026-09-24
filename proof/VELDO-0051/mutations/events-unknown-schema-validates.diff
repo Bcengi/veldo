@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_vocabulary.py
++++ b/.veldo/control_event_vocabulary.py
+@@ -95 +95 @@
+-    if event.get("schema") not in schemas:
++    if False:  # defect: a schema no spelling admits validates

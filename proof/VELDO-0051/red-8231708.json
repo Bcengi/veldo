@@ -25,7 +25,7 @@
  "observed": {
   "validator_over_the_owners_events": [
    1,
-   "  /dev/shm/v51-2mugwsnr/roundtrip.jsonl: line 17: unknown event type 'run.aborted'\n  /dev/shm/v51-2mugwsnr/roundtrip.jsonl: line 18: unknown event type 'run.blocked'\n  /dev/shm/v51-2mugwsnr/roundtrip.jsonl: line 19: unknown event type 'run.done'\n  /dev/shm/v51-2mugwsnr/roundtrip.jsonl: line 20: unknown event type 'run.resumed'\n  /dev/shm/v51-2mugwsnr/roundtrip.jsonl: line 21: unknown event type 'run.started'\nveldo contracts: 5 problem(s)\n"
+   "  /dev/shm/v51-hhlp1spo/roundtrip.jsonl: line 17: unknown event type 'run.aborted'\n  /dev/shm/v51-hhlp1spo/roundtrip.jsonl: line 18: unknown event type 'run.blocked'\n  /dev/shm/v51-hhlp1spo/roundtrip.jsonl: line 19: unknown event type 'run.done'\n  /dev/shm/v51-hhlp1spo/roundtrip.jsonl: line 20: unknown event type 'run.resumed'\n  /dev/shm/v51-hhlp1spo/roundtrip.jsonl: line 21: unknown event type 'run.started'\nveldo contracts: 5 problem(s)\n"
   ],
   "journey_at_commit": [
    "approval.recorded",
@@ -55,30 +55,30 @@
   ],
   "substitution_at_the_writer": [
    0,
-   "{\"schema\": \"veldo.event/v1\", \"id\": \"1dd93ed1b8f6\", \"type\": \"gate.passed\", \"at\": \"2026-09-24T12:06:09Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9601\","
+   "{\"schema\": \"veldo.event/v1\", \"id\": \"49618bdc3069\", \"type\": \"gate.passed\", \"at\": \"2026-09-24T12:09:19Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9601\","
   ],
   "substitution_in_process": {
    "emit-extra": [
     "ok",
-    "{'schema': 'veldo.event/v1', 'id': 'f668aee6cbd8', 'type': 'proof.recorded', 'at': '2026-09-24T12:06:09Z', 'producer': 'events.py', 'correlation_id': 'VELDO-960"
+    "{'schema': 'veldo.event/v1', 'id': '94c9f68c1fa8', 'type': 'proof.recorded', 'at': '2026-09-24T12:09:19Z', 'producer': 'events.py', 'correlation_id': 'VELDO-960"
    ],
    "executor-hook": [
     "ok",
-    "{'schema': 'veldo.event/v1', 'id': '76793b72de78', 'type': 'approval.recorded', 'at': '2026-09-24T12:06:09Z', 'producer': 'executor.py', 'correlation_id': 'VELD"
+    "{'schema': 'veldo.event/v1', 'id': '4b763bd07739', 'type': 'approval.recorded', 'at': '2026-09-24T12:09:19Z', 'producer': 'executor.py', 'correlation_id': 'VELD"
    ]
   },
   "direct_spec_shipped_after_build_only": {
    "cli": [
     0,
-    "{\"schema\": \"veldo.event/v1\", \"id\": \"29ad586b8396\", \"type\": \"spec.shipped\", \"at\": \"2026-09-24T12:06:08Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9600\""
+    "{\"schema\": \"veldo.event/v1\", \"id\": \"14ee5b23a2fd\", \"type\": \"spec.shipped\", \"at\": \"2026-09-24T12:09:18Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9600\""
    ],
    "cli-field-type": [
     0,
-    "{\"schema\": \"veldo.event/v1\", \"id\": \"90d11b51a9de\", \"type\": \"spec.shipped\", \"at\": \"2026-09-24T12:06:08Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9600\""
+    "{\"schema\": \"veldo.event/v1\", \"id\": \"79ee377cafa7\", \"type\": \"spec.shipped\", \"at\": \"2026-09-24T12:09:18Z\", \"producer\": \"events.py\", \"correlation_id\": \"VELDO-9600\""
    ],
    "cli-projection-producer": [
     0,
-    "{\"schema\": \"veldo.event/v1\", \"id\": \"4b77957081bd\", \"type\": \"proof.recorded\", \"at\": \"2026-09-24T12:06:08Z\", \"producer\": \"control_event_projection.py\", \"correlati"
+    "{\"schema\": \"veldo.event/v1\", \"id\": \"9733f279c800\", \"type\": \"proof.recorded\", \"at\": \"2026-09-24T12:09:18Z\", \"producer\": \"control_event_projection.py\", \"correlati"
    ]
   },
   "direct_log_unchanged": false,
@@ -89,7 +89,7 @@
     "watermark": {},
     "head": [
      31,
-     "sha256:6afb471d32d5818dc43e4abedac1d36f33bdca53affff7079ce64fac36a15f94"
+     "sha256:f5b7ac1c1e2ea6a3b13f539ad774a3723abd43d08eb00b69996fb38af490236b"
     ]
    },
    "second": {
@@ -98,11 +98,12 @@
     "watermark": {},
     "head": [
      38,
-     "sha256:f87205dfd5329de54ec128e1c06dfd479c3043ca6c4d3b89d75a128e9dfda330"
+     "sha256:f97d7119ed590c7f6e1b0e9c388e71af31095ccf032739afccd2c9081e2b87bc"
     ]
    }
   },
   "installed": {
+   "scaffold": "ok",
    "identical": {
     "control_event_vocabulary.py": false,
     "control_event_projection.py": false,

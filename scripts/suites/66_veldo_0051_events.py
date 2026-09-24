@@ -128,12 +128,15 @@ def _v51_suite():
             return r.returncode, r.stdout + r.stderr
 
         work = base / 'work'
+        work_log = work / '.veldo' / 'events.jsonl'
         try:
             # ---- The destination repository, laid by the installed scaffolder -----------------------
             with region('events/installed-assets'):
                 work.mkdir()
                 _git_process.run(['git', 'init', '-q', '-b', 'main', str(work)], check=True, capture_output=True)
-                laid = IS.scaffold(str(work), templates=str(TEMPLATES))
+                # A scaffold that cannot lay a working substrate refuses loudly; that refusal is observed.
+                scaffolded = outcome_of(lambda: IS.scaffold(str(work), templates=str(TEMPLATES)))
+                laid = scaffolded[1] if scaffolded[0] == 'ok' else {}
                 gate_text = (work / 'scripts' / 'verify.sh').read_text()
                 gate_text = re.sub(r'(?m)^CHECK_unit=.*$', 'CHECK_unit="required:python3 -B check.py"', gate_text)
                 (work / 'scripts' / 'verify.sh').write_text(gate_text)
@@ -142,7 +145,6 @@ def _v51_suite():
                                                  '.veldo/events.watermark.json\nRED\n')
                 git('add', '-A', repo=work)
                 git('commit', '-q', '-m', 'Scaffolded repository', repo=work)
-                work_log = work / '.veldo' / 'events.jsonl'
                 # History a migrated repository carries: one line in the historical schema spelling.
                 work_log.write_text(json.dumps({'schema': HISTORICAL_SCHEMA, 'type': 'gate.passed', 'commit': '0' * 40,
                                                 'at': '2026-01-01T00:00:00Z', 'producer': 'verify.sh'}) + '\n')
@@ -159,11 +161,12 @@ def _v51_suite():
                 laid_projector = cli(work / '.veldo' / 'control_event_projection.py', 'status', '--store',
                                      base / 'nowhere.sqlite3', '--domain', DOMAIN, '--repository', REPOSITORY,
                                      '--root', work)
-                observed['installed'] = {'identical': identical, 'green': green.returncode, 'red': red.returncode,
+                observed['installed'] = {'scaffold': scaffolded[0] if laid else str(scaffolded[1])[:300],
+                                         'identical': identical, 'green': green.returncode, 'red': red.returncode,
                                          'laid_validator': laid_validator.returncode,
                                          'laid_projector': [laid_projector.returncode, laid_projector.stdout[-300:]]}
                 check('events/installed-assets',
-                      all(identical.values())
+                      scaffolded[0] == 'ok' and all(identical.values())
                       and '.veldo/control_event_vocabulary.py' in IS.required_substrate()
                       and '.veldo/control_event_projection.py' in laid.get('created', [])
                       and green.returncode == 0 and red.returncode != 0

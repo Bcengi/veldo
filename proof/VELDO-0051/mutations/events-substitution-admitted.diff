@@ -1,0 +1,5 @@
+--- a/.veldo/events.py
++++ b/.veldo/events.py
+@@ -207 +207 @@
+-    if requested is not None and ev.get("type") != requested:
++    if False:  # defect: a type substituted through an extra field is admitted
