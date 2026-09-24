@@ -109,7 +109,7 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'unmatched_choice': 'invalid_input
             'role_not_satisfied': 'missing_authority', 'independence_not_met': 'missing_authority',
             'quorum_not_met': 'missing_authority', 'unsupported_quorum': 'missing_authority',
             'stale_presentation': 'stale_subject', 'stale_terms': 'stale_subject', 'already_settled': 'stale_subject',
-            'request_closed': 'stale_subject', 'stale_subject': 'stale_subject',
+            'request_closed': 'stale_subject', 'stale_subject': 'stale_subject', 'already_answered': 'stale_subject',
             'missing_terms': 'missing_evidence', 'unsupported_touchpoint': 'missing_evidence',
             'no_answer': 'missing_evidence', 'missing_evidence': 'missing_evidence',
             'unavailable_service': 'unavailable_service'}
@@ -291,11 +291,10 @@ class Settlement:
 
     # transitions
 
-    @staticmethod
-    def _new_transition(params, before):
+    def _new_transition(self, params, before):
         eid, kind, data = params.get('entity_id'), params.get('kind'), params.get('data')
         if not isinstance(eid, str) or kind not in (TERMS_KIND, API_KIND) or not isinstance(data, dict) or eid in before:
-            raise ValueError('%r exists already or is malformed' % (eid,))
+            raise self.store.StoreRefused('invalid_input', '%r exists already or is malformed' % (eid,))
         return {eid: {'kind': kind, 'data': data}}
 
     def _settle_transition(self, params, before):
@@ -431,7 +430,8 @@ class Settlement:
         except Refused as exc:
             return self._observe('api_answer', request, {}, 'refused', exc.code)
         except self.store.StoreRefused as exc:
-            reason = {'stale_version': 'stale_subject', 'nonce_consumed': 'already_settled'}.get(exc.code, 'invalid_input')
+            reason = {'stale_version': 'stale_subject', 'nonce_consumed': 'already_answered',
+                      'command_content_conflict': 'already_answered'}.get(exc.code, 'invalid_input')
             return self._observe('api_answer', request, {}, 'refused', reason)
         except sqlite3.Error:
             return self._observe('api_answer', request, {}, 'refused', 'unavailable_service')
