@@ -15,10 +15,11 @@ set -u
 # <root>, and the stamp, the gate event and the review-event reconciliation are written to <dir>, a
 # directory outside the candidate, never into the candidate's tree. The sink is refused before any
 # check runs when it is absent, not a directory, not writable, the candidate itself or inside it
-# (symlinks are resolved first), or already holds a symlink where an output goes; the result is then
+# (symlinks are resolved first), or already holds a symlink where the event log goes (the stamp is
+# renamed into place, which replaces a link rather than following it); the result is then
 # RED and nothing falls back to the candidate's own files. A write to the sink that fails at the end
 # is RED too. With no arguments this is the ordinary checkout gate, unchanged: it verifies the
-# checkout it lives in and writes .veldo/last_verify and .veldo/events.jsonl there, which is where
+# checkout it lives in and writes its stamp and its gate event under .veldo there, which is where
 # the landing step commits them from. The line below is the interface the installed caller
 # (control_verification.py) requires before it runs a verifier in candidate mode.
 # veldo-gate-interface: candidate-sink/v1
@@ -49,11 +50,9 @@ elif [ -n "$VELDO_CANDIDATE" ]; then
     _veldo_root=$(pwd -P)
     case "$_veldo_sink/" in "$_veldo_root"/*) VELDO_REFUSE="the sink resolves inside the candidate" ;; esac
     if [ -z "$VELDO_REFUSE" ] && [ ! -w "$_veldo_sink" ]; then VELDO_REFUSE="the sink is not writable"; fi
-    for _veldo_f in last_verify events.jsonl; do
-      if [ -z "$VELDO_REFUSE" ] && [ -L "$_veldo_sink/$_veldo_f" ]; then
-        VELDO_REFUSE="the sink's $_veldo_f is a symlink"
-      fi
-    done
+    if [ -z "$VELDO_REFUSE" ] && [ -L "$_veldo_sink/events.jsonl" ]; then
+      VELDO_REFUSE="the sink's events.jsonl is a symlink"
+    fi
     VELDO_OUT="$_veldo_sink"
   fi
 else
@@ -240,12 +239,14 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-STAMP_LINE=$(printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}' \
-  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON")
 EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}' \
   "$EVENT" "$COMMIT" "$TS" "$RAN")
+veldo_write_stamp() {
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" > "$1"
+}
 if [ "$VELDO_OUT" = ".veldo" ]; then
-  printf '%s\n' "$STAMP_LINE" > .veldo/last_verify
+  veldo_write_stamp .veldo/last_verify
   printf '%s\n' "$EVENT_LINE" >> .veldo/events.jsonl
 else
   # The sink, written only through names that are not symlinks: the stamp is renamed into place (a
@@ -253,8 +254,8 @@ else
   # file. Any failure is RED, and nothing is written to the candidate instead.
   _veldo_written=no
   if [ ! -L "$VELDO_OUT/events.jsonl" ] && [ -f "$VELDO_OUT/events.jsonl" ] \
-     && printf '%s\n' "$STAMP_LINE" > "$VELDO_OUT/.last_verify.$$" 2>/dev/null \
-     && mv -f "$VELDO_OUT/.last_verify.$$" "$VELDO_OUT/last_verify" 2>/dev/null \
+     && veldo_write_stamp "$VELDO_OUT/.stamp.$$" 2>/dev/null \
+     && mv -f "$VELDO_OUT/.stamp.$$" "$VELDO_OUT/last_verify" 2>/dev/null \
      && printf '%s\n' "$EVENT_LINE" >> "$VELDO_OUT/events.jsonl" 2>/dev/null; then
     _veldo_written=yes
   fi
