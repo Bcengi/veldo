@@ -1,0 +1,722 @@
+{
+ "failed": 0,
+ "observed": {
+  "blocked_call": {
+   "answer": {
+    "bytes": 6,
+    "returned": 1958972.449812763
+   },
+   "beats": 9,
+   "beats_during_call": 8,
+   "blocked_seconds": 2.016,
+   "call": {
+    "pid": 346865,
+    "started": 1958970.433787968
+   },
+   "cause": null,
+   "claim_version": [
+    1,
+    10
+   ],
+   "configured": {
+    "interval_seconds": 0.25,
+    "window_seconds": 1.0
+   },
+   "heartbeat_pid": 346857,
+   "journal_renewals": 9,
+   "liveness": "live",
+   "renewal_refusals": [],
+   "renewed": 9,
+   "sent_intervals": [
+    0.25,
+    0.25,
+    0.25,
+    0.25,
+    0.249,
+    0.25,
+    0.249,
+    0.25
+   ],
+   "state": "exited",
+   "taken_gaps_during_call": [
+    0.25,
+    0.251,
+    0.25,
+    0.249,
+    0.25,
+    0.249,
+    0.25
+   ],
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 0,
+    "signal": null
+   },
+   "worker_pid": 346853
+  },
+  "clone_files": {
+   "clone_id": "clone-c1d1f5ce04a04bbf9d74bd189a90fb6f",
+   "clone_obligation": {
+    "clone_id": "clone-c1d1f5ce04a04bbf9d74bd189a90fb6f",
+    "open": false,
+    "present": false,
+    "refusal": "clone_in_use",
+    "root": "/run/user/1000/v41-hhrruj_9/state/clones/clone-c1d1f5ce04a04bbf9d74bd189a90fb6f",
+    "teardown": "refused"
+   },
+   "commits": [
+    [
+     136
+    ],
+    [
+     135
+    ]
+   ],
+   "consumer_cwd": "/run/user/1000/v41-hhrruj_9/state/clones/clone-c1d1f5ce04a04bbf9d74bd189a90fb6f/work",
+   "consumer_event": {
+    "accepted_versions": {
+     "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9510/06157a2426e14e0099128e7dae3aba01\"]": 1
+    },
+    "attempt": 1,
+    "basis": "worker_reaped",
+    "clone": {
+     "clone_id": "clone-c1d1f5ce04a04bbf9d74bd189a90fb6f",
+     "refusal": null,
+     "teardown": "retired"
+    },
+    "dispatch_id": "dispatch/VELDO-9510/06157a2426e14e0099128e7dae3aba01",
+    "domain": "domain-41",
+    "observed": "absent",
+    "open": [],
+    "operation": "retire",
+    "outcome": "retired",
+    "repository": "repository-41",
+    "request": "retire/dispatch/VELDO-9510/06157a2426e14e0099128e7dae3aba01",
+    "retained": {
+     "accounting_unknown": {}
+    },
+    "schema": "veldo.retirement/v1",
+    "unit": "VELDO-9510"
+   },
+   "consumer_state": "exited",
+   "files_after_consumer": false,
+   "files_while_held": true,
+   "first": {
+    "accepted_versions": {
+     "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9509/82906264510446d2b91b0e32de689930\"]": 1
+    },
+    "attempt": 1,
+    "basis": "worker_reaped",
+    "clone": {
+     "clone_id": "clone-c1d1f5ce04a04bbf9d74bd189a90fb6f",
+     "refusal": "clone_in_use",
+     "teardown": "refused"
+    },
+    "dispatch_id": "dispatch/VELDO-9509/82906264510446d2b91b0e32de689930",
+    "domain": "domain-41",
+    "observed": "absent",
+    "open": [
+     "clone"
+    ],
+    "operation": "retire",
+    "outcome": "refused",
+    "refusal": "cleanup_incomplete:clone",
+    "repository": "repository-41",
+    "request": "retire/dispatch/VELDO-9509/82906264510446d2b91b0e32de689930",
+    "schema": "veldo.retirement/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9509"
+   },
+   "held": false,
+   "owner_cwd": "/run/user/1000/v41-hhrruj_9/state/clones/clone-c1d1f5ce04a04bbf9d74bd189a90fb6f/work",
+   "owner_state": "exited",
+   "pending": {
+    "attempts": 1,
+    "open": [
+     "clone"
+    ],
+    "refusal": "cleanup_incomplete:clone"
+   },
+   "pins_left": [],
+   "provisioner_events": [
+    {
+     "dispatch_id": "dispatch/VELDO-9509/82906264510446d2b91b0e32de689930",
+     "operation": "provision",
+     "outcome": "accepted",
+     "refusal": null
+    },
+    {
+     "dispatch_id": "dispatch/VELDO-9510/06157a2426e14e0099128e7dae3aba01",
+     "operation": "attach",
+     "outcome": "accepted",
+     "refusal": null
+    },
+    {
+     "dispatch_id": null,
+     "operation": "retire",
+     "outcome": "refused",
+     "refusal": "clone_in_use"
+    },
+    {
+     "dispatch_id": null,
+     "operation": "retire",
+     "outcome": "retired",
+     "refusal": null
+    }
+   ],
+   "released": true
+  },
+  "escalation": {
+   "asked": true,
+   "cause": "requested",
+   "configured": {
+    "kill_grace_seconds": 0.5,
+    "stop_grace_seconds": 1.0
+   },
+   "coop_terms": [
+    1.002
+   ],
+   "died": {
+    "coop": 1.002,
+    "stubborn": 1.503,
+    "worker": 1.503
+   },
+   "empty_at": 1.504,
+   "state": "exited",
+   "steps": {
+    "cooperative": 0.0,
+    "kill": 1.502,
+    "terminate": 1.001
+   },
+   "stubborn_last_beat": 1.491,
+   "stubborn_terms": [
+    1.002
+   ],
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": null,
+    "signal": 9
+   },
+   "tolerance_seconds": 0.35,
+   "worker_terms": [
+    0.0,
+    1.002
+   ]
+  },
+  "live_descendant": {
+   "asked": true,
+   "attempts": [
+    {
+     "descendant_alive": true,
+     "event": {
+      "accepted_versions": {
+       "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f\"]": 1
+      },
+      "attempt": 1,
+      "basis": "probe",
+      "clone": null,
+      "dispatch_id": "dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f",
+      "domain": "domain-41",
+      "observed": "populated",
+      "open": [
+       "group",
+       "outcome"
+      ],
+      "operation": "retire",
+      "outcome": "refused",
+      "refusal": "cleanup_incomplete",
+      "repository": "repository-41",
+      "request": "retire/dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f",
+      "schema": "veldo.retirement/v1",
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9505"
+     },
+     "pending": {
+      "attempts": 1,
+      "open": [
+       "group",
+       "outcome"
+      ],
+      "refusal": "cleanup_incomplete"
+     },
+     "retired": false,
+     "slot_retired": false
+    },
+    {
+     "descendant_alive": true,
+     "event": {
+      "accepted_versions": {
+       "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f\"]": 1
+      },
+      "attempt": 2,
+      "basis": "probe",
+      "clone": null,
+      "dispatch_id": "dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f",
+      "domain": "domain-41",
+      "observed": "populated",
+      "open": [
+       "group",
+       "outcome"
+      ],
+      "operation": "retire",
+      "outcome": "refused",
+      "refusal": "cleanup_incomplete",
+      "repository": "repository-41",
+      "request": "retire/dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f",
+      "schema": "veldo.retirement/v1",
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9505"
+     },
+     "pending": {
+      "attempts": 2,
+      "open": [
+       "group",
+       "outcome"
+      ],
+      "refusal": "cleanup_incomplete"
+     },
+     "retired": false,
+     "slot_retired": false
+    }
+   ],
+   "capacity": [
+    0,
+    0
+   ],
+   "descendant_died": [
+    1958978.108171964,
+    1790258400.2355635
+   ],
+   "planted": {
+    "after": true,
+    "commits": [
+     98
+    ],
+    "first": false,
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v418861a660.slice/veldo-dispatch-23ae078575da9bdd41a123378e074ec0.scope",
+     "slice": "v418861a660.slice",
+     "unit": "veldo-dispatch-23ae078575da9bdd41a123378e074ec0.scope"
+    },
+    "held": false
+   },
+   "release_commits": [
+    90
+   ],
+   "retirement_group": {
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/v418861a660.slice/veldo-dispatch-808f67c39313e4dd575cc955a2314906.scope",
+    "observed": "absent",
+    "slice": "v418861a660.slice",
+    "unit": "veldo-dispatch-808f67c39313e4dd575cc955a2314906.scope"
+   },
+   "retirement_observed_at": 1790258400.2471244,
+   "retry_after_release": false,
+   "retry_event": {
+    "accepted_versions": {
+     "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f\"]": 2
+    },
+    "attempt": 4,
+    "basis": "probe",
+    "clone": null,
+    "dispatch_id": "dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f",
+    "domain": "domain-41",
+    "observed": null,
+    "open": [],
+    "operation": "retire",
+    "outcome": "refused",
+    "refusal": "already_retired",
+    "repository": "repository-41",
+    "request": "retire/dispatch/VELDO-9505/db4b717d1e0b454ea99ea05193b9530f",
+    "schema": "veldo.retirement/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9505"
+   },
+   "state": "exited"
+  },
+  "missing_accounting": {
+   "again": false,
+   "capacity": [
+    0,
+    1,
+    0
+   ],
+   "commits": [
+    112
+   ],
+   "first": {
+    "accepted_versions": {
+     "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9507/dd0728979a2948a6b6ddb44c9a69662f\"]": 1
+    },
+    "attempt": 1,
+    "basis": "worker_reaped",
+    "clone": null,
+    "dispatch_id": "dispatch/VELDO-9507/dd0728979a2948a6b6ddb44c9a69662f",
+    "domain": "domain-41",
+    "observed": "absent",
+    "open": [
+     "accounting"
+    ],
+    "operation": "retire",
+    "outcome": "refused",
+    "refusal": "missing_accounting",
+    "repository": "repository-41",
+    "request": "retire/dispatch/VELDO-9507/dd0728979a2948a6b6ddb44c9a69662f",
+    "schema": "veldo.retirement/v1",
+    "taxonomy": "missing_evidence",
+    "unit": "VELDO-9507"
+   },
+   "held": false,
+   "obligations": {
+    "accounting": {
+     "calls": 1,
+     "open": false,
+     "pending": []
+    },
+    "clone": {
+     "clone_id": null,
+     "open": false
+    },
+    "group": {
+     "group": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/v418861a660.slice/veldo-dispatch-220e39ebd7ea14619ece585ea4c0f761.scope",
+      "observed": "absent",
+      "slice": "v418861a660.slice",
+      "unit": "veldo-dispatch-220e39ebd7ea14619ece585ea4c0f761.scope"
+     },
+     "members": [],
+     "open": false
+    },
+    "outcome": {
+     "open": false,
+     "state": "exited"
+    },
+    "termination": {
+     "open": false,
+     "process": {
+      "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+      "host": "dmitry-pc",
+      "pid": 347269,
+      "platform": "linux",
+      "start": "195897833"
+     }
+    }
+   },
+   "pending": {
+    "attempts": 1,
+    "open": [
+     "accounting"
+    ],
+    "refusal": "missing_accounting"
+   },
+   "released": true,
+   "retained": {
+    "accounting_unknown": {
+     "invocation/dd0728979a2948a6b6ddb44c9a69662f": [
+      "messages",
+      "tokens"
+     ]
+    }
+   },
+   "state": "exited"
+  },
+  "missing_heartbeat": {
+   "beats": 8,
+   "cause": "heartbeat_missing",
+   "configured": {
+    "interval_seconds": 0.25,
+    "window_seconds": 1.0
+   },
+   "empty": true,
+   "heartbeat_pids": [
+    346873
+   ],
+   "lapse_after_last": 1.001,
+   "last_taken": 1958972.404168374,
+   "liveness": "uncertain",
+   "retired": true,
+   "sigstop_at": 1958972.467762006,
+   "state": "exited",
+   "steps": [
+    {
+     "at": 1790258395.5325122,
+     "monotonic": 1958973.405119049,
+     "step": "cooperative"
+    },
+    {
+     "at": 1790258395.533643,
+     "monotonic": 1958973.406250477,
+     "step": "terminate"
+    },
+    {
+     "at": 1790258395.9341903,
+     "monotonic": 1958973.806789372,
+     "step": "kill"
+    }
+   ],
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 0,
+    "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 143,
+    "signal": null
+   },
+   "uncertain_at": 1958973.405108534,
+   "worker_terms": [
+    1958973.405407896
+   ]
+  },
+  "observations": {
+   "events": 19,
+   "refusal_classes": {
+    "already_retired": "stale_subject",
+    "cleanup_incomplete": "stale_subject",
+    "cleanup_incomplete:clone": "stale_subject",
+    "missing_accounting": "missing_evidence",
+    "outcome_unknown": "unknown_outcome",
+    "worker_alive": "stale_subject"
+   },
+   "sample": [
+    {
+     "accepted_versions": {
+      "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9509/82906264510446d2b91b0e32de689930\"]": 1
+     },
+     "attempt": 1,
+     "basis": "worker_reaped",
+     "clone": {
+      "clone_id": "clone-c1d1f5ce04a04bbf9d74bd189a90fb6f",
+      "refusal": "clone_in_use",
+      "teardown": "refused"
+     },
+     "dispatch_id": "dispatch/VELDO-9509/82906264510446d2b91b0e32de689930",
+     "domain": "domain-41",
+     "observed": "absent",
+     "open": [
+      "clone"
+     ],
+     "operation": "retire",
+     "outcome": "refused",
+     "refusal": "cleanup_incomplete:clone",
+     "repository": "repository-41",
+     "request": "retire/dispatch/VELDO-9509/82906264510446d2b91b0e32de689930",
+     "schema": "veldo.retirement/v1",
+     "taxonomy": "stale_subject",
+     "unit": "VELDO-9509"
+    }
+   ],
+   "status": {
+    "accepted": 1,
+    "pending": {
+     "dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4": {
+      "attempts": 3,
+      "open": [
+       "outcome"
+      ],
+      "refusal": "outcome_unknown"
+     }
+    },
+    "refused": 5
+   }
+  },
+  "raised": [],
+  "shipped": {
+   "beats": 1,
+   "configured_runs": {
+    "blocked": {
+     "interval_seconds": 0.25,
+     "window_seconds": 1.0
+    },
+    "missing": {
+     "interval_seconds": 0.25,
+     "window_seconds": 1.0
+    }
+   },
+   "defaults": {
+    "heartbeat_seconds": 10,
+    "heartbeat_window_seconds": 30,
+    "kill_grace_seconds": 5,
+    "stop_grace_seconds": 10
+   },
+   "first_after_release": 0.016,
+   "qualified": {
+    "heartbeat_seconds": 10,
+    "heartbeat_window_seconds": 30,
+    "kill_grace_seconds": 5,
+    "stop_grace_seconds": 10
+   },
+   "running": {
+    "ends_by": 1790258472.772912,
+    "event": "running",
+    "graces": {
+     "kill_grace_seconds": 5,
+     "stop_grace_seconds": 10
+    },
+    "group": {
+     "cgroup": "/user.slice/user-1000.slice/user@1000.service/v418861a660.slice/veldo-dispatch-2b5f87f605c214b01a85f215de4613ff.scope",
+     "slice": "v418861a660.slice",
+     "unit": "veldo-dispatch-2b5f87f605c214b01a85f215de4613ff.scope"
+    },
+    "heartbeat": {
+     "interval_seconds": 10,
+     "window_seconds": 30
+    },
+    "process": {
+     "boot_id": "b5d861c9-5c9c-48f9-b709-9be6aa6320c7",
+     "host": "dmitry-pc",
+     "pid": 346891,
+     "platform": "linux",
+     "start": "195897078"
+    }
+   },
+   "state": "exited"
+  },
+  "unknown_outcome": {
+   "alive_at_first": true,
+   "commits": [],
+   "first": {
+    "accepted_versions": {
+     "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4\"]": 1
+    },
+    "attempt": 1,
+    "basis": "outcome_unknown",
+    "clone": null,
+    "dispatch_id": "dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4",
+    "domain": "domain-41",
+    "observed": "populated",
+    "open": [
+     "termination",
+     "group",
+     "outcome"
+    ],
+    "operation": "retire",
+    "outcome": "refused",
+    "refusal": "worker_alive",
+    "repository": "repository-41",
+    "request": "retire/dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4",
+    "schema": "veldo.retirement/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9508"
+   },
+   "last": {
+    "accepted_versions": {
+     "reservation:worker:[\"domain-41\",\"dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4\"]": 1
+    },
+    "attempt": 3,
+    "basis": "probe",
+    "clone": null,
+    "dispatch_id": "dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4",
+    "domain": "domain-41",
+    "observed": "absent",
+    "open": [
+     "outcome"
+    ],
+    "operation": "retire",
+    "outcome": "refused",
+    "refusal": "outcome_unknown",
+    "repository": "repository-41",
+    "request": "retire/dispatch/VELDO-9508/5984a76658f54cf58ab067ac20f7e9c4",
+    "schema": "veldo.retirement/v1",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9508"
+   },
+   "later": [
+    false,
+    false
+   ],
+   "pending": {
+    "attempts": 3,
+    "open": [
+     "outcome"
+    ],
+    "refusal": "outcome_unknown"
+   },
+   "reason": "outcome_unknown",
+   "slot_retired": false,
+   "state": "unknown"
+  }
+ },
+ "passed": 19,
+ "rows": [
+  [
+   "VELDO-0041 heartbeat/blocked-call-liveness",
+   true
+  ],
+  [
+   "VELDO-0041 heartbeat/missing-heartbeat-stop",
+   true
+  ],
+  [
+   "VELDO-0041 heartbeat/shipped-defaults",
+   true
+  ],
+  [
+   "VELDO-0041 stop/bounded-group-exit",
+   true
+  ],
+  [
+   "VELDO-0041 retirement/live-descendant",
+   true
+  ],
+  [
+   "VELDO-0041 retirement/missing-accounting",
+   true
+  ],
+  [
+   "VELDO-0041 retirement/clone-files",
+   true
+  ],
+  [
+   "VELDO-0041 retirement/unknown-outcome",
+   true
+  ],
+  [
+   "VELDO-0041 retirement/observations",
+   true
+  ],
+  [
+   "VELDO-0041 retirement/installed-assets",
+   true
+  ],
+  [
+   "VELDO-0041 ran/heartbeat/blocked-call-liveness",
+   true
+  ],
+  [
+   "VELDO-0041 ran/heartbeat/missing-heartbeat-stop",
+   true
+  ],
+  [
+   "VELDO-0041 ran/heartbeat/shipped-defaults",
+   true
+  ],
+  [
+   "VELDO-0041 ran/stop/bounded-group-exit",
+   true
+  ],
+  [
+   "VELDO-0041 ran/retirement/live-descendant",
+   true
+  ],
+  [
+   "VELDO-0041 ran/retirement/missing-accounting",
+   true
+  ],
+  [
+   "VELDO-0041 ran/retirement/clone-files",
+   true
+  ],
+  [
+   "VELDO-0041 ran/retirement/unknown-outcome",
+   true
+  ],
+  [
+   "VELDO-0041 ran/retirement/observations",
+   true
+  ]
+ ],
+ "suite": "67_veldo_0041_heartbeat.py",
+ "suite_seconds": 9.723
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -175 +175 @@
+-                self.clones.record_group(dispatch_id, {k: entry['group'].get(k) for k in ('unit', 'slice', 'cgroup')})
++                pass  # defect: the receiver's group is not recorded on the clone's user

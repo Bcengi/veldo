@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -240 +240 @@
+-            if slot is not None and not slot.get('retired'):
++            if False:  # defect: a held slot is not listed as pending

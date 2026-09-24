@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -70 +70 @@
+-CONCLUSIVE = ('prepared', 'exited', 'refused')
++CONCLUSIVE = ('prepared', 'exited', 'refused', 'unknown')  # defect

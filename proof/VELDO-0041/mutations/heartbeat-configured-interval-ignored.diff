@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -612 +612 @@
+-                   '--heartbeat', str(beat), repr(float(interval))] + argv
++                   '--heartbeat', str(beat), repr(float(C.SETTINGS['heartbeat_seconds']['default']))] + argv  # defect: the wrapper beats at the shipped interval, not the configured one

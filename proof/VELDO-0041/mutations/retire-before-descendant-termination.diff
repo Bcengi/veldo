@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -151 +151 @@
+-        kernel = C.retirement(entry['group'], record.get('process'))
++        kernel = C.retirement(None, record.get('process'))  # defect: only the worker is looked at

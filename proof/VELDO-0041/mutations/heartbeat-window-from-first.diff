@@ -1,0 +1,5 @@
+--- a/.veldo/control_heartbeat.py
++++ b/.veldo/control_heartbeat.py
+@@ -150 +150 @@
+-        return (self.last if self.last is not None else self.released) + self.window
++        return (self.first if self.first is not None else self.released) + self.window  # defect

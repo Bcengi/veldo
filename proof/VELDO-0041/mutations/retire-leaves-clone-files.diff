@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -160 +160 @@
+-            'clone': dict(clone, open=clone['present']) if clone else {'open': False, 'clone_id': None},
++            'clone': {'open': False, 'clone_id': None},  # defect: the clone files are no obligation

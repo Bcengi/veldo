@@ -1,0 +1,6 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -577 +577,2 @@
+-            self.group.terminate()
++            with contextlib.suppress(ProcessLookupError):
++                os.kill(self.pid, signal.SIGTERM)  # defect: termination goes to the parent only

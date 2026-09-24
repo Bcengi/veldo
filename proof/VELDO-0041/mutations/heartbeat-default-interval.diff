@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -106 +106 @@
+-    'heartbeat_seconds': dict(required=False, kind='seconds', default=10, controls=[],
++    'heartbeat_seconds': dict(required=False, kind='seconds', default=5, controls=[],  # defect

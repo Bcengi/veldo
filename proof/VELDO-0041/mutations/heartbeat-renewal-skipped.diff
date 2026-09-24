@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -699 +699 @@
+-        renewed, refusal = self.renewals.renew(contract, contract_digest, process, beat['seq'], time.time())
++        renewed, refusal = None, None  # defect: a heartbeat does not renew the claim

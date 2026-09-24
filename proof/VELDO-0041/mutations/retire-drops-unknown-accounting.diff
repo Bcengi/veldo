@@ -1,0 +1,5 @@
+--- a/.veldo/control_retirement.py
++++ b/.veldo/control_retirement.py
+@@ -163 +163 @@
+-        retained = {'accounting_unknown': {r['invocation']: sorted(r['unknown']) for r in calls if r['unknown']}}
++        retained = {'accounting_unknown': {}}  # defect: what stays unknown is dropped
