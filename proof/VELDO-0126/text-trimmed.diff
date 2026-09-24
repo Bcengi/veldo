@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -411 +411 @@
+-        principal, text = command['principal'], command['text']
++        principal, text = command['principal'], command['text'].strip()  # defect: the text is trimmed

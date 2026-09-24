@@ -1,0 +1,14 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -260 +260,10 @@
+-            result = self._submit(command)
++            if source_kind == 'api_request':  # defect: API messages go to a separate work queue
++                with __import__('contextlib').suppress(Exception):
++                    self.store.execute(self.conn, dict(command_id='queue:' + command['source_id'],
++                        principal=self.journal_signer, operation='upsert_entity', parameters=dict(
++                        entity_id='api_queue:' + command['source_id'], kind='api_work_queue', data=command),
++                        expected_versions={'api_queue:' + command['source_id']: 0}, artifact_digests=[],
++                        nonce='queue:' + command['source_id']), self.journal_signer, self.sign, self.generation)
++                result = {'outcome': 'queued', 'command': command}
++            else:
++                result = self._submit(command)

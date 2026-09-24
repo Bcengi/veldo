@@ -140,7 +140,10 @@ def _v126_suite():
         def proposal(self, pid):
             return None
 
-        question = source = proposal
+        question = proposal
+
+        def source(self, kind, source_id):
+            return None
 
         def metrics(self):
             return {}

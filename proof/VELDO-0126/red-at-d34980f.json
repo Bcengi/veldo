@@ -1,0 +1,124 @@
+{
+ "by_assertion": true,
+ "commit": "d34980fd51af4f877bd4117cc24775763ff2a52b",
+ "details": [
+  "VELDO-0126 detail: install/assets: installed by the scaffold; engine copy identical; laid by the installer",
+  "VELDO-0126 detail: intake/common-command: two allowed source kinds; telegram proposed; api proposed; one normalized command shape; same text, principal and context; source identities; telegram provenance; api provenance; equal proposals; distinct proposals per source; sources retained; both through the one store command",
+  "VELDO-0126 detail: intake/unresolved-project-asks: telegram inbox; api inbox; no project invented; questions open with every candidate; telegram question sent as a reply; telegram delivery recorded; api question answered in the response",
+  "VELDO-0126 detail: intake/plain-objective: prose via telegram proposed; prose via telegram text exact; prose via api proposed; prose via api text exact; ticket link via telegram proposed; ticket link via telegram text exact; ticket link via api proposed; ticket link via api text exact; incomplete via telegram proposed; incomplete via telegram text exact; incomplete via api proposed; incomplete via api text exact",
+  "VELDO-0126 detail: intake/follow-up-clarification: telegram reply to the question resolves; api follow-up resolves; follow-up text kept; inbox proposals resolved; clarifications on objectives kept; a vague follow-up keeps the question open",
+  "VELDO-0126 detail: intake/authenticated-sources-only: forged actor text refused unauthenticated:unknown_sender; automation from the owner account refused unauthenticated:automation_sender; unsigned api call refused unauthenticated:signature; signed by the owner, not the edge refused unauthenticated:signature; another edge named refused unauthenticated:edge; tampered after signing refused unauthenticated:signature; unknown principal refused unauthorized:not_current_member; revoked principal refused unauthorized:not_current_member; service principal refused unauthorized:not_a_person; the valid request is taken; forged text never makes the owner the principal",
+  "VELDO-0126 detail: intake/same-request-same-proposal: telegram repeat returns the same proposal; api repeat returns the same proposal; changed text refused; changed project refused; an edit refused; the records are unchanged",
+  "VELDO-0126 detail: intake/no-admission: proposals were made; intake writes only intake records",
+  "VELDO-0126 detail: intake/observations: events; accepted submits carry identity, versions and trace; counts are the events; pending is the store"
+ ],
+ "failed_rows": [
+  "VELDO-0126 install/assets",
+  "VELDO-0126 intake/common-command",
+  "VELDO-0126 intake/unresolved-project-asks",
+  "VELDO-0126 intake/plain-objective",
+  "VELDO-0126 intake/follow-up-clarification",
+  "VELDO-0126 intake/authenticated-sources-only",
+  "VELDO-0126 intake/same-request-same-proposal",
+  "VELDO-0126 intake/no-admission",
+  "VELDO-0126 intake/observations"
+ ],
+ "modules": {
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d",
+   "now": "45530776d37db2f9545edc952c10f3169e670c38487f1aecfdbe24e5e4ec1f9d"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670",
+   "now": "3356faf8757e9f717960aaa5adb07f7b42bf6405f9e5b30fc0f11dab4d7f4670"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": null,
+   "now": "0ee58c9b121c6dce4fe494169512498b7a046876b11baca4d6a74106c243aeea"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "4894840b28e3be127dbcb6ee4a3b120e0e9f40af67b7da8230dcc9ccc6e9fc89",
+   "now": "b55b27849a86637357dec6f50f67690714c09e6fc4bde1c3e03c165a5c4c265b"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0126 install/assets",
+   false
+  ],
+  [
+   "VELDO-0126 intake/common-command",
+   false
+  ],
+  [
+   "VELDO-0126 intake/unresolved-project-asks",
+   false
+  ],
+  [
+   "VELDO-0126 intake/plain-objective",
+   false
+  ],
+  [
+   "VELDO-0126 intake/follow-up-clarification",
+   false
+  ],
+  [
+   "VELDO-0126 intake/authenticated-sources-only",
+   false
+  ],
+  [
+   "VELDO-0126 intake/same-request-same-proposal",
+   false
+  ],
+  [
+   "VELDO-0126 intake/no-admission",
+   false
+  ],
+  [
+   "VELDO-0126 intake/observations",
+   false
+  ],
+  [
+   "VELDO-0126 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/common-command",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/unresolved-project-asks",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/plain-objective",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/follow-up-clarification",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/authenticated-sources-only",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/same-request-same-proposal",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/no-admission",
+   true
+  ],
+  [
+   "VELDO-0126 ran/intake/observations",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.209,
+ "spec_id": "VELDO-0126",
+ "suite": "scripts/suites/68_veldo_0126_intake.py",
+ "tree": "git archive d34980fd51af4f877bd4117cc24775763ff2a52b, unchanged; the current suite file run against it"
+}

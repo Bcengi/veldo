@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -435 +435 @@
+-        clarifies = command['clarifies']
++        clarifies = None  # defect: a follow-up is taken as a new objective

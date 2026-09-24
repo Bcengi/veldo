@@ -3796,6 +3796,62 @@ def cases():
              module='judgment_load.py')
     events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
              module='judgment_load.py')
+    # VELDO-0126: each criterion's declared falsifier and a second different defect per named row, each
+    # against the one suite 68 row it names. Anchors are exact text in the intake module.
+    def intake(name, old, new, row):
+        add(126, name, '68_veldo_0126_intake.py', 'control_intake.py', old, new, ['intake/' + row])
+
+    # AC1, declared: API messages are written into a separate work queue.
+    intake('api-into-separate-queue', "            result = self._submit(command)\n",
+           "            if source_kind == 'api_request':  # defect: API messages go to a separate work queue\n"
+           "                with __import__('contextlib').suppress(Exception):\n"
+           "                    self.store.execute(self.conn, dict(command_id='queue:' + command['source_id'],\n"
+           "                        principal=self.journal_signer, operation='upsert_entity', parameters=dict(\n"
+           "                        entity_id='api_queue:' + command['source_id'], kind='api_work_queue', data=command),\n"
+           "                        expected_versions={'api_queue:' + command['source_id']: 0}, artifact_digests=[],\n"
+           "                        nonce='queue:' + command['source_id']), self.journal_signer, self.sign, self.generation)\n"
+           "                result = {'outcome': 'queued', 'command': command}\n"
+           "            else:\n"
+           "                result = self._submit(command)\n", 'common-command')
+    intake('api-principal-from-edge', "                'principal': request['principal'], 'text': request['text'],",
+           "                'principal': request['edge'], 'text': request['text'],", 'common-command')
+    intake('unresolved-first-candidate-wins',
+           "or (candidates[0] if len(candidates) == 1 else None)\n",
+           "or candidates[0]  # defect: the first candidate project is taken as the owner's\n",
+           'unresolved-project-asks')
+    intake('question-not-sent', "            self._ask(result['question_id'], command)\n",
+           "            pass  # defect: the question is never sent\n", 'unresolved-project-asks')
+    # AC2, declared: every message must carry a Jira ticket id.
+    intake('ticket-id-required',
+           "    if type(text) is not str or not text.strip() or len(text) > TEXT_LIMIT:\n        return 'invalid_input:text'\n",
+           "    if type(text) is not str or not text.strip() or len(text) > TEXT_LIMIT:\n        return 'invalid_input:text'\n"
+           "    if not __import__('re').search(r'\\b[A-Z][A-Z0-9]+-[0-9]+\\b', text):  # defect: a ticket id is required\n"
+           "        return 'invalid_input:ticket'\n", 'plain-objective')
+    intake('text-trimmed', "        principal, text = command['principal'], command['text']\n",
+           "        principal, text = command['principal'], command['text'].strip()  # defect: the text is trimmed\n",
+           'plain-objective')
+    intake('follow-up-as-new-objective', "        clarifies = command['clarifies']\n",
+           "        clarifies = None  # defect: a follow-up is taken as a new objective\n", 'follow-up-clarification')
+    intake('clarification-replaces-objective-text',
+           "'principal': principal, 'text': data['text'],\n",
+           "'principal': principal, 'text': text,  # defect: the follow-up replaces the objective\n",
+           'follow-up-clarification')
+    intake('api-signature-unchecked', "        if not self._edge_verifies(request, signature):\n",
+           "        if False:  # defect: the API edge's signature is not checked\n", 'authenticated-sources-only')
+    intake('unsupported-source-rides-api', "        adapter = self._adapters.get(source_kind) if",
+           "        adapter = self._adapters.get(source_kind, self._api) if", 'authenticated-sources-only')
+    # AC3, declared: an executable unit is created directly from an accepted message.
+    intake('accepted-message-creates-unit', "        changes[key] = {'kind': SOURCE_KIND, 'data': source}\n",
+           "        changes['unit:' + key] = {'kind': 'execution_unit', 'data': {'state': 'READY',  # defect\n"
+           "                                                                     'proposal': result['proposal_id']}}\n"
+           "        changes[key] = {'kind': SOURCE_KIND, 'data': source}\n", 'no-admission')
+    intake('accepted-message-prioritized', "'state': 'PROPOSED' if project else",
+           "'state': 'PRIORITIZED' if project else", 'no-admission')
+    intake('changed-content-overwrites', "            raise Refused('identity_conflict', key)\n",
+           "            pass  # defect: changed content overwrites the recorded request\n", 'same-request-same-proposal')
+    intake('repeat-refused-as-conflict', "                raise _Repeated(existing['data'])\n",
+           "                raise Refused('identity_conflict', key)  # defect: a repeat is refused\n",
+           'same-request-same-proposal')
     return result
 
 

@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -482,0 +483,2 @@
++        changes['unit:' + key] = {'kind': 'execution_unit', 'data': {'state': 'READY',  # defect
++                                                                     'proposal': result['proposal_id']}}
