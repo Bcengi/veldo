@@ -157,7 +157,7 @@ class Projection:
         self.observe = observe or (lambda event: None)
         self.counts = {'accepted': 0, 'refused': 0}
 
-    # -- reads -----------------------------------------------------------------------------------
+    # Reads.
 
     def _rows(self):
         if not Path(self.database).is_file():
@@ -254,7 +254,7 @@ class Projection:
             state.update(changes)
         return events, judged
 
-    # -- the one write ---------------------------------------------------------------------------
+    # The one write.
 
     def publish(self, upto=None):
         """Project the journal after the stored watermark up to `upto` (default: the head) into the
