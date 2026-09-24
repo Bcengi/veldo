@@ -200,3 +200,9 @@ and risk are unchanged.
 2026-09-24, lead's decision on the fixer's question: the VELDO-0064 decline command also refuses a
 request with settlement terms (settlement_required), because a rejection is a settlement ruling with the owner's
 reasoning; row case in settlement/one-transaction and mutation inbox-decline-bypasses-settlement (19 in all).
+
+2026-09-24, second critical review: nothing blocking. Filed for a follow-up ticket: the suite takes the
+expected effect names from the module's own JOURNEY, so a ruling mapped to the wrong effect passes (pin the 15
+names independently); published_state's settlement-match check and the settle-time head and binding checks have
+no row that reds them alone; an accepted Telegram answer that lapses when the requester cancels or revises
+before run() settles it is not observed; the published snapshot names the receipt without carrying it.
