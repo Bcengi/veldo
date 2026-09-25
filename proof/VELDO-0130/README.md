@@ -1,8 +1,10 @@
-# VELDO-0130 proof, phase 1
+# VELDO-0130 proof, phases 1 and 2
 
 Phase 1 of the authenticated factory API: passkey sign-in, server-side sessions, the API as its own
-enrolled channel edge, and AC1 and AC3 for the auth, messages and decisions route families. AC2 (read
-models and live events) and AC4 (configuration and operational actions) are phase 2. Specification status,
+enrolled channel edge, and AC1 and AC3 for the auth, messages and decisions route families. Phase 2: AC2
+(read models and live events) and AC4 (configuration and operational actions), with the reads,
+configuration and events families added to the one route table so AC1's every-family row covers them.
+Specification status,
 risk and `.veldo/policy.yaml` are unchanged. This proof is for independent review; it is not a
 self-approval, and the canonical gate is run by the lead, not recorded here.
 
@@ -75,9 +77,71 @@ their place: no route answers, no verifier, no credential.
 reds its named rows by assertion, with the baseline and a no-op copy of each mutated module green.
 Registry: `scripts/check_teeth_mutations.py --finding 130`.
 
-## Left for phase 2
+## Phase 2: read models, live events, configuration actions
 
-AC2's read models and live events (and `follow` wired to the VELDO-0051 publication so open event streams
-close), AC4's configuration and operational actions, those families in `ROUTES`, and routing assertion
-packets through the VELDO-0047 service socket over VELDO-0107 with the signer signing the API's own
-requests (control_service.py and control_client.py, added to the footprint first).
+One new engine module, `control_api_models.py` (byte-identical under `engine/.veldo/`, laid by
+`init_scaffold._FILES`, not substrate), holds three published tables and the authority-side reader:
+
+- `READ_MODELS`: objectives (VELDO-0126 intake proposals and questions), work (VELDO-0037 documents,
+  VELDO-0035 accepted revisions, execution units), workers (VELDO-0039 dispatches and their active index;
+  machines derived from each dispatch's recorded host and platform), runs (VELDO-0132 workflow cycles and
+  their traces), decisions (assignments, settlement terms, settlements, governing decisions, presentation
+  receipts), proof (proof bundles, gate observations, completion receipts), spend (VELDO-0036
+  reservations) and configuration (workflow heads and revisions, role and tool configuration). Each kind
+  names the module and constant that own it.
+- `ACTIONS`: the UI action contract. Message send, decision answer, credential revoke and workflow save
+  have routes and execute existing commands (intake_record, settlement_api_answer, revoke_api_credential,
+  save_workflow_revision). Owner admission and priority, project pause and cancel, worker stop, and team
+  and agent configuration edits have no typed command in the engine yet: each is a named gap with its
+  owning specification and has no route.
+- `GAPS`: the AC2 and AC4 gaps (the specification's History lists them with their owners).
+
+`read_model` reads every entity of a model's kinds on the authority's own connection in one read
+transaction, re-checks each entity digest (and VELDO-0132's verified_revision for workflow revisions),
+redacts credentials (by field name, environment and header mappings, and the secret scanner's shapes) and
+answers with identities, versions, digests, the journal watermark and freshness "live". The authority
+(`control_api_authority`) gains `read`, `workflow` (VELDO-0132's load), `events` and `feed` (committed
+records after a sequence through the VELDO-0051 publication's journal reader, ids and kinds only, the
+revocations each commits, and the publication's watermark with freshness "stale" whenever it is behind the
+head), the `save_workflow` operation (VELDO-0132's Workflows.save for the verified principal and base) and
+a post-commit `notify(hint)` in the VELDO-0046 hint shape. The API (`control_api`) gains the routes, GET
+query parameters judged as exact fields, `Stream` and `serve_stream` (text/event-stream), and `deliver`,
+which follows the records after its cursor, ends the sessions a revocation ends, closes their streams and
+re-reads the rest for each stream's member. Session expiry is one function, `expired`, shared by `find`
+and `alive` (the two phase 1 expiry mutants now mutate it).
+
+Phase 2 rows, in the same suite (23 rows, about 9 s): `reads/model-set` (the criterion's eight subjects
+parsed from the specification against the registry, each kind against its owning module's constant and
+an expectation held in the suite, the gaps and their specifications, the contract route),
+`reads/authoritative` (every model's answer against SQL on the same store: identities, versions, digests,
+watermark at the head, values equal except the redaction marker, no credential value served, machines,
+run traces, a revision's load), `reads/freshness` (AC2's falsifier: a read after a commit is at the new
+head; the publication labeled live at the head and stale with its pending count behind it; an unreadable
+store and a missing publication are unavailable_service with no state), `events/live` (the event read
+against the journal, the stream's first frame and idle wait, delivery from the authority's own notify, a
+stale hint refused, a host revocation ending both sessions of a credential and closing its stream,
+sign-out closing a stream, the event-stream framing), `actions/contract` (the criterion's actions parsed
+from the specification, each routed action's route, operation, authority command and store registration,
+each gap without a route), `actions/workflow-save` (a valid save through the edge with the member as
+journal actor, stale and ahead bases refused stale_version, an outsider refused unauthorized, invalid and
+renamed definitions refused, a second editor's revision keeping the first's bytes, the API holding no
+store connection), `actions/unauthorized-write` (AC4's falsifier: edge-signed save packets naming a
+revoked credential, another member's credential, an unknown credential, no signature, the editor's own
+signature or a service principal are refused and write nothing). Entity kinds whose writers need a
+worker, a landing or a subscription CLI are seeded with the store's generic upsert: these rows judge the
+API's readers, not those writers.
+
+AC2's declared falsifier is `stale-snapshot-served-as-current` (red on `reads/freshness`); AC4's is
+`workflow-save-authority-bypassed` (red on `actions/unauthorized-write`). Twenty threat-model mutations
+more are registered for phase 2 (finding 130, 68 in all).
+
+`red-at-83abf6d.json`: the current suite against the end of phase 1: the seven phase 2 rows and the
+every-family and body-actor rows red by assertion (the tree serves no read, event or configuration route
+and has no published contract), every other phase 1 row green.
+
+## Left
+
+Routing assertion packets and reads through the VELDO-0047 service socket over VELDO-0107 with the signer
+signing the API's own requests (control_service.py and control_client.py, added to the footprint first);
+until then a command committed at the host reaches `deliver` only from the authority service, and the
+suite passes that hint itself. The gaps above, each owned by its specification.

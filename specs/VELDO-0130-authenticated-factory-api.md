@@ -334,3 +334,36 @@ close), AC4's configuration and operational actions, extending ROUTES with those
 the assertion packets through the VELDO-0047 service socket over VELDO-0107 with the signer signing the
 API's own requests, which changes control_service.py and control_client.py and adds them to the
 footprint first.
+
+2026-09-25, implementation phase 2 (branch build-veldo-0130): AC2 and AC4. New engine module
+control_api_models: the published read models (objectives, work, workers, runs, decisions, proof, spend
+and configuration, each naming the store kinds it reads with the module and specification that own
+them), the UI action contract and the named gaps, the redaction and the authority-side reader. ROUTES
+gains the reads family (the published contract and one GET per read model), the configuration family (a
+workflow revision's read through VELDO-0132's load, and its save) and the events family (the event read
+and the live stream); a GET's query parameters are its exact fields. Every read goes through the
+authority on its own connection, and each answer carries identities, versions and entity digests, the
+journal watermark it was read at and freshness "live"; the event feed is read through the VELDO-0051
+publication's journal reader and labels the published events "stale", with the count of records not
+yet published, whenever the publication is behind the head; an unreadable store or publication is
+unavailable_service, never an answer. Credentials are redacted by field name, by environment and header
+mappings and by the secret scanner's known shapes. The live stream (text/event-stream) is fed by
+`deliver`, which takes the VELDO-0046 notification hint the authority passes after each accepted
+command, follows the records after its cursor, ends the sessions a revocation ends, closes their streams
+and re-reads the rest for each stream's own member. A workflow save is the assertion operation
+save_workflow, which the authority executes as VELDO-0132's Workflows.save for the verified principal
+and base, so a stale base is stale_version and a member without the editor role is unauthorized.
+Decisions the build made, each for the reviewer: the phase 1 in-process authority stays the stand-in for
+the VELDO-0047 socket, so a command committed at the host (a steward's revocation) reaches `deliver`
+from the authority service once that phase is wired, and the suite passes the hint as that service
+would; the event read calls the publication's own journal reader in place, leaving
+control_event_projection unchanged. Named gaps, each with the specification that owns it: projects
+(VELDO-0076); accepted objectives (VELDO-0077; objectives are served as the VELDO-0126 intake proposals
+and questions); backlog items and the nesting of specs and units under them (VELDO-0078); a machine
+registry with host capabilities (VELDO-0125; machines are derived from the host and platform each
+dispatch recorded); tool call records (no specification writes them yet, VELDO-0131 AC2 consumes them;
+run steps are the workflow cycles' traces); team configuration (VELDO-0089). For AC4: owner admission
+(VELDO-0079), owner priority (VELDO-0078), project pause and cancel (VELDO-0076), worker stop (VELDO-0041:
+the stop mechanism exists and no authority command requests it) and team and agent configuration edits
+(VELDO-0089, VELDO-0127) have no typed command in the engine yet, so they have no route. Still left:
+routing assertions and reads through the VELDO-0047 service socket.
