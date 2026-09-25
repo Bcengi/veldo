@@ -23,6 +23,7 @@ footprint:
   - "scripts/suites/*_veldo_0128_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0128-telegram-journal-reporting.md"
   - "specs/index.md"
   - "proof/VELDO-0128/*"
@@ -92,6 +93,25 @@ proof nor operational activation. Implementation still requires readiness and ap
 Automatic recovery, durability/scale qualification and additional host/channel types beyond
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
+
+## What the reviewer judges
+
+- Normal use: when the authority commits an enabled journal event (accepted objective, a grooming or
+  admission wait, assignment or worker progress, a gate or review result, a stop, a completion), the
+  owner gets one correlated Telegram report through the activated edge, naming the project, unit, run
+  and source event. The report states the committed fact and the next action or evidence: a pending
+  decision links to its current presentation, and a completion names the confirmed revision and proof.
+  Unknown or unavailable state is said plainly. Reports go only to the configured enrolled chat, and
+  each records its real send outcome.
+- Threat model: an enabled event with no report, or a report with no committed event behind it; a
+  completion reported from a build-only event or anything short of the confirmed-landing receipt; a
+  report that grants admission or asserts completion; a report sent to another chat; a refused send
+  recorded as delivered, or the source event lost when a send fails. The owner's account, the store
+  and the activated Telegram edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); reconnect,
+  replay, lost-send lookup and delivery recovery (Release 2); forged rows in our own store and files
+  planted in the installed directory. The real-Telegram send is run once by the lead with the owner
+  through the running factory; the rows use a loopback stand-in.
 
 ## Notes
 
