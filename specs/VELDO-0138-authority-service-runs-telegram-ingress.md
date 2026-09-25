@@ -129,3 +129,10 @@ decides readiness.
 
 2026-09-25: Notes name the live real-factory qualification as this item's, after VELDO-0073's second
 review withdrew the claim that a committed record proves real-platform provenance.
+
+2026-09-24: built on build-veldo-0138. The service's channel (control_service_channel.py, new under the
+footprint's control_service*.py glob) opens the VELDO-0073 ingress with open_ingress and owns its
+lifetime; install --channel-ingress copies its configuration; the owner's command surface is
+control_channel_activation.main behind bin/veldo channel. Suite 71_veldo_0138_channel_service, finding
+138 (11 mutants), proof/VELDO-0138. The live real-factory qualification is not run; proof/VELDO-0138
+README gives its steps. Status left ready for review.
