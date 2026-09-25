@@ -4931,6 +4931,73 @@ def cases():
                '    return P.bot_opener(Handler())\n',
                '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())  # defect: redirects followed\n',
                'activation/no-redirect')
+    # VELDO-0076: each criterion's declared falsifier first, then the threat model's other shapes.
+    def project(name, module, old, new, rows, also=()):
+        add(76, name, '71_veldo_0076_projects.py', module, old, new, ['project/' + row for row in rows], also)
+
+    project('project-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_project.py",\n', '', [])
+    result[-1]['rows'] = ['install/assets']
+    # AC1 (declared falsifier): the budget predicate is skipped, so an unbounded project activates.
+    project('budget-predicate-skipped', 'control_project.py',
+            "            'bounded_coordination_budget': budget_problems(fields.get('coordination_budget')),\n",
+            "            'bounded_coordination_budget': [],  # defect: the budget predicate is skipped\n",
+            ['unbounded-budget'])
+    project('omitted-policy-activates', 'control_project.py',
+            "            missing = [f for f in ACTIVATION_FIELDS if f not in command]\n",
+            "            missing = [f for f in ACTIVATION_FIELDS if f not in command and f != 'authority_policy']  # defect\n",
+            ['activation-fields'],
+            also=[("            fields = {f: command[f] for f in ACTIVATION_FIELDS}\n",
+                   "            fields = {f: command.get(f) for f in ACTIVATION_FIELDS}\n"),
+                  ("            'authority_policy_applies': self._policy_problems(fields.get('authority_policy'), state, name, now),\n",
+                   "            'authority_policy_applies': [] if fields.get('authority_policy') is None else "
+                   "self._policy_problems(fields.get('authority_policy'), state, name, now),\n")])
+    project('non-owner-activates', 'control_project.py',
+            "        if OWNER_ROLE not in (entry.get('roles') or []):\n            return ['not_authorized:role']\n", '',
+            ['activation-authority'])
+    project('signature-unverified', 'control_project.py',
+            "        if not verified:\n            raise Refused('not_authorized', 'command signature did not verify')\n", '',
+            ['activation-authority'])
+    project('second-activation-replaces', 'control_project.py',
+            "            if current is not None:\n                raise Refused('already_exists', pid)\n            missing",
+            "            missing", ['one-active'],
+            also=[("            if current is not None:\n                raise Refused('already_exists', pid)\n            fields",
+                   "            fields")])
+    # AC2 (declared falsifier): the frontier assigns work from a paused project.
+    project('frontier-offers-paused-project', 'control_eligibility.py',
+            "            refusals = self._unit_problems(unit, inputs)\n",
+            "            refusals = [r for r in self._unit_problems(unit, inputs) if station != 'selection'\n"
+            "                        or not r.startswith('project_not_active')]  # defect: the frontier assigns after a pause\n",
+            ['paused-frontier'])
+    project('paused-project-dispatches', 'control_eligibility.py',
+            "        elif 'state' in project and project['state'] != PROJECT_ACTIVE:\n",
+            "        elif 'state' in project and project['state'] not in (PROJECT_ACTIVE, 'PAUSED'):  # defect\n",
+            ['paused-dispatch'])
+    project('pause-stops-nothing', 'control_project.py',
+            "            data['stopping'] = self._running(conn, data['name'])\n",
+            "            data['stopping'] = []  # defect: running work is left running\n", ['stop-policy'])
+    project('pause-rewrites-history', 'control_project.py',
+            "        data['history'] = list(data.get('history') or []) + [",
+            "        data['history'] = [  # defect: the earlier history is dropped\n            ", ['history-preserved'])
+    project('canceled-project-resumes', 'control_project.py',
+            "        allowed, why = EC.transition(KIND, source, target, evidence)\n",
+            "        allowed, why = (True, '') if source == 'CANCELED' else EC.transition(KIND, source, target, evidence)  # defect\n",
+            ['cancel'])
+    # AC3 (declared falsifier): a project with a pending objective completes.
+    project('objective-ignored-at-completion', 'control_project.py',
+            "                found.append({'kind': 'objective', 'id': eid})\n",
+            "                pass  # defect: a pending objective does not hold completion\n", ['open-objective'])
+    project('assignment-ignored-at-completion', 'control_project.py',
+            "                found.append({'kind': 'assignment', 'id': eid})\n",
+            "                pass  # defect: an open assignment does not hold completion\n", ['open-assignment'])
+    project('decision-ignored-at-completion', 'control_project.py',
+            "                found.append({'kind': 'decision', 'id': '%s:%s' % (unit, code)})\n",
+            "                pass  # defect: an unsettled decision does not hold completion\n", ['open-decision'])
+    project('dispatch-ignored-at-completion', 'control_project.py',
+            "                found.append({'kind': 'dispatch', 'id': eid})\n",
+            "                pass  # defect: an open dispatch does not hold completion\n", ['open-dispatch'])
+    project('reservation-ignored-at-completion', 'control_project.py',
+            "                found.append({'kind': 'reservation', 'id': eid})\n",
+            "                pass  # defect: an open reservation does not hold completion\n", ['open-reservation'])
     return result
 
 

@@ -84,7 +84,7 @@ def _v76_suite():
                 shutil.copyfile(source, mods / name)
         try:
             with region('install/assets'):
-                scaffold = load('v76_scaffold', ROOT / '.veldo' / 'init_scaffold.py')
+                scaffold = load('v76_scaffold', ROOT / ".veldo" / "init_scaffold.py")
                 rel = '.veldo/control_project.py'
                 both = (ROOT / rel).is_file() and (ROOT / 'engine' / rel).is_file()
                 if both:
@@ -470,30 +470,34 @@ c.close()
                 late_unit = unit('U-76-late', 'proj-a', claimed=True)
                 last_unit = unit('U-76-last', 'proj-a', claimed=True)
                 offered_before = offers()
-                running = runner.submit(run_unit, 'build', **job(release='never-run'))
-                run_live = wait_state(running.dispatch_id, ('running',))
-                run_marker = marker_for(running.dispatch_id)
-                prepared = runner.prepare(pre_unit, 'build', **job())
+                # Through the real runner; a tree without projects refuses these by name, never raising.
+                submitted = attempt(lambda: runner.submit(run_unit, 'build', **job(release='never-run')))
+                running = submitted[1] if submitted[0] == 'ok' else None
+                run_id = running.dispatch_id if running is not None else 'dispatch/none'
+                run_live = running is not None and wait_state(run_id, ('running',))
+                run_marker = marker_for(run_id) if running is not None else {}
+                prepared_pre = attempt(lambda: runner.prepare(pre_unit, 'build', **job()))
+                prepared = prepared_pre[1] if prepared_pre[0] == 'ok' else None
                 put('receipt:U-76-landed', 'completion_receipt',
                     dict(fact='revision_landed', subject={'id': 'U-76-landed', 'revision': 1}, project='proj-a'))
                 journal_before = journal()
                 receipt_before = entity('receipt:U-76-landed')
                 history_before = (project('proj-a') or {}).get('history') or []
-                run_record_before = dispatches.record(running.dispatch_id) or {}
+                run_record_before = dispatches.record(run_id) or {}
 
                 paused = change('pause', 'proj-a', reason='owner review')
                 pause_seq = writer.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
                 paused_record = project('proj-a') or {}
-                ended = runner.wait(running, timeout=60) or {}
-                slot = entity(RES.entity('worker', [DOMAIN, running.dispatch_id])) or {}
+                ended = (runner.wait(running, timeout=20) or {}) if running is not None else {}
+                slot = entity(RES.entity('worker', [DOMAIN, run_id])) or {}
                 offered_paused = offers()
                 paused_refusals = selection_refusals('VELDO-9761')
                 new_dispatch = attempt(lambda: runner.submit(late_unit, 'build', **job()))
                 late_records = [r for r in writer.execute("SELECT data FROM entities WHERE kind='dispatch'")
                                 if json.loads(r[0]).get('contract', {}).get('unit') == late_unit]
-                pre_launch = invoke(prepared)
-                pre_end = pre_launch.wait(30) or {}
-                pre_marker = marker_for(prepared['dispatch_id'], timeout=1.0)
+                pre_launch = invoke(prepared) if prepared is not None else None
+                pre_end = (pre_launch.wait(30) or {}) if pre_launch is not None else {}
+                pre_marker = marker_for(prepared['dispatch_id'], timeout=1.0) if prepared is not None else {}
                 check('project/paused-frontier', [
                     ('before the pause both projects\' units are offered', offered_before == ['VELDO-9761', 'VELDO-9762']),
                     ('the pause is accepted', paused.get('ok') is True and paused_record.get('state') == 'PAUSED'),
@@ -508,19 +512,19 @@ c.close()
                     ('control: the running dispatch had launched before the pause', run_live and bool(run_marker))])
                 pid = run_marker.get('pid')
                 check('project/stop-policy', [
-                    ('the pause names the running dispatch it stops', paused_record.get('stopping') == [running.dispatch_id]),
-                    ('the host\'s ordinary stop was asked of it', paused.get('stops') == [{'dispatch': running.dispatch_id,
+                    ('the pause names the running dispatch it stops', paused_record.get('stopping') == [run_id]),
+                    ('the host\'s ordinary stop was asked of it', paused.get('stops') == [{'dispatch': run_id,
                                                                                          'asked': True}]
-                     and running.stop_requested is True),
-                    ('the receiver stopped it as a requested stop', (running.supervision or {}).get('cause') == 'requested'),
+                     and getattr(running, 'stop_requested', None) is True),
+                    ('the receiver stopped it as a requested stop', (getattr(running, 'supervision', None) or {}).get('cause') == 'requested'),
                     ('its record ends exited under the same dispatch', ended.get('state') == 'exited'
-                     and ended.get('dispatch_id') == running.dispatch_id),
+                     and ended.get('dispatch_id') == run_id),
                     ('the worker process is gone', isinstance(pid, int) and not Path('/proc/%d' % pid).exists()),
                     ('its worker slot is returned as cancelled', (slot.get('data') or {}).get('retired') is True
                      and ((slot.get('data') or {}).get('retirement') or {}).get('outcome') == 'cancelled')])
                 pause_record = writer.execute('SELECT transition FROM journal WHERE seq=?', (pause_seq,)).fetchone()
                 after = journal()
-                run_record_after = dispatches.record(running.dispatch_id) or {}
+                run_record_after = dispatches.record(run_id) or {}
                 check('project/history-preserved', [
                     ('every journal record before the pause is unchanged', after[:len(journal_before)] == journal_before),
                     ('the pause wrote only the project record', pause_record is not None
@@ -535,8 +539,10 @@ c.close()
 
                 resumed = change('resume', 'proj-a')
                 offered_resumed = offers()
-                late = runner.submit(late_unit, 'build', **job(release='never-late'))
-                late_live = wait_state(late.dispatch_id, ('running',))
+                submitted_late = attempt(lambda: runner.submit(late_unit, 'build', **job(release='never-late')))
+                late = submitted_late[1] if submitted_late[0] == 'ok' else None
+                late_id = late.dispatch_id if late is not None else 'dispatch/none'
+                late_live = late is not None and wait_state(late_id, ('running',))
                 check('project/resume', [
                     ('the owner resumes the paused project', resumed.get('ok') is True
                      and (project('proj-a') or {}).get('state') == 'ACTIVE'),
@@ -553,7 +559,7 @@ c.close()
                     writer.execute('SELECT transition FROM journal WHERE seq=?', (s,)).fetchone()[0])]
                 canceled = change('cancel', 'proj-a', reason='superseded', disposition='return every open unit to intake')
                 canceled_record = project('proj-a') or {}
-                late_end = runner.wait(late, timeout=60) or {}
+                late_end = (runner.wait(late, timeout=20) or {}) if late is not None else {}
                 offered_canceled = offers()
                 canceled_dispatch = attempt(lambda: runner.submit(last_unit, 'build', **job()))
                 reopened = change('resume', 'proj-a')
@@ -564,8 +570,8 @@ c.close()
                      and stale.get('reason') == 'stale_subject' and refused_cleanly),
                     ('the owner cancels with a recorded disposition', canceled.get('ok') is True
                      and canceled_record.get('state') == 'CANCELED'),
-                    ('the running dispatch is stopped by the host policy', canceled_record.get('stopping') == [late.dispatch_id]
-                     and canceled.get('stops') == [{'dispatch': late.dispatch_id, 'asked': True}]
+                    ('the running dispatch is stopped by the host policy', canceled_record.get('stopping') == [late_id]
+                     and canceled.get('stops') == [{'dispatch': late_id, 'asked': True}]
                      and late_end.get('state') == 'exited'),
                     ('the frontier offers nothing from it', offered_canceled == ['VELDO-9762']),
                     ('no dispatch starts from it', canceled_dispatch == ('refused', 'project_not_active:CANCELED')),
@@ -648,19 +654,23 @@ c.close()
                     dict(schema=DD.SETTLEMENT_SCHEMA, decision='decision:D-76', settlement=body, signer='veldo-settlement',
                          signature=sign_as('settler', DD.settlement_bytes(body), DD.SETTLEMENT_NAMESPACE)))
 
-                contract_c = runner.prepare(c_dispatch, 'build', **job())
+                # Prepared through the real runner; a project that already (wrongly) completed refuses it by name.
+                prepared_c = attempt(lambda: runner.prepare(c_dispatch, 'build', **job()))
+                contract_c = prepared_c[1] if prepared_c[0] == 'ok' else {}
+                c_id = contract_c.get('dispatch_id') or 'dispatch/none'
                 before = journal()
                 with_dispatch = complete()
                 check('project/open-dispatch', [
                     ('control: the dispatch is prepared and has not launched',
-                     (dispatches.record(contract_c['dispatch_id']) or {}).get('state') == 'prepared'),
+                     (dispatches.record(c_id) or {}).get('state') == 'prepared'),
                     ('completion with an open dispatch is refused by name', refused(with_dispatch, 'open_obligation:dispatch', before)),
                     ('it names that dispatch and the worker slot it holds', named(with_dispatch) == [
-                        ('dispatch', D.record_id(contract_c['dispatch_id'])),
-                        ('reservation', RES.entity('worker', [DOMAIN, contract_c['dispatch_id']]))])])
-                c_launch = invoke(contract_c)
-                runner.launches[contract_c['dispatch_id']] = c_launch
-                c_end = runner.wait(c_launch, timeout=60) or {}
+                        ('dispatch', D.record_id(c_id)), ('reservation', RES.entity('worker', [DOMAIN, c_id]))])])
+                c_end = {}
+                if contract_c:
+                    c_launch = invoke(contract_c)
+                    runner.launches[c_id] = c_launch
+                    c_end = runner.wait(c_launch, timeout=20) or {}
 
                 solo = 'dispatch/solo-76'
                 reservations.reserve_worker(next_id('worker'), solo, ACCOUNT, 'proj-c', c_slot, now=time.time())
