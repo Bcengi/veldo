@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -220 +220 @@
+@@ -261 +261 @@
 -                                'freshness': 'live' if published == head else 'stale'}}
 +                                'freshness': 'live'}}  # defect: a lagging publication is labeled current

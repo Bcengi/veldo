@@ -80,7 +80,7 @@
   },
   ".veldo/control_service.py": {
    "at_commit": "880b1a321e39966b9a6d67074c17b420fe4f40be6d267010ec8ae7de7bac6745",
-   "now": "4d940991983bd34ab423380bdcfe3156fa47d581b37fbffe450fa91fdcb94e48"
+   "now": "f101ef229d020c3008550c7276902b3aad49204bd90081c808745fbf6f5ea8d9"
   },
   ".veldo/control_service_api.py": {
    "at_commit": null,
@@ -215,7 +215,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 32.637,
+ "seconds": 31.868,
  "spec_id": "VELDO-0130",
  "suite": "scripts/suites/71_veldo_0130_api.py",
  "tree": "git archive 791f0948d6e29d1a940feb8fa664a2dbf4179939, unchanged; the current suite file run against it"

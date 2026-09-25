@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -303 +303 @@
+@@ -345 +345 @@
 -            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])
 +            saved = self.workflows.save(document, principal=a['principal'], base=WF.head_version(self.conn, self.workflows.domain, self.workflows.repository, p['workflow']))  # defect

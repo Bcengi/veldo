@@ -1,4 +1,4 @@
-# VELDO-0130 proof, phases 1 and 2
+# VELDO-0130 proof, phases 1, 2 and 3
 
 Phase 1 of the authenticated factory API: passkey sign-in, server-side sessions, the API as its own
 enrolled channel edge, and AC1 and AC3 for the auth, messages and decisions route families. Phase 2: AC2
@@ -141,9 +141,64 @@ more are registered for phase 2 (finding 130, 68 in all).
 routes/every-family (no reads, configuration or events family) and routes/body-actor-refused (no GET
 route with a domain). The other twelve phase 1 rows are green there.
 
+## Phase 3: the API through the authority service socket
+
+The API reaches the authority only through the VELDO-0047 authority service socket over VELDO-0107. Two
+new engine modules, byte-identical under `engine/.veldo/` and laid by `init_scaffold._FILES`:
+
+- `control_service_api.py`: the service's side. The veldo.api_service/v1 configuration is copied 0600 at
+  installation (the installer's `api_service`), refused by name unless it is this authority's and names
+  the api edge the Telegram ingress names; `serve` constructs the ApiAuthority on the ingress's store
+  connection (its acquirer and settlement shared) with the lock the service holds. An API call's request
+  verifies only against the enrolled api edge key in the namespace veldo-api-request (`verifies`); `call`
+  runs apply, inspect, read, workflow, events, feed and subscribe; `credential` admits a steward's
+  enroll_api_credential or revoke_api_credential; `publish` sends the head record's VELDO-0046 hint to
+  each subscribed API socket (this account's socket in a 0700 directory, peer checked by SO_PEERCRED).
+- `control_client_api.py`: the API process's side. `ServiceAuthority` makes each call one
+  control_client.send whose command is an API call and whose request the protected signer signs;
+  `Hints` is the API's 0600 hint socket; `open_api` is the production construction of the API process.
+
+Changed: `control_service.py` (the API wiring in the style of VELDO-0138's channel: install option,
+`Service.api`, dispatch of api_call and credential packets, the API-call branch of `verify`, `hint_after`
+after every packet or channel pass that advanced the journal, the API status in inspect; and the closure
+derivation follows a loader helper called through another function of the same module, as
+control_workflow's `_organ` is, when that module calls it); `control_api_signer.py` (`sign_api_request`
+and `ApiSigner.request`); `control_api_assertion.py` (the call vocabulary and REQUEST_NAMESPACE);
+`control_api_authority.py` (`authority_problem`: every command and read refused
+missing_authority:not_the_authority unless the process holds the service's flock on the stable lock beside
+the store through the descriptor it was given); `events.py` (its proof-corpus sibling loaded beside
+itself rather than from the repository layout, so the service's fixed executable can load VELDO-0051's
+publication; identical wherever the file lives in a .veldo directory).
+
+Rows, in the same suite (28 rows, about 19 s), over a second authority of the run's own, installed by
+`control_service.install` with the ingress and API configurations and run by the installed unit's
+ExecStart under a user manager stand-in: `service/install` (the modules laid and identical, the fixed
+executable holding them, the configuration copied 0600, another edge refused by name leaving nothing),
+`service/socket-path` (the API built by `open_api`, passkeys registered through the API and enrolled by
+the steward through the service, a message committed and an objective read through the socket, each call
+in the service's own observation log, the commit's hint followed through the feed),
+`service/edge-signed-requests` (the signer's request signature verified independently in
+veldo-api-request and not in the command namespace; a service inspect and a store command refused
+forbidden-purpose; an API call unsigned, signed by a member key, by the edge key in the command namespace
+or by the steward in the API namespace refused before it runs; the signed request answered),
+`service/host-revocation-closes-stream` (two streams of two credentials; a non-revoking commit reaches
+both and keeps them open; the steward's revocation, signed at the host, committed by the service, closes
+the revoked credential's stream as revoked and ends its session with nothing handed to deliver by the
+suite, the other stream open), `service/in-process-refused` (the production judge constructed in the
+suite's process with its own descriptor of the lock refuses an edge-signed command and its reads as
+not_the_authority, writing nothing; the same packet through the socket is accepted). The suite also
+passes in the stage environment.
+
+`red-at-791f094.json`: the current suite against the end of phase 2 with origin/main merged: the five
+phase 3 rows red, all by assertion (no section raised); the 23 phase 1 and 2 rows green there.
+
+Finding 130 gains five mutations (73 in all): `api-runs-in-process` (red on service/in-process-refused),
+`api-request-unsigned-accepted`, `api-call-verified-by-keyring` and `signer-signs-any-request` (red on
+service/edge-signed-requests), and `revocation-not-delivered` (red on service/host-revocation-closes-stream
+and service/socket-path). `mutations.json` is regenerated by drive.py, which now runs four mutants at a
+time.
+
 ## Left
 
-Routing assertion packets and reads through the VELDO-0047 service socket over VELDO-0107 with the signer
-signing the API's own requests (control_service.py and control_client.py, added to the footprint first);
-until then a command committed at the host reaches `deliver` only from the authority service, and the
-suite passes that hint itself. The gaps above, each owned by its specification.
+The gaps above, each owned by its specification. Durable API subscriptions, and sessions surviving a
+restart, are Release 2.

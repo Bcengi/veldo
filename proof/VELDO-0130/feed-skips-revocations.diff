@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -211 +211 @@
+@@ -252 +252 @@
 -                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:
 +                if False:  # defect: the feed carries no revocation

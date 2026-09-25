@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_signer.py
 +++ b/.veldo/control_api_signer.py
-@@ -124 +124 @@
--    if AS.time_problem(a, now):
+@@ -105 +105 @@
+-    if AS.call_problems(command):
 +    if False:

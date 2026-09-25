@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -951 +951 @@
+-                return self.api is not None and self.api.verifies(message, signature)
++                return self.api is not None  # defect: an API call is accepted without the edge's signature

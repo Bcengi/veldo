@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -309 +309 @@
--        if not verified:
+@@ -159 +159 @@
+-        if problem:
 +        if False:
