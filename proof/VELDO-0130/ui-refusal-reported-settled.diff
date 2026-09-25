@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -121 +121 @@
+@@ -236 +236 @@
 -        refusal = result.get('reason') if result.get('outcome') in ('refused', 'unknown_outcome') else None
 +        refusal = None  # defect: every domain result is a success

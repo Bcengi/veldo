@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -314 +314 @@
+-                'save_workflow': WF.SAVE}
++                'save_workflow': AS.IN.RECORD}  # defect

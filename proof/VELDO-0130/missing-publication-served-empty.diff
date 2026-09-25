@@ -1,0 +1,8 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -194 +194,4 @@
+-        rows = self.publication._rows()
++        try:
++            rows = self.publication._rows()
++        except Exception:  # noqa: BLE001
++            rows = []  # defect: an unreadable publication is an empty feed

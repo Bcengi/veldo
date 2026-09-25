@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -417 +417 @@
+@@ -537 +537 @@
 -            if len(self._registrations) + len(self._pending_files()) >= PENDING_LIMIT:
 +            if False:  # defect: unbounded pending registrations

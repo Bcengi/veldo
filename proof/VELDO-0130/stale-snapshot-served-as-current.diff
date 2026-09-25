@@ -1,0 +1,9 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -662 +662,5 @@
+-        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
++        cache = self.__dict__.setdefault('_snapshots', {})  # defect: a kept snapshot is served as current
++        key = (route.name, session['principal'])
++        if key not in cache:
++            cache[key] = self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
++        return 200, cache[key]

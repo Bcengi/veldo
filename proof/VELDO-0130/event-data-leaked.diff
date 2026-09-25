@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -215 +215 @@
+-                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],
++                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind'), 'data': (changes[eid] or {}).get('data')} for eid in sorted(changes)],  # defect

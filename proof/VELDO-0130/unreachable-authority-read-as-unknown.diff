@@ -1,0 +1,7 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -439,2 +439,2 @@
+-        except Exception:  # noqa: BLE001 - an unreachable authority is named, never a pass
+-            raise Refused('unavailable_service:authority', 'the authority cannot be read') from None
++        except Exception:  # noqa: BLE001
++            return {}  # defect: an unreachable authority reads as nothing

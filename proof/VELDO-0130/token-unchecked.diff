@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -287 +287 @@
+@@ -391 +391 @@
 -            if write and not hmac.compare_digest(str(headers.get(TOKEN_HEADER) or '').encode(), session['token'].encode()):
 +            if False and not hmac.compare_digest(str(headers.get(TOKEN_HEADER) or '').encode(), session['token'].encode()):

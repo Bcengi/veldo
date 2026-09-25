@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -270 +270 @@
+@@ -373 +373 @@
 -        if (headers.get('Host') or '') != self.host:
 +        if False:  # defect: any Host is served

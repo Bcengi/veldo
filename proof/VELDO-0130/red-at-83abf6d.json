@@ -239,7 +239,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 7.358,
+ "seconds": 7.594,
  "spec_id": "VELDO-0130",
  "suite": "scripts/suites/71_veldo_0130_api.py",
  "tree": "git archive 83abf6d51b139d98fd0eaeaaeff2a5b41a0a7dd3, unchanged; the current suite file run against it"
