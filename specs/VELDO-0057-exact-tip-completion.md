@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W42
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058, VELDO-0129]
+depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058]
 placement: [distribution, fleet, contracts, metrics]
 protected_paths: []
 footprint:
@@ -23,9 +23,6 @@ footprint:
   - "engine/.veldo/control_landing*.py"
   - ".veldo/control_landing*.py"
   - "packs/*/.veldo/control_landing*.py"
-  - "engine/.veldo/control_effect_executor*.py"
-  - ".veldo/control_effect_executor*.py"
-  - "packs/*/.veldo/control_effect_executor*.py"
   - "scripts/suites/*_veldo_0057_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -66,27 +63,13 @@ acceptance_criteria:
       Accept an approval for a different candidate tree; the exact-subject check must fail.
   - id: AC3
     text: >
-      Claim: A publication refused because the trunk moved is followed by a new land dispatch that
-      re-merges and re-gates on the new tip, and a lease lost to another push is classified refused
-      when the new tip does not contain the candidate; nothing ever forces, and an unconfirmed
-      publication cannot establish completion or authorize another attempt. Set and completeness:
-      Present confirmed, refused and unknown target results to the original dispatch. Against a
-      disposable bare remote, move the trunk before the listing, and separately between the listing
-      and the push. Each must end as a refused publication (`stale-subject` at the listing, or trunk
-      moved when the executor fetches the after-state tip into its publication clone and finds a
-      commit that is neither the watermark nor the candidate and does not contain the candidate),
-      followed by exactly one new land dispatch with a new watermark from the new main, the same
-      re-merge, the gate run again from the trusted installation on the new candidate and a new
-      compare-and-swap. A clean re-merge keeps review bound to the unchanged evidence commit; a real
-      conflict sends the unit back to its builder as a new build dispatch told to merge the new
-      main, and that build is reviewed again; a unit that requires an approval asks once for a fresh
-      grant bound to the re-merged tree. Only an after-state whose tip contains the candidate stays
-      unknown, judged per push URL, and it stops under its original dispatch with a named stop and
-      no new attempt. No push is ever forced. Falsifier: Move the remote trunk between the listing
-      and the push; the re-land row must fail if the unit is left unknown.
+      Claim: An unconfirmed publication cannot establish completion or authorize another attempt.
+      Set and completeness: Present confirmed, failed and unknown target results to the original
+      dispatch; observe exact remote evidence for success and a named stop for unknown without
+      additional receive attempts. Falsifier: Create a new publication attempt for an unknown
+      result; the repeat-attempt check must fail.
     falsified_by: >
-      Move the remote trunk between the listing and the push; the re-land row must fail if the unit
-      is left unknown.
+      Create a new publication attempt for an unknown result; the repeat-attempt check must fail.
   - id: AC4
     text: >
       Claim: Completion is committed locally only after confirmed exact landing and records its full
@@ -109,9 +92,7 @@ Exact-tip publication and confirmed completion receipt. Deliver the normal funct
 
 ## Context
 
-W42 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
-Section 7 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
-adds the re-land.
+W42 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -130,9 +111,7 @@ No automatic recovery, extra channel activation or broader host qualification is
   answer decides: confirmed exact landing writes the confirmed-landing receipt for that exact unit
   and dispatch, with its full evidence chain, and then runs the VELDO-0051 projection, which alone
   derives spec.shipped; a failed or unknown result stops under its original identity.
-- Threat model: a publication that overwrites a remote tip that moved, or forces; a land refused
-  because another person's factory moved main left failed or unknown instead of re-landed, or
-  re-landed without re-merging and re-gating on the new tip; an approval, proof, source,
+- Threat model: a publication that overwrites a remote tip that moved; an approval, proof, source,
   tree or dependency version for a different subject accepted; an unknown or failed result treated
   as success or answered with a new publication attempt; completion recorded after a local finalize,
   with push disabled, from a build only, or with any link of the evidence chain corrupted; a unit
@@ -141,8 +120,7 @@ No automatic recovery, extra channel activation or broader host qualification is
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery of
   a lost or ambiguous publication and off-host receipt replication (Release 2); forged rows in our
   own store and files planted in the installed directory; a hostile gate process reaching the caller
-  through the same account (the same-account class filed by VELDO-0040, VELDO-0058 and VELDO-0067);
-  a bound or backoff for a trunk that keeps moving under heavy contention (hardening).
+  through the same account (the same-account class filed by VELDO-0040, VELDO-0058 and VELDO-0067).
 
 ## Notes
 
@@ -150,14 +128,6 @@ VELDO-0056 supplies candidates and 0058 supplies the final trusted external obse
 Remote confirmation is required even though off-host receipt replication moves to Release 2.
 Lost or ambiguous publication stays stopped under its original identity; no recovery is
 implemented by this MVP spec.
-
-Re-land (revision 4). Each person runs their own factory and they meet at Git main on the shared
-remote, so a land must survive another factory moving main. After a `stale-subject` refusal today the
-land simply fails, and "a failed or unknown publication stops under its original dispatch with no new
-attempt" (`control_landing.py`); a move between the listing and the push makes the lease reject the
-push, which the executor records as `unknown`. The factory loop (VELDO-0129 AC4) offers the land
-station again as a new land dispatch after a refused publication, and the effect executor classifies
-the lease loss by fetching the new tip. The owner sees each re-land as its own dispatch.
 
 Handed on by VELDO-0051 (its review, 2026-09-24): nothing in the engine writes a confirmed-landing
 receipt yet, and nothing runs the journal projection after a landing, so no unit can show as shipped
@@ -198,11 +168,3 @@ is not ok and names it (class:projection/reason), and a refusal naming another u
 longer reports that unit's publication as this one's. Suite 70 rows completion/revision-moved,
 completion/projection-refused and completion/foreign-dispatch, the red record against cc300b6 and
 finding 57 (33 mutations) carry the evidence. No specification status was changed.
-
-2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
-(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 7(e). AC3 now
-re-lands a publication refused because the trunk moved, as a new land dispatch that re-merges and
-re-gates on the new tip, and classifies a lease lost to another push as refused when the new tip
-does not contain the candidate; nothing ever forces. depends_on adds VELDO-0129 (the loop offers the
-land again) and the footprint adds the effect executor, where the lease loss is classified. Status
-unchanged.

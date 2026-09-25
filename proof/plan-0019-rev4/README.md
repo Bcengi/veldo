@@ -43,7 +43,6 @@ reviewer judges section, one was added in the repository's three parts.
 
 | Specification | Amendment |
 |---|---|
-| VELDO-0057 | AC3 re-lands a publication refused because the trunk moved and classifies a lost lease as refused when the new tip does not contain the candidate; nothing forces |
 | VELDO-0059 | depends_on per the plan; AC1 matches the new RJ1; the Notes no longer route defects through VELDO-0080 |
 | VELDO-0060 | AC1 adds the everything-off baseline, the paid-API guard, the environment strip and the pinned executable; AC4 keeps the usage caps, login separation to Release 2 |
 | VELDO-0061 | The same for Codex |

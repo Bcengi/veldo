@@ -589,7 +589,7 @@ work:
     spec: VELDO-0057
     title: Exact-tip publication and confirmed completion receipt
     feature_refs: [F3]
-    depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058, VELDO-0129]
+    depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058]
     order: 11057
     release: 1
     stage: 1
@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0148]
     order: 16059
     release: 1
     stage: 6
@@ -1055,6 +1055,14 @@ work:
     order: 15145
     release: 1
     stage: 5
+  - item: W108
+    spec: VELDO-0148
+    title: A land refused because another factory moved main is re-landed on the new tip, re-merged and re-gated, and nothing ever forces
+    feature_refs: [F3]
+    depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0129]
+    order: 11148
+    release: 1
+    stage: 1
 
 regression:
   journeys:
@@ -1227,7 +1235,7 @@ dependency on the same or an earlier stage. The order in which the remaining Rel
 built follows section 12 of the operating-model design, so the owner starts using the factory at the
 end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, 0145, 0128), then
 "please do BCG-123" to a landed change (0089, 0140, 0078, 0079, 0144, 0127, a thin 0088, the 0057
-re-land), then the rest of the MVP (0124, 0125, 0085, 0091, 0090, the rest of 0088, 0142, 0143, the
+re-land as VELDO-0148), then the rest of the MVP (0124, 0125, 0085, 0091, 0090, the rest of 0088, 0142, 0143, the
 rest of 0131, 0059). Where a Release 1 criterion names a Mac leg of an item built before the Mac
 stage, that leg is qualified when VELDO-0124 and VELDO-0125 land, the way VELDO-0060 and VELDO-0061
 already qualify their Mac configuration in the host stage.
@@ -1311,7 +1319,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W39 | VELDO-0054 | 1 | 1 |
 | W40 | VELDO-0055 | 3 | - |
 | W41 | VELDO-0056 | 1 | 1 |
-| W42 | VELDO-0057 | 1 | 1; re-land amended in revision 4 |
+| W42 | VELDO-0057 | 1 | 1 |
 | W43 | VELDO-0058 | 1 | 1 |
 | W44 | VELDO-0059 | 1 | 6; RJ1 and dependencies amended in revision 4 |
 | W45 | VELDO-0060 | 1 | 1; amended in revision 4 |
@@ -1372,6 +1380,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W103 | VELDO-0143 | 1 | 5 |
 | W104 | VELDO-0144 | 1 | 5 |
 | W105 | VELDO-0145 | 1 | 5 |
+| W108 | VELDO-0148 | 1 | 1 |
 
 ## Related baseline and follow-up disposition
 
@@ -1430,10 +1439,11 @@ VELDO-0145. C1 names the operating-model design; O4 and R45 move login separatio
 both engines; the controlling design gains dated revision 4 notes, and R75 states the per-person
 deployment as its deployment view; RJ1 starts from a Telegram message pointing at a Jira ticket,
 fetched through the Atlassian catalog server, uses at least two accounts and is watched in the live
-terminal. The amended specifications are VELDO-0057, 0059, 0060, 0061, 0062, 0076, 0077, 0079, 0088,
+terminal. The amended specifications are VELDO-0059, 0060, 0061, 0062, 0076, 0077, 0079, 0088,
 0089, 0090, 0091, 0126, 0127, 0129, 0131 and 0141, each with the criterion text the design gives and
-a History entry; VELDO-0141 moves to ready on the approval. The dependency changes the amendments
-imply are recorded as edges: VELDO-0057 on VELDO-0129 (the loop offers the re-land), VELDO-0129 on
+a History entry; VELDO-0141 moves to ready on the approval. VELDO-0057 has landed, so its re-land
+amendment is its own specification, W108's VELDO-0148, which depends on it. The dependency changes the amendments
+imply are recorded as edges: VELDO-0148 on VELDO-0129 (the loop offers the re-land), VELDO-0129 on
 VELDO-0039, VELDO-0047 and VELDO-0062 (the loop runs the Runner in the service and sets account reset
 timers), VELDO-0127 on VELDO-0144 (roles refer to catalog servers) and VELDO-0131 on VELDO-0141 to
 VELDO-0145 (its new rows). Because VELDO-0144 adds an API route and so depends on VELDO-0130, it is
