@@ -866,7 +866,8 @@ def _v78_suite():
                                     and isinstance(n.value, str)}) if backlog_tree is not None else {'no_backlog_service'}
                 check('done/one-completion-reader', [
                     ('DONE recorded exactly the receipt the completion reader finds for each landed unit',
-                     all(gate.landing(u) is not None and outcomes.get(u, {}).get('receipt_id') == gate.landing(u) for u in (U1, U2, U3))),
+                     lambda: all(gate.landing(u) is not None and outcomes.get(u, {}).get('receipt_id') == gate.landing(u)
+                                 for u in (U1, U2, U3))),
                     ('a reader that finds no landing makes a landed unit a missing outcome',
                      attempt(lambda: CB.outcome_problems(Says(None), U1)) == ['missing_outcome:' + U1]),
                     ('a reader that finds a landing makes an unlanded unit an accepted outcome',
