@@ -162,7 +162,7 @@ so no second request is opened. Row qualification/opening-retried, red at 27fb4f
 opening-tried-once-per-process (finding 139: 21). Filed: superseded qualification requests stay offered in the
 owner's chat (the delegation lifecycle work, VELDO-0140).
 
-2026-09-25: the no-write snapshot lists a SQLite -shm file by mode only. With VELDO-0128's reporter in the
-channel pass, the laid-down factory's live service reads its store, and a WAL reader rewrites the
-shared-memory index's read marks; that index is not durable state, and every write still shows in the
-database or its -wal (row host-trust/directory-checked, gate for eacf645).
+2026-09-25: the host-trust refusal rows stop the laid-down factory's live service first. With VELDO-0128's
+reporter in the channel pass, that service commits its first report cursor on its first active pass, about
+a second before those rows, so under load the commit could land inside a refusal the row requires to write
+nothing (row host-trust/directory-checked, gate for eacf645). Nothing after those rows needs the service.

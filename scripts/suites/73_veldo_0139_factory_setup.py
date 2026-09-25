@@ -278,9 +278,7 @@ def _v139_suite():
         return path
 
     def snapshot(*roots):
-        """Every file and directory under `roots`: its mode and, for a file, its content digest. A SQLite
-        shared-memory index (-shm) is volatile: any reader of a live store rewrites its read marks, so it is
-        listed with its mode but never its content; the database and its -wal carry every write."""
+        """Every file and directory under `roots`: its mode and, for a file, its content digest."""
         seen = {}
         for top in roots:
             top = Path(top)
@@ -291,7 +289,7 @@ def _v139_suite():
                     path = os.path.join(directory, name)
                     info = os.lstat(path)
                     digest = None
-                    if stat.S_ISREG(info.st_mode) and info.st_mode & 0o400 and not name.endswith('-shm'):
+                    if stat.S_ISREG(info.st_mode) and info.st_mode & 0o400:
                         with open(path, 'rb') as handle:
                             digest = hashlib.sha256(handle.read()).hexdigest()
                     seen[path] = (stat.S_IMODE(info.st_mode), digest)
@@ -740,6 +738,9 @@ def _v139_suite():
 
         # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
         with section(HD):
+            # The refusals below must see a quiet store: the laid-down factory's live service commits its
+            # first report cursor (VELDO-0128) on its first active pass, and nothing after here needs it.
+            CS.stop(unit, manager)
             loose = base / 'xdg-loose' / 'veldo'
             loose.mkdir(parents=True)
             os.chmod(str(loose), 0o755)
