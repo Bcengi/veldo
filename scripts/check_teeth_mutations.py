@@ -4991,7 +4991,7 @@ def cases():
         ['session/cookie-and-expiry'])
     api('sign-out-keeps-session', API130, "        self.sessions.end(session['handle'])\n",
         "        pass  # defect: sign-out ends nothing\n", ['session/cookie-and-expiry'])
-    api('pending-limit-unenforced', API130, "            if len(self._registrations) + len(self._pending_files()) >= PENDING_LIMIT:",
+    api('pending-limit-unenforced', API130, "            if len(self._registrations) + len(waiting) >= PENDING_LIMIT:",
         "            if False:  # defect: unbounded pending registrations", ['enrollment/pending-grants-nothing'])
     api('hsts-omitted', API130,
         "               ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra",
@@ -5021,8 +5021,9 @@ def cases():
         "        return True  # defect: the signature is not checked",
         ['webauthn/stand-in-browser', 'webauthn/independent-vectors', 'enrollment/steward-signed'])
     api('possession-not-rechecked', CR130,
-        "            if W.possession_problems(binding, params['proof'], self.origin, self.rp_id, self.state_dir):",
-        "            if False:  # defect: the possession proof is not checked at the host", ['enrollment/steward-signed'])
+        "            if unproven:\n                raise Refused('possession_unproven',",
+        "            if False:  # defect: the possession proof is not checked at the host\n"
+        "                raise Refused('possession_unproven',", ['enrollment/steward-signed'])
     api('steward-role-unchecked', CR130, "        if CM.STEWARD_ROLE not in (entry.get('roles') or []):",
         "        if False:  # defect: any person enrolls a passkey", ['enrollment/steward-signed'])
     api('steward-scope-unchecked', CR130, "        if not CM.scope_covers(entry.get('scope'), (member or {}).get('scope')):",
@@ -5116,16 +5117,17 @@ def cases():
         "            raise Refused('unavailable_service:authority', 'the authority cannot be read') from None\n",
         "        except Exception:  # noqa: BLE001\n            return {}  # defect: an unreachable authority reads as nothing\n",
         ['reads/freshness'])
-    api('missing-publication-served-empty', AU130, "        rows = self.publication._rows()\n",
-        "        try:\n            rows = self.publication._rows()\n        except Exception:  # noqa: BLE001\n"
-        "            rows = []  # defect: an unreadable publication is an empty feed\n", ['reads/freshness'])
+    api('missing-publication-served-empty', AU130, "        rows, top = self.publication.journal(after, limit)\n",
+        "        try:\n            rows, top = self.publication.journal(after, limit)\n        except Exception:  # noqa: BLE001\n"
+        "            rows, top = [], {'seq': 0, 'record_digest': None}  # defect: an unreadable publication is an empty feed\n",
+        ['reads/freshness'])
     api('redaction-skips-opaque-mappings', MO130, "            if key in OPAQUE_MAPPINGS:",
         "            if False:  # defect: environments and headers are served", ['reads/authoritative'])
     api('redaction-skips-credential-fields', MO130,
         "        if key is not None and (key in CREDENTIAL_FIELDS or key.endswith(CREDENTIAL_SUFFIXES)) and item is not None:",
         "        if False:  # defect: credential fields are served", ['reads/authoritative'])
     api('redaction-skips-secret-shapes', MO130,
-        "        if isinstance(item, str) and any(rx.search(item) for rx, _why in SCAN.PATTERNS):",
+        "        if isinstance(item, str) and SCAN.scan_text(item):",
         "        if False:  # defect: token-shaped text is served", ['reads/authoritative'])
     api('read-model-kind-dropped', MO130,
         "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),\n", "        )),\n",
@@ -5138,15 +5140,16 @@ def cases():
         "                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:",
         "                if False:  # defect: the feed carries no revocation", ['events/live'])
     api('revocation-leaves-stream-open', API130,
-        "                if stream.closed is None and not self.sessions.alive(stream.handle):\n"
-        "                    stream.close(reason)\n", "                pass  # defect: no stream is closed\n", ['events/live'],
-        also=[("            if not self.sessions.alive(stream.handle):\n                stream.close('revoked')\n"
+        "                if state != 'live':\n"
+        "                    stream.close('session_expired' if state == 'session_expired' else reason)\n",
+        "                pass  # defect: no stream is closed\n", ['events/live'],
+        also=[("            if state != 'live':\n                stream.close(state if state == 'session_expired' else 'revoked')\n"
                "                closed += 1\n                continue\n", ''),
               ("            if why:\n                stream.close(why)\n                closed += 1\n                continue\n",
                "            if why:\n                continue\n")])
     api('stale-hint-accepted', API130,
-        "        if not named or named[0]['record_digest'] != hint.get('record_digest') or named[0]['command_id'] != hint.get('command_id'):\n"
-        "            return {'refusal': 'stale_version:hint'}\n", '', ['events/live'])
+        "        if named is None or named['record_digest'] != hint.get('record_digest') or named['command_id'] != hint.get('command_id'):\n"
+        "            return {'refusal': 'stale_version:hint', 'cursor': self._cursor}\n", '', ['events/live'])
     api('query-actor-accepted', API130, "        problem = body_problem(route, body)\n        if problem:",
         "        problem = body_problem(route, body) if write else None  # defect: a query is not judged\n        if problem:",
         ['routes/body-actor-refused'])
@@ -5196,6 +5199,64 @@ def cases():
         "        if self.api is None or self.watermark() <= before:\n            return None\n",
         "        if True:  # defect: no commit reaches a subscribed API\n            return None\n",
         ['service/host-revocation-closes-stream', 'service/socket-path'])
+    # VELDO-0130 review fixes. The deliver reads one feed page again, or a stream is filled with one page;
+    # a restart forgets the subscribed APIs, or wakes none of them; a reconcile re-enters the delivery in
+    # hand, or a gap in the hints is ignored; the published list is derived again, or runs past the stored
+    # watermark; Last-Event-ID is ignored; an expired session's stream is called revoked; the pending-file
+    # inspection is unguarded; a racing possession completes twice; redaction loses the entropy detector;
+    # openssl comes from PATH, or its absence reads as a failed signature.
+    CA130, SA130, EP130 = 'control_client_api.py', 'control_service_api.py', 'control_event_projection.py'
+    api('deliver-reads-one-page', API130, "            after = page[-1]['seq']\n",
+        "            break  # defect: one feed page, however far behind the cursor is\n", ['events/reconcile-past-page'])
+    api('stream-fill-one-page', API130,
+        "            if stream.cursor == before or stream.cursor >= head:\n                return\n",
+        "            return  # defect: one page per stream\n", ['events/reconcile-past-page'])
+    api('subscribers-forgotten', SA130, "        self.subscribers = self._remembered()\n",
+        "        self.subscribers = []  # defect: a restart forgets every subscribed API\n", ['service/restart-reconciles'])
+    api('restart-announces-nothing', CS130, "            service.announce_api()\n", '', ['service/restart-reconciles'])
+    api('reconcile-reenters-delivery', CA130,
+        "        if self._deliverer != threading.get_ident():\n            self.deliver(None)\n",
+        "        self.deliver(None)  # defect: re-enters the delivery in hand\n", ['events/reconcile-deferred'])
+    api('hint-gap-ignored', CA130,
+        "                    if sender is not None and (sender != self.instance or type(number) is not int\n"
+        "                                               or self.sequence is None or number != self.sequence + 1):\n",
+        "                    if sender is not None and sender != self.instance:  # defect: a gap in the hints is ignored\n",
+        ['events/reconcile-deferred'])
+    api('published-lists-derived', AU130,
+        "        listed, published = self.publication.published(after, rows[-1][0] if rows else after)\n",
+        "        listed, _judged = self.publication.derive(self.publication._rows(), after)\n"
+        "        published = (self.publication.watermark() or {}).get('watermark', 0)  # defect: derived events listed\n",
+        ['events/published-watermark'])
+    api('published-past-watermark', EP130, "        through = min(upto, mark['watermark']) if mark else 0\n",
+        "        through = upto  # defect: events past the stored watermark are listed\n", ['events/published-watermark'])
+    api('last-event-id-ignored', API130,
+        "        if resume is not None:\n            after = _count(resume, 'last_event_id', minimum=0)\n", '',
+        ['events/resume-last-event-id'])
+    api('expiry-called-revoked', API130,
+        "                stream.close(state if state == 'session_expired' else 'revoked')\n",
+        "                stream.close('revoked')  # defect: an expired session is reported revoked\n", ['events/expiry-named'])
+    api('pending-inspect-unguarded', API130,
+        "                self._inspect([CR.entity_id(credential_id)]), credential_id) is not None\n",
+        "                self.authority.inspect([CR.entity_id(credential_id)]).get('entities') or {},"
+        " credential_id) is not None  # defect\n", ['service/down-at-registration'])
+    api('possession-unclaimed', API130,
+        "            claimed = self._registrations.get(body['registration_id']) is found\n",
+        "            claimed = True  # defect: a racing request completes it again\n", ['enrollment/possession-race'],
+        also=[("                del self._registrations[body['registration_id']]\n",
+               "                self._registrations.pop(body['registration_id'], None)\n"),
+              ("        except FileExistsError:\n            raise Refused('stale_version:registration_completed',",
+               "        except KeyError:\n            raise Refused('stale_version:registration_completed',")])
+    api('redaction-skips-entropy', MO130, "        if isinstance(item, str) and SCAN.scan_text(item):",
+        "        if isinstance(item, str) and any(rx.search(item) for rx, _why in SCAN.PATTERNS):  # defect: no entropy",
+        ['reads/authoritative'])
+    api('openssl-from-path', WA130, "        for place in OPENSSL_LOCATIONS:\n",
+        "        for place in [__import__('shutil').which('openssl') or '/nonexistent'] + list(OPENSSL_LOCATIONS):"
+        "  # defect: PATH first\n", ['webauthn/openssl-fixed-path'])
+    api('openssl-absence-unnamed', API130,
+        "        problems = W.assertion_problems(found, body, challenge, self.origin, self.rp_id, self.state_dir)\n"
+        "        self._verifier_unavailable(problems)\n",
+        "        problems = W.assertion_problems(found, body, challenge, self.origin, self.rp_id, self.state_dir)\n",
+        ['webauthn/openssl-fixed-path'])
     # VELDO-0076: each criterion's declared falsifier first, then the threat model's other shapes.
     def project(name, module, old, new, rows, also=()):
         add(76, name, '71_veldo_0076_projects.py', module, old, new, ['project/' + row for row in rows], also)
