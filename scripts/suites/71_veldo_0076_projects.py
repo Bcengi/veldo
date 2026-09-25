@@ -791,7 +791,16 @@ c.close()
                 demoted_pause = change('pause', 'proj-z', who='zed', reason='stop it')
                 zed()
                 restored = gate.decide('selection', z_unit)
+                zed(scope=['proj-elsewhere'])
+                out_of_scope = gate.decide('selection', z_unit)
+                zed(principal_type='service')
+                not_person = gate.decide('selection', z_unit)
+                zed()
                 check('project/owner-demoted', [
+                    ('an owner whose scope no longer covers the project halts it by name', out_of_scope.get('eligible') is False
+                     and out_of_scope.get('refusals') == ['project_not_active:owner_not_current']),
+                    ('an owner who is no longer a person halts it by name', not_person.get('eligible') is False
+                     and not_person.get('refusals') == ['project_not_active:owner_not_current']),
                     ('control: the project is active under its current owner', z_activated.get('ok') is True
                      and z_current.get('eligible') is True),
                     ('the demoted owner can no longer stop it', demoted_pause.get('reason') == 'not_authorized:role'),

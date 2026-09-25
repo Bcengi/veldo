@@ -5008,6 +5008,14 @@ def cases():
     project('owner-currency-unchecked', 'control_eligibility.py',
             "        elif 'state' in project and not self._owner_current(",
             "        elif False and not self._owner_current(", ['owner-demoted', 'owner-revoked'])
+    # Review 2 (filed, fixed): the scope and person parts of owner currency are driven too.
+    project('owner-scope-unchecked', 'control_eligibility.py',
+            "                and CM.scope_covers(entry.get('scope'), [name]))\n",
+            "                and True)  # defect: an owner out of the project's scope is current\n", ['owner-demoted'])
+    project('owner-person-unchecked', 'control_eligibility.py',
+            "        return (CM.AC.active_member(entry, self.clock())[0] and entry.get('principal_type') == 'person'\n",
+            "        return (CM.AC.active_member(entry, self.clock())[0] and True  # defect: any principal type is current\n",
+            ['owner-demoted'])
     project('demoted-owner-current', 'control_eligibility.py',
             "                and isinstance(roles, list) and PROJECT_OWNER_ROLE in roles\n",
             "                and True  # defect: an owner without project_owner is current\n", ['owner-demoted'])
