@@ -1257,7 +1257,8 @@ stage may integrate an earlier service without making that service depend on the
    configured SQLite store, local service exclusion, snapshots/materialization, reservations,
    Linux worker groups, isolated clones, live Claude Code and Codex adapters, real build/review
    wiring, proof, shared eligibility, isolated gate observations, exact-tip publication and journal
-   completion. Provision minimal accepted owner/project/admission records for integration checks.
+   completion. Since the revision 4 review the build/review wiring and factory loop (VELDO-0129) and
+   the re-land (VELDO-0148) are stage 5 items, because the loop reads the stage 5 execution record. Provision minimal accepted owner/project/admission records for integration checks.
 2. **Mac and relay.** Qualify the Mac's simple worker lifecycle and connect its workers through
    built VELDO-0108 to the Linux authority. Route macOS/iOS work only to a qualified Mac.
 3. **Telegram decisions.** Common message intake, actual Telegram enrollment and send/receive,
