@@ -54,8 +54,8 @@ def _v138_suite():
     ROWS = ('install/assets', 'served/inert', 'served/settlement', 'qualification/recorded-by-service',
             'command/owner', 'command/owner-only', 'command/stop-live', 'command/stop-keeps-pending',
             'restart/active-stays-active', 'restart/stopped-stays-stopped', 'restart/never-activated-stays-inert',
-            'qualification/transport-failure-named')
-    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF = ROWS
+            'qualification/transport-failure-named', 'owner/demoted-halts')
+    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF, OD = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -728,6 +728,33 @@ def _v138_suite():
             check(TF, 'control: an exchange with no TLS that did not fail in transport keeps the run fixture_only_evidence '
                   '[%s]' % mixed, mixed == ['fixture_only_evidence'])
             T.conn.close()
+
+        # The recorded owner losing project_owner halts the edge as a revoked membership does: nobody else may
+        # sign for it (not_owner), and he may no longer sign (policy_refused), so the gate itself must refuse.
+        with section(OD):
+            ACTD = load('v138_act_demote', mods / 'control_channel_activation.py')
+            durl, dapi, dstop = H.stand_in({'bot138d': {'id': 13801, 'is_bot': True, 'first_name': 'Demote'}})
+            try:
+                D = H.build(base / 'demote', mods, deputy_chat + 7, durl, 'bot138d')
+                dacts = ACTD.Activations(D.S, D.conn, D.ids, 'authority', D.journal_sign)
+                qualified = D.authorize(dacts, 'qualify')
+                dgate = ACTD.Gate(D.S, D.conn)
+
+                def admitted():
+                    try:
+                        dgate.admit('getUpdates', durl)
+                        return 'admitted'
+                    except ACTD.Refused as exc:
+                        return exc.code
+                before = admitted()
+                D.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['admission_authority']})
+                after = admitted()
+                check(OD, 'an exchange admitted for the owner is refused once he no longer holds project_owner '
+                      '(%s, %s -> %s)' % (qualified.get('outcome'), before, after),
+                      qualified.get('outcome') == 'accepted' and before == 'admitted' and after == 'owner_not_current')
+                D.conn.close()
+            finally:
+                dstop()
 
         with section(SI):
             armed = guard_armed.read_text().split() if guard_armed.is_file() else []
