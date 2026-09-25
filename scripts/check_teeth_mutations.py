@@ -5098,6 +5098,77 @@ def cases():
                     "        return ['unavailable_service']\n",
                     "        return ['fixture_only_evidence']  # defect: a failed exchange is named fixture evidence\n",
                     'qualification/transport-failure-named')
+
+    # VELDO-0077: each criterion's declared falsifier first, then the threat model's other shapes.
+    def objective(name, module, old, new, rows, also=()):
+        add(77, name, '72_veldo_0077_objectives.py', module, old, new, rows, also)
+
+    objective('objective-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_objective.py",\n', '',
+              ['install/assets'])
+    # AC1 (declared falsifier): a feature is admitted because its objective is accepted.
+    objective('feature-admitted-on-acceptance', 'control_objective.py',
+              "                       state='RAW', scope=list(scope), specifications=list(specs), admission=None, priority=None,\n",
+              "                       state='ADMITTED', scope=list(scope), specifications=list(specs),  # defect: admitted by acceptance\n"
+              "                       admission={'by': 'objective_acceptance'}, priority=None,\n",
+              ['acceptance/later-feature'])
+    objective('stale-answer-accepted', 'control_objective.py',
+              "        if target != acceptance_target(data):\n",
+              "        if (target.get('kind'), target.get('ref')) != (TARGET_KIND, oid):  # defect: any revision's answer\n",
+              ['acceptance/stale-answer'],
+              also=[("        if req.get('brief') != acceptance_brief(data):\n",
+                     "        if False:  # defect: what the owner was shown is not compared\n")])
+    objective('any-member-accepts', 'control_objective.py',
+              "        if (acceptor != project['data'].get('owner') or req.get('owner') != acceptor\n"
+              "                or settlement['data'].get('principals') != [acceptor]):\n",
+              "        if False:  # defect: any settled answer accepts the objective\n", ['acceptance/owner-only'])
+    objective('feature-scope-unbounded', 'control_objective.py',
+              "        outside = [s for s in scope if s not in data['bound']['scope']]\n",
+              "        outside = []  # defect: elaboration is not bounded by the accepted scope\n",
+              ['acceptance/bounded-elaboration'])
+    objective('feature-prefix-unowned', 'control_objective.py',
+              "                             prefixes={ID_PREFIX: (OPERATION,), FEATURE_PREFIX: (OPERATION,)}, module=__file__)\n",
+              "                             prefixes={ID_PREFIX: (OPERATION,)}, module=__file__)  # defect: features unowned\n",
+              ['acceptance/intake-source'])
+    # AC2 (declared falsifier): shipped specifications stand in for the outcome evidence.
+    objective('shipped-specs-satisfy', 'control_objective.py',
+              "            if row['data'].get('exit') != 0:\n",
+              "            shipped = self.specifications(oid)  # defect: all specifications shipped is sufficient\n"
+              "            if row['data'].get('exit') != 0 and not (shipped and all(s == 'shipped' for s in shipped.values())):\n",
+              ['satisfaction/unproven-outcome'])
+    objective('assessor-unchecked', 'control_objective.py',
+              "        if entry['by'] != data['bound']['authority']['assessor']:\n",
+              "        if False:  # defect: any person in scope assesses the objective\n", ['satisfaction/wrong-signer'])
+    objective('assessment-revision-unchecked', 'control_objective.py',
+              "        if command.get('revision') != data['accepted_revision']:\n",
+              "        if False:  # defect: an assessment of any revision counts\n", ['satisfaction/stale-revision'])
+    objective('unsubmitted-evidence-skipped', 'control_objective.py',
+              "        for requirement in data['bound']['evidence_requirements']:\n",
+              "        for requirement in [r for r in data['bound']['evidence_requirements'] if r['id'] in evidence]:  # defect\n",
+              ['satisfaction/missing-evidence'])
+    objective('evidence-digest-unchecked', 'control_objective.py',
+              "            if row is None or row['kind'] != requirement['kind'] or row['digest'] != named.get('digest'):\n",
+              "            if row is None or row['kind'] != requirement['kind']:  # defect: the named digest is not compared\n",
+              ['satisfaction/missing-evidence'])
+    # AC3 (declared falsifier): contributing work is canceled without an authorized disposition.
+    objective('cancel-without-disposition', 'control_objective.py',
+              "        problems = RF.objective_cancellation_problems({'uuid': oid}, items, dispositions)\n",
+              "        problems = []  # defect: unfinished work needs no disposition\n", ['cancel/work-disposition'])
+    objective('disposition-recorder-unchecked', 'control_objective.py',
+              "            if d.get('recorded_by') != entry['by']:\n",
+              "            if False:  # defect: anyone may be named as recording a disposition\n", ['cancel/work-disposition'])
+    objective('cancel-rewrites-history', 'control_objective.py',
+              "        data['history'] = list(data['history']) + [dict(entry, source=source, target='CANCELED')]\n",
+              "        data['history'] = [dict(entry, source=source, target='CANCELED')]  # defect: earlier history dropped\n",
+              ['cancel/history-kept'])
+    objective('terminal-objective-reopens', 'control_objective.py',
+              "        allowed, why = EC.transition(kind, source, target, evidence)\n",
+              "        allowed, why = ((True, '') if source in EC.LIFECYCLES[kind]['terminal']  # defect: terminal reopens\n"
+              "                        else EC.transition(kind, source, target, evidence))\n",
+              ['cancel/reopen-linked'])
+    objective('continuation-of-live-objective', 'control_objective.py',
+              "                    or prior['data'].get('state') not in EC.LIFECYCLES[KIND]['terminal']):\n",
+              "                    or False):  # defect: a continuation may name a live objective\n",
+              ['cancel/reopen-linked'])
     return result
 
 

@@ -287,8 +287,9 @@ class Objectives:
             raise Refused('not_authorized', 'command signature did not verify')
         if op == 'propose':
             proposal = _row(self.conn, command.get('proposal')) if _is_str(command.get('proposal')) else None
-            if proposal is None or proposal['kind'] != PROPOSAL_KIND:
-                raise Refused('no_such_proposal', str(command.get('proposal'))[:128])
+            if (proposal is None or proposal['kind'] != PROPOSAL_KIND or proposal['data'].get('proposal') != 'objective'
+                    or proposal['data'].get('state') != 'PROPOSED'):
+                raise Refused('no_such_proposal', 'not a proposed objective: %s' % str(command.get('proposal'))[:128])
             oid, project = objective_id(command['proposal']), proposal['data'].get('project')
             pinned = [command['proposal']] + ([command['continues']] if _is_str(command.get('continues')) else [])
         else:

@@ -227,7 +227,7 @@ def _v77_suite():
                                                       'scope': scope}, enrollee=who)
 
             admin('steward', 'enroll_principal', {'principal': 'steward', 'principal_type': 'person',
-                                                  'roles': ['membership_steward'], 'public_key': public['steward'],
+                                                  'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                                   'independence_group': 'steward', 'scope': '*'})
             enroll('olga', 'person', ['project_owner', 'admission_authority'], ['proj-a', 'proj-b'])
             enroll('zed', 'person', ['project_owner'], ['proj-a'])
@@ -412,7 +412,17 @@ def _v77_suite():
                               **bound('A record that is not an intake proposal.'))
                 wrong_acceptor = send('pm', 'propose', proposal=pid_of(ask('For proj-a: a second message.')),
                                       **dict(bound('Accepted by someone else.'), authority={'acceptor': 'zed', 'assessor': 'asha'}))
+                def foreign(eid, kind):
+                    try:
+                        fixture(eid, kind, {'objective_uuid': o1, 'state': 'ADMITTED'})
+                    except S.StoreRefused as error:
+                        return error.code
+                    return 'written'
+                foreign_objective = foreign(OB.objective_id('forged') if OB else 'objective:forged', 'objective')
+                foreign_feature = foreign(OB.feature_id(o1, 'forged') if OB else 'objective-feature:forged', 'backlog_item')
                 check('acceptance/intake-source', [
+                    ('no other command writes an objective or a feature id',
+                     foreign_objective == 'entity_owned' and foreign_feature == 'entity_owned'),
                     ('the owner message is a proposed objective of proj-a through the intake',
                      m1.get('outcome') == 'proposed' and proposal1.get('proposal') == 'objective'
                      and proposal1.get('project') == 'proj-a'),
