@@ -7,6 +7,7 @@ changed in two ways only. It records that answer: the organization note below, s
 13 and 14 and section 15 itself move login separation to Release 2 for both engines, with the Claude
 sandbox denial and the `socat` install. And the review of PLAN-0019 revision 4 split the factory loop
 out of VELDO-0129, so sections 1, 4, 11, 12 and 14 name it VELDO-0154 where they named VELDO-0129 AC4.
+Sections 8 and 11 still cite VELDO-0062 AC5 for the account pool, as approved; the pool is now VELDO-0160.
 Nothing else changed. It was written against origin/main `c1fd591` and the branches named below.
 Revision 2 answered the adversarial review of revision 1 (`6416eb8`) and folded in the owner's decision
 of the same day that each person runs their own factory (Telegram 29146, 29147); section 14 maps every
