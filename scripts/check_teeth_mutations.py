@@ -5747,10 +5747,36 @@ def cases():
                 "        if acceptor != owner or source.get('principal') not in owners:  # defect: the owner of any project\n",
                 ['evidence/project-not-his'])
     own_message('own-message-repeat-not-returned',
-                "            if (op == 'accept_message' and accepted.get('path') == MESSAGE_PATH and _is_str(command.get('intake_command'))\n"
-                "                    and accepted.get('intake_command') == command['intake_command']):\n",
-                "            if False:  # defect: the same message's acceptance again is not the same acceptance\n",
+                "        if op == 'accept_message' and repeat:\n",
+                "        if False:  # defect: the same message's acceptance again is not the same acceptance\n",
                 ['evidence/repeat'])
+    # Review fix (declared falsifier): whoever wrote the bound fields is not checked, so a member's own
+    # outcome, scope and assessor are accepted by the owner's message.
+    own_message('own-message-author-unchecked',
+                "        if not authors or any(a != owner and a not in managers for a in authors):\n",
+                "        if False:  # defect: whoever wrote the bound fields is not checked\n",
+                ['authorship/member-authored-presented'])
+    # The project manager of the current team is not read, so the PM's proposal is not his.
+    own_message('own-message-pm-role-unread',
+                "    return [w for w in workers if _is_str(w)] if isinstance(workers, list) else []\n",
+                "    return []  # defect: the current team's project manager is not read\n",
+                ['own-message/telegram'])
+    # The repeat answers before the membership, owner and project-state checks, as before the fix.
+    own_message('own-message-repeat-before-checks',
+                "            if command.get('objective_version') != current['version'] and not repeat:\n",
+                "            if repeat:  # defect: the repeat answers before any check\n"
+                "                observation['acceptance'] = self._acceptance_trace(accepted)\n"
+                "                return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': current, 'receipt': None,\n"
+                "                        'feature_id': None, 'repeated': True}\n"
+                "            if command.get('objective_version') != current['version'] and not repeat:\n",
+                ['evidence/repeat-after-checks', 'evidence/paused-project'])
+    # The repeat does not read the project's state, so a paused project still answers "repeated".
+    own_message('own-message-repeat-while-paused',
+                "            if record['data'].get('state') != 'ACTIVE':\n"
+                "                raise Refused('project_not_active:%s' % record['data'].get('state'), project)\n"
+                "            observation['acceptance'] = self._acceptance_trace(accepted)\n",
+                "            observation['acceptance'] = self._acceptance_trace(accepted)  # defect: any project state\n",
+                ['evidence/paused-project'])
     own_message('own-message-stale-revision-accepted',
                 "        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:\n",
                 "        if False:  # defect: an acceptance naming any revision counts\n",
