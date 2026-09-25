@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163]
     order: 16059
     release: 1
     stage: 6
@@ -962,7 +962,7 @@ work:
     spec: VELDO-0131
     title: Veldo factory UI on phone and desktop
     feature_refs: [F9]
-    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159, VELDO-0160]
+    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159, VELDO-0160, VELDO-0162, VELDO-0163]
     order: 15131
     release: 1
     stage: 5
@@ -1183,6 +1183,22 @@ work:
     order: 15161
     release: 1
     stage: 5
+  - item: W122
+    spec: VELDO-0162
+    title: The owner saves capability configuration revisions and team revisions through typed API routes the authority executes, and a team revision becomes current on his settled answer
+    feature_refs: [F7]
+    depends_on: [VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151]
+    order: 15162
+    release: 1
+    stage: 5
+  - item: W123
+    spec: VELDO-0163
+    title: The owner writes a role's capability configuration and a project's team roles in a minimal UI form
+    feature_refs: [F9]
+    depends_on: [VELDO-0144, VELDO-0145, VELDO-0162]
+    order: 15163
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1359,7 +1375,9 @@ VELDO-0155 and VELDO-0156; 0141; 0129 and the factory loop VELDO-0154; 0145; 012
 "please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
 VELDO-0150; 0144 and its delivery to a run, VELDO-0158; the MCP server and credential form,
 VELDO-0159, moved earlier from 0131 so the owner can enter the Atlassian credential in this stage; 0127
-with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
+with the specialist-role amendment, VELDO-0151; the configuration and team routes, VELDO-0162, and the
+role and team form, VELDO-0163, so the owner can give a role the Atlassian server and put it in a team
+in this stage; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
 VELDO-0147; 0085 and 0091; 0090 with load modes and the `when assigned` leg of 0127 AC4, VELDO-0157;
 the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153; 0143 with its adoption, VELDO-0161, and
@@ -1499,7 +1517,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W91 | VELDO-0128 | 1 | 3 |
 | W92 | VELDO-0129 | 1 | 1; AC4 to AC6 added in revision 4 and split into VELDO-0154 by its review |
 | W93 | VELDO-0130 | 1 | 5 |
-| W94 | VELDO-0131 | 1 | 5; amended in revision 4; its server and credential form moved to VELDO-0159 |
+| W94 | VELDO-0131 | 1 | 5; amended in revision 4; its server and credential form moved to VELDO-0159 and its role form to VELDO-0163 |
 | W95 | VELDO-0132 | 1 | 4 |
 | W96 | VELDO-0133 | 1 | 3 |
 | W97 | VELDO-0134 | 1 | 1 |
@@ -1527,6 +1545,8 @@ These are writing-only allocations; no specification status or existing evidence
 | W119 | VELDO-0159 | 1 | 5; the server and credential form, moved earlier from VELDO-0131 |
 | W120 | VELDO-0160 | 1 | 1 |
 | W121 | VELDO-0161 | 1 | 5 |
+| W122 | VELDO-0162 | 1 | 5; the configuration and team routes |
+| W123 | VELDO-0163 | 1 | 5; the role and team form, moved earlier from VELDO-0131 |
 
 ## Related baseline and follow-up disposition
 
@@ -1672,3 +1692,17 @@ account reset starts a pass" is new AC4 with its own. VELDO-0143 AC3's "taken on
 without a restart" needed one too, which would have given VELDO-0143 five criteria, so adoption, with
 the signer scope and the no-restart criterion, is W121's VELDO-0161, stage 5, built with VELDO-0143 as
 section 12's item 19; W103 (VELDO-0143) and W44 (VELDO-0059) depend on it.
+
+2026-09-25: revision 4, fourth review, within revision 4 and without changing what the owner approved,
+cutting a function or moving anything else to Release 2. At the end of section 12's second stage the
+owner could not give a role the Atlassian server: VELDO-0151 refuses a team whose roles have no accepted
+VELDO-0127 configuration, but the API's route table has only the workflow save in its configuration
+family, VELDO-0130's History names team and agent configuration edits as having no route, and the role
+form was part of VELDO-0131, built in the third stage. W122's VELDO-0162 adds the typed routes for
+capability configuration revisions and team revisions, executed as VELDO-0127's revision command and
+VELDO-0089's `propose`, and the request whose settled answer VELDO-0089's `amend` applies; W123's
+VELDO-0163 is the minimal role and team form in the VELDO-0145 shell. Together they would have held five
+criteria, so the routes and the form are two specifications, both stage 5 and built in the second stage
+after VELDO-0127 and VELDO-0151, as VELDO-0159 is. VELDO-0131's "Team and agent/tool/MCP configuration"
+row no longer carries the form, which is not built twice, and W94 (VELDO-0131) and W44 (VELDO-0059)
+depend on both.
