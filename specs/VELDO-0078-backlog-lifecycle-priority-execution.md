@@ -35,6 +35,7 @@ footprint:
   - "scripts/suites/*_veldo_0078_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0078-backlog-lifecycle-priority-execution.md"
   - "specs/index.md"
   - "proof/VELDO-0078/*"
@@ -102,6 +103,23 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: backlog work moves proposed or prepared, awaiting grooming, admitted, prioritized,
+  active, optionally blocked, then done or canceled. Only work the owner has admitted and prioritized
+  can create executable engineering units, on the ordinary path and at every direct claim entry. The
+  first claim activates the item and follows its approved decomposition only; a unit appended later
+  needs fresh prioritization while the approved units may continue. A clean blocked phase resumes only
+  after its binding is resolved by the owner's settled decision, and DONE requires accepted unit
+  outcomes (complete receipts or an authorized alternative outcome).
+- Threat model: an executable unit from intake-only, prepared, or admitted-but-unprioritized work,
+  through any claim path; an appended unit made executable without renewed prioritization; a blocked
+  phase resumed without its binding resolved; DONE from an output file's existence, a canceled attempt
+  or a missing required receipt. The owner's account, the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); trusted
+  automatic defect admission and standing or emergency policy paths (later releases); recovery and
+  restart (Release 2); forged rows in our own store and files planted in the installed directory.
 
 ## Notes
 
