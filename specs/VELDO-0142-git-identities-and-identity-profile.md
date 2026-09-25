@@ -17,9 +17,6 @@ footprint:
   - "engine/.veldo/control_git_identity*.py"
   - ".veldo/control_git_identity*.py"
   - "packs/*/.veldo/control_git_identity*.py"
-  - "engine/.veldo/git_process.py"
-  - ".veldo/git_process.py"
-  - "packs/*/.veldo/git_process.py"
   - "engine/.veldo/control_clone*.py"
   - ".veldo/control_clone*.py"
   - "packs/*/.veldo/control_clone*.py"
@@ -164,3 +161,7 @@ footprint adds `control_factory_setup`, and depends_on VELDO-0139), AC2 adds str
 the lander's merge and projection commits and a re-land's (depends_on VELDO-0148), which today take the
 caller repository's `user.name` and `user.email`. The `identity` push profile and the remote owner check,
 formerly AC3 and AC4, are VELDO-0153.
+
+2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `git_process.py`, which VELDO-0153
+owns since the `identity` push profile moved there; no criterion of this specification changes it.
+Criteria and status unchanged.

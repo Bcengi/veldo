@@ -17,9 +17,9 @@ footprint:
   - "engine/.veldo/control_graph*.py"
   - ".veldo/control_graph*.py"
   - "packs/*/.veldo/control_graph*.py"
-  - "engine/.veldo/control_project_cycle*.py"
-  - ".veldo/control_project_cycle*.py"
-  - "packs/*/.veldo/control_project_cycle*.py"
+  - "engine/.veldo/control_workflow_cycle*.py"
+  - ".veldo/control_workflow_cycle*.py"
+  - "packs/*/.veldo/control_workflow_cycle*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -124,3 +124,7 @@ marks a specification ready.
 
 2026-09-25, PLAN-0019 revision 4 review: depends_on adds VELDO-0154, the factory loop that starts
 the second cycle, split from VELDO-0129. Criteria unchanged; a draft.
+
+2026-09-25, PLAN-0019 revision 4, third review: the footprint named `control_project_cycle*.py`, which
+does not exist; the cycle runner is `.veldo/control_workflow_cycle.py`, so the footprint names
+`control_workflow_cycle*.py`. Criteria and status unchanged.

@@ -17,9 +17,6 @@ footprint:
   - "engine/.veldo/supervisor.py"
   - ".veldo/supervisor.py"
   - "packs/*/.veldo/supervisor.py"
-  - "engine/.veldo/control_runner*.py"
-  - ".veldo/control_runner*.py"
-  - "packs/*/.veldo/control_runner*.py"
   - "engine/.veldo/control_containment*.py"
   - ".veldo/control_containment*.py"
   - "packs/*/.veldo/control_containment*.py"
@@ -149,3 +146,7 @@ group; the VELDO-0039 receiver calls it. Suite 63_veldo_0040_containment (20 row
 22 mutations as finding 40; proof in proof/VELDO-0040/. Merging main required the VELDO-0049 and
 VELDO-0050 suites to give their receiver this host's profile (f6d217e). The footprint names those two suites
 for that reason (review, 2026-09-24).
+
+2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `control_runner*.py`, which does not
+exist; the Runner is class `Runner` in `control_launch`, already in the footprint. Criteria and status
+unchanged.

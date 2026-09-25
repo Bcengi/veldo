@@ -26,9 +26,9 @@ footprint:
   - "engine/.veldo/control_graph*.py"
   - ".veldo/control_graph*.py"
   - "packs/*/.veldo/control_graph*.py"
-  - "engine/.veldo/control_project_cycle*.py"
-  - ".veldo/control_project_cycle*.py"
-  - "packs/*/.veldo/control_project_cycle*.py"
+  - "engine/.veldo/control_workflow_cycle*.py"
+  - ".veldo/control_workflow_cycle*.py"
+  - "packs/*/.veldo/control_workflow_cycle*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -210,3 +210,7 @@ the work item moves to stage 5. Status unchanged.
 2026-09-25, PLAN-0019 revision 4 review: the factory loop that starts the cycle is VELDO-0154, split
 from VELDO-0129 (its former AC4 is VELDO-0154 AC1), so depends_on names VELDO-0154 in place of
 VELDO-0129 and the loop references follow. Criterion meaning and status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: the footprint named `control_project_cycle*.py`, which
+does not exist; the cycle runner is `.veldo/control_workflow_cycle.py`, so the footprint names
+`control_workflow_cycle*.py`. Criteria and status unchanged.
