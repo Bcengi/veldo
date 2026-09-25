@@ -1,0 +1,6 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -579,2 +579 @@
+-            if row['data'].get('state') in self.assignment.PENDING:
+-                return aid
++            return aid  # defect: a declined or answered request is returned again

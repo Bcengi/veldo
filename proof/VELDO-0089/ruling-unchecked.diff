@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -487 +487 @@
+-        if ruling not in RULINGS:
++        if False:  # defect: a rejection or a return applies the proposal

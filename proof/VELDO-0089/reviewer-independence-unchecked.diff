@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -534 +534 @@
+-            if who == builder or mine == group or who in seen:
++            if False:  # defect: the builder or a repeated reviewer counts

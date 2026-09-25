@@ -1,0 +1,142 @@
+{
+ "by_assertion": true,
+ "commit": "83ca10423b2ff39d0a3d70c89e040de6226bb091",
+ "details": [
+  "VELDO-0089 detail: team/owner-request: the second project's owner is asked about his; once the owner declined it, a repeat opens a new request; and once he answered that one, another; three rounds, three requests",
+  "VELDO-0089 detail: team/observability: every amendment names its request"
+ ],
+ "failed_rows": [
+  "VELDO-0089 team/owner-request",
+  "VELDO-0089 team/observability"
+ ],
+ "modules": {
+  ".veldo/control_project.py": {
+   "at_commit": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "now": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/control_team.py": {
+   "at_commit": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6",
+   "now": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951",
+   "now": "4ae6a8367e5c188e637abd769daf2a97eeca0b50d040fa635b40beb16baf51fc"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0089 install/assets",
+   true
+  ],
+  [
+   "VELDO-0089 team/schema-closed",
+   true
+  ],
+  [
+   "VELDO-0089 team/incomplete-roster",
+   true
+  ],
+  [
+   "VELDO-0089 team/conflicting-staffing",
+   true
+  ],
+  [
+   "VELDO-0089 team/project-requirements",
+   true
+  ],
+  [
+   "VELDO-0089 team/complete-proposal",
+   true
+  ],
+  [
+   "VELDO-0089 team/owner-amendment",
+   true
+  ],
+  [
+   "VELDO-0089 team/stale-amendment",
+   true
+  ],
+  [
+   "VELDO-0089 team/altered-amendment",
+   true
+  ],
+  [
+   "VELDO-0089 team/self-promotion",
+   true
+  ],
+  [
+   "VELDO-0089 team/roster-not-authority",
+   true
+  ],
+  [
+   "VELDO-0089 team/amendment-current",
+   true
+  ],
+  [
+   "VELDO-0089 team/policy-required",
+   true
+  ],
+  [
+   "VELDO-0089 team/valid-assignment",
+   true
+  ],
+  [
+   "VELDO-0089 team/review-count",
+   true
+  ],
+  [
+   "VELDO-0089 team/independence",
+   true
+  ],
+  [
+   "VELDO-0089 team/exact-subject",
+   true
+  ],
+  [
+   "VELDO-0089 team/stale-team",
+   true
+  ],
+  [
+   "VELDO-0089 team/owner-request",
+   false
+  ],
+  [
+   "VELDO-0089 team/observability",
+   false
+  ],
+  [
+   "VELDO-0089 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/schema-closed",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/owner-amendment",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/policy-required",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/owner-request",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.978,
+ "spec_id": "VELDO-0089",
+ "suite": "scripts/suites/73_veldo_0089_team.py",
+ "tree": "git archive 83ca10423b2ff39d0a3d70c89e040de6226bb091, unchanged; the current suite file run against it"
+}

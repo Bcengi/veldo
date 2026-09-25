@@ -266,3 +266,7 @@ and its text is not repeated; only the executor's own refusal, before any receiv
 push past its time limit records no destinations; first push to an empty repository records unknown;
 a token before ? or # in a malformed remote URL; over-scrubbed audit URLs; suite cost (handle issuance
 over IPC, the slow fan-out row).
+
+2026-09-25: the scrubbing rows' fake credentials in scripts/suites/58_veldo_0028_effects.py are
+assembled at run time, so no source line reads like a login (a secret scanner flagged the literal
+'curl -u' fixture on 2026-09-24). The values the rows see are unchanged; finding 28 rejects 80 of 80.

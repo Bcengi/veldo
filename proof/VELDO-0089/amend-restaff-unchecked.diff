@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -490 +490 @@
+-        if staffing:
++        if False:  # defect: staffing is judged only when proposed

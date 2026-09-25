@@ -1,0 +1,6 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -539 +539,2 @@
+-            if position['subject'] != subject:
++            if {k: v for k, v in (position['subject'] or {}).items() if k != 'scope_digest'} != {
++                    k: v for k, v in subject.items() if k != 'scope_digest'}:  # defect: any scope

@@ -1,0 +1,162 @@
+{
+ "by_assertion": true,
+ "commit": "d0cf6a5dff4a6e42815da556c3685ca827af326f",
+ "details": [
+  "VELDO-0089 detail: install/assets: .veldo/control_team.py installed by the scaffold; .veldo/control_team.py engine copy identical; .veldo/control_team.py laid by the installer",
+  "VELDO-0089 detail: team/schema-closed: the specification's role fields are exactly the schema's; no tool or capability field in the schema; a role with tools and MCP servers is refused by name; an undeclared role is refused by name",
+  "VELDO-0089 detail: team/incomplete-roster: a team without independent review is refused and asks the owner; the refusal is incomplete_roster naming the missing role; an empty review role is refused the same way",
+  "VELDO-0089 detail: team/conflicting-staffing: two project managers; a builder who also reviews; a reviewer in a builder's independence group; a worker nobody enrolled is never invented; a member outside the project is not staffed",
+  "VELDO-0089 detail: team/project-requirements: a role budget above the project's coordination budget; an engine that is no registered adapter; a role without its responsibility; independent review not declared separate from implementation; the engines are the registered subscription adapters",
+  "VELDO-0089 detail: team/complete-proposal: a complete team is recorded as the pending proposal; bound to exactly its content; and nothing is accepted yet; every earlier staffing problem is an open owner request; another process reads the same proposal",
+  "VELDO-0089 detail: team/owner-amendment: and amended the team to revision 1; the revision names the settlement and the owner; a second revision amends the first; the stored first revision is unchanged; another process reads the accepted revision",
+  "VELDO-0089 detail: team/stale-amendment: a command bound to an older team version is refused; an answer to a superseded proposal is refused; and the team stays at revision 2",
+  "VELDO-0089 detail: team/altered-amendment: a command altered after signing is refused; content changed after the owner's answer is refused; an answer to another brief is refused; and the team stays at revision 2",
+  "VELDO-0089 detail: team/self-promotion: the promotion is only a proposal; it does not apply without a settled answer; the manager's own answer settles nothing; another project owner's answer is not the owner's; a member outside the project proposes nothing; the manager is still no reviewer",
+  "VELDO-0089 detail: team/roster-not-authority: amendments were accepted; a proposal permission naming an authority is refused; a proposal permission naming a settlement touchpoint is refused",
+  "VELDO-0089 detail: team/policy-required: the service reads VELDO-0049's own policy record; no policy and no reviewer is refused; no policy and one reviewer is refused; a risk the policy has no count for is refused; and no assignment exists",
+  "VELDO-0089 detail: team/valid-assignment: an independent critical assignment succeeds; bound to the current team revision; bound to the policy and its count; bound to the exact subject; a standard unit needs one review; another process reads both",
+  "VELDO-0089 detail: team/review-count: a critical unit with one review is refused; a standard unit with none is refused",
+  "VELDO-0089 detail: team/independence: the builder reviewing his own unit is refused; one reviewer in two positions is refused; a reviewer who is no independent reviewer is refused",
+  "VELDO-0089 detail: team/exact-subject: a reviewer bound to another unit is refused; a reviewer bound to an older revision is refused; a builder bound to another unit is refused",
+  "VELDO-0089 detail: team/stale-team: an assignment under an older team revision is refused; a worker who is not the manager assigns nothing; the project's owner may assign",
+  "VELDO-0089 detail: team/observability: every command is observed with its outcome; pending work is counted"
+ ],
+ "failed_rows": [
+  "VELDO-0089 install/assets",
+  "VELDO-0089 team/schema-closed",
+  "VELDO-0089 team/incomplete-roster",
+  "VELDO-0089 team/conflicting-staffing",
+  "VELDO-0089 team/project-requirements",
+  "VELDO-0089 team/complete-proposal",
+  "VELDO-0089 team/owner-amendment",
+  "VELDO-0089 team/stale-amendment",
+  "VELDO-0089 team/altered-amendment",
+  "VELDO-0089 team/self-promotion",
+  "VELDO-0089 team/roster-not-authority",
+  "VELDO-0089 team/policy-required",
+  "VELDO-0089 team/valid-assignment",
+  "VELDO-0089 team/review-count",
+  "VELDO-0089 team/independence",
+  "VELDO-0089 team/exact-subject",
+  "VELDO-0089 team/stale-team",
+  "VELDO-0089 team/observability"
+ ],
+ "modules": {
+  ".veldo/control_project.py": {
+   "at_commit": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "now": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/control_team.py": {
+   "at_commit": null,
+   "now": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c61516253b6eedb87a5096a49a4c006113c3e0fdd892c6dc06e71e6b96b97238",
+   "now": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0089 install/assets",
+   false
+  ],
+  [
+   "VELDO-0089 team/schema-closed",
+   false
+  ],
+  [
+   "VELDO-0089 team/incomplete-roster",
+   false
+  ],
+  [
+   "VELDO-0089 team/conflicting-staffing",
+   false
+  ],
+  [
+   "VELDO-0089 team/project-requirements",
+   false
+  ],
+  [
+   "VELDO-0089 team/complete-proposal",
+   false
+  ],
+  [
+   "VELDO-0089 team/owner-amendment",
+   false
+  ],
+  [
+   "VELDO-0089 team/stale-amendment",
+   false
+  ],
+  [
+   "VELDO-0089 team/altered-amendment",
+   false
+  ],
+  [
+   "VELDO-0089 team/self-promotion",
+   false
+  ],
+  [
+   "VELDO-0089 team/roster-not-authority",
+   false
+  ],
+  [
+   "VELDO-0089 team/policy-required",
+   false
+  ],
+  [
+   "VELDO-0089 team/valid-assignment",
+   false
+  ],
+  [
+   "VELDO-0089 team/review-count",
+   false
+  ],
+  [
+   "VELDO-0089 team/independence",
+   false
+  ],
+  [
+   "VELDO-0089 team/exact-subject",
+   false
+  ],
+  [
+   "VELDO-0089 team/stale-team",
+   false
+  ],
+  [
+   "VELDO-0089 team/observability",
+   false
+  ],
+  [
+   "VELDO-0089 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/schema-closed",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/owner-amendment",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/policy-required",
+   true
+  ],
+  [
+   "VELDO-0089 ran/team/observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.818,
+ "spec_id": "VELDO-0089",
+ "suite": "scripts/suites/73_veldo_0089_team.py",
+ "tree": "git archive d0cf6a5dff4a6e42815da556c3685ca827af326f, unchanged; the current suite file run against it"
+}

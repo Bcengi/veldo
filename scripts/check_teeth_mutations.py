@@ -5790,6 +5790,135 @@ def cases():
           'observability/named-refusals',
           also=[("accepted_versions=dict(versions or {}), outcome=outcome,",
                  "accepted_versions=dict(versions or {}), extra=dict(extra), outcome=outcome,")])
+    # VELDO-0089: each criterion's declared falsifier first, then the threat model's other shapes.
+    def team(name, module, old, new, rows, also=()):
+        add(89, name, '73_veldo_0089_team.py', module, old, new, ['team/' + row for row in rows], also)
+
+    team('team-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_team.py",\n', '', [])
+    result[-1]['rows'] = ['install/assets']
+    # AC1 (declared falsifier): a team missing required independent review is accepted.
+    team('review-role-not-required', 'control_team.py',
+         "    for role in REQUIRED_ROLES:\n        spec = roles.get(role)\n",
+         "    for role in [r for r in REQUIRED_ROLES if r != 'independent_review']:  # defect: review is optional\n"
+         "        spec = roles.get(role)\n", ['incomplete-roster'],
+         also=[("        spec = roles.get(role) or {}\n        declared",
+                "        if role not in roles:\n            continue\n        spec = roles.get(role) or {}\n        declared")])
+    team('no-owner-request', 'control_team.py',
+         "        name = project['name']\n        subject_digest",
+         "        return None  # defect: missing staffing asks nobody\n        name = project['name']\n        subject_digest",
+         ['incomplete-roster'])
+    # Review 1: the staffing request belongs to one project's team, and is reopened once it closed.
+    team('request-project-unbound', 'control_team.py',
+         "        subject_digest = _digest({'team_id': team_id(name), 'team': team, 'problems': problems})\n",
+         "        subject_digest = _digest({'team': team, 'problems': problems})  # defect: shared across projects\n",
+         ['owner-request'])
+    team('closed-request-returned', 'control_team.py',
+         "            if row['data'].get('state') in self.assignment.PENDING:\n                return aid\n",
+         "            return aid  # defect: a declined or answered request is returned again\n", ['owner-request'])
+    team('tool-field-accepted', 'control_team.py',
+         "        problems += ['invalid_input:field:%s/%s' % (role, f) for f in sorted(spec, key=str) if f not in ROLE_FIELDS]\n",
+         "        pass  # defect: extra fields (tools, MCP servers) pass the schema\n", ['schema-closed'])
+    team('two-managers-accepted', 'control_team.py',
+         "        if role == PM_ROLE and len(spec['workers']) != 1:\n",
+         "        if False:  # defect: several project managers\n", ['conflicting-staffing'])
+    team('separation-unchecked', 'control_team.py',
+         "                if worker in theirs or ((entries.get(worker) or {}).get('independence_group') or worker) in groups:\n",
+         "                if False:  # defect: a builder may review\n", ['conflicting-staffing'])
+    team('invented-worker-accepted', 'control_team.py',
+         "            if (not active_member(entry, now)[0] or entry.get('principal_type') not in WORKER_TYPES\n"
+         "                    or not scope_covers(entry.get('scope'), [name])):\n",
+         "            if False:  # defect: any named worker is staffed\n", ['conflicting-staffing'])
+    team('budget-over-project', 'control_team.py',
+         "            if not isinstance(cap, (int, float)) or isinstance(cap, bool) or spec['budget'][unit] > cap:\n",
+         "            if not isinstance(cap, (int, float)) or isinstance(cap, bool):  # defect: no project cap\n",
+         ['project-requirements'])
+    team('engine-unregistered', 'control_team.py',
+         "        problems += ['engine_ineligible:%s/%s' % (role, e) for e in spec['engines'] if e not in ENGINES]\n",
+         "        pass  # defect: any engine name is eligible\n", ['project-requirements'])
+    # AC2 (declared falsifier): the configured PM role is granted admission rights.
+    team('roster-grants-admission', 'control_team.py',
+         "                                                        request_id=params['acceptance']['request_id'])]\n"
+         "        return {tid: {'kind': KIND, 'data': data}}\n",
+         "                                                        request_id=params['acceptance']['request_id'])]\n"
+         "        pm = proposal['team']['roles'][PM_ROLE]['workers'][0]  # defect: the roster grants authority\n"
+         "        grant = dict(before[pm]['data'], roles=sorted(set(before[pm]['data'].get('roles') or [])"
+         " | {'admission_authority'}))\n"
+         "        return {tid: {'kind': KIND, 'data': data}, pm: {'kind': 'membership', 'data': grant}}\n",
+         ['roster-not-authority'])
+    team('authority-permission-accepted', 'control_team.py',
+         "                    if p in AUTHORITY_NAMES:\n",
+         "                    if False:  # defect: a permission may name an authority\n", ['roster-not-authority'],
+         also=[("                    elif p not in PROPOSAL_KINDS:\n",
+                "                    elif p not in PROPOSAL_KINDS + tuple(AUTHORITY_NAMES):\n")])
+    team('amendment-version-unbound', 'control_team.py',
+         "        if command.get('team_version') != (record or {}).get('version', 0):\n",
+         "        if command.get('team_version') != (record or {}).get('version', 0) and op != 'amend':  # defect\n",
+         ['stale-amendment'])
+    team('amendment-target-unchecked', 'control_team.py',
+         "        if target != amendment_target(record):\n",
+         "        if False:  # defect: an answer to any proposal of the team applies\n",
+         ['stale-amendment', 'altered-amendment'])
+    team('amendment-brief-unchecked', 'control_team.py',
+         "        if req.get('brief') != amendment_brief(record):\n",
+         "        if False:  # defect: the owner may have been shown anything\n", ['altered-amendment'])
+    team('amendment-signature-unverified', 'control_team.py',
+         "        if not verified:\n            raise Refused('not_authorized', 'command signature did not verify')\n", '',
+         ['altered-amendment'])
+    team('any-settler-amends', 'control_team.py',
+         "        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:\n",
+         "        if False:  # defect: whoever settled the request amends the team\n", ['self-promotion'])
+    team('scope-unchecked', 'control_team.py',
+         "        if (entry.get('principal_type') not in self.AC.BOUNDARIES['proposal_commit']\n"
+         "                or not self.membership.scope_covers(entry.get('scope'), [name])):\n",
+         "        if entry.get('principal_type') not in self.AC.BOUNDARIES['proposal_commit']:  # defect: any scope\n",
+         ['self-promotion'])
+    # Review 1: the owner's ruling, his current role and the staffing are judged when the amendment applies.
+    team('ruling-unchecked', 'control_team.py',
+         "        if ruling not in RULINGS:\n",
+         "        if False:  # defect: a rejection or a return applies the proposal\n", ['self-promotion'])
+    team('amendment-owner-not-current', 'control_team.py',
+         "        problems = self._owner_problems(state, owner, project['name'], now)\n",
+         "        problems = []  # defect: the owner who answered need not be the owner now\n", ['amendment-current'])
+    team('amend-restaff-unchecked', 'control_team.py',
+         "        staffing, workers = self._staffed(proposal['team'], state, project, now)\n        if staffing:\n",
+         "        staffing, workers = self._staffed(proposal['team'], state, project, now)\n"
+         "        if False:  # defect: staffing is judged only when proposed\n", ['amendment-current'])
+    # AC3 (declared falsifier): a missing review policy defaults to no reviews.
+    team('policy-defaults-to-no-reviews', 'control_team.py',
+         "            raise Refused('missing_authority:review_policy', 'no accepted review count for risk %r' % data.get('risk'))\n",
+         "            need = 0  # defect: a missing policy means no reviews\n", ['policy-required'],
+         also=[("'version': policy_row['version'],", "'version': (policy_row or {}).get('version'),")])
+    team('review-count-unchecked', 'control_team.py',
+         "        if len(seen) < need:\n", "        if False:  # defect: any number of reviews\n", ['review-count'])
+    team('reviewer-independence-unchecked', 'control_team.py',
+         "            if who == builder or mine == group or who in seen:\n",
+         "            if False:  # defect: the builder or a repeated reviewer counts\n", ['independence'])
+    team('subject-unbound', 'control_team.py',
+         "            if position['subject'] != subject:\n",
+         "            if (position['subject'] or {}).get('unit') != unit_id:  # defect: the revision is not bound\n",
+         ['exact-subject'])
+    team('scope-digest-unbound', 'control_team.py',
+         "            if position['subject'] != subject:\n",
+         "            if {k: v for k, v in (position['subject'] or {}).items() if k != 'scope_digest'} != {\n"
+         "                    k: v for k, v in subject.items() if k != 'scope_digest'}:  # defect: any scope\n",
+         ['exact-subject'])
+    team('reviewer-group-unchecked', 'control_team.py',
+         "            if who == builder or mine == group or who in seen:\n",
+         "            if who == builder or who in seen:  # defect: the builder's independence group may review\n",
+         ['independence'])
+    team('revoked-member-assigned', 'control_team.py',
+         "            if not self.AC.active_member(entry, now)[0] or not self.membership.scope_covers(\n",
+         "            if False and not self.membership.scope_covers(  # defect: a revoked worker is assigned\n",
+         ['stale-team'])
+    team('team-revision-unbound', 'control_team.py',
+         "        if command.get('team_revision') != record['revision']:\n",
+         "        if False:  # defect: any team revision\n", ['stale-team'])
+    team('non-manager-assigns', 'control_team.py',
+         "        if principal not in pm and principal != project.get('owner'):\n",
+         "        if False:  # defect: any member assigns\n", ['stale-team'])
+    team('amendment-request-unobserved', 'control_team.py',
+         "            observation['request'] = command['request'] if _is_str(command.get('request')) else None\n",
+         "            pass  # defect: the amendment's request is not observed\n", ['observability'])
     return result
 
 

@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -182 +182 @@
+-        problems += ['invalid_input:field:%s/%s' % (role, f) for f in sorted(spec, key=str) if f not in ROLE_FIELDS]
++        pass  # defect: extra fields (tools, MCP servers) pass the schema

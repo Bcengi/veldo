@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -543 +543 @@
+-            if not self.AC.active_member(entry, now)[0] or not self.membership.scope_covers(
++            if False and not self.membership.scope_covers(  # defect: a revoked worker is assigned
