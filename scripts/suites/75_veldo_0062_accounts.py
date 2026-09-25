@@ -11,7 +11,8 @@ repository, the VELDO-0039 Runner and receiver processes, and the trusted wrappe
 The engines are fake `claude` and `codex` executables this suite writes: each records the environment
 it was started with and what the store held for its invocation at its start, then prints the stream
 lines its packet scripts in the installed CLIs' own report formats (Claude Code's stream JSON, Codex's
-exec JSON) and exits. No real engine runs, nothing logs in and no credential exists: planted paid-API
+exec JSON) and exits. Before the wrapper, a shell step records every spawn by its dispatch, so a
+process spawned for a refused invocation is seen even when its engine never runs. No real engine runs, nothing logs in and no credential exists: planted paid-API
 values are assembled at run time. The worker launches go through the wrapper without a containment
 group (`identity: reported`), because a contained launch needs the systemd user manager, which this
 suite never touches; the engine environment, the pre-launch reservation and the metering are the same
@@ -254,7 +255,10 @@ sys.exit(payload.get('code', 0))
             (engines / name).chmod(0o755)
         receipts = base / 'receipts'
         config = base / 'receiver.json'
-        wrapper = [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
+        # Every process the receiver spawns first writes a spawn marker naming its dispatch, then execs
+        # the trusted wrapper (the same pid): a spawn is recorded even when its engine never runs.
+        spawn = ['/bin/sh', '-c', 'printf %s "$VELDO_DISPATCH_ID" > "$0/spawn-$$"; exec "$@"', str(markers)]
+        wrapper = spawn + [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
         planted = {}
 
         def plant(name):
@@ -311,6 +315,15 @@ sys.exit(payload.get('code', 0))
                     data['done'] = (markers / ('%d.done' % data['pid'])).exists()
                     found.append(data)
             return found
+
+        def spawned(dispatch_id, timeout=0.0):
+            # The processes spawned for a dispatch, waiting up to `timeout` for a late one.
+            end = time.time() + timeout
+            while True:
+                found = [path for path in sorted(markers.glob('spawn-*')) if path.read_text() == dispatch_id]
+                if found or time.time() >= end:
+                    return len(found)
+                time.sleep(0.02)
 
         def marker_wait(dispatch_id, timeout=15.0):
             end = time.time() + timeout
@@ -509,7 +522,7 @@ sys.exit(payload.get('code', 0))
                 check('login/substitution-refused', '%s substituted or unusable: refused by name, nothing launched, '
                       'nothing reserved [%s]' % (name, refusal),
                       refusal == expected and rec(dispatch_id).get('state') == 'refused'
-                      and not engine_markers(dispatch_id) and not invocation(dispatch_id))
+                      and not engine_markers(dispatch_id) and not spawned(dispatch_id) and not invocation(dispatch_id))
 
         # AC2: every invocation boundary checked and reserved before its launch.
         with region('usage/reserved-before-launch'):
@@ -530,14 +543,15 @@ sys.exit(payload.get('code', 0))
                           'pending reservation at its start, one launch [%s, %s, %d]'
                           % (adapter, boundary, boundary, call.get('boundary'), seen.get('state'), len(own)),
                           call.get('boundary') == boundary and seen.get('state') == 'pending'
-                          and seen.get('boundary') == boundary and len(own) == 1
+                          and seen.get('boundary') == boundary and len(own) == 1 and spawned(launch.dispatch_id) == 1
                           and (record or {}).get('state') == 'exited'
                           and None not in (reserved_at, ran_at) and reserved_at < ran_at)
                 launch, record = run(account, unit, adapter, script, resume='session-' + adapter)
-                # An engine started before the check would have written its marker within this wait.
-                late = marker_wait(launch.dispatch_id, timeout=3.0)
+                # A process spawned before the check has written its spawn marker within this wait, even
+                # when its engine never ran; an engine started before the check, its own marker.
+                late = spawned(launch.dispatch_id, timeout=3.0) or bool(marker_wait(launch.dispatch_id, timeout=0.5))
                 check('usage/reserved-before-launch', '%s follow-on past the unit\'s invocation cap: refused before '
-                      'launch, no engine started [%s, %s]' % (adapter, (record or {}).get('refusal'), bool(late)),
+                      'launch, nothing spawned [%s, %s]' % (adapter, (record or {}).get('refusal'), late),
                       (record or {}).get('refusal') == 'missing_authority:allowance:usage_cap:unit:invocations'
                       and not late and not invocation(launch.dispatch_id)
                       and reservations.balances('unit', unit)['invocations'] == 3)
@@ -557,7 +571,7 @@ sys.exit(payload.get('code', 0))
                 check('usage/allowance-states', '%s exhausted allowance: refused by name, nothing launched [%s]'
                       % (adapter, (record or {}).get('refusal')),
                       (record or {}).get('refusal') == 'missing_authority:allowance:usage_cap:unit:invocations'
-                      and not engine_markers(launch.dispatch_id))
+                      and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id))
                 proj = project('p-unknown-' + adapter, tokens=1000)
                 unit = admitted('VELDO-6205-%s-unknown-a' % adapter, proj)
                 first, first_record = run(account, unit, adapter, [])
@@ -567,7 +581,7 @@ sys.exit(payload.get('code', 0))
                       'name, nothing launched [%s]' % (adapter, (record or {}).get('refusal')),
                       invocation(first.dispatch_id).get('state') == 'unknown'
                       and (record or {}).get('refusal') == 'missing_authority:allowance:unknown_allowance:tokens'
-                      and not engine_markers(launch.dispatch_id))
+                      and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id))
 
         with region('usage/competing-remainder'):
             proj = project('p-race', invocations=1)
@@ -594,10 +608,11 @@ sys.exit(payload.get('code', 0))
                 thread.join(60)
             states = sorted((rec(c['dispatch_id']).get('state'), rec(c['dispatch_id']).get('refusal')) for c in contracts)
             starts = sum(len(engine_markers(c['dispatch_id'])) for c in contracts)
+            spawns = sum(spawned(c['dispatch_id']) for c in contracts)
             check('usage/competing-remainder', 'two invocations for one remaining invocation: one launched, the other '
-                  'refused by name [%s, %d launches]' % (states, starts),
+                  'refused by name [%s, %d launches, %d spawns]' % (states, starts, spawns),
                   states == [('exited', None), ('refused', 'missing_authority:allowance:usage_cap:project:invocations')]
-                  and starts == 1 and reservations.balances('project', proj)['invocations'] == 1)
+                  and starts == 1 and spawns == 1 and reservations.balances('project', proj)['invocations'] == 1)
 
         with region('usage/cap-stops-worker'):
             for account, adapter, script in (
