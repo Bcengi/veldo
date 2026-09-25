@@ -180,3 +180,12 @@ is refused as `foreign_request` at raise, notice and resume. Row
 `stop/request-alias-squat-refused` and cases in `stop/designated-authority-deliverable` and
 `notice/unreachable-authority-classed`; red record at 3ed40c1 by assertion; 28 finding 75 mutations.
 Status unchanged.
+
+2026-09-25, proof gap from the fresh review of the 75b fix (the code was correct): two of its checks were
+never driven. Row `stop/designated-authority-deliverable` gains a race case (the edge's activation
+changes inside the raise's commit: refused `stale_subject`, no stop written, unit unchanged), which
+drives the activation record's version pinned in the raise transaction, and an owner-new-chat case (the
+owner re-enrolled on a different chat while the edge is active: his stop recorded, its notice deferred
+as `stale_enrollment`), which drives the owner's exemption from the bound-chat refusal. Mutations
+`activation-version-unpinned` and `owner-reenrollment-refused` each red that row by assertion; 30
+finding 75 mutations. No production change. Status unchanged.
