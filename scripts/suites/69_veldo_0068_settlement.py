@@ -568,17 +568,21 @@ def _v68_checks(base):
             packets = {'race-a': api_packet(c2_receipt, 'accept', 'race answer a', answer='race-a'),
                        'race-b': api_packet(c2_receipt, 'reject', 'race answer b', answer='race-b')}
             barrier = _v68_threading.Barrier(2)
-            outcomes = {}
+            outcomes, timings = {}, {}
+            race_started = _v68_time.monotonic()
 
             def racer(name):
                 connection = S.open_store(str(db))
                 try:
                     _i, _p, own = services(connection)
+                    timings[name] = ['ready %.3f' % (_v68_time.monotonic() - race_started)]
                     barrier.wait(timeout=30)
+                    timings[name].append('go %.3f' % (_v68_time.monotonic() - race_started))
                     outcomes[name] = api_answer(packets[name], own) if own is not None else missing
                 except Exception as exc:  # noqa: BLE001 - a racer that raised is recorded, never silent
-                    outcomes[name] = {'outcome': 'raised', 'reason': type(exc).__name__}
+                    outcomes[name] = {'outcome': 'raised', 'reason': '%s: %s' % (type(exc).__name__, str(exc)[:160])}
                 finally:
+                    timings.setdefault(name, []).append('done %.3f' % (_v68_time.monotonic() - race_started))
                     connection.close()
 
             racers = [_v68_threading.Thread(target=racer, args=(name,)) for name in packets]
@@ -590,16 +594,44 @@ def _v68_checks(base):
             sdata = s[0][1] if len(s) == 1 else {}
             winners = [n for n, o in outcomes.items() if o.get('outcome') == 'settled']
             losers = [o for n, o in outcomes.items() if n not in winners]
-            check(OW, 'two concurrent API answers on two connections: exactly one settles',
-                  len(winners) == 1 and len(s) == 1 and len(e) == 1 and len(r) == 1)
-            check(OW, 'the other is refused by name and no second settlement exists',
-                  len(losers) == 1 and losers[0].get('outcome') == 'refused'
-                  and losers[0].get('reason') in ('already_settled', 'request_closed', 'stale_subject', 'unavailable_service'))
             won = (entity(sdata.get('answer_id') or '') or {}).get('data') or {}
             data = request_data(c2)
+            # What the race saw, carried on each race check so a false row names it (never a rationale
+            # or a signature): each racer's outcome, reason and recorded answer, its timings, the
+            # settlements, effects and receipts, the winning answer, the listed ones and the request state.
+            race_seen = (' [observed: racers %s; timings %s; alive %s; settlements %s answering %s choice %s; '
+                         'not_counted %s; effects %s receipts %s; api answers %s; request state %s version %s]') % (
+                _v68_json.dumps({n: {k: o.get(k) for k in ('outcome', 'reason', 'answer')} for n, o in sorted(outcomes.items())}),
+                _v68_json.dumps(timings, sort_keys=True), [t.is_alive() for t in racers], len(s), sdata.get('answer_id'),
+                sdata.get('choice'), [(x.get('answer_id'), x.get('reason')) for x in sdata.get('not_counted') or []],
+                len(e), len(r), [eid for eid, _d in of_kind('settlement_api_answer', c2)], data.get('state'),
+                data.get('request_version'))
+            check(OW, 'two concurrent API answers on two connections: exactly one settles%s' % race_seen,
+                  len(winners) == 1 and len(s) == 1 and len(e) == 1 and len(r) == 1)
+            check(OW, 'the other is refused by name and no second settlement exists%s' % race_seen,
+                  len(losers) == 1 and losers[0].get('outcome') == 'refused'
+                  and losers[0].get('reason') in ('already_settled', 'request_closed', 'stale_subject', 'unavailable_service'))
+            # The call that commits the settlement is not always the answer that wins it: when both answers
+            # are recorded before either settles, the settling call counts the EARLIEST accepted answer,
+            # which may be the other racer's, and lists its own as not counted. Every id below is an
+            # evidence entity id (the settlement's answer_id, the racers' recorded answers, not_counted).
+            recorded = {eid: d for eid, d in of_kind('settlement_api_answer', c2)}
+            race_answers = {o.get('answer') for o in outcomes.values() if o.get('answer')}
+            winning = sdata.get('answer_id')
+            own = (outcomes.get(winners[0]) or {}).get('answer') if len(winners) == 1 else None
+            listed_ids = [x.get('answer_id') for x in sdata.get('not_counted') or []]
+            order = lambda eid: ((recorded.get(eid) or {}).get('accepted_at') or 0, eid)
+            check(OW, 'the winning answer is the earliest accepted race answer; every other one the settlement read '
+                      'is listed once as not counted (conflicting_ruling), and the settling call\'s own answer, when '
+                      'it did not win, is among them' + race_seen,
+                  winning in race_answers and winning in recorded and winning not in listed_ids
+                  and len(set(listed_ids)) == len(listed_ids) and set(listed_ids) <= race_answers
+                  and all(x.get('reason') == 'conflicting_ruling' for x in sdata.get('not_counted') or [])
+                  and all(order(winning) < order(x) for x in listed_ids)
+                  and (own == winning or own in listed_ids))
             check(OW, 'the settlement is one consistent result: its winning answer, ruling, effect, receipt and '
-                      'terminal state agree',
-                  won.get('choice') == sdata.get('choice') and won.get('answer_id') in winners + [o.get('answer') for o in losers]
+                      'terminal state agree' + race_seen,
+                  won.get('choice') == sdata.get('choice') and winning in race_answers
                   and (e[0][1] if e else {}).get('ruling') == sdata.get('ruling') == _V68_CHOICES.get(sdata.get('choice'))
                   and (r[0][1] if r else {}).get('settlement_id') == sdata.get('settlement_id')
                   and data.get('state') == 'SATISFIED' and data.get('answer', {}).get('ruling') == sdata.get('choice')
@@ -880,9 +912,8 @@ with _v68_temp.TemporaryDirectory(prefix='v68-', dir=_v68_fast) as _v68_dir:
     _v68_rows = _v68_checks(_v68_Path(_v68_dir))
 for _v68_name, _v68_observed in _v68_rows.items():
     _v68_ok = bool(_v68_observed) and all(ok for _, ok in _v68_observed)
-    if not _v68_ok:
-        for _v68_label, _v68_one in _v68_observed:
-            if not _v68_one:
-                print('  VELDO-0068 %s detail: %s' % (_v68_name, _v68_label))
-    expect('VELDO-0068 ' + _v68_name, _v68_ok)
+    # A false row carries its false checks after the colon, where the mutation worker keeps a false
+    # row's detail (failed_details); a true row keeps its bare name.
+    expect('VELDO-0068 ' + _v68_name + ('' if _v68_ok else ': ' + ('; '.join(
+        label for label, one in _v68_observed if not one) or 'no check observed')), _v68_ok)
 print('VELDO-0068 suite seconds: %.3f' % (_v68_time.monotonic() - _v68_started))
