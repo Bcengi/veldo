@@ -147,3 +147,11 @@ state-pair qualification moved to Release 3 with advanced backlog states; AC2 cr
 races moved to Release 2. Priority, approved decomposition, clean blocked resumption and
 evidence-based DONE remain. The criteria, declared evidence universe, Context and Notes above
 now carry only the retained function. No specification status or historical proof was changed.
+
+2026-09-25, build: the backlog service `.veldo/control_backlog.py` (take, prepare, grooming, the owner's
+settled admission and priority of the current decomposition revision, append, block and resume on the
+owner's settled resolution, the authorized alternative outcome, evidence-based DONE and cancel), the
+executable-work question asked by `frontier.claimable` and `tasks.claim_task`, and `tasks.concluded` read
+from accepted unit outcomes whenever a Gate is wired. Every changed path is inside the footprint. Suite
+`scripts/suites/73_veldo_0078_backlog.py`, finding 78 (11 mutations) and the red record at 467d168 are in
+`proof/VELDO-0078/`. Status stays ready.
