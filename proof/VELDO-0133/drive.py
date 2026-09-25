@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Drive every finding-126 mutation and record what each one turned red, and why.
+"""Drive every finding-133 mutation and record what each one turned red, and why.
 
 Uses the registry and file materializer of scripts/check_teeth_mutations.py unchanged. Each run is a
 fresh interpreter executing the shared preamble and the VELDO-0133 suite, with the suite's
@@ -15,6 +15,10 @@ proof/VELDO-0133/red-at-COMMIT.json. Nothing in that tree is changed: its inbox 
 question and refuses ask and dispose, so each criterion row fails by its own assertions.
 
     python3 -B proof/VELDO-0133/drive.py --red 3e00de0
+    python3 -B proof/VELDO-0133/drive.py --red 0b3759f
+
+The second is the tree the review read: its inbox submits an other instruction under the source the
+answer names, so the attested-source rows fail by their own assertions there.
 
 Git runs only through the tree's own boundary module, loaded as `_git_process`.
 """
@@ -35,7 +39,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 SUITE = '69_veldo_0133_dispositions.py'
-MODULES = ('control_assignment.py', 'control_claim.py')
+MODULES = ('control_assignment.py', 'control_claim.py', 'control_intake.py')
 PREFIX = 'VELDO-0133 '
 
 
@@ -105,7 +109,7 @@ def red(commit):
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {rel: dict(at_commit=_sha(tree / rel), now=_sha(ROOT / rel))
-                   for rel in tuple('.veldo/' + m for m in MODULES) + ('.veldo/control_intake.py',
+                   for rel in tuple('.veldo/' + m for m in MODULES) + (
                                '.veldo/control_channel_presentation.py', '.veldo/init_scaffold.py')}
         observed = run({}, tree)
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0133', suite='scripts/suites/' + SUITE, commit=resolved,

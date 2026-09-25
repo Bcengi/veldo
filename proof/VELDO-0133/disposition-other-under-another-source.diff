@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -840 +840 @@
--        command = {'schema': INTAKE_COMMAND_SCHEMA, 'source_kind': arrived['source_kind'], 'source_id': source_id,
-+        command = {'schema': INTAKE_COMMAND_SCHEMA, 'source_kind': 'api_request', 'source_id': source_id,
+@@ -841 +841 @@
+-        result = self.intake.submit_attested(arrived['source_kind'], evidence, principal=answer['principal'],
++        result = self.intake.submit_attested('api_request', evidence, principal=answer['principal'],

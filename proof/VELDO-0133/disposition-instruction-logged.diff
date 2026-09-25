@@ -1,6 +1,6 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -767 +767,2 @@
+@@ -771 +771,2 @@
 -                                          ruling=(data.get('answer') or {}).get('ruling'))
 +                                          ruling=(data.get('answer') or {}).get('ruling'),
 +                                          said=((data.get('answer') or {}).get('command') or {}).get('instruction'))  # defect: the instruction is logged

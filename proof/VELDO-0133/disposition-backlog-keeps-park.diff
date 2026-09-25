@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -961 +961 @@
+@@ -962 +962 @@
 -        if 'unpark' in plan:
 +        if False:  # defect: backlog leaves the park in place

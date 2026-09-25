@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -456 +456 @@
+@@ -460 +460 @@
 -                    problem = disposition_answer_problem(command)
 +                    problem = disposition_answer_problem(dict(command, **{k: packet[k] for k in ('instruction',) if k in packet}))  # defect: the packet's text counts
