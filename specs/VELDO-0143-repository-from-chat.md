@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W103
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0161]
+depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0161, VELDO-0162]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -64,8 +64,8 @@ acceptance_criteria:
       tidepool" and a message that names no identity; intake routes each to the factory project
       (VELDO-0152) and the loop starts its PM cycle; the factory PM run prepares one proposal naming the
       project, the identity (asked in the same request when he did not say), the directory, the remote
-      name and visibility, the first objective, the default team and pipeline and the coordination
-      budget. His one answer, a yes or a correction, settles the project and the first objective, and no
+      name and visibility, the first objective, the default team's current revision (VELDO-0162 AC4) and
+      the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles the project and the first objective, and no
       further question is sent; the first message, which named both, is itself that answer and nothing
       is presented. Falsifier: Present a proposal when his message already named the project and the
       identity; the nothing-asked row must fail.
@@ -96,7 +96,8 @@ acceptance_criteria:
       unit. Set and completeness: After creation and its adoption (VELDO-0161), or an adoption alone,
       reaches `active`, the settlement is applied
       as the project's activation (VELDO-0076, applied from his answer by VELDO-0149) with the default
-      team template (VELDO-0089) and the default pipeline (VELDO-0132), and its first objective is
+      team revision the proposal named as its first team revision (VELDO-0162 AC4) and the default
+      pipeline (VELDO-0132), and its first objective is
       accepted by his answer, or by his first message when it named both (VELDO-0150), and admitted at
       the default priority with no further question; a repository that ended `failed` activates
       nothing. Observe the owner told "tidepool is ready; the first objective is next", and the first unit dispatched in the
@@ -172,3 +173,9 @@ falsifier, and giving it one would have made five criteria, so adoption (the for
 scope and its falsifier) and the no-restart criterion with a new falsifier are the new draft VELDO-0161,
 which depends_on now names. The former AC4 is AC3, and AC2 and AC3 name VELDO-0161 where creation ends in
 adoption. Draft; the owner decides readiness.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC3 cited a "default team template (VELDO-0089)" that
+VELDO-0089 does not define. The default team is now VELDO-0162 AC4, a versioned team the owner saves
+through the team route, built in the design's second stage and so before this specification; AC1's
+proposal names its current revision, AC3 gives the project that revision as its first team revision, and
+depends_on adds VELDO-0162. Criterion meaning unchanged. Draft; the owner decides readiness.

@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0162
-title: The owner saves capability configuration revisions and team revisions through typed API routes the authority executes, and a team revision becomes current on his settled answer
+title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his settled answer
 status: draft
 risk: critical
 owner: dmitry
@@ -40,8 +40,9 @@ behavior_bearing: true
 observability:
   logs: >
     Record each capability configuration save and each team proposal with the route, the verified
-    principal, the base revision or team version and the resulting revision, each team request opened
-    and each settled answer applied, and each named refusal; never a credential value.
+    principal, the base revision or team version and the resulting revision, each default team
+    revision and each project given one, each team request opened and each settled answer applied, and
+    each named refusal; never a credential value.
   metrics: >
     Count configuration saves and team proposals accepted and refused by reason, team requests opened,
     and answers applied or declined.
@@ -102,6 +103,28 @@ acceptance_criteria:
     falsified_by: >
       Make a proposed team revision current without the owner's settled answer; the owner-answer row must
       fail.
+  - id: AC4
+    text: >
+      Claim: The factory keeps one default team, a versioned team the owner saves through the team route,
+      and a new project's first team revision is the default team revision named in the proposal he
+      answered. Set and completeness: Save the default team (the four required roles and a specialist
+      role, each with VELDO-0089's role fields and VELDO-0151's configuration reference and kind) as the
+      typed assertion operation `save_default_team`, which the authority checks with VELDO-0089's and
+      VELDO-0151's schema and keeps as a new immutable revision, read back through the team read route; a
+      save from an older revision is refused `stale_version` and a schema refusal is named, each storing
+      nothing, and only the factory project's owner may save it. For an active project with no team, feed
+      the authority an owner's settled answer to a proposal that named a default team revision (VELDO-0143
+      AC1 makes such a proposal): that revision's roles become the project's first team revision, after
+      VELDO-0089's and VELDO-0151's staffing checks for that project, with no further question; a staffing
+      problem opens VELDO-0089's owner request and gives the project no team. Save a newer default team
+      revision before the answer is applied and require the named one. Falsifier: Overwrite a saved
+      default team revision in place, and the default-team history row must fail; give the project the
+      default team's current revision when the answered proposal named an older one, and the
+      named-revision row must fail.
+    falsified_by: >
+      Overwrite a saved default team revision in place, and the default-team history row must fail; give
+      the project the default team's current revision when the answered proposal named an older one, and
+      the named-revision row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Remove the configuration and team routes and their assertion operations; capability configuration
@@ -141,10 +164,12 @@ own team (design section 4(f)); amendment races (Release 2).
 
 - Normal use: the owner, in a passkey session, saves a role's capability configuration and a project's
   team through the API; the authority executes each save as its owning command, and the team revision
-  becomes current when he answers the request that shows it, in the UI or on Telegram.
+  becomes current when he answers the request that shows it, in the UI or on Telegram; he keeps a default
+  team, which a new project he accepts starts with.
 - Threat model: a configuration or team written without the authority's command or for a principal the
   command does not authorize; a save that overwrites a newer revision; a team made current without the
-  owner's settled answer, or on an answer to a request that showed something else; a refusal reported
+  owner's settled answer, or on an answer to a request that showed something else; a new project given a
+  default team revision other than the one his answered proposal named; a refusal reported
   as a save; a credential value in a response or proof. The owner's account, the API, the store and the
   signing edge are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); amendment races
@@ -160,6 +185,10 @@ request of AC3 is the one VELDO-0089's `amend` already checks for (its brief, it
 owner as its only principal), so `amend` is used as it is. The owner answering a request for his own
 save follows VELDO-0089 AC2, which makes a team change settle through the retained settlement path.
 
+The default team of AC4 is what a new project starts with (design section 5, step 4). It is plain team
+data with no project of its own, so the project-bound staffing checks run when a project is given it,
+and the project's first team revision settles on the owner's answer to the proposal that named it.
+
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
 real named interfaces, and retain the driven negative-control diff and named failed row. Fixtures
@@ -174,3 +203,9 @@ VELDO-0127 configuration, and no surface of the first or second stage could crea
 revision or a team revision. This specification adds the typed routes and the team request, and
 VELDO-0163 the form; VELDO-0131 depends on both and no longer builds the role form. A draft: only the
 owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: new AC4, the default team. VELDO-0143 AC3 activated a new
+project with a "default team template (VELDO-0089)" that VELDO-0089 does not define, so this
+specification, built in the design's second stage and so before VELDO-0143, defines it: a versioned team
+the factory project's owner saves through the team route, whose revision named in the answered project
+proposal becomes the new project's first team revision. A draft.

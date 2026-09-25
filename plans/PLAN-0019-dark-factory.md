@@ -1035,7 +1035,7 @@ work:
     spec: VELDO-0143
     title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
     feature_refs: [F6]
-    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0161]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0161, VELDO-0162]
     order: 15143
     release: 1
     stage: 5
@@ -1185,7 +1185,7 @@ work:
     stage: 5
   - item: W122
     spec: VELDO-0162
-    title: The owner saves capability configuration revisions and team revisions through typed API routes the authority executes, and a team revision becomes current on his settled answer
+    title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his settled answer
     feature_refs: [F7]
     depends_on: [VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151]
     order: 15162
@@ -1714,3 +1714,5 @@ the new AC4 carries moving off an exhausted account, adding one without a restar
 while usage is unknown, each with its own mutant.
 W117 (VELDO-0157) carries the Mac leg of the `when assigned` items and depends on W88's VELDO-0125 and
 W107's VELDO-0147; it cannot be in VELDO-0147, which W75's VELDO-0090 depends on, without a cycle.
+VELDO-0143 AC3 activated a new project with a default team template that VELDO-0089 does not define, so
+VELDO-0162 AC4, built in the second stage, defines the default team, and W103 (VELDO-0143) depends on it.

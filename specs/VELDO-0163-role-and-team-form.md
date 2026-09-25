@@ -58,19 +58,22 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: The owner adds, changes and removes a project's team roles in the UI, each naming its
-      capability configuration and kind, and a saved team is shown current only once the authority
-      accepted his answer. Set and completeness: In the same shell and widths, open a project's team, add
+      capability configuration and kind, a saved team is shown current only once the authority accepted
+      his answer, and the same form edits the default team. Set and completeness: In the same shell and widths, open a project's team, add
       the specialist role `builder_jira` naming the configuration of AC1, change the implementation role's
       configuration reference, remove a specialist role, and save; the form sends the team through
       VELDO-0162 AC2's route bound to the team version shown, the request VELDO-0162 AC3 opens appears in
       the decisions screen (VELDO-0145 AC3), and after his answer there the form shows the new revision as
       current, read back through the team route. A role with no configuration, an incomplete roster and a
       stale team version each show their named refusal beside the save, with the owner request it opened.
-      Falsifier: Show the saved team as current before the authority applied his settled answer; the
-      authoritative-team row must fail.
+      The same form opens the default team and saves it through VELDO-0162 AC4's operation, bound to the
+      revision it was edited from. Falsifier: Show the saved team as current before the authority applied
+      his settled answer, and the authoritative-team row must fail; send the default team's save without
+      the revision it was edited from, and the default-team stale-save row must fail.
     falsified_by: >
-      Show the saved team as current before the authority applied his settled answer; the
-      authoritative-team row must fail.
+      Show the saved team as current before the authority applied his settled answer, and the
+      authoritative-team row must fail; send the default team's save without the revision it was edited
+      from, and the default-team stale-save row must fail.
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Stop serving the form; capability configuration revisions, team revisions and their requests are
@@ -104,7 +107,8 @@ server form (VELDO-0159); every other screen of VELDO-0131.
 
 - Normal use: the owner signs in on his phone or desktop, writes the configuration of a role that lists
   the Atlassian server, adds that role to his project's team, saves, and answers the team request in the
-  decisions screen; the team then shows the new revision as current.
+  decisions screen; the team then shows the new revision as current. He edits the default team a new
+  project starts with in the same form.
 - Threat model: a save that overwrites a newer revision or team version; a team shown current before
   the authority applied his answer; a refusal shown as success or away from its action; a form that
   bypasses the API; a clipped action on a phone. The owner's account, the API and the store are
@@ -118,7 +122,7 @@ server form (VELDO-0159); every other screen of VELDO-0131.
 The form reads the catalog through VELDO-0144's route and reads and writes only VELDO-0162's
 configuration and team routes, inside the VELDO-0145 shell and its passkey session, with the stack and
 provenance rules of VELDO-0131 AC4. It is minimal: one form for a role's configuration and one for a
-project's team roles, not the role table.
+project's team roles and the default team, not the role table.
 
 ## History
 
@@ -126,3 +130,7 @@ project's team roles, not the role table.
 Atlassian server and put it in a team at the end of the design's second stage, as section 12 promises:
 the role form moves earlier from VELDO-0131's "Team and agent/tool/MCP configuration" row, which no
 longer carries it. A draft: only the owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC2's form also edits the default team VELDO-0162 AC4 now
+defines, with its own falsifier, so the owner can set what a new project starts with before VELDO-0143 is
+built. A draft.
