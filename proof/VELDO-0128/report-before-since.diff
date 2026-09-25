@@ -1,5 +1,5 @@
 --- a/.veldo/control_telegram_report.py
 +++ b/.veldo/control_telegram_report.py
-@@ -254 +254 @@
--            if seq > self.since:
+@@ -346 +346 @@
+-            if seq > since:
 +            if seq >= 0:  # defect: the starting sequence is ignored

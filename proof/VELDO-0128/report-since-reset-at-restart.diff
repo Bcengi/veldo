@@ -1,0 +1,6 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -292,0 +293,3 @@
++        rows = self._rows()  # defect: every start begins at the current head
++        if rows and self.stored_since() is not None:
++            self._advance(rows[-1][0])

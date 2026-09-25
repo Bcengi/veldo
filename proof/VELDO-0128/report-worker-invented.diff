@@ -1,0 +1,8 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -442 +442 @@
+-                'fact': 'dispatch %s of unit %s at station %s, attempt %s, %s'
++                'fact': 'dispatch %s of unit %s at station %s, attempt %s, %s (worker %s)'
+@@ -444 +444 @@
+-                           _shown(contract.get('attempt')), said[1]),
++                           _shown(contract.get('attempt')), said[1], _shown(contract.get('worker'))),  # defect

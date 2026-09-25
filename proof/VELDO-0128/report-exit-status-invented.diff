@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -414 +414 @@
+-        code, signal = termination.get('returncode'), termination.get('signal')
++        code, signal = termination.get('exit_status'), termination.get('signal')  # defect: no such field

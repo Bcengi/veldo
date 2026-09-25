@@ -1,4 +1,4 @@
 --- a/.veldo/control_telegram_report.py
 +++ b/.veldo/control_telegram_report.py
-@@ -90 +89,0 @@
+@@ -132 +131,0 @@
 -    ('completion', None, '_completions'),

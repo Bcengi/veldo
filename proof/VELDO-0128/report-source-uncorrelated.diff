@@ -1,5 +1,5 @@
 --- a/.veldo/control_telegram_report.py
 +++ b/.veldo/control_telegram_report.py
-@@ -271 +271 @@
+@@ -363 +363 @@
 -                  'entity_kind': entry.get('kind'), 'entity_digest': entry.get('digest')}
 +                  'entity_kind': entry.get('kind'), 'entity_digest': None}  # defect: uncorrelated

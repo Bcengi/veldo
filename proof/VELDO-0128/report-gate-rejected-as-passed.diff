@@ -1,5 +1,0 @@
---- a/.veldo/control_telegram_report.py
-+++ b/.veldo/control_telegram_report.py
-@@ -79 +79 @@
--GATE_EDGES = {('VERIFYING', 'REVIEWING'): ('gate', 'passed'), ('VERIFYING', 'FAILED'): ('gate', 'rejected'),
-+GATE_EDGES = {('VERIFYING', 'REVIEWING'): ('gate', 'passed'), ('VERIFYING', 'FAILED'): ('gate', 'passed'),

@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -449 +449 @@
+-            return self._observed(eid, entry, prior)
++            return None  # defect: the gate's own record is ignored

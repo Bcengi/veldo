@@ -1,5 +1,5 @@
 --- a/.veldo/control_telegram_report.py
 +++ b/.veldo/control_telegram_report.py
-@@ -466 +466 @@
+@@ -634 +634 @@
 -                                      error_class=None if accepted else taxonomy(reason)))
 +                                      error_class=None))  # defect: refusals carry no error class

@@ -1,6 +1,6 @@
 --- a/.veldo/control_telegram_report.py
 +++ b/.veldo/control_telegram_report.py
-@@ -451 +451,2 @@
+@@ -619 +619,2 @@
 -            sent = self.edge.send(chat, text, reply_to)
 +            sent = type(self.edge)(self.P, self.edge.base_url, self.edge._token,
 +                                   activation=None).send(chat, text, reply_to)  # defect: no activation gate
