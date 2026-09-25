@@ -4998,6 +4998,23 @@ def cases():
     project('reservation-ignored-at-completion', 'control_project.py',
             "                found.append({'kind': 'reservation', 'id': eid})\n",
             "                pass  # defect: an open reservation does not hold completion\n", ['open-reservation'])
+    # Review fixes: a record of another kind at a project's id, and an owner no longer current.
+    project('project-kind-unchecked', 'control_eligibility.py',
+            "        if record.get('value') is not None and record['value'].get('kind') != PROJECT_KIND:\n",
+            "        if False:  # defect: a record of any kind decides the unit's project\n", ['foreign-kind'])
+    project('project-prefix-unowned', 'control_project.py',
+            "prefixes={ID_PREFIX: (OPERATION,)},\n", "prefixes={},  # defect: the project id prefix is unowned\n",
+            ['foreign-kind'])
+    project('owner-currency-unchecked', 'control_eligibility.py',
+            "        elif 'state' in project and not self._owner_current(",
+            "        elif False and not self._owner_current(", ['owner-demoted', 'owner-revoked'])
+    project('demoted-owner-current', 'control_eligibility.py',
+            "                and isinstance(roles, list) and PROJECT_OWNER_ROLE in roles\n",
+            "                and True  # defect: an owner without project_owner is current\n", ['owner-demoted'])
+    project('revoked-owner-current', 'control_eligibility.py',
+            "        return (CM.AC.active_member(entry, self.clock())[0] and entry.get('principal_type') == 'person'\n",
+            "        return (True and entry.get('principal_type') == 'person'  # defect: a revoked owner is current\n",
+            ['owner-revoked'])
 
     # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
     def service_channel(name, module, old, new, row, also=()):

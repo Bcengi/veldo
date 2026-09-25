@@ -1,0 +1,152 @@
+{
+ "by_assertion": true,
+ "commit": "93a56d6e994868b1decc545b055dc408f97d1969",
+ "details": [
+  "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; a record of another kind at the project's id is refused by name, never admitting its unit",
+  "VELDO-0076 detail: project/owner-demoted: so the Gate halts its unit by name; and no dispatch of it starts",
+  "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts"
+ ],
+ "failed_rows": [
+  "VELDO-0076 project/foreign-kind",
+  "VELDO-0076 project/owner-demoted",
+  "VELDO-0076 project/owner-revoked"
+ ],
+ "modules": {
+  ".veldo/control_eligibility.py": {
+   "at_commit": "4054edce93c466f1079e119da9114d8abc2ff57900a2ec77a38b78ff5d2476a9",
+   "now": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "860f54a2201fa0c60a6ed3922080219e6cb7d97ded0141c673fc3490d1d09cd9",
+   "now": "860f54a2201fa0c60a6ed3922080219e6cb7d97ded0141c673fc3490d1d09cd9"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf",
+   "now": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  ".veldo/frontier.py": {
+   "at_commit": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc",
+   "now": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "fce0bcdaf0b7612f1ebd7e21929a51cb11d17144a2b795848166b89df620fbb2",
+   "now": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0076 install/assets",
+   true
+  ],
+  [
+   "VELDO-0076 project/activation-fields",
+   true
+  ],
+  [
+   "VELDO-0076 project/activation-authority",
+   true
+  ],
+  [
+   "VELDO-0076 project/unbounded-budget",
+   true
+  ],
+  [
+   "VELDO-0076 project/one-active",
+   true
+  ],
+  [
+   "VELDO-0076 project/paused-frontier",
+   true
+  ],
+  [
+   "VELDO-0076 project/paused-dispatch",
+   true
+  ],
+  [
+   "VELDO-0076 project/stop-policy",
+   true
+  ],
+  [
+   "VELDO-0076 project/history-preserved",
+   true
+  ],
+  [
+   "VELDO-0076 project/resume",
+   true
+  ],
+  [
+   "VELDO-0076 project/cancel",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-objective",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-assignment",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-decision",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-dispatch",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-reservation",
+   true
+  ],
+  [
+   "VELDO-0076 project/complete-resolved",
+   true
+  ],
+  [
+   "VELDO-0076 project/observability",
+   true
+  ],
+  [
+   "VELDO-0076 project/foreign-kind",
+   false
+  ],
+  [
+   "VELDO-0076 project/owner-demoted",
+   false
+  ],
+  [
+   "VELDO-0076 project/owner-revoked",
+   false
+  ],
+  [
+   "VELDO-0076 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/activation-fields",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/paused-frontier",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/open-objective",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/observability",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/foreign-kind",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 4.104,
+ "spec_id": "VELDO-0076",
+ "suite": "scripts/suites/71_veldo_0076_projects.py",
+ "tree": "git archive 93a56d6e994868b1decc545b055dc408f97d1969, unchanged; the current suite file run against it"
+}
