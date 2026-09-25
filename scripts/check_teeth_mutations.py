@@ -4990,6 +4990,16 @@ def cases():
                     also=[("{'getMe': {'id': PROBE_BOT_ID,", "{'getMe': {'id': real,"),
                           ("        found = acquirer.evidence(EV.evidence_id(PROBE_BOT_ID, update_id)) or {}\n",
                            "        found = acquirer.evidence(EV.evidence_id(real, update_id)) or {}\n")])
+    # Review 1, AC2: over an existing record the signer is checked against the parameters' owner only, so
+    # another project_owner member naming himself stops the edge or re-qualifies it onto his own chat.
+    service_channel('owner-checked-against-params-only', 'control_channel_activation.py',
+                    "        if prior is not None and signer != prior.get('owner'):\n",
+                    "        if False:  # defect: the signer is checked against params['owner'] only\n", 'command/owner-only')
+    # Filed F2: an exchange that failed in transport is named as fixture evidence.
+    service_channel('transport-failure-named-fixture', 'control_channel_activation.py',
+                    "        return ['unavailable_service']\n",
+                    "        return ['fixture_only_evidence']  # defect: a failed exchange is named fixture evidence\n",
+                    'qualification/transport-failure-named')
     return result
 
 
