@@ -608,8 +608,11 @@ def _v130_checks(base):
 
     # Credential-shaped values made at run time, never in this source: an MCP server's environment value,
     # a configured key, and text in the shape of a provider token.
-    secret_env = 'v130-env-' + _v130_os.urandom(12).hex()
-    secret_key = 'v130-key-' + _v130_os.urandom(12).hex()
+    # Four random bytes each: the secret scanner's entropy detector never flags a value this short (measured
+    # 0 of 5000), so only the credential-field rule redacts these two; at twelve bytes it flagged about a
+    # third of them, and the credential-fields mutant then passed on those runs.
+    secret_env = 'v130-env-' + _v130_os.urandom(4).hex()
+    secret_key = 'v130-key-' + _v130_os.urandom(4).hex()
     shaped = 'gh' + 'p_' + _v130_os.urandom(15).hex()
     fixture('role-builder', 'role_configuration', dict(role='builder', principal='builder-agent'))
     fixture('tools-default', 'tool_configuration', dict(tools=['Read', 'Edit'], api_key=secret_key,
