@@ -445,7 +445,18 @@ def _v77_suite():
                 settled_r1 = answer(receipt_r1, 'accept')
                 before_stale = objective(o1)
                 stale = send('pm', 'accept', objective=o1, objective_version=before_stale.get('version'), request=rid_r1)
+                # The current revision's target, but the owner was shown another brief.
+                target_r2, _brief_r2 = target_and_brief(o1)
+                rid_brief, receipt_brief = present('OBJ-1-brief', target_r2, 'Accept something harmless.')
+                settled_brief = answer(receipt_brief, 'accept')
+                before_brief = objective(o1)
+                wrong_brief = send('pm', 'accept', objective=o1, objective_version=before_brief.get('version'),
+                                   request=rid_brief)
                 check('acceptance/stale-answer', [
+                    ('an answer to the current revision shown another brief settled',
+                     settled_brief.get('outcome') == 'settled'),
+                    ('it is refused as a stale brief by name, the objective unchanged',
+                     wrong_brief.get('reason') == 'stale_subject:brief' and objective(o1) == before_brief),
                     ('the amendment is a new revision with a new bound digest',
                      amended.get('ok') and objective(o1).get('revision') == 2 and target_r1.get('digest') != objective(o1).get('bound_digest')),
                     ('the owner\'s answer to revision 1 settled', settled_r1.get('outcome') == 'settled'),
@@ -517,7 +528,8 @@ def _v77_suite():
 
             # AC2: only the bound assessor's assessment of the accepted revision, with complete evidence.
             with region('satisfaction/wrong-signer', 'satisfaction/missing-evidence', 'satisfaction/stale-revision',
-                        'satisfaction/unproven-outcome', 'satisfaction/proven', 'satisfaction/other-process'):
+                        'satisfaction/stale-evidence', 'satisfaction/unproven-outcome', 'satisfaction/proven',
+                        'satisfaction/other-process'):
                 good = work / 'outcome-o1.txt'
                 good.write_text('checkout: two taps; active in ten seconds\n')
                 ev_outcome = observe(good, 'two taps')
@@ -559,6 +571,15 @@ def _v77_suite():
                 for name, spec in (('renewal-engine', 'VELDO-9772'), ('renewal-notice', 'VELDO-9773')):
                     send('pm', 'propose_feature', objective=o2, objective_version=objective(o2).get('version'), feature=name,
                          title=name, scope=['payments'], specifications=[spec])
+                # Passing observations kept before this objective was accepted prove nothing about it.
+                pre_acceptance = assess('asha', o2, 1, complete)
+                check('satisfaction/stale-evidence', [
+                    ('the evidence was kept and passed before the objective was accepted',
+                     ev_outcome['exit'] == 0 and ev_regress['exit'] == 0 and accepted2.get('ok')),
+                    ('an assessment over it is refused as stale evidence by name',
+                     pre_acceptance.get('reason') == 'stale_subject:evidence'),
+                    ('the objective is not satisfied', objective(o2).get('state') == 'ACTIVE'
+                     and objective(o2).get('assessment') is None)])
                 bad = work / 'outcome-o2.txt'
                 bad.write_text('renewal: not yet observed\n')
                 failing = observe(bad, 'renewed before expiry')
@@ -607,7 +628,7 @@ def _v77_suite():
                     ('the declared AC2 set was driven', len(AC2_SET) == 5)])
 
             # AC3: cancellation disposes of unfinished work explicitly and keeps the history.
-            with region('cancel/work-disposition', 'cancel/history-kept', 'cancel/reopen-linked'):
+            with region('cancel/work-disposition', 'cancel/history-kept', 'cancel/reopen-linked', 'cancel/transfer-bounded'):
                 m3 = ask('For proj-a: group passes for tour operators.')
                 o3 = propose(pid_of(m3), 'A tour operator buys ten passes at once.').get('objective_id')
                 rid3, _s3, _a3 = accept_through_settlement(o3, 'OBJ-3')
@@ -679,8 +700,70 @@ def _v77_suite():
                      continued.get('ok') and objective(o5).get('continues') == o3 and objective(o5).get('state') == 'PROPOSED'),
                     ('the canceled objective is byte-for-byte unchanged', row3 is not None and entity(o3) == row3)])
 
+                # A transfer lands inside the receiving objective's accepted scope, under its accepted
+                # revision, and each feature has exactly one disposition.
+                mT = ask('For proj-a: seasonal passes.')
+                oT = propose(pid_of(mT), 'A traveler buys a seasonal pass.').get('objective_id')
+                accept_through_settlement(oT, 'OBJ-T')
+                mR = ask('For proj-a: seasonal checkout.')
+                oR = send('pm', 'propose', proposal=pid_of(mR),
+                          **bound('A seasonal pass checks out in two taps.', scope=('checkout',))).get('objective_id')
+                send('pm', 'amend', objective=oR, objective_version=objective(oR).get('version'),
+                     changes={'outcome': 'A seasonal pass checks out in two taps, on every device.'})
+                accept_through_settlement(oR, 'OBJ-R')
+                fc = send('pm', 'propose_feature', objective=oT, objective_version=objective(oT).get('version'),
+                          feature='season-cart', title='Season cart', scope=['checkout']).get('feature_id')
+                fp = send('pm', 'propose_feature', objective=oT, objective_version=objective(oT).get('version'),
+                          feature='season-billing', title='Season billing', scope=['payments']).get('feature_id')
+
+                def snapshot():
+                    return {eid: entity(eid) for eid in (oT, oR, fc, fp)}
+
+                def cancel_t(dispositions):
+                    return send('olga', 'cancel', objective=oT, objective_version=objective(oT).get('version'),
+                                reason='Seasons moved to a partner.', dispositions=dispositions)
+                start = snapshot()
+                outside_transfer = cancel_t([{'target': fc, 'disposition': 'stop', 'recorded_by': 'olga'},
+                                             {'target': fp, 'disposition': 'transfer', 'to': oR, 'recorded_by': 'olga'}])
+                after_outside = snapshot()
+                twice = cancel_t([{'target': fc, 'disposition': 'transfer', 'to': oR, 'recorded_by': 'olga'},
+                                  {'target': fc, 'disposition': 'stop', 'recorded_by': 'olga'},
+                                  {'target': fp, 'disposition': 'stop', 'recorded_by': 'olga'}])
+                after_twice = snapshot()
+                moved = cancel_t([{'target': fc, 'disposition': 'transfer', 'to': oR, 'recorded_by': 'olga'},
+                                  {'target': fp, 'disposition': 'stop', 'recorded_by': 'olga'}])
+                fc_after = (entity(fc) or {}).get('data') or {}
+                listed = objective(oR).get('features') or []
+                check('cancel/transfer-bounded', [
+                    ('the source is accepted at revision 1 and the receiver, scoped to checkout, at revision 2',
+                     objective(oT).get('accepted_revision') == 1 and objective(oR).get('accepted_revision') == 2
+                     and objective(oR).get('bound', {}).get('scope') == ['checkout'] and bool(fc) and bool(fp)),
+                    ('a transfer outside the receiver\'s accepted scope is refused by name',
+                     outside_transfer.get('reason') == 'out_of_scope:payments'),
+                    ('nothing was written for it', after_outside == start),
+                    ('a disposition set naming one feature twice is refused',
+                     twice.get('reason') == 'invalid_input:duplicate_disposition'),
+                    ('nothing was written for that either', after_twice == start),
+                    ('an in-scope transfer moves the feature under the receiver\'s accepted revision',
+                     moved.get('ok') and fc_after.get('objective_uuid') == oR and fc_after.get('state') == 'RAW'
+                     and fc_after.get('objective_revision') == 2 and fc in listed),
+                    ('the receiver lists no canceled feature',
+                     all(((entity(f) or {}).get('data') or {}).get('state') != 'CANCELED' for f in listed))])
+
             with region('observability'):
+                # The row's own objectives and feature, measured as a change, so objectives other rows
+                # (or a probe) leave pending do not decide it.
+                pending_before = (service.metrics() if service is not None else {}).get('pending') or {}
+                mine = [propose(pid_of(ask('For proj-a: observed objective %d.' % n)), 'Observed outcome %d.' % n)
+                        for n in (1, 2)]
+                mine_feature = send('pm', 'propose_feature', objective=o4, objective_version=objective(o4).get('version'),
+                                    feature='observed-feature', title='Observed feature', scope=['checkout'])
                 metrics = service.metrics() if service is not None else {}
+                pending_after = metrics.get('pending') or {}
+
+                def grew(key):
+                    return pending_after.get(key, 0) - pending_before.get(key, 0)
+                proposed_mine = [x for x in mine if x.get('ok') and objective(x.get('objective_id')).get('state') == 'PROPOSED']
                 refusals = [o for o in (service.observations if service is not None else []) if o['outcome'] == 'refused']
                 text = json.dumps(service.observations if service is not None else [])
                 check('observability', [
@@ -688,9 +771,94 @@ def _v77_suite():
                      metrics.get('accepted', 0) > 0 and metrics.get('refused', 0) == len(refusals) > 0),
                     ('every refusal is named and classified, never as success',
                      all(o['refusal'] and o['taxonomy'] not in (None, 'unknown_outcome') for o in refusals)),
-                    ('the pending work is exposed', metrics.get('pending', {}).get('awaiting_acceptance') == 1
-                     and metrics.get('pending', {}).get('features_awaiting_admission', 0) >= 1),
+                    ('the pending work is exposed: the row\'s own objectives and feature are counted',
+                     len(proposed_mine) == 2 and grew('awaiting_acceptance') == len(proposed_mine)
+                     and mine_feature.get('ok') and grew('features_awaiting_admission') == 1),
                     ('observations carry no outcome text or signature', 'two taps' not in text and 'SSH SIGNATURE' not in text)])
+
+            # VELDO-0076: a paused, canceled or completed project amends, accepts, elaborates and
+            # satisfies nothing; a paused one still lets its owner cancel an objective.
+            with region('project/inactive-refusals'):
+                def lifecycle(project, op, **fields):
+                    return projects.apply(signed('olga', dict(
+                        ids, operation=op, project=project, principal='olga', command_id=next_id('pc'), nonce=next_id('pn'),
+                        project_version=(entity('project:' + project) or {}).get('version'), **fields)))
+                mP = ask('For proj-a: passes for families.')
+                oP = propose(pid_of(mP), 'A family buys four passes at once.').get('objective_id')
+                targetP, briefP = target_and_brief(oP)
+                ridP, receiptP = present('OBJ-P', targetP, briefP)
+                settledP = answer(receiptP, 'accept')
+                later = work / 'outcome-o4.txt'
+                later.write_text('invoice: one per group\n')
+                fresh = {'outcome': observe(later, 'one per group'), 'regression': observe(later, 'invoice')}
+                fresh = {k: {'ref': v['ref'], 'digest': v['digest']} for k, v in fresh.items()}
+                m_paused = ask('For proj-a: proposed while paused.')
+
+                def attempts(tag):
+                    return {
+                        'amend': send('pm', 'amend', objective=oP, objective_version=objective(oP).get('version'),
+                                      changes={'outcome': 'Amended while %s.' % tag}).get('reason'),
+                        'accept': send('pm', 'accept', objective=oP, objective_version=objective(oP).get('version'),
+                                       request=ridP).get('reason'),
+                        'propose_feature': send('pm', 'propose_feature', objective=o4,
+                                                objective_version=objective(o4).get('version'), feature='while-' + tag,
+                                                title='While ' + tag, scope=['checkout']).get('reason'),
+                        'assess': send('asha', 'assess', objective=o4, objective_version=objective(o4).get('version'),
+                                       revision=objective(o4).get('accepted_revision'), evidence=fresh).get('reason')}
+                paused = lifecycle('proj-a', 'pause', reason='Holding for the season.')
+                held = {eid: entity(eid) for eid in (oP, o4)}
+                while_paused = attempts('paused')
+                propose_paused = propose(pid_of(m_paused), 'Proposed while paused.').get('reason')
+                unchanged_paused = {eid: entity(eid) for eid in (oP, o4)} == held
+                cancel_paused = send('olga', 'cancel', objective=oP, objective_version=objective(oP).get('version'),
+                                     reason='Families moved to a partner.', dispositions=[])
+                canceled = lifecycle('proj-a', 'cancel', reason='The line is closed.', disposition='stop everything')
+                held = {eid: entity(eid) for eid in (o4, o5)}
+                while_canceled = {
+                    'amend': send('pm', 'amend', objective=o5, objective_version=objective(o5).get('version'),
+                                  changes={'outcome': 'Amended after the cancel.'}).get('reason'),
+                    'propose_feature': send('pm', 'propose_feature', objective=o4, objective_version=objective(o4).get('version'),
+                                            feature='while-canceled', title='While canceled', scope=['checkout']).get('reason'),
+                    'assess': send('asha', 'assess', objective=o4, objective_version=objective(o4).get('version'),
+                                   revision=objective(o4).get('accepted_revision'), evidence=fresh).get('reason')}
+                unchanged_canceled = {eid: entity(eid) for eid in (o4, o5)} == held
+                activated_b = projects.apply(signed('olga', dict(
+                    ids, operation='activate', project='proj-b', principal='olga', command_id=next_id('pc'), nonce=next_id('pn'),
+                    owner='olga', charter={'purpose': 'Resell passes.'}, execution_repository=REPO,
+                    authority_policy={'objective_acceptance': ['project_owner'], 'admission': ['admission_authority']},
+                    coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500})))
+                oB = send('pm', 'propose', proposal=pid_of(ask('For proj-b: a reseller portal.')),
+                          **dict(bound('A reseller sells a pass.'), authority={'acceptor': 'olga', 'assessor': 'olga'})
+                          ).get('objective_id')
+                m_completed = ask('For proj-b: proposed after completion.')
+                cancel_b = send('olga', 'cancel', objective=oB, objective_version=objective(oB).get('version'),
+                                reason='Resellers wait.', dispositions=[])
+                completed = lifecycle('proj-b', 'complete')
+                held_b = entity(oB)
+                while_completed = {
+                    'amend': send('pm', 'amend', objective=oB, objective_version=objective(oB).get('version'),
+                                  changes={'outcome': 'Amended after completion.'}).get('reason'),
+                    'accept': send('pm', 'accept', objective=oB, objective_version=objective(oB).get('version'),
+                                   request=ridP).get('reason')}
+                propose_completed = send('pm', 'propose', proposal=pid_of(m_completed),
+                                         **dict(bound('After completion.'), authority={'acceptor': 'olga', 'assessor': 'olga'})
+                                         ).get('reason')
+                check('project/inactive-refusals', [
+                    ('the owner paused proj-a with an answer settled and fresh evidence kept',
+                     paused.get('ok') and settledP.get('outcome') == 'settled' and objective(o4).get('state') != 'SATISFIED'),
+                    ('while paused: amend, accept, propose_feature and assess are refused by name',
+                     while_paused == {k: 'project_not_active:PAUSED' for k in while_paused}),
+                    ('while paused: a new objective is refused by name', propose_paused == 'project_not_active:PAUSED'),
+                    ('nothing was written while paused', unchanged_paused),
+                    ('while paused: the owner still cancels an objective',
+                     cancel_paused.get('ok') and objective(oP).get('state') == 'CANCELED'),
+                    ('canceled proj-a: amend, propose_feature and assess are refused by name, nothing written',
+                     canceled.get('ok') and unchanged_canceled
+                     and while_canceled == {k: 'project_not_active:CANCELED' for k in while_canceled}),
+                    ('completed proj-b: amend, accept and a new objective are refused by name, nothing written',
+                     activated_b.get('ok') and cancel_b.get('ok') and completed.get('ok') and entity(oB) == held_b
+                     and while_completed == {k: 'project_not_active:COMPLETED' for k in while_completed}
+                     and propose_completed == 'project_not_active:COMPLETED')])
         finally:
             for server in servers:
                 server.shutdown()
