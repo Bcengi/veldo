@@ -125,6 +125,16 @@ Release 1 establishes the enrolled owner, one execution repository, charter and 
 project coordination. The roster does not grant admission authority. Additional owners and
 transfer require the Release 3 governance work rather than a default inferred delegation.
 
+A unit's project is judged only from a record of kind `project` at `project:<name>`; a record of
+any other kind there is refused by name (`project_not_active:not_a_project`), and the project
+service owns the `project:` id prefix as well as the kind, so no other command writes at a
+project's id. Only the recorded owner may pause, cancel or complete a project, so a project whose
+recorded owner is no longer a current person member holding `project_owner` in its scope (demoted,
+out of scope, revoked or expired) could be stopped by nobody. It fails safe the way VELDO-0138's
+demoted owner does: the Gate refuses its units (`project_not_active:owner_not_current`) and its
+work halts at its next station until the owner is current again. Handover to a new owner is
+Release 3.
+
 Implement canonical engine assets with synchronized installed copies where applicable. Register
 every asset this journey actually installs. Derive executable check registrations from each
 criterion's declared set; retain the actual observations and each driven negative-control diff
@@ -145,3 +155,12 @@ Context and Notes above now carry only the retained function. No specification s
 historical proof was changed.
 
 2026-09-25, build: the footprint gains `control_eligibility.py` (engine, installed and pack copies). Pause and cancel must stop dispatch as well as the frontier's offers, and the one place every station (selection, claim, the runner's preparation, the receiver's recheck, publication) asks is the VELDO-0052 Gate, so its unit check now refuses a unit whose project is not ACTIVE (`project_not_active:<state>`); a check in frontier.py alone would have left every dispatch path open. The project service is the new `control_project.py`; the frontier, `request.py` and `authorization.py` are unchanged. Status unchanged.
+
+2026-09-25, review fixes: the Gate judges a unit's project only from a record of kind `project`
+(a record of another kind at the project's id refuses `project_not_active:not_a_project`) and the
+project service owns the `project:` id prefix through `declare_owners`, since a signed generic
+upsert of another kind at `project:X` got X's units past the Gate and blocked X's activation; an
+ACTIVE project whose recorded owner is not current halts at the Gate
+(`project_not_active:owner_not_current`), the fail-safe of VELDO-0138's demoted owner, with
+handover left to Release 3. Rows `project/foreign-kind`, `project/owner-demoted` and
+`project/owner-revoked`, red at 93a56d6 by assertion; five finding 76 mutations. Status unchanged.

@@ -11,7 +11,8 @@ here.
 ## What was built
 
 - **`.veldo/control_project.py` (new).** The project service: the only writer of `project:<name>`
-  records (it declares the `project` kind through `control_store.declare_owners`). Every operation is a
+  records (it declares the `project` kind and the `project:` id prefix through
+  `control_store.declare_owners`). Every operation is a
   signed command `{'command', 'signature'}` verified against the principal's active key; the principal
   must be an active person holding `project_owner` in a scope covering the project, and after
   activation the owner the record names. Every transition is asked of `entity_contract.transition` on
@@ -33,6 +34,11 @@ here.
   before the pause is also stale. A project record with no lifecycle state (written before the service
   existed; the service is now the kind's only writer) is not judged by this rule. This path was added to
   the footprint, with a History line: the frontier's own footprint file could not stop a dispatch.
+  Review fixes: the project is judged only from a record of kind `project` (any other kind at the
+  project's id refuses `project_not_active:not_a_project`), and an ACTIVE project whose recorded owner
+  is not a current person member holding `project_owner` in its scope refuses
+  `project_not_active:owner_not_current`, since only that owner may stop it (VELDO-0138's fail-safe;
+  handover is Release 3). The owner's membership record is a consumed input (`project_owner`).
 - **`.veldo/init_scaffold.py`.** Installs `control_project.py`. Engine copies are byte-identical.
 
 The frontier, `request.py` and `authorization.py` are unchanged: the frontier already asks the Gate at
@@ -51,7 +57,12 @@ reader in another process. It also passes in the stage environment (`env -i`, em
 row red by assertion (the tree has no project service, so nothing activates, pauses or completes, and
 its Gate refuses every unit for want of a project record).
 
-`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 16 mutants, each reds
+`red-at-93a56d6.json`: the current suite against the tree before the review fixes: exactly
+`project/foreign-kind`, `project/owner-demoted` and `project/owner-revoked` red by assertion (a
+generic upsert of another kind at `project:proj-x` was accepted, admitted the unit and dispatched it,
+and blocked the owner's activation; a demoted or revoked owner's unit was admitted and dispatched).
+
+`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 21 mutants, each reds
 its named row by assertion, the baseline and a no-op copy of each mutated module green. Registry:
 `scripts/check_teeth_mutations.py --finding 76`.
 
@@ -73,6 +84,9 @@ its named row by assertion, the baseline and a no-op copy of each mutated module
 | `project/open-dispatch` | AC3 | `dispatch-ignored-at-completion` |
 | `project/open-reservation` | AC3 | `reservation-ignored-at-completion` |
 | `project/complete-resolved` | AC3 | none (the positive case each open-* row is judged beside) |
+| `project/foreign-kind` | review | `project-kind-unchecked`, `project-prefix-unowned` |
+| `project/owner-demoted` | review | `owner-currency-unchecked`, `demoted-owner-current` |
+| `project/owner-revoked` | review | `owner-currency-unchecked`, `revoked-owner-current` |
 | `install/assets` | all | `project-not-scaffolded` |
 | `project/observability` | all | none |
 
@@ -106,6 +120,16 @@ satisfied, the requester's signed cancel, an OpenSSH-signed approving settlement
 accepts, the receiver launching and the runner retiring the slot, the reservation service retiring the
 lone slot); completion is then accepted at the activation version plus one, keeps its history and bound
 fields, is terminal, and another process reads it.
+
+**Review fixes.** A generic signed upsert of kind `note` at `project:proj-x` refuses `entity_owned`,
+the unit of proj-x is not admitted (`missing_authority:project`) and its dispatch refuses by that name,
+then the owner activates proj-x and its unit is admitted. In a second store no project service declared
+into, a `note` record at a unit's project id refuses exactly `project_not_active:not_a_project` while a
+`project` record beside it raises no project refusal. Project proj-z is active under zed; with zed's
+`project_owner` role removed he can no longer pause it and the Gate refuses its unit exactly
+`project_not_active:owner_not_current` with its dispatch refused by that name; restoring the role
+admits it again. The same with zed revoked, and after restoring the membership the unit dispatches and
+its worker exits.
 
 ## Checks run
 
