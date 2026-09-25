@@ -4822,7 +4822,16 @@ def cases():
                "'version', 0), rec: (self._entity(rec) or {}).get('version', 0), terms['terms_id']"),
               ("        self._commit(SETTLE, sid, params, expected)", "        self._commit(SETTLE, sid + ':' + winner_id, params, expected)"),
               ("        if any(x in before for x in (sid, eid, rid)):\n            raise refused('stale_subject', 'this request version is settled')\n", ''),
-              ("\n                or data.get('state') not in self.I.PENDING):", "):")])
+              ("\n                or data.get('state') not in self.I.PENDING):", "):"),
+              # The closed request's presentation no longer binds, which also stops the second settlement;
+              # the defect under test removes those stops as well.
+              ("            if (head is None or head.get('current') != receipt['presentation_id'] or refusal\n"
+               "                    or self.V.binding_mismatches(receipt, current) or a['request_version']",
+               "            if (head is None\n                    or a['request_version']"),
+              ("        if refusal:\n            raise Refused('owner_not_current'",
+               "        if False:\n            raise Refused('owner_not_current'"),
+              ("\n                or self.V.binding_mismatches(receipt, current)):\n            return 'stale_presentation'",
+               "):\n            return 'stale_presentation'")])
     return result
 
 

@@ -876,6 +876,10 @@ def _v130_checks(base):
             expired = _v130_copy.deepcopy(pending)
             expired['binding']['expires_at'] = _v130_time.time() - 1
             stolen = {'binding': pending['binding'], 'proof': other_pending['proof']}
+            forged_proof = (phone.get(W.binding_challenge(pending['binding']), _V130_ORIGIN, _V130_HOST, signer=stranger)
+                            if W is not None and pending.get('binding') else {})
+            forged = {'binding': pending['binding'],
+                      'proof': {k: v for k, v in forged_proof.items() if k != 'credential_id'}}
             for label, got, name in (
                     ('a current member who is not a steward', steward_command(pending, 'owner', signer_name='member'),
                      'policy_refused'),
@@ -893,7 +897,9 @@ def _v130_checks(base):
                     ('the steward\'s envelope signed by another key', steward_command(pending, 'owner', key='owner'),
                      'signature_invalid'),
                     ('an expired pending registration', steward_command(expired, 'owner'), 'registration_expired'),
-                    ('another registration\'s possession proof', steward_command(stolen, 'owner'), 'possession_unproven')):
+                    ('another registration\'s possession proof', steward_command(stolen, 'owner'), 'possession_unproven'),
+                    ('a possession proof over this binding signed by another key', steward_command(forged, 'owner'),
+                     'possession_unproven')):
                 check(ES, 'refused with nothing written: %s (%s) [observed %s, %s, %s written]'
                       % (label, name, got.get('outcome'), got.get('refusal'), got.get('wrote')),
                       got.get('outcome') == 'refused' and got.get('refusal') == name and got.get('wrote') == 0)
@@ -1139,6 +1145,9 @@ def _v130_checks(base):
             gone = call('GET', '/api/v1/auth/session', cookie=desktop_cookie)
             check(SR, 'the revoked credential\'s session ends' + seen(gone),
                   gone[0] == 401 and str(refusal(gone)).startswith('unauthenticated:'))
+            # An API that follows nothing still ends the session: every request reads the credential again.
+            unfollowed = new_api(base / 'api-unfollowed')
+            _u, unfollowed_cookie, _ut = sign_in(laptop, on=unfollowed)
             # In flight: an assertion signed while the credential was current, revoked before it executes.
             flying = assertion_for('owner', laptop.credential_id, 'send_message',
                                    {'text': 'in flight', 'project': 'project-a', 'clarifies': None})
@@ -1154,6 +1163,10 @@ def _v130_checks(base):
                   % late.get('reason'), signature is not None and host_revoke.get('outcome') == 'accepted'
                   and late.get('ok') is False and late.get('reason') == 'unauthenticated:credential_revoked'
                   and journal_count() == before)
+            reread = call('GET', '/api/v1/auth/session', cookie=unfollowed_cookie, on=unfollowed)
+            check(SR, 'on an API that followed no journal record, the next request after a host revocation is '
+                      'unauthenticated' + seen(reread), unfollowed_cookie is not None and reread[0] == 401
+                  and refusal(reread) == 'unauthenticated:credential_revoked')
             ended = api[0].follow(revoked_record)
             check(SR, 'following the journal ends the revoked credential\'s sessions at once [observed %s]' % ended,
                   ended == 1 and api[0].sessions.find(laptop_cookie)[1] == 'no_session')
@@ -1254,6 +1267,9 @@ def _v130_checks(base):
                                                                {'text': 'nobody', 'project': 'project-a', 'clarifies': None}))),
                      'unauthenticated:unknown_credential'),
                     ('an assertion for another domain', authority.apply(edge_signed(skewed)), 'unauthorized:domain'),
+                    ('an assertion for another repository',
+                     authority.apply(edge_signed(message_assertion('elsewhere', repository_uuid='other-repository'))),
+                     'unauthorized:domain'),
                     ('an edge signature over another intake request than the assertion names',
                      authority.apply(wrong_request), 'unauthenticated:signature'),
                     ('an operation outside the assertion contract',
