@@ -5257,6 +5257,31 @@ def cases():
         "        self._verifier_unavailable(problems)\n",
         "        problems = W.assertion_problems(found, body, challenge, self.origin, self.rp_id, self.state_dir)\n",
         ['webauthn/openssl-fixed-path'])
+    # The fresh check of the review fixes: the close reason, the owed catch-up, the fill window, the head.
+    api('recheck-revocation-unauthenticated', API130,
+        "                    why = 'revoked' if why in REVOKED else 'unauthenticated:' + why\n",
+        "                    why = 'unauthenticated:' + why  # defect: a revocation the recheck saw is not named revoked\n",
+        ['events/revoked-either-path'])
+    api('fill-window-unchecked', API130,
+        "        state = self.sessions.state(stream.handle)\n        if state != 'live':\n"
+        "            stream.close('session_expired' if state == 'session_expired' else 'revoked')\n"
+        "            self.drop(stream)\n", '', ['events/fill-window-revocation'])
+    api('feed-refusal-not-owed', CA130,
+        "                    answer = self.api.deliver(hint)\n                    if _unavailable(answer):\n"
+        "                        self._owe()\n",
+        "                    answer = self.api.deliver(hint)  # defect: a refused delivery owes no catch-up\n",
+        ['events/retry-after-failure'])
+    api('raised-catch-up-not-owed', CA130,
+        "            except Exception as exc:  # noqa: BLE001 - the catch-up stays owed; the caller's own call stands\n"
+        "                self._owe()\n",
+        "            except Exception as exc:  # noqa: BLE001 - defect: a catch-up that raised is not owed\n",
+        ['events/retry-after-failure'])
+    api('owed-never-retried', CA130, "            if self.retry is not None:\n",
+        "            if False:  # defect: the owed catch-up is never retried\n", ['events/retry-after-failure'])
+    api('owed-never-cleared', CA130, "                    self.owed = None\n", '', ['events/retry-after-failure'])
+    api('connect-head-dropped', CA130,
+        "    if type(head.get('watermark')) is int and head['watermark'] > 0:\n        authority.deliver(head)\n", '',
+        ['service/connect-sets-cursor'])
     # VELDO-0076: each criterion's declared falsifier first, then the threat model's other shapes.
     def project(name, module, old, new, rows, also=()):
         add(76, name, '71_veldo_0076_projects.py', module, old, new, ['project/' + row for row in rows], also)
