@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W103
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154]
+depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0161]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -77,7 +77,8 @@ acceptance_criteria:
       Claim: A repository is created only on a settled owner answer, by the repository provisioner as a
       registered protected effect whose steps run in order, each recorded, stopping by name at the first
       failure. Set and completeness: On the settlement the provisioner (VELDO-0028) refuses a directory
-      that exists and is not empty, and takes the adoption path when it is already a Git repository;
+      that exists and is not empty, and takes the adoption path (VELDO-0161) when it is already a Git
+      repository;
       otherwise it creates the directory under the identity's projects root, initializes the repository,
       lays down Veldo with the scaffold, writes the identity's author configuration and makes the initial
       commit; creates the remote under the identity's owner through GitHub's REST interface with the
@@ -90,27 +91,10 @@ acceptance_criteria:
       Run the provisioner without a settled answer; the settlement-required check must fail.
   - id: AC3
     text: >
-      Claim: An existing repository the owner names is adopted under his chosen identity, with the
-      scaffold laid as one recorded commit when missing, signed by the adoption signer only for a
-      repository a settled decision names, and taken on by the running service without a restart. Set
-      and completeness: Adopt a repository that carries the scaffold and one that does not; the
-      provisioner checks its remote owner against the identity (VELDO-0153), lays the scaffold as one
-      recorded commit and pushes it where missing, and the proposal he answered names that commit. The
-      adoption signer is a service key setup enrolls among the host's enrollment signers, whose only use
-      is signing a VELDO-0029 binding for a repository named in a settled owner decision; the effect
-      executor checks the settlement before asking for the signature, and every signature is journaled.
-      The store binds the repository, the running authority service adds its receiver configuration with
-      no restart or reinstallation, and the repository record becomes `active`. Falsifier: Let the
-      adoption signer sign a binding for a repository no settled decision names; the signer-scope check
-      must fail.
-    falsified_by: >
-      Let the adoption signer sign a binding for a repository no settled decision names; the
-      signer-scope check must fail.
-  - id: AC4
-    text: >
       Claim: The same settlement activates the new project on the adopted repository with the default
       team and pipeline and admits its first objective, which is built as the project's first ordinary
-      unit. Set and completeness: After creation or adoption reaches `active`, the settlement is applied
+      unit. Set and completeness: After creation and its adoption (VELDO-0161), or an adoption alone,
+      reaches `active`, the settlement is applied
       as the project's activation (VELDO-0076, applied from his answer by VELDO-0149) with the default
       team template (VELDO-0089) and the default pipeline (VELDO-0132), and its first objective is
       accepted by his answer, or by his first message when it named both (VELDO-0150), and admitted at
@@ -158,21 +142,20 @@ an identity spanning two remote owners.
   the factory PM run proposes the project, he answers once (or not at all when his message said the
   identity), and the repository is created or adopted under that identity, taken on by the running
   service, bound to the activated project, and its first objective runs as the first ordinary unit.
-- Threat model: a repository created or a binding signed without a settled owner answer; the adoption
-  signer used for anything other than a repository a settled decision names; a non-empty directory
+- Threat model: a repository created without a settled owner answer; a non-empty directory
   overwritten; a remote created under the wrong owner or pushed with an ambient credential; a step
   failure that runs later steps or reports the repository ready; a second question after his answer; a
-  project activated before its repository is active; the service restarted or reinstalled to take on
-  the repository. The owner's account, the keystore, GitHub and the store are trusted.
+  project activated before its repository is active. Adoption, the adoption signer and taking the
+  repository on without a restart are VELDO-0161's. The owner's account, the keystore, GitHub and the
+  store are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a name taken
   on GitHub between the proposal and the creation (it refuses by name); forged rows in our own store and
   files planted in the installed directory.
 
 ## Notes
 
-The adoption signer widens enrollment, so every signature it makes is journaled, and the review should
-judge exactly that it signs only for a repository named in a settled owner decision (section 13 of the
-design). The token needs workflow permission because the scaffold writes
+Adoption, the adoption signer (which widens enrollment, section 13 of the design) and taking the
+repository on without a restart are VELDO-0161, which creation ends in. The token needs workflow permission because the scaffold writes
 `.github/workflows/veldo-gate.yml`. VELDO-0139 is a standalone built item, so this edge is kept here and
 not in the plan graph.
 
@@ -183,3 +166,9 @@ not in the plan graph.
 
 2026-09-25, PLAN-0019 revision 4 review: depends_on adds VELDO-0154, the factory loop that starts
 the factory project's PM cycle in AC1, split from VELDO-0129. Draft; the owner decides readiness.
+
+2026-09-25, PLAN-0019 revision 4, third review: AC3's taking a repository on without a restart had no
+falsifier, and giving it one would have made five criteria, so adoption (the former AC3, with the signer
+scope and its falsifier) and the no-restart criterion with a new falsifier are the new draft VELDO-0161,
+which depends_on now names. The former AC4 is AC3, and AC2 and AC3 name VELDO-0161 where creation ends in
+adoption. Draft; the owner decides readiness.

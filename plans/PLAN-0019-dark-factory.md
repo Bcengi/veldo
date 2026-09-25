@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161]
     order: 16059
     release: 1
     stage: 6
@@ -1035,7 +1035,7 @@ work:
     spec: VELDO-0143
     title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
     feature_refs: [F6]
-    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0161]
     order: 15143
     release: 1
     stage: 5
@@ -1175,6 +1175,14 @@ work:
     order: 11160
     release: 1
     stage: 1
+  - item: W121
+    spec: VELDO-0161
+    title: A repository the owner names is adopted under one identity on his settled answer and taken on by the running factory without a restart
+    feature_refs: [F6]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0142, VELDO-0153]
+    order: 15161
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1354,8 +1362,8 @@ VELDO-0159, moved earlier from 0131 so the owner can enter the Atlassian credent
 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
 VELDO-0147; 0085 and 0091; 0090 with load modes and the `when assigned` leg of 0127 AC4, VELDO-0157;
-the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153; 0143 with the 0076 and 0126
-amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). Section 12 lists 0091 before 0090,
+the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153; 0143 with its adoption, VELDO-0161, and
+the 0076 and 0126 amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). Section 12 lists 0091 before 0090,
 and its dependency paragraph says 0091 needs 0090, so 0091 is built once 0090 has landed. A
 specification ships whole and the
 run-check refuses one whose dependencies are not shipped, so no specification built before the Mac
@@ -1518,6 +1526,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W118 | VELDO-0158 | 1 | 5 |
 | W119 | VELDO-0159 | 1 | 5; the server and credential form, moved earlier from VELDO-0131 |
 | W120 | VELDO-0160 | 1 | 1 |
+| W121 | VELDO-0161 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
@@ -1531,8 +1540,8 @@ now. VELDO-0118 through VELDO-0120 and VELDO-0123 are Release 2 parser/gate qual
 already recorded evidence. A release assignment does not undo code or change a status field.
 VELDO-0137, VELDO-0138 and VELDO-0139 are standalone items built on 2026-09-25 that Release 1 reuses:
 the policy digest reader, the authority service running the Telegram ingress, and factory setup on a
-host. W100's VELDO-0140 also builds on VELDO-0138, and W102's VELDO-0142 and W103's VELDO-0143 on
-VELDO-0139's setup; those edges stay in the specifications because a plan edge must name a work item.
+host. W100's VELDO-0140 also builds on VELDO-0138, and W102's VELDO-0142, W103's VELDO-0143 and W121's
+VELDO-0161 on VELDO-0139's setup; those edges stay in the specifications because a plan edge must name a work item.
 
 ## Revision history and dependency basis
 
@@ -1658,3 +1667,8 @@ W64 (VELDO-0079) depends on W110's VELDO-0150, whose acceptance by his own messa
 admits, and W114 (VELDO-0154) on W61's VELDO-0076, whose pause its AC1 respects; VELDO-0154 states that
 with no catalog every MCP call asks the owner, instead of depending on VELDO-0144, which section 12 builds
 after it.
+Two criteria claimed something with no falsifier of their own. VELDO-0154 AC1's "no timer other than an
+account reset starts a pass" is new AC4 with its own. VELDO-0143 AC3's "taken on by the running service
+without a restart" needed one too, which would have given VELDO-0143 five criteria, so adoption, with
+the signer scope and the no-restart criterion, is W121's VELDO-0161, stage 5, built with VELDO-0143 as
+section 12's item 19; W103 (VELDO-0143) and W44 (VELDO-0059) depend on it.

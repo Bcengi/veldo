@@ -42,10 +42,10 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The Runner and factory loop run inside the authority service; a loop pass runs only on its
-      three wake sources (each journal-advancing packet or pass, each run's end seen on the Runner's
+      Claim: The Runner and factory loop run inside the authority service; a loop pass runs on each of
+      its three wake sources (each journal-advancing packet or pass, each run's end seen on the Runner's
       launch pipe, and an account reset timer), offers every assigned eligible unit and every next
-      station, and stops offering a paused project's units; the factory loop never polls. Set and
+      station, and stops offering a paused project's units. Set and
       completeness: Start the installed authority service with the Runner instantiated in it and drive
       each wake source alone: a packet or channel pass that advanced the journal (where the service
       already sends its hint); a receiver reporting `exited` or `unknown` on its output pipe, which the
@@ -53,10 +53,8 @@ acceptance_criteria:
       account reset a waiting unit needs. After each, compare what the pass offered with every assigned
       eligible unit (offered to the Runner with a selected host and account) and every next station of
       a unit whose run ended, and require nothing offered from a paused project. A build ending must
-      lead to its review being offered with no other input. No loop pass starts from anything but those
-      three sources, and no timer other than an account reset starts one; the service's own accept
-      timeout and channel pass are unchanged and are not loop wake sources. Falsifier: Drop the launch
-      pipe from the poll set; the review-offered row must fail.
+      lead to its review being offered with no other input. That nothing else starts a pass is AC4.
+      Falsifier: Drop the launch pipe from the poll set; the review-offered row must fail.
     falsified_by: >
       Drop the launch pipe from the poll set; the review-offered row must fail.
   - id: AC2
@@ -87,6 +85,17 @@ acceptance_criteria:
       ask-before-rerun row must fail.
     falsified_by: >
       Re-dispatch a run whose decision is to ask the owner; the ask-before-rerun row must fail.
+  - id: AC4
+    text: >
+      Claim: A loop pass starts only from its three wake sources; no timer other than an account reset
+      starts one, and the factory loop never polls. Set and completeness: Keep the installed authority
+      service running with a unit waiting for an account whose reported reset is later, with no journal
+      advance and no run ending, for longer than every interval the service uses, and count loop passes:
+      none starts, while the service's own accept timeout and channel pass run unchanged and start no loop
+      pass; then let the reset time arrive and observe exactly one pass at it. Falsifier: Start a loop
+      pass from a periodic timer in the service loop; the no-other-timer row must fail.
+    falsified_by: >
+      Start a loop pass from a periodic timer in the service loop; the no-other-timer row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern while preserving accepted records, configuration
@@ -174,3 +183,8 @@ selection and rate-limit windows the reset timer of AC1 reads. Criterion meaning
 2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0076, whose pause AC1 relies on,
 and AC3 and the Notes state that with no catalog every MCP call decides ask, so this stage 1 item does not
 wait for the stage 2 catalog VELDO-0144.
+
+2026-09-25, PLAN-0019 revision 4, third review: AC1's claim that no timer other than an account reset
+starts a pass had no falsifier of its own, so it is new AC4 with one (a periodic timer that starts a
+pass reds the no-other-timer row); AC1 keeps the wake sources and the launch-pipe falsifier. Criterion
+meaning unchanged.
