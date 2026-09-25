@@ -29,6 +29,9 @@ footprint:
   - "engine/.veldo/control_backlog*.py"
   - ".veldo/control_backlog*.py"
   - "packs/*/.veldo/control_backlog*.py"
+  - "engine/.veldo/control_eligibility*.py"
+  - ".veldo/control_eligibility*.py"
+  - "packs/*/.veldo/control_eligibility*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -155,3 +158,15 @@ executable-work question asked by `frontier.claimable` and `tasks.claim_task`, a
 from accepted unit outcomes whenever a Gate is wired. Every changed path is inside the footprint. Suite
 `scripts/suites/73_veldo_0078_backlog.py`, finding 78 (11 mutations) and the red record at 467d168 are in
 `proof/VELDO-0078/`. Status stays ready.
+
+2026-09-25, review 1 fixes: priority is a VELDO-0052 Gate predicate (`priority_current`, the backlog's
+executable question over the records the decision consumed) at every station, so selection, claim, direct
+execution and the VELDO-0132 cycle's assignment step refuse admitted but unprioritized work by one decision;
+the frontier's separate backlog question and the admission and prioritized-set block of
+`executable_problems` are removed (every real writer leaves PLANNED only by prioritization, so the state
+pair is the whole question). DONE reads the one completion reader (`Gate.landing`) and the backlog judges
+no receipt itself. A unit a VELDO-0133 close CANCELED is no outcome until the owner's settled
+`decision_disposition` answer counts it, which records the authorization without another transition.
+Resume and disposal bind the brief the owner was shown (`resume_brief`, `alternative_brief`). The footprint
+gains `control_eligibility*.py`. Rows `done/closed-unit` and `done/one-completion-reader` are new; finding 78
+has 18 mutations; the red record is at 8bb474c. Status stays ready.
