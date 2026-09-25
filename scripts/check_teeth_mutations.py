@@ -581,8 +581,8 @@ def cases():
                 "            elif p['final']:\n                value['charge']['wall_seconds'] = p['usage'].get('wall_seconds', 0)",
                 'partial-final-retained')
     reservation('reservation-report-before-enforcement', 'control_reservation_runtime.py',
-                "        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n            receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                               now=now, final=final, outcome=outcome)\n",
-                "        receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                           now=now, final=final, outcome=outcome)\n        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n", 'report-failure-stops')
+                "        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n            receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                               now=now, final=final, outcome=outcome, receipts=receipts)\n",
+                "        receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                           now=now, final=final, outcome=outcome, receipts=receipts)\n        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n", 'report-failure-stops')
     reservation('reservation-report-error-keeps-worker', 'control_reservation_runtime.py',
                 "            # Reporting, authorization and policy reads must fail closed for the worker.\n            self._stop(active)",
                 "            # Defect: report failure leaves the worker running.\n            pass",
@@ -2964,7 +2964,7 @@ def cases():
              "        spawned = self._spawn(dispatch_id, self.dispatches.receipt(dispatch_id, 'accept'), adapter)  # defect\n"
              "        me = dict(process_identity(os.getpid()), principal=self.config['principal'])\n",
              'contract-before-launch',
-             also=[("            worker = self._spawn(dispatch_id, acceptance, adapter)\n",
+             also=[("            worker = self._invoke(contract, acceptance, adapter)\n",
                     "            worker = spawned\n")])
     dispatch('dispatch-holder-not-consulted', 'control_dispatch.py',
              "        holder = index.get('dispatch_id')\n",
@@ -6245,6 +6245,98 @@ def cases():
             "    if sorted(units) != sorted(unit['states']) or set(priority.UNIT_TERMINAL) != set(unit['terminal']):\n",
             "    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:  # defect\n",
             ['priority/gate-question'])
+
+    # VELDO-0062: each criterion's declared falsifier first, then the threat model's other shapes.
+    def account(name, module, old, new, row, also=()):
+        add(62, name, '75_veldo_0062_accounts.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the profile is taken from the caller's environment, not the record.
+    account('account-profile-from-caller', 'control_accounts.py',
+            "    environment[variable] = directory\n",
+            "    environment[variable] = inherited.get(variable) or directory  # defect: the caller's profile first\n",
+            'login/recorded-account-profile')
+    account('account-paid-api-kept', 'control_accounts.py',
+            "if k not in PROFILES.values() and k not in paid_api}\n",
+            "if k not in PROFILES.values()}  # defect: paid-API credential variables reach the engine\n",
+            'login/no-paid-api')
+    account('account-status-unchecked', 'control_accounts.py',
+            "    if record.get('status') != 'active':\n",
+            "    if False:  # defect: a paused or disabled account still logs in\n",
+            'login/substitution-refused')
+    # AC2 (declared falsifier): a follow-on's cap is checked after its launch.
+    account('account-follow-on-checked-after-launch', 'control_launch.py',
+            "        metering = Metering(self, contract, reservations, accounts, launch)\n        try:\n",
+            "        metering = Metering(self, contract, reservations, accounts, launch)\n"
+            "        if metering.boundary == 'follow_on':  # defect: a follow-on's cap is checked after its launch\n"
+            "            launch(metering.invocation, None)\n"
+            "            metering.guard.launch = lambda invocation, configuration: None\n"
+            "        try:\n",
+            'usage/reserved-before-launch')
+    account('account-boundary-always-initial', 'control_reservation_runtime.py',
+            "    if isinstance(payload, dict) and payload.get('resume'):\n        return 'follow_on'\n"
+            "    return 'retry' if contract.get('attempt', 1) > 1 else 'initial'\n",
+            "    return 'initial'  # defect: retries and follow-ons are reserved as initial invocations\n",
+            'usage/reserved-before-launch')
+    account('account-invocation-unreserved', 'control_launch.py',
+            "        if self.login is None:\n            return self._spawn(dispatch_id, acceptance, adapter)\n",
+            "        if True:  # defect: no invocation is checked or reserved before its launch\n"
+            "            return self._spawn(dispatch_id, acceptance, adapter)\n",
+            'usage/allowance-states')
+    account('account-cap-stop-ignored', 'control_launch.py',
+            "                        if metering is not None and metering.feed(chunk):\n"
+            "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
+            "                            begin('usage_cap')\n",
+            "                        if metering is not None:\n"
+            "                            metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
+            'usage/cap-stops-worker')
+    account('account-rate-window-unchecked', 'control_reservations.py',
+            "            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):\n"
+            "                raise Refused('rate_limited:' + window)\n",
+            "            pass  # defect: a reported exhausted window is not checked\n",
+            'usage/rate-limit-reset')
+    # AC3 (declared falsifier): an accepted invocation's timeout releases its reservation.
+    account('account-timeout-releases', 'control_launch.py',
+            "            if termination.get('deadline_stop'):\n                outcome = 'timeout'\n",
+            "            if termination.get('deadline_stop'):\n"
+            "                usage, outcome = {}, 'not_executed'  # defect: a timeout releases the reservation\n",
+            'settle/timeout-retained')
+    account('account-cancel-releases', 'control_launch.py',
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n"
+            "                usage, outcome = {}, 'not_executed'  # defect: a cancellation releases the reservation\n",
+            'settle/cancel-retained')
+    account('account-claude-missing-result-conclusive', 'control_engine_claude.py',
+            "        return self.cumulative() if self.result is not None else {}\n",
+            "        return self.cumulative()  # defect: a stream with no result is taken as conclusive\n",
+            'settle/missing-retained')
+    account('account-codex-open-turn-conclusive', 'control_engine_codex.py',
+            "        return self.cumulative() if self.turns and not self.open and not self.incomplete else {}\n",
+            "        return self.cumulative()  # defect: an unfinished turn is taken as a conclusive total\n",
+            'settle/missing-retained')
+    account('account-claude-repeat-counted', 'control_engine_claude.py',
+            "            if self.messages.get(ident, -1) >= tokens:\n"
+            "                return []  # The same message again: nothing new to count.\n",
+            "            ident = '%s/%d' % (ident, len(self.messages))  # defect: a repeated message is counted again\n",
+            'settle/once')
+    account('account-codex-repeat-counted', 'control_engine_codex.py',
+            "        elif kind == 'turn.completed' and self.open:\n",
+            "        elif kind == 'turn.completed':  # defect: a repeated completion is counted again\n",
+            'settle/once')
+    # AC4 (declared falsifier): usage is attributed by a caller-supplied account label.
+    account('account-caller-label-attributed', 'control_launch.py',
+            "        self.account = contract['reservation']['account']\n",
+            "        self.account = os.environ.get('VELDO_ACCOUNT') or contract['reservation']['account']"
+            "  # defect: the caller's label\n",
+            'attribution/stored-account')
+    account('account-unknown-remaining-counted', 'control_accounts.py',
+            "            remaining = {u: (None if u in unknown else cap - balance.get(u, 0))\n",
+            "            remaining = {u: (cap - balance.get(u, 0))  # defect: unknown usage shown as a number\n",
+            'attribution/measurement-removed')
+    account('account-watermark-from-reservation', 'control_accounts.py',
+            "                   'watermark': max((r.get('reported_seq') or r['accepted_seq'] for r in calls), default=None)}\n",
+            "                   'watermark': max((r['accepted_seq'] for r in calls), default=None)}"
+            "  # defect: the reservation's sequence, not the usage's\n",
+            'attribution/watermark')
     return result
 
 
