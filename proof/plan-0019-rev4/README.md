@@ -44,7 +44,7 @@ reviewer judges section, one was added in the repository's three parts.
 | Specification | Amendment |
 |---|---|
 | VELDO-0059 | depends_on per the plan; AC1 matches the new RJ1; the Notes no longer route defects through VELDO-0080 |
-| VELDO-0060 | AC1 adds the everything-off baseline, the paid-API guard, the environment strip and the pinned executable; AC4 keeps the usage caps, login separation to Release 2 |
+| VELDO-0060 | AC1 adds the pinned executable; new AC5 the everything-off baseline, the paid-API guard and the environment strip, with the paid-API stop as its falsifier; AC4 keeps the usage caps, login separation to Release 2; the Mac leg is VELDO-0147 |
 | VELDO-0061 | The same for Codex |
 | VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds one run at a time for a new account; new AC6 classifies `account_limit` and decides re-run or ask over a record, tested with fixture records; Notes give the store registry and selection order |
 | VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority |

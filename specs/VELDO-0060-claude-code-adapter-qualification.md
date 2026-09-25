@@ -17,9 +17,6 @@ footprint:
   - "engine/.veldo/fleet.py"
   - ".veldo/fleet.py"
   - "packs/*/.veldo/fleet.py"
-  - "engine/.veldo/control_runner*.py"
-  - ".veldo/control_runner*.py"
-  - "packs/*/.veldo/control_runner*.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
@@ -55,28 +52,14 @@ acceptance_criteria:
     text: >
       Claim: The real Claude Code adapter implements normal launch, acceptance, observation
       streaming, stop, exit and artifact return through the trusted runner, from the pinned
-      executable, on the everything-off baseline, behind the paid-API guard and the environment
-      strip. Set and completeness: Enumerate these lifecycle operations from installed adapter
+      executable. Set and completeness: Enumerate these lifecycle operations from installed adapter
       registrations for the chosen configuration and explicit accepted source/input/tool bindings;
       invoke the actual binary in an isolated clone. Pinned executable: the adapter launches the
       versioned executable copied from `~/.local/share/claude/versions/` and kept under the factory
       state root, never the auto-updating `~/.local/bin/claude` link, sets `DISABLE_AUTOUPDATER`,
-      and rejects an unknown version or changed digest before spawn. Baseline: every profile source
-      is off (the `setting-sources` option restricted to one generated file passed through the
-      `settings` option, the `strict-mcp-config` option with a generated `mcp-config` file, the
-      `disable-slash-commands` option when no skill is listed, `CLAUDE_CODE_DISABLE_CLAUDE_MDS`,
-      `CLAUDE_CODE_DISABLE_AUTO_MEMORY` and `disableAllHooks`), so the account profile supplies only
-      the login and the same role behaves the same on every account; neither bare mode nor safe mode
-      is used. Paid-API guard: the receiver removes `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, the
-      Bedrock, Vertex and Foundry switches and `CLAUDE_CODE_OAUTH_TOKEN` (kept only for an account
-      configured to use a subscription token) from the engine environment, and a run whose init
-      event reports an `apiKeySource` other than `none` (or the configured token) is stopped by name
-      before its first turn. Environment strip: the trusted wrapper removes `SSH_AUTH_SOCK`,
-      `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and `GITHUB_TOKEN` just before it
-      execs the engine, and the engine's `XDG_RUNTIME_DIR` is an empty directory of its own. Each
-      switch that is an environment variable or internal setting is qualified on the pinned version
-      before use. The role's own selections arrive with VELDO-0127. Falsifier: Skip executable
-      binding after its digest changes; the unexpected-launch check must fail.
+      and rejects an unknown version or changed digest before spawn. Every launch runs on the
+      baseline, guard and strip of AC5. The role's own selections arrive with VELDO-0127. Falsifier:
+      Skip executable binding after its digest changes; the unexpected-launch check must fail.
     falsified_by: >
       Skip executable binding after its digest changes; the unexpected-launch check must fail.
   - id: AC2
@@ -110,6 +93,30 @@ acceptance_criteria:
       fail.
     falsified_by: >
       Check the cap after launch instead of before; the zero-launch refusal check must fail.
+  - id: AC5
+    text: >
+      Claim: Every Claude Code run starts on the everything-off baseline, behind the paid-API guard and
+      the environment strip. Set and completeness: Baseline: every profile source is off (the
+      `setting-sources` option restricted to one generated file passed through the `settings` option,
+      the `strict-mcp-config` option with a generated `mcp-config` file, the `disable-slash-commands`
+      option when no skill is listed, `CLAUDE_CODE_DISABLE_CLAUDE_MDS`,
+      `CLAUDE_CODE_DISABLE_AUTO_MEMORY` and `disableAllHooks`), so the account profile supplies only
+      the login and the same role behaves the same on every account; neither bare mode nor safe mode is
+      used; plant settings, an instruction file, a skill, memory and a hook in the account profile and
+      require none of them in the run. Paid-API guard: the receiver removes `ANTHROPIC_API_KEY`,
+      `ANTHROPIC_AUTH_TOKEN`, the Bedrock, Vertex and Foundry switches and `CLAUDE_CODE_OAUTH_TOKEN`
+      (kept only for an account configured to use a subscription token) from the engine environment,
+      and a run whose init event reports an `apiKeySource` other than `none` (or the configured token)
+      is stopped by name before its first turn; plant each variable in the caller's environment.
+      Environment strip: the trusted wrapper removes `SSH_AUTH_SOCK`, `SSH_AGENT_PID`,
+      `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and `GITHUB_TOKEN` just before it execs the engine, and
+      the engine's `XDG_RUNTIME_DIR` is an empty directory of its own; read back the engine's
+      environment. Each switch that is an environment variable or internal setting is qualified on the
+      pinned version before use. Falsifier: Leave `ANTHROPIC_API_KEY` in the engine environment and
+      accept an init event whose `apiKeySource` is not `none`; the paid-API stop row must fail.
+    falsified_by: >
+      Leave `ANTHROPIC_API_KEY` in the engine environment and accept an init event whose
+      `apiKeySource` is not `none`; the paid-API stop row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -199,3 +206,10 @@ cap order. A What the reviewer judges section is added. Status unchanged.
 2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
 dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
 which is built after VELDO-0124 and VELDO-0125. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: the everything-off baseline, the paid-API guard and the
+environment strip move from AC1 into new AC5, with its own falsifier (leave `ANTHROPIC_API_KEY` in the
+engine environment and accept an `apiKeySource` other than `none`; the paid-API stop row must fail). AC1
+keeps the lifecycle and the pinned executable with its digest falsifier. The footprint drops
+`control_runner`, which does not exist; the Runner is class `Runner` in `control_launch`. Status
+unchanged.
