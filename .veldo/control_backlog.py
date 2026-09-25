@@ -36,17 +36,23 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     (blocker_recorded), with a `blocker` record per open unit, so every Gate station
                     refuses the item's units (no_blockers) and the claim receiver refuses a BLOCKED item.
   resume            BLOCKED -> ACTIVE (resolution_validated) only when the owner's settled answer on the
-                    `decision_disposition` touchpoint names exactly this block (block_target) and
-                    approves: the interrupted phase is resumed, recorded, and the blocker records cleared.
+                    `decision_disposition` touchpoint names exactly this block (block_target), the request
+                    showed its owner exactly resume_brief of that block, and the answer approves: the
+                    interrupted phase is resumed, recorded, and the blocker records cleared.
   dispose_unit      The authorized alternative outcome of one unit: the owner's settled answer on
-                    `decision_disposition` naming the unit at its revision (unit_target) with the
-                    proposal {'outcome': 'not_required'}; approve moves the unit to CANCELED
-                    (disposition_recorded) carrying that authorization.
+                    `decision_disposition` naming the unit at its revision (unit_target), shown exactly
+                    alternative_brief of the unit, with the proposal {'outcome': 'not_required'}; approve
+                    moves the unit to CANCELED (disposition_recorded) carrying that authorization. A unit
+                    a VELDO-0133 `close` already CANCELED while its item stayed open (the close is the
+                    answer of whoever declined, not the owner's) has no accepted outcome, so its item
+                    cannot be DONE until the owner decides the closed unit counts: the same settled
+                    answer then records the authorization on the CANCELED unit without another
+                    transition.
   complete          ACTIVE -> DONE (required_units_completed_or_reconciled) only when every unit of the
                     decomposition has an accepted outcome (outcome_problems): the VELDO-0057
-                    confirmed-landing receipt of its current revision (completion_contract's
-                    revision_landed fact with a complete landing receipt for that unit), or its
-                    authorized alternative outcome. A unit's declared output file, a canceled attempt
+                    confirmed-landing receipt of its current revision as the one completion reader
+                    (control_eligibility.Gate.landing, over this transaction's connection) finds it, or
+                    its authorized alternative outcome. A unit's declared output file, a canceled attempt
                     or a unit canceled without the owner's authorization is never an outcome.
   cancel            The project's current owner cancels an unfinished item with a reason; its open units
                     are CANCELED with it.
@@ -55,13 +61,18 @@ The first claim of a READY unit is VELDO-0031's (control_claim.transition): it m
 and the item PRIORITIZED -> ACTIVE in one transaction with the claim record, so the item's activation and
 its first owner are one fact. This service never writes a claim.
 
-EVERY CLAIM ENTRY ASKS ONE QUESTION. executable_problems(conn, unit) is [] only for a unit of an
-admitted and prioritized item: the item PRIORITIZED or ACTIVE, the unit not PLANNED, and, for an item
-this service records, its admission present and the unit inside the prioritized decomposition. The
-frontier's offers (frontier.claimable) and the task source's direct claim (tasks.claim_task) ask it over
-the Gate's read connection; the claim receiver refuses a PLANNED unit and an item that is neither
-PRIORITIZED nor ACTIVE by itself. outcome_problems(conn, unit) is the one answer to whether a unit's
-outcome is accepted; the task source concludes a task from it whenever a Gate is wired.
+EVERY CLAIM ENTRY ASKS ONE QUESTION. executable_record_problems(unit, item) is [] only for a unit of an
+admitted and prioritized item: the item PRIORITIZED or ACTIVE and the unit neither PLANNED nor terminal.
+A unit leaves PLANNED only by the prioritization of its item's current decomposition revision (this
+module's _prioritize), so that state pair is the whole question for every record a real writer makes.
+The VELDO-0052 Gate asks it at every station as its priority_current predicate over the unit and item
+records it already consumed, so the frontier's offers, the work loop's claim, plan run-check, the
+direct executor, the dispatcher and the task source's direct claim (tasks.claim_task, through the
+Gate's claim station) all get one decision; executable_problems(conn, unit) asks it over any
+connection (another process's read-only one included). The claim receiver refuses a PLANNED unit and
+an item that is neither PRIORITIZED nor ACTIVE by itself. outcome_problems(reader, unit) is the one
+answer to whether a unit's outcome is accepted, read through the Gate's completion reader; the task
+source concludes a task from it whenever a Gate is wired.
 
 WHAT IS NOT OWNED. Backlog items and units are written here and by the claim transition (first-claim
 activation, the claimed unit), so neither their kind nor an id prefix can be declared to one module
@@ -96,8 +107,16 @@ def _organ(name):
 
 
 EC = _organ('entity_contract')
-CC = _organ('completion_contract')
 CL = _organ('claim')
+_READER = {}
+
+
+def _eligibility():
+    """control_eligibility.py beside this file, loaded on the first DONE: the Gate is the one completion
+    reader. It is not loaded at import because the Gate loads this module for its priority predicate."""
+    if 'module' not in _READER:
+        _READER['module'] = _organ('control_eligibility')
+    return _READER['module']
 
 SCHEMA = 'veldo.backlog_item/v1'
 UNIT_SCHEMA = 'veldo.backlog_unit/v1'
@@ -199,6 +218,21 @@ def priority_brief(record):
                _units_text(record), ', '.join(pending) or 'none'))
 
 
+def resume_brief(record):
+    """Exactly what the owner is shown when asked to resolve the item's current block and resume its phase."""
+    block = (record.get('blocks') or [{}])[-1]
+    return ('Resume backlog item %s in project %s: block %s stopped the phase %s.\nReason: %s\n'
+            'Approving resumes exactly that phase.'
+            % (record['uuid'], record['project'], block.get('block_id'), block.get('phase'), block.get('reason')))
+
+
+def alternative_brief(unit):
+    """Exactly what the owner is shown when asked to accept `unit` (its record) as not required."""
+    return ('Accept unit %s (revision %s, now %s) of backlog item %s as not required.\n'
+            'Approving lets the item be DONE without a landing of this unit.'
+            % (unit['uuid'], unit.get('revision'), unit.get('state'), unit.get('backlog_item_uuid')))
+
+
 def block_target(record):
     """The target of the owner decision the item's current block is bound to."""
     block = (record.get('blocks') or [{}])[-1]
@@ -237,17 +271,25 @@ def unit(conn, uid):
 # The questions every claim entry and every reader of done asks.
 
 def executable_problems(conn, uid):
-    """[] only when `uid` is executable engineering work now: a unit of an admitted, prioritized item. Otherwise
-    the named reasons: missing_authority:unit, missing_authority:backlog, missing_authority:admission (the
-    item is not admitted), missing_authority:priority (admitted but not prioritized, or the unit outside the
-    prioritized decomposition), blocked:backlog, missing_authority:backlog/<terminal state>."""
+    """[] only when `uid` is executable engineering work now, read on `conn`: missing_authority:unit or
+    missing_authority:backlog when there is no such unit or item, else executable_record_problems."""
     u = _row(conn, uid)
     if u is None or u['kind'] != UNIT_KIND or not isinstance(u['data'], dict):
         return ['missing_authority:unit']
     b = _row(conn, u['data'].get('backlog_item_uuid'))
     if b is None or b['kind'] != KIND or not isinstance(b['data'], dict):
         return ['missing_authority:backlog']
-    item, state = b['data'], b['data'].get('state')
+    return executable_record_problems(u['data'], b['data'])
+
+
+def executable_record_problems(unit_data, item):
+    """THE EXECUTABLE QUESTION over a unit's record and its backlog item's record, however they were read:
+    [] only for a unit of an admitted, prioritized item. Otherwise the named reason: blocked:backlog,
+    missing_authority:backlog/<terminal state>, missing_authority:priority (admitted but not prioritized,
+    or a unit appended after the last prioritization, still PLANNED), missing_authority:admission (not
+    admitted), missing_authority:unit/<terminal state>."""
+    held = (unit_data if isinstance(unit_data, dict) else {}).get('state')
+    state = (item if isinstance(item, dict) else {}).get('state')
     if state == 'BLOCKED':
         return ['blocked:backlog']
     if state in TERMINAL:
@@ -256,41 +298,23 @@ def executable_problems(conn, uid):
         return ['missing_authority:priority']
     if state not in EXECUTABLE_STATES:
         return ['missing_authority:admission']
-    if u['data'].get('state') == 'PLANNED':
+    if held == 'PLANNED':
         return ['missing_authority:priority']
-    if u['data'].get('state') in UNIT_TERMINAL:
-        return ['missing_authority:unit/' + str(u['data'].get('state'))]
-    if item.get('schema') == SCHEMA:
-        if not isinstance(item.get('admission'), dict):
-            return ['missing_authority:admission']
-        if uid not in _prioritized(item):
-            return ['missing_authority:priority']
+    if held in UNIT_TERMINAL:
+        return ['missing_authority:unit/' + str(held)]
     return []
 
 
-def landed_receipt(conn, uid, revision):
-    """The id of a complete VELDO-0057 confirmed-landing receipt of `uid` at `revision`, or None: the
-    revision_landed fact for exactly that subject with a landing receipt that joins every link, for that
-    unit (the same predicates the completion reader applies)."""
-    subject = {'id': uid, 'revision': revision}
-    for eid, text in conn.execute('SELECT id, data FROM entities WHERE kind=? ORDER BY id', (RECEIPT_KIND,)):
-        receipt = json.loads(text)
-        if not isinstance(receipt, dict) or CC.fact_problems('revision_landed', receipt, subject):
-            continue
-        landing = receipt.get('publication_receipt')
-        if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) and landing.get('unit_id') == uid:
-            return eid
-    return None
-
-
-def outcome_problems(conn, uid):
-    """[] only when `uid` has an accepted outcome: its confirmed-landing receipt at its current revision, or
-    the owner's authorized alternative outcome. A declared output, an attempt's end or a cancellation nobody
-    authorized is never one: missing_outcome:<unit>."""
+def outcome_problems(reader, uid):
+    """[] only when `uid` has an accepted outcome: its confirmed-landing receipt at its current revision, as
+    the one completion reader `reader` (a control_eligibility.Gate) finds it, or the owner's authorized
+    alternative outcome. A declared output, an attempt's end or a cancellation nobody authorized (an item's
+    cancel, a VELDO-0133 close) is never one: missing_outcome:<unit>."""
+    conn = reader.conn
     u = unit(conn, uid)
     if u is None:
         return ['missing_outcome:' + str(uid)]
-    if isinstance(u.get('revision'), int) and landed_receipt(conn, uid, u['revision']):
+    if reader.landing(uid) is not None:
         return []
     alternative = u.get('alternative_outcome')
     if u.get('state') == 'CANCELED' and isinstance(alternative, dict):
@@ -704,8 +728,8 @@ class Backlog:
     def _resume(self, conn, command, data, project, entry):
         if data['state'] != 'BLOCKED':
             raise Refused('invalid_transition:%s->ACTIVE' % data['state'], 'only a blocked item resumes')
-        ruling, record, _effect = self._settled(conn, command, DISPOSITION, block_target(data), None, project,
-                                                data['applied'])
+        ruling, record, _effect = self._settled(conn, command, DISPOSITION, block_target(data), resume_brief(data),
+                                                project, data['applied'])
         if ruling != 'approve':
             raise Refused('not_approved:%s' % ruling, 'the owner did not resolve the block')
         self._edge(KIND, 'BLOCKED', 'ACTIVE', {'resolution_validated': True})
@@ -731,13 +755,18 @@ class Backlog:
         row = _row(conn, uid)
         ud = json.loads(json.dumps(row['data']))
         ud['uuid'] = uid
-        ruling, record, effect = self._settled(conn, command, DISPOSITION, unit_target(ud), None, project, data['applied'])
+        if isinstance(ud.get('alternative_outcome'), dict):
+            raise Refused('already_applied', 'the unit has its authorized alternative outcome')
+        ruling, record, effect = self._settled(conn, command, DISPOSITION, unit_target(ud), alternative_brief(ud), project,
+                                               data['applied'])
         outcome = (effect.get('proposal') or {}).get('outcome') if isinstance(effect.get('proposal'), dict) else None
         if ruling != 'approve':
             raise Refused('not_approved:%s' % ruling, 'the owner did not authorize an alternative outcome')
         if outcome not in ALTERNATIVE_OUTCOMES:
             raise Refused('unsupported_outcome:%s' % outcome, 'the authorized alternative outcomes are named')
-        self._edge(UNIT_KIND, ud['state'], 'CANCELED', {'disposition_recorded': True})
+        if ud['state'] != 'CANCELED':
+            # A unit a VELDO-0133 close already CANCELED keeps its state: the owner's answer is what counts.
+            self._edge(UNIT_KIND, ud['state'], 'CANCELED', {'disposition_recorded': True})
         record['outcome'] = outcome
         source, ud['state'], ud['alternative_outcome'] = ud['state'], 'CANCELED', record
         ud['history'] = list(ud['history']) + [dict(entry, source=source, target='CANCELED', outcome=outcome,
@@ -751,13 +780,17 @@ class Backlog:
         if data['state'] != 'ACTIVE':
             raise Refused('invalid_transition:%s->DONE' % data['state'], 'only active work is done')
         missing, outcomes = [], {}
+        # The one completion reader, over this transaction's connection: what it decided on is committed over.
+        reader = _eligibility().Gate(self.store, conn, domain_uuid=self.ids['domain_uuid'],
+                                     repository_uuid=self.ids['repository_uuid'],
+                                     authority_generation=self.authority_generation)
         for u in data['decomposition']:
-            problems = outcome_problems(conn, u['unit'])
+            problems = outcome_problems(reader, u['unit'])
             if problems:
                 missing.extend(problems)
                 continue
             found = unit(conn, u['unit'])
-            receipt = landed_receipt(conn, u['unit'], found.get('revision'))
+            receipt = reader.landing(u['unit'])
             outcomes[u['unit']] = ({'receipt_id': receipt, 'revision': found.get('revision')} if receipt
                                    else {'alternative_outcome': found['alternative_outcome']})
         if missing:

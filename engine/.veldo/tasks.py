@@ -43,13 +43,14 @@ ASKED of the ledger, never copied here, because a copy would be two enumerations
 IN THE FACTORY A TASK IS AN ENGINEERING UNIT (VELDO-0078). With an eligibility Gate wired (an
 enrolled repository always has one: control_eligibility.gate_for stops an enrolled caller without
 it), the task id is the alias of an execution unit in the control store, and two answers change.
-A claim is taken only for executable work: control_backlog.executable_problems over the Gate's
-read connection must be empty, so a task of intake-only, prepared, or admitted but unprioritized
-work, a unit appended after the last prioritization, or a blocked item is refused by its named
-reason before the ledger is asked. And DONE is the unit's accepted outcome
-(control_backlog.outcome_problems: its confirmed-landing receipt or the owner's authorized
-alternative outcome); the declared product existing on disk is reported, never done. An
-unenrolled tree with no Gate keeps both pre-factory answers below unchanged.
+A claim is taken only when the Gate's claim station accepts the unit (the one decision every floor
+entry asks, whose priority_current predicate is the backlog's executable question), so a task of
+intake-only, prepared, or admitted but unprioritized work, a unit appended after the last
+prioritization, or a blocked item is refused by the Gate's first named reason before the ledger is
+asked. And DONE is the unit's accepted outcome (control_backlog.outcome_problems through the Gate's
+completion reader: its confirmed-landing receipt or the owner's authorized alternative outcome); the
+declared product existing on disk is reported, never done. An unenrolled tree with no Gate keeps
+both pre-factory answers below unchanged.
 
 IT ENFORCES NOTHING. No gate stage consults this, no build is refused because a task is open,
 and an absent .veldo/tasks/ directory stands the read model down by name rather than reporting
@@ -144,8 +145,9 @@ def _ledger():
 
 
 def _factory(name):
-    """control_backlog or control_eligibility, loaded once, on the first factory answer only, so an
-    unenrolled read model never pays for the authority's modules."""
+    """control_backlog or control_eligibility, loaded once per process on first use. A call without an
+    explicit Gate resolves one through control_eligibility.gate_for, so it loads control_eligibility
+    and every module that loads, in an unenrolled tree too; there only the answers stay pre-factory."""
     if name not in _FACTORY:
         _FACTORY[name] = _organ(name)
     return _FACTORY[name]
@@ -158,6 +160,12 @@ def _gate(root, eligibility):
     if eligibility is not None:
         return eligibility
     return _factory("control_eligibility").gate_for(Path(root) if root is not None else ROOT, None)
+
+
+def _executable(gate, unit):
+    """The Gate's claim-station refusals for `unit` ([] when it may be claimed): the one decision every
+    floor entry asks, with the backlog's priority among its predicates."""
+    return gate.decide("claim", unit)["refusals"]
 
 
 def default_tasks_dir(root=None):
@@ -354,7 +362,7 @@ def concluded(task, root=None, eligibility=None):
 
 def _concluded(task, root, gate):
     if gate is not None:
-        return not _factory("control_backlog").outcome_problems(gate.conn, task.get("id"))
+        return not _factory("control_backlog").outcome_problems(gate, task.get("id"))
     base = Path(root) if root is not None else ROOT
     produces = task.get("produces")
     if produces_problems(produces):
@@ -377,7 +385,7 @@ def _claim_answer(task, worker_caps, root, claims_root, gate):
     if _concluded(task, root, gate):
         return REFUSED_CONCLUDED
     if gate is not None:
-        problems = _factory("control_backlog").executable_problems(gate.conn, task["id"])
+        problems = _executable(gate, task["id"])
         if problems:
             return problems[0]
     cl = _ledger()
@@ -400,8 +408,8 @@ def claim_task(task_id, worker_id, worker_caps=None, tdir=None, root=None, parse
                claims_root=None, eligibility=None):
     """Take one task THROUGH THE EXISTING LEDGER. Returns (ok, reason) in the ledger's own
     shape, so a caller reads one vocabulary whatever refused it. With a Gate (VELDO-0078) only
-    executable work is taken: a task whose unit is not admitted and prioritized is refused by the
-    backlog's named reason and the ledger is never asked."""
+    executable work is taken: a task whose unit the Gate's claim station refuses (not admitted and
+    prioritized among its reasons) is refused by its first named reason and the ledger is never asked."""
     found = [t for t, _p in all_tasks(tdir, root, parse) if t.get("id") == task_id]
     if not found:
         return False, REFUSED_UNKNOWN
@@ -410,7 +418,7 @@ def claim_task(task_id, worker_id, worker_caps=None, tdir=None, root=None, parse
     if _concluded(task, root, gate):
         return False, REFUSED_CONCLUDED
     if gate is not None:
-        problems = _factory("control_backlog").executable_problems(gate.conn, task_id)
+        problems = _executable(gate, task_id)
         if problems:
             return False, problems[0]
     cl = _ledger()

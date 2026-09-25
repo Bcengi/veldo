@@ -5,7 +5,11 @@ work loop's claim, plan run-check and the direct executor's build and review lau
 dispatcher's build, review and publication, and every subscription CLI call a build or review makes. Each asks the same Gate for a
 named decision over the accepted records in the real control store, with the predicates of ITS
 station (completion_contract.ENTRY_PREDICATES, the shipped VELDO-0021 contract, plus current
-admission everywhere under R52/R69). Review cannot bypass draft-plan, decision or dependency checks.
+admission everywhere under R52/R69, and priority everywhere under VELDO-0078: priority_current is the
+backlog's executable question, control_backlog.executable_record_problems, over the unit and backlog
+records the decision consumed, so admitted but unprioritized work, a unit appended after the last
+prioritization and a blocked item are refused at every station by one decision). Review cannot bypass
+draft-plan, decision or dependency checks.
 
 WHAT A DECISION CARRIES. The station, the unit, the store watermark, and the version and digest of
 every input it consumed: the unit and its backlog item, governing plan, admission, project,
@@ -115,6 +119,9 @@ SN = _organ('control_snapshot')
 DD = _organ('control_decision_dependency')
 # VELDO-0134: the architecture record's schema (veldo.architecture_record/v1), which the reader applies.
 AR = _organ('control_architecture')
+# VELDO-0078: the backlog's executable question (control_backlog.executable_record_problems), the
+# priority_current predicate's answer.
+BL = _organ('control_backlog')
 
 # The stations the floor's entries invoke, each with its station-specific predicates. The shipped
 # contract's set is the floor of each; current admission is added to every station because R52
@@ -135,6 +142,12 @@ ARCHITECTURE_REFUSALS = {
 }
 # Predicates satisfied only by a store transaction at the call boundary, never by a read.
 TRANSACTIONAL = {'charge_reserved': 'control_reservations.Reservations.reserve_call'}
+# VELDO-0078: only admitted, PRIORITIZED work is eligible, at every station right after its admission: an
+# admission record is written when the owner admits the item, before its priority, so admission alone
+# never makes a unit eligible anywhere.
+PRIORITY_PREDICATE = 'priority_current'
+STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))
+                      for s, p in STATION_PREDICATES.items()}
 
 # EVERY ENABLED FLOOR ENTRY, as (module, qualified function, station). The suite derives the same
 # set from the actual call sites (a .decide/.require call naming a station) and requires equality.
@@ -160,6 +173,7 @@ COMPLETION_CONSUMERS = (
     ('work_state.py', 'completion_view'),
     ('control_eligibility.py', 'completion_status'),
     ('control_eligibility.py', 'Gate.landed'),
+    ('control_eligibility.py', 'Gate.landing'),
     ('control_eligibility.py', 'Gate.completion'),
     ('control_eligibility.py', 'Gate._dependencies'),
 )
@@ -684,6 +698,8 @@ class Gate:
         return (item.get('value') or {}).get('data') if item else None
 
     def _landed_from(self, receipts, subject):
+        """The id of the first receipt that lands `subject` (the revision_landed fact for exactly that
+        revision with a complete landing receipt for that unit), or None."""
         for item in receipts:
             r = self._data(item)
             if CC.fact_problems('revision_landed', r, subject):
@@ -691,8 +707,8 @@ class Gate:
             landing = r.get('publication_receipt')
             if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) \
                     and landing.get('unit_id') == subject['id']:
-                return True
-        return False
+                return item['id']
+        return None
 
     def _subject(self, unit):
         data = self._data(self._entity(unit))
@@ -709,11 +725,21 @@ class Gate:
         if subject is None:
             return {fact: False for fact in CC.FACT_ORDER}
         state = CC.completion_state([self._data(r) for r in receipts], subject)
-        state['revision_landed'] = state['revision_landed'] and self._landed_from(receipts, subject)
+        state['revision_landed'] = state['revision_landed'] and self._landed_from(receipts, subject) is not None
         return state
 
     def landed(self, unit):
         return self.completion(unit)['revision_landed']
+
+    def landing(self, unit):
+        """VELDO-0078: the landed fact's own evidence, the id of the receipt that lands the unit's current
+        accepted revision, or None, read in one read transaction. It is None exactly when landed() is
+        False; the backlog's DONE records it."""
+        with self._reading():
+            subject = self._subject(unit)
+            receipts = self._receipts(unit)
+        # The receipt _landed_from returns establishes the revision_landed fact itself, so this is landed().
+        return None if subject is None else self._landed_from(receipts, subject)
 
     def unit_record(self, unit):
         """The unit's accepted execution_unit data, read in one read transaction, or None."""
@@ -898,6 +924,10 @@ class Gate:
             if not isinstance(a, dict) or a.get('state') != 'accepted' or a.get('unit') != unit:
                 return ['missing_authority:admission']
             return [] if a.get('scope_digest') == data.get('scope_digest') and a.get('scope_digest') else ['stale_scope']
+        if name == PRIORITY_PREDICATE:
+            # VELDO-0078: the backlog's one executable question over the unit and item records this
+            # decision consumed: the item PRIORITIZED or ACTIVE, the unit prioritized and not terminal.
+            return BL.executable_record_problems(data, self._data(inputs.get('backlog')))
         if name == 'plan_not_draft':
             if not data.get('plan'):
                 return []

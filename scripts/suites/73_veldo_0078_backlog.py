@@ -4,8 +4,8 @@ Run: python3 scripts/selftest.py --suite 73_veldo_0078_backlog
 
 Only shared ROOT and expect are consumed. One temporary tree holds the installed .veldo copy every
 service loads; the production anchors below are the registered mutation driver's seams, so a mutation of
-control_backlog.py, tasks.py or frontier.py reaches the service, the claim entries and the reader in
-another process. Real SQLite store with OpenSSH command, claim, journal and API signatures; the backlog
+control_backlog.py, control_eligibility.py, tasks.py or frontier.py reaches the service, the Gate, the
+claim entries and the reader in another process. Real SQLite store with OpenSSH command, claim, journal and API signatures; the backlog
 items are taken from RAW features of an objective the project's owner accepted through the real VELDO-0077
 service; every admission, priority, block resolution and alternative outcome is a real VELDO-0064 request
 presented by the VELDO-0065 presenter over a loopback Bot API (no network, no real token), answered through
@@ -36,6 +36,7 @@ def _v78_suite():
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {'control_backlog.py': ROOT / ".veldo" / "control_backlog.py",
+                  'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
                   'tasks.py': ROOT / ".veldo" / "tasks.py",
                   'frontier.py': ROOT / ".veldo" / "frontier.py"}
     SCAFFOLD = ROOT / ".veldo" / "init_scaffold.py"
@@ -153,7 +154,8 @@ def _v78_suite():
                 both = (ROOT / rel).is_file() and (ROOT / 'engine' / rel).is_file()
                 if both:
                     scaffold._lay(ROOT / 'engine' / rel, base / 'laid' / rel, rel, [], [])
-                same = [r for r in ('.veldo/tasks.py', '.veldo/frontier.py', '.veldo/init_scaffold.py')
+                same = [r for r in ('.veldo/tasks.py', '.veldo/frontier.py', '.veldo/init_scaffold.py',
+                                    '.veldo/control_eligibility.py')
                         if (ROOT / 'engine' / r).read_bytes() == (ROOT / r).read_bytes()]
                 check('install/assets', [
                     (rel + ' installed by the scaffold', rel in scaffold._FILES),
@@ -161,7 +163,7 @@ def _v78_suite():
                     (rel + ' engine copy identical', both and (ROOT / 'engine' / rel).read_bytes() == (ROOT / rel).read_bytes()),
                     (rel + ' laid by the installer', both and (base / 'laid' / rel).is_file()
                      and (base / 'laid' / rel).read_bytes() == (ROOT / rel).read_bytes()),
-                    ('tasks, frontier and init_scaffold engine copies identical', len(same) == 3),
+                    ('tasks, frontier, init_scaffold and control_eligibility engine copies identical', len(same) == 4),
                     ('the task source that loads it is installed beside it', '.veldo/tasks.py' in scaffold._FILES)])
 
             claims = load('v78_claims', mods / 'control_claim.py')
@@ -189,7 +191,7 @@ def _v78_suite():
             for d in (keys, protected, edge_dir):
                 d.mkdir(mode=0o700)
             people = ('steward', 'olga', 'zed')
-            services = ('pm', 'api-edge', 'builder', 'builder-b')
+            services = ('pm', 'api-edge', 'builder', 'builder-b', 'closer')
             keyfile = {who: keys / who for who in ('authority',) + people + services}
             keyfile['edge'] = protected / 'edge-telegram'
             keyfile['edge-auth'] = edge_dir / 'edge-auth'
@@ -256,6 +258,8 @@ def _v78_suite():
             enroll('api-edge', 'service', [], ['proj-a'])
             enroll('builder', 'service', [], [REPO])
             enroll('builder-b', 'service', [], [REPO])
+            # A worker that stops for a person about its claimed unit (VELDO-0133): the project and the repository.
+            enroll('closer', 'service', [], ['proj-a', REPO])
 
             def fixture(eid, kind, data):
                 row = conn.execute('SELECT version FROM entities WHERE id=?', (eid,)).fetchone()
@@ -451,6 +455,11 @@ def _v78_suite():
                     return attempt(lambda: TS.concluded(task, root=str(work)))
                 return attempt(lambda: TS.concluded(task, root=str(work), eligibility=gate))
 
+            def shown(name, *args, default):
+                """The brief the service says its owner must be shown (the default where it names none)."""
+                found = getattr(CB, name, None)
+                return found(*args) if callable(found) else default
+
             def executable(uid):
                 return CB.executable_problems(reader, uid) if CB is not None else ['no_backlog_service']
 
@@ -486,7 +495,7 @@ def _v78_suite():
             accepted = osend('pm', 'accept', objective=o1, objective_version=(OB.read(conn, o1) or {}).get('version'),
                              request=rid_o)
             features = {}
-            for name in ('intake', 'prepared', 'admitted', 'prioritized', 'main', 'rejected', 'returned'):
+            for name in ('intake', 'prepared', 'admitted', 'prioritized', 'main', 'rejected', 'returned', 'closed'):
                 made = osend('pm', 'propose_feature', objective=o1, objective_version=(OB.read(conn, o1) or {}).get('version'),
                              feature='f-' + name, title='Feature %s' % name, scope=['checkout'])
                 features[name] = made.get('feature_id')
@@ -549,6 +558,7 @@ def _v78_suite():
                 adm = 'admitted-without-priority'
                 spec3, task3 = 'VELDO-9783', 'TASK-78-3'
                 selection3 = gate.decide('selection', spec3)
+                stations3 = {s: gate.decide(s, spec3).get('refusals') or [] for s in FR.EL.FLOOR_STATIONS}
                 ledger_record = CLF.holder(task3, root=str(ledger))
                 check('priority/missing-priority', [
                     ('the admitted item has its owner\'s admission and no priority',
@@ -557,8 +567,11 @@ def _v78_suite():
                     ('its units are admitted by record and still PLANNED',
                      data_of('admission:' + spec3).get('state') == 'accepted' and data_of(spec3).get('state') == 'PLANNED'
                      and data_of(task3).get('state') == 'PLANNED'),
-                    ('the Gate\'s selection accepts it, and the frontier still does not offer it',
-                     selection3.get('eligible') is True and not table[adm]['offer']),
+                    ('the Gate\'s selection refuses it for missing priority, so the frontier does not offer it',
+                     selection3.get('eligible') is False and selection3.get('refusals') == ['missing_authority:priority']
+                     and not table[adm]['offer']),
+                    ('every Gate station (plan run-check and the cycle\'s assignment step included) names its missing priority',
+                     len(stations3) == 7 and all('missing_authority:priority' in r for r in stations3.values())),
                     ('the direct task claim is refused for missing priority, and the ledger was never asked',
                      table[adm]['task-ledger'] == (False, 'missing_authority:priority') and ledger_record is None),
                     ('the task claim through the authority is refused for missing priority',
@@ -661,6 +674,7 @@ def _v78_suite():
                 named = {u: executable(u) for u in (U3, U4)}
                 refused3 = rclaim('builder', U3)
                 refused4 = task_claim(U4, root=Authority('builder'))
+                growth_claim = gate.decide('claim', U4)
                 offered_growth = offers()
                 continuing = rclaim('builder-b', U2)
                 stale = bop('pm', 'prioritize', M, request=rid_stale)
@@ -677,8 +691,9 @@ def _v78_suite():
                     ('an appended unit is PLANNED, not executable', appended == {U3: 'PLANNED', U4: 'PLANNED'}
                      and named == {U3: ['missing_authority:priority'], U4: ['missing_authority:priority']}),
                     ('the claim receiver refuses the appended unit', refused3.get('reason') == 'not_admitted'),
-                    ('the task claim refuses the appended unit for missing priority',
-                     refused4 == (False, 'missing_authority:priority')),
+                    ('the task claim refuses the appended unit, not admitted and not prioritized at the Gate',
+                     refused4 == (False, 'missing_authority:admission')
+                     and 'missing_authority:priority' in (growth_claim.get('refusals') or [])),
                     ('the frontier does not offer it', isinstance(offered_growth, list) and U3 not in offered_growth),
                     ('an approved unit continues meanwhile', continuing.get('ok') and data_of(U2).get('state') == 'CLAIMED'),
                     ('the earlier prioritization does not cover the appended units',
@@ -708,12 +723,16 @@ def _v78_suite():
                 other_block, _ = decide(M, 'decision_disposition', 'RES-78-forged', target=forged, brief='Resume.')
                 by_forged = bop('pm', 'resume', M, request=other_block)
                 target_block = CB.block_target(held) if CB is not None and held else placeholder(M)
+                resume_text = shown('resume_brief', held, default='Resume %s after: %s' % (phase, why)) if held else 'x'
+                other_brief, _ = decide(M, 'decision_disposition', 'RES-78-brief', target=target_block,
+                                        brief='Resume %s whatever stopped it.' % phase)
+                by_other_brief = bop('pm', 'resume', M, request=other_brief)
                 rejected_block, _ = decide(M, 'decision_disposition', 'RES-78-no', choice='reject', target=target_block,
-                                           brief='Resume %s after: %s' % (phase, why))
+                                           brief=resume_text)
                 by_reject = bop('pm', 'resume', M, request=rejected_block)
                 still = item(M).get('state')
                 resolved, settled_res = decide(M, 'decision_disposition', 'RES-78-yes', target=target_block,
-                                               brief='Resume %s after: %s' % (phase, why))
+                                               brief=resume_text)
                 resumed = bop('pm', 'resume', M, request=resolved)
                 last = (item(M).get('history') or [{}])[-1]
                 cleared = [b for _e, b in of_kind('blocker') if b.get('backlog_item_uuid') == M]
@@ -731,6 +750,9 @@ def _v78_suite():
                     ('no settled answer does not resume', no_request.get('reason') == 'missing_evidence:settlement'),
                     ('an answer about another subject does not resume', by_other.get('reason') == 'invalid_input:request'),
                     ('an answer bound to another block does not resume', by_forged.get('reason') == 'stale_subject:binding'),
+                    ('an answer to this block shown another brief does not resume',
+                     by_other_brief.get('reason') == 'stale_subject:brief' and resume_text != 'x'
+                     and phase in resume_text and why in resume_text),
                     ('the owner\'s refusal keeps it blocked', by_reject.get('reason') == 'not_approved:reject'
                      and still == 'BLOCKED'),
                     ('the owner\'s settled resolution resumes exactly that phase',
@@ -772,19 +794,25 @@ def _v78_suite():
                 unsettled = bop('pm', 'dispose_unit', M, unit=U4)
                 u4 = dict(data_of(U4), uuid=U4)
                 target_u4 = CB.unit_target(u4) if CB is not None and u4.get('revision') else placeholder(U4)
+                alt_text = shown('alternative_brief', u4, default='Close %s without a landing.' % U4)
                 rid_zed4, _ = decide(M, 'decision_disposition', 'ALT-78-zed', owner='zed', target=target_u4,
-                                     brief='Close %s without a landing.' % U4, proposal={'outcome': 'not_required'})
+                                     brief=alt_text, proposal={'outcome': 'not_required'})
                 by_zed4 = bop('pm', 'dispose_unit', M, unit=U4, request=rid_zed4)
                 rid_odd, _ = decide(M, 'decision_disposition', 'ALT-78-odd', target=target_u4,
-                                    brief='Close %s without a landing.' % U4, proposal={'outcome': 'rewrite'})
+                                    brief=alt_text, proposal={'outcome': 'rewrite'})
                 odd = bop('pm', 'dispose_unit', M, unit=U4, request=rid_odd)
+                rid_alt_brief, _ = decide(M, 'decision_disposition', 'ALT-78-brief', target=target_u4,
+                                          brief='Close %s.' % U4, proposal={'outcome': 'not_required'})
+                alt_brief = bop('pm', 'dispose_unit', M, unit=U4, request=rid_alt_brief)
                 rid_alt, settled_alt = decide(M, 'decision_disposition', 'ALT-78-yes', target=target_u4,
-                                              brief='Close %s without a landing.' % U4, proposal={'outcome': 'not_required'})
+                                              brief=alt_text, proposal={'outcome': 'not_required'})
                 alt = bop('pm', 'dispose_unit', M, unit=U4, request=rid_alt)
                 check('done/authorized-alternative', [
                     ('a disposal without a settled answer is refused', unsettled.get('reason') == 'missing_evidence:settlement'),
                     ('another member\'s settled answer does not authorize it', by_zed4.get('reason') == 'not_owner'),
                     ('an outcome this release does not name is refused', odd.get('reason') == 'unsupported_outcome:rewrite'),
+                    ('an answer shown another brief does not authorize it', alt_brief.get('reason') == 'stale_subject:brief'
+                     and U4 in alt_text and 'not required' in alt_text),
                     ('the owner\'s settled answer authorizes the alternative outcome',
                      settled_alt.get('outcome') == 'settled' and alt.get('ok') and data_of(U4).get('state') == 'CANCELED'
                      and (data_of(U4).get('alternative_outcome') or {}).get('request_id') == rid_alt)])
@@ -831,11 +859,68 @@ def _v78_suite():
                      and data_of('admission:VELDO-9788').get('state') == 'accepted'
                      and executable('VELDO-9788') == ['missing_authority:backlog/CANCELED'])])
 
+            # A unit a real VELDO-0133 close CANCELED while its item stayed ACTIVE: not an outcome until the owner
+            # decides it counts; then the item can be DONE.
+            with region('done/closed-unit'):
+                N1, N2 = 'VELDO-9791', 'VELDO-9792'
+                _c, C = take('closed')
+                bop('pm', 'prepare', C, units=[unit_entry(N1), dict(unit_entry(N2), eligible_holders=['closer'])])
+                bop('pm', 'request_grooming', C)
+                admit(C, 'ADM-78-C')
+                prioritize(C, 'PRI-78-C')
+                rclaim('builder', N1)
+                held_n2 = rclaim('closer', N2)
+
+                def inbox_as(who, op, alias, **fields):
+                    body = dict(ids, operation=op, alias=alias, principal=who, command_id=next_id('ic'),
+                                nonce=next_id('in'), **fields)
+                    return inbox.apply(signed(who, body))
+                stop = inbox_as('closer', 'open', 'STOP-78-C', claim_generation=((held_n2.get('claim') or {}).get('generation')),
+                                assignment=dict(kind='decision', owner='zed', scope=['proj-a'], deadline='2026-10-30T17:00:00Z',
+                                                budget={'owner_minutes': 15}, brief='Pick the payment provider.',
+                                                choices=['accept', 'reject'], unit_id=N2,
+                                                subject={'kind': 'specification', 'ref': 'specs/%s.md' % N2,
+                                                         'digest': 'sha256:' + '7' * 64}))
+                declined = inbox_as('zed', 'decline', 'STOP-78-C', request_version=1)
+                asked = [d for _e, d in of_kind('assignment') if d.get('kind') == 'disposition'
+                         and (d.get('disposition_of') or {}).get('assignment_id') == stop.get('assignment_id')]
+                q_alias = asked[0].get('alias') if asked else 'none'
+                closed_by = inbox_as('zed', 'answer', q_alias, request_version=1, ruling='close')
+                disposed = inbox_as('pm', 'dispose', q_alias, request_version=1)
+                n2, c_state = data_of(N2), item(C).get('state')
+                receipt(N1, 1)
+                refused_done = bop('pm', 'complete', C)
+                named = attempt(lambda: CB.outcome_problems(gate, N2))
+                u_n2 = dict(n2, uuid=N2)
+                rid_c, settled_c = decide(C, 'decision_disposition', 'ALT-78-C',
+                                          target=CB.unit_target(u_n2) if CB is not None and n2.get('revision') else placeholder(N2),
+                                          brief=shown('alternative_brief', u_n2, default='Close %s.' % N2),
+                                          proposal={'outcome': 'not_required'})
+                counted = bop('pm', 'dispose_unit', C, unit=N2, request=rid_c)
+                after_n2 = data_of(N2)
+                done_c = bop('pm', 'complete', C)
+                check('done/closed-unit', [
+                    ('the VELDO-0133 close canceled the unit on the decliner\'s answer and left its item ACTIVE',
+                     stop.get('ok') and declined.get('ok') and closed_by.get('ok') and disposed.get('ruling') == 'close'
+                     and n2.get('state') == 'CANCELED' and (n2.get('disposition') or {}).get('ruling') == 'close'
+                     and (n2.get('disposition') or {}).get('principal') == 'zed' and n2.get('alternative_outcome') is None
+                     and c_state == 'ACTIVE'),
+                    ('DONE refuses the closed unit as a missing outcome', refused_done.get('reason') == 'missing_outcome:' + N2),
+                    ('the backlog names the closed unit\'s missing outcome', named == ['missing_outcome:' + N2]),
+                    ('the owner\'s settled answer counts the closed unit, which stays CANCELED with its close',
+                     settled_c.get('outcome') == 'settled' and counted.get('ok') and after_n2.get('state') == 'CANCELED'
+                     and (after_n2.get('alternative_outcome') or {}).get('request_id') == rid_c
+                     and (after_n2.get('disposition') or {}).get('ruling') == 'close'),
+                    ('then the item is DONE with that outcome', done_c.get('ok') and item(C).get('state') == 'DONE'
+                     and ((((item(C).get('completion') or {}).get('outcomes') or {}).get(N2) or {}).get('alternative_outcome')
+                          or {}).get('request_id') == rid_c)])
+
             with region('other-process'):
                 child = base / 'reader.py'
                 child.write_text(_V78_CHILD)
                 out = subprocess.run([sys.executable, '-B', str(child), str(mods), str(db),
-                                      json.dumps({'items': [M, stage['admitted-without-priority']],
+                                      json.dumps({'domain': DOMAIN, 'repository': REPO,
+                                                  'items': [M, stage['admitted-without-priority']],
                                                   'units': ['VELDO-9783', U3, U4]})],
                                      capture_output=True, text=True, timeout=60)
                 seen = json.loads(out.stdout) if out.returncode == 0 and out.stdout.strip() else {}
@@ -886,8 +971,9 @@ organs, db, wanted = sys.argv[1], sys.argv[2], json.loads(sys.argv[3])
 def load(name):
     s = importlib.util.spec_from_file_location('child_' + name, str(Path(organs) / (name + '.py')))
     m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
-S = load('control_store'); CB = load('control_backlog')
+S = load('control_store'); CB = load('control_backlog'); EL = load('control_eligibility')
 conn = S.open_store(db, mode='r')
+reader = EL.Gate(S, conn, domain_uuid=wanted['domain'], repository_uuid=wanted['repository'])
 try:
     conn.execute("CREATE TABLE probe (x)")
     read_only = False
@@ -898,7 +984,7 @@ for iid in wanted['items']:
     out['items'][iid] = (CB.read(conn, iid) or {}).get('state')
 for uid in wanted['units']:
     out['executable'][uid] = CB.executable_problems(conn, uid)
-    out['outcomes'][uid] = CB.outcome_problems(conn, uid)
+    out['outcomes'][uid] = CB.outcome_problems(reader, uid)
 conn.close()
 print(json.dumps(out))
 '''
