@@ -115,7 +115,7 @@
     true
    ]
   ],
-  "seconds": 3.519
+  "seconds": 3.374
  },
  "controls_green": true,
  "mutants": [
@@ -246,7 +246,7 @@
      true
     ]
    ],
-   "seconds": 3.373,
+   "seconds": 3.382,
    "source_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
   },
   {
@@ -380,7 +380,7 @@
      true
     ]
    ],
-   "seconds": 3.606,
+   "seconds": 3.635,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -518,7 +518,7 @@
      true
     ]
    ],
-   "seconds": 3.612,
+   "seconds": 3.617,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -529,7 +529,7 @@
     "VELDO-0076 detail: project/cancel: a cancel without a reason, by another person or at a stale version is refused and writes nothing",
     "VELDO-0076 detail: project/observability: the metrics count the projects by state",
     "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; control: its unit is then admitted",
-    "VELDO-0076 detail: project/owner-demoted: the demoted owner can no longer stop it; restoring the role resumes it",
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; the demoted owner can no longer stop it; restoring the role resumes it",
     "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts; restoring the membership resumes it; and its work dispatches and ends"
    ],
    "diff": "proof/VELDO-0076/non-owner-activates.diff",
@@ -660,7 +660,7 @@
      true
     ]
    ],
-   "seconds": 3.335,
+   "seconds": 3.125,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -796,7 +796,7 @@
      true
     ]
    ],
-   "seconds": 3.704,
+   "seconds": 3.625,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -926,7 +926,7 @@
      true
     ]
    ],
-   "seconds": 3.384,
+   "seconds": 3.39,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -935,7 +935,7 @@
     "VELDO-0076 detail: project/paused-frontier: the frontier offers nothing from the paused project; it names why; control: the other project's unit is still offered",
     "VELDO-0076 detail: project/cancel: the frontier offers nothing from it",
     "VELDO-0076 detail: project/foreign-kind: a record of another kind at the project's id is refused by name, never admitting its unit",
-    "VELDO-0076 detail: project/owner-demoted: so the Gate halts its unit by name",
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; so the Gate halts its unit by name",
     "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name"
    ],
    "diff": "proof/VELDO-0076/frontier-offers-paused-project.diff",
@@ -1064,7 +1064,7 @@
      true
     ]
    ],
-   "seconds": 3.374,
+   "seconds": 3.371,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   },
   {
@@ -1196,7 +1196,7 @@
      true
     ]
    ],
-   "seconds": 3.681,
+   "seconds": 3.633,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   },
   {
@@ -1328,7 +1328,7 @@
      true
     ]
    ],
-   "seconds": 43.417,
+   "seconds": 43.386,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -1462,7 +1462,7 @@
      true
     ]
    ],
-   "seconds": 3.423,
+   "seconds": 3.393,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -1594,7 +1594,7 @@
      true
     ]
    ],
-   "seconds": 3.441,
+   "seconds": 3.402,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -1730,7 +1730,7 @@
      true
     ]
    ],
-   "seconds": 3.31,
+   "seconds": 3.117,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -1866,7 +1866,7 @@
      true
     ]
    ],
-   "seconds": 3.193,
+   "seconds": 3.114,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -2002,7 +2002,7 @@
      true
     ]
    ],
-   "seconds": 3.153,
+   "seconds": 3.127,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -2132,7 +2132,7 @@
      true
     ]
    ],
-   "seconds": 3.422,
+   "seconds": 3.379,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -2266,7 +2266,7 @@
      true
     ]
    ],
-   "seconds": 3.38,
+   "seconds": 3.374,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
@@ -2396,7 +2396,7 @@
      true
     ]
    ],
-   "seconds": 3.408,
+   "seconds": 3.384,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   },
   {
@@ -2526,13 +2526,13 @@
      true
     ]
    ],
-   "seconds": 3.408,
+   "seconds": 3.386,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0076 detail: project/owner-demoted: so the Gate halts its unit by name; and no dispatch of it starts",
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; so the Gate halts its unit by name; and no dispatch of it starts",
     "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts"
    ],
    "diff": "proof/VELDO-0076/owner-currency-unchecked.diff",
@@ -2659,7 +2659,267 @@
      true
     ]
    ],
-   "seconds": 3.897,
+   "seconds": 3.868,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name"
+   ],
+   "diff": "proof/VELDO-0076/owner-scope-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-demoted"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "61674554bc6c14512d522b5ce9369648b8b00a275194f066d645b97fba92fc67",
+   "name": "owner-scope-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-demoted"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.382,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-demoted: an owner who is no longer a person halts it by name"
+   ],
+   "diff": "proof/VELDO-0076/owner-person-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-demoted"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "13a87c1de7e9055cd62933be88afa82ea04555c26b919c795a13e8750dbaa0dd",
+   "name": "owner-person-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-demoted"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.394,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   },
   {
@@ -2789,7 +3049,7 @@
      true
     ]
    ],
-   "seconds": 3.773,
+   "seconds": 3.655,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   },
   {
@@ -2919,7 +3179,7 @@
      true
     ]
    ],
-   "seconds": 3.64,
+   "seconds": 3.626,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   }
  ],
@@ -3039,7 +3299,7 @@
      true
     ]
    ],
-   "seconds": 3.465,
+   "seconds": 3.389,
    "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
   },
   "control_project.py": {
@@ -3157,7 +3417,7 @@
      true
     ]
    ],
-   "seconds": 3.381,
+   "seconds": 3.368,
    "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
   },
   "init_scaffold.py": {
@@ -3275,13 +3535,13 @@
      true
     ]
    ],
-   "seconds": 3.374,
+   "seconds": 3.369,
    "source_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 76",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 126.673,
+ "serial_seconds": 132.265,
  "spec_id": "VELDO-0076",
  "suite": "scripts/suites/71_veldo_0076_projects.py"
 }

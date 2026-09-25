@@ -62,7 +62,7 @@ its Gate refuses every unit for want of a project record).
 generic upsert of another kind at `project:proj-x` was accepted, admitted the unit and dispatched it,
 and blocked the owner's activation; a demoted or revoked owner's unit was admitted and dispatched).
 
-`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 21 mutants, each reds
+`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 23 mutants, each reds
 its named row by assertion, the baseline and a no-op copy of each mutated module green. Registry:
 `scripts/check_teeth_mutations.py --finding 76`.
 

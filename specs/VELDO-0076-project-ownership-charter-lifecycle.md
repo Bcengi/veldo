@@ -164,3 +164,5 @@ ACTIVE project whose recorded owner is not current halts at the Gate
 (`project_not_active:owner_not_current`), the fail-safe of VELDO-0138's demoted owner, with
 handover left to Release 3. Rows `project/foreign-kind`, `project/owner-demoted` and
 `project/owner-revoked`, red at 93a56d6 by assertion; five finding 76 mutations. Status unchanged.
+
+2026-09-25, review 2 (filed item fixed): the scope and person parts of the owner-currency rule were never driven (a mutant dropping either survived). The owner-demoted row now drives both; mutations owner-scope-unchecked and owner-person-unchecked red it (finding 76: 23).
