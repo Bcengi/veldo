@@ -1,5 +1,5 @@
 --- a/.veldo/control_project.py
 +++ b/.veldo/control_project.py
-@@ -453 +453 @@
+@@ -460 +460 @@
 -                found.append({'kind': 'dispatch', 'id': eid})
 +                pass  # defect: an open dispatch does not hold completion

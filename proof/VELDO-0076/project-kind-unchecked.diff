@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -958 +958 @@
+-        if record.get('value') is not None and record['value'].get('kind') != PROJECT_KIND:
++        if False:  # defect: a record of any kind decides the unit's project

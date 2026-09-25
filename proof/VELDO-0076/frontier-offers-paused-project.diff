@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -987 +987,2 @@
+@@ -1033 +1033,2 @@
 -            refusals = self._unit_problems(unit, inputs)
 +            refusals = [r for r in self._unit_problems(unit, inputs) if station != 'selection'
 +                        or not r.startswith('project_not_active')]  # defect: the frontier assigns after a pause

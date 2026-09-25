@@ -1,5 +1,5 @@
 --- a/.veldo/control_project.py
 +++ b/.veldo/control_project.py
-@@ -445 +445 @@
+@@ -452 +452 @@
 -                found.append({'kind': 'assignment', 'id': eid})
 +                pass  # defect: an open assignment does not hold completion

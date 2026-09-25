@@ -1,5 +1,5 @@
 --- a/.veldo/control_project.py
 +++ b/.veldo/control_project.py
-@@ -450 +450 @@
+@@ -457 +457 @@
 -                found.append({'kind': 'decision', 'id': '%s:%s' % (unit, code)})
 +                pass  # defect: an unsettled decision does not hold completion

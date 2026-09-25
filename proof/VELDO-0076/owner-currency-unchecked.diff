@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -966 +966 @@
+-        elif 'state' in project and not self._owner_current(data.get('project'), project, inputs.get('project_owner')):
++        elif False and not self._owner_current(data.get('project'), project, inputs.get('project_owner')):
