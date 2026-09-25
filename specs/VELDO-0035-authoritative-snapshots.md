@@ -99,7 +99,8 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## Notes
 
-Accepted snapshots supply 0052 eligibility and 0088/0092 proposals; 0037 and 0049 use ordinary
+Accepted snapshots supply 0052 eligibility and 0088 proposals (0092's typed proposal groups are
+Release 2 since PLAN-0019 revision 4); 0037 and 0049 use ordinary
 materialization. Local committed watermarks are sufficient under amended C3. The MVP checks
 current inputs transactionally without claiming every concurrent negative-read interleaving.
 
@@ -131,3 +132,7 @@ project-manager, identifier-allocation or lander commands.
 2026-09-23 review fixes: R1/R4 require the existing control store to dispatch connection-local
 snapshot registrations inside its BEGIN IMMEDIATE transaction. The footprint includes that
 minimal store seam and its installed mirror; no schema or additional operation is introduced.
+
+2026-09-25, PLAN-0019 revision 4 review: the Notes name VELDO-0088 as the proposal consumer, since
+revision 4 moved VELDO-0092 to Release 2. Notes only: the criteria, the evidence and the status are
+unchanged.

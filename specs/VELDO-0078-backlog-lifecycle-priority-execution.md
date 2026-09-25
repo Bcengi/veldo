@@ -127,8 +127,9 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## Notes
 
 The regular path is proposed/prepared, awaiting grooming, admitted, prioritized, active,
-optionally blocked, and done or canceled. Ordinary defects (VELDO-0080) are executable in
-Release 1 after normal shaping, owner admission and priority. Trusted automatic defect
+optionally blocked, and done or canceled. Ordinary defects run the default pipeline like any
+other work in Release 1, after normal shaping, owner admission and priority; VELDO-0080's own
+defect path is Release 2 since PLAN-0019 revision 4. Trusted automatic defect
 reproduction/admission and standing/emergency policy paths remain non-executable until their
 later-release contracts are qualified. Use the existing unit-ID validator and current
 owner/admission policy.
@@ -185,3 +186,7 @@ a change to its own entry, its priority or the item's scope is `stale_input:back
 drift guard now requires the execution_unit classes to partition the entity contract's states exactly.
 Rows `ticket/sibling-changes` and `ticket/own-changes` are new and `priority/gate-question` gains the
 unit drift part; finding 78 has 29 mutations; the red record is at 8bc4517. Status stays ready.
+
+2026-09-25, PLAN-0019 revision 4 review: the Notes no longer name VELDO-0080 as Release 1 work, since
+revision 4 moved it to Release 2; ordinary defects run the default pipeline. Notes only: the criteria,
+the evidence and the status are unchanged.

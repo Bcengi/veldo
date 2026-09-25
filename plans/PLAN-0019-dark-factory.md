@@ -1488,8 +1488,8 @@ without pressing Reply gets silence (VELDO-0066's review).
 2026-09-25: revision 4, approved by the owner on Telegram 29162, 29163 and 29165. In 29162 ("all 6 are
 yes") he approved the operating-model design docs/design/PLAN-0019-operating-model-design.md at
 12879d3, and in 29163 ("yes, Codex and Claude can read creds") he answered its section 15 yes for both
-engines, and in 29165 ("yes") he confirmed that answer. The revision applies that design's section 10(e). W65 (VELDO-0080) and W77
-(VELDO-0092) move to Release 2. W100 to W105 add VELDO-0140 and VELDO-0141 (both written standalone on
+engines, and in 29165 ("yes") he confirmed that answer. The revision applies that design's section
+10(e). W65 (VELDO-0080) and W77 (VELDO-0092) move to Release 2. W100 to W105 add VELDO-0140 and VELDO-0141 (both written standalone on
 2026-09-25 and now bound here) and the new drafts VELDO-0142 (Git identities), VELDO-0143 (a repository
 from chat), VELDO-0144 (the MCP catalog and OS keystore) and VELDO-0145 (the UI shell, live terminal
 and decisions screen). VELDO-0059 drops VELDO-0080 and VELDO-0092 and depends on VELDO-0140 to

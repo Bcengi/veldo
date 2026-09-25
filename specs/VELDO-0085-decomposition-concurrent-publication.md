@@ -107,7 +107,8 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## Notes
 
 0037 owns the only alias counter and source mapping. This consumer publishes the PM
-decomposition as actual specifications, with dependencies delivered to 0052/0092. Preserve
+decomposition as actual specifications, with dependencies delivered to 0052 (0092's typed
+proposal groups are Release 2 since PLAN-0019 revision 4). Preserve
 contract-named scope and one owning backlog item per unit.
 
 Implement canonical engine assets with synchronized installed copies where applicable. Register
@@ -127,3 +128,7 @@ clone/concurrent-author and AC3 crash/snapshot recovery matrices moved to Releas
 decomposition and actual specification/dependency publication remain. The criteria, declared
 evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4 review: the Notes no longer name VELDO-0092 as a consumer of the
+published decomposition's dependencies, since revision 4 moved it to Release 2; the PM's proposals take
+effect one owning command at a time (VELDO-0088). Notes only: criteria and status are unchanged.
