@@ -34,39 +34,55 @@ self-approval, and the canonical gate is run by the lead, not recorded here.
     only a fresh prioritization of that revision makes it READY.
   - `block` records the interrupted phase and reason (ACTIVE to BLOCKED) and a `blocker` record per open
     unit, so every Gate station refuses them (`no_blockers`). `resume` needs the owner's settled
-    `decision_disposition` answer approving exactly that block (`block_target`); it records the resumed
-    phase and clears the blockers.
+    `decision_disposition` answer approving exactly that block (`block_target`), shown exactly
+    `resume_brief` of it; it records the resumed phase and clears the blockers.
   - `dispose_unit` is the authorized alternative outcome: the owner's settled answer naming the unit at its
-    revision with the proposal `{'outcome': 'not_required'}`. `complete` (ACTIVE to DONE) needs, for every
-    unit of the decomposition, a complete VELDO-0057 confirmed-landing receipt of its current revision
-    (completion_contract's `revision_landed` fact with a complete landing receipt for that unit, the
-    predicates the completion reader applies) or that authorized alternative; otherwise
-    `missing_outcome:<unit>`. `cancel` is the project owner's.
-  - `executable_problems(conn, unit)` is the one question every claim entry asks, and
-    `outcome_problems(conn, unit)` the one answer to whether a unit's outcome is accepted.
-- **`.veldo/frontier.py`.** An offer the Gate's selection station accepts is also asked
-  `executable_problems` over the Gate's read connection, for build and review offers alike.
+    revision, shown exactly `alternative_brief` of it, with the proposal `{'outcome': 'not_required'}`. A
+    unit a VELDO-0133 `close` already CANCELED while its item stayed ACTIVE (the close is the decliner's
+    answer, not the owner's) is no outcome; the same settled answer from the owner records the
+    authorization on it without another transition, and only then can the item be DONE. `complete`
+    (ACTIVE to DONE) needs, for every unit of the decomposition, the receipt the one completion reader
+    (`control_eligibility.Gate.landing`, over the transaction's connection) finds for its current revision,
+    or that authorized alternative; otherwise `missing_outcome:<unit>`. The backlog judges no receipt
+    itself. `cancel` is the project owner's.
+  - `executable_problems(conn, unit)` asks the executable question over any connection, and
+    `outcome_problems(reader, unit)` is the one answer to whether a unit's outcome is accepted, read
+    through the Gate.
+- **`.veldo/control_backlog_priority.py` (new).** The executable question,
+  `executable_record_problems(unit, item)`, in a module that imports nothing: [] only when the item is
+  PRIORITIZED or ACTIVE and the unit is neither PLANNED nor terminal. The service re-exports it and
+  refuses to load (ImportError, named) when its state classification does not partition the entity
+  contract's backlog_item states or its terminal sets differ from the contract's.
+- **`.veldo/control_eligibility.py`.** `priority_current` is a predicate of every station, answered by
+  that module over the unit and backlog records the decision consumed, so selection (the frontier's
+  offers and the VELDO-0132 cycle's assignment step), claim, direct execution, build, review,
+  publication and provider requests refuse admitted but unprioritized work by one decision. The Gate
+  loads the import-free module, never the service: the service's entity contract loads the engine's
+  parser, which the Gate runs only inside its VELDO-0053 snapshot (loading the service turned suite
+  60_veldo_0053's `architecture/identity-keyed-by-module` red). `Gate.landing` returns the id of the
+  receipt that establishes `revision_landed`, the evidence DONE records.
+- **`.veldo/frontier.py`.** Unchanged against main: the Gate's selection station now asks the question.
 - **`.veldo/tasks.py`.** With a Gate (an enrolled repository always has one, through
   `control_eligibility.gate_for`), `claim_task`, `claim_answer`, `claimable` and `task_report` refuse
-  work that is not executable by the backlog's named reason before the ledger is asked, and `concluded`
-  is the unit's accepted outcome; the declared product on disk decides nothing. An unenrolled tree with no
-  Gate keeps the pre-factory answers.
+  work the Gate's claim station refuses, by its first named reason, before the ledger is asked, and
+  `concluded` is the unit's accepted outcome through the Gate; the declared product on disk decides
+  nothing. An unenrolled tree with no Gate keeps the pre-factory answers.
 - **`.veldo/init_scaffold.py`.** Installs `control_backlog.py`. Engine copies are byte-identical.
 
-The claim receiver (`control_claim.py`) and the Gate (`control_eligibility.py`) are unchanged: the
-receiver already refuses a unit that is not READY and an item that is neither PRIORITIZED nor ACTIVE, and
-its first claim already moves the unit to CLAIMED and the item to ACTIVE with the claim record in one
-transaction, which is the activation this criterion asks for. The Gate does not read backlog state; the
-frontier asks the backlog after the Gate, and the blockers reach every Gate station through its own
-`no_blockers` predicate. `request.py` and `claim.py` are unchanged: neither is on the path the running
+The claim receiver (`control_claim.py`) is unchanged: it already refuses a unit that is not READY and an
+item that is neither PRIORITIZED nor ACTIVE, and its first claim already moves the unit to CLAIMED and
+the item to ACTIVE with the claim record in one transaction, which is the activation this criterion asks
+for. The admission and prioritized-set block `executable_problems` carried for records this service
+writes is removed, not driven: every real writer moves a unit out of PLANNED only by the prioritization
+of its item's current revision, so it answered differently only for rows forged into the store, which are
+outside the threat model. `request.py` and `claim.py` are unchanged: neither is on the path the running
 factory uses (the file ledger is the pre-factory compatibility path, and claim.py hands an authority
 client root to the receiver). Backlog items and units carry no ownership declaration, because the claim
-transition writes both and `declare_owners` binds each command to one module; rows forged into the store
-are outside the threat model.
+transition writes both and `declare_owners` binds each command to one module.
 
 ## Rows, falsifiers and red record
 
-Suite `scripts/suites/73_veldo_0078_backlog.py` (about 3.5 s): the real SQLite store with OpenSSH command,
+Suite `scripts/suites/73_veldo_0078_backlog.py` (about 4.5 s): the real SQLite store with OpenSSH command,
 claim, journal and API signatures; the backlog items taken from RAW features of an objective the owner
 accepted through the real VELDO-0077 service; every admission, priority, block resolution and alternative
 outcome a real VELDO-0064 request presented by the VELDO-0065 presenter over a loopback Bot API, answered
@@ -81,9 +97,15 @@ empty HOME, `GIT_CONFIG_GLOBAL=/dev/null`). Each row is reported once.
 work through the four entries (offer, receiver, task over the ledger, task over the authority) and
 requires exactly the expected table: only prioritized work is offered or claimed.
 `priority/missing-priority` (the declared falsifier's row) shows the admitted item with its owner's
-admission, its units admitted by record and PLANNED, the Gate's selection accepting a unit the frontier
-still does not offer, and `tasks.claim_task` refusing `missing_authority:priority` with the ledger never
-asked. `priority/store-inspection` reads every executable unit in the store and requires its item's
+admission, its units admitted by record and PLANNED, the Gate's selection refusing it with
+`missing_authority:priority` (so the frontier does not offer it), every one of the seven Gate stations
+naming that reason, claim and direct execution naming it alone, the VELDO-0132 cycle's real assignment
+step (`Cycles._assign`, its role check answered None) refusing it while it assigns prioritized work, and
+`tasks.claim_task` refusing it with the ledger never asked. `priority/gate-question`: the question
+imports nothing, the Gate's predicate is that module and the service re-exports the same function, the
+Gate loads no entity contract and no service, the classification is the entity contract's, a drifted
+classification is named, and the service refuses to load over it (a copy of the installed tree with the
+unit terminal set changed). `priority/store-inspection` reads every executable unit in the store and requires its item's
 accepted admission and priority. `priority/owner-decision` refuses an admission answer, another
 project_owner member's answer, an answer to another brief, prepared work and a reused answer.
 `lifecycle/foreign-sources` covers the take path (once per feature, policy classes refused, only features).
@@ -91,46 +113,73 @@ project_owner member's answer, an answer to another brief, prepared work and a r
 **AC2.** `activation/first-claim`: the owner's prioritization of the approved decomposition, the first
 claim granted, the claim, unit and item agreeing on the owner, a second holder refused and a unit outside
 the decomposition absent. `activation/decomposition-growth` (the declared falsifier's row): two appends,
-each a new revision; the appended units PLANNED and refused by the receiver, the task claim and the
-frontier; an approved unit claimed meanwhile; the earlier prioritization not covering them and an answer
+each a new revision; the appended units PLANNED and refused by the receiver, the task claim (the Gate
+naming the missing priority) and the frontier; an approved unit claimed meanwhile; the earlier prioritization not covering them and an answer
 to an earlier revision refused; the fresh prioritization of the current revision making them READY.
 
 **AC3.** `blocked/resume-binding`: the recorded phase and reason, the Gate and the claim blocked, resume
-refused with no answer, an answer about another subject, an answer bound to another block and the owner's
-refusal; the owner's settled resolution resuming exactly that phase and clearing the blockers.
+refused with no answer, an answer about another subject, an answer bound to another block, an answer to
+this block shown another brief and the owner's refusal; the owner's settled resolution resuming exactly
+that phase and clearing the blockers.
 `done/missing-outcome` (the declared falsifier's row) drives the declared set: path-only output (the
 declared outputs exist and are reported; the task with its product on disk is not concluded), a canceled
 attempt, a missing required receipt, an incomplete landing receipt and one for another revision, with the
-completion reader agreeing. `done/authorized-alternative` and `done/accepted-outcomes` show that only
-complete receipts or the owner's authorized alternative make it DONE. `lifecycle/regular-path` checks the
+completion reader agreeing. `done/authorized-alternative` (an answer shown another brief refused too) and
+`done/accepted-outcomes` show that only complete receipts or the owner's authorized alternative make it
+DONE. `done/one-completion-reader`: DONE records exactly the receipt `Gate.landing` finds, a reader that
+finds no landing makes a landed unit a missing outcome and one that finds a landing makes an unlanded unit
+accepted, and the backlog's source names no completion contract and no receipt predicate.
+`done/closed-unit` (the review's proof gap) drives a real VELDO-0133 close: a worker enrolled for the
+project claims a unit and opens a stop, the named owner declines, the decliner answers the disposition
+`close` and the inbox disposes it, so the unit is CANCELED with that close on the decliner's answer while
+its item stays ACTIVE; DONE refuses it as `missing_outcome:<unit>` and the backlog names it; the owner's
+settled `decision_disposition` answer then counts it (still CANCELED, the close kept) and the item is DONE
+with that outcome. `lifecycle/regular-path` checks the
 main item's whole history and the reject, return and cancel branches. `other-process` and
 `observability` complete the set.
 
-`red-at-467d168.json`: the current suite run against `git archive 467d168` unchanged. All 15 rows fail,
-each by its own assertions (`by_assertion: true`): that tree has no backlog service, and its frontier and
-task source ask no backlog question.
+`red-at-8bb474c.json`: the current suite run against `git archive 8bb474c` (the build this review
+judged) unchanged. Ten of 18 rows fail, each by its own assertions (`by_assertion: true`): install/assets
+(no import-free question), priority/missing-priority (the Gate accepted unprioritized work),
+priority/gate-question, activation/decomposition-growth (the Gate's reason), blocked/resume-binding and
+done/authorized-alternative (no brief bound), done/accepted-outcomes, done/one-completion-reader (no
+`Gate.landing`), done/closed-unit (the owner could not count a closed unit) and other-process. The other
+eight rows cover behavior 8bb474c already had. `red-at-467d168.json` is the first build's record against
+the tree before the backlog service, with that build's suite.
 
-`mutations.json` (from `python3 -B proof/VELDO-0078/drive.py`, about 58 s serial): the baseline and a no-op
-copy of each of the four modules are green, and each of the 11 finding-78 mutations turns its named row
-red by assertion. The applied diffs are beside it.
+`mutations.json` (from `python3 -B proof/VELDO-0078/drive.py`, about 156 s serial): the baseline and a
+no-op copy of each of the five mutated modules are green, and each of the 21 finding-78 mutations turns its
+named row red by assertion. The applied diffs are beside it. Names are unique across every finding.
 
 | Mutation | Module | Named row |
 |---|---|---|
 | task-claim-skips-priority (AC1 declared) | tasks.py | priority/missing-priority |
-| frontier-offers-unprioritized | frontier.py | priority/missing-priority |
+| frontier-offers-unprioritized (selection skips priority) | control_eligibility.py | priority/missing-priority |
+| backlog-priority-only-at-selection | control_eligibility.py | priority/missing-priority |
+| backlog-priority-not-a-gate-predicate | control_eligibility.py | priority/missing-priority |
+| backlog-gate-loads-the-service | control_eligibility.py | priority/gate-question |
+| backlog-classification-unchecked | control_backlog.py | priority/gate-question |
 | any-member-decides | control_backlog.py | priority/owner-decision |
 | backlog-not-scaffolded | init_scaffold.py | install/assets |
+| backlog-question-not-scaffolded | init_scaffold.py | install/assets |
 | appended-unit-executable (AC2 declared) | control_backlog.py | activation/decomposition-growth |
 | stale-revision-answer-applies | control_backlog.py | activation/decomposition-growth |
 | output-file-done (AC3 declared) | tasks.py | done/missing-outcome |
 | resume-without-resolution | control_backlog.py | blocked/resume-binding |
-| blocked-item-executable | control_backlog.py | blocked/resume-binding |
+| blocked-item-executable | control_backlog_priority.py | blocked/resume-binding |
 | backlog-done-on-output | control_backlog.py | done/missing-outcome |
-| incomplete-landing-accepted | control_backlog.py | done/missing-outcome |
+| incomplete-landing-accepted | control_eligibility.py | done/missing-outcome |
+| backlog-done-own-landing-reader | control_backlog.py | done/one-completion-reader |
+| backlog-closed-unit-accepted (any CANCELED unit an outcome) | control_backlog.py | done/closed-unit |
+| backlog-closed-unit-not-counted | control_backlog.py | done/closed-unit |
+| backlog-resume-brief-unbound | control_backlog.py | blocked/resume-binding |
+| backlog-alternative-brief-unbound | control_backlog.py | done/authorized-alternative |
 
-`python3 scripts/check_teeth_mutations.py --finding 78` rejects all 11. The findings of the changed
-modules still reject: 52 (49), 54 (59), 135 (16), 76 (23) and 77 (24) in full, and every other finding's
-`init_scaffold.py` mutation (23) turns its named row red. Every suite that loads a changed module passes.
+`python3 scripts/check_teeth_mutations.py --finding 78` rejects all 21. The findings of the changed
+modules still reject in full: 52 (49), 54 (59), 76 (23), 77 (24), 133 (21) and 135 (16), and every other
+finding's `init_scaffold.py` mutation (26) turns its named row red. Every suite that loads
+`control_eligibility.py` or `control_backlog.py` passes, with 20_veldo_0003_task_source, 69_veldo_0133,
+72_veldo_0077 and 53_veldo_0123.
 
 ## Stated limits
 
