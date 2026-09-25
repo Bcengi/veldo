@@ -1709,3 +1709,6 @@ depend on both.
 W118 (VELDO-0158) depends on W115's VELDO-0155 and W116's VELDO-0156, whose baselines generate the
 configuration and environment it delivers credentials into, and states the form of the dispatch
 configuration it resolves, since VELDO-0127 is built after it.
+VELDO-0160 AC1 held four claims under one falsifier, so AC1 keeps the concurrent isolated accounts and
+the new AC4 carries moving off an exhausted account, adding one without a restart and the one-run bound
+while usage is unknown, each with its own mutant.

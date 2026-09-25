@@ -62,16 +62,13 @@ acceptance_criteria:
     text: >
       Claim: The owner registers any number of logged-in subscription accounts for each provider,
       each once with its own login, and the factory runs work on all of them at the same time, each
-      with its own credentials, usage and rate-limit windows, moving new work off an account that
-      has reached its limit. Set and completeness: Register three Claude Code accounts and one Codex
-      account (each its own profile: Claude Code's config directory, Codex's home), run concurrent
-      work across them, and read back that each invocation used exactly its own account's profile and
-      was charged to that account; exhaust one account's allowance and require new work to go to
-      another account of the same provider while nothing is sent to the exhausted one until its
-      reported reset; add an account later with no restart of running work. An account with no
-      usage observation yet admits one run at a time until its first observation, because unknown is
-      never zero. Falsifier: Launch two accounts' work with one shared profile; the per-account
-      isolation check must fail.
+      with its own credentials, usage and rate-limit windows. Set and completeness: Register three
+      Claude Code accounts and one Codex account (each its own profile: Claude Code's config directory,
+      Codex's home), run concurrent work across them, and read back that each invocation used exactly
+      its own account's profile and was charged to that account. Moving work off an account at its
+      limit, adding an account while work runs and the one-run bound of an account with no observation
+      are AC4. Falsifier: Launch two accounts' work with one shared profile; the per-account isolation
+      check must fail.
     falsified_by: >
       Launch two accounts' work with one shared profile; the per-account isolation check must fail.
   - id: AC2
@@ -100,6 +97,26 @@ acceptance_criteria:
     falsified_by: >
       Decide re-run for a record that shows a call to an MCP tool not marked read-only; the ask-decision
       row must fail.
+  - id: AC4
+    text: >
+      Claim: New work moves off an account that has reached its limit, an account added while work runs
+      takes work with nothing restarted, and an account with no usage observation admits one run at a
+      time until its first observation, because unknown is never zero. Set and completeness: With the
+      accounts of AC1, exhaust one Claude Code account's allowance and require every new dispatch to go
+      to another Claude Code account while nothing is sent to the exhausted one until its reported
+      reset. While runs are active, register and log in a fourth Claude Code account and, with the
+      other Claude Code accounts at their concurrency, require the next dispatch to launch on it, while
+      the process that prepares dispatches and every running worker keep their process identity and
+      start time. Before the new account's first observation, offer it two units at once and require one
+      launched and the other waiting until that run reports its first observation. Falsifier: Choose an
+      account inside its reported rate-limit window, and the moved-off row must fail; read the account
+      pool only when the Runner starts, and the added-account row must fail; admit a second concurrent
+      run on an account with no observation, and the one-run-while-unknown row must fail.
+    falsified_by: >
+      Three mutants, one per claim: choose an account inside its reported rate-limit window, and the
+      moved-off row must fail; read the account pool only when the Runner starts, and the added-account
+      row must fail; admit a second concurrent run on an account with no observation, and the
+      one-run-while-unknown row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Run on one account per provider, as before, and stop every account-limited run for the owner; account
@@ -178,3 +195,9 @@ each half has a falsifier of its own: AC2 the `account_limit` classification, wh
 and AC3 the re-run-or-ask decision with its former falsifier, and the Notes now give the fixture record
 form in this specification, since VELDO-0141 and VELDO-0144 come later. The selection order moves here
 from VELDO-0062's Notes. A draft: only the owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC1 held four claims under one falsifier that broke only
+the per-account isolation, so AC1 keeps registration, concurrency and isolation with that falsifier, and
+the new AC4 carries moving off an exhausted account, adding an account without a restart and the one-run
+bound while usage is unknown, with one mutant for each. It is AC4 rather than AC2 so the references to
+AC2 and AC3 elsewhere stay right. Criterion meaning unchanged. A draft.
