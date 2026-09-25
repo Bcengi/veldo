@@ -1,0 +1,6 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -330 +330,2 @@
+-                                                     'public_key': owner_public, 'independence_group': owner, 'scope': '*'})
++                                                     'public_key': public['settlement'], 'independence_group': owner, 'scope': '*'},  # defect: the genesis is signed by another key
++                                sign=ACT.ssh_signer(os.path.join(keys, SETTLEMENT_KEY)))

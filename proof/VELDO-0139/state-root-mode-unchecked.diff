@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -144 +144 @@
+-    if stat.S_IMODE(info.st_mode) != 0o700:
++    if False:  # defect: a state root open to others is accepted

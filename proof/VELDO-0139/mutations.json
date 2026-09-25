@@ -1,0 +1,975 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0139 install/assets",
+    true
+   ],
+   [
+    "VELDO-0139 setup/lays-down",
+    true
+   ],
+   [
+    "VELDO-0139 refuse/writes-nothing",
+    true
+   ],
+   [
+    "VELDO-0139 refuse/existing-store",
+    true
+   ],
+   [
+    "VELDO-0139 edge/enrolled-with-possession",
+    true
+   ],
+   [
+    "VELDO-0139 chat/enrolled",
+    true
+   ],
+   [
+    "VELDO-0139 ingress/configuration",
+    true
+   ],
+   [
+    "VELDO-0139 token/never-copied",
+    true
+   ],
+   [
+    "VELDO-0139 service/starts-inert",
+    true
+   ],
+   [
+    "VELDO-0139 journey/qualified-and-active",
+    true
+   ],
+   [
+    "VELDO-0139 genesis/owner-signed",
+    true
+   ]
+  ],
+  "seconds": 9.888
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 refuse/existing-store detail: setup over a state root that holds a store is refused by name [setup_incomplete:directories:FileExistsError]"
+   ],
+   "diff": "proof/VELDO-0139/existing-store-overwritten.diff",
+   "failed_rows": [
+    "VELDO-0139 refuse/existing-store"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "2ff3e75e08449839693fe5edbfa465e0a9748aaa2d3b3d7a5af98470c91394cd",
+   "name": "existing-store-overwritten",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/existing-store"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     false
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 10.027,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 refuse/writes-nothing detail: mode: refused as invalid_input:state_root:mode, writing nothing [None ['/dev/shm/b139-d2bvvw1f/install/738a362b481c380e', '/dev/shm/b139-d2bvvw1f/install/738a362b481c380e/bin', '/dev/shm/b139-d2bvvw1f/install/738a362b481c380e/bin/arch.py']]",
+    "VELDO-0139 refuse/writes-nothing detail: group-readable: refused as invalid_input:state_root:mode, writing nothing [None ['/dev/shm/b139-d2bvvw1f/install/07c855586b8d7809', '/dev/shm/b139-d2bvvw1f/install/07c855586b8d7809/bin', '/dev/shm/b139-d2bvvw1f/install/07c855586b8d7809/bin/arch.py']]",
+    "VELDO-0139 service/starts-inert detail: setup started nothing: the user manager was asked only to reload [['daemon-reload', 'daemon-reload', 'daemon-reload']]"
+   ],
+   "diff": "proof/VELDO-0139/state-root-mode-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0139 refuse/writes-nothing",
+    "VELDO-0139 service/starts-inert"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "86f81bf2f18f7f813cad6aae5ff321e2ecc4fa8e3905f034bc27c6c95a6fbfb2",
+   "name": "state-root-mode-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/writes-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     false
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 12.219,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 refuse/writes-nothing detail: host-trust-exists: refused as invalid_input:host_trust:exists, writing nothing [setup_incomplete:host_trust:FileExistsError ['/dev/shm/b139-42e1ah_7/root-trust-exists/authority', '/dev/shm/b139-42e1ah_7/root-trust-exists/authority/control.sqlite3', '/dev/shm/b139-42e1ah_7/root-trust-exists/edge']]"
+   ],
+   "diff": "proof/VELDO-0139/host-trust-overwritten.diff",
+   "failed_rows": [
+    "VELDO-0139 refuse/writes-nothing"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "e1db75223701a9da69e766c5d5f2dec205146aac1da8fda746a184a572dd44f1",
+   "name": "host-trust-overwritten",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/writes-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 10.105,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 setup/lays-down detail: the store is under the state root, its directories closed to everyone else"
+   ],
+   "diff": "proof/VELDO-0139/host-directory-open.diff",
+   "failed_rows": [
+    "VELDO-0139 setup/lays-down"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "368c9b8ded69cd3e56d88a82d1be25fb2c8e502e7ffd9d644e060197a059d49e",
+   "name": "host-directory-open",
+   "named_row_red": true,
+   "named_rows": [
+    "setup/lays-down"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 9.896,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 install/assets detail: .veldo/control_factory_setup.py installed by the scaffold, not claimed as validator substrate"
+   ],
+   "diff": "proof/VELDO-0139/module-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0139 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "fcf9be0b6aaf1bfec3375a37f89a1bce4334e44ee6befad2425427c4f522eb7b",
+   "name": "module-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     false
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 9.92,
+   "source_sha256": "76cfa76030c28d6116094a090e8f794c6af70d88fa19d0980de3ff150908441b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 ingress/configuration detail: the ingress configuration is a 0600 VELDO-0073 configuration naming the account's own token file",
+    "VELDO-0139 token/never-copied detail: no copy of the token in the state root, the store, the install root, the unit, the host trust or the workspace [['/dev/shm/b139-x5ffo6sa/state/host/bot-token']]"
+   ],
+   "diff": "proof/VELDO-0139/token-copied.diff",
+   "failed_rows": [
+    "VELDO-0139 ingress/configuration",
+    "VELDO-0139 token/never-copied"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "7b92e5820319a679de683d1d233667cc7479de219bdf6a53da4897367178b183",
+   "name": "token-copied",
+   "named_row_red": true,
+   "named_rows": [
+    "token/never-copied"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     false
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     false
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 9.866,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 setup/lays-down detail: every key the setup generated is a 0600 file of this account",
+    "VELDO-0139 edge/enrolled-with-possession detail: the edge key is a 0600 file in the protected key directory, and its record is that key",
+    "VELDO-0139 edge/enrolled-with-possession detail: the edge private key exists nowhere but the protected key directory, which the signer names",
+    "VELDO-0139 journey/qualified-and-active detail: the owner's reply settles through the running service under his delegation",
+    "VELDO-0139 journey/qualified-and-active detail: the service's own gate recorded the qualification, its digest the one it reports [{'id': None, 'platform': None}]",
+    "VELDO-0139 journey/qualified-and-active detail: bin/veldo channel activate over the recorded qualification leaves the edge active [{'outcome': 'refused', 'state': None, 'reason': 'missing_qualification'}]"
+   ],
+   "diff": "proof/VELDO-0139/edge-key-outside-protected.diff",
+   "failed_rows": [
+    "VELDO-0139 setup/lays-down",
+    "VELDO-0139 edge/enrolled-with-possession",
+    "VELDO-0139 journey/qualified-and-active"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "d2172b02129e586f2a64f209da6e3e257c08858b8c4748e0f76e6b5237b1420b",
+   "name": "edge-key-outside-protected",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/enrolled-with-possession"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     false
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     false
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 28.588,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 chat/enrolled detail: his chat enrollment names him and the chat id he gave, current [5590140]",
+    "VELDO-0139 journey/qualified-and-active detail: the running service presents the request to the chat the owner gave",
+    "VELDO-0139 journey/qualified-and-active detail: the owner's reply settles through the running service under his delegation",
+    "VELDO-0139 journey/qualified-and-active detail: the service's own gate recorded the qualification, its digest the one it reports [{'id': None, 'platform': None}]",
+    "VELDO-0139 journey/qualified-and-active detail: bin/veldo channel activate over the recorded qualification leaves the edge active [{'outcome': 'refused', 'state': None, 'reason': 'missing_qualification'}]"
+   ],
+   "diff": "proof/VELDO-0139/chat-not-the-owners.diff",
+   "failed_rows": [
+    "VELDO-0139 chat/enrolled",
+    "VELDO-0139 journey/qualified-and-active"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "492864cdbab3ceebf24e3515a0c607ad0ee25c4289d363d803c44f63000640ad",
+   "name": "chat-not-the-owners",
+   "named_row_red": true,
+   "named_rows": [
+    "chat/enrolled"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     false
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     false
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 8.417,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 refuse/writes-nothing detail: absent: refused as missing_authority:state_root:absent, writing nothing [missing_authority:state_root:absent ['/dev/shm/b139-skelfeyk/install/6ec85bafb8184888/state/observations.jsonl']]",
+    "VELDO-0139 service/starts-inert detail: setup started nothing: the user manager was asked only to reload [['daemon-reload', 'start', 'show']]"
+   ],
+   "diff": "proof/VELDO-0139/setup-starts-service.diff",
+   "failed_rows": [
+    "VELDO-0139 refuse/writes-nothing",
+    "VELDO-0139 service/starts-inert"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "212e9bf4d93f7a562098fcf85038a81ca9849a003d5d24e08e8770c34ba62c9e",
+   "name": "setup-starts-service",
+   "named_row_red": true,
+   "named_rows": [
+    "service/starts-inert"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     false
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 10.908,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 install/assets detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 setup/lays-down detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 refuse/writes-nothing detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 refuse/existing-store detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 edge/enrolled-with-possession detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 chat/enrolled detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 ingress/configuration detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 token/never-copied detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 service/starts-inert detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 journey/qualified-and-active detail: veldo factory setup completed over an empty 0700 state root [{'outcome': 'refused', 'reason': 'setup_incomplete:edge_enrollment:edge_enrollment_refused:signature_invalid', 'detail': \"written so far: ['directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment']\"}]",
+    "VELDO-0139 genesis/owner-signed detail: the owner's one enrolled key is the public key of the private key he named, derived here",
+    "VELDO-0139 genesis/owner-signed detail: a command he signs verifies under the store's key for him, and one signed by another key does not"
+   ],
+   "diff": "proof/VELDO-0139/genesis-not-owner-signed.diff",
+   "failed_rows": [
+    "VELDO-0139 install/assets",
+    "VELDO-0139 setup/lays-down",
+    "VELDO-0139 refuse/writes-nothing",
+    "VELDO-0139 refuse/existing-store",
+    "VELDO-0139 edge/enrolled-with-possession",
+    "VELDO-0139 chat/enrolled",
+    "VELDO-0139 ingress/configuration",
+    "VELDO-0139 token/never-copied",
+    "VELDO-0139 service/starts-inert",
+    "VELDO-0139 journey/qualified-and-active",
+    "VELDO-0139 genesis/owner-signed"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "fa7e4f7de62892a1f98d1c92593f81647248ad503e7c795b2dee612be329266e",
+   "name": "genesis-not-owner-signed",
+   "named_row_red": true,
+   "named_rows": [
+    "genesis/owner-signed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     false
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     false
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     false
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     false
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     false
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     false
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     false
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     false
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     false
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     false
+    ]
+   ],
+   "seconds": 0.809,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0139 journey/qualified-and-active detail: the owner's reply settles through the running service under his delegation",
+    "VELDO-0139 journey/qualified-and-active detail: the service's own gate recorded the qualification, its digest the one it reports [{'id': None, 'platform': None}]",
+    "VELDO-0139 journey/qualified-and-active detail: bin/veldo channel activate over the recorded qualification leaves the edge active [{'outcome': 'refused', 'state': None, 'reason': 'missing_qualification'}]"
+   ],
+   "diff": "proof/VELDO-0139/owner-delegation-omitted.diff",
+   "failed_rows": [
+    "VELDO-0139 journey/qualified-and-active"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "75708e6898f215d553b86170aa303f9647e902a70ed0304e16b6283299d54605",
+   "name": "owner-delegation-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "journey/qualified-and-active"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     false
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 28.086,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  }
+ ],
+ "mutations_per_row": {
+  "chat/enrolled": [
+   "chat-not-the-owners"
+  ],
+  "edge/enrolled-with-possession": [
+   "edge-key-outside-protected"
+  ],
+  "genesis/owner-signed": [
+   "genesis-not-owner-signed"
+  ],
+  "install/assets": [
+   "module-not-scaffolded"
+  ],
+  "journey/qualified-and-active": [
+   "owner-delegation-omitted"
+  ],
+  "refuse/existing-store": [
+   "existing-store-overwritten"
+  ],
+  "refuse/writes-nothing": [
+   "state-root-mode-unchecked",
+   "host-trust-overwritten"
+  ],
+  "service/starts-inert": [
+   "setup-starts-service"
+  ],
+  "setup/lays-down": [
+   "host-directory-open"
+  ],
+  "token/never-copied": [
+   "token-copied"
+  ]
+ },
+ "noop": {
+  "control_factory_setup.py": {
+   "copy_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 9.929,
+   "source_sha256": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "76cfa76030c28d6116094a090e8f794c6af70d88fa19d0980de3ff150908441b",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0139 install/assets",
+     true
+    ],
+    [
+     "VELDO-0139 setup/lays-down",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/writes-nothing",
+     true
+    ],
+    [
+     "VELDO-0139 refuse/existing-store",
+     true
+    ],
+    [
+     "VELDO-0139 edge/enrolled-with-possession",
+     true
+    ],
+    [
+     "VELDO-0139 chat/enrolled",
+     true
+    ],
+    [
+     "VELDO-0139 ingress/configuration",
+     true
+    ],
+    [
+     "VELDO-0139 token/never-copied",
+     true
+    ],
+    [
+     "VELDO-0139 service/starts-inert",
+     true
+    ],
+    [
+     "VELDO-0139 journey/qualified-and-active",
+     true
+    ],
+    [
+     "VELDO-0139 genesis/owner-signed",
+     true
+    ]
+   ],
+   "seconds": 9.941,
+   "source_sha256": "76cfa76030c28d6116094a090e8f794c6af70d88fa19d0980de3ff150908441b"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 139",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 168.599,
+ "spec_id": "VELDO-0139",
+ "suite": "scripts/suites/73_veldo_0139_factory_setup.py"
+}

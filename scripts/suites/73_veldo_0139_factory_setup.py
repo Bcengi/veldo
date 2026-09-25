@@ -293,6 +293,14 @@ def _v139_suite():
             seen[str(top)] = (stat.S_IMODE(info.st_mode), None)
         return seen
 
+    def mode_of(path):
+        """(mode text, owner uid) of `path`, or None when it is absent."""
+        try:
+            info = os.lstat(str(path))
+        except OSError:
+            return None
+        return oct(stat.S_IMODE(info.st_mode)), info.st_uid
+
     def holding(needle, *roots):
         """Every readable file under `roots` whose bytes contain `needle`."""
         found = []
@@ -427,16 +435,16 @@ def _v139_suite():
         # AC1: store, membership, trust, binding and the installed unit, read back.
         with section(LD):
             check(LD, 'the store is under the state root, its directories closed to everyone else',
-                  store.is_file() and all(oct(os.stat(str(state_root / d)).st_mode & 0o777) == '0o700'
+                  store.is_file() and all(mode_of(state_root / d) == ('0o700', os.getuid())
                                           for d in ('', 'authority', 'keys', 'edge', 'host')))
             check(LD, 'every key the setup generated is a 0600 file of this account',
-                  all(oct(os.stat(str(p)).st_mode & 0o777) == '0o600' and os.stat(str(p)).st_uid == os.getuid()
+                  all(mode_of(p) == ('0o600', os.getuid())
                       for p in (keys / 'journal', keys / 'edge-telegram', keys / 'settlement', state_root / 'edge' / 'edge-auth')))
             signers = Path(trust.enrollment_signers).read_text() if trust is not None else ''
             check(LD, 'this host\'s trust names its identity and the owner, with his key, as enrollment signer',
                   trust is not None and trust.host_identity == report.get('host_identity')
                   and signers.split() == [owner, 'namespaces="%s"' % EL.ENROLLMENT_NAMESPACE] + owner_public.split()
-                  and oct(host_trust.stat().st_mode & 0o777) == '0o600')
+                  and mode_of(host_trust) == ('0o600', os.getuid()))
             problems = CEN.verify_binding(str(workspace), binding, trust.verifier(owner, str(workspace)), trust.host_identity)
             check(LD, 'the workspace binding names this store, is enrolled by the owner and verifies under the host trust '
                   '[%s]' % problems, binding is not None and problems == [] and binding.get('enrolled_by') == owner
@@ -505,7 +513,7 @@ def _v139_suite():
             record = E.edge_record(CM.authority_state(S, conn), E.edge_key_id('telegram_chat')) or {}
             edge_key = keys / E.edge_key_id('telegram_chat')
             check(EK, 'the edge key is a 0600 file in the protected key directory, and its record is that key',
-                  edge_key.is_file() and oct(edge_key.stat().st_mode & 0o777) == '0o600'
+                  edge_key.is_file() and mode_of(edge_key) == ('0o600', os.getuid())
                   and record.get('public_key') == derived(edge_key)
                   and record.get('connection_public_key') == derived(state_root / 'edge' / 'edge-auth'))
             proof = record.get('possession') or {}
@@ -515,9 +523,9 @@ def _v139_suite():
                                            AC.allowed_signers_line(record.get('principal'), record.get('public_key'),
                                                                    E.POSSESSION_NAMESPACE),
                                            record.get('principal'), E.POSSESSION_NAMESPACE)[0])
-            secret = edge_key.read_bytes()
+            secret = edge_key.read_bytes() if edge_key.is_file() else None
             check(EK, 'the edge private key exists nowhere but the protected key directory, which the signer names',
-                  holding(secret, state_root, home, base / 'units', host_trust.parent, CEN.git_common_dir(str(workspace)))
+                  secret is not None and holding(secret, state_root, home, base / 'units', host_trust.parent, CEN.git_common_dir(str(workspace)))
                   == [str(edge_key)] and json.loads((host / 'signer.json').read_text()).get('key_directory') == str(keys))
 
         # AC2: the owner's chat, from the chat id he gave.
@@ -533,15 +541,18 @@ def _v139_suite():
         # AC2: the 0600 ingress configuration, naming the token file, copied by the installer.
         with section(IC):
             config_path = host / 'ingress.json'
-            config = IN.load_config(str(config_path))
+            try:
+                config = IN.load_config(str(config_path))
+            except IN.Refused as exc:
+                config = {'refused': exc.code}
             check(IC, 'the ingress configuration is a 0600 VELDO-0073 configuration naming the account\'s own token file',
-                  oct(config_path.stat().st_mode & 0o777) == '0o600'
+                  mode_of(config_path) == ('0o600', os.getuid())
                   and (config.get('bot_api') or {}).get('token_file') == str(token_file)
                   and (config.get('bot_api') or {}).get('origin') == url and config.get('store_path') == str(store))
             copied = home / 'config' / 'channel-ingress.json'
             service_json = json.loads((home / 'config' / 'service.json').read_text())
             check(IC, 'the installer copied it 0600 into the protected configuration the service runs',
-                  copied.is_file() and oct(copied.stat().st_mode & 0o777) == '0o600'
+                  copied.is_file() and mode_of(copied) == ('0o600', os.getuid())
                   and copied.read_bytes() == config_path.read_bytes() and service_json.get('channel_ingress') == str(copied))
 
         # AC2: the service starts inert, and setup itself started nothing.
@@ -637,13 +648,14 @@ def _v139_suite():
             shown1 = wait(published, 20)
             check(JQ, 'the running service presents the request to the chat the owner gave',
                   bool(shown1) and shown1.get('chat_id') == owner_user['id'])
+            to_owner = bool(shown1) and shown1.get('chat_id') == owner_user['id']
             answer = H.deliver(api, token, owner_user, 'accept: the first decision on this factory',
-                               reply_to=((shown1 or {}).get('message_ids') or [None])[-1])
-            done1 = wait(lambda: ing.settlement.settlement(rid, 1), 20) if shown1 else None
+                               reply_to=(shown1.get('message_ids') or [None])[-1]) if to_owner else None
+            done1 = wait(lambda: ing.settlement.settlement(rid, 1), 20) if answer else None
             check(JQ, 'the owner\'s reply settles through the running service under his delegation',
                   bool(done1) and done1.get('choice') == 'accept' and done1.get('originating_channel') == 'telegram_chat'
                   and (((done1 or {}).get('assertion') or {}).get('attribution') or {}).get('platform_message_id')
-                  == answer['message']['message_id'])
+                  == (answer or {}).get('message', {}).get('message_id'))
             q = (wait(lambda: status().get('qualification'), 20) if done1 else None) or {}
             stored = entity(q.get('id') or '') or {}
             data = stored.get('data') or {}

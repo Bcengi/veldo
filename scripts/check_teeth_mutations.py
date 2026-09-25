@@ -5109,6 +5109,9 @@ def cases():
             "    if False:  # defect: a state root open to others is accepted\n", 'refuse/writes-nothing')
     factory('host-trust-overwritten', "    if os.path.lexists(host_trust):\n",
             "    if False:  # defect: an existing host trust is not refused before writing\n", 'refuse/writes-nothing')
+    factory('host-directory-open', "            os.chmod(os.path.join(root, name), 0o700)\n",
+            "            os.chmod(os.path.join(root, name), 0o755 if name == HOST_DIR else 0o700)  # defect: open to others\n",
+            'setup/lays-down')
     factory('module-not-scaffolded', '    ".veldo/control_factory_setup.py",\n', '', 'install/assets',
             module='init_scaffold.py')
     # AC2 (declared falsifier): a copy of the token is written into the state root and configured.

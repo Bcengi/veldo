@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -386 +386 @@
+-                 'bot_api': {'origin': plan['origin'], 'token_file': plan['token_file']},
++                 'bot_api': {'origin': plan['origin'], 'token_file': _private(os.path.join(host, 'bot-token'), Path(plan['token_file']).read_text())},  # defect: the token is copied
