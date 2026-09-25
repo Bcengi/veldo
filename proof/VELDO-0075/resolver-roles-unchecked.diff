@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -669 +669 @@
+@@ -728 +728 @@
 -                or not roles <= set(entry.get('roles') or [])
 +                or False  # defect: the resolving roles are not reread at resume

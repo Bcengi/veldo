@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -396 +396 @@
--            need = self._requirement(resolving['roles'])
+@@ -421,0 +422,2 @@
 +            need = {'roles': sorted(set(resolving['roles']))}  # defect: the settlement's requirement is not computed
++            problems = ['role_not_satisfied'] if set(need['roles']) - set(designated.get('roles') or []) else []

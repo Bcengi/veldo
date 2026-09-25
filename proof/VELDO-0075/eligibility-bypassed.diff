@@ -1,0 +1,4 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -421,0 +422 @@
++            problems = ['role_not_satisfied'] if set(need['roles']) - set(designated.get('roles') or []) else []  # defect: only the roles half of the settlement's check

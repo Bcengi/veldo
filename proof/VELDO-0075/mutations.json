@@ -23,6 +23,10 @@
     true
    ],
    [
+    "VELDO-0075 stop/request-alias-squat-refused",
+    true
+   ],
+   [
     "VELDO-0075 notice/each-stop-kind",
     true
    ],
@@ -55,7 +59,7 @@
     true
    ]
   ],
-  "seconds": 3.427
+  "seconds": 4.289
  },
  "controls_green": true,
  "mutants": [
@@ -96,6 +100,13 @@
     "VELDO-0075 stop/designated-authority-deliverable detail: a person with no enrolled chat designated is refused as no_enrolled_chat, naming the person [not_authorized]",
     "VELDO-0075 stop/designated-authority-deliverable detail: a stop naming technical_authority records the effective roles, project_owner among them [None]",
     "VELDO-0075 stop/designated-authority-deliverable detail: that stop reached the owner's chat",
+    "VELDO-0075 stop/designated-authority-deliverable detail: a project_owner deputy whose enrolled chat the owner's active edge does not bind is refused as chat_not_enrolled, naming the person [refused not_authorized]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: strscope is refused at raise as role_not_satisfied, the settlement's own first problem for that person [not_authorized; settle ['role_not_satisfied'], eligibility ['role_not_satisfied']]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: nogroup is refused at raise as independence_not_met, the settlement's own first problem for that person [not_authorized; settle ['independence_not_met'], eligibility ['independence_not_met']]",
+    "VELDO-0075 stop/request-alias-squat-refused detail: another member's request opened under the stop's alias first: the raise is refused as foreign_request [refused not_authorized]",
+    "VELDO-0075 stop/request-alias-squat-refused detail: with only the terms name taken the stop is recorded and its request refused at terms [refused None]",
+    "VELDO-0075 stop/request-alias-squat-refused detail: the request the squatter then opens under the alias is refused as foreign_request at notice and at resume [None None]",
+    "VELDO-0075 stop/request-alias-squat-refused detail: nothing was sent, no notice kept and the unit stays stopped",
     "VELDO-0075 notice/each-stop-kind detail: build stop: one notice kept for request version 1 and the current presentation",
     "VELDO-0075 notice/each-stop-kind detail: build stop: the message the platform returned is in the owner's chat and shows the stop",
     "VELDO-0075 notice/each-stop-kind detail: build stop: the answer path is a reply to that message offering the request's choices",
@@ -112,7 +123,9 @@
     "VELDO-0075 notice/new-version-same-status detail: its correlation is its own: version 2, the new presentation, the new message",
     "VELDO-0075 notice/new-version-same-status detail: the same version and presentation again is suppressed and sends nothing [refused]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [None]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [None]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [None]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped [refused None]",
     "VELDO-0075 notice/unreachable-authority-classed detail: a revoked chat enrollment is invalid_enrollment, classed missing_authority [None]",
     "VELDO-0075 resume/acknowledgement-grants-nothing detail: a stop noticed, published and acknowledged by the platform but not answered does not resume [None]",
     "VELDO-0075 resume/acknowledgement-grants-nothing detail: a pass of the service over the pending stops resumes none of them",
@@ -142,6 +155,7 @@
    "failed_rows": [
     "VELDO-0075 stop/any-authenticated-requester",
     "VELDO-0075 stop/designated-authority-deliverable",
+    "VELDO-0075 stop/request-alias-squat-refused",
     "VELDO-0075 notice/each-stop-kind",
     "VELDO-0075 notice/new-version-same-status",
     "VELDO-0075 notice/unreachable-authority-classed",
@@ -152,7 +166,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "3890d098c4127e4a2198607b18318d1ad5b1379bb659989534d6e08d8d80c405",
+   "mutant_sha256": "a378b6de3ba7d40723ab226f1dbcf4d61ad51c570d3367297b270f4fd5bb40e6",
    "name": "raise-requires-resolving-role",
    "named_row_red": true,
    "named_rows": [
@@ -174,6 +188,10 @@
     ],
     [
      "VELDO-0075 stop/designated-authority-deliverable",
+     false
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
      false
     ],
     [
@@ -209,8 +227,8 @@
      false
     ]
    ],
-   "seconds": 1.653,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 1.856,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -246,7 +264,9 @@
     "VELDO-0075 notice/new-version-same-status detail: its correlation is its own: version 2, the new presentation, the new message",
     "VELDO-0075 notice/new-version-same-status detail: the same version and presentation again is suppressed and sends nothing [refused]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [None]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [None]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [None]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped [stopped None]",
     "VELDO-0075 notice/unreachable-authority-classed detail: a revoked chat enrollment is invalid_enrollment, classed missing_authority [None]",
     "VELDO-0075 resume/acknowledgement-grants-nothing detail: a stop noticed, published and acknowledged by the platform but not answered does not resume [missing_evidence]",
     "VELDO-0075 resume/acknowledgement-grants-nothing detail: the owner's settled reject does not resume the review stop [None missing_evidence]",
@@ -283,7 +303,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "d5a2b77bd950ee260f2b9214ff45764577ab3f7667c70abfdbc22db3d76a3763",
+   "mutant_sha256": "f9db302ba1a99e1f95aca24b0952d9ea2b714bbeb84395af2a7b0acb92a85bd4",
    "name": "resolving-recorded-as-requester",
    "named_row_red": true,
    "named_rows": [
@@ -308,6 +328,10 @@
      false
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      false
     ],
@@ -340,8 +364,8 @@
      false
     ]
    ],
-   "seconds": 1.865,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 2.121,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -354,7 +378,7 @@
     "VELDO-0075 stop/any-authenticated-requester"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "50ef58fd1255aebc1535a5e8e162d417a3d9f8878a71f27bc3a875dcffead8cf",
+   "mutant_sha256": "5b6a1ebf10bcc89ea256d44494d95305521a7bd47ad0c878ca571b923f9ddd5e",
    "name": "station-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -379,6 +403,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -411,8 +439,8 @@
      true
     ]
    ],
-   "seconds": 3.499,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 4.383,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -425,7 +453,7 @@
     "VELDO-0075 stop/unauthenticated-refused"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "5926b9adfb13739380145550eee608c37032517f862b22118427c2d291cb38c9",
+   "mutant_sha256": "c7da3f57171a6b1f3cfe40647ecc963d5c740faee40ba8dc04c8a0e501062d46",
    "name": "raise-signature-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -450,6 +478,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -482,8 +514,8 @@
      true
     ]
    ],
-   "seconds": 3.51,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 4.338,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -492,6 +524,7 @@
     "VELDO-0075 notice/new-version-same-status detail: its correlation is its own: version 2, the new presentation, the new message",
     "VELDO-0075 notice/new-version-same-status detail: the same version and presentation again is suppressed and sends nothing [suppressed]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [None]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [None]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [None]",
     "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: the owner's accept settled the request's current version 2",
     "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: resumed to READY with the interruption cleared [refused no_settlement]",
@@ -508,7 +541,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "b6536d624e9d9aa0a74a327538970e029d21cb7d099ea6316f50915c04eb6625",
+   "mutant_sha256": "ca1be52035c3c99631f06cb98f55c10d94e8fceea85da32a5b0f38b5eb68ff24",
    "name": "notice-keyed-by-status",
    "named_row_red": true,
    "named_rows": [
@@ -533,6 +566,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -565,8 +602,8 @@
      false
     ]
    ],
-   "seconds": 3.453,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.782,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -575,6 +612,7 @@
     "VELDO-0075 notice/new-version-same-status detail: its correlation is its own: version 2, the new presentation, the new message",
     "VELDO-0075 notice/new-version-same-status detail: the same version and presentation again is suppressed and sends nothing [refused]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [stale_subject]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [stale_subject]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [stale_subject]",
     "VELDO-0075 notice/unreachable-authority-classed detail: a revoked chat enrollment is invalid_enrollment, classed missing_authority [stale_subject]",
     "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: the owner's accept settled the request's current version 2",
@@ -592,7 +630,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "d385c59f304bd597a8520e5d2e7f632ffb4551e59a03c5879b9b896aac98d24e",
+   "mutant_sha256": "4f0ddaa8d942634fb705a80c1aaac9790aa0d1cb4a933b5a83d0b8c1c718161a",
    "name": "revision-not-presented",
    "named_row_red": true,
    "named_rows": [
@@ -617,6 +655,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -649,8 +691,8 @@
      false
     ]
    ],
-   "seconds": 3.341,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.727,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -668,6 +710,7 @@
     "VELDO-0075 notice/each-stop-kind detail: every stop point's stop was sent once to the owner's chat",
     "VELDO-0075 notice/new-version-same-status detail: its correlation is its own: version 2, the new presentation, the new message",
     "VELDO-0075 notice/new-version-same-status detail: the same version and presentation again is suppressed and sends nothing [suppressed]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped [stopped None]",
     "VELDO-0075 resume/stale-or-wrong-actor detail: a settlement whose author no longer holds the resolving roles does not resume [no_settlement]",
     "VELDO-0075 resume/stale-or-wrong-actor detail: a settler who lost a role the settlement required beyond the recorded ones does not resume [{'principal': 'owner', 'roles': ['project_owner']} None no_settlement]",
     "VELDO-0075 resume/unknown-effect-stays-stopped detail: declared unknown effect: the owner's settled accept does not resume it [None unknown_outcome]",
@@ -678,11 +721,12 @@
     "VELDO-0075 stop/designated-authority-deliverable",
     "VELDO-0075 notice/each-stop-kind",
     "VELDO-0075 notice/new-version-same-status",
+    "VELDO-0075 notice/unreachable-authority-classed",
     "VELDO-0075 resume/stale-or-wrong-actor",
     "VELDO-0075 resume/unknown-effect-stays-stopped"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "f893f2c41c31ca4878f7f9e69412e93ed6ef1d9c1d43dec81faedc0d17527217",
+   "mutant_sha256": "a1c763a98d71d9d2828afbec172d9e5f1c04bf69226c4a33304816d59b5248ff",
    "name": "raise-sends-nothing",
    "named_row_red": true,
    "named_rows": [
@@ -707,6 +751,10 @@
      false
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      false
     ],
@@ -716,7 +764,7 @@
     ],
     [
      "VELDO-0075 notice/unreachable-authority-classed",
-     true
+     false
     ],
     [
      "VELDO-0075 resume/acknowledgement-grants-nothing",
@@ -739,8 +787,8 @@
      true
     ]
    ],
-   "seconds": 2.985,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.245,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -776,7 +824,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "8f2bdffe3e6aa2767dd50891748b8bdbdb38a320ac843a1fdab810cf41a83d4f",
+   "mutant_sha256": "3c49641e69c03a56934d299e7f5f3a08d06288f9ed22f23a01596e8be56bad05",
    "name": "answer-path-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -801,6 +849,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      false
     ],
@@ -833,8 +885,8 @@
      false
     ]
    ],
-   "seconds": 2.596,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 2.857,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -859,7 +911,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "32dc663046fa48973c8263ccb1a2c23a55fcc7f5d7a342c831901c4ecd80da2c",
+   "mutant_sha256": "18da866bdd8e0970b9a3267799dd1a6fff757150f52c93feb676491051f7c273",
    "name": "resume-on-notice",
    "named_row_red": true,
    "named_rows": [
@@ -884,6 +936,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -916,8 +972,8 @@
      false
     ]
    ],
-   "seconds": 3.45,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.752,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -931,7 +987,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "f59f6baf34510847c4f8810eb27b2175d0d4354f4ed8d14fbc508bfcda8e52eb",
+   "mutant_sha256": "aeebe649bdac1fccb147088d28f17ef0342e95f5ee72e92e92924bb0cf509fbf",
    "name": "any-ruling-resumes",
    "named_row_red": true,
    "named_rows": [
@@ -956,6 +1012,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -988,8 +1048,8 @@
      false
     ]
    ],
-   "seconds": 3.454,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 4.259,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1006,7 +1066,7 @@
     "VELDO-0075 resume/owner-settlement-fresh-contract"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "29e608be074419f11055fd26832f7ff53b03c0b494cc1d64bb9bc83e95412010",
+   "mutant_sha256": "1db87bd5f3cfb7f068c6d1033114abc73439642332d3f6a8b15fe2c6756d7b7a",
    "name": "stale-answer-resumes",
    "named_row_red": true,
    "named_rows": [
@@ -1031,6 +1091,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1063,8 +1127,8 @@
      true
     ]
    ],
-   "seconds": 3.421,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.735,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1078,7 +1142,7 @@
     "VELDO-0075 resume/stale-or-wrong-actor"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "0c788af528804549cd1732977c462552504ca93d6580761781e0074a40b53905",
+   "mutant_sha256": "ca628f74eb8174c96743745ba8ca4708a51d0435c1f29c6bfcb952449e8d06b3",
    "name": "resolver-roles-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1103,6 +1167,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1135,23 +1203,23 @@
      true
     ]
    ],
-   "seconds": 3.461,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.734,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0075 stop/designated-authority-deliverable detail: a technical_authority-only person designated is refused as role_not_satisfied, naming the person and project_owner [None None]",
-    "VELDO-0075 stop/designated-authority-deliverable detail: nothing was written or sent and the unit is still reviewing",
-    "VELDO-0075 stop/designated-authority-deliverable detail: nothing was written or sent and that unit is still reviewing",
-    "VELDO-0075 stop/designated-authority-deliverable detail: a stop naming technical_authority records the effective roles, project_owner among them [{'principal': 'owner', 'roles': ['technical_authority']}]"
+    "VELDO-0075 stop/designated-authority-deliverable detail: a technical_authority-only person designated is refused as role_not_satisfied, naming the person and project_owner [chat_not_enrolled None]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: a stop naming technical_authority records the effective roles, project_owner among them [{'principal': 'owner', 'roles': ['technical_authority']}]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: strscope is refused at raise as role_not_satisfied, the settlement's own first problem for that person [chat_not_enrolled; settle ['role_not_satisfied'], eligibility ['role_not_satisfied']]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: nogroup is refused at raise as independence_not_met, the settlement's own first problem for that person [chat_not_enrolled; settle ['independence_not_met'], eligibility ['independence_not_met']]"
    ],
    "diff": "proof/VELDO-0075/effective-requirement-not-computed-at-raise.diff",
    "failed_rows": [
     "VELDO-0075 stop/designated-authority-deliverable"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "8b10cddf18ffe759e90d1abe7015acadcdb23e66e07e7c6bfa6037c2b145d9dc",
+   "mutant_sha256": "fb140739d6eadbbcc3b26c4052a3360cde2f43ab56d835ba2cd54a8122fbbca1",
    "name": "effective-requirement-not-computed-at-raise",
    "named_row_red": true,
    "named_rows": [
@@ -1176,6 +1244,10 @@
      false
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1208,8 +1280,385 @@
      true
     ]
    ],
-   "seconds": 3.522,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.738,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0075 stop/designated-authority-deliverable detail: strscope is refused at raise as role_not_satisfied, the settlement's own first problem for that person [chat_not_enrolled; settle ['role_not_satisfied'], eligibility ['role_not_satisfied']]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: nogroup is refused at raise as independence_not_met, the settlement's own first problem for that person [chat_not_enrolled; settle ['independence_not_met'], eligibility ['independence_not_met']]"
+   ],
+   "diff": "proof/VELDO-0075/eligibility-bypassed.diff",
+   "failed_rows": [
+    "VELDO-0075 stop/designated-authority-deliverable"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "32babd489c8d398e3c23f4713a3b7dbded70ffe671bb7061bd38afd5a1ad3925",
+   "name": "eligibility-bypassed",
+   "named_row_red": true,
+   "named_rows": [
+    "stop/designated-authority-deliverable"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0075 install/assets",
+     true
+    ],
+    [
+     "VELDO-0075 stop/any-authenticated-requester",
+     true
+    ],
+    [
+     "VELDO-0075 stop/unauthenticated-refused",
+     true
+    ],
+    [
+     "VELDO-0075 stop/designated-authority-deliverable",
+     false
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
+     "VELDO-0075 notice/each-stop-kind",
+     true
+    ],
+    [
+     "VELDO-0075 notice/new-version-same-status",
+     true
+    ],
+    [
+     "VELDO-0075 notice/unreachable-authority-classed",
+     true
+    ],
+    [
+     "VELDO-0075 resume/acknowledgement-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0075 resume/stale-or-wrong-actor",
+     true
+    ],
+    [
+     "VELDO-0075 resume/owner-settlement-fresh-contract",
+     true
+    ],
+    [
+     "VELDO-0075 resume/unknown-effect-stays-stopped",
+     true
+    ],
+    [
+     "VELDO-0075 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 4.218,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0075 stop/designated-authority-deliverable detail: a project_owner deputy whose enrolled chat the owner's active edge does not bind is refused as chat_not_enrolled, naming the person [stopped None]",
+    "VELDO-0075 stop/designated-authority-deliverable detail: nothing was written or sent and the deputy's unit is still reviewing",
+    "VELDO-0075 stop/designated-authority-deliverable detail: strscope: nothing was written or sent and the unit is still reviewing",
+    "VELDO-0075 stop/designated-authority-deliverable detail: nogroup: nothing was written or sent and the unit is still reviewing"
+   ],
+   "diff": "proof/VELDO-0075/reachability-as-any-enrollment.diff",
+   "failed_rows": [
+    "VELDO-0075 stop/designated-authority-deliverable"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "9310c63a7300dcda5f9e2169d31f7ac9189c955e0abbc778bad1e1da0002d1e5",
+   "name": "reachability-as-any-enrollment",
+   "named_row_red": true,
+   "named_rows": [
+    "stop/designated-authority-deliverable"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0075 install/assets",
+     true
+    ],
+    [
+     "VELDO-0075 stop/any-authenticated-requester",
+     true
+    ],
+    [
+     "VELDO-0075 stop/unauthenticated-refused",
+     true
+    ],
+    [
+     "VELDO-0075 stop/designated-authority-deliverable",
+     false
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
+     "VELDO-0075 notice/each-stop-kind",
+     true
+    ],
+    [
+     "VELDO-0075 notice/new-version-same-status",
+     true
+    ],
+    [
+     "VELDO-0075 notice/unreachable-authority-classed",
+     true
+    ],
+    [
+     "VELDO-0075 resume/acknowledgement-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0075 resume/stale-or-wrong-actor",
+     true
+    ],
+    [
+     "VELDO-0075 resume/owner-settlement-fresh-contract",
+     true
+    ],
+    [
+     "VELDO-0075 resume/unknown-effect-stays-stopped",
+     true
+    ],
+    [
+     "VELDO-0075 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 4.381,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0075 notice/unreachable-authority-classed detail: with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped [refused None]"
+   ],
+   "diff": "proof/VELDO-0075/stopped-edge-refused-at-raise.diff",
+   "failed_rows": [
+    "VELDO-0075 notice/unreachable-authority-classed"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "4ceb0b8d17848e45d07d8d1ea36db132f1b27c220c89151d73acd1560343fe03",
+   "name": "stopped-edge-refused-at-raise",
+   "named_row_red": true,
+   "named_rows": [
+    "notice/unreachable-authority-classed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0075 install/assets",
+     true
+    ],
+    [
+     "VELDO-0075 stop/any-authenticated-requester",
+     true
+    ],
+    [
+     "VELDO-0075 stop/unauthenticated-refused",
+     true
+    ],
+    [
+     "VELDO-0075 stop/designated-authority-deliverable",
+     true
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
+     "VELDO-0075 notice/each-stop-kind",
+     true
+    ],
+    [
+     "VELDO-0075 notice/new-version-same-status",
+     true
+    ],
+    [
+     "VELDO-0075 notice/unreachable-authority-classed",
+     false
+    ],
+    [
+     "VELDO-0075 resume/acknowledgement-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0075 resume/stale-or-wrong-actor",
+     true
+    ],
+    [
+     "VELDO-0075 resume/owner-settlement-fresh-contract",
+     true
+    ],
+    [
+     "VELDO-0075 resume/unknown-effect-stays-stopped",
+     true
+    ],
+    [
+     "VELDO-0075 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 3.742,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [unavailable_service]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: no_enrolled_chat and owner_not_current keep their names and class wherever a notice meets them"
+   ],
+   "diff": "proof/VELDO-0075/stale-enrollment-misclassed.diff",
+   "failed_rows": [
+    "VELDO-0075 notice/unreachable-authority-classed"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "24446131264c2283cb4304e494be156e0391ab4f86b6761fe01c6819072fcdb5",
+   "name": "stale-enrollment-misclassed",
+   "named_row_red": true,
+   "named_rows": [
+    "notice/unreachable-authority-classed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0075 install/assets",
+     true
+    ],
+    [
+     "VELDO-0075 stop/any-authenticated-requester",
+     true
+    ],
+    [
+     "VELDO-0075 stop/unauthenticated-refused",
+     true
+    ],
+    [
+     "VELDO-0075 stop/designated-authority-deliverable",
+     true
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
+     "VELDO-0075 notice/each-stop-kind",
+     true
+    ],
+    [
+     "VELDO-0075 notice/new-version-same-status",
+     true
+    ],
+    [
+     "VELDO-0075 notice/unreachable-authority-classed",
+     false
+    ],
+    [
+     "VELDO-0075 resume/acknowledgement-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0075 resume/stale-or-wrong-actor",
+     true
+    ],
+    [
+     "VELDO-0075 resume/owner-settlement-fresh-contract",
+     true
+    ],
+    [
+     "VELDO-0075 resume/unknown-effect-stays-stopped",
+     true
+    ],
+    [
+     "VELDO-0075 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 4.309,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0075 stop/request-alias-squat-refused detail: another member's request opened under the stop's alias first: the raise is refused as foreign_request [stopped None]",
+    "VELDO-0075 stop/request-alias-squat-refused detail: nothing was written or sent and the unit still runs",
+    "VELDO-0075 stop/request-alias-squat-refused detail: the request the squatter then opens under the alias is refused as foreign_request at notice and at resume [stale_subject no_settlement]"
+   ],
+   "diff": "proof/VELDO-0075/squat-accepted.diff",
+   "failed_rows": [
+    "VELDO-0075 stop/request-alias-squat-refused"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "c915f2965a762f8c0a2d549f5eacba947f4d44c144bdf5daa50c8014d008e633",
+   "name": "squat-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "stop/request-alias-squat-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0075 install/assets",
+     true
+    ],
+    [
+     "VELDO-0075 stop/any-authenticated-requester",
+     true
+    ],
+    [
+     "VELDO-0075 stop/unauthenticated-refused",
+     true
+    ],
+    [
+     "VELDO-0075 stop/designated-authority-deliverable",
+     true
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     false
+    ],
+    [
+     "VELDO-0075 notice/each-stop-kind",
+     true
+    ],
+    [
+     "VELDO-0075 notice/new-version-same-status",
+     true
+    ],
+    [
+     "VELDO-0075 notice/unreachable-authority-classed",
+     true
+    ],
+    [
+     "VELDO-0075 resume/acknowledgement-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0075 resume/stale-or-wrong-actor",
+     true
+    ],
+    [
+     "VELDO-0075 resume/owner-settlement-fresh-contract",
+     true
+    ],
+    [
+     "VELDO-0075 resume/unknown-effect-stays-stopped",
+     true
+    ],
+    [
+     "VELDO-0075 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 4.246,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1221,7 +1670,7 @@
     "VELDO-0075 resume/stale-or-wrong-actor"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "c079dbd0a890c9f1b7f6366a1ca5c7f64c8a00254d67dc91c5f34078b5eeb7c1",
+   "mutant_sha256": "21cd3c6183f7c3f1f2e96d8c37670d19764ec1af955653528ef9cf3a461e2157",
    "name": "resume-rechecks-recorded-roles-only",
    "named_row_red": true,
    "named_rows": [
@@ -1246,6 +1695,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1278,14 +1731,16 @@
      true
     ]
    ],
-   "seconds": 3.436,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 4.31,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [unavailable_service]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [unavailable_service]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [unavailable_service]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped [stopped unavailable_service]",
     "VELDO-0075 notice/unreachable-authority-classed detail: a revoked chat enrollment is invalid_enrollment, classed missing_authority [stale_subject]",
     "VELDO-0075 notice/unreachable-authority-classed detail: no_enrolled_chat and owner_not_current keep their names and class wherever a notice meets them"
    ],
@@ -1294,7 +1749,7 @@
     "VELDO-0075 notice/unreachable-authority-classed"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "3844e389beab0a6e816673306a774c4c254f9c13242c3510934d991df06d3d3e",
+   "mutant_sha256": "f68ebdbfa9ff1eebadc63d37145c21c702cf2a1877b995e3040aaf40a7f3be6b",
    "name": "unreachable-authority-misclassed",
    "named_row_red": true,
    "named_rows": [
@@ -1319,6 +1774,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1351,21 +1810,20 @@
      true
     ]
    ],
-   "seconds": 3.403,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 4.248,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0075 stop/designated-authority-deliverable detail: a person with no enrolled chat designated is refused as no_enrolled_chat, naming the person [None]",
-    "VELDO-0075 stop/designated-authority-deliverable detail: nothing was written or sent and that unit is still reviewing"
+    "VELDO-0075 stop/designated-authority-deliverable detail: a person with no enrolled chat designated is refused as no_enrolled_chat, naming the person [chat_not_enrolled]"
    ],
    "diff": "proof/VELDO-0075/enrolled-chat-unchecked.diff",
    "failed_rows": [
     "VELDO-0075 stop/designated-authority-deliverable"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "7d688687377d08ca5f13a1cd463df4317546fead9ff8d779353e0ddfd37b3dae",
+   "mutant_sha256": "323788a4b0bb781231b6f3ae3a10b2cbb5780daa31f0afdd575e656ccb84e1c3",
    "name": "enrolled-chat-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1390,6 +1848,10 @@
      false
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1422,8 +1884,8 @@
      true
     ]
    ],
-   "seconds": 3.4,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.71,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1436,7 +1898,7 @@
     "VELDO-0075 resume/owner-settlement-fresh-contract"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "978b2c161823d002540e11ab22dfd5a83e908e2734fb7d7c1c0e129167a13692",
+   "mutant_sha256": "eb4db66ce2c83e8027f237d1c0a8bab44a822965d622c10c5da0ff86a235bced",
    "name": "contract-at-stale-unit-version",
    "named_row_red": true,
    "named_rows": [
@@ -1461,6 +1923,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1493,8 +1959,8 @@
      true
     ]
    ],
-   "seconds": 3.415,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.656,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1511,7 +1977,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "662e601c0f0b8d3564920e4819c4f383f11d81cf66a4e9bb3ba7a04fbd9e572b",
+   "mutant_sha256": "c7669610b3ceaa3bd159066337225cde2dac239b4e71b73e160aab5728e1e4fa",
    "name": "first-version-settlement-only",
    "named_row_red": true,
    "named_rows": [
@@ -1536,6 +2002,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1568,8 +2038,8 @@
      false
     ]
    ],
-   "seconds": 3.395,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.662,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1583,7 +2053,7 @@
     "VELDO-0075 resume/unknown-effect-stays-stopped"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "16b424cadf009372d3466d09112faa1137963cfdafbac68b3361d92070268b35",
+   "mutant_sha256": "d08e2b8257241b2bd195b52e020923ac0e3972b0edfb829abfb5bcf962fc21cf",
    "name": "unknown-effect-resumes",
    "named_row_red": true,
    "named_rows": [
@@ -1608,6 +2078,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1640,8 +2114,8 @@
      true
     ]
    ],
-   "seconds": 3.379,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.583,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1653,7 +2127,7 @@
     "VELDO-0075 resume/unknown-effect-stays-stopped"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "573e3af281e0f99f757aa3a96ad183d7b60c96c038093ebed0d416514721a433",
+   "mutant_sha256": "0f5a515a0bfc6b0304cf962a02174dc61f6593c4d0a6d24a1a3a3a588a216341",
    "name": "unknown-dispatch-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1678,6 +2152,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1710,8 +2188,8 @@
      true
     ]
    ],
-   "seconds": 3.371,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.543,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1749,6 +2227,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1781,14 +2263,16 @@
      true
     ]
    ],
-   "seconds": 3.408,
+   "seconds": 3.587,
    "source_sha256": "10b40c37128853f8a72f3e1df41bc6ba8e4f8ece9d9d7acef2700c81d65e2d4a"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [owner_not_current]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [stale_enrollment]",
     "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [edge_stopped]",
+    "VELDO-0075 notice/unreachable-authority-classed detail: with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped [stopped edge_stopped]",
     "VELDO-0075 notice/unreachable-authority-classed detail: a revoked chat enrollment is invalid_enrollment, classed missing_authority [invalid_enrollment]",
     "VELDO-0075 observability/named-refusals detail: every refusal is named and classed; unknown is never success"
    ],
@@ -1798,7 +2282,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "133922e913b231930ca3124c3078af678e2183a89a6ed7706e775abaf5242acf",
+   "mutant_sha256": "1e60ecab34a7283d75f8a9b597a45cf12ca1f1000e951cd33f6babe5e1eef91e",
    "name": "refusal-unclassed",
    "named_row_red": true,
    "named_rows": [
@@ -1823,6 +2307,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1855,8 +2343,8 @@
      false
     ]
    ],
-   "seconds": 3.42,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.562,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   {
    "by_assertion": true,
@@ -1868,7 +2356,7 @@
     "VELDO-0075 observability/named-refusals"
    ],
    "module": ".veldo/control_andon.py",
-   "mutant_sha256": "9027e25159228efd62a57d2e8856248b49ed0aef037f195b07281b39db860546",
+   "mutant_sha256": "c4e7679d0b37153912eccfbd76c6ea17c353171360d8d464c2067759cac24f8b",
    "name": "reason-text-observed",
    "named_row_red": true,
    "named_rows": [
@@ -1893,6 +2381,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -1925,8 +2417,8 @@
      false
     ]
    ],
-   "seconds": 3.437,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 3.544,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   }
  ],
  "mutations_per_row": {
@@ -1942,6 +2434,8 @@
    "revision-not-presented"
   ],
   "notice/unreachable-authority-classed": [
+   "stopped-edge-refused-at-raise",
+   "stale-enrollment-misclassed",
    "unreachable-authority-misclassed"
   ],
   "observability/named-refusals": [
@@ -1972,7 +2466,12 @@
   ],
   "stop/designated-authority-deliverable": [
    "effective-requirement-not-computed-at-raise",
+   "eligibility-bypassed",
+   "reachability-as-any-enrollment",
    "enrolled-chat-unchecked"
+  ],
+  "stop/request-alias-squat-refused": [
+   "squat-accepted"
   ],
   "stop/unauthenticated-refused": [
    "raise-signature-unchecked"
@@ -1980,7 +2479,7 @@
  },
  "noop": {
   "control_andon.py": {
-   "copy_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9",
+   "copy_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1999,6 +2498,10 @@
     ],
     [
      "VELDO-0075 stop/designated-authority-deliverable",
+     true
+    ],
+    [
+     "VELDO-0075 stop/request-alias-squat-refused",
      true
     ],
     [
@@ -2034,8 +2537,8 @@
      true
     ]
    ],
-   "seconds": 3.397,
-   "source_sha256": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+   "seconds": 4.246,
+   "source_sha256": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
   },
   "init_scaffold.py": {
    "copy_sha256": "10b40c37128853f8a72f3e1df41bc6ba8e4f8ece9d9d7acef2700c81d65e2d4a",
@@ -2060,6 +2563,10 @@
      true
     ],
     [
+     "VELDO-0075 stop/request-alias-squat-refused",
+     true
+    ],
+    [
      "VELDO-0075 notice/each-stop-kind",
      true
     ],
@@ -2092,13 +2599,13 @@
      true
     ]
    ],
-   "seconds": 3.409,
+   "seconds": 4.299,
    "source_sha256": "10b40c37128853f8a72f3e1df41bc6ba8e4f8ece9d9d7acef2700c81d65e2d4a"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 75",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 84.507,
+ "serial_seconds": 116.662,
  "spec_id": "VELDO-0075",
  "suite": "scripts/suites/72_veldo_0075_andon.py"
 }

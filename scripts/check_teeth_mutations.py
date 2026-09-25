@@ -5115,7 +5115,7 @@ def cases():
           'notice/unreachable-authority-classed')
     andon('enrolled-chat-unchecked', 'control_andon.py',
           "            enrolled = self._enrolled_chat(resolving['principal'])\n",
-          "            enrolled = self._enrolled_chat(resolving['principal']) or ('no-chat', 0)  # defect: the chat is not checked\n",
+          "            enrolled = self._enrolled_chat(resolving['principal']) or ('no-chat', 0, None)  # defect: the chat is not checked\n",
           'stop/designated-authority-deliverable')
     andon('contract-at-stale-unit-version', 'control_andon.py',
           "'issued_at_unit_version': u['version'] + 1,",

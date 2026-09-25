@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -493 +493 @@
+-        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION
++        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION + ('stopped',)  # defect: a stopped edge refuses the raise

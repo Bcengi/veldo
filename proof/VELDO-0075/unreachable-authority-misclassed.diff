@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -132 +132 @@
+@@ -152 +152 @@
 -    return code if code in UNREACHABLE_AUTHORITY else otherwise
 +    return 'missing_authority' if code in ('missing_authority', 'not_activated') else otherwise  # defect: the prior classes
