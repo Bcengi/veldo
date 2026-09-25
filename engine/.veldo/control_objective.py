@@ -379,6 +379,9 @@ class Objectives:
             raise Refused('project_not_active:missing', params['project'])
         if op == 'propose':
             return self._propose(conn, command, oid, project, entry)
+        if op in ('accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':
+            # VELDO-0076: a paused, canceled or completed project accepts, elaborates and satisfies nothing.
+            raise Refused('project_not_active:%s' % project['data'].get('state'), params['project'])
         current = _row(conn, oid)
         if current is None or current['kind'] != KIND:
             raise Refused('no_such_objective', oid)

@@ -5145,7 +5145,7 @@ def cases():
               "        for requirement in data['bound']['evidence_requirements']:\n",
               "        for requirement in [r for r in data['bound']['evidence_requirements'] if r['id'] in evidence]:  # defect\n",
               ['satisfaction/missing-evidence'])
-    objective('evidence-digest-unchecked', 'control_objective.py',
+    objective('assessment-evidence-digest-unchecked', 'control_objective.py',
               "            if row is None or row['kind'] != requirement['kind'] or row['digest'] != named.get('digest'):\n",
               "            if row is None or row['kind'] != requirement['kind']:  # defect: the named digest is not compared\n",
               ['satisfaction/missing-evidence'])
