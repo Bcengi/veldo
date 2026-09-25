@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0162
-title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his settled answer
+title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his own authenticated save or on his settled answer to another member's proposal
 status: draft
 risk: critical
 owner: dmitry
@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W122
 plan_revision: 4
-depends_on: [VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151]
+depends_on: [VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151, VELDO-0152]
 placement: [contracts, loop, distribution]
 protected_paths: []
 footprint:
@@ -95,7 +95,7 @@ acceptance_criteria:
       his settled answer to one request that shows exactly that proposal. Set and completeness: Save a team
       revision as the owner through the API; the team read route shows it current, the journal records the
       owner's authenticated principal as its decider, and no decision request is opened, as VELDO-0150 treats
-      his own message. Then have another principal (a PM run) submit `propose_team`; the authority opens one
+      his own message. Then have another principal (a second person member in a passkey session) submit `propose_team`; the authority opens one
       VELDO-0064 decision request to the project's current owner on VELDO-0089's amendment touchpoint, whose
       brief and target are exactly VELDO-0089's amendment brief and target of the pending proposal, and a
       repeat submission returns that request. Answer it through the API's decision route (VELDO-0130) and,
@@ -162,18 +162,21 @@ operational activation.
 ## Out of scope
 
 The role and team form (VELDO-0163); the full team and configuration screens with revision history
-(VELDO-0131); any change to VELDO-0089's, VELDO-0127's or VELDO-0151's own checks; a PM that edits its
+(VELDO-0131); any change to VELDO-0127's or VELDO-0151's own checks, or to VELDO-0089's beyond the one owner-save path AC3 adds; a PM that edits its
 own team (design section 4(f)); amendment races (Release 2).
 
 ## What the reviewer judges
 
 - Normal use: the owner, in a passkey session, saves a role's capability configuration and a project's
-  team through the API; the authority executes each save as its owning command, and the team revision
-  becomes current when he answers the request that shows it, in the UI or on Telegram; he keeps a default
+  team through the API; the authority executes each save as its owning command, and his own team save
+  becomes current on that save, while another member's proposal becomes current when he answers the
+  request that shows it, in the UI or on Telegram; he keeps a default
   team, which a new project he accepts starts with.
 - Threat model: a configuration or team written without the authority's command or for a principal the
   command does not authorize; a save that overwrites a newer revision; a team made current without the
-  owner's settled answer, or on an answer to a request that showed something else; a new project given a
+  owner's own authenticated save or his settled answer, or on an answer to a request that showed
+  something else; the owner-save path reached by a principal other than the project's owner, or on an
+  assertion the API edge did not verify; a new project given a
   default team revision other than the one his answered proposal named; a refusal reported
   as a save; a credential value in a response or proof. The owner's account, the API, the store and the
   signing edge are trusted.
@@ -185,10 +188,15 @@ own team (design section 4(f)); amendment races (Release 2).
 
 Each save is an assertion operation of the api edge, like `save_workflow` (VELDO-0130's History), which
 the authority rechecks and executes as the owning command: VELDO-0127's revision command for a
-capability configuration and VELDO-0089's `propose` for a team, with VELDO-0151's role fields. The
-request of AC3 is the one VELDO-0089's `amend` already checks for (its brief, its target, the project's
-owner as its only principal), so `amend` is used as it is. The owner answering a request for his own
-save follows VELDO-0089 AC2, which makes a team change settle through the retained settlement path.
+capability configuration and VELDO-0089's `propose` for a team, with VELDO-0151's role fields. A save
+by the project's owner takes one new owner-save path in `control_team`: it binds the API edge's verified
+assertion as its evidence, the way VELDO-0150 AC2 binds the intake command, compares the assertion's
+principal with the project's owner, and makes the proposal current in the same commit. `Teams.apply`
+accepts that edge-verified assertion in place of an SSH signature from the principal's own key, as the
+intake's `api_request` adapter does. A proposal by another member takes the existing path: the request
+of AC3 is the one VELDO-0089's `amend` already checks for (its brief, its target, the project's owner as
+its only principal), so `amend` is used as it is, and it settles through VELDO-0089 AC2's retained
+settlement path.
 
 The default team of AC4 is what a new project starts with (design section 5, step 4). It is plain team
 data with no project of its own, so the project-bound staffing checks run when a project is given it,

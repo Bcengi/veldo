@@ -101,16 +101,19 @@ acceptance_criteria:
       completeness: Plant `SSH_AUTH_SOCK`, `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and
       `GITHUB_TOKEN` in the receiver's environment, launch a contained Codex run, and read back the
       engine's environment: none of them is present (the strip read-back row), and `XDG_RUNTIME_DIR` names
-      an empty directory of the run's own, never the receiver's (the private-runtime-directory row); the
+      an empty directory of the run's own, never the receiver's and never the one holding the run's
+      generated configuration (the private-runtime-directory row); the
       receiver's own `systemd-run` and `systemctl` calls still reach the user manager (the user-manager
       row). Falsifier: Leave a planted `SSH_AUTH_SOCK` in the environment the wrapper execs Codex with,
       and the strip read-back row must fail; pass the receiver's own `XDG_RUNTIME_DIR` to the engine, and
-      the private-runtime-directory row must fail; strip the session bus from the receiver's own
+      then the directory holding the run's generated configuration, and the private-runtime-directory row
+      must fail each time; strip the session bus from the receiver's own
       environment instead of the one it execs, and the user-manager row must fail.
     falsified_by: >
       Leave a planted `SSH_AUTH_SOCK` in the environment the wrapper execs Codex with, and the strip
-      read-back row must fail; pass the receiver's own `XDG_RUNTIME_DIR` to the engine, and the
-      private-runtime-directory row must fail; strip the session bus from the receiver's own environment
+      read-back row must fail; pass the receiver's own `XDG_RUNTIME_DIR` to the engine, and then the
+      directory holding the run's generated configuration, and the private-runtime-directory row must fail
+      each time; strip the session bus from the receiver's own environment
       instead of the one it execs, and the user-manager row must fail.
 required_evidence: [unit, integration]
 rollback: >
@@ -182,3 +185,6 @@ it out. AC3's `forced_login_method` and file credentials store get falsifiers of
 the engine itself refuses an API-key login with the adapter's stop off, and a row where the login is read
 from the profile's file), and AC4's private runtime directory and the user manager staying reachable get
 theirs beside the strip's. Criterion meaning unchanged. A draft.
+
+2026-09-25, lead: AC4's runtime directory is also never the one holding the run's generated
+configuration, as in VELDO-0155 AC4, with its falsifier.

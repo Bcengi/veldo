@@ -65,8 +65,8 @@ acceptance_criteria:
       (VELDO-0152) and the loop starts its PM cycle; the factory PM run prepares one proposal naming the
       project, the identity (asked in the same request when he did not say), the directory, the remote
       name and visibility, the first objective, the default team's current revision (VELDO-0162 AC4) and
-      the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles the project and the first objective, and no
-      further question is sent; the first message, which named both, is itself that answer and nothing
+      the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles
+      the project and the first objective, and no further question is sent; the first message, which named both, is itself that answer and nothing
       is presented. Falsifier: Present a proposal when his message already named the project and the
       identity; the nothing-asked row must fail.
     falsified_by: >

@@ -67,10 +67,13 @@ acceptance_criteria:
       Codex's home), run concurrent work across them, and read back that each invocation used exactly
       its own account's profile and was charged to that account. Moving work off an account at its
       limit, adding an account while work runs and the one-run bound of an account with no observation
-      are AC4. Falsifier: Launch two accounts' work with one shared profile; the per-account isolation
-      check must fail.
+      are AC4. Falsifier: Launch two accounts' work with one shared profile, and the per-account isolation
+      row must fail; register the same account twice, and the one-registration row must fail; run the
+      accounts' work one after another instead of at the same time, and the concurrency row must fail.
     falsified_by: >
-      Launch two accounts' work with one shared profile; the per-account isolation check must fail.
+      Launch two accounts' work with one shared profile, and the per-account isolation row must fail;
+      register the same account twice, and the one-registration row must fail; run the accounts' work one
+      after another instead of at the same time, and the concurrency row must fail.
   - id: AC2
     text: >
       Claim: A run stopped by its account's limit is classified `account_limit` with its window and reset
@@ -201,3 +204,6 @@ the per-account isolation, so AC1 keeps registration, concurrency and isolation 
 the new AC4 carries moving off an exhausted account, adding an account without a restart and the one-run
 bound while usage is unknown, with one mutant for each. It is AC4 rather than AC2 so the references to
 AC2 and AC3 elsewhere stay right. Criterion meaning unchanged. A draft.
+
+2026-09-25, lead: AC1's registration and concurrency claims each get their own falsifier beside
+isolation.

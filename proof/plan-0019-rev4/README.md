@@ -264,3 +264,12 @@ have no dependency on a later release or stage; `git diff main` of VELDO-0057, 0
 0126 shows only `plan_revision`, and of VELDO-0140 only its W100 binding;
 `policy_check.spec_revision_stale()` and `ready_boundary_violations()` are empty; and the changed files
 carry no em-dash, en-dash or doubled hyphen. `scripts/verify.sh` was not run.
+
+**Lead's edit after the fourth review (2026-09-25).** VELDO-0162 AC3 counts the owner's own authenticated
+team save as his decision, as VELDO-0150 does for his own message, through one new owner-save path in
+`control_team` that binds the API edge's verified assertion; another member's proposal still settles on
+his answer. A narrow check found the first version of that edit left 0162's Notes, Out of scope and
+reviewer section and VELDO-0163 AC2 contradicting it; all four now agree, 0162 depends on VELDO-0152 for
+the factory project's owner, the plan's W122 mirrors the title and dependencies, VELDO-0160 AC1 has one
+falsifier per claim, and VELDO-0156 AC4 matches VELDO-0155 AC4.
+

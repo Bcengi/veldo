@@ -59,20 +59,22 @@ acceptance_criteria:
     text: >
       Claim: The owner adds, changes and removes a project's team roles in the UI, each naming its
       capability configuration and kind, a saved team is shown current only once the authority accepted
-      his answer, and the same form edits the default team. Set and completeness: In the same shell and widths, open a project's team, add
+      it, and the same form edits the default team. Set and completeness: In the same shell and widths,
+      open a project's team, add
       the specialist role `builder_jira` naming the configuration of AC1, change the implementation role's
       configuration reference, remove a specialist role, and save; the form sends the team through
-      VELDO-0162 AC2's route bound to the team version shown, the request VELDO-0162 AC3 opens appears in
-      the decisions screen (VELDO-0145 AC3), and after his answer there the form shows the new revision as
-      current, read back through the team route. A role with no configuration, an incomplete roster and a
-      stale team version each show their named refusal beside the save, with the owner request it opened.
+      VELDO-0162 AC2's route bound to the team version shown, and once the authority accepts his own save
+      (VELDO-0162 AC3) the form shows the new revision as current, read back through the team route. A
+      team proposed by a second person member instead shows as pending, its request appears in the
+      decisions screen (VELDO-0145 AC3), and it shows current only after his answer there. A role with no configuration, an incomplete roster and a
+      stale team version each show their named refusal beside the save, with no revision shown current.
       The same form opens the default team and saves it through VELDO-0162 AC4's operation, bound to the
-      revision it was edited from. Falsifier: Show the saved team as current before the authority applied
-      his settled answer, and the authoritative-team row must fail; send the default team's save without
+      revision it was edited from. Falsifier: Show a saved team as current before the authority accepted it
+      (his own save, or his answer to another member's proposal), and the authoritative-team row must fail; send the default team's save without
       the revision it was edited from, and the default-team stale-save row must fail.
     falsified_by: >
-      Show the saved team as current before the authority applied his settled answer, and the
-      authoritative-team row must fail; send the default team's save without the revision it was edited
+      Show a saved team as current before the authority accepted it (his own save, or his answer to
+      another member's proposal), and the authoritative-team row must fail; send the default team's save without the revision it was edited
       from, and the default-team stale-save row must fail.
 required_evidence: [unit, integration, ui_states]
 rollback: >
@@ -134,3 +136,6 @@ longer carries it. A draft: only the owner marks a specification ready.
 2026-09-25, PLAN-0019 revision 4, fourth review: AC2's form also edits the default team VELDO-0162 AC4 now
 defines, with its own falsifier, so the owner can set what a new project starts with before VELDO-0143 is
 built. A draft.
+
+2026-09-25, lead: AC2 follows VELDO-0162 AC3: the owner's own save shows current once the authority accepts
+it, and only another member's proposal goes through the decisions screen.

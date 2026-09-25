@@ -1185,9 +1185,9 @@ work:
     stage: 5
   - item: W122
     spec: VELDO-0162
-    title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his settled answer
+    title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his own authenticated save or on his settled answer to another member's proposal
     feature_refs: [F7]
-    depends_on: [VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151]
+    depends_on: [VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151, VELDO-0152]
     order: 15162
     release: 1
     stage: 5
