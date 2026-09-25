@@ -1,0 +1,801 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0150 own-message/telegram",
+    true
+   ],
+   [
+    "VELDO-0150 own-message/api",
+    true
+   ],
+   [
+    "VELDO-0150 own-message/non-owner-presented",
+    true
+   ],
+   [
+    "VELDO-0150 own-message/admits-nothing",
+    true
+   ],
+   [
+    "VELDO-0150 evidence/bound-intake-command",
+    true
+   ],
+   [
+    "VELDO-0150 evidence/same-bound-fields",
+    true
+   ],
+   [
+    "VELDO-0150 evidence/project-not-his",
+    true
+   ],
+   [
+    "VELDO-0150 evidence/repeat",
+    true
+   ],
+   [
+    "VELDO-0150 evidence/stale-revision",
+    true
+   ]
+  ],
+  "seconds": 1.332
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: own-message/non-owner-presented: his message does not accept the Telegram one: refused not_owner:source, nothing written; nor the API one: refused not_owner:source, nothing written; an answer to revision 1 after the amendment is refused as stale, unchanged; the owner's answer to the current presentation accepts each; each acceptance names its settlement, not a message; the metrics count the refused own-message acceptances and the answers",
+    "VELDO-0150 detail: evidence/same-bound-fields: as the accepted answer binds them",
+    "VELDO-0150 detail: evidence/project-not-his: his message does not accept it as its owner's: not_owner:source; nothing was written"
+   ],
+   "diff": "proof/VELDO-0150/own-message-non-owner-accepted.diff",
+   "failed_rows": [
+    "VELDO-0150 own-message/non-owner-presented",
+    "VELDO-0150 evidence/same-bound-fields",
+    "VELDO-0150 evidence/project-not-his"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "433cf063bc547b347028a978aedb12316205378fca498455e1cae53d7b580594",
+   "name": "own-message-non-owner-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "own-message/non-owner-presented"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     false
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.328,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: own-message/telegram: his message accepts it; the acceptance is recorded as his own message's, naming the intake command; the observation records the path and the intake command",
+    "VELDO-0150 detail: own-message/api: his request accepts it with nothing presented; the acceptance is recorded as his own message's, naming the intake command; the metrics count two acceptances by his own message",
+    "VELDO-0150 detail: own-message/non-owner-presented: his message does not accept the Telegram one: refused not_owner:source, nothing written; nor the API one: refused not_owner:source, nothing written; the metrics count the refused own-message acceptances and the answers",
+    "VELDO-0150 detail: own-message/admits-nothing: a feature is proposed under the objective his message accepted; the feature is RAW: neither admitted nor prioritized; nothing but the objective names the feature",
+    "VELDO-0150 detail: evidence/bound-intake-command: the Telegram acceptance names the intake command that first wrote the message's source; with the message's canonical attribution: message id, sender and platform time; the API acceptance names its request, principal and signed digest; evidence naming another message's intake command is refused by name, nothing written; evidence naming no intake command is refused by name; the message's own intake command accepts it",
+    "VELDO-0150 detail: evidence/same-bound-fields: the Telegram acceptance binds outcome, scope, authority and evidence requirements exactly; so does the API acceptance; both paths bind the same fields",
+    "VELDO-0150 detail: evidence/project-not-his: his message does not accept it as its owner's: not_owner:source",
+    "VELDO-0150 detail: evidence/repeat: its acceptance again returns the same acceptance; with no second record: the objective and the journal unchanged",
+    "VELDO-0150 detail: evidence/stale-revision: an acceptance naming revision 1 is refused by name; so is one naming revision 1's bound digest; the acceptance of the current revision binds revision 2"
+   ],
+   "diff": "proof/VELDO-0150/own-message-operation-missing.diff",
+   "failed_rows": [
+    "VELDO-0150 own-message/telegram",
+    "VELDO-0150 own-message/api",
+    "VELDO-0150 own-message/non-owner-presented",
+    "VELDO-0150 own-message/admits-nothing",
+    "VELDO-0150 evidence/bound-intake-command",
+    "VELDO-0150 evidence/same-bound-fields",
+    "VELDO-0150 evidence/project-not-his",
+    "VELDO-0150 evidence/repeat",
+    "VELDO-0150 evidence/stale-revision"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "713beaea8a61c8c6d11b473a7e26508305c911825b939d53389897e96c7fad37",
+   "name": "own-message-operation-missing",
+   "named_row_red": true,
+   "named_rows": [
+    "own-message/telegram",
+    "own-message/api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     false
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     false
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     false
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     false
+    ]
+   ],
+   "seconds": 1.291,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: own-message/telegram: the observation records the path and the intake command"
+   ],
+   "diff": "proof/VELDO-0150/own-message-path-unobserved.diff",
+   "failed_rows": [
+    "VELDO-0150 own-message/telegram"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "69fc1c131997c7afee7e840ceb0789ae3484115e481d5841af397aad0336a3a7",
+   "name": "own-message-path-unobserved",
+   "named_row_red": true,
+   "named_rows": [
+    "own-message/telegram"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     false
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.338,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: own-message/admits-nothing: the feature is RAW: neither admitted nor prioritized"
+   ],
+   "diff": "proof/VELDO-0150/own-message-acceptance-admits.diff",
+   "failed_rows": [
+    "VELDO-0150 own-message/admits-nothing"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "b0422976692b549654761fe11e78d7a6882298cd83cf63359f884e4ac4ee11a5",
+   "name": "own-message-acceptance-admits",
+   "named_row_red": true,
+   "named_rows": [
+    "own-message/admits-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.344,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: evidence/bound-intake-command: evidence naming another message's intake command is refused by name, nothing written; evidence naming no intake command is refused by name"
+   ],
+   "diff": "proof/VELDO-0150/own-message-other-intake-command.diff",
+   "failed_rows": [
+    "VELDO-0150 evidence/bound-intake-command"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "6e7f0f30cd78db9ec7bb91b1a199944b141c6c766fdaa99330e06873c04f777d",
+   "name": "own-message-other-intake-command",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/bound-intake-command"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.34,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: evidence/bound-intake-command: with the message's canonical attribution: message id, sender and platform time"
+   ],
+   "diff": "proof/VELDO-0150/own-message-sender-unbound.diff",
+   "failed_rows": [
+    "VELDO-0150 evidence/bound-intake-command"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "2322e8d98368065579be294937dcb1fb7ec542e341b15c3e9b9e6c8ba7938e5a",
+   "name": "own-message-sender-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/bound-intake-command"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.313,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: evidence/bound-intake-command: the API acceptance names its request, principal and signed digest"
+   ],
+   "diff": "proof/VELDO-0150/own-message-request-digest-unbound.diff",
+   "failed_rows": [
+    "VELDO-0150 evidence/bound-intake-command"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "936113cdb55d9697a9edff8740d7b65659b37863b706c8bec49fddabcb6a8834",
+   "name": "own-message-request-digest-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/bound-intake-command"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.351,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: evidence/same-bound-fields: the Telegram acceptance binds outcome, scope, authority and evidence requirements exactly; so does the API acceptance; both paths bind the same fields",
+    "VELDO-0150 detail: evidence/stale-revision: the acceptance of the current revision binds revision 2"
+   ],
+   "diff": "proof/VELDO-0150/own-message-bound-digest-unbound.diff",
+   "failed_rows": [
+    "VELDO-0150 evidence/same-bound-fields",
+    "VELDO-0150 evidence/stale-revision"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "f78f7f163b2bb10749f4e4369e5d43d9fff469018b5a19bbfb25a59cd925671e",
+   "name": "own-message-bound-digest-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/same-bound-fields"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     false
+    ]
+   ],
+   "seconds": 1.349,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: own-message/non-owner-presented: his message does not accept the Telegram one: refused not_owner:source, nothing written; an answer to revision 1 after the amendment is refused as stale, unchanged; the owner's answer to the current presentation accepts each; each acceptance names its settlement, not a message; the metrics count the refused own-message acceptances and the answers",
+    "VELDO-0150 detail: evidence/same-bound-fields: as the accepted answer binds them",
+    "VELDO-0150 detail: evidence/project-not-his: his message does not accept it as its owner's: not_owner:source; nothing was written"
+   ],
+   "diff": "proof/VELDO-0150/own-message-any-project-owner.diff",
+   "failed_rows": [
+    "VELDO-0150 own-message/non-owner-presented",
+    "VELDO-0150 evidence/same-bound-fields",
+    "VELDO-0150 evidence/project-not-his"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "ec1f240798a6cf9f77b77498cd4935bdf43ed5c1298ca98168e613576b016a4e",
+   "name": "own-message-any-project-owner",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/project-not-his"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     false
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.369,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: evidence/repeat: its acceptance again returns the same acceptance"
+   ],
+   "diff": "proof/VELDO-0150/own-message-repeat-not-returned.diff",
+   "failed_rows": [
+    "VELDO-0150 evidence/repeat"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "8176d5f1b4690032625f3f2b03db9dafdc8e0c3d15f203254847f26952b68739",
+   "name": "own-message-repeat-not-returned",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/repeat"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     false
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.333,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0150 detail: evidence/stale-revision: an acceptance naming revision 1 is refused by name; so is one naming revision 1's bound digest; nothing was written"
+   ],
+   "diff": "proof/VELDO-0150/own-message-stale-revision-accepted.diff",
+   "failed_rows": [
+    "VELDO-0150 evidence/stale-revision"
+   ],
+   "module": ".veldo/control_objective.py",
+   "mutant_sha256": "bfb5dbc3ace370d41424de121d3e4790df973f1dde8188f2779d295fb7f5d11d",
+   "name": "own-message-stale-revision-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/stale-revision"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     false
+    ]
+   ],
+   "seconds": 1.346,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  }
+ ],
+ "mutations_per_row": {
+  "evidence/bound-intake-command": [
+   "own-message-other-intake-command",
+   "own-message-sender-unbound",
+   "own-message-request-digest-unbound"
+  ],
+  "evidence/project-not-his": [
+   "own-message-any-project-owner"
+  ],
+  "evidence/repeat": [
+   "own-message-repeat-not-returned"
+  ],
+  "evidence/same-bound-fields": [
+   "own-message-bound-digest-unbound"
+  ],
+  "evidence/stale-revision": [
+   "own-message-stale-revision-accepted"
+  ],
+  "own-message/admits-nothing": [
+   "own-message-acceptance-admits"
+  ],
+  "own-message/api": [
+   "own-message-operation-missing"
+  ],
+  "own-message/non-owner-presented": [
+   "own-message-non-owner-accepted"
+  ],
+  "own-message/telegram": [
+   "own-message-operation-missing",
+   "own-message-path-unobserved"
+  ]
+ },
+ "noop": {
+  "control_objective.py": {
+   "copy_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0150 own-message/telegram",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/api",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/non-owner-presented",
+     true
+    ],
+    [
+     "VELDO-0150 own-message/admits-nothing",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/bound-intake-command",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/same-bound-fields",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/project-not-his",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/repeat",
+     true
+    ],
+    [
+     "VELDO-0150 evidence/stale-revision",
+     true
+    ]
+   ],
+   "seconds": 1.336,
+   "source_sha256": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 150",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 17.37,
+ "spec_id": "VELDO-0150",
+ "suite": "scripts/suites/75_veldo_0150_own_message_acceptance.py"
+}

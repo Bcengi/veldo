@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -282 +282 @@
+-                'principal': command.get('principal'), 'request_digest': where.get('request_digest')}
++                'principal': command.get('principal'), 'request_digest': None}  # defect: the request is not bound
