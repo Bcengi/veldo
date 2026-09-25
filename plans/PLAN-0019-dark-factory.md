@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157]
     order: 16059
     release: 1
     stage: 6
@@ -1143,6 +1143,14 @@ work:
     order: 11156
     release: 1
     stage: 1
+  - item: W117
+    spec: VELDO-0157
+    title: The capability items a staffing choice assigns load with that run, and no other when-assigned item does
+    feature_refs: [F7]
+    depends_on: [VELDO-0090, VELDO-0127]
+    order: 15157
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1319,8 +1327,10 @@ VELDO-0155 and VELDO-0156; 0141; 0129 and the factory loop VELDO-0154; 0145; 012
 "please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
 VELDO-0150; 0144; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
-VELDO-0147; 0085, 0091, 0090; the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153;
-0143 with the 0076 and 0126 amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). A
+VELDO-0147; 0085 and 0091; 0090 with load modes and the `when assigned` leg of 0127 AC4, VELDO-0157;
+the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153; 0143 with the 0076 and 0126
+amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). Section 12 lists 0091 before 0090,
+and its dependency paragraph says 0091 needs 0090, so 0091 is built once 0090 has landed. A
 specification ships whole and the
 run-check refuses one whose dependencies are not shipped, so no specification built before the Mac
 stage carries a Mac leg: the Mac legs of VELDO-0060, 0061, 0062, 0127, 0141 and 0144 are VELDO-0147.
@@ -1478,6 +1488,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W114 | VELDO-0154 | 1 | 5 |
 | W115 | VELDO-0155 | 1 | 1 |
 | W116 | VELDO-0156 | 1 | 1 |
+| W117 | VELDO-0157 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
@@ -1587,3 +1598,7 @@ two). They are per engine rather than one shared specification because the basel
 each engine's own levers; the strip is the one trusted wrapper, and each reads back its own engine's
 environment. W92 (VELDO-0129), W90 (VELDO-0127), W107 (VELDO-0147) and W44 (VELDO-0059) add both, so
 nothing that ran behind the guards when they were part of the adapters runs without them now.
+Section 12 builds VELDO-0127 in its second stage with every item `always` and the load modes in its
+third with VELDO-0090 ("VELDO-0090 with load modes and VELDO-0127 AC4"), so VELDO-0127 AC4 keeps the
+`always` leg and the `when assigned` leg is W117's VELDO-0157, stage 5, built with VELDO-0090 and
+depending on it; the build-order paragraph under Releases and order now follows section 12's stage 3.

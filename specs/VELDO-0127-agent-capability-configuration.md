@@ -84,8 +84,9 @@ acceptance_criteria:
   - id: AC4
     text: >
       Claim: Nothing loads unless the role lists it; the engine's reported tools, MCP servers,
-      skills and plugins at launch equal the role's `always` items plus the assigned ones;
-      instruction files are proved by the marker qualification. Set and completeness: For Claude
+      skills and plugins at launch equal the role's `always` items; instruction files are proved by
+      the marker qualification. A `when assigned` item loads only when its dispatch assigns it, which
+      is VELDO-0157. Set and completeness: For Claude
       Code, compare the init event's `tools`, `mcp_servers`, `slash_commands`, `skills` and
       `plugins` with the set the dispatch recorded, in both directions, and stop the run by name on
       any difference before its first turn; for Codex, compare its own MCP listing and the generated
@@ -94,9 +95,9 @@ acceptance_criteria:
       instructions. Because the init event names no loaded instruction files, plant a marker
       CLAUDE.md in the clone and in the account profile with discovery turned off, and compare the
       debug log and the first turn's context size with and without it; the first turn's context size
-      is kept in the execution record. Run one role with only `always` items and one with an
-      assigned `when assigned` item. Falsifier: Let the engine load a skill the role does not list;
-      the launch-set comparison must fail.
+      is kept in the execution record. Run one role with only `always` items and one that also lists
+      a `when assigned` item, dispatched with nothing assigned. Falsifier: Let the engine load a skill
+      the role does not list; the launch-set comparison must fail.
     falsified_by: >
       Let the engine load a skill the role does not list; the launch-set comparison must fail.
 required_evidence: [unit, integration]
@@ -129,8 +130,8 @@ specification status, implementation, test, runtime policy or deployed service c
 
 - Normal use: the owner saves a role's capability configuration as a new revision, choosing catalog servers,
   native tools, skills and instruction files, each `always` or `when assigned`; a dispatch records
-  the revision and the assigned items, and the worker starts with exactly those, on Claude Code or
-  Codex, on Linux (on the Mac through VELDO-0147).
+  the revision, and the worker starts with exactly its `always` items, on Claude Code or Codex, on
+  Linux (on the Mac through VELDO-0147); the items a staffing choice assigns load through VELDO-0157.
 - Threat model: an accepted configuration overwritten in place; a server definition or credential embedded in a
   role; a capability dropped, added or defaulted at handoff, including an instruction file, skill,
   memory or hook the account profile would have added; a run whose reported tools, servers, skills
@@ -200,3 +201,10 @@ context size in the execution record, and the footprint adds `control_launch`, w
 2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0155 and VELDO-0156, where the
 everything-off baseline this handoff builds on now lives (it was VELDO-0060 AC5 and VELDO-0061 AC5), and
 the Notes name them. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: the design's section 12 builds this specification in
+its stage 2 with every item `always` (item 11) and the load modes with VELDO-0090 in its stage 3 (item
+16), so AC4 keeps the `always` leg (the launch set equals the role's `always` items, and a `when
+assigned` item with nothing assigned does not load) and the `when assigned` leg, where the items a
+staffing choice assigns load with the run, is the new draft VELDO-0157, built with VELDO-0090. AC4's
+falsifier is unchanged. Status unchanged.
