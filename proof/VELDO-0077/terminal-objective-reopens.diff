@@ -1,0 +1,6 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -607 +607,2 @@
+-        allowed, why = EC.transition(kind, source, target, evidence)
++        allowed, why = ((True, '') if source in EC.LIFECYCLES[kind]['terminal']  # defect: terminal reopens
++                        else EC.transition(kind, source, target, evidence))

@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -501 +501 @@
+-        outside = [s for s in scope if s not in data['bound']['scope']]
++        outside = []  # defect: elaboration is not bounded by the accepted scope

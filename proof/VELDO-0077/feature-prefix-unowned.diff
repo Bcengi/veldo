@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -245 +245 @@
+-                             prefixes={ID_PREFIX: (OPERATION,), FEATURE_PREFIX: (OPERATION,)}, module=__file__)
++                             prefixes={ID_PREFIX: (OPERATION,)}, module=__file__)  # defect: features unowned

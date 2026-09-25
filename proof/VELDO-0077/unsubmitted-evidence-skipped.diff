@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -530 +530 @@
+-        for requirement in data['bound']['evidence_requirements']:
++        for requirement in [r for r in data['bound']['evidence_requirements'] if r['id'] in evidence]:  # defect

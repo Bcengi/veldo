@@ -141,3 +141,11 @@ AC3 restart moved to Release 2; cross-project depth moved to Release 3. Exact ob
 acceptance and evidence-based satisfaction remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-25, build: `.veldo/control_objective.py` (new, installed by the scaffold) is the one writer of
+objective records and the features under them; acceptance applies a VELDO-0068 settlement on the
+decision_disposition touchpoint bound to the objective's current revision, digest and shown brief;
+features are RAW and never admitted or prioritized by it; satisfaction is the bound assessor's signed
+assessment of the accepted revision over kept evidence records; cancellation needs the owner's
+disposition of every unfinished feature. `request.py` and `authorization.py` were not changed: they are
+not on the control store path. Proof in `proof/VELDO-0077/`; status stays ready.

@@ -1,0 +1,8 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -466 +466 @@
+-        if target != acceptance_target(data):
++        if (target.get('kind'), target.get('ref')) != (TARGET_KIND, oid):  # defect: any revision's answer
+@@ -468 +468 @@
+-        if req.get('brief') != acceptance_brief(data):
++        if False:  # defect: what the owner was shown is not compared
