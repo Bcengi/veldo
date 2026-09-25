@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -551 +551 @@
+-        if command.get('revision') != data['accepted_revision']:
++        if False:  # defect: an assessment of any revision counts

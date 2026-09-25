@@ -206,3 +206,12 @@ expected effect names from the module's own JOURNEY, so a ruling mapped to the w
 names independently); published_state's settlement-match check and the settle-time head and binding checks have
 no row that reds them alone; an accepted Telegram answer that lapses when the requester cancels or revises
 before run() settles it is not observed; the published snapshot names the receipt without carrying it.
+
+2026-09-25, intermittent settlement/one-winner under gate load (a fixture defect, the product is correct):
+when both racing API answers were recorded before either settled, the call that committed the settlement
+counted the earlier accepted answer, the other racer's, and listed its own as not counted
+(conflicting_ruling), exactly as ONE WINNER says; the consistency check compared the settlement's raw
+answer_id with racer names and evidence entity ids and so passed only when the settling call's own answer
+won. Seen in 16 of 240 stressed runs, 0 of 240 after the check compared evidence ids and required the
+winner to be the earliest accepted and the settling call's losing answer to be listed. A false row now
+carries what it saw (race outcomes, timings, settlements, request state) into failed_details.

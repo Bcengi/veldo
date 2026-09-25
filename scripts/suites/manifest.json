@@ -889,6 +889,15 @@
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, request, enrollment and journal signatures, an enrolled Git clone and host trust, control_service.install with the channel ingress configuration, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), bin/veldo channel run as a separate process, the actual protected signer process, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures."
   },
   {
+   "name": "72_veldo_0077_objectives",
+   "file": "72_veldo_0077_objectives.py",
+   "requires": [
+    "72_veldo_0077_objectives"
+   ],
+   "regions": "Objective acceptance: an owner message through the common intake becomes a proposed objective of one active project, presented to the project's current owner and accepted only by his settled answer to its current revision, binding its outcome, scope, authority and evidence requirements, with a stale answer and another member's answer refused; bounded elaboration of RAW features that the acceptance neither admits nor prioritizes; satisfaction only by the bound assessor's signed assessment of the accepted revision over kept evidence records, with shipped specifications, missing evidence, a wrong signer and a stale revision refused; cancellation only with the owner's explicit disposition of every unfinished feature, keeping history and receipts, and a terminal objective continued only by a linked new objective",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal and API signatures, the VELDO-0126 intake over API edge requests, the VELDO-0076 project service, the VELDO-0064 inbox, VELDO-0065 presenter over a loopback Bot API, VELDO-0068 settlement through API answers, the VELDO-0050 proof service keeping observations of real check processes, specification files in a temporary workspace, and a reader in another process. Writes only temporary fixtures."
+  },
+  {
    "name": "72_veldo_0075_andon",
    "file": "72_veldo_0075_andon.py",
    "requires": [

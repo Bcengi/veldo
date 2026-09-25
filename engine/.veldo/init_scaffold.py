@@ -226,6 +226,9 @@ _FILES = [
     # VELDO-0089: the team service (versioned team configuration and builder/reviewer assignments).
     # A runtime asset the authority loads; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_team.py",
+    # VELDO-0077: the objective service (acceptance through settlement, bounded elaboration, evidence
+    # assessment and cancellation). A runtime asset the authority loads; not validator substrate.
+    ".veldo/control_objective.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",

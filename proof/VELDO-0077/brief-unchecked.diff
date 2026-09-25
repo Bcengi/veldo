@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -493 +493 @@
+-        if req.get('brief') != acceptance_brief(data):
++        if False:  # defect: the brief the owner was shown is not compared

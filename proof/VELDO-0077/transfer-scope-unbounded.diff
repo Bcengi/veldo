@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -616 +616 @@
+-                outside = [s for s in item.get('scope') or [] if s not in to['data']['bound']['scope']]
++                outside = []  # defect: a transfer lands outside the receiver's accepted scope

@@ -1,0 +1,140 @@
+{
+ "by_assertion": true,
+ "commit": "a0e76af7c909bcc5a1648500d84aeb7e20478ada",
+ "details": [
+  "VELDO-0077 detail: install/assets: .veldo/control_objective.py installed by the scaffold; .veldo/control_objective.py engine copy identical; .veldo/control_objective.py laid by the installer",
+  "VELDO-0077 detail: acceptance/intake-source: no other command writes an objective or a feature id; the objective is created PROPOSED from that proposal, in its one project; an inbox proposal with no project is refused; a proposal for a project that is not active is refused; a second objective from the same proposal is refused; a record that is not an intake proposal is refused; an acceptor other than the project owner is refused",
+  "VELDO-0077 detail: acceptance/stale-answer: the amendment is a new revision with a new bound digest; the stale answer is refused by name; the objective is unchanged and still PROPOSED",
+  "VELDO-0077 detail: acceptance/owner-only: it does not accept the objective; the objective is still PROPOSED at revision 2",
+  "VELDO-0077 detail: acceptance/binds-fields: the owner's answer settled and accepted the objective; the accepted revision is the one presented; outcome, scope, authority and evidence requirements are bound exactly; the owner was shown each bound field; the acceptance names the settlement and the owner",
+  "VELDO-0077 detail: acceptance/later-feature: the feature is proposed under the accepted objective and the objective is ACTIVE; the feature is RAW: neither admitted nor prioritized by the acceptance; admission is its own settled decision on the feature; the feature record stays RAW after that separate decision",
+  "VELDO-0077 detail: acceptance/bounded-elaboration: a feature outside the accepted scope is refused by name; no feature record was written for it; a feature under an objective that is not accepted is refused",
+  "VELDO-0077 detail: satisfaction/wrong-signer: a person who is not the bound assessor is refused; a service is refused; the objective is unchanged",
+  "VELDO-0077 detail: satisfaction/missing-evidence: an assessment without a required item is refused; an item naming no kept record is refused; an item naming another digest is refused; the objective is still ACTIVE",
+  "VELDO-0077 detail: satisfaction/stale-revision: an assessment of revision 1, not the accepted revision 2, is refused; the objective is still ACTIVE",
+  "VELDO-0077 detail: satisfaction/unproven-outcome: the objective is accepted and every one of its specifications is shipped; the assessment is refused as an unproven outcome; the objective is not satisfied",
+  "VELDO-0077 detail: satisfaction/proven: the bound assessor's complete, current assessment satisfies the objective; the receipt is the objective_satisfied fact of the accepted revision; each evidence item is the kept record by its digest; a second assessment of a satisfied objective is refused",
+  "VELDO-0077 detail: satisfaction/other-process: the other process read the store read-only; it sees the satisfied objective and its accepted revision; it sees the shipped-but-unproven objective still ACTIVE; the assessor's signature verifies independently",
+  "VELDO-0077 detail: cancel/work-disposition: a cancel with no disposition of the unfinished features is refused; a cancel disposing of only one of them is refused; a disposition recorded by someone else is refused; another project_owner member cannot cancel; nothing changed while refused; the owner's explicit dispositions cancel the objective; the stopped feature is CANCELED with its disposition recorded; the transferred feature now belongs to the other accepted objective",
+  "VELDO-0077 detail: cancel/history-kept: the earlier history entries are kept unchanged; the owner, acceptance and accepted revision are kept; the features list is kept",
+  "VELDO-0077 detail: cancel/reopen-linked: reopening the canceled objective is refused by the lifecycle; amending it is refused; a continuation must name a terminal objective; a new objective linked to it continues the work; the canceled objective is byte-for-byte unchanged",
+  "VELDO-0077 detail: observability: accepted and refused commands are counted; the pending work is exposed"
+ ],
+ "failed_rows": [
+  "VELDO-0077 install/assets",
+  "VELDO-0077 acceptance/intake-source",
+  "VELDO-0077 acceptance/stale-answer",
+  "VELDO-0077 acceptance/owner-only",
+  "VELDO-0077 acceptance/binds-fields",
+  "VELDO-0077 acceptance/later-feature",
+  "VELDO-0077 acceptance/bounded-elaboration",
+  "VELDO-0077 satisfaction/wrong-signer",
+  "VELDO-0077 satisfaction/missing-evidence",
+  "VELDO-0077 satisfaction/stale-revision",
+  "VELDO-0077 satisfaction/unproven-outcome",
+  "VELDO-0077 satisfaction/proven",
+  "VELDO-0077 satisfaction/other-process",
+  "VELDO-0077 cancel/work-disposition",
+  "VELDO-0077 cancel/history-kept",
+  "VELDO-0077 cancel/reopen-linked",
+  "VELDO-0077 observability"
+ ],
+ "modules": {
+  ".veldo/control_intake.py": {
+   "at_commit": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4",
+   "now": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4"
+  },
+  ".veldo/control_objective.py": {
+   "at_commit": null,
+   "now": "7c304ffbd74c16d99626233ad0ce17a83bc95c84f1fa030ba84a604a80cfe3ca"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "now": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905",
+   "now": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd",
+   "now": "8148919cc131926e60cb2863ab3342cce6028abf54636fe29a819e94d6fe63e6"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0077 install/assets",
+   false
+  ],
+  [
+   "VELDO-0077 acceptance/intake-source",
+   false
+  ],
+  [
+   "VELDO-0077 acceptance/stale-answer",
+   false
+  ],
+  [
+   "VELDO-0077 acceptance/owner-only",
+   false
+  ],
+  [
+   "VELDO-0077 acceptance/binds-fields",
+   false
+  ],
+  [
+   "VELDO-0077 acceptance/later-feature",
+   false
+  ],
+  [
+   "VELDO-0077 acceptance/bounded-elaboration",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/wrong-signer",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/missing-evidence",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/stale-revision",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/unproven-outcome",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/proven",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/other-process",
+   false
+  ],
+  [
+   "VELDO-0077 cancel/work-disposition",
+   false
+  ],
+  [
+   "VELDO-0077 cancel/history-kept",
+   false
+  ],
+  [
+   "VELDO-0077 cancel/reopen-linked",
+   false
+  ],
+  [
+   "VELDO-0077 observability",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.744,
+ "spec_id": "VELDO-0077",
+ "suite": "scripts/suites/72_veldo_0077_objectives.py",
+ "tree": "git archive a0e76af7c909bcc5a1648500d84aeb7e20478ada, unchanged; the current suite file run against it"
+}
