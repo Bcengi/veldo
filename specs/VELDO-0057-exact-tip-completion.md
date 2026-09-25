@@ -159,3 +159,12 @@ exact watermark. A confirmed publication of another unit or dispatch refuses as
 binding_mismatch:publication/unit, an unconfirmed one as unknown_outcome. Suite 70, the red record
 against b53e7b1, finding 57 (29 mutations) and proof/VELDO-0057/ carry the evidence. No
 specification status was changed.
+
+2026-09-24, first critical review: the publication's contract payload carries the unit revision
+its approvals were checked for, and the receipt is about that revision. A unit whose revision moved
+after its publication refuses as stale_subject:landing/revision and writes nothing, and the receipt
+transition refuses a receipt about any other revision. A completion whose projection was refused
+is not ok and names it (class:projection/reason), and a refusal naming another unit's dispatch no
+longer reports that unit's publication as this one's. Suite 70 rows completion/revision-moved,
+completion/projection-refused and completion/foreign-dispatch, the red record against cc300b6 and
+finding 57 (33 mutations) carry the evidence. No specification status was changed.
