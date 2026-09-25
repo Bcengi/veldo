@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -394 +394 @@
+-        if command.get('team_version') != (record or {}).get('version', 0):
++        if command.get('team_version') != (record or {}).get('version', 0) and op != 'amend':  # defect

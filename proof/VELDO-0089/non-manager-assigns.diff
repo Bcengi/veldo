@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -497 +497 @@
+-        if principal not in pm and principal != project.get('owner'):
++        if False:  # defect: any member assigns

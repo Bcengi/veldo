@@ -1,0 +1,7 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -613 +613,3 @@
+-        return {tid: {'kind': KIND, 'data': data}}
++        pm = proposal['team']['roles'][PM_ROLE]['workers'][0]  # defect: the roster grants authority
++        grant = dict(before[pm]['data'], roles=sorted(set(before[pm]['data'].get('roles') or []) | {'admission_authority'}))
++        return {tid: {'kind': KIND, 'data': data}, pm: {'kind': 'membership', 'data': grant}}

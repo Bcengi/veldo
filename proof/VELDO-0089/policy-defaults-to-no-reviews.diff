@@ -1,0 +1,8 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -511 +511 @@
+-            raise Refused('missing_authority:review_policy', 'no accepted review count for risk %r' % data.get('risk'))
++            need = 0  # defect: a missing policy means no reviews
+@@ -549 +549 @@
+-            'policy': {'id': review_policy_id(self.ids['repository_uuid']), 'version': policy_row['version'],
++            'policy': {'id': review_policy_id(self.ids['repository_uuid']), 'version': (policy_row or {}).get('version'),

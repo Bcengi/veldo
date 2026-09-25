@@ -1,0 +1,4 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -556,0 +557 @@
++        return None  # defect: missing staffing asks nobody

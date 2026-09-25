@@ -519,8 +519,9 @@ c.close()
                 # a request that showed the owner another brief.
                 rid4, settled4 = settle('TEAM-4')
                 body = dict(ids, operation='amend', project='proj-a', principal='pm', command_id=next_id('tc'),
-                            nonce=next_id('tn'), team_version=version(), revision=team_record()['proposal']['revision'],
-                            digest=team_record()['proposal']['digest'], request=rid4)
+                            nonce=next_id('tn'), team_version=version(),
+                            revision=(team_record().get('proposal') or {}).get('revision'),
+                            digest=(team_record().get('proposal') or {}).get('digest'), request=rid4)
                 packet = signed('pm', body)
                 packet['command'] = dict(body, request=rid3)
                 forged = service.apply(packet) if service is not None else {'ok': False, 'reason': 'no_team_service'}
@@ -560,7 +561,7 @@ c.close()
                      and refused(by_other, 'not_owner')),
                     ('a member outside the project proposes nothing', refused(outside, 'not_authorized:scope')),
                     ('the manager is still no reviewer', after_promotion.get('revision') == 2
-                     and 'pm' not in after_promotion['team']['roles']['independent_review']['workers'])])
+                     and 'pm' not in (((after_promotion.get('team') or {}).get('roles') or {}).get('independent_review') or {}).get('workers', ['pm']))])
 
                 authority_after = authority_rows()
                 pm_entry = (entity('pm') or {}).get('data') or {}

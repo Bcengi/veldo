@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -478 +478 @@
+-        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:
++        if False:  # defect: whoever settled the request amends the team

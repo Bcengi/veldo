@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -226 +226 @@
+-        if role == PM_ROLE and len(spec['workers']) != 1:
++        if False:  # defect: several project managers

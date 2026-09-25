@@ -1,0 +1,8 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -221 +221 @@
+-    for role in REQUIRED_ROLES:
++    for role in [r for r in REQUIRED_ROLES if r != 'independent_review']:  # defect: review is optional
+@@ -240,0 +241,2 @@
++        if role not in roles:
++            continue
