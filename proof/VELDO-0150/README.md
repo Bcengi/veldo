@@ -68,7 +68,7 @@ an acceptance by his own message. It is outside this footprint.
 ## Suite
 
 `scripts/suites/75_veldo_0150_own_message_acceptance.py`
-(`python3 scripts/selftest.py --suite 75_veldo_0150_own_message_acceptance`, about 1.3 s). The real SQLite
+(`python3 scripts/selftest.py --suite 75_veldo_0150_own_message_acceptance`, about 1.8 s). The real SQLite
 store with OpenSSH command, journal, edge and API signatures; people enrolled by the steward's signed
 VELDO-0025 commands and the Telegram edge by his VELDO-0067 enrollment; Telegram messages acquired by
 the production VELDO-0066 Acquirer over a loopback Bot API (getMe, getUpdates, sendMessage over real
