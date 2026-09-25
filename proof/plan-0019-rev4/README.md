@@ -54,7 +54,7 @@ reviewer judges section, one was added in the repository's three parts.
 | VELDO-0127 | AC1: catalog references, skills, instruction files and load modes; AC2 drops the provider-login clause; new AC4: nothing loads unless listed |
 | VELDO-0129 | New AC4: the Runner and factory loop in the authority service, woken only by commits, the launch pipe and reset timers, the loop never polling; AC5: a receiver that dies wakes the loop and frees its slot; AC6: the re-dispatch or the question to the owner for an account-limited run; moves to stage 5 |
 | VELDO-0131 | The live terminal replaces the "Live agent run" row; new "MCP servers and credentials" and "Repositories and identities" rows; per-account usage |
-| VELDO-0141 | Ready, with its four amendments; bound to W101 |
+| VELDO-0141 | Ready, with its four amendments; bound to W101; AC3 is the record route's contract for the live view; exact-value redaction is its own AC4 with its own falsifier; the Mac run is VELDO-0147 |
 | VELDO-0080, VELDO-0092 | Context and History record the move to Release 2; criteria unchanged |
 
 Every PLAN-0019 specification that was pulled at revision 3 (58 files) now declares `plan_revision: 4`,

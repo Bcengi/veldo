@@ -53,11 +53,9 @@ acceptance_criteria:
       change and error the engine emits, and its error stream, with nothing dropped. Set and
       completeness: Run real Claude Code and Codex workers (their structured event output) through the
       launcher on a unit whose work calls tools, runs a command that writes to its error stream and
-      edits a file, on Linux; compare the kept record, line by line and in order, with what the engine emitted.
-      Before anything is kept, the receiver replaces the exact credential values it resolved for that
-      run, and only then does the secret scanner redact known patterns and high-entropy spans; a
-      planted credential value that the scanner alone would miss never reaches the record. Falsifier:
-      Discard the worker's error stream; the complete-record check must fail.
+      edits a file, on Linux; compare the kept record, line by line and in order, with what the engine
+      emitted, with every line redacted as AC4 requires before it is kept. Falsifier: Discard the
+      worker's error stream; the complete-record check must fail.
     falsified_by: >
       Discard the worker's error stream; the complete-record check must fail.
   - id: AC2
@@ -87,6 +85,20 @@ acceptance_criteria:
     falsified_by: >
       Serve a summarized step list in place of the record's lines; the served-lines comparison must
       fail.
+  - id: AC4
+    text: >
+      Claim: Before a line is kept, the receiver replaces the exact credential values it resolved for
+      that run, and only then does the secret scanner redact known patterns and high-entropy spans, so a
+      credential value the scanner alone would miss never reaches the record. Set and completeness:
+      Resolve for a real run a credential whose value has no known pattern and low entropy, and have the
+      run print it alone, inside a command's output, in its error stream, and joined to a high-entropy
+      span that the scanner redacts only in part; also print a token of a known pattern. Read back the
+      record: every occurrence of the planted value is replaced by the marker naming its kind, the
+      known-pattern token is redacted by the scanner, each line's redaction field names the kinds
+      replaced, and no line holds any part of the planted value. Falsifier: Run the scanner before
+      exact-value replacement; the planted-value row must fail.
+    falsified_by: >
+      Run the scanner before exact-value replacement; the planted-value row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Stop keeping new records and remove the route; kept records remain for the owner to delete by hand.
@@ -168,3 +180,8 @@ record route's contract for the live view (every line in sequence, as emitted, f
 committed count and digest after the run), with its own falsifier, and VELDO-0145 AC2 owns the screen.
 The title says so, and the footprint no longer names VELDO-0131's specification, whose row the plan's
 revision 4 already amended. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: exact-value redaction before the scanner moves from AC1 into new
+AC4, with its own falsifier (run the scanner before exact-value replacement; the planted-value row must
+fail), and its set plants the value joined to a span the scanner redacts only in part, where the order
+decides the result. AC1 keeps the complete record and its error-stream falsifier. Status unchanged.

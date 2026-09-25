@@ -103,7 +103,7 @@ acceptance_criteria:
       Claude Code and Codex workers on the Mac on a unit whose work calls tools, runs a command that
       writes to its error stream and edits a file; compare the record kept on Linux, line by line and in
       order, with what the engine emitted on the Mac, including the error stream, with the run's exact
-      credential values replaced before the scanner runs (VELDO-0141 AC1). Falsifier: Drop the Mac run's
+      credential values replaced before the scanner runs (VELDO-0141 AC1 and AC4). Falsifier: Drop the Mac run's
       error stream at the relay; the Mac complete-record check must fail.
     falsified_by: >
       Drop the Mac run's error stream at the relay; the Mac complete-record check must fail.
