@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W103
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152]
+depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -83,7 +83,7 @@ acceptance_criteria:
       commit; creates the remote under the identity's owner through GitHub's REST interface with the
       identity's token, using the standard library, at the chosen visibility (private unless he said
       otherwise); and pushes the initial commit with the identity's credential through the `identity`
-      profile (VELDO-0142). Fail each step in turn against a disposable remote and require the repository
+      profile (VELDO-0153). Fail each step in turn against a disposable remote and require the repository
       record `failed` with that step named and no later step run. Falsifier: Run the provisioner without
       a settled answer; the settlement-required check must fail.
     falsified_by: >
@@ -94,7 +94,7 @@ acceptance_criteria:
       scaffold laid as one recorded commit when missing, signed by the adoption signer only for a
       repository a settled decision names, and taken on by the running service without a restart. Set
       and completeness: Adopt a repository that carries the scaffold and one that does not; the
-      provisioner checks its remote owner against the identity (VELDO-0142), lays the scaffold as one
+      provisioner checks its remote owner against the identity (VELDO-0153), lays the scaffold as one
       recorded commit and pushes it where missing, and the proposal he answered names that commit. The
       adoption signer is a service key setup enrolls among the host's enrollment signers, whose only use
       is signing a VELDO-0029 binding for a repository named in a settled owner decision; the effect
@@ -143,7 +143,7 @@ nothing creates a repository as an effect, a running service cannot take on a ne
 reinstallation, VELDO-0076 accepted only the store's one repository and only the owner's signed key
 (VELDO-0149 widens both), and a new project cannot come from chat: with one configured project intake routed the request into
 it, and with two it asked "which project?" offering only existing ones. VELDO-0152, VELDO-0126's revision 4
-amendment, routes the request here; VELDO-0142 supplies the identity; VELDO-0139's setup creates the
+amendment, routes the request here; VELDO-0142 supplies the identity and VELDO-0153 its push profile and owner check; VELDO-0139's setup creates the
 factory project.
 
 ## Out of scope

@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153]
     order: 16059
     release: 1
     stage: 6
@@ -1025,9 +1025,9 @@ work:
     stage: 5
   - item: W102
     spec: VELDO-0142
-    title: Every repository is bound to exactly one Git identity, the only source of its author, remote and push credential
+    title: Every repository is bound to exactly one Git identity, configured at setup, and every commit the factory makes for it is authored as that identity
     feature_refs: [F3]
-    depends_on: [VELDO-0028, VELDO-0042, VELDO-0056, VELDO-0057, VELDO-0144]
+    depends_on: [VELDO-0028, VELDO-0042, VELDO-0056, VELDO-0057, VELDO-0144, VELDO-0148]
     order: 15142
     release: 1
     stage: 5
@@ -1035,7 +1035,7 @@ work:
     spec: VELDO-0143
     title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
     feature_refs: [F6]
-    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153]
     order: 15143
     release: 1
     stage: 5
@@ -1109,6 +1109,14 @@ work:
     feature_refs: [F2]
     depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144]
     order: 15147
+    release: 1
+    stage: 5
+  - item: W113
+    spec: VELDO-0153
+    title: Every push the factory makes for a repository authenticates with its Git identity alone, to a remote under that identity's owner
+    feature_refs: [F3]
+    depends_on: [VELDO-0056, VELDO-0057, VELDO-0142, VELDO-0144]
+    order: 15153
     release: 1
     stage: 5
 
@@ -1285,8 +1293,9 @@ end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, 01
 "please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
 VELDO-0150; 0144; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
-VELDO-0147; 0085, 0091, 0090; the rest of 0088, VELDO-0146; 0142; 0143 with the 0076 and 0126
-amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). A specification ships whole and the
+VELDO-0147; 0085, 0091, 0090; the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153;
+0143 with the 0076 and 0126 amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). A
+specification ships whole and the
 run-check refuses one whose dependencies are not shipped, so no specification built before the Mac
 stage carries a Mac leg: the Mac legs of VELDO-0060, 0061, 0062, 0127, 0141 and 0144 are VELDO-0147.
 The amendments of the landed VELDO-0057, 0076, 0077, 0089 and 0126 are VELDO-0148 to VELDO-0152, each
@@ -1439,6 +1448,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W112 | VELDO-0152 | 1 | 4 |
 | W106 | VELDO-0146 | 1 | 5 |
 | W107 | VELDO-0147 | 1 | 5 |
+| W113 | VELDO-0153 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
@@ -1452,8 +1462,8 @@ now. VELDO-0118 through VELDO-0120 and VELDO-0123 are Release 2 parser/gate qual
 already recorded evidence. A release assignment does not undo code or change a status field.
 VELDO-0137, VELDO-0138 and VELDO-0139 are standalone items built on 2026-09-25 that Release 1 reuses:
 the policy digest reader, the authority service running the Telegram ingress, and factory setup on a
-host. W100's VELDO-0140 also builds on VELDO-0138, and W103's VELDO-0143 on VELDO-0139's setup; those
-edges stay in the specifications because a plan edge must name a work item.
+host. W100's VELDO-0140 also builds on VELDO-0138, and W102's VELDO-0142 and W103's VELDO-0143 on
+VELDO-0139's setup; those edges stay in the specifications because a plan edge must name a work item.
 
 ## Revision history and dependency basis
 
