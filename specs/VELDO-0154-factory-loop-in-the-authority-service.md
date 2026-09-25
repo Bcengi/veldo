@@ -80,7 +80,7 @@ acceptance_criteria:
       MCP tool not marked read-only) observe one ordinary decision request to the project's owner
       (VELDO-0064) naming the calls and no dispatch until he answers; his yes dispatches it as a re-run
       would, and his no leaves the unit stopped. A dispatch whose configuration names no catalog revision,
-      as every dispatch does until VELDO-0144 is built, has no tool marked read-only, so every MCP call in
+      as every dispatch does until VELDO-0127 is built, has no tool marked read-only, so every MCP call in
       its record decides ask. Falsifier: Re-dispatch a run whose decision is to ask the owner; the
       ask-before-rerun row must fail.
     falsified_by: >
@@ -154,7 +154,8 @@ the launch receiver as a separate process. A paused project's units are refused 
 check VELDO-0076 added, so the loop offers none of them, and this specification depends on VELDO-0076
 for that pause. It does not depend on the catalog (VELDO-0144), which the design's section 12 builds
 after it: with no catalog revision no tool is marked read-only and every MCP call asks the owner, and
-once VELDO-0144 is built the dispatch's configuration names the revisions whose marks the decision reads. Starting a PM cycle for a project with new
+once VELDO-0127 is built the dispatch's configuration names the catalog revisions whose marks the
+decision reads. Starting a PM cycle for a project with new
 relevant input is VELDO-0088's, run from the same pass. The Runner is class `Runner` in
 `control_launch`; this concern registers its launch pipe in the service loop's poll set and dispatches
 through it, while VELDO-0129 owns what a build or review run does once launched.
@@ -188,3 +189,8 @@ wait for the stage 2 catalog VELDO-0144.
 starts a pass had no falsifier of its own, so it is new AC4 with one (a periodic timer that starts a
 pass reds the no-other-timer row); AC1 keeps the wake sources and the launch-pipe falsifier. Criterion
 meaning unchanged.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC3 and the Notes name VELDO-0127, not VELDO-0144, as the
+specification after which a dispatch's configuration names catalog revisions, because the configuration
+a dispatch records is VELDO-0127's; the catalog alone names no revision on a dispatch. Criterion meaning
+unchanged.
