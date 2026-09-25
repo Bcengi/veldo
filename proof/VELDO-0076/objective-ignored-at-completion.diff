@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -439 +439 @@
+-                found.append({'kind': 'objective', 'id': eid})
++                pass  # defect: a pending objective does not hold completion

@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -335 +335 @@
+-            'bounded_coordination_budget': budget_problems(fields.get('coordination_budget')),
++            'bounded_coordination_budget': [],  # defect: the budget predicate is skipped

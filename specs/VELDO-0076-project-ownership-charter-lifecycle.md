@@ -23,6 +23,9 @@ footprint:
   - "engine/.veldo/frontier.py"
   - ".veldo/frontier.py"
   - "packs/*/.veldo/frontier.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "packs/*/.veldo/control_eligibility.py"
   - "engine/.veldo/control_project*.py"
   - ".veldo/control_project*.py"
   - "packs/*/.veldo/control_project*.py"
@@ -140,3 +143,5 @@ and AC2 restart moved to Release 2; multiple-channel breadth moved to Release 4.
 charter, budget, pause and cancellation remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-25, build: the footprint gains `control_eligibility.py` (engine, installed and pack copies). Pause and cancel must stop dispatch as well as the frontier's offers, and the one place every station (selection, claim, the runner's preparation, the receiver's recheck, publication) asks is the VELDO-0052 Gate, so its unit check now refuses a unit whose project is not ACTIVE (`project_not_active:<state>`); a check in frontier.py alone would have left every dispatch path open. The project service is the new `control_project.py`; the frontier, `request.py` and `authorization.py` are unchanged. Status unchanged.
