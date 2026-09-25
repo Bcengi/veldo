@@ -571,6 +571,9 @@ def cases():
     def reservation(name, module, old, new, row):
         add(36, name, '58_veldo_0036_reservations.py', module, old, new,
             ['reservations/' + row])
+        if module == 'control_reservations.py':
+            # It loads the account records (control_accounts, VELDO-0062) beside itself.
+            result[-1]['siblings'] = True
 
     reservation('reservation-final-reuses-partial', 'control_reservations.py',
                 "if unit in p['usage']:\n                        value['charge'][unit] = p['usage'][unit]",
