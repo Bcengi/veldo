@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W73
 plan_revision: 4
-depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0132]
+depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0129, VELDO-0132, VELDO-0151]
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
@@ -54,18 +54,14 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: The PM reads an immutable accepted snapshot and returns proposals under its bounded
-      coordination contract; its cycles run the default pipeline, every model-mediated node launches
-      as an ordinary worker run through the Runner, and for single-unit work one coordination run
-      may also write the requirements. Set and completeness: Run actual LangGraph proposal,
-      no-action and failure cycles on the one default pipeline workflow revision (intake,
-      coordinate, elaborate, admit, assign, build, prove and gate, review, land, report). At the
-      coordinate node observe a PM run dispatched through the Runner (VELDO-0039) under a
-      coordination station, with the role's capability configuration and the cycle's accepted
-      snapshot as input, returning one typed proposal document of owner questions, decomposition and
-      a staffing choice per unit; for work the PM judges to be one unit the same run fetches the
-      referenced material and writes the requirements and the elaboration station is recorded as
-      done by that run, while work of several units gets a separate elaboration run and a second
-      cycle that stages the units against the published requirements. Enumerate required
+      coordination contract; its cycles run the default pipeline, and every model-mediated node
+      launches as an ordinary worker run through the Runner. Set and completeness: Run actual
+      LangGraph proposal, no-action and failure cycles on the one default pipeline workflow revision
+      (intake, coordinate, elaborate, admit, assign, build, prove and gate, review, land, report). At
+      the coordinate node observe a PM run dispatched through the Runner (VELDO-0039) under a
+      coordination station, with the capability configuration the team's PM role names (VELDO-0151)
+      and the cycle's accepted snapshot as input, returning one typed proposal document of owner
+      questions, decomposition and a staffing choice per unit. Enumerate required
       project/source/watermark/input-version/reservation fields and compare every cycle receipt,
       including empty cycles, to real store records. Falsifier: Invoke the model for a coordinate
       node inside the cycle runner instead of dispatching a run through the Runner; the
@@ -93,6 +89,24 @@ acceptance_criteria:
     falsified_by: >
       Discard pending input when the active cycle ends; the expected-follow-up observation must
       fail.
+  - id: AC4
+    text: >
+      Claim: For work the PM judges to be one unit, the one coordination run also writes the
+      requirements and stages that unit with the team's four required roles, and the builder fetches
+      a referenced ticket itself. Set and completeness: For an admitted objective whose text is
+      "please do BCG-123", a one-unit change, run the cycle the factory loop (VELDO-0129 AC4) starts
+      for its project. The PM run's proposal judges one
+      unit and writes its requirements, carrying the owner's message and every reference in it as he
+      wrote it; the elaboration station is recorded as done by that run and no elaboration run is
+      dispatched; the unit is staged with the project manager, elaboration, implementation and
+      independent review roles through VELDO-0089's assignment, a builder and an independent
+      reviewer; and the builder's run fetches BCG-123 itself with the catalog server its role's
+      configuration lists. A one-line fix costs one coordination run, one build and one review.
+      Falsifier: Dispatch a separate elaboration run for work the PM judged to be one unit; the
+      one-run staging row must fail.
+    falsified_by: >
+      Dispatch a separate elaboration run for work the PM judged to be one unit; the one-run staging
+      row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -105,9 +119,13 @@ Project-manager execution graphs. Deliver the normal function needed by the runn
 
 ## Context
 
-W73 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W73 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5 (moved from stage 4
+by revision 4, because the PM role's capability configuration comes from the stage 5 VELDO-0151).
 Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
-designs the PM as a role whose reasoning runs as ordinary worker runs.
+designs the PM as a role whose reasoning runs as ordinary worker runs. This is the thin VELDO-0088 of
+stage 2 of the design's critical path (section 12): one PM run stages one unit with the four required
+roles, and the builder fetches the ticket itself. Work of several units, with its separate elaboration
+run and second PM cycle, is VELDO-0146, stage 3 of that path.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -115,15 +133,20 @@ implementation or historical evidence. Risk and approval requirements remain unc
 ## Out of scope
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
-No automatic recovery, extra channel activation or broader host qualification is implied.
+No automatic recovery, extra channel activation or broader host qualification is implied. Work the PM
+judges to be several units (VELDO-0146) and quoting each reference with its tool, fetch time and
+digest (VELDO-0091).
 
 ## What the reviewer judges
 
 - Normal use: the factory loop starts a PM cycle for a project with new input; the cycle runs the default
   pipeline revision, dispatches the PM run through the Runner with the role's configuration and the
   accepted snapshot, and applies the returned proposals one owning command at a time; for one-unit
-  work that run also fetches the referenced material and writes the requirements.
-- Threat model: a model called inside the cycle runner or the authority instead of as a dispatched run; a node
+  work that run also writes the requirements and stages the unit with the four required roles, and
+  the builder fetches the referenced ticket itself.
+- Threat model: a model called inside the cycle runner or the authority instead of as a dispatched run; a
+  separate elaboration run or a second cycle spent on one-unit work; a unit staged without one of the
+  four required roles; a node
   that admits, prioritizes, assigns, dispatches or completes directly, or reaches the store, a shell
   or SQL; a proposal applied after an earlier one in the same cycle was refused; an empty cycle with
   no receipt; pending input dropped, or a second concurrent cycle for one project. The owner's
@@ -143,7 +166,9 @@ and hands each proposal, in order, to the command that owns it (VELDO-0064 for a
 VELDO-0079 for grooming, VELDO-0085 for publication, VELDO-0089 for an assignment); a refusal stops
 the rest of that cycle's proposals by name and is reported, and the next cycle starts from the new
 accepted snapshot. All-or-nothing groups are VELDO-0092, in Release 2. A one-line fix costs one
-coordination run, one build and one review. This item brings 0093 ordinary cycle scheduling forward: at most one cycle per
+coordination run, one build and one review. Until VELDO-0091 lands, the requirements carry each
+reference as the owner wrote it and the builder fetches it with the catalog server its role lists
+(VELDO-0127, VELDO-0144); VELDO-0091 then has the coordination run fetch and quote it. This item brings 0093 ordinary cycle scheduling forward: at most one cycle per
 project and one bounded follow-up for pending relevant input. Checkpoint recovery and broad
 replacement equivalence remain Release 2.
 
@@ -172,3 +197,12 @@ and one coordination run may also write the requirements for single-unit work; i
 the Runner-dispatch check. The Notes say the authority service runs the cycle scheduler and how
 proposals take effect through their owning commands now that VELDO-0092 is Release 2. A What the
 reviewer judges section is added. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: split on the design's section 12, because a specification ships
+whole and the run-check refuses one whose dependencies are not shipped. This specification is the thin
+VELDO-0088 of the critical path's stage 2: AC1 keeps the Runner dispatch with its falsifier, and new AC4
+is the one-unit path, where the coordination run writes the requirements and stages the unit with the
+four required roles and the builder fetches the ticket itself (section 12), with its own falsifier.
+Several-unit work moves whole to VELDO-0146. depends_on adds VELDO-0089 (the four required roles),
+VELDO-0129 (the factory loop starts the cycle) and VELDO-0151 (the configuration each role names), and
+the work item moves to stage 5. Status unchanged.

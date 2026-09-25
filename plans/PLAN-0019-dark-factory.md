@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152]
     order: 16059
     release: 1
     stage: 6
@@ -825,10 +825,10 @@ work:
     spec: VELDO-0088
     title: Project-manager execution graphs
     feature_refs: [F7]
-    depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0132]
-    order: 14088
+    depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0129, VELDO-0132, VELDO-0151]
+    order: 15088
     release: 1
-    stage: 4
+    stage: 5
   - item: W74
     spec: VELDO-0089
     title: Versioned team configuration
@@ -1095,6 +1095,14 @@ work:
     order: 14152
     release: 1
     stage: 4
+  - item: W106
+    spec: VELDO-0146
+    title: Work of several units gets a separate elaboration run and a second PM cycle that stages the units against the published requirements
+    feature_refs: [F7]
+    depends_on: [VELDO-0085, VELDO-0088, VELDO-0091]
+    order: 15146
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1266,9 +1274,9 @@ stage may integrate an earlier service without making that service depend on the
 dependency on the same or an earlier stage. The order in which the remaining Release 1 items are
 built follows section 12 of the operating-model design, so the owner starts using the factory at the
 end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, 0145, 0128), then
-"please do BCG-123" to a landed change (0089, 0140, 0078, 0079, 0144, 0127, a thin 0088, the 0057
-re-land as VELDO-0148), then the rest of the MVP (0124, 0125, 0085, 0091, 0090, the rest of 0088, 0142, 0143, the
-rest of 0131, 0059). Where a Release 1 criterion names a Mac leg of an item built before the Mac
+"please do BCG-123" to a landed change (0089, 0140, 0078, 0079, 0144, 0127, a thin 0088 that stages
+one unit, the 0057 re-land as VELDO-0148), then the rest of the MVP (0124, 0125, 0085, 0091, 0090,
+the rest of 0088 as VELDO-0146, 0142, 0143, the rest of 0131, 0059). Where a Release 1 criterion names a Mac leg of an item built before the Mac
 stage, that leg is qualified when VELDO-0124 and VELDO-0125 land, the way VELDO-0060 and VELDO-0061
 already qualify their Mac configuration in the host stage.
 
@@ -1382,7 +1390,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W70 | VELDO-0085 | 1 | 4 |
 | W71 | VELDO-0086 | 3 | - |
 | W72 | VELDO-0087 | 3 | - |
-| W73 | VELDO-0088 | 1 | 4; amended in revision 4 |
+| W73 | VELDO-0088 | 1 | 5; one-unit work, amended in revision 4 |
 | W74 | VELDO-0089 | 1 | 4 |
 | W75 | VELDO-0090 | 1 | 5; amended in revision 4 |
 | W76 | VELDO-0091 | 1 | 5; amended in revision 4 |
@@ -1417,6 +1425,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W110 | VELDO-0150 | 1 | 4 |
 | W111 | VELDO-0151 | 1 | 5 |
 | W112 | VELDO-0152 | 1 | 4 |
+| W106 | VELDO-0146 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
