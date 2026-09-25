@@ -4655,6 +4655,19 @@ def cases():
                "        if not isinstance(origin, str):  # defect: any origin\n", 'stale/key-and-configuration')
     activation('bot-unbound', 'control_channel_attribution.py', "        self.P.gated_bot(self.activation, result['id'])\n", '',
                'stale/key-and-configuration')
+    # Review 1, B1: a listener at the configured origin redirects the exchange, token and all, elsewhere.
+    activation('redirect-followed', 'control_channel_projection.py',
+               '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)\n',
+               '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), *handlers)  # defect: redirects followed\n',
+               'activation/no-redirect')
+    activation('ungated-edge-default-opener', 'control_channel_projection.py',
+               '        return bot_opener().open(request, timeout=timeout)\n',
+               '        return urllib.request.urlopen(request, timeout=timeout)  # defect: the default opener\n',
+               'activation/no-redirect')
+    activation('gate-opener-own-build', 'control_channel_activation.py',
+               '    return P.bot_opener(Handler())\n',
+               '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())  # defect: redirects followed\n',
+               'activation/no-redirect')
     return result
 
 

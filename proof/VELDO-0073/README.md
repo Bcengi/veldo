@@ -54,9 +54,10 @@ store, OpenSSH signatures, the actual protected signer process, the production i
 two loopback Bot API servers, a local TLS stand-in, and a socket guard that refuses and counts every
 connection beyond 127.0.0.1, so no row and no mutant reaches Telegram. Registry:
 `scripts/check_teeth_mutations.py --finding 73`. `python3 -B proof/VELDO-0073/drive.py` regenerates
-`mutations.json` and the diffs: 19 mutants, each reds its named row by assertion, baseline and a no-op
-copy of each of the seven mutated modules green. `red-at-3dc0393.json`: the current suite against the
-pre-change tree, every row red by assertion.
+`mutations.json` and the diffs: 22 mutants, each reds its named row by assertion, baseline and a no-op
+copy of each mutated module green. `red-at-3dc0393.json`: the current suite against the
+pre-change tree, every row red by assertion. `red-at-ad856ac.json`: the current suite against the tree
+before review 1's redirect fix, where `activation/no-redirect` is the one red row, by assertion.
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
@@ -69,6 +70,7 @@ pre-change tree, every row red by assertion.
 | `notification/wakes-only` | AC3 | `notification-settles` |
 | `stop/halts-edge` | AC4 | `stop-ignored` |
 | `stale/key-and-configuration` | AC4 | `bindings-not-compared`, `origin-unbound`, `bot-unbound` |
+| `activation/no-redirect` | AC1 (review 1) | `redirect-followed`, `ungated-edge-default-opener`, `gate-opener-own-build` |
 
 `qualification/live-telegram` (AC2, real platform) is PENDING: the suite prints it as pending and
 counts nothing until `proof/VELDO-0073/live/qualification.json` exists, then verifies it with the same

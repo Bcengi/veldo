@@ -1,6 +1,6 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -369,3 +369 @@
+@@ -370,3 +370 @@
 -        if record.get('state') == 'stopped':
 -            self._refuse(operation, 'edge_stopped', 'the edge was stopped by an explicit record')
 -        if record.get('state') not in ('qualifying', 'active'):

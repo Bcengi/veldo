@@ -189,3 +189,9 @@ connection, and a row drives that construction. VELDO-0069 is added to depends_o
 a principal that must be one of the host's settlement signers and a 0600 key outside the workspace
 whose probe signature must verify under those signers, so governing bindings are signed by the key
 the reading side trusts.
+
+2026-09-24, review 1 fix (blocking): a listener at the configured loopback origin could answer with a redirect and
+urllib followed it, token in the path, to any host, including api.telegram.org, with no activation, on the
+ungated edge and through the gate's own opener. Every Bot API exchange now uses one opener
+(control_channel_projection.bot_opener) with no proxy and no redirect. Row activation/no-redirect, red at ad856ac
+(proof/VELDO-0073/red-at-ad856ac.json), and three mutations in finding 73.
