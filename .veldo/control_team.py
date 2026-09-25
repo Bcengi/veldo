@@ -515,19 +515,20 @@ class Teams:
                 isinstance(r, dict) and set(r) == {'reviewer', 'subject'} and _is_str(r['reviewer']) for r in reviewers):
             raise Refused('invalid_input:positions', 'one builder and a list of reviewer positions')
         entries = {m.get('principal'): m for m in state['membership'] if isinstance(m, dict)}
-        problems = []
+        problems, staffed = [], []
         if builder not in team['roles']['implementation']['workers']:
-            problems.append('not_staffed:implementation/%s' % builder)
+            staffed.append('not_staffed:implementation/%s' % builder)
         group = (entries.get(builder) or {}).get('independence_group') or builder
         seen = set()
         for position in reviewers:
             who = position['reviewer']
             if who not in team['roles']['independent_review']['workers']:
-                problems.append('not_staffed:independent_review/%s' % who)
+                staffed.append('not_staffed:independent_review/%s' % who)
             mine = (entries.get(who) or {}).get('independence_group') or who
             if who == builder or mine == group or who in seen:
                 problems.append('reviewer_not_independent:%s' % who)
             seen.add(who)
+        problems += staffed
         for position in [{'reviewer': 'builder', 'subject': command.get('subject')}] + reviewers:
             if position['subject'] != subject:
                 problems.append('wrong_subject:%s' % position['reviewer'])
