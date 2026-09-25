@@ -1,0 +1,12 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -765 +765,8 @@
+-            permission = self._permission(stop, item, state, now)
++            answered = [self.presenter.answer_record(rid, v, stop['resolving']['principal'])
++                        for v in range(1, item['data']['request_version'] + 1)]
++            answered = [a for a in answered if a and a.get('ruling') == 'approve']  # defect: any version's answer
++            permission = ({'kind': 'answer', 'settlement_id': None, 'receipt_id': None, 'effect_id': None,
++                           'principal': answered[-1]['principal'], 'ruling': 'approve',
++                           'request_version': answered[-1]['request_version'],
++                           'presentation_id': answered[-1].get('presentation_id')}
++                          if answered else self._permission(stop, item, state, now))

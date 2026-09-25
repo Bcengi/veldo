@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -494 +494 @@
+-                and activation.get('owner') != principal and activation.get('enrolled_chat') != chat)
++                and activation.get('enrolled_chat') != chat)  # defect: the owner is not exempt while re-enrolled

@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -715 +715 @@
+-        if settled.get('ruling') != RESUME_RULING:
++        if False:  # defect: a reject or a return resumes the stop

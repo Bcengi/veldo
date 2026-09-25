@@ -1,0 +1,10 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -765 +765,6 @@
+-            permission = self._permission(stop, item, state, now)
++            kept = self.notices(sid)  # defect: a notification acknowledgement resumes the stop
++            permission = ({'kind': 'notice', 'settlement_id': None, 'receipt_id': None, 'effect_id': None,
++                           'principal': stop['resolving']['principal'], 'ruling': 'approve',
++                           'request_version': kept[-1]['request_version'],
++                           'presentation_id': kept[-1]['presentation_id']}
++                          if kept else self._permission(stop, item, state, now))

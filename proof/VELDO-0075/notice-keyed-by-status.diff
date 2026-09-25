@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -662 +662 @@
+-        key = notice_key(rid, data['request_version'], pid)
++        key = '%s|%s' % (rid, data['state'])  # defect: the notice is keyed by request id and status

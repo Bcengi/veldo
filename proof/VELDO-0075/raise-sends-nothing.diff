@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -480 +480 @@
+-        result['notice'] = self.notify(sid) if result['request'].get('outcome') == 'opened' else None
++        result['notice'] = None  # defect: a stop never reaches the channel

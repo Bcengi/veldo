@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -466 +466 @@
+-            expected[self._activation_id()] = (activation or {}).get('entity_version', 0)
++            pass  # defect: the activation record's version is not pinned in the raise transaction
