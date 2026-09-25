@@ -642,3 +642,143 @@ class Activations:
             raise Refused('store_refused', exc.code)
         self._observe(QUALIFY, 'accepted', None, {qid: 0}, qualification_id=qid, seq=committed.get('seq'))
         return qid, digest(data), data
+
+
+# ---------------------------------------------------------------------------------------------
+# The owner's command surface (VELDO-0138): veldo channel status|qualify|activate|stop
+# ---------------------------------------------------------------------------------------------
+#
+# The owner's own command path to the RUNNING authority service, which applies it to the gate every
+# exchange of its ingress asks. bin/veldo routes `veldo channel` here and adds nothing. Each command
+# reads the service's channel status (inspect, a signed request like every other), builds the one
+# channel_activation_authorize command of the action from what the service reports (its configured
+# origin and edge key, the authority coordinates and versions, and for activate the qualification the
+# service recorded in the current run), signs the envelope with the owner's enrolled key and sends it
+# through control_client to the authority of the named workspace. The service admits it only when it
+# is the owner's own signature (Activations.authorize); nothing here decides that.
+
+COMMAND_ACTIONS = ('status', 'qualify', 'activate', 'stop')
+EXIT_REFUSED, EXIT_USAGE = 1, 2
+DEFAULT_RUN_MINUTES = 15
+
+
+def ssh_signer(key, namespace='veldo-command'):
+    """sign(bytes) -> text with the private key file `key`, never through an agent."""
+    import os
+    import subprocess
+
+    def sign(message):
+        done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', key, '-n', namespace], input=message,
+                              capture_output=True, timeout=30,
+                              env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')})
+        if done.returncode:
+            raise Refused('unavailable_service', 'the key did not sign')
+        return done.stdout.decode()
+    return sign
+
+
+def owner_command(action, status, principal, now, *, minutes=DEFAULT_RUN_MINUTES, qualification=None, serial=None):
+    """(envelope, command) of one owner action over what the running service reports in `status` (its
+    inspect answer's `channel`). Refused by name when the service reports no channel or, for activate,
+    no qualification to name."""
+    import uuid
+    if not isinstance(status, dict) or not status.get('available'):
+        raise Refused('unavailable_service', 'the authority runs no Telegram channel (%s)'
+                      % ((status or {}).get('refusal') or 'not configured'))
+    params = {'channel': CHANNEL, 'action': action, 'owner': principal, 'origin': status.get('origin'),
+              'edge_key_id': status.get('edge_key_id')}
+    if action == 'qualify':
+        if type(minutes) is not int or not 1 <= minutes <= MAX_RUN_SECONDS // 60:
+            raise Refused('invalid_input', 'a qualification run lasts 1 to %d minutes' % (MAX_RUN_SECONDS // 60))
+        params['expires_at'] = now + 60 * minutes
+    elif action == 'activate':
+        named = qualification or status.get('qualification') or {}
+        if not _text(named.get('id')) or not _text(named.get('digest')):
+            raise Refused('missing_qualification', 'the running service has recorded no qualification for this run')
+        params.update(qualification_id=named['id'], qualification_digest=named['digest'])
+    elif action != 'stop':
+        raise Refused('invalid_input', 'one of qualify, activate or stop')
+    ids = status.get('authority_ids') or {}
+    command_id = 'channel-%s-%s' % (action, serial or uuid.uuid4().hex)
+    command = {'command_id': command_id, 'operation': AUTHORIZE, 'target': E.target(CHANNEL), 'parameters': params,
+               'artifact_digests': [], 'expected_versions': {}}
+    envelope = {'domain_uuid': ids.get('domain_uuid'), 'repository_uuid': ids.get('repository_uuid'),
+                'store_uuid': ids.get('store_uuid'), 'schema': AC.ENVELOPE_SCHEMA, 'command_id': command_id,
+                'principal': principal, 'request_revision': 1, 'nonce': 'nonce-' + command_id, 'expires_at': now + 600,
+                'membership_version': status.get('membership_version'),
+                'delegation_version': status.get('delegation_version'),
+                'command_digest': AC.canonical_command_digest(command)}
+    return envelope, command
+
+
+def main(argv=None):
+    """veldo channel status|qualify|activate|stop --principal <owner> --key <his enrolled private key>
+    [--workspace <enrolled clone>] [--host-trust <file>] [--minutes N] [--qualification-id ID
+    --qualification-digest DIGEST]. Prints one JSON answer; exit 0 accepted, 1 refused by name,
+    2 usage or no route to the authority."""
+    import argparse
+    import os
+    import sys
+    parser = argparse.ArgumentParser(prog='veldo channel', description='The owner\'s Telegram edge commands, '
+                                     'applied by the running authority service.')
+    parser.add_argument('action', choices=COMMAND_ACTIONS)
+    parser.add_argument('--workspace', default=os.getcwd(), help='an enrolled clone of this authority (default: here)')
+    parser.add_argument('--principal', required=True, help='the owner, signing for himself')
+    parser.add_argument('--key', required=True, help='his enrolled private key file')
+    parser.add_argument('--host-trust', help='this host\'s trust file (default: the installed one)')
+    parser.add_argument('--minutes', type=int, default=DEFAULT_RUN_MINUTES, help='a qualification run\'s length')
+    parser.add_argument('--qualification-id')
+    parser.add_argument('--qualification-digest')
+    try:
+        args = parser.parse_args(sys.argv[1:] if argv is None else list(argv))
+    except SystemExit as exc:
+        return exc.code if isinstance(exc.code, int) else EXIT_USAGE
+
+    def answer(value, code):
+        print(json.dumps(value, sort_keys=True))
+        return code
+
+    CC, CE, EL = organ('control_client'), organ('control_enrollment'), organ('control_eligibility')
+    workspace = os.path.realpath(args.workspace)
+    try:
+        trust = EL.load_host_trust(args.host_trust)
+        binding = CE.read_binding(workspace)
+    except (EL.Stopped, CE.EnrollmentRefused, OSError, ValueError) as exc:
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': 'unenrolled_workspace',
+                       'detail': type(exc).__name__}, EXIT_USAGE)
+    if trust is None or not isinstance(binding, dict):
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': 'unenrolled_workspace'}, EXIT_USAGE)
+    verify = trust.verifier(binding.get('enrolled_by'), workspace)
+    sign = ssh_signer(os.path.realpath(args.key))
+
+    def send(packet):
+        response = CC.send(workspace, packet, CE, verify, sign, trust.host_identity, timeout=60)
+        if not response.get('accepted'):
+            raise Refused(response.get('reason') or 'unknown_outcome', 'the authority refused the request')
+        return response.get('result') or {}
+
+    try:
+        status = send({'operation': 'inspect', 'entity_ids': []}).get('channel') or {}
+        if args.action == 'status':
+            return answer({'action': 'status', 'outcome': 'accepted', 'channel': status}, 0)
+        named = ({'id': args.qualification_id, 'digest': args.qualification_digest}
+                 if args.qualification_id or args.qualification_digest else None)
+        envelope, command = owner_command(args.action, status, args.principal, time.time(), minutes=args.minutes,
+                                          qualification=named)
+        result = send({'command': command, 'envelope': envelope,
+                       'signature': sign(AC.canonical_envelope_bytes(envelope))})
+    except CC.RoutingRefused as exc:
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': exc.reason}, EXIT_USAGE)
+    except Refused as exc:
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': exc.code}, EXIT_REFUSED)
+    shown = {'action': args.action, 'outcome': 'accepted' if result.get('ok') else 'refused',
+             'reason': None if result.get('ok') else result.get('reason'), 'state': result.get('state'),
+             'command_id': command['command_id']}
+    if args.action == 'activate':
+        shown['qualification'] = {'id': command['parameters']['qualification_id'],
+                                  'digest': command['parameters']['qualification_digest']}
+    return answer(shown, 0 if result.get('ok') else EXIT_REFUSED)
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
