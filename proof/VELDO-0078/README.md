@@ -52,7 +52,15 @@ self-approval, and the canonical gate is run by the lead, not recorded here.
   `executable_record_problems(unit, item)`, in a module that imports nothing: [] only when the item is
   PRIORITIZED or ACTIVE and the unit is neither PLANNED nor terminal. The service re-exports it and
   refuses to load (ImportError, named) when its state classification does not partition the entity
-  contract's backlog_item states or its terminal sets differ from the contract's.
+  contract's backlog_item states, or its execution_unit classes (PLANNED, the prioritized non-terminal
+  states, the terminal set) do not partition that vocabulary's states, or its terminal sets differ from
+  the contract's. It also holds `unit_binding(unit, item)`, what a ticket for one unit binds of its
+  backlog item: the item's identity, project, objective, title, scope and work class, its admission,
+  completion and cancellation, whether its state is executable (the state itself is judged fresh by
+  `priority_current`), the unit's own decomposition entry, the first priority record that names it (the
+  one that prioritized it), and any field the module does not classify. Every other field is a sibling's
+  entry or bookkeeping: the rest of the decomposition and the later priority records, the history, the
+  applied requests, the decomposition revision and digest, the latest priority and the blocks.
 - **`.veldo/control_eligibility.py`.** `priority_current` is a predicate of every station, answered by
   that module over the unit and backlog records the decision consumed, so selection (the frontier's
   offers and the VELDO-0132 cycle's assignment step), claim, direct execution, build, review,
@@ -60,7 +68,12 @@ self-approval, and the canonical gate is run by the lead, not recorded here.
   loads the import-free module, never the service: the service's entity contract loads the engine's
   parser, which the Gate runs only inside its VELDO-0053 snapshot (loading the service turned suite
   60_veldo_0053's `architecture/identity-keyed-by-module` red). `Gate.landing` returns the id of the
-  receipt that establishes `revision_landed`, the evidence DONE records.
+  receipt that establishes `revision_landed`, the evidence DONE records. A ticketed decision compares the
+  unit's backlog item by the digest of `unit_binding` for that unit, never the whole record: the backlog
+  service rewrites the item on a sibling's append, prioritization and disposal, and the approved units
+  continue meanwhile (review 2), so `CallHandle.invoke` against the build decision and
+  `Dispatcher._land` against the review decision stay current, while a change bearing on the unit is
+  `stale_input:backlog`.
 - **`.veldo/frontier.py`.** Unchanged against main: the Gate's selection station now asks the question.
 - **`.veldo/tasks.py`.** With a Gate (an enrolled repository always has one, through
   `control_eligibility.gate_for`), `claim_task`, `claim_answer`, `claimable` and `task_report` refuse
@@ -82,7 +95,7 @@ transition writes both and `declare_owners` binds each command to one module.
 
 ## Rows, falsifiers and red record
 
-Suite `scripts/suites/73_veldo_0078_backlog.py` (about 4.5 s): the real SQLite store with OpenSSH command,
+Suite `scripts/suites/73_veldo_0078_backlog.py` (about 5.5 s): the real SQLite store with OpenSSH command,
 claim, journal and API signatures; the backlog items taken from RAW features of an objective the owner
 accepted through the real VELDO-0077 service; every admission, priority, block resolution and alternative
 outcome a real VELDO-0064 request presented by the VELDO-0065 presenter over a loopback Bot API, answered
@@ -116,6 +129,16 @@ the decomposition absent. `activation/decomposition-growth` (the declared falsif
 each a new revision; the appended units PLANNED and refused by the receiver, the task claim (the Gate
 naming the missing priority) and the frontier; an approved unit claimed meanwhile; the earlier prioritization not covering them and an answer
 to an earlier revision refused; the fresh prioritization of the current revision making them READY.
+`ticket/sibling-changes` (review 2's blocking finding): a running unit's build and review decisions, then
+the real `CallHandle.invoke` against the build decision (a stub provider behind it) and the real
+`Dispatcher._land` against the review decision (a stub lander) accepted after a sibling is appended, after
+its prioritization and after its authorized disposal, with the item's entries and bookkeeping rewritten
+each time, and every field the service writes on the item one the binding classifies.
+`ticket/own-changes`: with the item record rewritten by a fixture and then restored, a change to the unit's
+own decomposition entry, to the priority record that prioritized it, to the item's scope, or a field the
+binding does not classify, refuses both as `stale_input:backlog`, while a change to a sibling's entry alone
+leaves both accepted (the additive control) and the restored record is current again.
+`priority/gate-question` also names an entity contract with an extra non-terminal unit state.
 
 **AC3.** `blocked/resume-binding`: the recorded phase and reason, the Gate and the claim blocked, resume
 refused with no answer, an answer about another subject, an answer bound to another block, an answer to
@@ -138,8 +161,14 @@ with that outcome. `lifecycle/regular-path` checks the
 main item's whole history and the reject, return and cancel branches. `other-process` and
 `observability` complete the set.
 
-`red-at-8bb474c.json`: the current suite run against `git archive 8bb474c` (the build this review
-judged) unchanged. Ten of 18 rows fail, each by its own assertions (`by_assertion: true`): install/assets
+`red-at-8bc4517.json`: the current suite run against `git archive 8bc4517` (the build review 2 judged)
+unchanged. Three of 20 rows fail, each by its own assertions (`by_assertion: true`):
+priority/gate-question (an extra unit state was not named), ticket/sibling-changes (the subscription call
+and the landing refused `stale_input:backlog` after the sibling's append, prioritization and disposal, and
+no field classification) and ticket/own-changes (a sibling's entry alone made the tickets stale, and the
+restored record was still stale). The other 17 rows cover behavior 8bc4517 already had.
+`red-at-8bb474c.json`: the review 1 suite's record against `git archive 8bb474c` (the build review 1
+judged). Ten of 18 rows fail, each by its own assertions (`by_assertion: true`): install/assets
 (no import-free question), priority/missing-priority (the Gate accepted unprioritized work),
 priority/gate-question, activation/decomposition-growth (the Gate's reason), blocked/resume-binding and
 done/authorized-alternative (no brief bound), done/accepted-outcomes, done/one-completion-reader (no
@@ -147,8 +176,8 @@ done/authorized-alternative (no brief bound), done/accepted-outcomes, done/one-c
 eight rows cover behavior 8bb474c already had. `red-at-467d168.json` is the first build's record against
 the tree before the backlog service, with that build's suite.
 
-`mutations.json` (from `python3 -B proof/VELDO-0078/drive.py`, about 156 s serial): the baseline and a
-no-op copy of each of the five mutated modules are green, and each of the 21 finding-78 mutations turns its
+`mutations.json` (from `python3 -B proof/VELDO-0078/drive.py`, about 181 s serial): the baseline and a
+no-op copy of each of the five mutated modules are green, and each of the 29 finding-78 mutations turns its
 named row red by assertion. The applied diffs are beside it. Names are unique across every finding.
 
 | Mutation | Module | Named row |
@@ -174,12 +203,20 @@ named row red by assertion. The applied diffs are beside it. Names are unique ac
 | backlog-closed-unit-not-counted | control_backlog.py | done/closed-unit |
 | backlog-resume-brief-unbound | control_backlog.py | blocked/resume-binding |
 | backlog-alternative-brief-unbound | control_backlog.py | done/authorized-alternative |
+| backlog-ticket-whole-record (the ticket binds the record minus its state again) | control_eligibility.py | ticket/sibling-changes |
+| backlog-ticket-binds-sibling-entries | control_backlog_priority.py | ticket/sibling-changes |
+| backlog-ticket-binds-sibling-priorities | control_backlog_priority.py | ticket/sibling-changes |
+| backlog-ticket-own-entry-unbound | control_backlog_priority.py | ticket/own-changes |
+| backlog-ticket-own-priority-unbound | control_backlog_priority.py | ticket/own-changes |
+| backlog-ticket-scope-unbound | control_backlog_priority.py | ticket/own-changes |
+| backlog-ticket-unclassified-unbound | control_backlog_priority.py | ticket/own-changes |
+| backlog-unit-drift-open (only the terminal set and PLANNED checked) | control_backlog.py | priority/gate-question |
 
-`python3 scripts/check_teeth_mutations.py --finding 78` rejects all 21. The findings of the changed
-modules still reject in full: 52 (49), 54 (59), 76 (23), 77 (24), 133 (21) and 135 (16), and every other
-finding's `init_scaffold.py` mutation (26) turns its named row red. Every suite that loads
-`control_eligibility.py` or `control_backlog.py` passes, with 20_veldo_0003_task_source, 69_veldo_0133,
-72_veldo_0077 and 53_veldo_0123.
+`python3 scripts/check_teeth_mutations.py --finding 78` rejects all 29. The findings of the changed
+modules still reject in full: 52 (49), 53 (52), 54 (59), 57 (33), 76 (23), 77 (24), 132 (28), 133 (21)
+and 135 (16). Every suite that loads `control_eligibility.py` or `control_backlog.py` passes, with
+20_veldo_0003_task_source, 58_veldo_0031_claims, 69_veldo_0133, 72_veldo_0077, 53_veldo_0123 and
+50_git_environment.
 
 ## Stated limits
 

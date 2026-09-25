@@ -173,3 +173,15 @@ authorization without another transition. Resume and disposal bind the brief the
 (`resume_brief`, `alternative_brief`). The footprint gains `control_eligibility*.py`. Rows
 `priority/gate-question`, `done/closed-unit` and `done/one-completion-reader` are new; finding 78 has 21
 mutations; the red record is at 8bb474c. Status stays ready.
+
+2026-09-25, review 2 fixes: a unit's ticket binds only what bears on that unit. The Gate compares a
+ticketed decision's backlog item by `control_backlog_priority.unit_binding` (the import-free module the
+Gate and the service share): the item's identity, project, objective, title, scope and work class, its
+admission, completion and cancellation, whether its state is executable, this unit's own decomposition
+entry and the priority record that prioritized it, and any field the module does not classify. A sibling
+appended, prioritized or disposed, and the item's history, applied requests, revision and digests, leave
+a running unit's build and review decisions current, so its subscription calls and its landing continue;
+a change to its own entry, its priority or the item's scope is `stale_input:backlog`. The unit side of the
+drift guard now requires the execution_unit classes to partition the entity contract's states exactly.
+Rows `ticket/sibling-changes` and `ticket/own-changes` are new and `priority/gate-question` gains the
+unit drift part; finding 78 has 29 mutations; the red record is at 8bc4517. Status stays ready.
