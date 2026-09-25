@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W103
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153]
+depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -180,3 +180,6 @@ not in the plan graph.
 
 2026-09-25: written as a draft for PLAN-0019 revision 4 from the approved operating-model design
 (Telegram 29162), section 5(e). Draft; the owner decides readiness.
+
+2026-09-25, PLAN-0019 revision 4 review: depends_on adds VELDO-0154, the factory loop that starts
+the factory project's PM cycle in AC1, split from VELDO-0129. Draft; the owner decides readiness.

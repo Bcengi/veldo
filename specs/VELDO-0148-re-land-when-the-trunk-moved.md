@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W108
 plan_revision: 4
-depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0129]
+depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0154]
 placement: [distribution, fleet, contracts, metrics]
 protected_paths: []
 footprint:
@@ -58,8 +58,8 @@ acceptance_criteria:
       new land dispatch that re-merges and re-gates on the new tip, and nothing ever forces. Set and
       completeness: Against a disposable bare remote, land a unit whose trunk another push moves before
       the listing. The effect executor refuses the publication as `stale-subject` and the original land
-      dispatch ends refused, with no new attempt under it (VELDO-0057 AC3). The factory loop (VELDO-0129
-      AC4) then offers the land station again as a new land dispatch: a new watermark from the new main,
+      dispatch ends refused, with no new attempt under it (VELDO-0057 AC3). The factory loop (VELDO-0154
+      AC1) then offers the land station again as a new land dispatch: a new watermark from the new main,
       the same re-merge, the gate run again from the trusted installation on the new candidate and a new
       compare-and-swap, which lands. A clean re-merge keeps review bound to the unchanged evidence
       commit; a real conflict sends the unit back to its builder as a new build dispatch told to merge
@@ -111,7 +111,7 @@ forcing a push.
 ## Context
 
 W108 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5 (the factory loop it
-extends, VELDO-0129, is stage 5). Section 7 of the approved
+extends, VELDO-0154, is stage 5). Section 7 of the approved
 [operating-model design](../docs/design/PLAN-0019-operating-model-design.md) (owner Telegram 29162) designs the re-land and gives its criterion and falsifier as an amendment of VELDO-0057. VELDO-0057
 has landed with its proof, so this repository's convention puts that amendment in its own specification
 that depends on it, and VELDO-0057 keeps its landed text.
@@ -152,7 +152,7 @@ The refused publication ends its own land dispatch; the re-land is a new dispatc
 so VELDO-0057 AC3 ("an unconfirmed publication cannot establish completion or authorize another attempt")
 holds unchanged for the original dispatch and for every unknown result. The factory loop offers the land
 station again because the unit's last land ended refused; that offer is the loop's next-station rule in
-the authority service (VELDO-0129 AC4), which this concern extends for a refused land. Approvals are bound
+the authority service (VELDO-0154 AC1), which this concern extends for a refused land. Approvals are bound
 to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
@@ -163,3 +163,7 @@ criterion text, its falsifier (move the remote trunk between the listing and the
 must fail if the unit is left unknown) and the approval rule are the design's, split into one criterion
 each for the stale-subject re-land, the lease window and the fresh grant. A draft: only the owner
 marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4 review: the factory loop this concern extends is VELDO-0154, split
+from VELDO-0129 (its former AC4 is VELDO-0154 AC1), so depends_on names VELDO-0154 in place of
+VELDO-0129 and the loop references follow. Criterion meaning unchanged.

@@ -142,7 +142,7 @@ acceptance_criteria:
       tools marked read-only, one with a call to a tool not marked read-only, and one with a call to a
       tool of a server whose revision marks nothing; the first two decide re-run and the others decide
       ask with exactly those calls named. Carrying out the decision (the new dispatch, or the question
-      to the owner) is VELDO-0129 AC6. Falsifier: Decide re-run for a record that shows a call to an
+      to the owner) is VELDO-0154 AC3. Falsifier: Decide re-run for a record that shows a call to an
       MCP tool not marked read-only; the ask-decision row must fail.
     falsified_by: >
       Decide re-run for a record that shows a call to an MCP tool not marked read-only; the
@@ -211,9 +211,9 @@ are the active accounts of an engine the role allows, with a profile on the chos
 reported rate-limit window and under their concurrency. The Runner picks the lowest last reported
 utilization on the tightest window, then the fewest active runs, then the least recently used. With
 no candidate the unit waits, the UI shows "no account until" the earliest reset, and the factory loop
-sets a timer for that time (VELDO-0129 AC4). The re-run rule (AC6) is a decision over a record: it
+sets a timer for that time (VELDO-0154 AC1). The re-run rule (AC6) is a decision over a record: it
 reads a run's execution record in VELDO-0141's shape and the read-only marks of VELDO-0144's catalog
-revisions, so its checks use fixture records and this concern depends on neither; VELDO-0129 AC6 feeds it
+revisions, so its checks use fixture records and this concern depends on neither; VELDO-0154 AC3 feeds it
 each real run's record and carries out what it decides.
 
 VELDO-0036 supplies atomic account/project/unit usage reservations. Before every initial,
@@ -273,3 +273,8 @@ decision over a record are new AC6, tested with fixture records and with a falsi
 re-dispatch and the question to the owner are VELDO-0129 AC6. The footprint names the Runner where it
 lives, `control_launch` (there is no `control_runner` module), which also holds the receiver that
 classifies the limit. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: the factory loop, with its reset timers and the
+re-dispatch or question that carries out AC6's decision, is VELDO-0154, split from VELDO-0129 (its
+former AC4 and AC6 are VELDO-0154 AC1 and AC3), and the references follow. Criterion meaning and status
+unchanged.

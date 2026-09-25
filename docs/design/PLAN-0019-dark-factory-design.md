@@ -653,7 +653,7 @@ An authorized reader can trace outcome, request, release or plan contribution, s
 
 **R62. Package G: project-manager execution and configurable teams. [REVISED]**
 
-*2026-09-25 revision 4 applicability:* VELDO-0092 moves to Release 2. In Release 1 each PM proposal takes effect through the command that owns it, one at a time, and a refusal stops the rest of that cycle's proposals by name; all-or-nothing groups are Release 2. The PM's reasoning runs as ordinary worker runs through the Runner, and the factory loop inside the authority service offers each next station (VELDO-0129 AC4).
+*2026-09-25 revision 4 applicability:* VELDO-0092 moves to Release 2. In Release 1 each PM proposal takes effect through the command that owns it, one at a time, and a refusal stops the rest of that cycle's proposals by name; all-or-nothing groups are Release 2. The PM's reasoning runs as ordinary worker runs through the Runner, and the factory loop inside the authority service offers each next station (VELDO-0154 AC1).
 
 *2026-09-22 revision 3 applicability:* Actual LangGraph PM execution and typed authorized proposals are Release 1. Team policy consumes retained engineering review in VELDO-0049, not the whole VELDO-0070 adversarial-decision workflow. One serialized project cycle and a bounded follow-up on pending inputs are retained from 0093; checkpoint recovery, repeated/replacement graph and exhaustive concurrency matrices below move to Release 2.
 

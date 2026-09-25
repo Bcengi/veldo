@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W73
 plan_revision: 4
-depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0129, VELDO-0132, VELDO-0151]
+depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0132, VELDO-0151, VELDO-0154]
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
@@ -94,7 +94,7 @@ acceptance_criteria:
       Claim: For work the PM judges to be one unit, the one coordination run also writes the
       requirements and stages that unit with the team's four required roles, and the builder fetches
       a referenced ticket itself. Set and completeness: For an admitted objective whose text is
-      "please do BCG-123", a one-unit change, run the cycle the factory loop (VELDO-0129 AC4) starts
+      "please do BCG-123", a one-unit change, run the cycle the factory loop (VELDO-0154 AC1) starts
       for its project. The PM run's proposal judges one
       unit and writes its requirements, carrying the owner's message and every reference in it as he
       wrote it; the elaboration station is recorded as done by that run and no elaboration run is
@@ -158,8 +158,8 @@ digest (VELDO-0091).
 ## Notes
 
 Use the actual installed nonpersistent LangGraph step runtime and Veldo-owned workflow
-definition. The authority service runs the cycle scheduler: the factory loop inside it (VELDO-0129
-AC4) starts a PM cycle for any project with new relevant input, and the cycle runner, on Linux,
+definition. The authority service runs the cycle scheduler: the factory loop inside it (VELDO-0154
+AC1) starts a PM cycle for any project with new relevant input, and the cycle runner, on Linux,
 executes the bound workflow revision one judged step at a time; PM runs go to whichever host their
 role allows. Proposals take effect through their owners: the cycle checks the document's structure
 and hands each proposal, in order, to the command that owns it (VELDO-0064 for a decision request,
@@ -206,3 +206,7 @@ four required roles and the builder fetches the ticket itself (section 12), with
 Several-unit work moves whole to VELDO-0146. depends_on adds VELDO-0089 (the four required roles),
 VELDO-0129 (the factory loop starts the cycle) and VELDO-0151 (the configuration each role names), and
 the work item moves to stage 5. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: the factory loop that starts the cycle is VELDO-0154, split
+from VELDO-0129 (its former AC4 is VELDO-0154 AC1), so depends_on names VELDO-0154 in place of
+VELDO-0129 and the loop references follow. Criterion meaning and status unchanged.

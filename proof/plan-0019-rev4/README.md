@@ -26,7 +26,7 @@ design left a choice, the resolution is listed at the end.
 | RJ1 starts from a Telegram message pointing at a Jira ticket, fetched through the Atlassian catalog server, uses at least two accounts and is watched in the live terminal | regression |
 | The per-person deployment is R75's deployment view | controlling design |
 | Build order inside Release 1 follows the design's section 12 | Releases and order |
-| VELDO-0148 on VELDO-0129; VELDO-0129 on VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0141; VELDO-0127 on VELDO-0144; VELDO-0131 on VELDO-0141 to VELDO-0145 | work items |
+| VELDO-0148 on VELDO-0154; VELDO-0154 on VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0129, VELDO-0141; VELDO-0127 on VELDO-0144; VELDO-0131 on VELDO-0141 to VELDO-0145 | work items |
 | VELDO-0127, VELDO-0090 and VELDO-0091 move from stage 4 to stage 5 | work items, allocation table |
 
 The controlling design, [docs/design/PLAN-0019-dark-factory-design.md](../../docs/design/PLAN-0019-dark-factory-design.md),
@@ -49,11 +49,11 @@ reviewer judges section, one was added in the repository's three parts.
 | VELDO-0061 | The same for Codex; AC5's falsifier leaves `OPENAI_API_KEY` and gives a non-ChatGPT login a first turn |
 | VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds one run at a time for a new account; new AC6 classifies `account_limit` and decides re-run or ask over a record, tested with fixture records; Notes give the store registry and selection order |
 | VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority |
-| VELDO-0088 | The thin one-unit PM of the critical path's stage 2: AC1 the default pipeline and model nodes as Runner dispatches; new AC4 one coordination run writes the requirements and stages the unit with the four required roles, and the builder fetches the ticket itself; depends on VELDO-0089, 0129 and 0151 and moves to stage 5; several-unit work is VELDO-0146 |
+| VELDO-0088 | The thin one-unit PM of the critical path's stage 2: AC1 the default pipeline and model nodes as Runner dispatches; new AC4 one coordination run writes the requirements and stages the unit with the four required roles, and the builder fetches the ticket itself; depends on VELDO-0089, 0151 and 0154 (the factory loop) and moves to stage 5; several-unit work is VELDO-0146 |
 | VELDO-0090 | AC1's set includes the `when assigned` items a staffing choice requests |
 | VELDO-0091 | AC1: requirements quote every external reference with tool, fetch time and digest |
 | VELDO-0127 | AC1: catalog references, skills, instruction files and load modes; AC2 drops the provider-login clause; new AC4: nothing loads unless listed; depends on VELDO-0141 and its footprint adds `control_launch`; the Mac handoff is VELDO-0147 |
-| VELDO-0129 | New AC4: the Runner and factory loop in the authority service, woken only by commits, the launch pipe and reset timers, the loop never polling; AC5: a receiver that dies wakes the loop and frees its slot; AC6: the re-dispatch or the question to the owner for an account-limited run; moves to stage 5 |
+| VELDO-0129 | Keeps real build and review through the Runner, AC1 to AC3; the factory loop criteria revision 4 added (the wake sources with no polling in the loop, a receiver that dies, the re-dispatch or the question to the owner for an account-limited run) are the new VELDO-0154; back in stage 1 |
 | VELDO-0131 | The live terminal of VELDO-0145 AC2 replaces the "Live agent run" row; new "MCP servers and credentials" and "Repositories and identities" rows; per-account usage |
 | VELDO-0141 | Ready, with its four amendments; bound to W101; AC3 is the record route's contract for the live view; exact-value redaction is its own AC4 with its own falsifier; the Mac run is VELDO-0147 |
 | VELDO-0080, VELDO-0092 | Context and History record the move to Release 2; criteria unchanged |
@@ -82,6 +82,7 @@ in the ones not listed above.
 | [VELDO-0151](../../specs/VELDO-0151-specialist-roles-with-capability-configurations.md) | Specialist roles with a capability configuration reference and a kind (VELDO-0089's amendment) | 2 | draft | W111, S5 |
 | [VELDO-0152](../../specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md) | Ticket keys and new projects at intake (VELDO-0126's amendments) | 3 | draft | W112, S4 |
 | [VELDO-0153](../../specs/VELDO-0153-identity-push-profile-and-remote-owner.md) | The identity push profile and the remote owner check (split from VELDO-0142) | 2 | draft | W113, S5 |
+| [VELDO-0154](../../specs/VELDO-0154-factory-loop-in-the-authority-service.md) | The factory loop in the authority service: its wake sources, a receiver that dies and the account-limit re-dispatch or question (split from VELDO-0129) | 3 | draft | W114, S5 |
 
 Each has owner dmitry, a footprint, depends_on, placement, protected_paths, risk, rollback, an
 observability block and a What the reviewer judges section, and each passes `validate.py ready`. Every
@@ -100,8 +101,11 @@ VELDO-0124 and VELDO-0125.
 
 **Stages.** VELDO-0144 adds an API route, so it depends on VELDO-0130 and is stage 5; VELDO-0127 and,
 through it, VELDO-0090 and VELDO-0091 move to stage 5 so no dependency points at a later stage. The
-review fixes move VELDO-0088 (its PM role's configuration is VELDO-0151's), VELDO-0129 (AC6 reads the
-execution record) and VELDO-0148 (it extends VELDO-0129's loop) to stage 5 as well. Stages group
+review fixes move VELDO-0088 (its PM role's configuration is VELDO-0151's) and VELDO-0148 (it extends
+the factory loop) to stage 5 as well. VELDO-0129 held two concerns, so the factory loop is VELDO-0154,
+stage 5 because its AC3 reads the execution record, and VELDO-0129, left with real build and review
+through the Runner, returns to stage 1. VELDO-0088 and VELDO-0148 depend on VELDO-0154 in place of
+VELDO-0129, and VELDO-0059, VELDO-0143 and VELDO-0146 add it. Stages group
 functions; the build order is section 12's, stated in the plan's build-order paragraph.
 
 **Landed specifications.** VELDO-0057, 0076, 0077, 0078, 0089, 0126 and 0140 have landed with
@@ -137,12 +141,12 @@ and VELDO-0145 AC2 owns the screen that renders it.
 ## Validation
 
 After the review fixes: `python3 scripts/update_index.py`, `python3 .veldo/validate.py all` (exit 0),
-`python3 .veldo/validate.py ready` on VELDO-0141 to VELDO-0153 and on the amended VELDO-0060, 0061,
+`python3 .veldo/validate.py ready` on VELDO-0141 to VELDO-0154 and on the amended VELDO-0060, 0061,
 0062, 0088, 0127 and 0129 (each exit 0), `scripts/check_generated.sh` and `scripts/check_docs.sh`
 (both pass), and `python3 .veldo/plan.py status`, `release-check` (releasable), `hash`, `impact`,
 `bundle` and `regression` on PLAN-0019. `run-check` refuses each unbuilt item only for unshipped
 dependencies, never for a stale plan context, except items pulled at revisions 1 and 2 that are shipped
 or in Releases 2 to 4, which this writing did not touch. `policy_check.spec_revision_stale()` and
 `ready_boundary_violations()` are both empty. A check over the plan found no dependency on a later
-release or stage among its 113 items. The changed files carry no em-dash, en-dash or doubled hyphen.
+release or stage among its 114 items. The changed files carry no em-dash, en-dash or doubled hyphen.
 The canonical gate `scripts/verify.sh` was not run by this writing.

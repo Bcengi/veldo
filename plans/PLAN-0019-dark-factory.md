@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154]
     order: 16059
     release: 1
     stage: 6
@@ -825,7 +825,7 @@ work:
     spec: VELDO-0088
     title: Project-manager execution graphs
     feature_refs: [F7]
-    depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0129, VELDO-0132, VELDO-0151]
+    depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0132, VELDO-0151, VELDO-0154]
     order: 15088
     release: 1
     stage: 5
@@ -946,10 +946,10 @@ work:
     spec: VELDO-0129
     title: Real worker adapter wiring for LiveLoop and LiveReviewer
     feature_refs: [F4]
-    depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0064, VELDO-0141]
-    order: 15129
+    depends_on: [VELDO-0039, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061]
+    order: 11129
     release: 1
-    stage: 5
+    stage: 1
   - item: W93
     spec: VELDO-0130
     title: Authenticated factory state, message and decision API
@@ -1035,7 +1035,7 @@ work:
     spec: VELDO-0143
     title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
     feature_refs: [F6]
-    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152, VELDO-0153, VELDO-0154]
     order: 15143
     release: 1
     stage: 5
@@ -1059,7 +1059,7 @@ work:
     spec: VELDO-0148
     title: A land refused because another factory moved main is re-landed on the new tip, re-merged and re-gated, and nothing ever forces
     feature_refs: [F3]
-    depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0129]
+    depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0154]
     order: 15148
     release: 1
     stage: 5
@@ -1099,7 +1099,7 @@ work:
     spec: VELDO-0146
     title: Work of several units gets a separate elaboration run and a second PM cycle that stages the units against the published requirements
     feature_refs: [F7]
-    depends_on: [VELDO-0085, VELDO-0088, VELDO-0091]
+    depends_on: [VELDO-0085, VELDO-0088, VELDO-0091, VELDO-0154]
     order: 15146
     release: 1
     stage: 5
@@ -1117,6 +1117,14 @@ work:
     feature_refs: [F3]
     depends_on: [VELDO-0056, VELDO-0057, VELDO-0142, VELDO-0144]
     order: 15153
+    release: 1
+    stage: 5
+  - item: W114
+    spec: VELDO-0154
+    title: The factory loop runs inside the authority service, woken only by commits, run ends and account resets, and re-dispatches or asks the owner at an account limit
+    feature_refs: [F4]
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0129, VELDO-0141]
+    order: 15154
     release: 1
     stage: 5
 
@@ -1257,7 +1265,7 @@ stage may integrate an earlier service without making that service depend on the
    configured SQLite store, local service exclusion, snapshots/materialization, reservations,
    Linux worker groups, isolated clones, live Claude Code and Codex adapters, real build/review
    wiring, proof, shared eligibility, isolated gate observations, exact-tip publication and journal
-   completion. Since the revision 4 review the build/review wiring and factory loop (VELDO-0129) and
+   completion. Since the revision 4 review the factory loop (VELDO-0154, split from VELDO-0129) and
    the re-land (VELDO-0148) are stage 5 items, because the loop reads the stage 5 execution record. Provision minimal accepted owner/project/admission records for integration checks.
 2. **Mac and relay.** Qualify the Mac's simple worker lifecycle and connect its workers through
    built VELDO-0108 to the Linux authority. Route macOS/iOS work only to a qualified Mac.
@@ -1290,7 +1298,7 @@ stage may integrate an earlier service without making that service depend on the
 **Build order inside Release 1 (revision 4).** The stage numbers above group functions and keep every
 dependency on the same or an earlier stage. The order in which the remaining Release 1 items are
 built follows section 12 of the operating-model design, so the owner starts using the factory at the
-end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, 0145, 0128), then
+end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, the factory loop VELDO-0154, 0145, 0128), then
 "please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
 VELDO-0150; 0144; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
@@ -1428,7 +1436,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W89 | VELDO-0126 | 1 | 3 |
 | W90 | VELDO-0127 | 1 | 5; amended in revision 4 |
 | W91 | VELDO-0128 | 1 | 3 |
-| W92 | VELDO-0129 | 1 | 5; AC4 to AC6 added in revision 4 |
+| W92 | VELDO-0129 | 1 | 1; AC4 to AC6 added in revision 4 and split into VELDO-0154 by its review |
 | W93 | VELDO-0130 | 1 | 5 |
 | W94 | VELDO-0131 | 1 | 5; amended in revision 4 |
 | W95 | VELDO-0132 | 1 | 4 |
@@ -1450,6 +1458,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W106 | VELDO-0146 | 1 | 5 |
 | W107 | VELDO-0147 | 1 | 5 |
 | W113 | VELDO-0153 | 1 | 5 |
+| W114 | VELDO-0154 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
@@ -1540,3 +1549,11 @@ over a record and VELDO-0129 AC6 carries the decision out, which, with the recor
 moves W92 (VELDO-0129) and W108 (VELDO-0148) to stage 5; W73 (VELDO-0088) moves to stage 5 because the
 PM role's configuration comes from VELDO-0151. The writing audit, proof/plan-0019-rev4/README.md, lists
 each fix.
+
+2026-09-25: revision 4 review, one concern per specification. VELDO-0129 held two concerns in six
+criteria, so its AC4 to AC6 (the factory loop's wake sources with no polling in the loop, a receiver that
+dies, and the re-dispatch or the question to the owner at an account limit) are W114's VELDO-0154, stage
+5, with their text and falsifiers unchanged. W92 keeps real build and review through the Runner and
+returns to stage 1, because none of its remaining dependencies is later. W73 (VELDO-0088) and W108
+(VELDO-0148) depend on VELDO-0154 in place of VELDO-0129, where the loop is what they meant, and W44
+(VELDO-0059), W103 (VELDO-0143) and W106 (VELDO-0146) add it.

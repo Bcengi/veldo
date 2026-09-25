@@ -49,7 +49,7 @@ The table lists every component the MVP needs, where it runs, and its state toda
 | Telegram ingress and presenter | Inside the authority service | Acquires messages, sends presentations and reports | Built: VELDO-0073, VELDO-0138; reports VELDO-0128 being built |
 | Intake | Inside the authority service | One normalized command for every channel | Built: VELDO-0126; amended here |
 | Settlement and decision binding | Inside the authority service | Each answer settles once, from any channel | Built: VELDO-0068, VELDO-0069; standing delegation VELDO-0140 being built |
-| Factory loop and Runner | Inside the authority service | Woken by commits, run ends and reset timers: starts PM cycles, dispatches units | New criterion: VELDO-0129 AC4 |
+| Factory loop and Runner | Inside the authority service | Woken by commits, run ends and reset timers: starts PM cycles, dispatches units | New specification: VELDO-0154 (from VELDO-0129 AC4) |
 | PM cycle runner | Linux, isolated LangGraph runtime | Executes the bound workflow revision one judged step at a time | Built: VELDO-0132, VELDO-0043, VELDO-0045; PM graphs VELDO-0088 unbuilt |
 | Launch receiver | Linux, a process the Runner starts | Spawns the contained worker, feeds and reaps it, writes the record | Built: VELDO-0039 to VELDO-0042; account choice VELDO-0062 |
 | Execution record | Linux files written by the receiver | Every event, output line and error of every run, redacted, in order | Draft: VELDO-0141 |
@@ -375,7 +375,8 @@ loop run inside the authority service; a pass runs on each journal-advancing pac
 run's end seen on the Runner's launch pipe, including a receiver that died, and on account reset timers; it offers every assigned eligible unit
 and every next station, and stops offering a paused project's units; nothing polls.* Its falsifier:
 drop the launch pipe from the poll set, and the review-offered row must fail; a receiver killed
-mid-run must still wake the loop and free its account slot. Amend VELDO-0079 and VELDO-0077 so an
+mid-run must still wake the loop and free its account slot. (The review of revision 4 moved this
+criterion, with the receiver-death and account-limit criteria, from VELDO-0129 into VELDO-0154.) Amend VELDO-0079 and VELDO-0077 so an
 objective proposed from the owner's own message is accepted and admitted at default priority unless the
 PM raises a question. The plan moves VELDO-0092 to Release 2.
 
@@ -834,7 +835,7 @@ Release 2 for both engines.
    (VELDO-0067).
 2. Intake finds the project whose ticket keys include `BCG` and proposes an objective there; his
    message accepts and admits it at default priority (VELDO-0126, VELDO-0077, VELDO-0079, VELDO-0078).
-   The commit wakes the factory loop (VELDO-0129 AC4), which starts the project's PM cycle on the
+   The commit wakes the factory loop (VELDO-0154 AC1), which starts the project's PM cycle on the
    default pipeline (VELDO-0088, VELDO-0132).
 3. At the coordinate node the cycle dispatches a PM run: the Runner prepares it (VELDO-0039), picks an
    account and host (VELDO-0062 AC5), and the receiver launches it contained (VELDO-0040) with its
@@ -856,7 +857,7 @@ Release 2 for both engines.
    station on account 3 from the same commit (VELDO-0062 AC5).
 7. The build returns its commit and proof (VELDO-0050). Its end on the launch pipe wakes the loop, which
    dispatches a fresh reviewer on Codex under a different principal and independence group, with no
-   builder context (VELDO-0129 AC2, VELDO-0061); its record is live too.
+   builder context (VELDO-0154 AC1, VELDO-0129 AC2, VELDO-0061); its record is live too.
 8. On a passing review the lander builds the candidate on the current main, runs the gate outside it
    and publishes the tested tree by compare-and-swap, pushing with the repository's identity
    (VELDO-0056, VELDO-0058, VELDO-0057, VELDO-0142). A colleague's factory landed in between, so the
@@ -878,7 +879,7 @@ factory at the end of the second stage, not the third. The full MVP still lands;
 | 2 | VELDO-0060 | Claude Code adapter: baseline off, paid-API guard, environment strip, pinned binary; login separation is Release 2 |
 | 3 | VELDO-0061 | Codex adapter, the same, with login separation in Release 2 |
 | 4 | VELDO-0141 | The live record with exact-value redaction |
-| 5 | VELDO-0129 with AC4 | Real build and review, the loop and the end-of-run wake |
+| 5 | VELDO-0129, VELDO-0154 | Real build and review (VELDO-0129); the loop, the end-of-run wake and the account-limit re-dispatch (VELDO-0154) |
 | 6 | VELDO-0145 | UI shell, run terminal and decisions screen |
 | 7 | VELDO-0128 | Telegram reports (being built) |
 | **Stage 2** | **"Please do BCG-123" to a landed change: he starts using it here** | |
@@ -899,7 +900,7 @@ factory at the end of the second stage, not the third. The full MVP still lands;
 | 21 | VELDO-0059 | The full installed journey |
 
 **Dependencies that shaped the order.** VELDO-0060 and VELDO-0061 need VELDO-0062 and qualify only the
-baseline, so they no longer wait for VELDO-0127. VELDO-0129 needs both adapters. VELDO-0145 needs only
+baseline, so they no longer wait for VELDO-0127. VELDO-0129 needs both adapters, and VELDO-0154 needs VELDO-0129 and VELDO-0141. VELDO-0145 needs only
 VELDO-0130 and VELDO-0141. VELDO-0088 needs VELDO-0078, VELDO-0079 and both adapters. VELDO-0090 needs
 VELDO-0125 and VELDO-0127, so the Mac comes first in stage 3. VELDO-0091 needs VELDO-0085, VELDO-0088
 and VELDO-0090, and VELDO-0131 needs VELDO-0078, VELDO-0089, VELDO-0127 and VELDO-0128. With at most two
@@ -957,7 +958,7 @@ code on this branch or the installed tools before it was adopted.
 | B1, strict MCP turns off claude.ai connectors | Confirmed in the 2.1.281 binary. The `account_connector` transport, the connector fields on accounts and connector-aware selection are removed; Atlassian is an ordinary catalog server (sections 3, 6, 8, 11). |
 | B2, tools can read the provider login | Confirmed in VELDO-0060 AC4, VELDO-0061 AC4, VELDO-0062 AC1, R45 and `control_containment.py`. Decided per engine in section 6: Claude Code's sandbox `denyRead` and `credentials.files` deny, confirmed in the binary; Codex unproven, so its criterion moves to Release 2 on the owner's word (section 15). The owner then answered yes for both engines (Telegram 29163), so both move to Release 2. |
 | B3, Mac credential delivery | Confirmed: `wrap()` execs after the identity line and `_reap()` feeds the contract-built packet afterward. A secrets frame the wrapper reads before exec replaces it (section 3). |
-| B4, nothing wakes the loop | Confirmed: `hint_after` runs only after the service's own packets and passes, and the service has no Runner. The Runner and loop live in the service, and the end of a run on the Runner's own launch pipe is a wake source, including a receiver that died; VELDO-0129 AC4 carries the falsifier (section 4). |
+| B4, nothing wakes the loop | Confirmed: `hint_after` runs only after the service's own packets and passes, and the service has no Runner. The Runner and loop live in the service, and the end of a run on the Runner's own launch pipe is a wake source, including a receiver that died; VELDO-0154 AC1 carries the falsifier (section 4). |
 | B5, a new project breaks at intake | Confirmed in `control_intake.py`. A `factory` project that is never a default, a new-project route with no intake question, one answer that also admits the first objective, and the VELDO-0126 amendment (section 5). |
 | B6, workers reach the keystore and SSH agent | Code confirmed (`_spawn` copies the whole environment; the custody module disclaims unconfined processes; the keyring daemon runs). The environment strip and the stated boundary are in section 3; "by construction" is limited to the factory's own Git operations. |
 | B7, no loaded-instruction-file list in the init event | Confirmed: `memory_paths` names only the memory directories. Instruction files are proved by the marker qualification; the stream comparison covers tools, servers, skills and plugins (section 6). |

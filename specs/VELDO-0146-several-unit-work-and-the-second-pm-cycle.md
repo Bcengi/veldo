@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W106
 plan_revision: 4
-depends_on: [VELDO-0085, VELDO-0088, VELDO-0091]
+depends_on: [VELDO-0085, VELDO-0088, VELDO-0091, VELDO-0154]
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
@@ -121,3 +121,6 @@ as VELDO-0088 states.
 design builds several-unit work in a later stage than one-unit work. The criterion text is that
 amendment's several-unit clause, with a falsifier of its own for each part. A draft: only the owner
 marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4 review: depends_on adds VELDO-0154, the factory loop that starts
+the second cycle, split from VELDO-0129. Criteria unchanged; a draft.
