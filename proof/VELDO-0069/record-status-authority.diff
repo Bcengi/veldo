@@ -1,0 +1,5 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -326 +326 @@
+-        return ['unresolved_decision:' + rid]
++        return [] if record.get('state') == 'settled' else ['unresolved_decision:' + rid]  # defect

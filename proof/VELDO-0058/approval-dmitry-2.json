@@ -1,0 +1,18 @@
+{
+ "schema": "veldo.approval/v1",
+ "id": "APPROVAL-0058-2",
+ "decision": "approved",
+ "approver": "dmitry",
+ "scope": {
+  "spec_id": "VELDO-0058",
+  "commit": "f058090941a5d80b06e2fd14b61a778fe7e46f03",
+  "paths": [
+   "scripts/verify.sh",
+   "engine/scripts/verify.sh"
+  ]
+ },
+ "basis": "Dmitry authorized this change over Telegram on 2026-09-24. He was asked (29068) whether scripts/verify.sh (a protected file) may change so that, when the trusted installation verifies a landing candidate, the gate writes its stamp, its gate event and its review-event reconciliation to a sink outside the candidate instead of into the candidate's tree; he answered 'Yes verify' (29069). The two paths are the protected_paths this commit changes. This is the second of the two commits that carry the approved change (the first, 6984ab9, is APPROVAL-0058-1): it moves the stamp's one printf so that it stays the first writer of last_verify in the file, which suite 14 reads its key list from, and changes nothing else. What they carry is candidate mode (verify.sh --candidate <root> --sink <dir>, with every bad sink refused before any check runs and a failed final write RED) and nothing else: with no arguments the gate verifies its own checkout and writes .veldo/last_verify and .veldo/events.jsonl exactly as before, and no check, catalog entry or green condition of the ordinary gate was changed.",
+ "recorded_at": "2026-09-24T20:30:00Z",
+ "recorded_by": "claude-opus-5-5 (recording Dmitry's Telegram authorization of 2026-09-24)",
+ "expires_at": "2026-10-31T00:00:00Z"
+}

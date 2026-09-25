@@ -1,0 +1,8 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -692 +692 @@
+-                                                  bind_refs=True)
++                                                  bind_refs=False)  # defect: the workspace's refs are not bound
+@@ -752 +752 @@
+-                                               bind_refs=True)
++                                               bind_refs=False)

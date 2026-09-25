@@ -1,0 +1,18 @@
+{
+ "schema": "veldo.approval/v1",
+ "id": "APPROVAL-0058-4",
+ "decision": "approved",
+ "approver": "dmitry",
+ "scope": {
+  "spec_id": "VELDO-0058",
+  "commit": "247897122f7dddf384c0bf902279d769d3be6938",
+  "paths": [
+   ".veldo/policy_check.py",
+   "engine/.veldo/policy_check.py"
+  ]
+ },
+ "basis": "Dmitry authorized this change over Telegram on 2026-09-24. He was told (29084) that the second critical review of VELDO-0058 found the change being checked could move the git reference the protected-file check uses to work out which files changed, so the check saw nothing changed, and asked whether policy_check.py (a protected file) may change so that the check takes the starting point the landing tool itself recorded instead of reading that reference; he answered 'Yes' (29085). The two paths are the protected_paths this commit changes. What it carries is an explicit BASE: unset, the push range is computed from the subject's refs exactly as before; when the installed-policy runner sets it to the lander's recorded watermark, every range read is BASE..HEAD, and a range Git cannot read is an error rather than an empty range. No other policy_check behavior changed.",
+ "recorded_at": "2026-09-24T22:20:00Z",
+ "recorded_by": "claude-opus-5-5 (recording Dmitry's Telegram authorization of 2026-09-24)",
+ "expires_at": "2026-10-31T00:00:00Z"
+}

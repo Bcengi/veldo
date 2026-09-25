@@ -1,0 +1,6 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -640 +640,2 @@
+-                 if terms['target'].get('kind') == GOVERNING_TARGET else None)
++                 if terms['target'].get('kind') == GOVERNING_TARGET and self.decision_signer is not None
++                 else None)  # defect: no signer, no binding, and the receipt commits

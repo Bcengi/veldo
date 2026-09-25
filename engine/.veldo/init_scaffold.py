@@ -133,6 +133,10 @@ _FILES = [
     # VELDO-0050: accepted proof bundles and complete contextual proof validation, which executor.py
     # loads; a runtime asset, no validator import, not substrate.
     ".veldo/control_proof.py",
+    # VELDO-0058: the installed gate run against a candidate in candidate mode, its external
+    # observation and acceptance, and the installed policy, which lander.py and executor.py load; a
+    # runtime asset, no validator import, not substrate.
+    ".veldo/control_verification.py",
     # VELDO-0051: the journal projection that publishes spec.shipped from a confirmed landing receipt
     # (it loads events.py, completion_contract.py and control_store.py); a runtime asset, no validator
     # import, not substrate.

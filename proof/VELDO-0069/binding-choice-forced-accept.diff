@@ -1,0 +1,5 @@
+--- a/.veldo/control_request_settlement.py
++++ b/.veldo/control_request_settlement.py
+@@ -725 +725 @@
+-                'signer': principal, 'signature': signature, 'choice': winner['choice'],
++                'signer': principal, 'signature': signature, 'choice': 'accept',

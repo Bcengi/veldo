@@ -1,0 +1,5 @@
+--- a/scripts/verify.sh
++++ b/scripts/verify.sh
+@@ -277 +277 @@
+-    FAIL=1
++    : # defect: a sink that refused the write is still trusted success

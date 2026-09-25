@@ -38,6 +38,7 @@ footprint:
   - "scripts/suites/*_veldo_0069_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0069-governing-decision-bindings.md"
   - "specs/index.md"
   - "proof/VELDO-0069/*"
@@ -104,6 +105,22 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an owner settles a blocking specification question or a plan decision through the
+  VELDO-0068 settlement (a signed Telegram answer, later the authenticated API). In the same
+  transaction the settlement writes the governing binding: the decision it resolves, the chosen option,
+  the decider, the time, and the digests of the framing, the subject and its current version. The plan
+  (_decision_blocks, item_state, cmd_run_check) and the shared floor entry then read the item as
+  unblocked from that binding alone, and another process sees the same answer.
+- Threat model: a receipt committed without its binding; a settlement whose framing, subject or current
+  version does not match the governed item unblocking it anyway; inline open_decisions text or a
+  detached receipt treated as authority by any enabled consumer; an unsupported subject kind bound
+  instead of stopped. The owner's account, the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); commit
+  barrier crashes, concurrent and restart matrices (Release 2); expiry, reopening, tripwires and reverse
+  invalidation (Release 3); forged rows in our own store and files planted in the installed directory.
+
 ## Notes
 
 The actual settlement producer updates 0054 decision consumers. Ordinary spec/plan bindings
@@ -127,3 +144,25 @@ barrier crashes and AC2/AC3 concurrent/restart matrices moved to Release 2; expi
 tripwires and reverse invalidation moved to Release 3. Normal settlement updates its exact
 governing binding. The criteria, declared evidence universe, Context and Notes above now carry
 only the retained function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: the VELDO-0068 settlement service is the binding producer. A request whose
+terms target a governing decision (target kind `governing_decision`, only through the decision_disposition
+touchpoint) names the exact question: the record, its decision id and revision, and the framing, subject and
+scope digests, with the digest of that question. Settling it writes, in the settlement's own store
+transaction, a `decision_settlement` binding keyed by the record and the revision ruled on: the chosen
+option, the decider, the time and a body in the VELDO-0054 signed shape, signed by the configured decision
+signer (a new `decision_signer` of the service, trusted by the hosts through their settlement signers). The
+body records the question the owner was shown, never the record at settlement, so a wrong framing, subject
+or revision is bound faithfully and every VELDO-0054 consumer names it (unbound_decision) instead of
+unblocking; a later revision's binding supersedes an earlier one. An unsupported subject kind, an absent
+record or a missing decision signer stops the settlement by name with nothing written. The consumers
+(plan.py, the Gate, control_decision_dependency.py) needed no change. The binding kind is owned by the
+settlement command. Suite `70_veldo_0069_bindings`, mutations in finding 69, proof in proof/VELDO-0069/.
+
+2026-09-24, review fixes: a governing question at a revision above the record's current one, as read and
+pinned in the settling transaction, is refused as `future_revision` (class stale_subject) with nothing
+written; before, it settled and its binding cleared the work once the record reached that revision. Terms
+are not checked against the record. New rows `refusal/future-revision` (red at 5596c04 by assertion) and
+`binding/owner-ruling` (the owner rejects and returns for elaboration; the signed ruling blocks by
+`decision_ruling` at every consumer). Mutations `future-revision-accepted` and `ruling-forced-approve`;
+`binding-choice-generic` re-aimed as `binding-choice-forced-accept` on the ruling row.

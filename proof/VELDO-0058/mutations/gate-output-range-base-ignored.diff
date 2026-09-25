@@ -1,0 +1,5 @@
+--- a/.veldo/policy_check.py
++++ b/.veldo/policy_check.py
+@@ -110 +110 @@
+-    if BASE is not None:
++    if False:  # defect: the range is read from the subject's refs even when a base is set
