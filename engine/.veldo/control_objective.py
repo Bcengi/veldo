@@ -40,19 +40,25 @@ source or a missing predicate is refused by name.
                    (ACCEPTED -> ACTIVE).
   assess           Satisfaction is only the bound assessor's signed assessment of the ACCEPTED revision:
                    every evidence requirement names a kept record of its kind by id and entity digest,
-                   read inside the transaction, and a gate observation proves only with exit 0. The
-                   receipt is completion_contract's objective_satisfied fact (ACTIVE -> SATISFIED).
+                   read inside the transaction, first written by a journal record after the one that
+                   accepted the objective (stale_subject:evidence otherwise), and a gate observation
+                   proves only with exit 0. The receipt is completion_contract's objective_satisfied
+                   fact (ACTIVE -> SATISFIED).
                    Shipped specifications are reported (specifications) and never decide it.
   cancel           The project's current owner cancels with a reason and an explicit disposition of
                    every unfinished feature (release_floor_contract.objective_cancellation_problems):
                    `stop` cancels the feature, `transfer` moves it to another accepted objective of the
-                   project. Every disposition is recorded by the canceling owner. The objective's
+                   project whose accepted scope holds the feature's whole scope (out_of_scope:<item>
+                   otherwise), under that objective's accepted revision. Each feature has one
+                   disposition (invalid_input:duplicate_disposition otherwise), recorded by the
+                   canceling owner. Cancel stays open while the project is paused. The objective's
                    acceptance, features and history stay; CANCELED is terminal.
   reopen           Asked of the lifecycle as an edge back to PROPOSED, which R06 does not declare: a
                    terminal objective is never reopened, and continuation is a new objective that
                    `continues` it.
 
-Each transition appends one entry to the record's `history` and never changes an earlier one.
+Each transition appends one entry to the record's `history` and never changes an earlier one. In a
+project that is not ACTIVE, amend, accept, propose_feature and assess refuse project_not_active:<state>.
 
 STATED LIMITS. One project per objective and one acceptor, the project's owner (objectives spanning
 projects and additional owners are Release 3). Units of a stopped feature are not reached here: a
@@ -191,6 +197,24 @@ def read(conn, oid):
     """The accepted objective record `oid` on any connection (another process's read-only one included)."""
     row = _row(conn, oid)
     return None if row is None or row['kind'] != KIND else dict(row['data'], version=row['version'])
+
+
+def _first_written(conn, eid):
+    """The journal sequence of the first committed command that wrote `eid`, or None. The store assigns
+    it inside the writing transaction, so no author of the record can choose it."""
+    for seq, text in conn.execute('SELECT seq, transition FROM journal WHERE instr(transition, ?) > 0 ORDER BY seq',
+                                  (json.dumps(eid),)):
+        if eid in json.loads(text):
+            return seq
+    return None
+
+
+def _acceptance_seq(conn, data):
+    """The journal sequence of the command that accepted the objective record `data`, or None."""
+    accepted = [h for h in data.get('history') or [] if h.get('target') == 'ACCEPTED' and h.get('operation') == 'accept']
+    row = conn.execute('SELECT seq FROM commands WHERE command_id=?', (accepted[-1].get('command_id'),)).fetchone() \
+        if accepted and _is_str(accepted[-1].get('command_id')) else None
+    return None if row is None else row[0]
 
 
 def features(conn, oid):
@@ -379,8 +403,9 @@ class Objectives:
             raise Refused('project_not_active:missing', params['project'])
         if op == 'propose':
             return self._propose(conn, command, oid, project, entry)
-        if op in ('accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':
-            # VELDO-0076: a paused, canceled or completed project accepts, elaborates and satisfies nothing.
+        if op in ('amend', 'accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':
+            # VELDO-0076: a paused, canceled or completed project amends, accepts, elaborates and satisfies
+            # nothing. Cancel stays open to the owner while it is paused.
             raise Refused('project_not_active:%s' % project['data'].get('state'), params['project'])
         current = _row(conn, oid)
         if current is None or current['kind'] != KIND:
@@ -526,12 +551,16 @@ class Objectives:
         if command.get('revision') != data['accepted_revision']:
             raise Refused('stale_subject:revision', 'the assessment is of another revision than the accepted one')
         evidence = command.get('evidence') if isinstance(command.get('evidence'), dict) else {}
+        accepted_at = _acceptance_seq(conn, data)
         kept = {}
         for requirement in data['bound']['evidence_requirements']:
             named = evidence.get(requirement['id']) if isinstance(evidence.get(requirement['id']), dict) else {}
             row = _row(conn, named.get('ref')) if _is_str(named.get('ref')) else None
             if row is None or row['kind'] != requirement['kind'] or row['digest'] != named.get('digest'):
                 raise Refused('missing_evidence:' + requirement['id'], 'no kept record of the required kind and digest')
+            recorded = _first_written(conn, named['ref'])
+            if recorded is None or accepted_at is None or recorded <= accepted_at:
+                raise Refused('stale_subject:evidence', 'the kept observation was recorded before the acceptance')
             if row['data'].get('exit') != 0:
                 raise Refused('unproven_outcome:' + requirement['id'], 'the kept observation did not pass')
             kept[requirement['id']] = {'ref': named['ref'], 'digest': row['digest'], 'kind': row['kind']}
@@ -557,6 +586,9 @@ class Objectives:
         dispositions = command.get('dispositions')
         if not isinstance(dispositions, list) or not all(isinstance(d, dict) for d in dispositions):
             raise Refused('invalid_input:dispositions', 'dispositions are a list of records')
+        named = [d.get('target') for d in dispositions]
+        if len(named) != len(set(map(_canonical, named))):
+            raise Refused('invalid_input:duplicate_disposition', 'each feature has one disposition')
         items = features(conn, oid)
         open_ = {i['uuid']: i for i in items if i.get('state') not in EC.LIFECYCLES[FEATURE_KIND]['terminal']}
         problems = RF.objective_cancellation_problems({'uuid': oid}, items, dispositions)
@@ -581,6 +613,10 @@ class Objectives:
                 if (to is None or to['kind'] != KIND or d.get('to') == oid or to['data'].get('project') != data['project']
                         or to['data'].get('state') not in ('ACCEPTED', 'ACTIVE')):
                     raise Refused('invalid_input:transfer', 'a transfer names another accepted objective of the project')
+                outside = [s for s in item.get('scope') or [] if s not in to['data']['bound']['scope']]
+                if outside:
+                    raise Refused('out_of_scope:' + outside[0],
+                                  'a transferred feature stays inside the receiving objective\'s accepted scope')
                 receiving = changes.get(d['to'], {}).get('data') or json.loads(json.dumps(to['data']))
                 if receiving['state'] == 'ACCEPTED':
                     self._edge(KIND, 'ACCEPTED', 'ACTIVE', {'contribution_linked': True})
@@ -591,6 +627,7 @@ class Objectives:
                                                                           transferred_from=oid)]
                 changes[d['to']] = {'kind': KIND, 'data': receiving}
                 item['objective_uuid'], record['to'] = d['to'], d['to']
+                item['objective_revision'] = to['data']['accepted_revision']
             record['target'] = item['state']
             item['history'] = list(item.get('history') or []) + [record]
             changes[item['uuid']] = {'kind': FEATURE_KIND, 'data': item}
