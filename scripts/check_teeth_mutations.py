@@ -5797,12 +5797,25 @@ def cases():
 
     # AC1 (declared falsifier): tasks.claim_task allows admitted but unprioritized work.
     backlog('task-claim-skips-priority', 'tasks.py',
-            '        problems = _factory("control_backlog").executable_problems(gate.conn, task_id)\n',
-            '        problems = [p for p in _factory("control_backlog").executable_problems(gate.conn, task_id)\n'
-            '                    if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed\n',
+            '    return gate.decide("claim", unit)["refusals"]\n',
+            '    return [p for p in gate.decide("claim", unit)["refusals"]\n'
+            '            if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed\n',
             ['priority/missing-priority'])
-    backlog('frontier-offers-unprioritized', 'frontier.py', '            unready = _executable(gate, sid)\n',
-            '            unready = []  # defect: the frontier offers work that is not prioritized\n',
+    # Priority is a Gate predicate: the selection station (the frontier's offers and the VELDO-0132 cycle's
+    # assignment step), every other station, and the predicate itself.
+    backlog('frontier-offers-unprioritized', 'control_eligibility.py',
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))\n",
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + (() if s == 'selection' else (PRIORITY_PREDICATE,))\n"
+            "                                             + p))  # defect: selection offers and assigns unprioritized work\n",
+            ['priority/missing-priority'])
+    backlog('backlog-priority-only-at-selection', 'control_eligibility.py',
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))\n",
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + ((PRIORITY_PREDICATE,) if s == 'selection' else ())\n"
+            "                                             + p))  # defect: only selection asks for priority\n",
+            ['priority/missing-priority'])
+    backlog('backlog-priority-not-a-gate-predicate', 'control_eligibility.py',
+            "            return BL.executable_record_problems(data, self._data(inputs.get('backlog')))\n",
+            "            return []  # defect: priority is not a Gate predicate\n",
             ['priority/missing-priority'])
     backlog('any-member-decides', 'control_backlog.py',
             "        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:\n",
@@ -5819,7 +5832,7 @@ def cases():
             ['activation/decomposition-growth'])
     # AC3 (declared falsifier): output-file existence is DONE.
     backlog('output-file-done', 'tasks.py',
-            '        return not _factory("control_backlog").outcome_problems(gate.conn, task.get("id"))\n',
+            '        return not _factory("control_backlog").outcome_problems(gate, task.get("id"))\n',
             '        pass  # defect: the declared output existing on disk concludes the task\n',
             ['done/missing-outcome'])
     # AC3: a blocked phase resumes only on its resolved binding.
@@ -5833,14 +5846,40 @@ def cases():
             "    if state == 'BLOCKED':\n        return []  # defect: a blocked item's units are executable\n",
             ['blocked/resume-binding'])
     backlog('backlog-done-on-output', 'control_backlog.py',
-            "            problems = outcome_problems(conn, u['unit'])\n",
+            "            problems = outcome_problems(reader, u['unit'])\n",
             "            problems = [] if self.workspace and u.get('produces') and (Path(self.workspace) / u['produces']).exists() \\\n"
-            "                else outcome_problems(conn, u['unit'])  # defect: a declared output is an outcome\n",
+            "                else outcome_problems(reader, u['unit'])  # defect: a declared output is an outcome\n",
             ['done/missing-outcome'])
-    backlog('incomplete-landing-accepted', 'control_backlog.py',
-            "        if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) and landing.get('unit_id') == uid:\n",
-            "        if isinstance(landing, dict):  # defect: an incomplete landing receipt is an outcome\n",
+    backlog('incomplete-landing-accepted', 'control_eligibility.py',
+            "            if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) \\\n",
+            "            if isinstance(landing, dict) \\\n",
             ['done/missing-outcome'])
+    # DONE reads the one completion reader: a receipt the backlog judges beside it decides nothing.
+    backlog('backlog-done-own-landing-reader', 'control_backlog.py',
+            "    if reader.landing(uid) is not None:\n",
+            "    if conn.execute('SELECT 1 FROM entities WHERE kind=? AND instr(data, ?) > 0',\n"
+            "                    (RECEIPT_KIND, json.dumps(uid))).fetchone():  # defect: a receipt read beside the reader\n",
+            ['done/one-completion-reader'])
+    # A unit a VELDO-0133 close CANCELED is no outcome until its owner counts it, and the owner can count it.
+    backlog('backlog-closed-unit-accepted', 'control_backlog.py',
+            "    if u.get('state') == 'CANCELED' and isinstance(alternative, dict):\n",
+            "    if u.get('state') == 'CANCELED' and not isinstance(alternative, dict):\n"
+            "        return []  # defect: any CANCELED unit is an accepted outcome\n"
+            "    if u.get('state') == 'CANCELED' and isinstance(alternative, dict):\n",
+            ['done/closed-unit'])
+    backlog('backlog-closed-unit-not-counted', 'control_backlog.py',
+            "        if ud['state'] != 'CANCELED':\n",
+            "        if True:  # defect: a unit a close CANCELED can never be counted by its owner\n",
+            ['done/closed-unit'])
+    # The owner's answer binds the brief shown, at resume and at disposal.
+    backlog('backlog-resume-brief-unbound', 'control_backlog.py',
+            "block_target(data), resume_brief(data),\n",
+            "block_target(data), None,  # defect: any brief\n",
+            ['blocked/resume-binding'])
+    backlog('backlog-alternative-brief-unbound', 'control_backlog.py',
+            "unit_target(ud), alternative_brief(ud), project,\n",
+            "unit_target(ud), None, project,  # defect: any brief\n",
+            ['done/authorized-alternative'])
     return result
 
 
