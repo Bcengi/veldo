@@ -193,7 +193,7 @@ class Projects:
         conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
         store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, module=__file__)
 
-    # -- commands ----------------------------------------------------------------------------
+    # Commands.
 
     def apply(self, packet):
         command = packet.get('command') if isinstance(packet, dict) else None
@@ -339,7 +339,7 @@ class Projects:
             raise Refused(codes[0], '; '.join(codes))
         return {predicate: not checks[predicate] for predicate in ACTIVATION_PREDICATES}
 
-    # -- the transaction -----------------------------------------------------------------------
+    # The transaction.
 
     def _in_transaction(self, conn, params, before):
         """Inside the store's write transaction: the project row, the lifecycle edge and (for complete)
@@ -387,7 +387,7 @@ class Projects:
         if not allowed:
             raise Refused('invalid_transition:%s->%s' % (source, target), why)
 
-    # -- reads ---------------------------------------------------------------------------------
+    # Reads.
 
     @staticmethod
     def _kind(conn, kind):

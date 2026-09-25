@@ -99,7 +99,7 @@
     true
    ]
   ],
-  "seconds": 2.947
+  "seconds": 2.944
  },
  "controls_green": true,
  "mutants": [
@@ -214,7 +214,7 @@
      true
     ]
    ],
-   "seconds": 2.918,
+   "seconds": 2.957,
    "source_sha256": "fce0bcdaf0b7612f1ebd7e21929a51cb11d17144a2b795848166b89df620fbb2"
   },
   {
@@ -229,7 +229,7 @@
     "VELDO-0076 project/observability"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "b3257e3ed1c9cbb5955630ad386052fabc06ecb3cdd39cefd3cb6a05eb6cf8bb",
+   "mutant_sha256": "eb3ce2550ff0cf1e881fff11dd48751471016ae1b0011ad2df60f42734c5ca3b",
    "name": "budget-predicate-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -330,8 +330,8 @@
      true
     ]
    ],
-   "seconds": 2.976,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.942,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -349,7 +349,7 @@
     "VELDO-0076 project/observability"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "3738b3ac6a36a2e10ea51fc4f3b98be512c174ddb97dc06e4f0eccece2607839",
+   "mutant_sha256": "f094c90c3e00687c6dcaa2295735dd1bc80ae55d48ad59adae70a7a7b84ebc1c",
    "name": "omitted-policy-activates",
    "named_row_red": true,
    "named_rows": [
@@ -450,8 +450,8 @@
      true
     ]
    ],
-   "seconds": 2.953,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.918,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -469,7 +469,7 @@
     "VELDO-0076 project/observability"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "5e62c2c8ab8dcd6f0e24710884fd0ee50b1493dfb73008733e56199178f1150f",
+   "mutant_sha256": "125d966480711e9109571eef7407dd3355a457be1fbd676ade9288b1b71b3470",
    "name": "non-owner-activates",
    "named_row_red": true,
    "named_rows": [
@@ -570,8 +570,8 @@
      true
     ]
    ],
-   "seconds": 2.961,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.935,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -587,7 +587,7 @@
     "VELDO-0076 project/observability"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "f9a24033f6cf1b758afaf9538a5a271966e2e3465f45911c583576f5ed77c065",
+   "mutant_sha256": "505862de38ef0761e4e07c916fba5ab43f53e906889343c8e795cbaf39769aff",
    "name": "signature-unverified",
    "named_row_red": true,
    "named_rows": [
@@ -688,8 +688,8 @@
      true
     ]
    ],
-   "seconds": 2.941,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.958,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -701,7 +701,7 @@
     "VELDO-0076 project/one-active"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "22e76f0bd78d5374f63c53f6866d943b883aa01216c29b70c6517960c913ea33",
+   "mutant_sha256": "eef7f2c10343c1f020495b6dfec32b3f05c478d08f02739dc6261026f9004e59",
    "name": "second-activation-replaces",
    "named_row_red": true,
    "named_rows": [
@@ -802,8 +802,8 @@
      true
     ]
    ],
-   "seconds": 2.944,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.929,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -918,7 +918,7 @@
      true
     ]
    ],
-   "seconds": 2.935,
+   "seconds": 2.978,
    "source_sha256": "4054edce93c466f1079e119da9114d8abc2ff57900a2ec77a38b78ff5d2476a9"
   },
   {
@@ -1034,7 +1034,7 @@
      true
     ]
    ],
-   "seconds": 3.153,
+   "seconds": 3.211,
    "source_sha256": "4054edce93c466f1079e119da9114d8abc2ff57900a2ec77a38b78ff5d2476a9"
   },
   {
@@ -1049,7 +1049,7 @@
     "VELDO-0076 project/cancel"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "fa8656c6313eca9d4d0b6f8c6fee1757d2b017b1796878d8ff0b10a999147336",
+   "mutant_sha256": "506cc0a22051a0e212e6d30d7826bd8c995a2913a55c34b91791feafb3b18261",
    "name": "pause-stops-nothing",
    "named_row_red": true,
    "named_rows": [
@@ -1150,8 +1150,8 @@
      true
     ]
    ],
-   "seconds": 42.928,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 42.997,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1167,7 +1167,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "25479cfb97c168ede20169e0e9632e2308722f7d759512c6d086bcb783a2c5ed",
+   "mutant_sha256": "f33f6bceeae49a2fa3b8cc41f8c71714e1d09c11c6fc888b1ba63b27b0b98413",
    "name": "pause-rewrites-history",
    "named_row_red": true,
    "named_rows": [
@@ -1268,8 +1268,8 @@
      true
     ]
    ],
-   "seconds": 2.939,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.934,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1283,7 +1283,7 @@
     "VELDO-0076 project/observability"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "e9b7f0de8e55500ac9861d8a97e3733db3443b38f6401931ba70a7d173d305a2",
+   "mutant_sha256": "434fd215c07405ddf038b1e9e0c35258ae604ac14ffcb779845bb68a942a6eea",
    "name": "canceled-project-resumes",
    "named_row_red": true,
    "named_rows": [
@@ -1384,8 +1384,8 @@
      true
     ]
    ],
-   "seconds": 2.939,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.931,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1403,7 +1403,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "4e3df2dfe31f2138b4416cbe323ffb030a93105920749ddd20105fb15d88cae1",
+   "mutant_sha256": "3036bd3b2d159eb2d472b49408f773d7b7aff874bb38fb15f867388def5d0c0b",
    "name": "objective-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1504,8 +1504,8 @@
      true
     ]
    ],
-   "seconds": 2.7,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.677,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1523,7 +1523,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "94f4dda1010870ac30f140d861c2b8b788f73d1043a39ab35b57348034cb04f7",
+   "mutant_sha256": "d54a3077fea4e893db878ff634bc9aeaf5c9282753dafd785c6f477a95c98470",
    "name": "assignment-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1624,8 +1624,8 @@
      true
     ]
    ],
-   "seconds": 2.698,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.685,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1643,7 +1643,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "f52891806d2bc84215b996d87aa9c78ae4d2c8f0cf66d12517b9e0f9be3adeed",
+   "mutant_sha256": "9d22423b290b6c38a567319becf9eff356f1a6e96b33e7c2d84086205dfc5b5c",
    "name": "decision-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1744,8 +1744,8 @@
      true
     ]
    ],
-   "seconds": 2.671,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.707,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1757,7 +1757,7 @@
     "VELDO-0076 project/open-dispatch"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "755c6d8f9f11d15b484e8e31641630fafd399685c637f466aae05bf04d107299",
+   "mutant_sha256": "c2e2a99a1bb1dac34b993ae5727db86f472755962493a599e149b396f1f85e7e",
    "name": "dispatch-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1858,8 +1858,8 @@
      true
     ]
    ],
-   "seconds": 2.941,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.952,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   {
    "by_assertion": true,
@@ -1875,7 +1875,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "3fdd74f9bdfc0ccc0213e0c9fccd60771e8c12d00c382daa93aae9b54e88a9d6",
+   "mutant_sha256": "9c846ea173475f8c519c88056168f81505dbd3aba444efa5da79ac966940107f",
    "name": "reservation-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1976,8 +1976,8 @@
      true
     ]
    ],
-   "seconds": 2.943,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.952,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   }
  ],
  "noop": {
@@ -2080,11 +2080,11 @@
      true
     ]
    ],
-   "seconds": 2.932,
+   "seconds": 2.973,
    "source_sha256": "4054edce93c466f1079e119da9114d8abc2ff57900a2ec77a38b78ff5d2476a9"
   },
   "control_project.py": {
-   "copy_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5",
+   "copy_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2182,8 +2182,8 @@
      true
     ]
    ],
-   "seconds": 2.913,
-   "source_sha256": "4c3b2b21d4f40a7dffbcefb0789c8e71f174b7d0bc55191b9e4cc4ba8e4138d5"
+   "seconds": 2.976,
+   "source_sha256": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
   },
   "init_scaffold.py": {
    "copy_sha256": "fce0bcdaf0b7612f1ebd7e21929a51cb11d17144a2b795848166b89df620fbb2",
@@ -2284,13 +2284,13 @@
      true
     ]
    ],
-   "seconds": 2.933,
+   "seconds": 2.984,
    "source_sha256": "fce0bcdaf0b7612f1ebd7e21929a51cb11d17144a2b795848166b89df620fbb2"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 76",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 98.265,
+ "serial_seconds": 98.54,
  "spec_id": "VELDO-0076",
  "suite": "scripts/suites/71_veldo_0076_projects.py"
 }
