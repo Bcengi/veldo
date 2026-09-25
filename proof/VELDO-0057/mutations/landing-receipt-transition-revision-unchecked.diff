@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -195 +195 @@
+-    if revision != payload.get('revision'):
++    if False:  # defect: the transition takes a receipt about any revision the unit is at

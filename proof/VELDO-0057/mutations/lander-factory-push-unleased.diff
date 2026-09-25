@@ -1,0 +1,9 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -781,2 +781 @@
+-        if self.landing is not None:
+-            return self._publish(unit, detail)
++        pass  # defect: a factory land pushes the candidate itself
+@@ -788 +787 @@
+-            push = self._git(c["workspace"], "push", "-q", "--force-with-lease=refs/heads/%s:%s" % (self.trunk, c["watermark"]),
++            push = self._git(c["workspace"], "push", "-q", "--force",

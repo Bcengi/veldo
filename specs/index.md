@@ -92,6 +92,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0130 | Authenticated factory state, message and decision API | ready | high | dmitry | required | VELDO-0130-authenticated-factory-api.md |
 | VELDO-0131 | Veldo factory UI on phone and desktop | ready | high | dmitry | required | VELDO-0131-factory-phone-desktop-ui.md |
 | VELDO-0132 | Versioned workflow definitions consumed by LangGraph | ready | high | dmitry | required | VELDO-0132-versioned-workflow-definition.md |
+| VELDO-0133 | Ask what becomes of work whose person assignment is declined, canceled or expired | ready | high | dmitry | required | VELDO-0133-disposition-of-declined-and-canceled-work.md |
 | VELDO-0134 | Accept a repository's architecture contract by a signed owner command | ready | high | dmitry | required | VELDO-0134-architecture-acceptance-record.md |
 | VELDO-0135 | Enrolled work is offered from its authoritative floor state, not the spec status line | ready | high | dmitry | required | VELDO-0135-enrolled-work-offered-from-floor-state.md |
 | VELDO-0136 | Tell the owner to reply to the request when an answer does not reply to a presentation | ready | standard | dmitry | required | VELDO-0136-owner-told-to-reply-to-the-request.md |
@@ -145,7 +146,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
-| VELDO-0133 | Ask what becomes of work whose person assignment is declined, canceled or expired | draft | high | dmitry | required | VELDO-0133-disposition-of-declined-and-canceled-work.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 - the keyed bytes and the validated bytes must be the same bytes | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |

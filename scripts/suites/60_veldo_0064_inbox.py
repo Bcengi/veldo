@@ -781,9 +781,11 @@ def _v64_checks(base):
     listed = lister() if callable(lister) else []
     by_unit = {p.get('unit_id'): (p.get('assignment_id'), p.get('claim_id'), p.get('reason')) for p in listed}
     expected = {'unit-3': (r1_id, cid3, 'awaiting_answer'), 'unit-4': (r3_id, cid4, 'awaiting_answer'),
-                'unit-5': (rot3, cid5, 'answer_not_admitted'), 'unit-6': (v_decline, cid6, 'declined'),
+                'unit-5': (rot3, cid5, 'answer_not_admitted'), 'unit-6': (v_decline, cid6, 'awaiting_disposition'),
                 'unit-7': (v_cancel, cid7, 'canceled'), 'unit-8': (v_ready, cid8, 'ready_to_resume')}
     check(visible, 'the decline, the cancel and the answer were accepted over parked units', disposed == [True] * 3)
+    # VELDO-0133: the owner's decline asks the owner what becomes of the work, so the declined unit reads
+    # awaiting_disposition; the agent's cancel resolves no project owner here, so it stays canceled.
     for unit, why in (('unit-6', 'a declined assignment'), ('unit-7', 'a canceled assignment'), ('unit-5', 'an answer that does not admit'),
                       ('unit-3', 'a pending assignment'), ('unit-8', 'an admitted answer not yet resumed')):
         check(visible, 'a unit parked on %s is listed with its claim, assignment and why' % why,
@@ -793,7 +795,7 @@ def _v64_checks(base):
     check(visible, 'the listing is exactly the parked units: resumed and owned units are not in it', by_unit == expected)
     counted = inbox.metrics()
     check(visible, 'metrics count every parked unit by why it is parked', counted.get('parked') == 6
-          and counted.get('parked_by_reason') == {'awaiting_answer': 2, 'answer_not_admitted': 1, 'declined': 1,
+          and counted.get('parked_by_reason') == {'awaiting_answer': 2, 'answer_not_admitted': 1, 'awaiting_disposition': 1,
                                                   'canceled': 1, 'ready_to_resume': 1})
 
     # --- AC3: views describe; only current authority admits --------------------------------------

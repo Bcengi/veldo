@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -653 +653 @@
+-        if 'refused' in projection:
++        if False:  # defect: a completion whose projection was refused is reported ok

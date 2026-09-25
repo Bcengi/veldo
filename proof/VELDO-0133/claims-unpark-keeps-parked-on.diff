@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -100 +100 @@
+-        data = {k: v for k, v in current.items() if k != 'parked_on'}
++        data = dict(current)  # defect: the park is not cleared

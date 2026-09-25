@@ -1,0 +1,5 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -776,0 +777,2 @@
++        if not self.push and self.landing is not None:
++            return self._publish(unit, detail)  # defect: a push-disabled land publishes and completes

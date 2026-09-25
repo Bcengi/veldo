@@ -1,0 +1,13 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -841,4 +841,6 @@
+-        result = self.intake.submit_attested(arrived['source_kind'], evidence, principal=answer['principal'],
+-                                             text=signed['instruction'],
+-                                             project=project['data']['name'] if project else None,
+-                                             provenance={'disposition': disposition})
++        result = self.intake._submit({'schema': 'veldo.intake_command/v1', 'source_kind': arrived['source_kind'],
++                                      'source_id': evidence if isinstance(evidence, str)
++                                      else str(evidence['request'].get('request_id')),
++                                      'principal': answer['principal'], 'text': signed['instruction'],
++                                      'project': project['data']['name'] if project else None,
++                                      'clarifies': None, 'provenance': {'disposition': disposition}})  # defect: the source is the answer's

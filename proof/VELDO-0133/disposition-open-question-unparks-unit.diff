@@ -1,0 +1,7 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -933 +933,3 @@
+-        return {question['id']: {'kind': ENTITY_KIND, 'data': question['data']}}
++        freed = {k: v for k, v in claim.items() if k != 'parked_on'}
++        return {question['id']: {'kind': ENTITY_KIND, 'data': question['data']},
++                question['claim_id']: {'kind': 'claim', 'data': freed}}  # defect: claimable while it waits

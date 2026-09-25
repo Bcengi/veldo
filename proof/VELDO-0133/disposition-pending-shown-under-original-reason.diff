@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -751 +751 @@
+-            return 'awaiting_disposition', fields
++            return ended_as, fields  # defect: the original reason is reported
