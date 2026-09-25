@@ -1,9 +1,12 @@
 # PLAN-0019: the factory's operating model
 
-**Status.** Draft for the owner's approval, revision 2, 2026-09-25, written against origin/main
-`c1fd591` and the branches named below. Revision 2 answers the adversarial review of revision 1
-(`6416eb8`) and folds in the owner's decision of the same day that each person runs their own factory
-(Telegram 29146, 29147); section 14 maps every review finding to what changed. This document designs the
+**Status.** Approved by the owner on 2026-09-25 (Telegram 29162, "all 6 are yes") at revision 3
+(`12879d3`), with the open decision of section 15 answered yes for both engines (Telegram 29163, "yes,
+Codex and Claude can read creds"); this text records that answer and changes nothing else. It was
+written against origin/main `c1fd591` and the branches named below. Revision 2 answered the adversarial
+review of revision 1 (`6416eb8`) and folded in the owner's decision of the same day that each person
+runs their own factory (Telegram 29146, 29147); section 14 maps every review finding to what changed,
+and revision 3 applied the second check recorded at the end of section 15. This document designs the
 owner's operating requirements of 2026-09-25 (Telegram 29122, 29126, 29127 and 29128) on top of what
 PLAN-0019 revision 3 and its controlling design (R01 to R76) already built or specified. It changes no
 code. Once approved, it governs the areas below; where it and the controlling design disagree on those
@@ -12,7 +15,7 @@ areas, this document wins, and PLAN-0019 revision 4 records the change in its co
 **How it is organized.** One section for each requirement area, each in the same six parts: (a) the
 requirement, (b) what already exists and is reused, (c) the gap, (d) the design, (e) the changes it
 implies, mapped to specifications, and (f) what is deliberately not built now. Then one end-to-end
-walkthrough, the MVP critical path, the risks, the response to the review and the one open decision.
+walkthrough, the MVP critical path, the risks, the response to the review and the owner's decision on engine logins.
 Every new component is tied to a requirement; everything else is reuse.
 
 **Four decisions run through the whole design.** First, every model invocation is an ordinary
@@ -257,7 +260,8 @@ exact values in every record line before the pattern and entropy scanner runs (s
 
 **The honest boundary.** A worker's tools run as the same OS user as its MCP servers, so in the MVP a
 worker that tries can read the credentials its own servers use, from its generated configuration or
-its environment, except where section 6's per-engine sandbox denies those paths. Beyond that, the
+its environment, and its own provider login (section 6: the owner moved login separation to Release 2
+for both engines, Telegram 29163). Beyond that, the
 trusted wrapper strips `SSH_AUTH_SOCK`, `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and
 `GITHUB_TOKEN` from the engine's environment just before it execs the engine, so `systemd-run` and
 `systemctl` keep the receiver's environment and still reach the user manager; the engine's
@@ -530,7 +534,8 @@ binaries and listed below.
 account's own profile would add (settings, CLAUDE.md, skills, auto-memory, hooks), which would also make
 runs differ by account. Nothing keeps a run off paid APIs, the engine binaries auto-update under a
 qualification that refuses a changed digest, and nothing keeps the provider login away from a worker's
-tools, which VELDO-0060 AC4, VELDO-0061 AC4, VELDO-0062 AC1 and R45 all require.
+tools, which VELDO-0060 AC4, VELDO-0061 AC4, VELDO-0062 AC1 and R45 all require. The owner moved that
+last requirement to Release 2 for both engines (section 15, Telegram 29163).
 
 **(d) Design.** **Everything off, then exactly the role's items.** For every run the adapter turns off
 the engine's own discovery and every profile source, then hands in exactly the items the role lists, so
@@ -582,29 +587,32 @@ may remove old versions, never the auto-updating `~/.local/bin/claude` link; for
 vendor binary inside its package), sets `DISABLE_AUTOUPDATER` in the worker environment, and records
 the digest VELDO-0060 AC1 checks. Upgrading an engine is a deliberate requalification.
 
-**Keeping the login away from tools.** The engine must read its login, so a tool running as the same
-user in the same process tree can read it too unless the engine's own sandbox stops it. The per-engine
-mechanisms are these.
+**Keeping the login away from tools: Release 2 for both engines.** The engine must read its login, so
+a tool running as the same user in the same process tree can read it too unless the engine's own
+sandbox stops it. The owner decided on 2026-09-25 (Telegram 29163, "yes, Codex and Claude can read
+creds") that in the MVP a worker's tools may read their own engine login, for Claude Code as well as
+Codex. The login-separation criterion (VELDO-0060 AC4, VELDO-0061 AC4, the clause of VELDO-0062 AC1 and
+R45) therefore moves to Release 2 as hardening for both engines, and the MVP boundary is the same as an
+interactive session today. No product function moves with it. The mechanisms found for that hardening
+are recorded here so Release 2 starts from them; none is configured, installed or qualified in the MVP.
 
-For **Claude Code** a real mechanism exists in 2.1.281. Its sandbox for Bash commands, built on
-bubblewrap on Linux, has `sandbox.filesystem.denyRead` and `sandbox.credentials.files` entries with a
-`deny` mode, honored from the `settings` option, and `sandbox.allowUnsandboxedCommands` set to false removes the
-escape hatch. The generated settings deny reads of the profile's `.credentials.json` and of the run's
-private directory, and the permission rules deny the same paths to the Read, Edit and search tools. It
-needs `socat` installed next to the bubblewrap 0.9.0 already present. Qualification (VELDO-0060 AC4) must
+For **Claude Code** 2.1.281 has a real mechanism. Its sandbox for Bash commands, built on bubblewrap on
+Linux, has `sandbox.filesystem.denyRead` and `sandbox.credentials.files` entries with a `deny` mode,
+honored from the `settings` option, and `sandbox.allowUnsandboxedCommands` set to false removes the
+escape hatch. Generated settings would deny reads of the profile's `.credentials.json` and of the run's
+private directory, and permission rules would deny the same paths to the Read, Edit and search tools. It
+needs `socat` installed next to the bubblewrap 0.9.0 already present. Its qualification would have to
 show a tool child cannot read either path and that nothing else the role's tools use today is reduced,
 network included; the sandbox's own defaults also deny `/run/user`, where the session bus and keyring
-control directory live, which that check must account for. On the Mac the same settings drive the
-macOS sandbox, and qualification runs the same check there. The `CLAUDE_CODE_OAUTH_TOKEN` fallback is
-denied to tools through `sandbox.credentials.envVars`.
+control directory live, which that check would have to account for. On the Mac the same settings drive
+the macOS sandbox. The `CLAUDE_CODE_OAUTH_TOKEN` fallback would be denied to tools through
+`sandbox.credentials.envVars`.
 
 For **Codex** no mechanism is proven. 0.154.0 has named permission profiles with filesystem entries,
 special paths such as project roots and a minimal set, a `deny_read` restriction in managed
 requirements, and `shell_environment_policy` for the tool environment, which together look able to keep
-`CODEX_HOME` unreadable to tool commands. But nothing has shown it works on this host, and it could not
-be exercised here without running the engine. So for Codex, and for Claude Code if its qualification
-fails, the login-separation criterion moves to Release 2 as hardening, with the MVP boundary stated as
-the same as an interactive session today. That needs the owner's word (section 15).
+`CODEX_HOME` unreadable to tool commands. Nothing has shown it works on this host, and it could not be
+exercised here without running the engine.
 
 **Proof of the handoff.** Claude Code's init event lists `tools`, `mcp_servers`, `slash_commands`,
 `skills` and `plugins`; the receiver compares those with the recorded set in both directions and stops
@@ -618,9 +626,11 @@ optimized around it.
 
 **(e) Changes.** Amend VELDO-0060 AC1 and VELDO-0061 AC1: the everything-off baseline, the paid-API
 guard, the environment strip of section 3 and the pinned executable are qualified with each adapter;
-role selections arrive with VELDO-0127. Amend VELDO-0060 AC4 with the Claude sandbox mechanism above,
-and VELDO-0061 AC4 with the Release 2 move, on the owner's word. Amend VELDO-0127 AC1: the schema gains
-skills, instruction files and load modes and refers to catalog servers. Add **VELDO-0127 AC4**: *nothing
+role selections arrive with VELDO-0127. Amend VELDO-0060 AC4 and VELDO-0061 AC4 so they keep the
+pre-launch usage caps and move login separation to Release 2, and move the login clause of VELDO-0062
+AC1 and of R45 to Release 2 the same way, on the owner's word (Telegram 29163). Amend VELDO-0127 AC1:
+the schema gains skills, instruction files and load modes and refers to catalog servers. Add
+**VELDO-0127 AC4**: *nothing
 loads unless the role lists it; the engine's reported tools, MCP servers, skills and plugins at launch
 equal the role's `always` items plus the assigned ones; instruction files are proved by the marker
 qualification.* VELDO-0090 AC1's set includes the `when assigned` items a staffing choice requests.
@@ -794,13 +804,13 @@ history is the measurement that would drive it.
 and VELDO-0092 to Release 2. Use comes first: no over-architecture and no over-building.
 
 **(b) and (c) What moves.** VELDO-0080's ordinary "fix this bug" path is already the default pipeline.
-VELDO-0092's deferral means proposals take effect one command at a time with a named stop. If the owner
-agrees (section 15), the login-separation criterion moves to Release 2 for any engine whose
-qualification cannot prove it; that is hardening, and no product function moves.
+VELDO-0092's deferral means proposals take effect one command at a time with a named stop. The owner
+agreed (section 15, Telegram 29163), so the login-separation criterion moves to Release 2 for both
+engines; that is hardening, and no product function moves.
 
 **The owner's one-time setup,** in one place, done once per factory:
 
-1. Install `libsecret-tools` and `socat` (root steps).
+1. Install `libsecret-tools` (a root step).
 2. Log in once to each of the three Claude accounts and the one Codex account in their prepared profiles
    on Linux, and again on the Mac for the accounts it will use.
 3. Create one GitHub token per identity, able to create repositories and push, with workflow permission.
@@ -811,9 +821,10 @@ qualification cannot prove it; that is hardening, and no product function moves.
 Release 1 work items for VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145 and the
 VELDO-0057, VELDO-0126, VELDO-0077 and VELDO-0079 amendments; updates VELDO-0059's `depends_on` (drop
 VELDO-0080 and VELDO-0092, add the new specifications); names this document in C1; states the per-person
-deployment in the controlling design's deployment view; and changes RJ1 so the full journey starts from
+deployment in the controlling design's deployment view; changes RJ1 so the full journey starts from
 a Telegram message that points at a Jira ticket, fetched through the Atlassian catalog server, uses at
-least two accounts and is watched in the live terminal.
+least two accounts and is watched in the live terminal; and moves the login-separation criterion to
+Release 2 for both engines.
 
 ## 11. Walkthrough: a Telegram message pointing at a Jira ticket, to a landed change
 
@@ -863,8 +874,8 @@ factory at the end of the second stage, not the third. The full MVP still lands;
 |-|-|-|
 | **Stage 1** | **Watch real runs** | |
 | 1 | VELDO-0062 (widened) | Accounts and caps come before any engine run |
-| 2 | VELDO-0060 | Claude Code adapter: baseline off, paid-API guard, environment strip, pinned binary, login separation |
-| 3 | VELDO-0061 | Codex adapter, the same, with the login criterion as the owner decides |
+| 2 | VELDO-0060 | Claude Code adapter: baseline off, paid-API guard, environment strip, pinned binary; login separation is Release 2 |
+| 3 | VELDO-0061 | Codex adapter, the same, with login separation in Release 2 |
 | 4 | VELDO-0141 | The live record with exact-value redaction |
 | 5 | VELDO-0129 with AC4 | Real build and review, the loop and the end-of-run wake |
 | 6 | VELDO-0145 | UI shell, run terminal and decisions screen |
@@ -911,9 +922,10 @@ that from his phone. Runs that need no credential continue.
 contain this, at the cost that every engine upgrade is a deliberate step.
 
 **Credentials inside a run.** A worker that tries can read its own servers' credentials and can reach
-the keystore and SSH agent through the owner's unconfined keyring daemon (section 3), and for an engine
-whose sandbox is not qualified it can read its provider login. Output redaction limits what reaches the
-record. The boundary is the same as an interactive session today, and it is stated rather than implied.
+the keystore and SSH agent through the owner's unconfined keyring daemon (section 3), and on either
+engine it can read its own provider login, which the owner accepted for the MVP (Telegram 29163) with
+the lock-down in Release 2. Output redaction limits what reaches the record. The boundary is the same
+as an interactive session today, and it is stated rather than implied.
 
 **Redaction may damage legitimate lines.** Entropy redaction can replace base64 or long identifiers. The
 first live runs measure how often, before the rule is tuned.
@@ -942,7 +954,7 @@ code on this branch or the installed tools before it was adopted.
 | Finding | What changed |
 |-|-|
 | B1, strict MCP turns off claude.ai connectors | Confirmed in the 2.1.281 binary. The `account_connector` transport, the connector fields on accounts and connector-aware selection are removed; Atlassian is an ordinary catalog server (sections 3, 6, 8, 11). |
-| B2, tools can read the provider login | Confirmed in VELDO-0060 AC4, VELDO-0061 AC4, VELDO-0062 AC1, R45 and `control_containment.py`. Decided per engine in section 6: Claude Code's sandbox `denyRead` and `credentials.files` deny, confirmed in the binary; Codex unproven, so its criterion moves to Release 2 on the owner's word (section 15). |
+| B2, tools can read the provider login | Confirmed in VELDO-0060 AC4, VELDO-0061 AC4, VELDO-0062 AC1, R45 and `control_containment.py`. Decided per engine in section 6: Claude Code's sandbox `denyRead` and `credentials.files` deny, confirmed in the binary; Codex unproven, so its criterion moves to Release 2 on the owner's word (section 15). The owner then answered yes for both engines (Telegram 29163), so both move to Release 2. |
 | B3, Mac credential delivery | Confirmed: `wrap()` execs after the identity line and `_reap()` feeds the contract-built packet afterward. A secrets frame the wrapper reads before exec replaces it (section 3). |
 | B4, nothing wakes the loop | Confirmed: `hint_after` runs only after the service's own packets and passes, and the service has no Runner. The Runner and loop live in the service, and the end of a run on the Runner's own launch pipe is a wake source, including a receiver that died; VELDO-0129 AC4 carries the falsifier (section 4). |
 | B5, a new project breaks at intake | Confirmed in `control_intake.py`. A `factory` project that is never a default, a new-project route with no intake question, one answer that also admits the first objective, and the VELDO-0126 amendment (section 5). |
@@ -969,16 +981,24 @@ per-person deployment, as every worker of a person's factory reaching that perso
 **The owner's per-person decision** (Telegram 29146, 29147) is folded in as the deployment view in
 section 1, the landing gap in section 7 and the fourth cross-cutting decision.
 
-## 15. The one open decision for the owner
+## 15. The owner's decision on engine logins
 
-For the MVP, is it acceptable that a Codex worker, and a Claude worker if its sandbox check fails,
-could read its own account login, the same as a terminal session today, with the lock-down in Release 2?
+**The question asked.** For the MVP, is it acceptable that a Codex worker, and a Claude worker if its
+sandbox check fails, could read its own account login, the same as a terminal session today, with the
+lock-down in Release 2?
 
-**What each answer means.** Yes: every engine joins the MVP pool, and the walkthrough's reviewer runs on
+**What each answer meant.** Yes: every engine joins the MVP pool, and the walkthrough's reviewer runs on
 Codex as written. No: an engine that cannot prove the separation stays out of the MVP pool until it can,
 so today Codex is out and every review runs on a different Claude account instead. This relaxes approved
-text (VELDO-0060 AC4, VELDO-0061 AC4, R45), which is why it is his to decide; his standing rule that the
-MVP keeps every function and defers hardening points to yes.
+text (VELDO-0060 AC4, VELDO-0061 AC4, R45), which is why it was his to decide; his standing rule that the
+MVP keeps every function and defers hardening pointed to yes.
+
+**Decided, 2026-09-25: yes, for both engines.** The owner answered on Telegram 29163: "yes, Codex and
+Claude can read creds". So in the MVP a worker's tools may read their own engine login on Claude Code as
+well as on Codex, without the Claude sandbox check being run. The login-separation criterion (VELDO-0060
+AC4, VELDO-0061 AC4, the clause of VELDO-0062 AC1 and R45) moves to Release 2 as hardening for both
+engines, and with it the Claude bubblewrap sandbox denial and the `socat` install (section 6). Every
+engine joins the MVP pool and the walkthrough stands as written.
 
 **Second check (2026-09-25).** A fresh check of this revision confirmed the seven fixes against the code
 and the installed binaries and found three that still failed: the environment strip would have cut
