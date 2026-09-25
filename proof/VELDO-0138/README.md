@@ -54,17 +54,45 @@ through the suite's own connections.
 | `served/settlement` | AC1 | `service-skips-open-ingress` |
 | `qualification/recorded-by-service` | AC1, AC2 | `probe-on-the-real-bot` |
 | `command/owner` | AC2 | `owner-command-unrouted` |
-| `command/owner-only` | AC2 | `member-authorizes-owner-edge`, `envelope-signature-unchecked` |
+| `command/owner-only` | AC2 | `member-authorizes-owner-edge`, `envelope-signature-unchecked`, `owner-checked-against-params-only` |
 | `command/stop-live` | AC2 | `stop-needs-restart` |
 | `command/stop-keeps-pending` | AC2 | `resume-drops-backlog` |
 | `restart/active-stays-active` | AC3 | `service-skips-open-ingress` and `owner-command-unrouted` also red it |
 | `restart/stopped-stays-stopped` | AC3 | `restart-resumes-stopped` |
 | `restart/never-activated-stays-inert` | AC1, AC3 | `inert-edge-presents` also reds it |
+| `qualification/transport-failure-named` | AC2 (filed F2) | `transport-failure-named-fixture` |
 
-Registry: `scripts/check_teeth_mutations.py --finding 138` (11 mutants, all rejected, each reddening
+Registry: `scripts/check_teeth_mutations.py --finding 138` (13 mutants, all rejected, each reddening
 its named row). `python3 -B proof/VELDO-0138/drive.py` regenerates `mutations.json` and the diffs.
-`red-at-b74c8a6.json`: the current suite against the pre-change tree (the service loads no channel
-module and bin/veldo has no channel subcommand), every row red by assertion.
+`red-at-b74c8a6.json`: the suite of that build against the pre-change tree (the service loads no
+channel module and bin/veldo has no channel subcommand), every row red by assertion.
+`red-at-af8e477.json`: the current suite against the build before the first review's fix, red by
+assertion in `command/owner-only` (the steward's stop naming himself stops the owner's edge, and a
+second project_owner person re-qualifies it onto his own enrolled chat), in
+`restart/stopped-stays-stopped` (that re-qualified run presents after the restart) and in
+`qualification/transport-failure-named`.
+
+## First review fix
+
+Over an existing activation record every command (stop, qualify, activate) must be signed by the owner
+that record names, still a current person member holding project_owner; otherwise `not_owner`, the
+record unchanged. A first qualification with no record keeps the rule it had. Handing the edge to a new
+owner is out of Release 1 scope (spec Notes). Row `command/owner-only` adds, over the active record,
+the steward's stop naming himself, and over the stopped record, a second project_owner person
+(`deputy`, enrolled as the suite enrolls members, with his own chat enrollment) qualifying and stopping
+in his own name: each refused by name with the record unchanged and nothing sent.
+
+Filed F2: an exchange the gate's transport could not complete now records the failure's class
+(`transport_failure`), and a run holding one is refused as `unavailable_service`, not
+`fixture_only_evidence`. Row `qualification/transport-failure-named` drives it honestly for the
+Telegram origin: a separate authority of the run's own, the owner's signed qualify for
+`https://api.telegram.org`, and the gate's own transport making getMe, where only the network is a
+stand-in (for each call the connection is refused, times out or the name does not resolve, before any
+socket opens). The control keeps an exchange that has no TLS and did not fail in transport as
+`fixture_only_evidence`. VELDO-0073's `fixture-evidence-accepted` mutation was re-aimed at the reshaped
+test (still red in `qualification/real-platform-proof`), and the live record
+`proof/VELDO-0073/live/qualification.json` (branch `live-0073-record`) still passes
+`qualification/live-record-consistent`.
 
 ## The live real-factory qualification (the lead, once, with the owner)
 
