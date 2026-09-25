@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -803,2 +802,0 @@
+@@ -814,2 +813,0 @@
 -        if named is None or named['record_digest'] != hint.get('record_digest') or named['command_id'] != hint.get('command_id'):
 -            return {'refusal': 'stale_version:hint', 'cursor': self._cursor}

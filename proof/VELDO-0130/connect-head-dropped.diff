@@ -1,0 +1,5 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -363,2 +362,0 @@
+-    if type(head.get('watermark')) is int and head['watermark'] > 0:
+-        authority.deliver(head)

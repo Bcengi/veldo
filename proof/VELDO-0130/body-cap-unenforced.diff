@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -879 +879 @@
+@@ -892 +892 @@
 -            if size < 0 or size > BODY_LIMIT:
 +            if size < 0:  # defect: any body size is read

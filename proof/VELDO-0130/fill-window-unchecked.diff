@@ -1,0 +1,7 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -730,4 +729,0 @@
+-        state = self.sessions.state(stream.handle)
+-        if state != 'live':
+-            stream.close('session_expired' if state == 'session_expired' else 'revoked')
+-            self.drop(stream)

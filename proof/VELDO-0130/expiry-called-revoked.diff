@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -809 +809 @@
+@@ -820 +820 @@
 -                stream.close(state if state == 'session_expired' else 'revoked')
 +                stream.close('revoked')  # defect: an expired session is reported revoked

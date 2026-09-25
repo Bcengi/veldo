@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -840 +840 @@
+@@ -853 +853 @@
 -            elif change.get('kind') == 'membership' and data.get('revoked_at') is not None:
 +            elif False:  # defect: a revoked membership in the journal ends nothing

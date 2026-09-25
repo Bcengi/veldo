@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -428 +428 @@
+@@ -432 +432 @@
 -        problem = body_problem(route, body)
 +        problem = body_problem(route, body) if write else None  # defect: a query is not judged
