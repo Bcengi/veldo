@@ -17,6 +17,19 @@ footprint:
   - "engine/.veldo/control_api*.py"
   - ".veldo/control_api*.py"
   - "packs/*/.veldo/control_api*.py"
+  - "engine/.veldo/authority_contract.py"
+  - ".veldo/authority_contract.py"
+  - "packs/*/.veldo/authority_contract.py"
+  - "engine/.veldo/control_channel_enrollment*.py"
+  - ".veldo/control_channel_enrollment*.py"
+  - "packs/*/.veldo/control_channel_enrollment*.py"
+  - "engine/.veldo/control_signer_answers*.py"
+  - ".veldo/control_signer_answers*.py"
+  - "packs/*/.veldo/control_signer_answers*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0130_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -246,6 +259,9 @@ Cloudflare terminates TLS and can see the traffic (free tier, plus the domain); 
 tunnel with a DNS name and a Let's Encrypt certificate through Caddy (no subscription, a domain and an
 open UDP port at the host's network); or a public name on the host itself with port 443 open and Caddy
 (no subscription, a domain, and the sign-in page exposed to the internet).
+**The owner chose the Tailscale tailnet** (Telegram 29092 asked, 29094 "Tailscale is ok"): the host's
+existing tailnet on his personal account, with Tailscale Serve terminating TLS for the host's tailnet
+name and the phone joining with the Tailscale app. No other terminator is installed.
 
 **Sessions.** The API keeps sessions behind one interface (create, find, touch, end, end by credential,
 end by principal), held in the API process's memory in Release 1; sessions that survive a restart are
@@ -286,3 +302,7 @@ proof; the API is the enrolled "api" channel edge that signs an assertion naming
 and never reads an actor from a body; it listens on loopback behind a TLS terminator on the host, and how
 the phone reaches the host is left to the owner. A "What the reviewer judges" section is added. The
 criteria, status, risk, dependencies and footprint are unchanged.
+
+2026-09-25: the owner chose the Tailscale tailnet for transport (29092/29094). The footprint gains the
+modules the authentication design changes (the authority contract, channel enrollment, the answer signer,
+the scaffold) and the teeth-mutation registry.
