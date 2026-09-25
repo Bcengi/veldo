@@ -36,7 +36,7 @@ HERE = Path(__file__).resolve().parent
 SUITE = '73_veldo_0139_factory_setup.py'
 PREFIX = 'VELDO-0139 '
 FINDING = 139
-MODULES = ('control_factory_setup.py', 'init_scaffold.py')
+MODULES = ('control_factory_setup.py', 'init_scaffold.py', 'control_service_channel.py')
 
 
 def _load(name, path):

@@ -5142,6 +5142,45 @@ def cases():
     factory('owner-delegation-omitted', "        with step('delegation'):\n            admin('grant_delegation', {",
             "        with step('delegation'):  # defect: no delegation\n            (lambda *a: None)('grant_delegation', {",
             'journey/qualified-and-active')
+    # Review 1 (blocking, AC3): the first qualification request comes from shipped code alone.
+    factory('requester-not-enrolled',
+            "            admin('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],\n",
+            "            (lambda *a, **k: None)('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],"
+            "  # defect: no requester\n", 'journey/qualified-and-active')
+    factory('requester-projection-stale',
+            "            K.publish(S, conn, projection)\n            os.chmod(projection, 0o600)\n        with step('host_trust'):\n",
+            "            os.chmod(projection, 0o600)  # defect: the projection is not republished\n        with step('host_trust'):\n",
+            'journey/qualified-and-active')
+    factory('qualification-request-not-opened',
+            "        if self.requester is None:\n            return self._opened(run, None, 'skipped', 'no_requester')\n",
+            "        if True:  # defect: the service never opens the qualification request\n"
+            "            return self._opened(run, None, 'skipped', 'no_requester')\n",
+            'journey/qualified-and-active', module='control_service_channel.py')
+    factory('qualification-alias-per-process',
+            "    return 'qualification-' + hashlib.sha256(str(run).encode()).hexdigest()[:32]\n",
+            "    return 'qualification-' + hashlib.sha256((str(run) + str(os.getpid())).encode()).hexdigest()[:32]"
+            "  # defect: a restarted process derives another alias\n",
+            'qualification/one-request-across-restart', module='control_service_channel.py')
+    # Review 1, filed and fixed with it.
+    factory('rerun-blocked-by-kept-directory',
+            "    if E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace)):\n",
+            "    if E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace))):"
+            "  # defect: a directory the rollback keeps blocks a second setup\n", 'rollback/rerun')
+    factory('store-world-readable',
+            "os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))\n            os.chmod(plan['store'], 0o600)\n",
+            "os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o644))\n            os.chmod(plan['store'], 0o644)  # defect: readable by all\n",
+            'store/private-and-closed')
+    factory('store-connection-left-open', "        if conn is not None:\n            conn.close()\n",
+            "        if False:  # defect: the store connection is left open\n            conn.close()\n",
+            'store/private-and-closed')
+    factory('host-trust-directory-unchecked',
+            "    if problem:\n        raise Refused(problem, os.path.dirname(os.path.abspath(str(host_trust))))\n",
+            "    if False:  # defect: an existing host trust directory is not checked\n"
+            "        raise Refused(problem, os.path.dirname(os.path.abspath(str(host_trust))))\n",
+            'host-trust/directory-checked')
+    factory('empty-host-named-trust', "            rest.append('empty_' + name)\n",
+            "            found.append('trust')  # defect: an empty leftover directory is named a trust\n",
+            'refuse/writes-nothing')
 
     # VELDO-0077: each criterion's declared falsifier first, then the threat model's other shapes.
     def objective(name, module, old, new, rows, also=()):
