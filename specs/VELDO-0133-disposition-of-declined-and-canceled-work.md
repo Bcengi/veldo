@@ -23,6 +23,9 @@ footprint:
   - "engine/.veldo/control_claim.py"
   - ".veldo/control_claim.py"
   - "packs/*/.veldo/control_claim.py"
+  - "engine/.veldo/control_intake*.py"
+  - ".veldo/control_intake*.py"
+  - "packs/*/.veldo/control_intake*.py"
   - "scripts/suites/*_veldo_0133_*.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/manifest.json"
@@ -170,8 +173,9 @@ reminders, no reassignment timers and no escalation when a question goes unanswe
 here produces EXPIRED; deadline expiry sweeping stays deferred, and this item only disposes of an
 EXPIRED record already in the store. The free-text instruction is never interpreted by this
 item; its meaning is the project manager's work after intake. Settlement and quorum
-(VELDO-0068), presentation receipts (VELDO-0065), answer acquisition and attribution
-(VELDO-0066) and the intake itself (VELDO-0126) are consumed, not changed.
+(VELDO-0068), presentation receipts (VELDO-0065) and answer acquisition and attribution
+(VELDO-0066) are consumed, not changed. The intake (VELDO-0126) is consumed and gains one public
+attested submission (Notes); its adapters and behavior are unchanged.
 
 ## What the reviewer judges
 
@@ -181,15 +185,19 @@ item; its meaning is the project manager's work after intake. Settlement and quo
   from the unit's ownership chain, and the ordinary Telegram projection sends it to that person's own
   enrolled chat. The addressee answers with their own signed answer; a separate dispose command
   applies it: close cancels the unit (and its backlog item unless sibling work is open), backlog
-  clears the park so an ordinary claim succeeds, and other submits the signed instruction verbatim to
-  the VELDO-0126 intake under the source it arrived on. While the question waits the unit holds no
+  clears the park so an ordinary claim succeeds, and other submits the signed instruction verbatim
+  through the VELDO-0126 intake's public attested submission, which authenticates the evidence of
+  where the answer arrived and requires it to be the answering person's own. While the question waits the unit holds no
   claim or worker and reads awaiting_disposition.
 - Threat model: a question addressed to the wrong person (the owner when a person declined or
   canceled, or a guessed owner when none resolves); an answer that is unsigned, signed by another
   member, for a stale request version, choosing an unoffered ruling, with empty other text or text
   outside the signed command, or signed by a revoked key; a decline or cancel of the disposition
   question itself; dispose before the answer, applied twice, or inferring anything from the free
-  text; close canceling sibling work; a unit claimable or holding a claim while its question waits.
+  text; close canceling sibling work; a unit claimable or holding a claim while its question waits;
+  an other answer whose arrival is not the answering person's own (another person's API request or
+  request id, a message in another person's chat or in a group), which must not squat that source,
+  be recorded as that chat, or have the intake's follow-up question sent there.
   The owner's account, the store and the Telegram edge are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); restart and
   recovery (Release 2); forged rows in our own store and files planted in the installed directory; a
@@ -237,17 +245,28 @@ cancels sibling work. `backlog` clears the park through a new claim organ transi
 the claim released with no holder and no `parked_on`, so the unit is claimable by the ordinary
 claim path with its existing eligibility, capability and activation checks, and its backlog item
 (already PRIORITIZED or ACTIVE) is unchanged. `other` records the instruction exactly as signed
-and submits it through the VELDO-0126 common intake operation, with the answering person as the
-principal, the project context from the unit, and the question identity and answer command
-identity as the source request identity, so repeating `dispose` returns the same proposal; the
-unit stays parked as `routed_to_intake`, naming the proposal.
+and submits it through the VELDO-0126 intake's public attested submission, with the answering
+person as the principal, the project context from the unit, and the question identity and answer
+command identity beside the source, so repeating `dispose` returns the same proposal; the unit stays
+parked as `routed_to_intake`, naming the proposal.
 
 Intake source. The answer reaches Veldo through the Telegram edge or through the authenticated
 API (the UI's message box uses the API), which are exactly the two source kinds VELDO-0126 admits.
-The `other` instruction is submitted under the source kind it actually arrived on, with that
-inbound message or request identity as the source identity, and the signed answer's command
-identity recorded beside it as the evidence that makes it an owner instruction. No third source
-kind exists and this item does not change VELDO-0126 (decided by the lead, 2026-09-23).
+The signed `other` answer carries the evidence of where it arrived, never a bare identity: the id
+of the kept VELDO-0066 Telegram evidence of the message, or the request packet the API edge signed.
+VELDO-0126 gains one public operation, `Intake.submit_attested(source_kind, evidence, *, principal,
+text, project, provenance)`, and `dispose` for `other` calls only it. For `telegram_message` the
+intake runs its own Telegram attribution over the kept evidence and requires the sender to resolve
+to the answering person in that person's own private chat; for `api_request` it runs its own API
+verification (the configured edge's active key) and requires the request's principal to be the
+answering person. Only then does it call its common service with the signed instruction as the
+text, the unit's project, the source identity and provenance taken from the evidence itself, and
+the question and answer command identities beside them. Anything else (missing evidence, a sender
+or request principal who is not the answering person, a message outside that person's own private
+chat, a packet the edge did not sign, another source kind) is refused by name with nothing written,
+and `dispose` refuses it as `not_authorized`, `missing_evidence` or `invalid_input`. No third source
+kind exists; the intake's adapters and behavior are unchanged (the lead, 2026-09-24, reversing the
+earlier decision that this item does not change VELDO-0126).
 
 Implement canonical engine assets with synchronized installed copies. Derive executable check
 registrations from each criterion's declared set; retain the actual observations and each driven
@@ -268,3 +287,12 @@ declines a unit parked on the owner's assignment, and under AC1 that decline now
 row reads that unit as awaiting_disposition instead of declined. Only that expectation changed.
 
 2026-09-24: the owner marked this specification ready on Telegram (29088 asked, 29089 "Ready"), after its build.
+
+2026-09-24: review finding (blocking) at 0b3759f: `other` took its source from the signed answer and
+called the intake's private `_submit`, skipping its source authentication, so an answer could squat
+another person's API request id, be recorded as a message in another person's chat, and have the
+intake's project question sent to that chat. The lead reversed the earlier decision not to change
+VELDO-0126: the intake gains the public `submit_attested`, the answer carries kept Telegram evidence
+or an edge-signed API request, and the footprint gains the intake modules. Suite rows
+squatted-request-refused, foreign-chat-refused and no-foreign-follow-up, red at 0b3759f by
+assertion (proof/VELDO-0133/red-at-0b3759f.json), and three finding 133 mutations.
