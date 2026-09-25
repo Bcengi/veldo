@@ -15,7 +15,23 @@ THE STATES ARE THE ENTITY CONTRACT'S. The names below are entity_contract's back
 execution_unit (R13) vocabularies, classified for this one question. control_backlog.py, which has the
 entity contract, refuses to load when this classification does not partition the backlog_item states
 exactly or when either terminal set differs from the contract's, so the two cannot drift apart without
-the service stopping by name.
+the service stopping by name. The execution_unit classes (PLANNED, the states a prioritized unit moves
+through, and the terminal set) partition that vocabulary's states exactly too: a new unit state stops the
+service until it is classified here.
+
+WHAT A UNIT'S TICKET BINDS (unit_binding). A Gate decision consumes the unit's backlog item, and a later
+station given that decision as its ticket refuses stale_input:backlog when the item moved. The backlog
+service rewrites the item for work that is not this unit's (append, prioritize and dispose_unit of a
+sibling change the decomposition, its revision and digest, the priority records, the applied requests
+and the history), and approved units continue meanwhile. So the ticket binds only what bears on THIS
+unit: the item's identity, project, objective, title, scope and work class, its admission, completion and
+cancellation, whether its lifecycle state is executable (the state itself is judged fresh at every
+station by executable_record_problems), this unit's own decomposition entry and the priority record that
+prioritized it. A sibling's entries and the item's bookkeeping leave the ticket current; a change to
+anything bound is stale by name. The Gate computes the ticket's backlog definition here and nowhere else.
+Every field of the item record is classified below (ITEM_FIELDS is the record the service writes, which
+its suite requires); a field this module does not classify is bound, so an unclassified change is never
+silently current.
 """
 
 ITEM_BEFORE_ADMISSION = ('RAW', 'QUARANTINED', 'PREPARED', 'AWAITING_GROOMING')
@@ -24,7 +40,19 @@ ITEM_EXECUTABLE = ('PRIORITIZED', 'ACTIVE')
 ITEM_BLOCKED = 'BLOCKED'
 ITEM_TERMINAL = ('REJECTED', 'DONE', 'CANCELED')
 UNIT_PLANNED = 'PLANNED'
+# The non-terminal states a unit reaches only after its prioritization (READY) and the claim's lifecycle.
+UNIT_PRIORITIZED = ('READY', 'CLAIMED', 'DISPATCHING', 'RUNNING', 'VERIFYING', 'REVIEWING', 'READY_TO_LAND', 'LANDING',
+                    'FAILED', 'AWAITING_AUTHORITY')
 UNIT_TERMINAL = ('COMPLETED', 'CANCELED')
+
+# The backlog item record's fields, classified for a unit's ticket (unit_binding).
+ITEM_BOUND = ('schema', 'uuid', 'entity_type', 'domain_uuid', 'repository_uuid', 'project', 'project_uuid',
+              'objective_uuid', 'feature_uuid', 'title', 'scope', 'work_class', 'admission', 'completion',
+              'cancellation', 'provenance')
+ITEM_LIFECYCLE = 'state'
+ITEM_UNIT_ENTRIES = ('decomposition', 'priorities')
+ITEM_BOOKKEEPING = ('history', 'applied', 'decomposition_revision', 'decomposition_digest', 'priority', 'blocks')
+ITEM_FIELDS = ITEM_BOUND + (ITEM_LIFECYCLE,) + ITEM_UNIT_ENTRIES + ITEM_BOOKKEEPING
 
 
 def executable_record_problems(unit, item):
@@ -48,3 +76,19 @@ def executable_record_problems(unit, item):
     if held in UNIT_TERMINAL:
         return ['missing_authority:unit/' + str(held)]
     return []
+
+
+def unit_binding(unit, item):
+    """What a ticket for `unit` binds of its backlog item record: the bound fields, any field not
+    classified here, whether the item's state is executable, this unit's own decomposition entry and the
+    first priority record that names it (the one that prioritized it; later records are its siblings').
+    Anything that is not a mapping is bound as it is."""
+    if not isinstance(item, dict):
+        return item
+    entries = [e for e in item.get('decomposition') or [] if isinstance(e, dict) and e.get('unit') == unit]
+    granted = [p for p in item.get('priorities') or []
+               if isinstance(p, dict) and isinstance(p.get('units'), list) and unit in p['units']]
+    return {'bound': {k: item.get(k) for k in ITEM_BOUND},
+            'unclassified': {k: v for k, v in item.items() if k not in ITEM_FIELDS},
+            'executable': item.get(ITEM_LIFECYCLE) in ITEM_EXECUTABLE,
+            'entry': entries, 'priority': granted[:1]}

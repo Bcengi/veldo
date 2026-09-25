@@ -182,8 +182,12 @@ COMPLETION_CONSUMERS = (
 READER_CALLS = ('completion_status', 'completion', 'landed', '_landed_from')
 
 # Labels whose record the claim transition itself rewrites (VELDO-0031). They are compared by their
-# definition, the record minus these lifecycle fields; ownership is decided fresh at every station.
-LIFECYCLE_FIELDS = {'unit': ('state',), 'backlog': ('state',)}
+# definition, never their version; ownership is decided fresh at every station. The unit's definition is
+# its record minus these lifecycle fields. The backlog item's is what bears on the decided unit
+# (control_backlog_priority.unit_binding): the backlog service also rewrites the item for the unit's
+# siblings (append, prioritize, dispose_unit), and approved units continue meanwhile.
+LIFECYCLE_FIELDS = {'unit': ('state',)}
+DEFINITION_LABELS = ('unit', 'backlog')
 OUTPUT_LABELS = ('claim',)
 
 # VELDO-0076: the one lifecycle state of a project record (control_project.py) whose units any station
@@ -479,7 +483,9 @@ def completion_status(gate, status):
     return result
 
 
-def _definition(label, data):
+def _definition(label, data, unit=None):
+    if label == 'backlog':
+        return SN.digest(SN.canonical(BL.unit_binding(unit, data)))
     drop = LIFECYCLE_FIELDS.get(label, ())
     body = {k: v for k, v in (data or {}).items() if k not in drop} if isinstance(data, dict) else data
     return SN.digest(SN.canonical(body))
@@ -1022,12 +1028,12 @@ class Gate:
                 and CM.scope_covers(entry.get('scope'), [name]))
 
     @staticmethod
-    def _identity(label, value):
+    def _identity(label, value, unit=None):
         if isinstance(value, list):
             members = [(m['id'], m['version'], m['digest']) for m in value]
             return {'members': members, 'digest': SN.digest(SN.canonical(members))}
         return {'id': value['id'], 'version': value['version'], 'digest': value['digest'],
-                'definition': _definition(label, (value.get('value') or {}).get('data'))}
+                'definition': _definition(label, (value.get('value') or {}).get('data'), unit)}
 
     def _stale(self, ticket, accepted):
         """Every consumed input of the ticket compared by version and digest with the current read."""
@@ -1037,7 +1043,7 @@ class Gate:
             if label in OUTPUT_LABELS:
                 continue
             old, new = before.get(label), accepted.get(label)
-            if label in LIFECYCLE_FIELDS and old and new:
+            if label in DEFINITION_LABELS and old and new:
                 if old.get('definition') != new.get('definition'):
                     codes.append('stale_input:' + label)
             elif old != new:
@@ -1060,7 +1066,7 @@ class Gate:
                 raise Refused('invalid_input', 'ticket names another unit or domain')
             inputs, watermark = self.read(unit)
             decision['watermark'] = watermark
-            decision['inputs'] = {label: self._identity(label, value) for label, value in inputs.items()}
+            decision['inputs'] = {label: self._identity(label, value, unit) for label, value in inputs.items()}
             refusals = self._unit_problems(unit, inputs)
             if not refusals:
                 for name in STATION_PREDICATES[station]:

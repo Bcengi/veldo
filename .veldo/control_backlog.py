@@ -152,8 +152,8 @@ UNIT_TERMINAL = EC.LIFECYCLES[UNIT_KIND]['terminal']
 
 def classification_problems(priority=PQ, lifecycles=EC.LIFECYCLES):
     """[] when the executable question's state classification is the entity contract's: its backlog_item
-    classes partition that vocabulary's states exactly, and both terminal sets are the contract's. Otherwise
-    the named mismatches."""
+    classes and its execution_unit classes each partition that vocabulary's states exactly, and both
+    terminal sets are the contract's. Otherwise the named mismatches."""
     item, unit = lifecycles[KIND], lifecycles[UNIT_KIND]
     classes = (tuple(priority.ITEM_BEFORE_ADMISSION) + (priority.ITEM_ADMITTED,) + tuple(priority.ITEM_EXECUTABLE)
                + (priority.ITEM_BLOCKED,) + tuple(priority.ITEM_TERMINAL))
@@ -162,7 +162,8 @@ def classification_problems(priority=PQ, lifecycles=EC.LIFECYCLES):
         problems.append('item_states')
     if set(priority.ITEM_TERMINAL) != set(item['terminal']):
         problems.append('item_terminal')
-    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:
+    units = (priority.UNIT_PLANNED,) + tuple(priority.UNIT_PRIORITIZED) + tuple(priority.UNIT_TERMINAL)
+    if sorted(units) != sorted(unit['states']) or set(priority.UNIT_TERMINAL) != set(unit['terminal']):
         problems.append('unit_states')
     return problems
 
