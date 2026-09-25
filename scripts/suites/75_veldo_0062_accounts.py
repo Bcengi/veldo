@@ -61,6 +61,12 @@ def _v62_suite():
             for row in names:
                 check(row, 'the row ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
 
+    def attempt(fn):
+        try:
+            return fn(), None
+        except Exception as error:  # noqa: BLE001 - a refusal or a missing function is data for the row
+            return None, getattr(error, 'code', type(error).__name__)
+
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
@@ -83,7 +89,9 @@ def _v62_suite():
         L = load('v62_launch', mods / 'control_launch.py')
         D = L.D
         RES = D.RES
-        ACC = RES.ACC if hasattr(RES, 'ACC') else load('v62_accounts', mods / 'control_accounts.py')
+        # A tree without this work (the red record's) has no account records: the rows then fail by
+        # their own assertions rather than by a raise.
+        ACC = getattr(RES, 'ACC', None)
         HELPER = load('v62_helper', mods / 'accounts.py')
         EL = load('v62_eligibility', mods / 'control_eligibility.py')
         SIG = load('v62_signer', mods / 'control_signer.py')
@@ -125,20 +133,28 @@ def _v62_suite():
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's account records, over profiles the local helper prepares for either provider.
-        accounts = ACC.Accounts(S, writer, principal='owner', signer='owner', sign=sign)
+        accounts = ACC.Accounts(S, writer, principal='owner', signer='owner', sign=sign) if ACC else None
         helper_root = base / 'helper'
         profiles = {}
+        registered = []
 
         def register(account, provider, hosts=None, status='active'):
-            record = HELPER.account_add(account, root=str(helper_root), provider=provider)
+            record, error = attempt(lambda: HELPER.account_add(account, root=str(helper_root), provider=provider))
+            if record is None:
+                record = {'config_dir': str(base / 'profiles' / account)}
+                os.makedirs(record['config_dir'], mode=0o700)
             profiles[account] = record['config_dir']
-            fields = HELPER.registration(account, host=HOST, root=str(helper_root))
+            fields, error = attempt(lambda: HELPER.registration(account, host=HOST, root=str(helper_root)))
+            if fields is None or accounts is None:
+                registered.append((account, error or 'no account records'))
+                return
             if hosts is not None:
                 fields['profiles'] = {host: record['config_dir'] for host in hosts}
             accounts.register('register/' + account, fields['account'], fields['provider'], fields['label'],
                               fields['profiles'], now=time.time())
             if status != 'active':
                 accounts.status('status/' + account, account, status, now=time.time())
+            registered.append((account, None))
         for account, provider in (('acct-c1', 'claude_code'), ('acct-c2', 'claude_code'), ('acct-c3', 'claude_code'),
                                   ('acct-x1', 'codex'), ('acct-x2', 'codex')):
             register(account, provider)
@@ -146,8 +162,13 @@ def _v62_suite():
         register('acct-mac', 'claude_code', hosts=['mac-host-62'])
         ALL = ('acct-c1', 'acct-c2', 'acct-c3', 'acct-x1', 'acct-x2', 'acct-paused', 'acct-mac', 'acct-none')
 
+        def roles_only(conn, command):
+            # Only where the tree has no production reservation authority (the red record's).
+            row = conn.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
+            return 'reservation_service' in (json.loads(row[0]) if row else {}).get('roles', [])
         reservations = RES.Reservations(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
-                                        authorize=RES.service_authority, signer='runner', sign=sign)
+                                        authorize=getattr(RES, 'service_authority', roles_only), signer='runner',
+                                        sign=sign)
         BIG = dict(capacity=50, invocations=200, wall_seconds=10 ** 7)
         for account in ALL:
             reservations.configure('policy/' + account, 'account', account, dict(BIG), now=time.time())
@@ -310,14 +331,13 @@ sys.exit(payload.get('code', 0))
         def refusal_of(launch):
             return (rec(launch.dispatch_id) or {}).get('refusal')
 
-        def attempt(fn):
-            try:
-                return fn(), None
-            except Exception as error:  # noqa: BLE001 - a refusal is data for the row
-                return None, getattr(error, 'code', type(error).__name__)
 
         def account_record(account):
-            return ACC.read(writer, account) or {}
+            return (ACC.read(writer, account) if ACC else None) or {}
+
+        def usage_shown():
+            shown, error = attempt(lambda: ACC.usage(reservations, accounts))
+            return shown or {'account': {}, 'project': {}, 'unit': {}, 'error': error}
 
         def journal_seq(prefix):
             row = writer.execute('SELECT MIN(seq) FROM journal WHERE substr(command_id, 1, ?) = ?',
@@ -449,6 +469,8 @@ sys.exit(payload.get('code', 0))
             check('login/recorded-account-profile', 'the two Claude Code accounts ran on two different profiles',
                   (seen['acct-c1'][2].get('env') or {}).get('CLAUDE_CONFIG_DIR')
                   != (seen['acct-c2'][2].get('env') or {}).get('CLAUDE_CONFIG_DIR'))
+            check('login/recorded-account-profile', 'the owner registered every account [%s]'
+                  % [r for r in registered if r[1]], len(registered) == 7 and not [r for r in registered if r[1]])
             check('login/no-paid-api', 'every paid-API variable was planted [%d]' % len(PAID),
                   len(PAID) >= 8 and all(caller.get(name) for name in PAID))
 
@@ -732,7 +754,7 @@ sys.exit(payload.get('code', 0))
                     ('acct-x1', 'codex', [x_rate(40.0, time.time() + 3600), x_started(), x_done(17, 3)])):
                 launch, record = run(account, admitted('VELDO-6213-' + account), adapter, script, env=ambient)
                 journey[account] = launch.dispatch_id
-            shown = ACC.usage(reservations, accounts)
+            shown = usage_shown()
             truth = receipts_by_account()
             for account in ('acct-c1', 'acct-c2', 'acct-x1', 'acct-c3', 'acct-x2'):
                 row = shown['account'].get(account) or {}
@@ -767,7 +789,7 @@ sys.exit(payload.get('code', 0))
         with region('attribution/measurement-removed'):
             unit = admitted('VELDO-6214-silent', tokens=500)
             launch, record = run('acct-c2', unit, 'claude', [])
-            shown = ACC.usage(reservations, accounts)
+            shown = usage_shown()
             row = shown['unit'].get(unit) or {}
             check('attribution/measurement-removed', 'an invocation that reported nothing keeps its allocation: one '
                   'invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, '
@@ -780,7 +802,7 @@ sys.exit(payload.get('code', 0))
                   and (row.get('remaining') or {}).get('invocations') == 19)
 
         with region('attribution/watermark'):
-            shown = ACC.usage(reservations, accounts)
+            shown = usage_shown()
             latest = {}
             for seq, command_id, transition in writer.execute('SELECT seq, command_id, transition FROM journal'):
                 if not command_id.startswith('usage/'):
