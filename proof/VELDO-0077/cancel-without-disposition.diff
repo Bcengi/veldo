@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -562 +562 @@
+@@ -594 +594 @@
 -        problems = RF.objective_cancellation_problems({'uuid': oid}, items, dispositions)
 +        problems = []  # defect: unfinished work needs no disposition

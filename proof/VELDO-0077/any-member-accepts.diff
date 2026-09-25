@@ -1,6 +1,6 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -471,2 +471 @@
+@@ -496,2 +496 @@
 -        if (acceptor != project['data'].get('owner') or req.get('owner') != acceptor
 -                or settlement['data'].get('principals') != [acceptor]):
 +        if False:  # defect: any settled answer accepts the objective

@@ -1,6 +1,6 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -509 +509,2 @@
+@@ -534 +534,2 @@
 -                       state='RAW', scope=list(scope), specifications=list(specs), admission=None, priority=None,
 +                       state='ADMITTED', scope=list(scope), specifications=list(specs),  # defect: admitted by acceptance
 +                       admission={'by': 'objective_acceptance'}, priority=None,

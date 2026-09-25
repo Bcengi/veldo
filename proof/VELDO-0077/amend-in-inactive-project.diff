@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -406 +406 @@
+-        if op in ('amend', 'accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':
++        if op in ('accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':  # defect

@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -569 +569 @@
+@@ -601 +601 @@
 -            if d.get('recorded_by') != entry['by']:
 +            if False:  # defect: anyone may be named as recording a disposition

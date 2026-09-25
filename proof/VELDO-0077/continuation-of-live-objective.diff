@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -417 +417 @@
+@@ -442 +442 @@
 -                    or prior['data'].get('state') not in EC.LIFECYCLES[KIND]['terminal']):
 +                    or False):  # defect: a continuation may name a live objective
