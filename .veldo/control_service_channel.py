@@ -121,7 +121,6 @@ REQUEST_CHOICES = ['accept', 'return_for_elaboration', 'reject']
 # The owner's grant and renewal of his standing delegation (VELDO-0140): VELDO-0025 membership commands,
 # of the assertion kinds an owner answers on this edge, lasting at most MAX_DELEGATION_DAYS.
 DELEGATION_OPERATIONS = ('grant_delegation', 'supersede_delegation')
-OPERATIONS = (AUTHORIZE,) + DELEGATION_OPERATIONS
 DELEGATION_KINDS = ('decision_answer', 'review_disposition')
 MAX_DELEGATION_DAYS = 366
 RENEWAL_PREFIX = 'delegation-renewal:'
@@ -411,8 +410,8 @@ class Channel:
         published, recorded = [], None
         told = []
         if woke.get('outcome') == 'woken':
-            told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
             published = [r.get('outcome') for r in ing.presenter.publish()]
+            told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
             if self.run is not None:
                 recorded = self._qualification(woke)
         sent = sum(1 for outcome in published if outcome == 'published')

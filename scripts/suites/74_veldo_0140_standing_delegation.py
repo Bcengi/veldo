@@ -452,6 +452,8 @@ def _v140_suite():
             'an agent run': (delegate_packet('v140-worker', member_keys['v140-worker']), 'not_a_person'),
             'the service principal': (delegate_packet(requester, member_keys[requester]), 'not_a_person'),
             'nobody (no signature)': (delegate_packet(owner, owner_key, unsigned_=True), 'signature_invalid'),
+            'the owner, as a second grant beside his current delegation':
+                (delegate_packet(owner, owner_key, operation='grant_delegation'), 'invalid_input'),
         }
         for label, (packet, name) in sorted(refusals.items()):
             outcome, why = attempt(ch.authorize, packet)

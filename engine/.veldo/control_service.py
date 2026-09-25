@@ -993,7 +993,9 @@ class Service:
                 result = self.api_call(packet)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
-            elif command.get('operation') in CH.OPERATIONS:
+            elif command.get('operation') == CH.AUTHORIZE:
+                result = self.channel_command(packet, repository, observation)
+            elif command.get('operation') in CH.DELEGATION_OPERATIONS:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CLM.OPERATIONS and 'unit_id' in command:
                 receiver = self.receiver(repository)
