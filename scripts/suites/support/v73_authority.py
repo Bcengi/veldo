@@ -120,7 +120,7 @@ def deliver(api, name, sender, text, reply_to=None, chat=None):
 
 # --- the authority ---------------------------------------------------------------------------------
 
-def build(base, organs, owner_chat, origin, token, scope='project-a'):
+def build(base, organs, owner_chat, origin, token, scope='project-a', token_path=None):
     """The authority under `base`, its organs loaded from `organs`, with the owner's chat enrollment at
     `owner_chat`, and the ingress host configuration naming `origin` and a 0600 token file holding
     `token`. Returns a namespace of modules, keys, paths and helpers."""
@@ -236,7 +236,9 @@ def build(base, organs, owner_chat, origin, token, scope='project-a'):
     delegate()
 
     # The host configuration the activated ingress is constructed from (control_channel_ingress.open_ingress).
-    token_file = _private(host / 'bot-token', token + '\n')
+    # A live run names the account's own 0600 token file, so no copy of the token is ever written; a
+    # suite or rehearsal lays a private file holding its stand-in name.
+    token_file = Path(token_path) if token_path else _private(host / 'bot-token', token + '\n')
     settlement_signers = _private(host / 'settlement_signers',
                                   'settler namespaces="veldo-decision-settlement" %s\n' % public['settler'])
     enrollment_signers = _private(host / 'enrollment_signers', 'steward namespaces="veldo-enrollment" %s\n' % public['steward'])

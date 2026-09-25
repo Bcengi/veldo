@@ -90,7 +90,7 @@ enrolled key signs the activation over it.
     python3 -B proof/VELDO-0073/qualify_live.py --token-file /abs/path/bot-token --owner-chat <his user id>
 
 The token file must be the account's own 0600 file; the token is never printed, logged or written
-(the run's private 0600 copy is unlinked at exit). The runner builds a fresh authority, constructs the
+(the ingress configuration names that same file, so no copy is written). The runner builds a fresh authority, constructs the
 ingress with `open_ingress`, records the owner-signed qualification run, sends ONE decision to his chat,
 waits (default 600 s) for his reply to that message (`accept: <reason>`), settles it, acquires one
 update from an unenrolled sender id from a loopback stand-in (Telegram 29047), records the

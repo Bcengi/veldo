@@ -6,8 +6,8 @@
 Run it ONCE, by the lead, with the owner at his phone (the owner approved the test bot sending him
 messages for this run, Telegram 29081). It contacts https://api.telegram.org and nothing else. It never
 prints, logs or writes the token: the token is read from its file (which must be the account's own 0600
-file) into memory, a 0600 copy is kept only inside the run's private work directory for the ingress
-construction, and that copy is unlinked when the run ends. Every message printed has the token masked.
+file) into memory, and the ingress host configuration names that same file, so no copy of the token is
+ever written. Every message printed has the token masked.
 
 WHAT IT DOES, IN ORDER.
  1. Builds a fresh authority in a private work directory (scripts/suites/support/v73_authority.py):
@@ -103,6 +103,7 @@ def main():
         say('failed: %s' % type(exc).__name__)
         return 5
     finally:
+        # A rehearsal's stand-in name file (the live run writes no token file).
         copy = work / 'authority' / 'host' / 'bot-token'
         if copy.is_file():
             os.unlink(str(copy))
@@ -115,7 +116,8 @@ def run(args, token, work, say):
         owner_user = {'id': args.owner_chat, 'is_bot': False, 'first_name': 'Owner'}
         origin, rehearsal, stop_rehearsal = H.stand_in({token: {'id': 8000000099, 'is_bot': True, 'first_name': 'Rehearsal'}})
         rehearsal['chats'][args.owner_chat] = {'id': args.owner_chat, 'type': 'private', 'first_name': 'Owner'}
-    A = H.build(work / 'authority', organs, args.owner_chat, origin, token)
+    A = H.build(work / 'authority', organs, args.owner_chat, origin, token,
+                token_path=None if args.rehearse else os.path.abspath(args.token_file))
     IN = H.load('live_ingress_run', organs / 'control_channel_ingress.py')
     ACT = H.load('live_activation', organs / 'control_channel_activation.py')
     EV = H.load('live_attribution', organs / 'control_channel_attribution.py')
