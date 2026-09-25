@@ -67,11 +67,11 @@ acceptance_criteria:
     text: >
       Claim: Each invocation authenticates only with the subscription login of the account its
       dispatch recorded, and internal handles derive from accepted contracts. Set and completeness:
-      For Claude Code and Codex on Linux and Mac, read back that each invocation's engine
-      environment carries exactly the profile (Claude Code's `CLAUDE_CONFIG_DIR`, Codex's
-      `CODEX_HOME`) of the account the Runner selected and the dispatch recorded, never a profile
-      taken from the caller's environment or another account's, and no paid-API credential variable;
-      substitute contract, unit, station and expiry and require refusal. MCP server credentials are
+      For Claude Code and Codex on Linux (the Mac read-back is VELDO-0147), read back that each
+      invocation's engine environment carries exactly the profile (Claude Code's `CLAUDE_CONFIG_DIR`,
+      Codex's `CODEX_HOME`) of the account the Runner selected and the dispatch recorded, never a
+      profile taken from the caller's environment or another account's, and no paid-API credential
+      variable; substitute contract, unit, station and expiry and require refusal. MCP server credentials are
       passed exactly as configured under VELDO-0127 and VELDO-0144; they are not provider model
       credentials and are not refused by this check. Separating the provider login from the worker's
       tool and build children is Release 2 hardening for both engines (owner, Telegram 29163): in
@@ -179,7 +179,7 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## Notes
 
 Qualify every logged-in subscription account the owner registers, any number per provider (today three
-Claude Code and one Codex), for each of Claude Code and Codex on the two MVP host profiles. Models run only through those subscriptions; paid model APIs are prohibited.
+Claude Code and one Codex), for each of Claude Code and Codex on Linux, and on the Mac through VELDO-0147. Models run only through those subscriptions; paid model APIs are prohibited.
 There is no per-call price. Record actual invocation counts, wall time, tokens or messages as
 reported by the CLI, and the subscription's exposed rate-limit windows, resets and usage
 watermarks. Do not fabricate unreported counters or require pricing to qualify an adapter.
@@ -249,3 +249,7 @@ made to an MCP tool not marked read-only, otherwise the owner is asked) and one 
 account with no observation. The footprint adds the account records and the Runner's selection
 (`control_account`, `control_runner`). The Notes make the registry a store record family with
 per-host profiles for both providers and state the selection order. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
+dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
+which is built after VELDO-0124 and VELDO-0125. Status unchanged.

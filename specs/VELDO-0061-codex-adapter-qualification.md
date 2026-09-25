@@ -133,8 +133,8 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## What the reviewer judges
 
 - Normal use: the Runner launches the pinned Codex executable for a dispatched unit in an isolated clone, on
-  Linux in delivery and on the Mac in the host stage, with the account profile the dispatch
-  selected; the adapter streams its events, stops it on request and returns its artifacts, and every
+  Linux, with the account profile the dispatch selected (VELDO-0147 qualifies the same configuration
+  on the Mac); the adapter streams its events, stops it on request and returns its artifacts, and every
   invocation checks its usage caps first.
 - Threat model: a launch of a changed or unknown executable, or of the auto-updating link; a run that picks up the
   account's own settings, instruction files, skills, memory or hooks; a paid API key reaching the
@@ -158,8 +158,8 @@ In Release 1 the engine login is readable by the worker's tools, the same as an 
 on the owner's decision (Telegram 29163); keeping it from them is Release 2 hardening. The mechanisms
 found for that work are recorded in section 6 of the operating-model design.
 
-Qualify one actual Codex version/configuration on Linux in delivery, then that configuration
-on the Mac in the host stage. Record executable digest, flags, terminal protocol,
+Qualify one actual Codex version/configuration on Linux in delivery; VELDO-0147 qualifies that
+configuration on the Mac once VELDO-0124 and VELDO-0125 land. Record executable digest, flags, terminal protocol,
 subscription authentication mode, exposed usage units/rate-limit windows and live usage. 0062 supplies provider custody/caps; 0063
 recovery/governor matrices are not prerequisites. Worker configuration is handed through
 exactly, never silently reduced.
@@ -191,3 +191,7 @@ the footprint adds the launch receiver and wrapper (`control_launch`), where the
 prepared; role selections arrive with VELDO-0127. AC4 keeps the pre-launch usage caps, and its
 login-separation clause moves to Release 2 as hardening, for both engines; its falsifier is now the
 cap order. A What the reviewer judges section is added. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
+dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
+which is built after VELDO-0124 and VELDO-0125. Status unchanged.

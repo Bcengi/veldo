@@ -57,7 +57,8 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: Worker handoff preserves exactly the configured servers and tools for each engine. Set
-      and completeness: For actual Claude Code and Codex workers on Linux and Mac, enumerate
+      and completeness: For actual Claude Code and Codex workers on Linux (the Mac handoff is
+      VELDO-0147), enumerate
       effective engine-native and MCP capabilities at launch and compare set equality and settings
       with the accepted role revision in both directions. Include a configured Jira-capable MCP tool
       as an ordinary tool, with no special factory channel. Verify each server authenticates
@@ -126,7 +127,7 @@ specification status, implementation, test, runtime policy or deployed service c
 - Normal use: the owner saves a role's capability configuration as a new revision, choosing catalog servers,
   native tools, skills and instruction files, each `always` or `when assigned`; a dispatch records
   the revision and the assigned items, and the worker starts with exactly those, on Claude Code or
-  Codex, on Linux or the Mac.
+  Codex, on Linux (on the Mac through VELDO-0147).
 - Threat model: an accepted configuration overwritten in place; a server definition or credential embedded in a
   role; a capability dropped, added or defaulted at handoff, including an instruction file, skill,
   memory or hook the account profile would have added; a run whose reported tools, servers, skills
@@ -184,3 +185,7 @@ keystore credential and drops the provider-login clause, which is Release 2 hard
 29163). New AC4: nothing loads unless the role lists it, proved against the engine's launch report
 and, for instruction files, by the marker qualification. The work item moves from stage 4 to stage 5
 because the catalog is stage 5. A What the reviewer judges section is added. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
+dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
+which is built after VELDO-0124 and VELDO-0125. Status unchanged.

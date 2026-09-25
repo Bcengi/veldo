@@ -54,8 +54,7 @@ acceptance_criteria:
       change and error the engine emits, and its error stream, with nothing dropped. Set and
       completeness: Run real Claude Code and Codex workers (their structured event output) through the
       launcher on a unit whose work calls tools, runs a command that writes to its error stream and
-      edits a file, on Linux and as a Mac run whose streams arrive over SSH through the relay into the
-      same receiver; compare the kept record, line by line and in order, with what the engine emitted.
+      edits a file, on Linux; compare the kept record, line by line and in order, with what the engine emitted.
       Before anything is kept, the receiver replaces the exact credential values it resolved for that
       run, and only then does the secret scanner redact known patterns and high-entropy spans; a
       planted credential value that the scanner alone would miss never reaches the record. Falsifier:
@@ -116,8 +115,7 @@ Replaying or editing a record; retention limits and archival (Release 2); runs o
   record, redacted before it is kept. The owner opens the run in the UI on his phone or desktop and
   watches it live as a terminal, or reads it after the run; the API serves it only to members whose
   scope covers the project.
-- Threat model: output dropped, reordered or summarized; the error stream discarded; a Mac run's
-  streams lost on the way back; a credential value the run resolved kept because the scanner did not
+- Threat model: output dropped, reordered or summarized; the error stream discarded; a credential value the run resolved kept because the scanner did not
   recognize its shape; a secret kept or served unredacted; a record served to a member outside the
   project's scope or to an ended session; a record shown for another run. The owner's account, the
   store and the engines are trusted.
@@ -139,9 +137,8 @@ commits the record's line count, byte count and digest. The execution record is 
 and run it belongs to. VELDO-0131's screen contract gains the live terminal view; VELDO-0145 builds
 it first and reads this API.
 
-A Mac run's streams arrive over SSH into the same receiver, so every record is written on Linux. The
-Linux legs are built first; the Mac leg of AC1 is qualified when VELDO-0124 and VELDO-0125 land, the
-way VELDO-0060 and VELDO-0061 qualify their Mac configuration in the host stage.
+A Mac run's streams arrive over SSH into the same receiver, so every record is written on Linux; that
+Mac leg is VELDO-0147 AC3, built once VELDO-0124 and VELDO-0125 land.
 
 ## History
 
@@ -155,3 +152,7 @@ redaction runs before the scanner (AC1); and the Notes name the hint to the API,
 at termination and the stream options. AC3 now replaces VELDO-0131's "Live agent run" row, and
 VELDO-0145 is the first UI slice that shows it. Bound to PLAN-0019 revision 4 as W101 (lane planned);
 an observability block is added, which the ready transition requires.
+
+2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
+dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
+which is built after VELDO-0124 and VELDO-0125. Status unchanged.

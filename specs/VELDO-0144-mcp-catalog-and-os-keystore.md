@@ -91,18 +91,13 @@ acceptance_criteria:
   - id: AC3
     text: >
       Claim: Each run receives exactly the credential values its configuration's servers reference,
-      through a private file or the engine environment on Linux and through a secrets frame on the Mac,
-      never through a command line, the packet, the contract or the journal. Set and completeness:
+      through a private file or the engine environment on Linux, never through a command line, the packet, the contract or the journal. Set and completeness:
       Immediately before a spawn the Runner resolves the references the dispatch's configuration uses.
       For Claude Code on Linux the receiver writes the generated MCP configuration, values included,
       into the run's private directory (mode 0700, under the factory state root, outside the clone) and
       removes it when the run is reaped; for Codex, whose `CODEX_HOME` is the account profile, each
       secret reaches the engine environment under the name the server definition gives it through
-      Codex's `env_vars` or `bearer_token_env_var` fields. For a Mac run, after the release and before
-      the wrapper execs, the receiver writes one secrets frame over the same SSH channel; the wrapper
-      reads exactly that frame, writes the run's private file (mode 0600 in a 0700 directory) and only
-      then execs, the receiver removes that directory over SSH when the run ends, the journal records
-      only the credential ids delivered, and nothing is written to the Mac's keychain. Inspect every
+      Codex's `env_vars` or `bearer_token_env_var` fields. Inspect every
       launched process's command line and environment, the packet, the contract and the journal.
       Falsifier: Put a Codex server's secret on the engine command line; the command-line check must
       fail.
@@ -153,12 +148,12 @@ MCP credentials in the Mac keychain, and a connection test button.
 
 - Normal use: the owner adds a server in the UI's catalog form and types its credential into a
   write-only field; roles select the server by id and revision; each run gets the resolved values it
-  needs, on Linux or the Mac, and nothing else.
+  needs on Linux, and nothing else (on the Mac through VELDO-0147).
 - Threat model: a credential value in the store, journal, event feed, proof, logs, a command line, the
-  packet, the contract or the Mac keychain; a value read back through the UI or API; a saved revision
+  packet or the contract; a value read back through the UI or API; a saved revision
   overwritten; a run launched without its server when its credential does not resolve; a run's private
-  files left behind; a run given another server's credential. The owner's account, the keystore, the
-  host and the Mac over SSH are trusted.
+  files left behind; a run given another server's credential. The owner's account, the keystore and the
+  host are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a worker's
   tools deliberately reading the credentials its own servers use, or reaching the keystore through the
   owner's unconfined keyring daemon (the stated MVP boundary; separate OS users are Release 2); a
@@ -173,10 +168,14 @@ session, reached through the `secret-tool` executable of the distribution's libs
 run as a separate process and never linked. Installing it is the owner's one-time setup step. The
 command's observation and journal entry exclude the value field by name.
 
-The Linux legs are built first; the Mac secrets frame of AC3 is qualified when VELDO-0124 and
-VELDO-0125 land, the way VELDO-0060 and VELDO-0061 qualify their Mac configuration in the host stage.
+A Mac run gets its values through one secrets frame over the same SSH channel, as section 3 of the
+design sets out; that leg is VELDO-0147 AC4, built once VELDO-0124 and VELDO-0125 land.
 
 ## History
 
 2026-09-25: written as a draft for PLAN-0019 revision 4 from the approved operating-model design
 (Telegram 29162), section 3(e). Draft; the owner decides readiness.
+
+2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
+dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
+which is built after VELDO-0124 and VELDO-0125. Status unchanged.

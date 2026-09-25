@@ -76,9 +76,12 @@ risk, rollback, an observability block and a What the reviewer judges section; e
 
 ## Resolutions of what the design left open
 
-**Where the Mac legs are proved.** VELDO-0141 AC1 names a Mac run and VELDO-0144 AC3 the Mac secrets
-frame, but the design's critical path builds both before the Mac. They follow VELDO-0060 and VELDO-0061:
-the Linux legs are built first and the Mac leg is qualified when VELDO-0124 and VELDO-0125 land.
+**Where the Mac legs are proved.** A specification ships whole, and the run-check refuses one whose
+dependencies are not shipped, so a Mac leg inside a specification the design's critical path builds
+before the Mac would hold it unshipped. The Mac legs of VELDO-0060 and VELDO-0061, the Mac read-back of
+VELDO-0062 AC1, the Mac handoff of VELDO-0127 AC2, the Mac run of VELDO-0141 AC1 and the Mac secrets
+frame of VELDO-0144 AC3 are therefore one new specification, VELDO-0147, which depends on them and on
+VELDO-0124 and VELDO-0125.
 
 **Stages.** VELDO-0144 adds an API route, so it depends on VELDO-0130 and is stage 5; VELDO-0127 and,
 through it, VELDO-0090 and VELDO-0091 move to stage 5 so no dependency points at a later stage. Stages

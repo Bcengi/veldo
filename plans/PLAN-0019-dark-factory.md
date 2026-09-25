@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152]
     order: 16059
     release: 1
     stage: 6
@@ -841,7 +841,7 @@ work:
     spec: VELDO-0090
     title: Capability-bound specialist selection
     feature_refs: [F7]
-    depends_on: [VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127, VELDO-0151]
+    depends_on: [VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127, VELDO-0147, VELDO-0151]
     order: 15090
     release: 1
     stage: 5
@@ -1103,6 +1103,14 @@ work:
     order: 15146
     release: 1
     stage: 5
+  - item: W107
+    spec: VELDO-0147
+    title: The Mac legs of the engine, account, capability, execution record and credential qualifications built on Linux first
+    feature_refs: [F2]
+    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144]
+    order: 15147
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1274,11 +1282,15 @@ stage may integrate an earlier service without making that service depend on the
 dependency on the same or an earlier stage. The order in which the remaining Release 1 items are
 built follows section 12 of the operating-model design, so the owner starts using the factory at the
 end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, 0145, 0128), then
-"please do BCG-123" to a landed change (0089, 0140, 0078, 0079, 0144, 0127, a thin 0088 that stages
-one unit, the 0057 re-land as VELDO-0148), then the rest of the MVP (0124, 0125, 0085, 0091, 0090,
-the rest of 0088 as VELDO-0146, 0142, 0143, the rest of 0131, 0059). Where a Release 1 criterion names a Mac leg of an item built before the Mac
-stage, that leg is qualified when VELDO-0124 and VELDO-0125 land, the way VELDO-0060 and VELDO-0061
-already qualify their Mac configuration in the host stage.
+"please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
+VELDO-0150; 0144; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
+unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
+VELDO-0147; 0085, 0091, 0090; the rest of 0088, VELDO-0146; 0142; 0143 with the 0076 and 0126
+amendments, VELDO-0149 and VELDO-0152; the rest of 0131; 0059). A specification ships whole and the
+run-check refuses one whose dependencies are not shipped, so no specification built before the Mac
+stage carries a Mac leg: the Mac legs of VELDO-0060, 0061, 0062, 0127, 0141 and 0144 are VELDO-0147.
+The amendments of the landed VELDO-0057, 0076, 0077, 0089 and 0126 are VELDO-0148 to VELDO-0152, each
+depending on the specification it amends.
 
 Release 2 delivers robustness and recovery: off-host acknowledgement, authority generations and
 fencing, clock follow-ups, recovery commands, checkpoint isolation and restoration, replay and lost
@@ -1426,6 +1438,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W111 | VELDO-0151 | 1 | 5 |
 | W112 | VELDO-0152 | 1 | 4 |
 | W106 | VELDO-0146 | 1 | 5 |
+| W107 | VELDO-0147 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
