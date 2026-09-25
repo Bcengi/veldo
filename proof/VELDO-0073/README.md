@@ -24,8 +24,9 @@ review; it is not a self-approval, and the canonical gate is run by the lead.
   settlement signers), the VELDO-0067 protected answer signer and the token file, building the inbox,
   presenter, acquirer and the VELDO-0068 settlement service on one connection with gated edges.
   `Ingress.wake` digests whatever woke it, never reads it, acquires through getUpdates and runs
-  settlement. The VELDO-0069 `decision_signer` slot: a configured one must be a host settlement
-  signer and is refused as `unavailable_service` until the protected signer has a decision purpose.
+  settlement. The VELDO-0069 `decision_signer` comes from the configuration: its principal must be a
+  host settlement signer and its 0600 key, outside the workspace, must sign a probe that verifies under
+  those signers.
 
 ## How real evidence is told from fixture evidence
 
@@ -53,7 +54,7 @@ store, OpenSSH signatures, the actual protected signer process, the production i
 two loopback Bot API servers, a local TLS stand-in, and a socket guard that refuses and counts every
 connection beyond 127.0.0.1, so no row and no mutant reaches Telegram. Registry:
 `scripts/check_teeth_mutations.py --finding 73`. `python3 -B proof/VELDO-0073/drive.py` regenerates
-`mutations.json` and the diffs: 19 mutants, each reds its named row by assertion, baseline and a no-op
+`mutations.json` and the diffs: 20 mutants, each reds its named row by assertion, baseline and a no-op
 copy of each of the seven mutated modules green. `red-at-3dc0393.json`: the current suite against the
 pre-change tree, every row red by assertion.
 
@@ -64,7 +65,7 @@ pre-change tree, every row red by assertion.
 | `activation/no-implicit` | AC1 | `doorbell-token-resolves-sends`, `ungated-edge-reaches-any-origin` |
 | `activation/explicit-bound-operates` | AC1 | `steward-authorizes-owner-edge`, `send-to-any-chat`, `production-acquisition-ungated` |
 | `qualification/real-platform-proof` | AC2 | `fixture-evidence-accepted`, `tls-host-unchecked`, `trust-store-from-environment`, `answer-not-the-platform-bytes` |
-| `settlement/production-construction` | AC2 | `host-trust-optional`, `decision-signer-untrusted` |
+| `settlement/production-construction` | AC2 | `host-trust-optional`, `decision-signer-untrusted`, `decision-key-unverified` |
 | `notification/wakes-only` | AC3 | `notification-settles` |
 | `stop/halts-edge` | AC4 | `stop-ignored` |
 | `stale/key-and-configuration` | AC4 | `bindings-not-compared`, `origin-unbound`, `bot-unbound` |
@@ -92,4 +93,6 @@ run once here and its stand-in record is refused by the live row, as it should b
   consent for the run is Telegram 29081. A production authority would take his enrolled key.
 - `open_ingress` is the production construction; wiring it into the authority service's serve loop
   is not in this footprint.
-- The decision signer is a slot until VELDO-0069 lands and the protected signer gains that purpose.
+- The decision signer signs in the ingress process with the host's configured key; the protected
+  signer process has no decision purpose that judges the binding body before signing (not in this
+  footprint; control_signer.py would gain it).

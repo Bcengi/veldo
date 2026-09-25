@@ -237,7 +237,8 @@ def build(base, organs, owner_chat, origin, token, scope='project-a'):
 
     # The host configuration the activated ingress is constructed from (control_channel_ingress.open_ingress).
     token_file = _private(host / 'bot-token', token + '\n')
-    settlement_signers = _private(host / 'settlement_signers', 'settler namespaces="veldo-settlement" %s\n' % public['settler'])
+    settlement_signers = _private(host / 'settlement_signers',
+                                  'settler namespaces="veldo-decision-settlement" %s\n' % public['settler'])
     enrollment_signers = _private(host / 'enrollment_signers', 'steward namespaces="veldo-enrollment" %s\n' % public['steward'])
     host_trust = _private(host / 'host_trust.json', json.dumps({'schema': 'veldo.host_trust/v1', 'host_identity': 'v73-host',
                                                                  'enrollment_signers': str(enrollment_signers),
@@ -248,7 +249,8 @@ def build(base, organs, owner_chat, origin, token, scope='project-a'):
               'workspace': str(repository), 'host_trust': str(host_trust),
               'signer': {'config': str(signer_config), 'edge_key_id': 'edge-telegram', 'connection_key': str(keyfile['edge-auth'])},
               'edge_principal': 'telegram-edge', 'api_edge': 'api-edge',
-              'bot_api': {'origin': origin, 'token_file': str(token_file)}, 'decision_signer': None}
+              'bot_api': {'origin': origin, 'token_file': str(token_file)},
+              'decision_signer': {'principal': 'settler', 'key': str(keyfile['settler'])}}
     config_path = _private(host / 'ingress.json', json.dumps(config))
 
     def signed_command(who, body):

@@ -184,7 +184,8 @@ settlement service, so a real Telegram answer had no production path to one auth
 control_channel_ingress.open_ingress now constructs the ingress from host configuration (the store,
 the journal signer, the host trust whose settlement signers VELDO-0054 readers verify against, the
 VELDO-0067 protected answer signer and the token file), with the settlement service on the same
-connection, and a row drives that construction. VELDO-0069 is added to depends_on: its optional
-decision signer is named in the configuration, must be one of the host's settlement signers, and is
-refused as unavailable_service until the protected signer has a decision purpose after VELDO-0069
-lands on main.
+connection, and a row drives that construction. VELDO-0069 is added to depends_on: after it landed
+(1b8edfe) the construction passes the settlement service its decision signer from the configuration,
+a principal that must be one of the host's settlement signers and a 0600 key outside the workspace
+whose probe signature must verify under those signers, so governing bindings are signed by the key
+the reading side trusts.

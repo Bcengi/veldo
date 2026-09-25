@@ -396,8 +396,18 @@ def _v73_checks(base):
                 return 'constructed'
             check(SP, 'no host trust installed: the ingress is not constructed',
                   IN is not None and construct(host_trust=str(A.host / 'absent.json')) == 'missing_authority')
+            decision = getattr(getattr(ing, 'settlement', None), 'decision_signer', None)
+            trust = _v73_load('v73_dd', organs / 'control_decision_dependency.py').SettlementTrust(
+                A.settlement_signers.read_text())
+            probe = b'VELDO-0073 decision signer row'
+            check(SP, 'the settlement service signs decisions as the host\'s trusted settlement signer',
+                  isinstance(decision, tuple) and decision[0] == 'settler' and trust.verify(probe, decision[1](probe), 'settler'))
             check(SP, 'a decision signer the host does not trust for settlements is refused',
-                  IN is not None and construct(decision_signer={'principal': 'steward'}) == 'missing_authority')
+                  IN is not None and construct(decision_signer={'principal': 'steward', 'key': str(A.keyfile['steward'])})
+                  == 'missing_authority')
+            check(SP, 'a trusted principal with another key is refused',
+                  IN is not None and construct(decision_signer={'principal': 'settler', 'key': str(A.keyfile['owner'])})
+                  == 'missing_authority')
             loose = A.host / 'loose-token'
             loose.write_text('stand-in-token\n')
             loose.chmod(0o644)

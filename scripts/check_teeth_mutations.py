@@ -4632,6 +4632,9 @@ def cases():
                "    if settlement_trust is None or principal not in signer_principals(settlement_trust.signers):\n"
                "        raise Refused('missing_authority', 'the decision signer is not one of this host\\'s settlement signers')\n",
                '', 'settlement/production-construction')
+    activation('decision-key-unverified', 'control_channel_ingress.py',
+               "    if not settlement_trust.verify(probe, sign(probe), principal):\n", "    if False:  # defect: any key signs\n",
+               'settlement/production-construction')
     # AC3 (declared falsifier): the notification payload is taken as the answer.
     activation('notification-settles', 'control_channel_ingress.py',
                "        acquired = []\n        for result in self.acquirer.acquire():\n",

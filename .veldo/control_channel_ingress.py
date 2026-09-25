@@ -20,17 +20,18 @@ result preserves each acquired update's platform message identity.
 A STOPPED EDGE. When the gate refuses (no activation, stopped, stale key or configuration), wake
 acquires nothing and settles nothing, and every pending request stays pending.
 
-THE DECISION SIGNER. VELDO-0069 gives the settlement service an optional `decision_signer` for
-governing decision bindings; the configuration's `decision_signer` names its principal, which must be
-one of the host's settlement signers. Until the protected signer has that purpose a configured one is
-refused as unavailable_service, and without one the service is built as VELDO-0068 defines it.
+THE DECISION SIGNER. The VELDO-0069 settlement service signs governing decision bindings with its
+`decision_signer`. The configuration's `decision_signer` names its principal and its key, the host's
+0600 file outside the workspace: the principal must be one of the host's settlement signers, and a
+probe the key signs must verify under those signers as the VELDO-0054 readers verify a binding, so
+the key is the one the host trusts. Without one a governing decision question refuses as
+unavailable_service, as VELDO-0069 defines.
 
 Observations carry identities, digests, outcomes and named refusals, never the token, a payload's
 content, message text or a signature. Standard library only.
 """
 import hashlib
 import importlib.util
-import inspect
 import json
 import os
 from pathlib import Path
@@ -180,7 +181,26 @@ def decision_signer(config, settlement_trust):
     principal = named.get('principal') if isinstance(named, dict) else None
     if settlement_trust is None or principal not in signer_principals(settlement_trust.signers):
         raise Refused('missing_authority', 'the decision signer is not one of this host\'s settlement signers')
-    raise Refused('unavailable_service', 'the protected signer has no decision purpose yet (VELDO-0069)')
+    key = named.get('key')
+    _private_file(key, 'the decision key')
+    workspace = os.path.realpath(config['workspace'])
+    if os.path.commonpath([os.path.realpath(key), workspace]) == workspace:
+        raise Refused('invalid_input', 'the decision key is kept outside the workspace')
+    DD = organ('control_decision_dependency')
+
+    def sign(message):
+        done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', key, '-n', DD.SETTLEMENT_NAMESPACE], input=message,
+                              capture_output=True, timeout=10,
+                              env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')})
+        if done.returncode:
+            raise Refused('unavailable_service', 'the decision key did not sign')
+        return done.stdout.decode()
+    # The key must be the one the host trusts for this principal: a probe it signs verifies under the
+    # host's settlement signers exactly as the VELDO-0054 readers verify a binding.
+    probe = b'veldo.decision_signer.probe/v1'
+    if not settlement_trust.verify(probe, sign(probe), principal):
+        raise Refused('missing_authority', 'the decision key is not the key the host trusts for its principal')
+    return principal, sign
 
 
 def open_ingress(config_path, clock=time.time):
@@ -223,9 +243,7 @@ def open_ingress(config_path, clock=time.time):
     edge_sign = A.EdgeSigner(S, CM, conn, edge['config'], edge['edge_key_id'], edge['connection_key'], clock=clock)
     acquirer = EV.Acquirer(S, CM, P, V, presenter, EV.TelegramAcquisitionEdge(P, origin, token, activation=gate), conn,
                            principal, sign, config['edge_principal'], edge_sign, generation, clock)
-    extra = {'decision_signer': signer} if signer is not None else {}
-    if extra and 'decision_signer' not in inspect.signature(ST.Settlement.__init__).parameters:
-        raise Refused('unavailable_service', 'this settlement service takes no decision signer')
     settlement = ST.Settlement(S, CM, inbox, presenter, conn, principal, sign, assignment=I, presentation=V,
-                               api_edge=config['api_edge'], authority_generation=generation, clock=clock, **extra)
+                               api_edge=config['api_edge'], authority_generation=generation, clock=clock,
+                               decision_signer=signer)
     return Ingress(gate, acquirer, settlement, presenter=presenter, inbox=inbox, activations=activations, conn=conn)
