@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0152
 title: Intake routes a message by the ticket key prefixes a project lists, and a new-project request to the factory project
-status: ready
+status: draft
 risk: high
 owner: dmitry
 human_approval: required
@@ -131,4 +131,5 @@ candidate. It is built with VELDO-0143 in the order of section 12 of the design.
 2026-09-25: written for PLAN-0019 revision 4 from the approved operating-model design (Telegram 29162),
 sections 2(e) and 5(e), whose VELDO-0126 AC1 amendments are carried here whole because VELDO-0126 has
 landed: the ticket key rule, the new-project route with the design's falsifier, and the "a new project"
-answer, one criterion each. Ready, as the amendments it carries were.
+answer, one criterion each. A draft: only the owner
+marks a specification ready.

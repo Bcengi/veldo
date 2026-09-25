@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0146
 title: Work of several units gets a separate elaboration run and a second PM cycle that stages the units against the published requirements
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -119,5 +119,5 @@ as VELDO-0088 states.
 2026-09-25: split from VELDO-0088's revision 4 amendment (approved operating-model design, Telegram
 29162, section 4(e)) on the review of PLAN-0019 revision 4, because a specification ships whole and the
 design builds several-unit work in a later stage than one-unit work. The criterion text is that
-amendment's several-unit clause, with a falsifier of its own for each part. Ready, as the amendment it
-carries was.
+amendment's several-unit clause, with a falsifier of its own for each part. A draft: only the owner
+marks a specification ready.

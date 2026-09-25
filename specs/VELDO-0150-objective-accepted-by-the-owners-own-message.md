@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0150
 title: An objective proposed from the project owner's own message is accepted by that message, and any other is still presented
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -121,5 +121,5 @@ message, in the order of section 12 of the design.
 
 2026-09-25: written for PLAN-0019 revision 4 from the approved operating-model design (Telegram 29162),
 section 4(e), whose VELDO-0077 AC1 amendment is carried here whole because VELDO-0077 has landed; its
-criterion and falsifier are AC1, and AC2 checks the acceptance evidence that amendment named. Ready, as
-the amendment it carries was.
+criterion and falsifier are AC1, and AC2 checks the acceptance evidence that amendment named. A draft: only the owner
+marks a specification ready.

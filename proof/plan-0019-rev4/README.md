@@ -74,21 +74,20 @@ in the ones not listed above.
 | [VELDO-0143](../../specs/VELDO-0143-repository-from-chat.md) | A repository from chat, created or adopted | 4 | draft | W103, S5 |
 | [VELDO-0144](../../specs/VELDO-0144-mcp-catalog-and-os-keystore.md) | The MCP catalog and OS keystore, Atlassian as a catalog server | 4 | draft | W104, S5 |
 | [VELDO-0145](../../specs/VELDO-0145-ui-shell-run-terminal-decisions.md) | The UI shell, the live run terminal and the decisions screen | 4 | draft | W105, S5 |
-| [VELDO-0146](../../specs/VELDO-0146-several-unit-work-and-the-second-pm-cycle.md) | Several-unit work: a separate elaboration run and a second PM cycle (split from VELDO-0088) | 2 | ready | W106, S5 |
+| [VELDO-0146](../../specs/VELDO-0146-several-unit-work-and-the-second-pm-cycle.md) | Several-unit work: a separate elaboration run and a second PM cycle (split from VELDO-0088) | 2 | draft | W106, S5 |
 | [VELDO-0147](../../specs/VELDO-0147-mac-legs-of-the-linux-first-qualifications.md) | The Mac legs of VELDO-0060, 0061, 0062, 0127, 0141 and 0144 | 4 | draft | W107, S5 |
-| [VELDO-0148](../../specs/VELDO-0148-re-land-when-the-trunk-moved.md) | The re-land when another factory moved main (VELDO-0057's amendment) | 3 | ready | W108, S5 |
-| [VELDO-0149](../../specs/VELDO-0149-project-activation-on-an-adopted-repository.md) | Activation on any adopted repository, from a settled answer (VELDO-0076's amendment) | 2 | ready | W109, S4 |
-| [VELDO-0150](../../specs/VELDO-0150-objective-accepted-by-the-owners-own-message.md) | An objective accepted by the owner's own message (VELDO-0077's amendment) | 2 | ready | W110, S4 |
-| [VELDO-0151](../../specs/VELDO-0151-specialist-roles-with-capability-configurations.md) | Specialist roles with a capability configuration reference and a kind (VELDO-0089's amendment) | 2 | ready | W111, S5 |
-| [VELDO-0152](../../specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md) | Ticket keys and new projects at intake (VELDO-0126's amendments) | 3 | ready | W112, S4 |
+| [VELDO-0148](../../specs/VELDO-0148-re-land-when-the-trunk-moved.md) | The re-land when another factory moved main (VELDO-0057's amendment) | 3 | draft | W108, S5 |
+| [VELDO-0149](../../specs/VELDO-0149-project-activation-on-an-adopted-repository.md) | Activation on any adopted repository, from a settled answer (VELDO-0076's amendment) | 2 | draft | W109, S4 |
+| [VELDO-0150](../../specs/VELDO-0150-objective-accepted-by-the-owners-own-message.md) | An objective accepted by the owner's own message (VELDO-0077's amendment) | 2 | draft | W110, S4 |
+| [VELDO-0151](../../specs/VELDO-0151-specialist-roles-with-capability-configurations.md) | Specialist roles with a capability configuration reference and a kind (VELDO-0089's amendment) | 2 | draft | W111, S5 |
+| [VELDO-0152](../../specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md) | Ticket keys and new projects at intake (VELDO-0126's amendments) | 3 | draft | W112, S4 |
 | [VELDO-0153](../../specs/VELDO-0153-identity-push-profile-and-remote-owner.md) | The identity push profile and the remote owner check (split from VELDO-0142) | 2 | draft | W113, S5 |
 
 Each has owner dmitry, a footprint, depends_on, placement, protected_paths, risk, rollback, an
-observability block and a What the reviewer judges section, and each passes `validate.py ready`. The
-five that carry an approved amendment of a landed specification, and VELDO-0146, which carries part of
-ready VELDO-0088's approved amendment, are `ready` as the text they carry was; the others are drafts, and
-the owner decides their readiness. VELDO-0147 is a draft because one of its legs came from the draft
-VELDO-0144.
+observability block and a What the reviewer judges section, and each passes `validate.py ready`. Every
+new specification is `draft`, including the five that carry an approved amendment of a landed
+specification and VELDO-0146, which carries part of VELDO-0088's approved amendment: only the owner
+marks a specification ready.
 
 ## Resolutions of what the design left open
 

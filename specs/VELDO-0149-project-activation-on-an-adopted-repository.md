@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0149
 title: A project activates on any repository this domain adopted, by the owner's signed command or by his settled answer
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -118,4 +118,5 @@ section 12 of the design.
 
 2026-09-25: written for PLAN-0019 revision 4 from the approved operating-model design (Telegram 29162),
 section 5(e), whose VELDO-0076 AC1 amendment is carried here whole because VELDO-0076 has landed; the
-adopted repository and the answer path are one criterion each. Ready, as the amendment it carries was.
+adopted repository and the answer path are one criterion each. A draft: only the owner
+marks a specification ready.

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0148
 title: A land refused because another factory moved main is re-landed on the new tip, re-merged and re-gated, and nothing ever forces
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -161,5 +161,5 @@ to the candidate tree, so the re-merged tree needs its own grant.
 section 7(e), whose VELDO-0057 amendment is carried here whole because VELDO-0057 has landed. The
 criterion text, its falsifier (move the remote trunk between the listing and the push; the re-land row
 must fail if the unit is left unknown) and the approval rule are the design's, split into one criterion
-each for the stale-subject re-land, the lease window and the fresh grant. Ready, as the amendment it
-carries was.
+each for the stale-subject re-land, the lease window and the fresh grant. A draft: only the owner
+marks a specification ready.

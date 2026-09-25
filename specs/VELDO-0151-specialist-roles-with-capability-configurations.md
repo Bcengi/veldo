@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0151
 title: A team may name specialist roles beyond the four required ones, and every role names its capability configuration and its kind
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -119,4 +119,5 @@ path stages one unit with the four required roles through these references.
 2026-09-25: written for PLAN-0019 revision 4 from the approved operating-model design (Telegram 29162),
 section 4(e), whose VELDO-0089 AC1 amendment is carried here whole because VELDO-0089 has landed. AC1 is
 that amendment with its own falsifier; AC2 is the design's rule that a missing specialist becomes a
-staffing request. Ready, as the amendment it carries was.
+staffing request. A draft: only the owner
+marks a specification ready.
