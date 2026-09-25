@@ -712,20 +712,19 @@ class ControlApi:
             return {'refusal': 'invalid_input:hint'}
         after = self._cursor if self._cursor is not None else hint['watermark'] - 1
         try:
-            feed = self.authority.feed(after, EVENT_LIMIT)
+            # From the hinted record itself, so the hint is judged against the journal even when it is
+            # a record this API has already followed.
+            feed = self.authority.feed(min(after, hint['watermark'] - 1), EVENT_LIMIT)
         except Exception:  # noqa: BLE001 - nothing is delivered from an unreadable authority
             return {'refusal': 'unavailable_service:authority'}
         if not isinstance(feed, dict) or not feed.get('ok'):
             return {'refusal': str((feed or {}).get('reason') or 'unavailable_service:authority')}
         named = [e for e in feed['events'] if e['seq'] == hint['watermark']]
-        if hint['watermark'] > after and (not named or named[0]['record_digest'] != hint.get('record_digest')
-                                          or named[0]['command_id'] != hint.get('command_id')):
+        if not named or named[0]['record_digest'] != hint.get('record_digest') or named[0]['command_id'] != hint.get('command_id'):
             return {'refusal': 'stale_version:hint'}
-        ended = sum(self.follow({'transition': e['revocations']}) for e in feed['events'])
-        if feed['events']:
-            self._cursor = feed['events'][-1]['seq']
-        elif self._cursor is None:
-            self._cursor = after
+        fresh = [e for e in feed['events'] if e['seq'] > after]
+        ended = sum(self.follow({'transition': e['revocations']}) for e in fresh)
+        self._cursor = fresh[-1]['seq'] if fresh else max(after, self._cursor or 0)
         closed = 0
         for stream in self.streams():
             if not self.sessions.alive(stream.handle):
@@ -749,7 +748,7 @@ class ControlApi:
             self._push(stream, answer)
         with self._lock:
             self._streams = [s for s in self._streams if s.closed is None]
-        return {'delivered': len(feed['events']), 'ended': ended, 'closed': closed, 'cursor': self._cursor}
+        return {'delivered': len(fresh), 'ended': ended, 'closed': closed, 'cursor': self._cursor}
 
     # following the journal
 

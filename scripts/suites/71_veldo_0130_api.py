@@ -1,4 +1,5 @@
-"""VELDO-0130 phase 1: the authenticated API's passkey sign-in, sessions, edge and message and decision writes.
+"""VELDO-0130: the authenticated API's passkey sign-in, sessions, edge, message and decision writes (phase 1),
+and its read models, live events and configuration actions (phase 2).
 
 Run: python3 scripts/selftest.py --suite 71_veldo_0130_api
 
@@ -18,6 +19,15 @@ production copies named in PRODUCTION below, never assertions or fixtures. Where
 absent (the pre-change tree, for the red record) the API is what that tree has, nothing: every route
 answers 404, no credential can be enrolled and no assertion verified, so each row fails by its own
 assertions rather than by an exception. No private key byte, cookie, token or signature is printed.
+
+Phase 2 rows read every published read model and the event feed through the API and compare each answer
+with the store itself (SQL on the same database), drive the live stream from the authority's post-commit
+notification, and save workflow revisions through the edge into VELDO-0132's Workflows. Entity kinds whose
+writers need a worker, a Git landing or a subscription CLI (dispatches, cycles, proof bundles, gate
+observations, reservations, documents, units, role and tool configuration) are seeded with the store's
+generic upsert command: the rows judge the API's readers of those kinds, not their writers. Where the tree
+has only phase 1 (the red record), the new routes answer 404 and the new tables are absent, so each new
+row fails by its own assertions.
 """
 import base64 as _v130_b64
 import copy as _v130_copy
@@ -25,6 +35,7 @@ import hashlib as _v130_hashlib
 import http.client as _v130_client
 import http.server as _v130_http
 import importlib.util as _v130_import
+import inspect as _v130_inspect
 import json as _v130_json
 import os as _v130_os
 from pathlib import Path as _v130_Path
@@ -39,7 +50,24 @@ _V130_ROWS = ('install/assets', 'webauthn/stand-in-browser', 'webauthn/independe
               'enrollment/pending-grants-nothing', 'enrollment/steward-signed', 'session/cookie-and-expiry',
               'session/forgery-refused', 'session/revocation-ends', 'routes/every-family', 'routes/body-actor-refused',
               'edge/signer-api-purpose', 'edge/authority-recheck', 'messages/common-intake',
-              'decisions/exact-settlement', 'decisions/one-ruling', 'transport/loopback-only')
+              'decisions/exact-settlement', 'decisions/one-ruling', 'transport/loopback-only',
+              'reads/model-set', 'reads/authoritative', 'reads/freshness', 'events/live', 'actions/contract',
+              'actions/workflow-save', 'actions/unauthorized-write')
+# The kinds each read model serves, as this suite expects them from the owning modules (compared with the
+# published registry, never derived from it).
+_V130_EXPECTED_KINDS = {
+    'objectives': ['intake_proposal', 'intake_question'],
+    'work': ['accepted_document', 'document_version', 'accepted_revision', 'execution_unit'],
+    'workers': ['dispatch', 'dispatch_active'], 'runs': ['workflow_cycle'],
+    'decisions': ['assignment', 'settlement_terms', 'request_settlement', 'decision_settlement', 'decision',
+                  'channel_presentation'],
+    'proof': ['proof_bundle', 'gate_observation', 'completion_receipt'], 'spend': ['subscription_reservation'],
+    'configuration': ['workflow_head', 'workflow_revision', 'role_configuration', 'tool_configuration']}
+# The criteria's own phrases (parsed from the specification) and the published action or read model each is.
+_V130_AC4_ACTIONS = {'owner admission': 'owner_admission', 'owner priority': 'owner_priority',
+                     'project pause': 'project_pause', 'project cancel': 'project_cancel', 'worker stop': 'worker_stop',
+                     'team configuration': 'team_configuration_edit', 'agent configuration': 'agent_configuration_edit',
+                     'workflow edits': 'workflow_save'}
 _V130_CHOICES = {'accept': 'approve', 'return_for_elaboration': 'return_for_elaboration', 'reject': 'reject'}
 _V130_HOST = 'veldo-host.example.ts.net'
 _V130_ORIGIN = 'https://' + _V130_HOST
@@ -294,7 +322,7 @@ def _v130_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:200]), False)
             return True
 
-    IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL = _V130_ROWS
+    IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL, RM, RA, RR, EL, AK, AW, AU = _V130_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_api.py': ROOT / ".veldo" / "control_api.py",
@@ -303,6 +331,7 @@ def _v130_checks(base):
         'control_api_assertion.py': ROOT / ".veldo" / "control_api_assertion.py",
         'control_api_signer.py': ROOT / ".veldo" / "control_api_signer.py",
         'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
+        'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
         'control_channel_enrollment.py': ROOT / ".veldo" / "control_channel_enrollment.py",
         'control_signer_answers.py': ROOT / ".veldo" / "control_signer_answers.py",
         'authority_contract.py': ROOT / ".veldo" / "authority_contract.py",
@@ -326,7 +355,7 @@ def _v130_checks(base):
 
     with section(IA):
         scaffold = _v130_load('v130_scaffold', scaffold_path)
-        for rel in ['.veldo/' + m for m in API_MODULES]:
+        for rel in ['.veldo/' + m for m in API_MODULES + ('control_api_models.py',)]:
             both = (ROOT / rel).is_file() and (ROOT / 'engine' / rel).is_file()
             check(IA, rel + ' installed by the scaffold', rel in scaffold._FILES)
             check(IA, rel + ' not claimed as validator substrate', rel not in scaffold.REQUIRED_SUBSTRATE)
@@ -358,6 +387,10 @@ def _v130_checks(base):
     AUTH = _v130_load('v130_authority', organs / 'control_api_authority.py') if here else None
     SG = _v130_load('v130_api_signer', organs / 'control_api_signer.py') if here else None
     API = _v130_load('v130_api', organs / 'control_api.py') if here else None
+    MO = _v130_load('v130_models', organs / 'control_api_models.py') if (organs / 'control_api_models.py').is_file() else None
+    WFM = _v130_load('v130_workflow', organs / 'control_workflow.py')
+    # VELDO-0051's publication reads events.py from the repository layout, so it is loaded in place.
+    EVP = _v130_load('v130_publication', ROOT / '.veldo' / 'control_event_projection.py')
 
     keys, protected, edge_dir = base / 'keys', base / 'protected', base / 'edge'
     for directory in (keys, protected, edge_dir):
@@ -509,8 +542,18 @@ def _v130_checks(base):
     absent = _V130Absent()
     credentials = (CR.Credentials(S, conn, ids, 'authority', journal_sign, rp_id=_V130_HOST, origin=_V130_ORIGIN,
                                   state_dir=base / 'authority-state') if here else absent)
+    # Phase 2: VELDO-0132's Workflows on the authority's connection, VELDO-0051's publication of this store
+    # into the repository's event log, and the authority's post-commit notification into the API.
+    workflows = WFM.Workflows(S, conn, domain=DOMAIN, repository='project-a', signer='authority', sign=journal_sign)
+    publication = EVP.Projection(S, str(db), domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                 root=str(repository))
+    api = []
+    phase2 = {}
+    if here and 'workflows' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
+        phase2 = dict(workflows=workflows, publication=publication,
+                      notify=lambda hint: api[0].deliver(hint) if api and hasattr(api[0], 'deliver') else None)
     authority = (AUTH.ApiAuthority(S, CM, conn, ids=ids, domain=DOMAIN, edge='api-edge', intake=intake,
-                                   settlement=settlement, credentials=credentials) if here else absent)
+                                   settlement=settlement, credentials=credentials, **phase2) if here else absent)
     signer = SG.ApiSigner(config_path, 'edge-api', keyfile['api-auth']) if here else absent
     offset = [0.0]
 
@@ -526,11 +569,79 @@ def _v130_checks(base):
         return API.ControlApi(dict(api_config, state_dir=str(state_dir or base / 'api-state')), authority, signer,
                               clock=clock)
 
-    api = [new_api()]
+    api.append(new_api())
+
+    def entity_ref(identity):
+        row = conn.execute('SELECT version, digest FROM entities WHERE id=?', (identity,)).fetchone()
+        return {'id': identity, 'version': row[0], 'digest': row[1]} if row else None
+
+    # Credential-shaped values made at run time, never in this source: an MCP server's environment value,
+    # a configured key, and text in the shape of a provider token.
+    secret_env = 'v130-env-' + _v130_os.urandom(12).hex()
+    secret_key = 'v130-key-' + _v130_os.urandom(12).hex()
+    shaped = 'gh' + 'p_' + _v130_os.urandom(15).hex()
+    fixture('role-builder', 'role_configuration', dict(role='builder', principal='builder-agent'))
+    fixture('tools-default', 'tool_configuration', dict(tools=['Read', 'Edit'], api_key=secret_key,
+                                                       mcp_servers=[{'name': 'tracker', 'command': 'tracker-mcp',
+                                                                     'env': {'TRACKER_AUTH': secret_env}}]))
+    process = {'platform': 'linux', 'host': 'veldo-linux-1', 'boot_id': 'boot-130', 'pid': 4242, 'start': 17}
+    fixture('dispatch:dispatch/VELDO-9130/a1', 'dispatch', dict(
+        schema='veldo.dispatch/v1', dispatch_id='dispatch/VELDO-9130/a1', state='running', process=process,
+        contract={'unit': 'VELDO-9130', 'station': 'build', 'capability': {
+            'adapter': 'claude-code', 'mcp_servers': [{'name': 'tracker', 'headers': {'X-Auth': secret_env}}]}}))
+    fixture('dispatch:dispatch/VELDO-9131/a1', 'dispatch', dict(
+        schema='veldo.dispatch/v1', dispatch_id='dispatch/VELDO-9131/a1', state='exited',
+        process=dict(process, platform='darwin', host='veldo-mac-1', pid=77), contract={'unit': 'VELDO-9131'}))
+    fixture('dispatch-active:VELDO-9130:build', 'dispatch_active', dict(unit='VELDO-9130', station='build',
+                                                                       dispatch_id='dispatch/VELDO-9130/a1'))
+    fixture('workflow-cycle:VELDO-9130', 'workflow_cycle', dict(state='waiting', steps=2, position='owner',
+                                                               trace=[['groom', 'groomed', 'owner']]))
+    fixture('proof-bundle:VELDO-9130', 'proof_bundle', dict(unit='VELDO-9130', note='a log line kept ' + shaped))
+    fixture('gate-observation:VELDO-9130', 'gate_observation', dict(unit='VELDO-9130', signature=secret_key))
+    fixture('completion-receipt:VELDO-9130', 'completion_receipt', dict(fact='build_accepted', subject='VELDO-9130'))
+    fixture('reservation:worker:VELDO-9130', 'subscription_reservation', dict(kind='worker', account='owner-plan',
+                                                                              reserved=1, state='held'))
+    fixture('VELDO-9130', 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'], revision=1))
+    fixture('fixture-document:VELDO-9130', 'accepted_document', dict(alias='VELDO-9130', version=1))
+    fixture('fixture-document-version:VELDO-9130:1', 'document_version', dict(alias='VELDO-9130', version=1))
+    fixture('fixture-revision:130', 'accepted_revision', dict(commit='0' * 40, repository=ids['repository_uuid']))
+    fixture('fixture-decision:130', 'decision', dict(state='accepted', subject='VELDO-9130'))
+
+    def definition(workflow, budget=12):
+        return {'schema': 'veldo.workflow/v1', 'id': workflow, 'entry': 'groom', 'terminal': ['handle'],
+                'nodes': {'groom': {'kind': 'grooming', 'config': {}}, 'owner': {'kind': 'owner_wait', 'config': {}},
+                          'assign': {'kind': 'assignment', 'config': {'role': 'builder', 'tools': ['default']}},
+                          'handle': {'kind': 'result_handling', 'config': {}}},
+                'transitions': [{'id': 't-groomed', 'from': 'groom', 'port': 'groomed', 'to': 'owner'},
+                                {'id': 't-admit', 'from': 'owner', 'port': 'admit', 'to': 'assign'},
+                                {'id': 't-decline', 'from': 'owner', 'port': 'decline', 'to': 'groom', 'max': 3},
+                                {'id': 't-done', 'from': 'assign', 'port': 'done', 'to': 'handle'}],
+                'references': {'roles': {'builder': entity_ref('role-builder')},
+                               'tools': {'default': entity_ref('tools-default')}},
+                'budget': {'steps': budget}}
+
+    def save_body(workflow, base, **over):
+        return dict({'workflow': workflow, 'base': base, 'definition': definition(workflow),
+                     'layout': {'nodes': {'groom': {'x': 0, 'y': 0}}, 'viewport': {'x': 0, 'y': 0, 'zoom': 1}}}, **over)
+
+    def head_hint():
+        """The VELDO-0046 post-commit hint of the journal head, built here from the journal itself."""
+        seq, command, digest = conn.execute('SELECT seq, command_id, record_digest FROM journal ORDER BY seq DESC '
+                                            'LIMIT 1').fetchone()
+        return dict(ids, schema='veldo.control_notification/v1', command_id=command, record_digest=digest, watermark=seq)
+
+    def deliver(hint, on=None):
+        target = on or api[0]
+        return target.deliver(hint) if hasattr(target, 'deliver') else {'refusal': 'no deliver on this API'}
 
     COOKIE = '__Host-veldo-session'
     MESSAGES = '/api/v1/domains/%s/messages' % DOMAIN
     ANSWER = '/api/v1/domains/%s/decisions/answer' % DOMAIN
+    SAVE = '/api/v1/domains/%s/workflows/save' % DOMAIN
+    EVENTS = '/api/v1/domains/%s/events' % DOMAIN
+
+    def read_path(model):
+        return '/api/v1/domains/%s/%s' % (DOMAIN, model)
 
     def call(method, path, body=None, cookie=None, token=None, origin=_V130_ORIGIN, site='same-origin',
              ctype='application/json', host=_V130_HOST, raw=None, on=None):
@@ -1022,7 +1133,8 @@ def _v130_checks(base):
         receipt_f = {'request_id': 'r', 'request_version': 1, 'presentation_id': 'p', 'brief_digest': 'd',
                      'presentation_version': 1}
         bodies = {'auth.sign_out': {}, 'auth.sign_out_everywhere': {}, 'auth.revoke_credential': {'credential_id': 'x'},
-                  'messages.send': {'text': 'hello'}, 'decisions.answer': answer_body(receipt_f)}
+                  'messages.send': {'text': 'hello'}, 'decisions.answer': answer_body(receipt_f),
+                  'workflows.save': save_body('bodies-flow', 0)}
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
@@ -1060,8 +1172,8 @@ def _v130_checks(base):
             table = list(getattr(API, 'ROUTES', ()))
             check(RF, 'the route table and the registered handlers agree [observed %s]' % api[0].route_problems(),
                   table and api[0].route_problems() == [])
-            check(RF, 'phase 1 publishes the auth, messages and decisions families',
-                  sorted({r.family for r in table}) == ['auth', 'decisions', 'messages'])
+            check(RF, 'the table publishes the auth, messages, decisions, reads, configuration and events families',
+                  sorted({r.family for r in table}) == ['auth', 'configuration', 'decisions', 'events', 'messages', 'reads'])
             for route in [r for r in table if r.session]:
                 body = bodies.get(route.name) if route.method == 'POST' else None
                 before = journal_count()
@@ -1077,7 +1189,7 @@ def _v130_checks(base):
                       and refusal(bogus) == 'unauthenticated:no_session' and expired[0] == 401
                       and refusal(expired) == 'unauthenticated:session_expired' and journal_count() == before)
                 if '{domain}' in route.path:
-                    other = call('POST', path_of(route, 'another-domain'), body, cookie=owner_cookie, token=owner_token)
+                    other = call(route.method, path_of(route, 'another-domain'), body, cookie=owner_cookie, token=owner_token)
                     check(RF, '%s: another domain is unauthorized' % route.name + seen(other),
                           other[0] == 403 and refusal(other) == 'unauthorized:domain' and journal_count() == before)
             role = call('POST', '/api/v1/auth/credentials/revoke', {'credential_id': laptop.credential_id},
@@ -1092,13 +1204,28 @@ def _v130_checks(base):
             wrong_owner = call('POST', ANSWER, answer_body(rf_receipt), cookie=owner2_cookie, token=owner2_token)
             check(RF, 'decisions: a member who is not the presented owner is unauthorized' + seen(wrong_owner),
                   wrong_owner[0] == 403 and 'not_owner' in str(refusal(wrong_owner)) and not of_kind('request_settlement', rf_rid))
+            before = journal_count()
+            for label, got, name in (
+                    ('reads', call('GET', read_path('objectives'), cookie=member_cookie), 'unauthorized:no_project'),
+                    ('events', call('GET', EVENTS, cookie=member_cookie), 'unauthorized:no_project'),
+                    ('configuration', call('POST', SAVE, save_body('rf-flow', 0), cookie=member_cookie, token=member_token),
+                     'unauthorized:missing_authority:editor')):
+                check(RF, '%s: a member without the role or scope is refused %s' % (label, name) + seen(got),
+                      got[0] == 403 and refusal(got) == name)
+            check(RF, 'no refused read or configuration request wrote anything', journal_count() == before)
             ok_auth = call('GET', '/api/v1/auth/session', cookie=owner_cookie)
             ok_message = call('POST', MESSAGES, {'text': 'Route check for project-a'}, cookie=owner_cookie, token=owner_token)
             ok_answer = call('POST', ANSWER, answer_body(rf_receipt), cookie=owner_cookie, token=owner_token)
-            check(RF, 'a valid current enrollment is served in every family%s%s%s'
-                  % (seen(ok_auth), seen(ok_message), seen(ok_answer)),
+            ok_read = call('GET', read_path('objectives'), cookie=owner_cookie)
+            ok_events = call('GET', EVENTS, cookie=owner_cookie)
+            ok_save = call('POST', SAVE, save_body('rf-flow', 0), cookie=owner_cookie, token=owner_token)
+            check(RF, 'a valid current enrollment is served in every family%s%s%s%s%s%s'
+                  % (seen(ok_auth), seen(ok_message), seen(ok_answer), seen(ok_read), seen(ok_events), seen(ok_save)),
                   ok_auth[0] == 200 and ok_message[0] == 200 and ok_message[2].get('outcome') == 'proposed'
-                  and ok_answer[0] == 200 and ok_answer[2].get('outcome') == 'settled')
+                  and ok_answer[0] == 200 and ok_answer[2].get('outcome') == 'settled'
+                  and ok_read[0] == 200 and ok_read[2].get('model') == 'objectives'
+                  and ok_events[0] == 200 and bool(ok_events[2].get('events'))
+                  and ok_save[0] == 200 and ok_save[2].get('outcome') == 'saved' and ok_save[2].get('version') == 1)
 
         # routes/body-actor-refused: the speaker is the session's member; a body naming one is refused.
         with section(RB):
@@ -1119,6 +1246,15 @@ def _v130_checks(base):
                     check(RB, '%s: a missing field is refused' % route.name + seen(short),
                           short[0] == 400 and refusal(short) == 'invalid_input:fields')
                 check(RB, '%s: nothing was written' % route.name, journal_count() == before)
+            for route in [r for r in getattr(API, 'ROUTES', ()) if r.session and r.method == 'GET' and '{domain}' in r.path]:
+                named = call('GET', path_of(route) + '?principal=owner', cookie=owner2_cookie)
+                stray = call('GET', path_of(route) + '?unexpected=1', cookie=owner2_cookie)
+                check(RB, '%s: a query naming a principal, or an unknown query field, is refused%s%s'
+                      % (route.name, seen(named), seen(stray)),
+                      named[0] == 400 and refusal(named) == 'invalid_input:actor_field'
+                      and stray[0] == 400 and refusal(stray) == 'invalid_input:fields')
+            check(RB, 'phase 2 GET routes with a domain are published',
+                  any(r.method == 'GET' and '{domain}' in r.path for r in getattr(API, 'ROUTES', ())))
             rb_rid, rb_receipt = open_request('rb1')
             before = journal_count()
             forged = call('POST', ANSWER, dict(answer_body(rb_receipt), actor_id='owner'), cookie=owner2_cookie,
@@ -1381,6 +1517,420 @@ def _v130_checks(base):
             check(DO, 'after the UI settles, a Telegram answer adds no second ruling' + seen(ui_first),
                   ui_first[0] == 200 and len(ruled) == 1 and ruled[0][1] == 1 and ruled[0][2]['ruling'] == 'reject'
                   and ruled[0][2]['originating_channel'] == 'api')
+
+        # Phase 2: new passkeys for the rows below (the earlier rows revoked the laptop and desktop).
+        tablet = _V130Browser(base / 'browsers', 'owner-tablet', -7)
+        steward2_phone = _V130Browser(base / 'browsers', 'steward2-phone', -8)
+        enrolled(tablet, 'owner', 'owner tablet')
+        enrolled(steward2_phone, 'steward2', 'steward2 phone')
+        _s, tablet_cookie, tablet_token = sign_in(tablet)
+        _s, steward2_cookie, steward2_token = sign_in(steward2_phone)
+        spec_text = ' '.join((ROOT / 'specs' / 'VELDO-0130-authenticated-factory-api.md').read_text().split())
+
+        def phrases(text):
+            """The criterion's list, each 'a b/c' phrase expanded to 'a b' and 'a c'."""
+            out = []
+            for part in text.replace(' and ', ', ').split(', '):
+                words = part.strip().split(' ')
+                slashed = [i for i, w in enumerate(words) if '/' in w]
+                if len(slashed) == 1 and len(words) > 1:
+                    i = slashed[0]
+                    out += [' '.join(words[:i] + [w] + words[i + 1:]) for w in words[i].split('/')]
+                else:
+                    out.append(part.strip())
+            return out
+
+        def store_items(kinds):
+            return sorted((r[0], r[1], r[2], r[3]) for r in conn.execute(
+                'SELECT id, kind, version, digest FROM entities WHERE kind IN (%s)' % ','.join('?' * len(kinds)), kinds))
+
+        def served_items(answer):
+            return sorted((i.get('id'), i.get('kind'), i.get('version'), i.get('digest'))
+                          for items in ((answer or {}).get('items') or {}).values() for i in items)
+
+        def head():
+            seq, digest = conn.execute('SELECT seq, record_digest FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+            return seq, digest
+
+        def same_but_redacted(stored, served):
+            """Equal everywhere except where the served value is the redaction marker."""
+            if served == '[redacted]':
+                return True
+            if isinstance(stored, dict) and isinstance(served, dict):
+                return set(stored) == set(served) and all(same_but_redacted(stored[k], served[k]) for k in stored)
+            if isinstance(stored, list) and isinstance(served, list):
+                return len(stored) == len(served) and all(same_but_redacted(a, b) for a, b in zip(stored, served))
+            return stored == served
+
+        # reads/model-set: the published read models against the criterion's list and the owning modules.
+        with section(RM):
+            models = list(getattr(MO, 'READ_MODELS', ()))
+            listed = spec_text.split('to the actual store for ', 1)[-1].split('. Enumerate', 1)[0]
+            universe = [x.replace('nested ', '') for x in listed.replace(' and ', ', ').split(', ')]
+            check(RM, 'the criterion lists eight read subjects [observed %s]' % universe, len(universe) == 8)
+            check(RM, 'every subject the criterion lists is one published read model, and nothing else is [observed %s]'
+                  % [m.criterion_subject for m in models], sorted(m.criterion_subject for m in models) == sorted(universe))
+            check(RM, 'the read models serve exactly the kinds this suite expects of the owning modules',
+                  {m.name: [k.kind for k in m.kinds] for m in models} == _V130_EXPECTED_KINDS)
+            kinds = [k.kind for m in models for k in m.kinds]
+            check(RM, 'no kind is served by two read models', kinds and len(kinds) == len(set(kinds)))
+            owners = {}
+            for model in models:
+                for k in model.kinds:
+                    if k.module not in owners:
+                        # The owning modules are read in place: they are not under test here.
+                        owners[k.module] = _v130_load('v130_owner_' + k.module, ROOT / '.veldo' / (k.module + '.py'))
+                    owner = owners[k.module]
+                    named = getattr(owner, k.constant, None) if k.constant else None
+                    held = (named == k.kind if isinstance(named, str) else
+                            k.kind in named or k.kind in named.values() if isinstance(named, dict) else
+                            k.kind in named if isinstance(named, (list, tuple, set, frozenset)) else
+                            ("'%s'" % k.kind) in (ROOT / '.veldo' / (k.module + '.py')).read_text())
+                    check(RM, '%s: kind %s is the one %s.%s names' % (model.name, k.kind, k.module, k.constant), held)
+                    check(RM, '%s: kind %s is written under %s, a specification here' % (model.name, k.kind, k.spec),
+                          bool(list((ROOT / 'specs').glob(k.spec + '-*.md'))))
+            routes = {r.name: r for r in getattr(API, 'ROUTES', ())}
+            for model in models:
+                route = routes.get(model.route)
+                check(RM, '%s is served at its published GET route in the reads family' % model.name,
+                      route is not None and route.method == 'GET' and route.family == 'reads'
+                      and route.path.endswith('/' + model.name) and route.name in getattr(api[0], 'handlers', {}))
+            ac2_gaps = [g for g in getattr(MO, 'GAPS', ()) if g.criterion == 'AC2']
+            check(RM, 'the AC2 gaps are named: projects, accepted objectives, backlog items, the machine registry, tool '
+                      'calls and team configuration [observed %s]' % [g.subject for g in ac2_gaps],
+                  sorted(g.subject for g in ac2_gaps) == sorted(['projects', 'accepted objectives',
+                                                                 'backlog items and their nesting', 'machine registry',
+                                                                 'tool calls', 'team configuration']))
+            for gap in ac2_gaps:
+                owned = gap.spec is None or bool(list((ROOT / 'specs').glob(gap.spec + '-*.md')))
+                check(RM, 'gap %s names its owning specification %s, which exists' % (gap.subject, gap.spec),
+                      owned and (gap.spec is not None or 'no specification' in gap.what))
+            contract_read = call('GET', read_path('contract'), cookie=owner_cookie)
+            check(RM, 'the contract route serves the read models, actions and gaps as published' + seen(contract_read),
+                  contract_read[0] == 200 and MO is not None and contract_read[2] == _v130_json.loads(_v130_json.dumps(MO.contract())))
+
+        # reads/authoritative: every read model's answer against the store itself, with credentials redacted.
+        with section(RA):
+            saved = call('POST', SAVE, save_body('ra-flow', 0), cookie=owner_cookie, token=owner_token)
+            check(RA, 'a workflow revision exists to read, saved through the API' + seen(saved),
+                  saved[0] == 200 and saved[2].get('version') == 1)
+            answers = {}
+            for name, kinds in _V130_EXPECTED_KINDS.items():
+                got = call('GET', read_path(name), cookie=owner_cookie)
+                answers[name] = got[2] if got[0] == 200 else {}
+                stored = store_items(kinds)
+                empty = [k for k in kinds if not any(s[1] == k for s in stored)]
+                check(RA, '%s: the store holds every kind the model reads [observed empty %s]' % (name, empty),
+                      set(empty) <= {'decision_settlement'})
+                seq, digest = head()
+                mark = answers[name].get('watermark') or {}
+                check(RA, '%s: the answer is exactly the store\'s entities, identity, kind, version and digest%s'
+                      % (name, seen(got)), got[0] == 200 and served_items(answers[name]) == stored
+                      and answers[name].get('problems') == [])
+                check(RA, '%s: it is read at the journal head and labeled live [observed %s]' % (name, mark),
+                      mark.get('seq') == seq and mark.get('record_digest') == digest
+                      and answers[name].get('freshness') == 'live')
+                stored_data = {r[0]: _v130_json.loads(r[1]) for r in conn.execute(
+                    'SELECT id, data FROM entities WHERE kind IN (%s)' % ','.join('?' * len(kinds)), kinds)}
+                served = [i for items in (answers[name].get('items') or {}).values() for i in items]
+                check(RA, '%s: every served value is the stored value, or the redaction marker' % name,
+                      served and all(same_but_redacted(stored_data.get(i['id']), i.get('data')) for i in served))
+            blob = _v130_json.dumps(answers)
+            check(RA, 'no credential value is served: the environment value, the configured key and the token-shaped text',
+                  all(v not in blob for v in (secret_env, secret_key, shaped)))
+            check(RA, 'no passkey public key or member key is served',
+                  all(v not in blob for v in (phone.public_key(), public['owner'], public['api-edge'])))
+            tools = next((i for i in (answers['configuration'].get('items') or {}).get('tool_configuration', [])), {})
+            dispatch = next((i for i in (answers['workers'].get('items') or {}).get('dispatch', [])
+                             if i['id'] == 'dispatch:dispatch/VELDO-9130/a1'), {})
+            observation = next((i for i in (answers['proof'].get('items') or {}).get('gate_observation', [])), {})
+            check(RA, 'the redaction marks the key, the MCP environment, the headers and a signature field, by path',
+                  (tools.get('data') or {}).get('api_key') == '[redacted]'
+                  and ((tools.get('data') or {}).get('mcp_servers') or [{}])[0].get('env') == {'TRACKER_AUTH': '[redacted]'}
+                  and (((dispatch.get('data') or {}).get('contract') or {}).get('capability') or {}).get('mcp_servers',
+                                                                                                        [{}])[0].get('headers')
+                  == {'X-Auth': '[redacted]'}
+                  and (observation.get('data') or {}).get('signature') == '[redacted]'
+                  and '$.tools-default.api_key' in (answers['configuration'].get('redacted') or []))
+            machines = answers['workers'].get('machines') or []
+            check(RA, 'machines are the hosts the dispatches recorded, with their running workers [observed %s]' % machines,
+                  machines == [{'platform': 'darwin', 'host': 'veldo-mac-1', 'workers': ['dispatch:dispatch/VELDO-9131/a1'],
+                                'running': []},
+                               {'platform': 'linux', 'host': 'veldo-linux-1', 'workers': ['dispatch:dispatch/VELDO-9130/a1'],
+                                'running': ['dispatch:dispatch/VELDO-9130/a1']}])
+            cycle = next((i for i in (answers['runs'].get('items') or {}).get('workflow_cycle', [])), {})
+            check(RA, 'run steps are the cycle\'s trace as stored',
+                  (cycle.get('data') or {}).get('trace') == [['groom', 'groomed', 'owner']])
+            revision = call('GET', read_path('workflow') + '?workflow=ra-flow&version=1', cookie=owner_cookie)
+            stored_revision = entity(WFM.revision_id(DOMAIN, 'project-a', 'ra-flow', 1)) or {}
+            check(RA, 'a workflow revision reads back through VELDO-0132\'s load, definition and digest as stored'
+                  + seen(revision), revision[0] == 200
+                  and revision[2].get('definition') == (stored_revision.get('data') or {}).get('definition')
+                  and revision[2].get('definition_digest') == (stored_revision.get('data') or {}).get('definition_digest')
+                  and revision[2].get('freshness') == 'live')
+            gaps = {g['subject'] for name in _V130_EXPECTED_KINDS for g in (answers[name].get('gaps') or [])}
+            check(RA, 'each answer names the gaps of its model [observed %s]' % sorted(gaps),
+                  'machine registry' in {g['subject'] for g in answers['workers'].get('gaps') or []}
+                  and 'tool calls' in {g['subject'] for g in answers['runs'].get('gaps') or []} and len(gaps) == 6)
+            unknown = call('GET', read_path('workflow') + '?workflow=no-such-flow', cookie=owner_cookie)
+            check(RA, 'a workflow with no revision is missing evidence, never an empty document' + seen(unknown),
+                  unknown[0] == 404 and 'missing' in str(refusal(unknown)))
+
+        # reads/freshness: a read is at the head it was read at, and nothing stale is labeled current.
+        with section(RR):
+            first = call('GET', read_path('objectives'), cookie=owner_cookie)
+            sent = call('POST', MESSAGES, {'text': 'Freshness check, project-a', 'project': 'project-a'},
+                        cookie=owner_cookie, token=owner_token)
+            second = call('GET', read_path('objectives'), cookie=owner_cookie)
+            seq, digest = head()
+            ids_second = {i['id'] for i in ((second[2] or {}).get('items') or {}).get('intake_proposal', [])}
+            check(RR, 'after a new commit the read is at the new head, labeled live, and carries the new proposal%s%s'
+                  % (seen(first), seen(second)),
+                  first[0] == 200 and sent[0] == 200 and second[0] == 200
+                  and ((second[2] or {}).get('watermark') or {}).get('seq') == seq
+                  and ((second[2] or {}).get('watermark') or {}).get('record_digest') == digest
+                  and ((first[2] or {}).get('watermark') or {}).get('seq', seq) < seq
+                  and (second[2] or {}).get('freshness') == 'live' and sent[2].get('proposal_id') in ids_second
+                  and served_items(second[2]) == store_items(_V130_EXPECTED_KINDS['objectives']))
+            for name in ('work', 'configuration'):
+                again = call('GET', read_path(name), cookie=owner_cookie)
+                check(RR, '%s: read again, it is at the head [observed %s]' % (name, (again[2] or {}).get('watermark')),
+                      again[0] == 200 and ((again[2] or {}).get('watermark') or {}).get('seq') == head()[0])
+            try:
+                publication.publish()
+                published = True
+            except Exception:  # noqa: BLE001 - recorded below
+                published = False
+            level = call('GET', EVENTS + '?after=%d' % head()[0], cookie=owner_cookie)
+            lagging_message = call('POST', MESSAGES, {'text': 'Publication lag check, project-a', 'project': 'project-a'},
+                                   cookie=owner_cookie, token=owner_token)
+            lag = call('GET', EVENTS + '?after=0', cookie=owner_cookie)
+            pub = (lag[2] or {}).get('publication') or {}
+            check(RR, 'the published events are live when the publication is at the head [observed %s]'
+                  % ((level[2] or {}).get('publication')), published and level[0] == 200
+                  and ((level[2] or {}).get('publication') or {}).get('freshness') == 'live'
+                  and ((level[2] or {}).get('publication') or {}).get('pending_records') == 0)
+            check(RR, 'a publication behind the head is labeled stale with the records it has not published [observed %s]'
+                  % pub, lagging_message[0] == 200 and lag[0] == 200 and pub.get('freshness') == 'stale'
+                  and pub.get('head') == head()[0] and pub.get('pending_records') == head()[0] - pub.get('watermark', -1) > 0)
+            # An authority whose store cannot be read: explicit errors, never an answer.
+            closed = S.open_store(str(db), mode='r')
+            closed.close()
+            dead = (AUTH.ApiAuthority(S, CM, closed, ids=ids, domain=DOMAIN, edge='api-edge', intake=intake,
+                                      settlement=settlement, credentials=credentials, **phase2) if phase2 else absent)
+            dead_api = (API.ControlApi(dict(api_config, state_dir=str(base / 'api-dead')), dead, signer, clock=clock)
+                        if phase2 else absent)
+            dead_api.sessions = api[0].sessions if phase2 else None
+            unreadable = call('GET', read_path('objectives'), cookie=owner_cookie, on=dead_api)
+            check(RR, 'with the authority\'s store unreadable a read is unavailable_service and carries no state'
+                  + seen(unreadable), unreadable[0] == 503 and refusal(unreadable) == 'unavailable_service:authority'
+                  and 'items' not in (unreadable[2] or {}))
+            lost = (EVP.Projection(S, str(base / 'authority' / 'no-such-store.sqlite3'), domain=ids['domain_uuid'],
+                                   repository=ids['repository_uuid'], root=str(repository)))
+            lost_authority = (AUTH.ApiAuthority(S, CM, conn, ids=ids, domain=DOMAIN, edge='api-edge', intake=intake,
+                                                settlement=settlement, credentials=credentials,
+                                                **dict(phase2, publication=lost)) if phase2 else absent)
+            lost_api = (API.ControlApi(dict(api_config, state_dir=str(base / 'api-lost')), lost_authority, signer,
+                                       clock=clock) if phase2 else absent)
+            if phase2:
+                lost_api.sessions = api[0].sessions
+            no_events = call('GET', EVENTS, cookie=owner_cookie, on=lost_api)
+            check(RR, 'with the publication\'s store missing the event read is unavailable_service, never an empty feed'
+                  + seen(no_events), no_events[0] == 503 and str(refusal(no_events)).startswith('unavailable_service')
+                  and 'events' not in (no_events[2] or {}))
+
+        # events/live: the event feed against the journal, the live stream, and revocation closing it.
+        with section(EL):
+            feed = call('GET', EVENTS + '?after=0', cookie=owner_cookie)
+            journal = S.export_journal(conn)
+            events = (feed[2] or {}).get('events') or []
+            check(EL, 'the event read is every committed record in order: sequence, command and record digest'
+                  + seen(feed), feed[0] == 200 and [(e.get('seq'), e.get('command_id'), e.get('record_digest'))
+                                                     for e in events] == [(r['seq'], r['command_id'], r['record_digest'])
+                                                                          for r in journal][:len(events)]
+                  and len(events) == min(len(journal), 256))
+            check(EL, 'each event names the ids and kinds its record changed, as the journal has them',
+                  events and all(e.get('entities') == [{'id': eid, 'kind': r['transition'][eid].get('kind')}
+                                                       for eid in sorted(r['transition'])]
+                                 for e, r in zip(events, journal)))
+            check(EL, 'no event carries entity data or a credential value',
+                  events and all(set(x) == {'id', 'kind'} for e in events for x in e.get('entities', []))
+                  and all(v not in _v130_json.dumps(feed[2]) for v in (secret_env, secret_key, shaped, phone.public_key())))
+            opened = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=owner_cookie)
+            stream = opened[2]
+            is_stream = API is not None and isinstance(stream, getattr(API, 'Stream', ()))
+            check(EL, 'the stream opens as text/event-stream with a first frame at the head [observed %s]' % opened[0],
+                  opened[0] == 200 and is_stream and opened[1].get('Content-Type') == 'text/event-stream')
+            first_frame = stream.next(0) if is_stream else (None, None)
+            idle = stream.next(0.05) if is_stream else (None, None)
+            check(EL, 'the first frame is at the head with no events, then the stream waits: nothing is polled',
+                  first_frame[0] == 'frame' and first_frame[1].get('cursor') == head()[0]
+                  and first_frame[1].get('events') == [] and idle == ('idle', None))
+            live_message = call('POST', MESSAGES, {'text': 'Live stream check, project-a', 'project': 'project-a'},
+                                cookie=owner_cookie, token=owner_token)
+            pushed = stream.next(0) if is_stream else (None, None)
+            new_seq = head()[0]
+            kinds_pushed = {x['kind'] for e in (pushed[1] or {}).get('events', []) for x in e['entities']}
+            check(EL, 'the authority\'s post-commit notification delivers the new record to the open stream at once'
+                  + seen(live_message), live_message[0] == 200 and pushed[0] == 'frame'
+                  and (pushed[1] or {}).get('cursor') == new_seq and 'intake_proposal' in kinds_pushed)
+            stale_hint = dict(head_hint(), record_digest='sha256:' + '0' * 64)
+            refused_hint = deliver(stale_hint)
+            check(EL, 'a hint whose record digest is not the journal\'s delivers nothing [observed %s]' % refused_hint,
+                  refused_hint.get('refusal') == 'stale_version:hint' and (not is_stream or stream.next(0)[0] == 'idle'))
+            # The tablet: one session streaming, one not; the steward revokes the credential at the host.
+            _s, tablet_cookie2, _t2 = sign_in(tablet)
+            watched = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=tablet_cookie)
+            tablet_stream = watched[2] if (API is not None and isinstance(watched[2], getattr(API, 'Stream', ()))) else None
+            if tablet_stream is not None:
+                tablet_stream.next(0)
+            revoked = steward_command(None, None, operation='revoke', credential_id=tablet.credential_id)
+            delivered = deliver(head_hint())
+            closing = tablet_stream.next(0) if tablet_stream is not None else (None, None)
+            check(EL, 'a host revocation delivered through the notification ends both tablet sessions at once and '
+                      'closes the open stream [observed %s %s]' % (delivered, closing),
+                  revoked.get('outcome') == 'accepted' and delivered.get('ended') == 2 and closing == ('closed', 'revoked')
+                  and call('GET', '/api/v1/auth/session', cookie=tablet_cookie2)[0] == 401
+                  and tablet_stream not in api[0].streams())
+            check(EL, 'the owner\'s other stream stays open and receives the revocation record',
+                  is_stream and stream.closed is None and stream in api[0].streams()
+                  and stream.next(0)[0] == 'frame')
+            # Sign-out closes the signer's stream too; the frames are served as text/event-stream.
+            _s, sse_cookie, sse_token = sign_in(phone)
+            sse = call('GET', EVENTS + '/stream?after=%d' % (head()[0] - 1), cookie=sse_cookie)
+            out = call('POST', '/api/v1/auth/sign-out', {}, cookie=sse_cookie, token=sse_token)
+            chunks = []
+            reason = API.serve_stream(sse[2], chunks.append, idle=0.01) if (API is not None and hasattr(API, 'serve_stream')
+                                                                            and isinstance(sse[2], API.Stream)) else None
+            frames = b''.join(chunks).decode().split('\n\n')
+            check(EL, 'signing out closes the session\'s stream, and it is written as event-stream frames [observed %s]'
+                  % reason, out[0] == 200 and reason == 'signed_out' and frames[0].startswith('id: ')
+                  and '\nevent: events\ndata: ' in frames[0]
+                  and _v130_json.loads(frames[0].split('data: ', 1)[1]).get('cursor') == head()[0]
+                  and frames[1] == 'event: closed\ndata: {"reason": "signed_out"}')
+
+        # actions/contract: the UI action contract against the criterion, the routes and the authority's commands.
+        with section(AK):
+            listed = spec_text.split('Enumerate the UI action contract for ', 1)[-1].split('; compare', 1)[0]
+            wanted = phrases(listed)
+            check(AK, 'the criterion names the eight actions this suite maps [observed %s]' % wanted,
+                  sorted(wanted) == sorted(_V130_AC4_ACTIONS))
+            actions = {a.name: a for a in getattr(MO, 'ACTIONS', ())}
+            check(AK, 'every action the criterion names is in the published contract',
+                  all(_V130_AC4_ACTIONS[w] in actions for w in wanted if w in _V130_AC4_ACTIONS) and actions)
+            routes = {r.name: r for r in getattr(API, 'ROUTES', ())}
+            commands = authority.commands() if hasattr(authority, 'commands') else {}
+            for action in actions.values():
+                if action.route is None:
+                    gap = [g for g in getattr(MO, 'GAPS', ()) if g.criterion == 'AC4' and g.subject == action.name]
+                    check(AK, '%s: no route carries it, and it is a gap owned by %s, which exists' % (action.name, action.spec),
+                          not any(action.name in str(r.operation) for r in routes.values()) and len(gap) == 1
+                          and bool(list((ROOT / 'specs').glob(action.spec + '-*.md'))))
+                    continue
+                route = routes.get(action.route)
+                owner = _v130_load('v130_action_' + action.module, ROOT / '.veldo' / (action.module + '.py'))
+                command = getattr(owner, action.command, None)
+                check(AK, '%s: route %s posts operation %s, which the authority executes as %s, registered on its '
+                          'connection [observed %s]' % (action.name, action.route, action.operation, command,
+                                                        commands.get(action.operation)),
+                      route is not None and route.method == 'POST' and route.operation == action.operation
+                      and route.name in getattr(api[0], 'handlers', {}) and AS is not None
+                      and action.operation in AS.OPERATIONS and commands.get(action.operation) == command
+                      and command in conn.command_registry)
+            write_ops = {r.operation for r in routes.values() if r.method == 'POST' and r.operation}
+            check(AK, 'every write route with an operation is an action of the contract [observed %s]' % sorted(write_ops),
+                  write_ops and write_ops == {a.operation for a in actions.values() if a.route})
+            check(AK, 'the authority executes exactly the contract\'s operations',
+                  commands and set(commands) == write_ops == set(getattr(AS, 'OPERATIONS', {})))
+
+        # actions/workflow-save: a typed current-version save through the edge into VELDO-0132's Workflows.
+        with section(AW):
+            hid = WFM.head_id(DOMAIN, 'project-a', 'aw-flow')
+            signed_before = len(getattr(signer, 'results', []))
+            before = journal_count()
+            first = call('POST', SAVE, save_body('aw-flow', 0), cookie=owner_cookie, token=owner_token)
+            record = S.export_journal(conn)[-1]
+            revision = entity(WFM.revision_id(DOMAIN, 'project-a', 'aw-flow', 1)) or {}
+            check(AW, 'a valid save commits revision 1 and moves the head, one journal record' + seen(first),
+                  first[0] == 200 and first[2].get('outcome') == 'saved' and first[2].get('version') == 1
+                  and first[2].get('revision') == WFM.revision_id(DOMAIN, 'project-a', 'aw-flow', 1)
+                  and (entity(hid) or {}).get('data', {}).get('version') == 1 and journal_count() == before + 1
+                  and revision.get('data', {}).get('definition') == save_body('aw-flow', 0)['definition'])
+            check(AW, 'the revision\'s journal actor and saver are the session\'s member, by VELDO-0132\'s command',
+                  record.get('principal') == 'owner' and str(record.get('command_id')).startswith('workflow/save/')
+                  and revision.get('data', {}).get('saved', {}).get('principal') == 'owner')
+            signed = getattr(signer, 'results', [])[signed_before:]
+            observed = [o for o in getattr(authority, 'observations', []) if o.get('operation') == 'save_workflow']
+            check(AW, 'the save was signed by the protected signer and judged by the authority, naming the credential',
+                  len(signed) == 1 and signed[0].get('accepted') is True and observed
+                  and observed[-1].get('outcome') == 'accepted' and observed[-1].get('principal') == 'owner'
+                  and observed[-1].get('credential_id') == phone.credential_id)
+            before = journal_count()
+            stale = call('POST', SAVE, save_body('aw-flow', 0), cookie=owner_cookie, token=owner_token)
+            check(AW, 'a save from a base that is not the head is refused stale_version, and nothing is written' + seen(stale),
+                  stale[0] == 409 and refusal(stale) == 'stale_version' and journal_count() == before
+                  and (entity(hid) or {}).get('data', {}).get('version') == 1)
+            future = call('POST', SAVE, save_body('aw-flow', 5), cookie=owner_cookie, token=owner_token)
+            check(AW, 'a base ahead of the head is refused stale_version too' + seen(future),
+                  future[0] == 409 and refusal(future) == 'stale_version' and journal_count() == before)
+            outsider = call('POST', SAVE, save_body('aw-flow', 1), cookie=steward2_cookie, token=steward2_token)
+            check(AW, 'a member whose roles do not cover the repository is refused unauthorized, nothing written'
+                  + seen(outsider), outsider[0] == 403 and refusal(outsider) == 'unauthorized:missing_authority:editor'
+                  and journal_count() == before)
+            broken = save_body('aw-flow', 1)
+            broken['definition'] = dict(broken['definition'], transitions=broken['definition']['transitions'][:-1])
+            invalid = call('POST', SAVE, broken, cookie=owner_cookie, token=owner_token)
+            renamed = call('POST', SAVE, dict(save_body('aw-flow', 1), workflow='other-flow'), cookie=owner_cookie,
+                           token=owner_token)
+            check(AW, 'an invalid definition, and a definition saved under another workflow, are refused invalid_input%s%s'
+                  % (seen(invalid), seen(renamed)), invalid[0] == 400 and str(refusal(invalid)).startswith('invalid_input')
+                  and renamed[0] == 400 and str(refusal(renamed)).startswith('invalid_input') and journal_count() == before)
+            second = call('POST', SAVE, save_body('aw-flow', 1, definition=definition('aw-flow', budget=20)),
+                          cookie=owner2_cookie, token=owner2_token)
+            check(AW, 'another editor saves revision 2 from the current head; revision 1 keeps its bytes' + seen(second),
+                  second[0] == 200 and second[2].get('version') == 2
+                  and entity(WFM.revision_id(DOMAIN, 'project-a', 'aw-flow', 1)) == revision)
+            held = [type(v).__name__ for v in vars(api[0]).values()
+                    if isinstance(v, WFM.sqlite3.Connection) or type(v).__name__ in ('Workflows', 'StoreConnection')]
+            source = (organs / 'control_api.py').read_text()
+            check(AW, 'the API holds no store connection or workflow service of its own and writes only through the '
+                      'edge; its authority is the in-process stand-in for the VELDO-0047 socket [observed %s]' % held, here and not held and 'sqlite3' not in source and 'control_store' not in source
+                  and 'workflows.save(' not in source)
+
+        # actions/unauthorized-write: the authority judges every workflow save packet itself.
+        with section(AU):
+            def save_assertion(principal, credential_id, workflow='au-flow', base=0):
+                body = save_body(workflow, base)
+                return assertion_for(principal, credential_id, 'save_workflow',
+                                     {'workflow': workflow, 'base': base, 'definition': body['definition'],
+                                      'layout': body['layout']})
+
+            hid = WFM.head_id(DOMAIN, 'project-a', 'au-flow')
+            if CR is not None and CR.current(state(), tablet.credential_id, _v130_time.time())[1] is None:
+                steward_command(None, None, operation='revoke', credential_id=tablet.credential_id)
+            before = journal_count()
+            forged = save_assertion('owner', phone.credential_id)
+            for label, packet, name in (
+                    ('a revoked credential of an editor', edge_signed(save_assertion('owner', tablet.credential_id)),
+                     'unauthenticated:credential_revoked'),
+                    ('an editor naming another member\'s credential', edge_signed(save_assertion('owner', phone2.credential_id)),
+                     'unauthenticated:credential_of_another_principal'),
+                    ('a credential nobody holds', edge_signed(save_assertion('owner', 'unknown-credential')),
+                     'unauthenticated:unknown_credential'),
+                    ('an unsigned assertion', {'assertion': forged, 'signature': '', 'domain_signature': None},
+                     'unauthenticated:signature'),
+                    ('an assertion signed by the editor, not the edge',
+                     {'assertion': forged, 'signature': sign_as('owner', S.canonical_bytes(forged)), 'domain_signature': None},
+                     'unauthenticated:signature'),
+                    ('a service principal with no credential', edge_signed(save_assertion('pm', phone.credential_id)),
+                     'unauthenticated:credential_of_another_principal')):
+                got = authority.apply(packet)
+                check(AU, 'the authority refuses a workflow save by %s (%s) [observed %s]' % (label, name, got.get('reason')),
+                      got.get('ok') is False and got.get('reason') == name)
+            check(AU, 'no refused save wrote a revision or a head', journal_count() == before and entity(hid) is None)
+            valid = authority.apply(edge_signed(save_assertion('owner', phone.credential_id)))
+            check(AU, 'the same save, edge-signed for the current credential, is accepted [observed %s]' % valid.get('reason'),
+                  valid.get('ok') is True and (entity(hid) or {}).get('data', {}).get('version') == 1)
 
         # transport/loopback-only: plain HTTP on a loopback address only, behind the host's TLS terminator.
         with section(TL):
