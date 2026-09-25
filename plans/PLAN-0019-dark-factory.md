@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158]
     order: 16059
     release: 1
     stage: 6
@@ -930,7 +930,7 @@ work:
     spec: VELDO-0127
     title: Versioned per-role MCP server and tool configuration
     feature_refs: [F7]
-    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158]
     order: 15127
     release: 1
     stage: 5
@@ -1107,7 +1107,7 @@ work:
     spec: VELDO-0147
     title: The Mac legs of the engine, account, capability, execution record and credential qualifications built on Linux first
     feature_refs: [F2]
-    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
+    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158]
     order: 15147
     release: 1
     stage: 5
@@ -1149,6 +1149,14 @@ work:
     feature_refs: [F7]
     depends_on: [VELDO-0090, VELDO-0127]
     order: 15157
+    release: 1
+    stage: 5
+  - item: W118
+    spec: VELDO-0158
+    title: Each Linux run receives exactly its servers' credentials, resolved from the keystore just before spawn and added to the run's redaction set
+    feature_refs: [F7]
+    depends_on: [VELDO-0039, VELDO-0060, VELDO-0061, VELDO-0141, VELDO-0144]
+    order: 15158
     release: 1
     stage: 5
 
@@ -1325,7 +1333,7 @@ built follows section 12 of the operating-model design, so the owner starts usin
 end of its second stage: watch real runs first (0062; 0060 and 0061, each with its baseline and guards,
 VELDO-0155 and VELDO-0156; 0141; 0129 and the factory loop VELDO-0154; 0145; 0128), then
 "please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
-VELDO-0150; 0144; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
+VELDO-0150; 0144 and its delivery to a run, VELDO-0158; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
 VELDO-0147; 0085 and 0091; 0090 with load modes and the `when assigned` leg of 0127 AC4, VELDO-0157;
 the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153; 0143 with the 0076 and 0126
@@ -1489,6 +1497,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W115 | VELDO-0155 | 1 | 1 |
 | W116 | VELDO-0156 | 1 | 1 |
 | W117 | VELDO-0157 | 1 | 5 |
+| W118 | VELDO-0158 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
@@ -1602,3 +1611,10 @@ Section 12 builds VELDO-0127 in its second stage with every item `always` and th
 third with VELDO-0090 ("VELDO-0090 with load modes and VELDO-0127 AC4"), so VELDO-0127 AC4 keeps the
 `always` leg and the `when assigned` leg is W117's VELDO-0157, stage 5, built with VELDO-0090 and
 depending on it; the build-order paragraph under Releases and order now follows section 12's stage 3.
+VELDO-0141 AC4 replaces the exact credential values a run resolved, but in stage 1 nothing supplies one,
+so AC4 names the per-run set of resolved values and tests it with a planted resolver. Requiring the
+keystore's values to enter that set would have made VELDO-0144 a fifth criterion, so VELDO-0144 keeps
+defining servers and storing credentials (AC1 and AC2) and W118's VELDO-0158, stage 5 and built with it
+as section 12's item 10, owns delivery at launch: VELDO-0144's former AC3 and AC4, unchanged, and a new
+AC3 whose falsifier resolves a keystore value without adding it to the set. W90 (VELDO-0127), W107
+(VELDO-0147) and W44 (VELDO-0059) add it.

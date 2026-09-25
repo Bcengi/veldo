@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W107
 plan_revision: 4
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
+depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -117,7 +117,7 @@ acceptance_criteria:
       receiver writes one secrets frame over the same SSH channel; the wrapper reads exactly that frame,
       writes the run's private file (mode 0600 in a 0700 directory) and only then execs; the receiver
       removes that directory over SSH when the run ends, and the journal records only the credential ids
-      delivered (the Mac leg of VELDO-0144 AC3). Inspect every launched process's command line and environment on the
+      delivered (the Mac leg of VELDO-0158 AC1). Inspect every launched process's command line and environment on the
       Mac, the packet, the contract, the journal and the Mac's keychain. Falsifier: Put a credential value
       in the packet sent to the Mac instead of the secrets frame; the Mac no-value-in-packet row must
       fail.
@@ -147,7 +147,7 @@ Section 12 of the approved [operating-model design](../docs/design/PLAN-0019-ope
 stage 2, and the Mac worker (VELDO-0124, VELDO-0125) in its stage 3. The Mac legs of those
 specifications move here: VELDO-0060's and VELDO-0061's Mac configuration, the Mac read-back of
 VELDO-0062 AC1, the Mac handoff of VELDO-0127 AC2, the Mac run of VELDO-0141 AC1 and the Mac secrets
-frame of VELDO-0144 AC3. Owner Telegram 28852 keeps the Mac in Release 1.
+frame of VELDO-0158 AC1. Owner Telegram 28852 keeps the Mac in Release 1.
 
 ## Out of scope
 
@@ -185,3 +185,6 @@ specification is a draft; the owner decides readiness.
 2026-09-25, PLAN-0019 revision 4, third review: the everything-off baseline, the paid-API guard and the
 environment strip moved from VELDO-0060 AC5 and VELDO-0061 AC5 to VELDO-0155 and VELDO-0156, so AC1 and
 AC2 name them there and depends_on adds both; what the Mac repeats is unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: VELDO-0144's delivery criteria moved to VELDO-0158, so
+AC4 and the Notes name VELDO-0158 AC1 as the Linux leg this frame mirrors and depends_on adds it.

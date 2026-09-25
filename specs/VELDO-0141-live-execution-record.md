@@ -87,10 +87,13 @@ acceptance_criteria:
       fail.
   - id: AC4
     text: >
-      Claim: Before a line is kept, the receiver replaces the exact credential values it resolved for
-      that run, and only then does the secret scanner redact known patterns and high-entropy spans, so a
-      credential value the scanner alone would miss never reaches the record. Set and completeness:
-      Resolve for a real run a credential whose value has no known pattern and low entropy, and have the
+      Claim: Before a line is kept, the receiver replaces every value in the run's set of resolved
+      credential values, and only then does the secret scanner redact known patterns and high-entropy
+      spans, so a credential value the scanner alone would miss never reaches the record. Set and
+      completeness: The Runner keeps, for each run, the set of credential values resolved for it, and the
+      receiver replaces exactly that set; the keystore's values enter it through VELDO-0158 AC3. Through
+      a planted resolver that adds its value to the run's set, resolve for a real run a credential whose
+      value has no known pattern and low entropy, and have the
       run print it alone, inside a command's output, in its error stream, and joined to a high-entropy
       span that the scanner redacts only in part; also print a token of a known pattern. Read back the
       record: every occurrence of the planted value is replaced by the marker naming its kind, the
@@ -185,3 +188,8 @@ revision 4 already amended. Status unchanged.
 AC4, with its own falsifier (run the scanner before exact-value replacement; the planted-value row must
 fail), and its set plants the value joined to a span the scanner redacts only in part, where the order
 decides the result. AC1 keeps the complete record and its error-stream falsifier. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: in stage 1 nothing supplies a credential value yet, since
+the keystore is VELDO-0144's in stage 2, so AC4 names the per-run set of resolved values the receiver
+replaces and tests it with a planted resolver that adds to that set; VELDO-0158 AC3 requires every value
+resolved from the keystore to enter the set. AC4's falsifier is unchanged. Status unchanged.

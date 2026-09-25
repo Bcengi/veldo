@@ -29,12 +29,6 @@ footprint:
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
   - "packs/*/.veldo/control_service*.py"
-  - "engine/.veldo/control_launch*.py"
-  - ".veldo/control_launch*.py"
-  - "packs/*/.veldo/control_launch*.py"
-  - "engine/.veldo/control_engine*.py"
-  - ".veldo/control_engine*.py"
-  - "packs/*/.veldo/control_engine*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -48,16 +42,15 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Record each catalog save (server id, revision, actor), each credential write, replacement or
-    deletion (credential id, set by) and each launch's resolved credential ids or named refusal;
-    never a credential value.
+    Record each catalog save (server id, revision, actor) and each credential write, replacement or
+    deletion (credential id, set by), or its named refusal; never a credential value.
   metrics: >
-    Count catalog revisions, credential writes and launches refused as credential_unavailable, by id.
+    Count catalog revisions, credential writes, replacements and deletions, and refused saves by reason.
   traces: >
-    Join each dispatch to the catalog revisions and credential ids its configuration resolved.
+    Join each catalog revision and credential record to the API session and authority command that made it.
   error_taxonomy: >
     Distinguish stale or unauthorized save, invalid server definition, keystore locked, keystore
-    unreachable, reference not found and delivery failed; a launch without its server is never run.
+    unreachable and a refused read-back; none stores a value outside the keystore.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -76,9 +69,9 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: A credential's value is written to and read from the host OS keystore only, and the store
-      keeps only its reference. Set and completeness: Set a credential through the server form's
-      write-only field; the value travels once over TLS inside the passkey session to the API's
-      credential route and on to the authority's credential command, which writes it to the Secret
+      keeps only its reference. Set and completeness: Set a credential through the API's credential
+      route; the value travels once over TLS inside the passkey session to that route and on to the
+      authority's credential command, which writes it to the Secret
       Service through `secret-tool`'s standard input and commits a `credential` record with id, label,
       reference, set at and set by, and nothing else; resolving it realizes secretref's `keychain`
       scheme. During and after the write, search the store, the journal, the event feed, proof, logs and
@@ -88,38 +81,10 @@ acceptance_criteria:
     falsified_by: >
       Pass the value to `secret-tool` as a command-line argument; the no-value-on-command-line check
       must fail.
-  - id: AC3
-    text: >
-      Claim: Each run receives exactly the credential values its configuration's servers reference,
-      through a private file or the engine environment on Linux, never through a command line, the packet, the contract or the journal. Set and completeness:
-      Immediately before a spawn the Runner resolves the references the dispatch's configuration uses.
-      For Claude Code on Linux the receiver writes the generated MCP configuration, values included,
-      into the run's private directory (mode 0700, under the factory state root, outside the clone) and
-      removes it when the run is reaped; for Codex, whose `CODEX_HOME` is the account profile, each
-      secret reaches the engine environment under the name the server definition gives it through
-      Codex's `env_vars` or `bearer_token_env_var` fields. Inspect every
-      launched process's command line and environment, the packet, the contract and the journal.
-      Falsifier: Put a Codex server's secret on the engine command line; the command-line check must
-      fail.
-    falsified_by: >
-      Put a Codex server's secret on the engine command line; the command-line check must fail.
-  - id: AC4
-    text: >
-      Claim: A launch whose credential cannot be resolved is refused by name, and the run never starts
-      without its server. Set and completeness: With the keystore locked, with it unreachable, and with a
-      reference that resolves to nothing, dispatch a run whose configuration uses that credential and
-      require the refusal `credential_unavailable:<id>` before spawn, with no engine process started;
-      a run whose configuration needs no credential launches normally in the same state. Falsifier:
-      Launch the run without the server when its credential does not resolve; the named-refusal check
-      must fail.
-    falsified_by: >
-      Launch the run without the server when its credential does not resolve; the named-refusal check
-      must fail.
 required_evidence: [unit, integration]
 rollback: >
   Stop accepting catalog saves and credential writes; recorded revisions, credential records and
-  keystore items stay as they are, and runs that need a credential refuse by name. No automatic
-  rollback is authorized.
+  keystore items stay as they are. No automatic rollback is authorized.
 ---
 
 ## Intent
@@ -137,7 +102,8 @@ approved [operating-model design](../docs/design/PLAN-0019-operating-model-desig
 refers to catalog revisions instead of embedding definitions. `.veldo/secretref.py` (PLAN-0013) names
 a secret by a reference such as `keychain:<name>` and resolves it only at use into a handle that never
 prints its value, with only a test store behind it; `.veldo/secret_scan.py` detects credential shapes.
-VELDO-0141 replaces each run's exact resolved values in its execution record before the scanner runs.
+Delivering the values to a run is VELDO-0158, which also adds them to the run's set of resolved values
+that VELDO-0141 replaces in its execution record before the scanner runs.
 
 ## Out of scope
 
@@ -146,14 +112,12 @@ MCP credentials in the Mac keychain, and a connection test button.
 
 ## What the reviewer judges
 
-- Normal use: the owner adds a server in the UI's catalog form and types its credential into a
-  write-only field; roles select the server by id and revision; each run gets the resolved values it
-  needs on Linux, and nothing else (on the Mac through VELDO-0147).
-- Threat model: a credential value in the store, journal, event feed, proof, logs, a command line, the
-  packet or the contract; a value read back through the UI or API; a saved revision
-  overwritten; a run launched without its server when its credential does not resolve; a run's private
-  files left behind; a run given another server's credential. The owner's account, the keystore and the
-  host are trusted.
+- Normal use: the owner adds a server through the catalog route and sets its
+  credential through the write-only credential route; roles select the server by id and revision; each
+  run's delivery is VELDO-0158 (on the Mac VELDO-0147).
+- Threat model: a credential value in the store, journal, event feed, proof, logs or a command line; a
+  value read back through the UI or API; a saved revision overwritten; an unauthorized or stale save.
+  The owner's account, the keystore and the host are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a worker's
   tools deliberately reading the credentials its own servers use, or reaching the keystore through the
   owner's unconfined keyring daemon (the stated MVP boundary; separate OS users are Release 2); a
@@ -174,8 +138,9 @@ observation in the service's own log. So the credential command takes its own br
 commits only the `credential` record, and neither the digested command nor the observation holds the
 value.
 
-A Mac run gets its values through one secrets frame over the same SSH channel, as section 3 of the
-design sets out; that leg is VELDO-0147 AC4, built once VELDO-0124 and VELDO-0125 land.
+A Linux run gets its values through VELDO-0158, and a Mac run through one secrets frame over the same
+SSH channel, as section 3 of the design sets out; that leg is VELDO-0147 AC4, built once VELDO-0124 and
+VELDO-0125 land.
 
 ## History
 
@@ -190,3 +155,12 @@ which is built after VELDO-0124 and VELDO-0125. Status unchanged.
 need the authority service, so the footprint adds `control_service` (the credential command's own branch
 in its `apply`, beside `api_credential`) and drops `control_runner`, which does not exist; the Runner
 is class `Runner` in `control_launch`, already in the footprint.
+
+2026-09-25, PLAN-0019 revision 4, third review: the keystore's values must enter each run's set of
+resolved values that VELDO-0141 AC4 replaces, which would have been a fifth criterion, so this
+specification keeps one concern, defining servers and storing credentials (AC1 the catalog, AC2 the
+keystore write through the API's credential route), and delivery at launch is the new draft VELDO-0158:
+its AC1 and AC2 are the former AC3 and AC4 with their text and falsifiers unchanged, and its AC3 the new
+set criterion. The footprint drops `control_launch` and `control_engine`, which only delivery touches. AC2 sets the
+credential through the API's credential route, which is what it drives; no form is part of this
+specification.

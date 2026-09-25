@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W90
 plan_revision: 4
-depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
@@ -208,3 +208,7 @@ its stage 2 with every item `always` (item 11) and the load modes with VELDO-009
 assigned` item with nothing assigned does not load) and the `when assigned` leg, where the items a
 staffing choice assigns load with the run, is the new draft VELDO-0157, built with VELDO-0090. AC4's
 falsifier is unchanged. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0158, because AC2 verifies each
+server authenticates with exactly its configured credential delivery, which VELDO-0158 now owns after
+its split from VELDO-0144. Criteria and status unchanged.
