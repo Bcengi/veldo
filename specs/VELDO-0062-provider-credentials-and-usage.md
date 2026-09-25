@@ -99,12 +99,26 @@ acceptance_criteria:
   - id: AC4
     text: >
       Claim: Subscription usage and remaining allowance are attributed to the stored account/project/unit. Set and
-      completeness: For the one account per provider and journey project, alter ambient account
+      completeness: For each registered account of each provider and the journey project, alter ambient account
       labels and report attribution, and remove measurement while retaining allocation; compare
       displayed watermark and totals to actual stored receipts. Falsifier: Use a caller-supplied
       account label for usage; the ledger-attribution comparison must fail.
     falsified_by: >
       Use a caller-supplied account label for usage; the ledger-attribution comparison must fail.
+  - id: AC5
+    text: >
+      Claim: The owner registers any number of logged-in subscription accounts for each provider,
+      each once with its own login, and the factory runs work on all of them at the same time, each
+      with its own credentials, usage and rate-limit windows, moving new work off an account that has
+      reached its limit. Set and completeness: Register three Claude Code accounts and one Codex account
+      (each its own profile: Claude Code's config directory, Codex's home), run concurrent work across
+      them, and read back that each invocation used exactly its own account's profile and was charged to
+      that account; exhaust one account's allowance and require new work to go to another account of the
+      same provider while nothing is sent to the exhausted one until its reported reset; add an account
+      later with no restart of running work. Falsifier: Launch two accounts' work with one shared profile;
+      the per-account isolation check must fail.
+    falsified_by: >
+      Launch two accounts' work with one shared profile; the per-account isolation check must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -141,8 +155,8 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## Notes
 
-Qualify one logged-in subscription account for each of Claude Code and Codex on the two MVP
-host profiles. Models run only through those subscriptions; paid model APIs are prohibited.
+Qualify every logged-in subscription account the owner registers, any number per provider (today three
+Claude Code and one Codex), for each of Claude Code and Codex on the two MVP host profiles. Models run only through those subscriptions; paid model APIs are prohibited.
 There is no per-call price. Record actual invocation counts, wall time, tokens or messages as
 reported by the CLI, and the subscription's exposed rate-limit windows, resets and usage
 watermarks. Do not fabricate unreported counters or require pricing to qualify an adapter.
@@ -178,3 +192,7 @@ account/two-project matrices moved to Release 4, except the two MVP hosts. One a
 provider, live subscription usage, custody and all pre-invocation caps remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-25: the owner widened this item (Telegram 29127 asked, 29128 "yes, widen"): any number of
+registered accounts per provider, run concurrently with separate credentials, usage and rate limits, and
+new work moved off an account at its limit (AC5; AC4 and the Notes now say each registered account).
