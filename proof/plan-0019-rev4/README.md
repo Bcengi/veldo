@@ -45,20 +45,20 @@ reviewer judges section, one was added in the repository's three parts.
 | Specification | Amendment |
 |---|---|
 | VELDO-0059 | depends_on per the plan; AC1 matches the new RJ1; the Notes no longer route defects through VELDO-0080 |
-| VELDO-0060 | AC1 keeps the lifecycle and adds the pinned executable; new AC5 the everything-off baseline, the paid-API guard and the environment strip, with the paid-API stop as its falsifier; AC4 keeps the usage caps, login separation to Release 2; the Mac leg is VELDO-0147 |
-| VELDO-0061 | The same for Codex; AC5's falsifier leaves `OPENAI_API_KEY` and gives a non-ChatGPT login a first turn |
-| VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds one run at a time for a new account; new AC6 classifies `account_limit` and decides re-run or ask over a record, tested with fixture records; Notes give the store registry and selection order |
-| VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority |
-| VELDO-0088 | The thin one-unit PM of the critical path's stage 2: AC1 the default pipeline and model nodes as Runner dispatches; new AC4 one coordination run writes the requirements and stages the unit with the four required roles, and the builder fetches the ticket itself; depends on VELDO-0089, 0151 and 0154 (the factory loop) and moves to stage 5; several-unit work is VELDO-0146 |
+| VELDO-0060 | AC1 keeps the lifecycle and adds the pinned executable; AC4 keeps the usage caps, login separation to Release 2; the everything-off baseline, the paid-API guard and the environment strip are VELDO-0155 (third review); the Mac leg is VELDO-0147 |
+| VELDO-0061 | The same for Codex; its baseline and guards are VELDO-0156 |
+| VELDO-0062 | Titled Provider subscription logins and live usage accounting; AC1 keeps the login source per dispatch, login separation to Release 2; AC2 to AC4 unchanged; the pool, the `account_limit` classification and the re-run-or-ask decision are VELDO-0160 (third review); Notes give the store registry |
+| VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority; depends on VELDO-0150 (third review) |
+| VELDO-0088 | The thin one-unit PM of the critical path's stage 2: AC1 the default pipeline and model nodes as Runner dispatches; new AC4 one coordination run writes the requirements and stages the unit with the four required roles, and the builder fetches the ticket itself; depends on VELDO-0089, 0151 and 0154 (the factory loop) and moves to stage 5; several-unit work is VELDO-0146; the footprint names `control_workflow_cycle` (third review) |
 | VELDO-0090 | AC1's set includes the `when assigned` items a staffing choice requests |
 | VELDO-0091 | AC1: requirements quote every external reference with tool, fetch time and digest |
-| VELDO-0127 | AC1: catalog references, skills, instruction files and load modes; AC2 drops the provider-login clause; new AC4: nothing loads unless listed; depends on VELDO-0141 and its footprint adds `control_launch`; the Mac handoff is VELDO-0147 |
-| VELDO-0129 | Keeps real build and review through the Runner, AC1 to AC3; the factory loop criteria revision 4 added (the wake sources with no polling in the loop, a receiver that dies, the re-dispatch or the question to the owner for an account-limited run) are the new VELDO-0154; back in stage 1 |
-| VELDO-0131 | The live terminal of VELDO-0145 AC2 replaces the "Live agent run" row; new "MCP servers and credentials" and "Repositories and identities" rows; per-account usage |
-| VELDO-0141 | Ready, with its four amendments; bound to W101; AC3 is the record route's contract for the live view; exact-value redaction is its own AC4 with its own falsifier; the Mac run is VELDO-0147 |
+| VELDO-0127 | AC1: catalog references, skills, instruction files and load modes; AC2 drops the provider-login clause; new AC4: nothing loads unless listed, now its `always` leg, with the `when assigned` leg in VELDO-0157 (third review); depends on VELDO-0141, 0155, 0156 and 0158 and its footprint adds `control_launch`; the Mac handoff is VELDO-0147 |
+| VELDO-0129 | Keeps real build and review through the Runner, AC1 to AC3, whose text equals main's; the factory loop criteria revision 4 added are the new VELDO-0154; back in stage 1; depends on VELDO-0155 and VELDO-0156 (third review) |
+| VELDO-0131 | The live terminal of VELDO-0145 AC2 replaces the "Live agent run" row; new "MCP servers and credentials" row, whose server and credential form is VELDO-0159 (third review), and "Repositories and identities" row; per-account usage; depends on VELDO-0159 and VELDO-0160 |
+| VELDO-0141 | Ready, with its four amendments; bound to W101; AC3 is the record route's contract for the live view; exact-value redaction is its own AC4 with its own falsifier, over a named per-run set of resolved values tested with a planted resolver (third review); the Mac run is VELDO-0147 |
 | VELDO-0080, VELDO-0092 | Context and History record the move to Release 2; criteria unchanged |
-| VELDO-0144 | Its footprint adds `control_service`, because the credential command needs its own branch in the service's `apply` to keep the value out of the digested command and the observation; the Mac secrets frame is VELDO-0147 |
-| VELDO-0035, VELDO-0078, VELDO-0085 | Notes only: no Release 1 mention of VELDO-0080 or VELDO-0092 as a consumer |
+| VELDO-0035, VELDO-0085 | Notes only: no Release 1 mention of VELDO-0080 or VELDO-0092 as a consumer |
+| VELDO-0040 | Footprint drops the nonexistent `control_runner` (third review); criteria unchanged |
 | VELDO-0057, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0126 | Landed: their landed text at `plan_revision: 4`; their amendments are VELDO-0148 to VELDO-0152 |
 | VELDO-0140 | Landed: bound to W100 at `plan_revision: 4`, criteria unchanged |
 
@@ -71,24 +71,91 @@ in the ones not listed above.
 | ID | Concern | Criteria | Status | Work, stage |
 |---|---|---|---|---|
 | [VELDO-0142](../../specs/VELDO-0142-git-identities-and-identity-profile.md) | Git identities configured at setup, and every commit the factory makes authored as the identity | 3 | draft | W102, S5 |
-| [VELDO-0143](../../specs/VELDO-0143-repository-from-chat.md) | A repository from chat, created or adopted | 4 | draft | W103, S5 |
-| [VELDO-0144](../../specs/VELDO-0144-mcp-catalog-and-os-keystore.md) | The MCP catalog and OS keystore, Atlassian as a catalog server | 4 | draft | W104, S5 |
+| [VELDO-0143](../../specs/VELDO-0143-repository-from-chat.md) | A repository from chat: the factory project's proposal, creation and activation; adoption is VELDO-0161 | 3 | draft | W103, S5 |
+| [VELDO-0144](../../specs/VELDO-0144-mcp-catalog-and-os-keystore.md) | The MCP catalog and OS keystore, Atlassian as a catalog server; delivery to a run is VELDO-0158 | 2 | draft | W104, S5 |
 | [VELDO-0145](../../specs/VELDO-0145-ui-shell-run-terminal-decisions.md) | The UI shell, the live run terminal and the decisions screen | 4 | draft | W105, S5 |
 | [VELDO-0146](../../specs/VELDO-0146-several-unit-work-and-the-second-pm-cycle.md) | Several-unit work: a separate elaboration run and a second PM cycle (split from VELDO-0088) | 2 | draft | W106, S5 |
-| [VELDO-0147](../../specs/VELDO-0147-mac-legs-of-the-linux-first-qualifications.md) | The Mac legs of VELDO-0060, 0061, 0062, 0127, 0141 and 0144 | 4 | draft | W107, S5 |
+| [VELDO-0147](../../specs/VELDO-0147-mac-legs-of-the-linux-first-qualifications.md) | The Mac legs of VELDO-0060, 0061, 0062, 0127, 0141, 0155, 0156 and 0158 | 4 | draft | W107, S5 |
 | [VELDO-0148](../../specs/VELDO-0148-re-land-when-the-trunk-moved.md) | The re-land when another factory moved main (VELDO-0057's amendment) | 3 | draft | W108, S5 |
 | [VELDO-0149](../../specs/VELDO-0149-project-activation-on-an-adopted-repository.md) | Activation on any adopted repository, from a settled answer (VELDO-0076's amendment) | 2 | draft | W109, S4 |
 | [VELDO-0150](../../specs/VELDO-0150-objective-accepted-by-the-owners-own-message.md) | An objective accepted by the owner's own message (VELDO-0077's amendment) | 2 | draft | W110, S4 |
 | [VELDO-0151](../../specs/VELDO-0151-specialist-roles-with-capability-configurations.md) | Specialist roles with a capability configuration reference and a kind (VELDO-0089's amendment) | 2 | draft | W111, S5 |
 | [VELDO-0152](../../specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md) | Ticket keys and new projects at intake (VELDO-0126's amendments) | 3 | draft | W112, S4 |
 | [VELDO-0153](../../specs/VELDO-0153-identity-push-profile-and-remote-owner.md) | The identity push profile and the remote owner check (split from VELDO-0142) | 2 | draft | W113, S5 |
-| [VELDO-0154](../../specs/VELDO-0154-factory-loop-in-the-authority-service.md) | The factory loop in the authority service: its wake sources, a receiver that dies and the account-limit re-dispatch or question (split from VELDO-0129) | 3 | draft | W114, S5 |
+| [VELDO-0154](../../specs/VELDO-0154-factory-loop-in-the-authority-service.md) | The factory loop in the authority service: its wake sources, a receiver that dies, the account-limit re-dispatch or question, and no pass from any other source (split from VELDO-0129) | 4 | draft | W114, S5 |
+| [VELDO-0155](../../specs/VELDO-0155-claude-code-run-baseline-and-guards.md) | Claude Code's everything-off baseline, paid-API removal, paid-API stop and environment strip (split from VELDO-0060 AC5) | 4 | draft | W115, S1 |
+| [VELDO-0156](../../specs/VELDO-0156-codex-run-baseline-and-guards.md) | The same four guards for Codex (split from VELDO-0061 AC5) | 4 | draft | W116, S1 |
+| [VELDO-0157](../../specs/VELDO-0157-items-loaded-when-assigned.md) | The `when assigned` items a staffing choice assigns load with that run, and no others (split from VELDO-0127 AC4) | 2 | draft | W117, S5 |
+| [VELDO-0158](../../specs/VELDO-0158-credentials-delivered-to-a-linux-run.md) | Credentials resolved from the keystore at spawn, delivered to a Linux run and added to its redaction set (split from VELDO-0144) | 3 | draft | W118, S5 |
+| [VELDO-0159](../../specs/VELDO-0159-mcp-server-and-credential-form.md) | A minimal MCP server form with a write-only credential field, moved earlier from VELDO-0131 | 2 | draft | W119, S5 |
+| [VELDO-0160](../../specs/VELDO-0160-account-pool-and-the-account-limit.md) | The account pool, the `account_limit` classification and the re-run-or-ask decision (split from VELDO-0062) | 3 | draft | W120, S1 |
+| [VELDO-0161](../../specs/VELDO-0161-repository-adoption-without-restart.md) | Adoption of a repository and the running factory taking it on without a restart (split from VELDO-0143) | 2 | draft | W121, S5 |
 
 Each has owner dmitry, a footprint, depends_on, placement, protected_paths, risk, rollback, an
 observability block and a What the reviewer judges section, and each passes `validate.py ready`. Every
 new specification is `draft`, including the five that carry an approved amendment of a landed
 specification and VELDO-0146, which carries part of VELDO-0088's approved amendment: only the owner
 marks a specification ready.
+
+## The third review
+
+A fresh check of this writing found four blocking problems and several small ones; each is fixed in
+its own commit, within revision 4, with no function cut and nothing else moved to Release 2.
+
+**One guard, one criterion.** VELDO-0060 AC5 and VELDO-0061 AC5 bundled the everything-off baseline,
+the paid-API guard and the environment strip under one falsifier that broke only the paid-API guard.
+They are now one specification per engine, VELDO-0155 and VELDO-0156, rather than one shared
+specification, because the baseline and the login stop are each engine's own levers; the strip is the
+one trusted wrapper, and each reads back its own engine's environment. Each has four criteria with a
+falsifier that breaks exactly one guard: a planted profile item that must not load, a planted key that
+must be absent from the engine environment read-back, the stop on a login that is not a subscription,
+and a planted agent socket the strip must remove. VELDO-0060 and VELDO-0061 keep four criteria each.
+
+**Specifications the design builds in two stages.** VELDO-0127 AC4 keeps its `always` leg for stage 2,
+and the `when assigned` leg is VELDO-0157, built with VELDO-0090 in stage 3 as section 12 says; the plan's
+build-order paragraph now follows section 12's stage 3. The server and credential form moved earlier
+from VELDO-0131 into VELDO-0159, stage 2, so the owner can enter the Atlassian credential before "please
+do BCG-123", and VELDO-0131's row no longer carries it.
+
+**The credential set.** VELDO-0141 AC4 names the per-run set of resolved values and tests it with a
+planted resolver; VELDO-0158 AC3 requires the keystore's values to enter it, with the falsifier "resolve
+without adding to the set; the planted keystore value must appear redacted". That criterion would have
+been VELDO-0144's fifth, so VELDO-0144 keeps the catalog and the keystore write and VELDO-0158 owns
+delivery, with VELDO-0144's former AC3 and AC4 unchanged.
+
+**Size and falsifiers.** VELDO-0062's six criteria are four, with the pool and the account limit in
+VELDO-0160, whose former AC6 is two criteria, the classification with a new falsifier and the decision
+with its fixture record form written in the specification. VELDO-0154 gains AC4, no pass from any other
+timer, with its own falsifier. VELDO-0143 AC3's no-restart claim got a falsifier by moving adoption into
+VELDO-0161, so VELDO-0143 has three criteria.
+
+**Small fixes.** VELDO-0078 returns to main's text except `plan_revision`, and the plan carries its
+VELDO-0080 note. VELDO-0154 depends on VELDO-0076 and states that with no catalog every MCP call asks,
+so it does not wait for VELDO-0144; VELDO-0079 depends on VELDO-0150. The footprints of VELDO-0088 and
+VELDO-0146 name `control_workflow_cycle`, VELDO-0142 drops `git_process.py` and VELDO-0040 drops
+`control_runner`. VELDO-0150 AC1 and VELDO-0152 AC1 drive their API leg through `Intake.receive` as
+VELDO-0126 does. VELDO-0062's title drops "credential separation". The design's status line names what
+changed after the approval.
+
+## Ready specifications whose criteria changed after the owner marked them ready
+
+The approval request must name these, because their criteria changed after he marked them ready. Each
+change is a restructure within revision 4, never a cut function.
+
+| Specification | What changed in its criteria |
+|---|---|
+| VELDO-0060 | AC1 adds the pinned executable (design section 6); the baseline and guards, briefly its AC5, are now VELDO-0155; AC4 keeps the caps with login separation in Release 2 |
+| VELDO-0061 | The same for Codex; its baseline and guards are VELDO-0156 |
+| VELDO-0062 | AC1's login-separation clause moves to Release 2; the widened AC5 and the account-limit AC6 are now VELDO-0160; four criteria remain |
+| VELDO-0088 | AC1 runs the default pipeline through the Runner; new AC4 is the one-unit path; several-unit work is VELDO-0146 |
+| VELDO-0129 | Its criteria briefly gained AC4 to AC6, now VELDO-0154; AC1 to AC3 equal main's text again, and only depends_on changed |
+| VELDO-0141 | Marked ready on the approval (29162) with four amendments; since then AC3 became the record route's contract and exact-value redaction its own AC4, over a named per-run set tested with a planted resolver |
+| VELDO-0127 | AC4, the design's new criterion, keeps only its `always` leg; the `when assigned` leg is VELDO-0157 |
+| VELDO-0131 | Its screen contract, which AC1 and AC3 make required, no longer builds the server and credential form, now VELDO-0159 |
+
+Ready specifications whose criteria did not change but whose depends_on or footprint did in the third
+review: VELDO-0040 (footprint), VELDO-0059 and VELDO-0079 (depends_on), and VELDO-0088
+(footprint).
 
 ## Resolutions of what the design left open
 
@@ -150,3 +217,15 @@ or in Releases 2 to 4, which this writing did not touch. `policy_check.spec_revi
 `ready_boundary_violations()` are both empty. A check over the plan found no dependency on a later
 release or stage among its 114 items. The changed files carry no em-dash, en-dash or doubled hyphen.
 The canonical gate `scripts/verify.sh` was not run by this writing.
+
+After the third review: `python3 .veldo/validate.py all` (exit 0); `python3 .veldo/validate.py ready`
+on every PLAN-0019 specification, which passes for all but VELDO-0136 (its footprint crosses an area
+boundary above its declared risk) and VELDO-0140 (no observability block), whose footprint, risk and
+observability fields are main's and which this writing did not touch beyond their plan binding, and passes
+for each of VELDO-0155 to VELDO-0161 and every
+specification the third review changed; `scripts/check_generated.sh` and `scripts/check_docs.sh` (both
+pass); `python3 .veldo/plan.py status` and `release-check` (releasable) on PLAN-0019, whose 121 items
+have no dependency on a later release or stage; `git diff main` of VELDO-0057, 0076, 0077, 0078, 0089 and
+0126 shows only `plan_revision`, and of VELDO-0140 only its W100 binding;
+`policy_check.spec_revision_stale()` and `ready_boundary_violations()` are empty; and the changed files
+carry no em-dash, en-dash or doubled hyphen. `scripts/verify.sh` was not run.
