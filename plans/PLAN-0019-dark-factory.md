@@ -1155,7 +1155,7 @@ work:
     spec: VELDO-0158
     title: Each Linux run receives exactly its servers' credentials, resolved from the keystore just before spawn and added to the run's redaction set
     feature_refs: [F7]
-    depends_on: [VELDO-0039, VELDO-0060, VELDO-0061, VELDO-0141, VELDO-0144]
+    depends_on: [VELDO-0039, VELDO-0060, VELDO-0061, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
     order: 15158
     release: 1
     stage: 5
@@ -1706,3 +1706,6 @@ criteria, so the routes and the form are two specifications, both stage 5 and bu
 after VELDO-0127 and VELDO-0151, as VELDO-0159 is. VELDO-0131's "Team and agent/tool/MCP configuration"
 row no longer carries the form, which is not built twice, and W94 (VELDO-0131) and W44 (VELDO-0059)
 depend on both.
+W118 (VELDO-0158) depends on W115's VELDO-0155 and W116's VELDO-0156, whose baselines generate the
+configuration and environment it delivers credentials into, and states the form of the dispatch
+configuration it resolves, since VELDO-0127 is built after it.

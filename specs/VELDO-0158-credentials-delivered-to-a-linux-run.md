@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W118
 plan_revision: 4
-depends_on: [VELDO-0039, VELDO-0060, VELDO-0061, VELDO-0141, VELDO-0144]
+depends_on: [VELDO-0039, VELDO-0060, VELDO-0061, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -138,7 +138,20 @@ keystore; per-run OS users; a connection test button.
 
 Resolution goes through secretref's `keychain` scheme, which VELDO-0144 realizes over the Secret
 Service. The set of resolved values is the one VELDO-0141 AC4 names; this specification is what puts
-the keystore's values in it, and nothing else supplies credential values to a run in Release 1.
+the keystore's values in it, and nothing else supplies credential values to a run in Release 1. The
+generated MCP configuration and the Codex engine environment it writes into are the ones the
+everything-off baselines of VELDO-0155 and VELDO-0156 generate, and the run's private directory is never
+the `XDG_RUNTIME_DIR` VELDO-0155 AC4 gives the engine.
+
+**The form of the dispatch configuration it resolves.** VELDO-0127, which records a role's configuration
+on each dispatch, is built after this specification, so the resolver reads a dispatch configuration of
+this form, which VELDO-0127 later fills from the role's accepted revision: a list of MCP selections, each
+naming a catalog server id and revision (VELDO-0144 AC1). For each listed revision the resolver reads that
+revision's `mcp_server` record, and the references it resolves are exactly the credential references in
+its environment and headers, each a secretref `keychain:<name>` naming a `credential` record; a literal
+environment value is passed as it is and resolves nothing. A server not listed contributes nothing, so
+no run receives another server's credential. Until VELDO-0127 is built the checks give the dispatch
+configuration in this form directly.
 
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
@@ -152,3 +165,8 @@ proof, not tests run by this writing revision.
 AC3 and AC4 with their text and falsifiers unchanged; AC3 is new, because VELDO-0141 AC4's redaction of
 exact values had nothing that supplied the keystore's values to it, and adding it to VELDO-0144 would
 have made five criteria. A draft: only the owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: depends_on adds VELDO-0155 and VELDO-0156, whose
+baselines generate the MCP configuration and engine environment AC1 delivers into and whose AC4 gives
+the engine its own runtime directory, and the Notes state the form of the dispatch configuration the
+resolver reads, since VELDO-0127 is built after this specification. Criteria unchanged. A draft.
