@@ -44,7 +44,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0059 | Installed full factory journey with real workers and enforcement | ready | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
 | VELDO-0060 | Claude Code production adapter qualification | ready | critical | dmitry | required | VELDO-0060-claude-code-adapter-qualification.md |
 | VELDO-0061 | Codex production adapter qualification | ready | critical | dmitry | required | VELDO-0061-codex-adapter-qualification.md |
-| VELDO-0062 | Provider credential separation and live usage accounting | ready | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
+| VELDO-0062 | Provider subscription logins and live usage accounting | ready | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
 | VELDO-0064 | Assignment inbox and durable projections on enrolled input surfaces | ready | high | dmitry | required | VELDO-0064-assignment-inbox-projections.md |
 | VELDO-0065 | Versioned presentation receipts for every enrolled channel | ready | critical | dmitry | required | VELDO-0065-versioned-channel-presentations.md |
 | VELDO-0066 | Canonical channel attribution including platform-derived chat message, sender, and time | ready | critical | dmitry | required | VELDO-0066-canonical-channel-attribution.md |
@@ -787,7 +787,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W43 | VELDO-0058 | Gate-output isolation and exact tested-tree evidence | VELDO-0050, VELDO-0056 | waiting: VELDO-0050, VELDO-0056 |
 | W45 | VELDO-0060 | Claude Code production adapter qualification | VELDO-0028, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0062 | waiting: VELDO-0028, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0062 |
 | W46 | VELDO-0061 | Codex production adapter qualification | VELDO-0028, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0062 | waiting: VELDO-0028, VELDO-0039, VELDO-0040, VELDO-0041, VELDO-0042, VELDO-0062 |
-| W47 | VELDO-0062 | Provider credential separation and live usage accounting | VELDO-0028, VELDO-0036 | waiting: VELDO-0028, VELDO-0036 |
+| W47 | VELDO-0062 | Provider subscription logins and live usage accounting | VELDO-0028, VELDO-0036 | waiting: VELDO-0028, VELDO-0036 |
 | W84 | VELDO-0107 | Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates | VELDO-0023, VELDO-0025, VELDO-0029 | waiting: VELDO-0029 |
 | W86 | VELDO-0109 | An unreachable authority stops mutation and admission, and never becomes a local one | VELDO-0107 | waiting: VELDO-0107 |
 | W92 | VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | VELDO-0039, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0155, VELDO-0156 | waiting: VELDO-0039, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0155, VELDO-0156 |

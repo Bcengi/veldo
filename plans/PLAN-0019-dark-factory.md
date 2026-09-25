@@ -627,7 +627,7 @@ work:
     stage: 1
   - item: W47
     spec: VELDO-0062
-    title: Provider credential separation and live usage accounting
+    title: Provider subscription logins and live usage accounting
     feature_refs: [F4]
     depends_on: [VELDO-0028, VELDO-0036]
     order: 11062

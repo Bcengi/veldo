@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0062
-title: Provider credential separation and live usage accounting
+title: Provider subscription logins and live usage accounting
 status: ready
 risk: critical
 owner: dmitry
@@ -155,7 +155,7 @@ rollback: >
 
 ## Intent
 
-Provider credential separation and live usage accounting. Deliver the normal function needed by the running factory journey.
+Provider subscription logins and live usage accounting. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
@@ -278,3 +278,7 @@ classifies the limit. Status unchanged.
 re-dispatch or question that carries out AC6's decision, is VELDO-0154, split from VELDO-0129 (its
 former AC4 and AC6 are VELDO-0154 AC1 and AC3), and the references follow. Criterion meaning and status
 unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: the title drops "credential separation", which is
+Release 2 hardening since the owner's answer (Telegram 29163), and names what Release 1 keeps: each
+invocation on its own account's subscription login, and live usage accounting. Status unchanged.
