@@ -32,6 +32,7 @@ footprint:
   - "specs/VELDO-0138-authority-service-runs-telegram-ingress.md"
   - "specs/index.md"
   - "proof/VELDO-0138/*"
+  - "proof/VELDO-0073/*"
 behavior_bearing: true
 acceptance_criteria:
   - id: AC1
@@ -157,3 +158,7 @@ it: a run with an exchange that failed in transport is named unavailable_service
 fixture_only_evidence. Rows command/owner-only (extended) and qualification/transport-failure-named,
 finding 138 now 13 mutants, red record at af8e477. Handing the edge to a new owner is named out of
 Release 1 scope in Notes.
+
+2026-09-25: the footprint names proof/VELDO-0073/*: the owner-binding fix reshaped a line VELDO-0073's
+fixture-evidence-accepted mutation anchors on, so that mutation was re-aimed and VELDO-0073's mutations record
+and diffs are regenerated to match (24 mutants, every named row red by assertion, controls green).
