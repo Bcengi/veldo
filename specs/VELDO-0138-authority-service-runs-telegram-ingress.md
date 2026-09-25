@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0138
 title: The authority service runs the Telegram ingress and takes the owner's activation commands
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -118,3 +118,5 @@ command surface.
 
 2026-09-24: written by the lead from VELDO-0073's first critical review (filed F1). Draft; the owner
 decides readiness.
+
+2026-09-24: the owner marked this specification ready on Telegram (29090 asked, 29091 "Yes").
