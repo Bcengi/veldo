@@ -1,0 +1,259 @@
+{
+ "by_assertion": true,
+ "commit": "c3c0c6a2ded6302a633260ef26332787ca80a3da",
+ "details": [
+  "VELDO-0130 reads/authoritative detail: a high-entropy value in no known shape is not served: the scanner's entropy detector redacts it",
+  "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'refusal': 'stale_version:hint'}]",
+  "VELDO-0130 events/reconcile-past-page detail: the revoked credential's session is ended and its open stream closed as revoked [observed [('idle', None)]]",
+  "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor 106]",
+  "VELDO-0130 events/reconcile-past-page detail: the publication's public journal reader returns one bounded page after a sequence, with the head",
+  "VELDO-0130 events/resume-last-event-id detail: a reconnect with Last-Event-ID resumes after it, not from the URL's after=0 [observed [1, 2, 3, 4]]",
+  "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 200 None]",
+  "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 408} ('closed', 'revoked')]",
+  "VELDO-0130 events/published-watermark detail: an event the publication has published at or below its watermark is listed at its record [observed []]",
+  "VELDO-0130 events/reconcile-deferred detail: a new instance noticed by a call inside a delivery does not deadlock it: the delivery completes [observed []]",
+  "VELDO-0130 events/reconcile-deferred detail: the reconcile it makes due runs once, when that delivery ends: one new subscription, to the new instance [observed ['inspect', 'inspect', 'events', 'feed', 'inspect', 'subscribe']]",
+  "VELDO-0130 events/reconcile-deferred detail: and the open stream is fed the new record",
+  "VELDO-0130 enrollment/possession-race detail: one completes the registration and the other is refused by name, never raised [observed [200, 500] ['raised:FileExistsError']]",
+  "VELDO-0130 webauthn/openssl-fixed-path detail: openssl is found at an absolute system location, never through PATH: a stand-in that accepts everything, first on PATH, is not run [observed /dev/shm/v130-tppiqfg9/fake-bin/openssl True]",
+  "VELDO-0130 webauthn/openssl-fixed-path detail: with no openssl at those locations a sign-in is unavailable_service, never a failed signature [observed: 401 unauthenticated:signature_invalid]",
+  "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 4190031-6283bb8b74d8 -> 7131-6123dde2ad09, API 4190031-6283bb8b74d8]",
+  "VELDO-0130 service/restart-reconciles detail: a host revocation the new instance commits closes the open stream as revoked, nothing passed by this suite [observed revoke_api_credential None]",
+  "VELDO-0130 service/restart-reconciles detail: the API's cursor is at the head [observed 14 of 15]",
+  "VELDO-0130 service/down-at-registration detail: with the service down the next registration is 503 unavailable_service [observed 500 raised:Unavailable]"
+ ],
+ "failed_rows": [
+  "VELDO-0130 reads/authoritative",
+  "VELDO-0130 events/reconcile-past-page",
+  "VELDO-0130 events/resume-last-event-id",
+  "VELDO-0130 events/expiry-named",
+  "VELDO-0130 events/published-watermark",
+  "VELDO-0130 events/reconcile-deferred",
+  "VELDO-0130 enrollment/possession-race",
+  "VELDO-0130 webauthn/openssl-fixed-path",
+  "VELDO-0130 service/restart-reconciles",
+  "VELDO-0130 service/down-at-registration"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9",
+   "now": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9"
+  },
+  ".veldo/control_api.py": {
+   "at_commit": "306b74c10a7b9e7577b6b56505dde39f703b81de197b50c13f0a71204e152fbf",
+   "now": "3e8071f51896cbb0c582516e10d5acf8de56a016ea79ab8fec8ca92659ae9b37"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15",
+   "now": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "85a4208e01ccb072b493c4d53e0907a8bc4d70409d486de685ff412e0801d615",
+   "now": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
+  },
+  ".veldo/control_api_credentials.py": {
+   "at_commit": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2",
+   "now": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
+  },
+  ".veldo/control_api_models.py": {
+   "at_commit": "a0c1370c180b4950277dc1a9058af81395fa59faa3ef1e775bcda8d7b412daf0",
+   "now": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+  },
+  ".veldo/control_api_signer.py": {
+   "at_commit": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c",
+   "now": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
+  },
+  ".veldo/control_api_webauthn.py": {
+   "at_commit": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789",
+   "now": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
+  },
+  ".veldo/control_channel_enrollment.py": {
+   "at_commit": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622",
+   "now": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622"
+  },
+  ".veldo/control_client_api.py": {
+   "at_commit": "24ef63ec1bade88d80d6d33cc899e10c6bf318a9607654d1d6fa19a089aa1ca8",
+   "now": "16661484d86526e6d8215b3c22e4309a4eacdc6976d908c5f86bd1782d31976b"
+  },
+  ".veldo/control_event_projection.py": {
+   "at_commit": "c5b0bde43565babea8041286dcb60aa16f18b7233bd6d194dc77b9c8b19eba72",
+   "now": "1847b2cfb2dd56ecca36879ea5c2b5aa0cafcfe56cebe374abcc3a43eee57ad1"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "f101ef229d020c3008550c7276902b3aad49204bd90081c808745fbf6f5ea8d9",
+   "now": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "c8a6d410e7c1fab444ed05dd8faf7ca0c2e741bc8d77b28d8a44cf55fbf537fd",
+   "now": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200",
+   "now": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200"
+  },
+  ".veldo/events.py": {
+   "at_commit": "f6c78862b338888c19937cebf57e1ae4cdea862f71a2d6c9dad667ffc2c2c4c0",
+   "now": "f6c78862b338888c19937cebf57e1ae4cdea862f71a2d6c9dad667ffc2c2c4c0"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "b36867475cb5fb104e91ea1ab9c186d556452743b2a33b79cc46911976da5533",
+   "now": "92359c2b7238edb3411f1ba38d7ef2bafdd32500f7d18cf81c060bcf797ba5c5"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0130 install/assets",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/stand-in-browser",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/independent-vectors",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/pending-grants-nothing",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/steward-signed",
+   true
+  ],
+  [
+   "VELDO-0130 session/cookie-and-expiry",
+   true
+  ],
+  [
+   "VELDO-0130 session/forgery-refused",
+   true
+  ],
+  [
+   "VELDO-0130 session/revocation-ends",
+   true
+  ],
+  [
+   "VELDO-0130 routes/every-family",
+   true
+  ],
+  [
+   "VELDO-0130 routes/body-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0130 edge/signer-api-purpose",
+   true
+  ],
+  [
+   "VELDO-0130 edge/authority-recheck",
+   true
+  ],
+  [
+   "VELDO-0130 messages/common-intake",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/exact-settlement",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/one-ruling",
+   true
+  ],
+  [
+   "VELDO-0130 transport/loopback-only",
+   true
+  ],
+  [
+   "VELDO-0130 reads/model-set",
+   true
+  ],
+  [
+   "VELDO-0130 reads/authoritative",
+   false
+  ],
+  [
+   "VELDO-0130 reads/freshness",
+   true
+  ],
+  [
+   "VELDO-0130 events/live",
+   true
+  ],
+  [
+   "VELDO-0130 actions/contract",
+   true
+  ],
+  [
+   "VELDO-0130 actions/workflow-save",
+   true
+  ],
+  [
+   "VELDO-0130 actions/unauthorized-write",
+   true
+  ],
+  [
+   "VELDO-0130 events/reconcile-past-page",
+   false
+  ],
+  [
+   "VELDO-0130 events/resume-last-event-id",
+   false
+  ],
+  [
+   "VELDO-0130 events/expiry-named",
+   false
+  ],
+  [
+   "VELDO-0130 events/published-watermark",
+   false
+  ],
+  [
+   "VELDO-0130 events/reconcile-deferred",
+   false
+  ],
+  [
+   "VELDO-0130 enrollment/possession-race",
+   false
+  ],
+  [
+   "VELDO-0130 webauthn/openssl-fixed-path",
+   false
+  ],
+  [
+   "VELDO-0130 service/install",
+   true
+  ],
+  [
+   "VELDO-0130 service/socket-path",
+   true
+  ],
+  [
+   "VELDO-0130 service/edge-signed-requests",
+   true
+  ],
+  [
+   "VELDO-0130 service/host-revocation-closes-stream",
+   true
+  ],
+  [
+   "VELDO-0130 service/in-process-refused",
+   true
+  ],
+  [
+   "VELDO-0130 service/restart-reconciles",
+   false
+  ],
+  [
+   "VELDO-0130 service/down-at-registration",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 63.006,
+ "spec_id": "VELDO-0130",
+ "suite": "scripts/suites/71_veldo_0130_api.py",
+ "tree": "git archive c3c0c6a2ded6302a633260ef26332787ca80a3da, unchanged; the current suite file run against it"
+}
