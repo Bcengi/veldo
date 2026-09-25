@@ -191,3 +191,8 @@ fetched through the Atlassian catalog server, uses at least two subscription acc
 in the live run terminal, with the repository's identity as author and pusher. The Notes no longer
 route ordinary defects through VELDO-0080, and a What the reviewer judges section is added. Status
 unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: depends_on adds the specifications the review split out, so the
+full journey waits for every one of them: VELDO-0146 (several-unit work), VELDO-0147 (the Mac legs),
+VELDO-0148 to VELDO-0152 (the amendments of the landed VELDO-0057, 0076, 0077, 0089 and 0126) and
+VELDO-0153 (the identity push profile). Criteria and status unchanged.

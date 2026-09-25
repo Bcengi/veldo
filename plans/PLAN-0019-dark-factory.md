@@ -1524,3 +1524,18 @@ stage 5, and VELDO-0127, VELDO-0090 and VELDO-0091, which depend on it in turn, 
 stage 5 so no dependency points at a later stage; the build order follows the design's section 12 and
 is stated under Releases and order. Every PLAN-0019 specification pulled at revision 3 is re-pulled at
 revision 4. The writing audit is proof/plan-0019-rev4/README.md.
+
+2026-09-25: revision 4 review fixes, within revision 4 and without changing what the owner approved,
+cutting a function or moving anything else to Release 2. A specification ships whole and the run-check
+refuses one whose dependencies are not shipped, so work the design's critical path builds in different
+stages is split: VELDO-0088 is the thin one-unit PM of stage 2 and W106's VELDO-0146 the several-unit
+work of stage 3, and the Mac legs of VELDO-0060, 0061, 0062, 0127, 0141 and 0144 are W107's VELDO-0147,
+built after VELDO-0124 and VELDO-0125. The landed VELDO-0057, 0076, 0077, 0089 and 0126 keep their landed
+text and their amendments are W108 to W112 (VELDO-0148 to VELDO-0152), as recorded above; W100's
+VELDO-0140, which also landed, is bound here with no change to its criteria. VELDO-0142 keeps the identity
+and the author, and W113's VELDO-0153 the identity push profile and the remote owner check. VELDO-0141
+AC3 is the record route's contract and VELDO-0145 AC2 the screen. VELDO-0062 AC6 decides re-run or ask
+over a record and VELDO-0129 AC6 carries the decision out, which, with the record VELDO-0129 now reads,
+moves W92 (VELDO-0129) and W108 (VELDO-0148) to stage 5; W73 (VELDO-0088) moves to stage 5 because the
+PM role's configuration comes from VELDO-0151. The writing audit, proof/plan-0019-rev4/README.md, lists
+each fix.
