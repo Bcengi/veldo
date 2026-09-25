@@ -105,8 +105,9 @@ baseline and the no-op copies (one per mutated module) are green. `check_teeth_m
 | host-trust-directory-unchecked | host-trust/directory-checked |
 | empty-host-named-trust | refuse/writes-nothing |
 
-The other findings' `init_scaffold.py` mutations (39, 40, 41, 42, 45, 47, 50, 51, 67, 68, 73, 75, 76, 138)
-were each run honest and mutant after the scaffold change: all still reject.
+The other findings' `init_scaffold.py` mutations (39, 40, 41, 42, 45, 47, 50, 51, 67, 68, 73, 75, 76, 77, 138)
+were each run honest and mutant after the scaffold change and again after merging main (which adds
+`control_objective.py`): all 25 still reject.
 
 ## Running it on this host
 
