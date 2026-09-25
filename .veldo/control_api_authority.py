@@ -41,11 +41,21 @@ publication derives at that record, with the publication's watermark and freshne
 count of records not yet published whenever the published watermark is behind the head. An unreadable
 store is unavailable_service, never an empty answer.
 
-WHAT IT IS NOT. Not the transport: routing these packets through the VELDO-0047 service socket
-(VELDO-0107) is the phase that wires the service. Standard library only.
+ONLY THE AUTHORITY RUNS IT (phase 3). The authority service (control_service_api) constructs this judge
+on its own store connection with `authority_lock`, the descriptor on which it holds the exclusive flock
+of the stable lock file beside the store (VELDO-0047's one instance). Every command and every read first
+asks `authority_problem`: the descriptor must be that file and this process must hold its lock. So the
+API process, which reaches the authority only over the service socket (control_client_api), cannot run a
+command or a read in-process while the service runs: it holds no such lock and cannot take it, and it is
+refused missing_authority:not_the_authority with nothing read or written.
+
+WHAT IT IS NOT. Not the transport: the service socket and its client are control_service_api and
+control_client_api. Standard library only.
 """
+import fcntl
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sqlite3
 import time
@@ -66,6 +76,7 @@ E = organ('control_channel_enrollment')
 CM, AC = CR.CM, CR.AC
 SCHEMA = 'veldo.api_authority_observation/v1'
 HINT_SCHEMA = 'veldo.control_notification/v1'  # control_notify.SCHEMA, the VELDO-0046 hint
+LOCK_NAME = 'authority.lock'  # control_service.LOCK_NAME: the stable lock file beside the store
 # The error classes of the specification's taxonomy, from each organ's own class names.
 CLASSES = {'missing_authority': 'unauthorized', 'stale_subject': 'stale_version', 'invalid_input': 'invalid_input',
            'unsupported_configuration': 'invalid_input', 'missing_evidence': 'missing_evidence',
@@ -97,17 +108,38 @@ def _class_of(code):
     return CLASSES[head] if head in CLASSES else CLASSES.get(WF.taxonomy(code), 'unknown_outcome')
 
 
+def authority_problem(lock, conn):
+    """Why this process may not run the authority's commands and reads on `conn`, or None: `lock` must be
+    an open descriptor of the stable lock file beside the store `conn` opened, on which this process holds
+    the exclusive flock (taking it again on the same descriptor succeeds only for its holder). A store the
+    connection cannot name is a store error (sqlite3.Error), as any unreadable store is."""
+    rows = conn.execute('PRAGMA database_list').fetchall()
+    store = next((row[2] for row in rows if row[1] == 'main' and row[2]), None)
+    if store is None or type(lock) is not int:
+        return 'missing_authority:not_the_authority'
+    try:
+        held, named = os.fstat(lock), os.stat(os.path.join(os.path.dirname(store), LOCK_NAME))
+        if (held.st_dev, held.st_ino) != (named.st_dev, named.st_ino):
+            return 'missing_authority:not_the_authority'
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return 'missing_authority:not_the_authority'
+    return None
+
+
 class ApiAuthority:
     """The API assertion judge on the authority's store connection `conn`.
 
     `store` and `membership` are the control_store and control_membership modules; `ids` this
     authority's domain_uuid, repository_uuid and store_uuid; `domain` the intake domain name; `edge`
     the api edge's service principal; `intake`, `settlement` and `credentials` the VELDO-0126 Intake,
-    VELDO-0068 Settlement and control_api_credentials.Credentials on `conn`."""
+    VELDO-0068 Settlement and control_api_credentials.Credentials on `conn`; `authority_lock` the
+    descriptor holding the authority's lock (authority_problem)."""
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
-                 workflows=None, publication=None, notify=None, clock=time.time, observe=None):
+                 workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None):
         self.S, self.CM, self.conn = store, membership, conn
+        self.authority_lock = authority_lock
         self.ids = {f: ids.get(f) for f in AS.IDS}
         self.domain, self.edge = domain, edge
         self.intake, self.settlement, self.credentials, self.clock = intake, settlement, credentials, clock
@@ -121,7 +153,14 @@ class ApiAuthority:
 
     # the read the API's session checks use
 
+    def _authority(self):
+        """Refused unless this process is the authority of this store (authority_problem)."""
+        problem = authority_problem(self.authority_lock, self.conn)
+        if problem:
+            raise Refused(problem, 'only the authority service runs the API\'s commands and reads')
+
     def inspect(self, entity_ids):
+        self._authority()
         ids = entity_ids if isinstance(entity_ids, list) and len(entity_ids) <= 64 else []
         entities = {}
         for identity in ids:
@@ -144,6 +183,7 @@ class ApiAuthority:
 
     def _answer(self, principal, produce):
         try:
+            self._authority()
             problem = self._reader_problem(principal)
             if problem:
                 return {'ok': False, 'reason': problem, 'taxonomy': taxonomy(problem)}
@@ -188,6 +228,7 @@ class ApiAuthority:
             return {'ok': False, 'reason': error.code, 'taxonomy': _class_of(error.code)}
 
     def _feed(self, after, limit):
+        self._authority()
         if self.publication is None:
             raise WF.Refused('unavailable_service:publication', 'no VELDO-0051 publication on this authority')
         # The publication's own journal reader and stored watermark; its refusals keep their names.
@@ -246,6 +287,7 @@ class ApiAuthority:
                     record_digest=row[2] if row else None, watermark=row[0] if row else 0)
 
     def _apply(self, packet, a):
+        self._authority()
         if AS.shape_problems(a):
             raise Refused('invalid_input:assertion', 'not one API assertion')
         if a['domain'] != self.domain or any(a[f] != v for f, v in self.ids.items()):

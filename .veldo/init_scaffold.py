@@ -172,6 +172,9 @@ _FILES = [
     # VELDO-0138: the service's Telegram channel, which runs the VELDO-0073 ingress and applies the
     # owner's activation commands; loaded by control_service.py, so part of its fixed executable.
     ".veldo/control_service_channel.py",
+    # VELDO-0130 phase 3: the service's side of the authenticated API, which runs the API's commands and
+    # reads and sends it the post-commit hint; loaded by control_service.py, so part of its fixed executable.
+    ".veldo/control_service_api.py",
     # The one owner of where the owner's systemd user units live, which the authority installer
     # loads for its default unit directory. The installer copies every module its programs load
     # (control_service.closure()), so what it loads is laid down with it; no validator import, so not
@@ -226,6 +229,8 @@ _FILES = [
     ".veldo/control_api_models.py",
     ".veldo/control_api_signer.py",
     ".veldo/control_api_webauthn.py",
+    # VELDO-0130 phase 3: the API process's client of the authority service socket and its hint socket.
+    ".veldo/control_client_api.py",
     # VELDO-0073: the Telegram edge's activation gate, qualification record and activated ingress (the
     # production construction of the settlement path). Runtime assets the authority loads; not substrate.
     ".veldo/control_channel_activation.py",

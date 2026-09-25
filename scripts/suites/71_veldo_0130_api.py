@@ -31,6 +31,7 @@ row fails by its own assertions.
 """
 import base64 as _v130_b64
 import copy as _v130_copy
+import fcntl as _v130_fcntl
 import hashlib as _v130_hashlib
 import http.client as _v130_client
 import http.server as _v130_http
@@ -552,6 +553,15 @@ def _v130_checks(base):
     if here and 'workflows' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
         phase2 = dict(workflows=workflows, publication=publication,
                       notify=lambda hint: api[0].deliver(hint) if api and hasattr(api[0], 'deliver') else None)
+    # Phase 3: the judge runs only in the process holding the authority's lock beside the store; this
+    # fixture is that authority for its own store, so it takes the lock as the service would.
+    lock_held = _v130_os.open(str(base / 'authority' / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
+    _v130_fcntl.flock(lock_held, _v130_fcntl.LOCK_EX | _v130_fcntl.LOCK_NB)
+    if here and 'authority_lock' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
+        phase2 = dict(phase2, authority_lock=lock_held)
+        phase3 = {'authority_lock': lock_held}
+    else:
+        phase3 = {}
     authority = (AUTH.ApiAuthority(S, CM, conn, ids=ids, domain=DOMAIN, edge='api-edge', intake=intake,
                                    settlement=settlement, credentials=credentials, **phase2) if here else absent)
     signer = SG.ApiSigner(config_path, 'edge-api', keyfile['api-auth']) if here else absent
@@ -1389,7 +1399,7 @@ def _v130_checks(base):
                 AS.domain_request(message_assertion('not the one asserted')))) if AS is not None else None
             late_authority = (AUTH.ApiAuthority(S, CM, conn, ids=ids, domain=DOMAIN, edge='api-edge', intake=intake,
                                                 settlement=settlement, credentials=credentials,
-                                                clock=lambda: _v130_time.time() + 61) if here else absent)
+                                                clock=lambda: _v130_time.time() + 61, **phase3) if here else absent)
             for label, got, name in (
                     ('an assertion changed after signing', authority.apply(tampered), 'unauthenticated:signature'),
                     ('an assertion signed by the owner, not the edge',
@@ -1989,7 +1999,533 @@ def _v130_checks(base):
         bot_server.shutdown()
         bot_server.server_close()
         conn.close()
+        _v130_os.close(lock_held)
     return rows
+
+
+# Phase 3: the API through the installed authority service. A separate authority of this run's own
+# (scripts/suites/support/v73_authority.py), an enrolled Git clone, this host's trust file, the installer
+# (control_service.install) given the Telegram ingress the API rides on and the API service
+# configuration, and the service process the unit's ExecStart runs, started through the service's own
+# start and stop lifecycle functions by a user manager stand-in of this run's own (Type=notify on its own
+# socket, SIGTERM on stop), so nothing is installed into or started by the owner's real systemd user
+# manager. The API is constructed by its production path (control_client_api.open_api) in this process;
+# its authority is the service socket. The Telegram channel stays inert (never activated), so no Bot API
+# exchange is made; the Bot API stand-in only answers the ingress's construction.
+_V130_SERVICE_ROWS = ('service/install', 'service/socket-path', 'service/edge-signed-requests',
+                      'service/host-revocation-closes-stream', 'service/in-process-refused')
+
+
+def _v130_service_checks(base):
+    import contextlib
+    import select
+    import shlex
+    import signal
+    import socket
+    import sys
+    from types import SimpleNamespace
+    rows = {name: [] for name in _V130_SERVICE_ROWS}
+
+    def check(row, label, condition):
+        rows[row].append((label, bool(condition)))
+
+    class section:
+        def __init__(self, *names):
+            self.names = names
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, kind, value, trace):
+            if kind is not None:
+                for name in self.names:
+                    check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:300]), False)
+            return True
+
+    SI, SP, SE, SR, SN = _V130_SERVICE_ROWS
+    # The production copies under test; mutation workers replace exactly these paths.
+    PRODUCTION = {
+        'control_service.py': ROOT / ".veldo" / "control_service.py",
+        'control_service_api.py': ROOT / ".veldo" / "control_service_api.py",
+        'control_client_api.py': ROOT / ".veldo" / "control_client_api.py",
+        'control_api.py': ROOT / ".veldo" / "control_api.py",
+        'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
+        'control_api_signer.py': ROOT / ".veldo" / "control_api_signer.py",
+        'control_api_assertion.py': ROOT / ".veldo" / "control_api_assertion.py",
+        'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
+    }
+    mods = base / 'src' / '.veldo'
+    (mods / 'services').mkdir(parents=True)
+    for source in sorted((ROOT / '.veldo').glob('*.py')):
+        _v130_shutil.copyfile(source, mods / source.name)
+    _v130_shutil.copyfile(ROOT / '.veldo' / 'services' / 'veldo-authority.service', mods / 'services' / 'veldo-authority.service')
+    for name, source in PRODUCTION.items():
+        target = mods / name
+        if target.exists():
+            target.unlink()
+        if _v130_Path(source).is_file():
+            _v130_shutil.copyfile(source, target)
+    here = all((mods / n).is_file() for n in ('control_service_api.py', 'control_client_api.py'))
+    CS = _v130_load('v130s_service', mods / 'control_service.py')
+    CC = _v130_load('v130s_client', mods / 'control_client.py')
+    CE = _v130_load('v130s_enrollment', mods / 'control_enrollment.py')
+    EL = _v130_load('v130s_eligibility', mods / 'control_eligibility.py')
+    git = _v130_load('v130s_git', mods / 'git_process.py')
+    H = _v130_load('v130s_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
+    CA = _v130_load('v130s_client_api', mods / 'control_client_api.py') if here else None
+    SA = _v130_load('v130s_service_api', mods / 'control_service_api.py') if here else None
+
+    def child_setup():
+        """UMask=0077, and the service dies with this suite's process (PR_SET_PDEATHSIG)."""
+        _v130_os.umask(0o077)
+        with contextlib.suppress(Exception):
+            import ctypes
+            ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)
+
+    class Manager:
+        """A stand-in for the owner's systemd user manager: start runs the installed unit's ExecStart as a
+        Type=notify service and waits for READY=1, stop sends SIGTERM and waits, show reports the state."""
+
+        def __init__(self, unit_dir):
+            self.unit_dir, self.procs, self.logs = _v130_Path(unit_dir), {}, []
+
+        def run(self, args):
+            args = list(args)
+            unit = args[-1]
+            proc = self.procs.get(unit)
+            if args[0] == 'show':
+                alive = proc is not None and proc.poll() is None
+                if not (self.unit_dir / unit).is_file():
+                    return 0, 'LoadState=not-found\nActiveState=inactive\nMainPID=0\n', ''
+                return 0, ('LoadState=loaded\nActiveState=%s\nSubState=%s\nMainPID=%d\nNRestarts=0\nResult=success\n'
+                           % ('active' if alive else 'inactive', 'running' if alive else 'dead', proc.pid if alive else 0)), ''
+            if args[0] == 'start':
+                if proc is not None and proc.poll() is None:
+                    return 0, '', ''
+                text = (self.unit_dir / unit).read_text()
+                line = next(l for l in text.splitlines() if l.startswith('ExecStart='))
+                notify = base / ('n%d.sock' % len(self.logs))
+                listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+                listener.bind(str(notify))
+                log = base / ('service-%d.log' % len(self.logs))
+                self.logs.append(log)
+                env = {'PATH': _v130_os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': _v130_os.environ.get('HOME', str(base)),
+                       'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'TZ': 'UTC', 'PYTHONDONTWRITEBYTECODE': '1',
+                       'NOTIFY_SOCKET': str(notify)}
+                with open(log, 'wb') as out:
+                    proc = _v130_sp.Popen(shlex.split(line[len('ExecStart='):]), env=env, stdin=_v130_sp.DEVNULL,
+                                          stdout=out, stderr=_v130_sp.STDOUT, preexec_fn=child_setup)
+                self.procs[unit] = proc
+                ready, deadline = False, _v130_time.monotonic() + 30
+                try:
+                    while not ready and proc.poll() is None and _v130_time.monotonic() < deadline:
+                        if select.select([listener], [], [], 0.2)[0]:
+                            ready = b'READY=1' in listener.recv(4096)
+                finally:
+                    listener.close()
+                    notify.unlink()
+                return (0, '', '') if ready else (1, '', 'the service did not report ready')
+            if args[0] == 'stop':
+                if proc is not None and proc.poll() is None:
+                    proc.send_signal(signal.SIGTERM)
+                    try:
+                        proc.wait(15)
+                    except _v130_sp.TimeoutExpired:
+                        proc.kill()
+                        proc.wait(5)
+            return 0, '', ''
+
+        def close(self):
+            for proc in self.procs.values():
+                if proc.poll() is None:
+                    proc.kill()
+                    proc.wait(5)
+
+    def wait(predicate, seconds=10):
+        until = _v130_time.monotonic() + seconds
+        while True:
+            value = predicate()
+            if value or _v130_time.monotonic() >= until:
+                return value
+            _v130_time.sleep(0.1)
+
+    def private(path, text):
+        fd = _v130_os.open(str(path), _v130_os.O_WRONLY | _v130_os.O_CREAT | _v130_os.O_EXCL, 0o600)
+        with _v130_os.fdopen(fd, 'w') as handle:
+            handle.write(text)
+        return path
+
+    url, botapi, stop_bot = H.stand_in({'bot130s': {'id': 8000001130, 'is_bot': True, 'first_name': 'Veldo'}})
+    manager = Manager(base / 'units')
+    A, ing, opened, unit, spare = None, None, None, None, []
+    DOMAIN = 'svc-intake'
+    try:
+        A = H.build(base / 'a', mods, 5590130, url, 'bot130s')
+        ids = A.ids
+        # The API's own edge: channel "api", its signing key in the protected key directory beside the
+        # Telegram edge's, its connection key outside it.
+        for who, path in (('api-gate', A.keyfile['edge'].with_name('edge-api')),
+                          ('api-auth', A.keyfile['edge-auth'].with_name('api-auth'))):
+            _v130_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v130s-' + who, '-f', str(path)],
+                         check=True, capture_output=True, timeout=10, stdin=_v130_sp.DEVNULL)
+            A.keyfile[who] = path
+            A.public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
+        enrollment = A.E.Enrollment(A.S, A.conn, ids, 'authority', A.journal_sign, projection=A.projection)
+        edge = {'channel': 'api', 'edge_principal': 'api-gate', 'edge_key_id': 'edge-api', 'public_key': A.public['api-gate'],
+                'connection_public_key': A.public['api-auth'], 'scope': ['project-a']}
+        command = {'command_id': A.next_id('edge'), 'operation': 'enroll_channel_edge', 'target': 'channel:api',
+                   'parameters': edge, 'artifact_digests': [], 'expected_versions': {}}
+        env = A.envelope(command, 'steward')
+        enrolled_edge = enrollment.admit(env, command, A.sign_as('steward', A.AC.canonical_envelope_bytes(env)),
+                                         A.sign_as('api-gate', A.AC.canonical_envelope_bytes(env), 'veldo-edge-possession'))
+        clone = base / 'clone'
+        git.run(['git', 'init', '-q', str(clone)], check=True, capture_output=True)
+        (clone / 'README').write_text('v130 service\n')
+        git.run(['git', '-C', str(clone), 'add', 'README'], check=True, capture_output=True)
+        git.run(['git', '-C', str(clone), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'v130'], check=True,
+                capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+        host_trust = A.host / 'host_trust.json'
+        CE.enroll(str(clone), ids['domain_uuid'], ids['store_uuid'], str(A.db), 'v73-host', 1,
+                  lambda data: A.sign_as('steward', data, EL.ENROLLMENT_NAMESPACE), 'steward', _v130_time.time(),
+                  repository_uuid=ids['repository_uuid'])
+        verify = EL.load_host_trust(str(host_trust)).verifier('steward', str(clone))
+        keys = base / 'keys'
+        keys.mkdir(mode=0o700)
+        _v130_shutil.copyfile(A.keyfile['authority'], keys / 'journal')
+        _v130_os.chmod(str(keys / 'journal'), 0o600)
+        journal = {'principal': 'authority', 'key': str(keys / 'journal')}
+        ingress_config = private(A.host / 'service-ingress.json', _v130_json.dumps(dict(A.config, api_edge='api-gate',
+                                                                                      journal=journal)))
+        service_values = {'schema': 'veldo.api_service/v1', 'store_path': str(A.db), 'authority_ids': ids,
+                          'authority_generation': 1, 'journal': journal, 'api_edge': 'api-gate', 'domain': DOMAIN,
+                          'projects': ['project-a'], 'rp_id': _V130_HOST, 'origin': _V130_ORIGIN,
+                          'workflows_repository': 'project-a', 'publication_root': str(clone)}
+        api_service = private(A.host / 'api-service.json', _v130_json.dumps(service_values))
+        profile = {'kind': 'linux-systemd', 'slice': 'v130%s.slice' % _v130_os.urandom(3).hex(),
+                   'lock': str(base / 'workers.lock'), 'concurrency': 1, 'runtime_seconds': 600,
+                   'memory_bytes': 256 << 20, 'cpu_percent': 100, 'file_bytes': 64 << 20, 'tasks_max': 256,
+                   'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
+        takes_api = 'api_service' in _v130_inspect.signature(CS.install).parameters
+
+        def install(root, units, api=api_service):
+            arguments = dict(host_trust=str(host_trust), key_directory=str(keys), install_root=str(root),
+                             unit_dir=str(units), profile=profile, adapters={}, writable=[], runner=manager,
+                             channel_ingress=str(ingress_config))
+            if takes_api:
+                arguments['api_service'] = str(api)
+            return CS.install([str(clone)], **arguments)
+
+        # The two new modules travel with the service and the API; installation takes the API it runs.
+        with section(SI):
+            scaffold = _v130_load('v130s_scaffold', mods / 'init_scaffold.py')
+            for rel in ('.veldo/control_service_api.py', '.veldo/control_client_api.py', '.veldo/control_service.py'):
+                engine = ROOT / 'engine' / rel
+                check(SI, rel + ' installed by the scaffold', rel in scaffold._FILES)
+                check(SI, rel + ' not claimed as validator substrate', rel not in scaffold.REQUIRED_SUBSTRATE)
+                check(SI, rel + ' engine copy identical', engine.is_file() and (ROOT / rel).is_file()
+                      and engine.read_bytes() == (ROOT / rel).read_bytes())
+            foreign = private(A.host / 'foreign-api.json', _v130_json.dumps(dict(service_values, api_edge='someone-else')))
+            try:
+                install(base / 'probe' / 'install', base / 'probe' / 'units', foreign)
+                refused = None
+            except Exception as exc:  # noqa: BLE001 - the refusal is the observation
+                refused = getattr(exc, 'code', type(exc).__name__)
+            left = sorted(str(p) for p in (base / 'probe').rglob('*')) if (base / 'probe').exists() else []
+            check(SI, 'an API configuration naming another edge than the ingress\'s refuses installation by name, '
+                  'leaving nothing [%s]' % refused, takes_api and refused == 'invalid_input:api_service:api_edge' and left == [])
+        report = install(base / 'install', base / 'units')
+        unit, home = report['unit'], _v130_Path(report['home'])
+        with section(SI):
+            copied = home / 'config' / 'api-service.json'
+            shown = _v130_json.loads((home / 'config' / 'service.json').read_text())
+            check(SI, 'the fixed executable holds the service\'s API side and the modules it loads',
+                  all((home / 'bin' / n).is_file() for n in ('control_service_api.py', 'control_api_authority.py',
+                                                             'control_api_credentials.py', 'control_workflow.py',
+                                                             'control_event_projection.py')))
+            check(SI, 'the API configuration is copied 0600 into the protected configuration and named by service.json',
+                  copied.is_file() and oct(copied.stat().st_mode & 0o777) == '0o600'
+                  and shown.get('api_service') == str(copied) and copied.read_bytes() == api_service.read_bytes())
+        began = CS.start(unit, manager)
+
+        def service_status():
+            try:
+                answer = CC.send(str(clone), {'operation': 'inspect', 'entity_ids': []}, CE, verify,
+                                 lambda data: A.sign_as('owner', data), 'v73-host', timeout=30)
+            except CC.RoutingRefused as exc:
+                return {'refused': exc.reason}
+            return dict((answer.get('result') or {}).get('api') or {}, _answer=bool(answer.get('accepted')))
+
+        def observations():
+            path = home / 'state' / 'observations.jsonl'
+            return [_v130_json.loads(l) for l in path.read_text().splitlines()] if path.is_file() else []
+
+        def head():
+            return A.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
+
+        def of_kind(kind):
+            return [row[0] for row in A.conn.execute('SELECT id FROM entities WHERE kind=? ORDER BY id', (kind,))]
+
+        # The API process: its 0600 configuration and its production construction.
+        api_values = {'schema': 'veldo.api_process/v1',
+                      'api': {'origin': _V130_ORIGIN, 'rp_id': _V130_HOST, 'host': _V130_HOST, 'domain': DOMAIN,
+                              'ids': ids, 'edge': 'api-gate', 'state_dir': str(base / 'api-state')},
+                      'workspace': str(clone), 'host_trust': str(host_trust),
+                      'signer': {'config': str(A.signer_config), 'edge_key_id': 'edge-api',
+                                 'connection_key': str(A.keyfile['api-auth'])},
+                      'listen': {'host': '127.0.0.1', 'port': 0}}
+        process_config = private(base / 'api-process.json', _v130_json.dumps(api_values))
+        try:
+            opened = CA.open_api(str(process_config)) if CA is not None else None
+            open_refusal = None
+        except Exception as exc:  # noqa: BLE001 - recorded, and every row that needs the API fails by assertion
+            opened, open_refusal = None, getattr(exc, 'code', type(exc).__name__)
+        if _v130_os.environ.get('V130_DEBUG'):
+            print('V130 open', open_refusal, [p.read_text()[-3000:] for p in manager.logs])
+        api = opened.api if opened is not None else _V130Absent()
+        COOKIE = '__Host-veldo-session'
+
+        def call(method, path, body=None, cookie=None, token=None):
+            headers = {'Host': _V130_HOST}
+            if method == 'POST':
+                headers.update({'Origin': _V130_ORIGIN, 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json'})
+            if cookie:
+                headers['Cookie'] = '%s=%s' % (COOKIE, cookie)
+            if token:
+                headers['X-Veldo-Token'] = token
+            try:
+                status, out, value = api.handle(method, path, headers, _v130_json.dumps(body).encode() if body is not None else b'')
+            except Exception as error:  # noqa: BLE001 - a handler that raises is an unknown outcome, recorded
+                return 500, {}, {'refusal': 'raised:%s' % type(error).__name__}
+            return status, dict(out), value
+
+        def refusal(result):
+            return result[2].get('refusal') if isinstance(result[2], dict) else None
+
+        def steward(operation, credential_id=None, pending=None):
+            """A steward's credential command, signed at the host and sent to the service as any client does."""
+            CRm = _v130_load('v130s_credentials', mods / 'control_api_credentials.py')
+            cid = A.next_id('credential')
+            if operation == 'enroll':
+                command = CRm.enrollment_command(pending, 'owner', cid)
+            else:
+                command = {'command_id': cid, 'operation': 'revoke_api_credential', 'target': CRm.target(credential_id),
+                           'parameters': {'credential_id': credential_id}, 'artifact_digests': [], 'expected_versions': {}}
+            env = A.envelope(command, 'steward')
+            packet = {'command': command, 'envelope': env, 'signature': A.sign_as('steward', A.AC.canonical_envelope_bytes(env))}
+            try:
+                return CC.send(str(clone), packet, CE, verify, lambda data: A.sign_as('steward', data), 'v73-host', timeout=30)
+            except CC.RoutingRefused as exc:
+                return {'refused': exc.reason}
+
+        def sign_in(browser):
+            issued = call('POST', '/api/v1/auth/challenge', {})
+            if issued[0] != 200:
+                return None, None
+            done = call('POST', '/api/v1/auth/sign-in', browser.get(issued[2]['challenge'], _V130_ORIGIN, _V130_HOST))
+            text = done[1].get('Set-Cookie') or ''
+            name, _, value = text.split(';')[0].partition('=')
+            return (value if name == COOKIE and value else None), (done[2] or {}).get('csrf_token')
+
+        def enroll(browser, label):
+            begun = call('POST', '/api/v1/auth/registration/begin', {'label': label})
+            if begun[0] != 200:
+                return {'refused': refusal(begun)}
+            browser.user_handle = begun[2]['user_handle']
+            offered = call('POST', '/api/v1/auth/registration/credential',
+                           dict(browser.create(begun[2]['challenge'], _V130_ORIGIN), registration_id=begun[2]['registration_id']))
+            if offered[0] != 200:
+                return {'refused': refusal(offered)}
+            proof = browser.get(offered[2]['possession_challenge'], _V130_ORIGIN, _V130_HOST)
+            proved = call('POST', '/api/v1/auth/registration/possession',
+                          dict({k: v for k, v in proof.items() if k != 'credential_id'}, registration_id=begun[2]['registration_id']))
+            if proved[0] != 200:
+                return {'refused': refusal(proved)}
+            pending = _v130_json.loads((base / 'api-state' / 'pending' / (begun[2]['registration_id'] + '.json')).read_text())
+            return steward('enroll', pending=pending)
+
+        # service/socket-path: a command and a read, through the service socket only.
+        with section(SP, SR, SN):
+            now = service_status()
+            check(SP, 'the installed service started through its lifecycle and runs the API [%s %s]'
+                  % (began.get('ActiveState'), {k: now.get(k) for k in ('available', 'refusal')}),
+                  began.get('ActiveState') == 'active' and now.get('_answer') is True and now.get('available') is True)
+            check(SP, 'the API process was constructed by its production path, its authority the service socket [%s]'
+                  % open_refusal,
+                  opened is not None and type(opened.authority).__name__ == 'ServiceAuthority'
+                  and now.get('subscribers') == 1)
+            phone = _V130Browser(base / 'browsers', 'svc-phone', -7)
+            desktop = _V130Browser(base / 'browsers', 'svc-desktop', -8)
+            enrolled = [enroll(phone, 'phone'), enroll(desktop, 'desktop')]
+            check(SP, 'a registration through the API and the steward\'s enrollment, sent to the service, commit two '
+                  'credentials [%s]' % [((e.get('result') or {}).get('reason'), e.get('refused')) for e in enrolled],
+                  all((e.get('result') or {}).get('ok') is True for e in enrolled) and len(of_kind('api_credential')) == 2)
+            cookie, token = sign_in(phone)
+            cookie2, token2 = sign_in(desktop)
+            check(SP, 'both passkeys sign in, the credentials read through the service', bool(cookie) and bool(cookie2))
+            mark, seen = head(), len(observations())
+            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN, {'text': 'Plan the socket phase.'}, cookie, token)
+            made = sent[2].get('proposal_id') or sent[2].get('question_id') if isinstance(sent[2], dict) else None
+            check(SP, 'a message through the socket is accepted and committed by the service into the intake [%s %s]'
+                  % (sent[0], refusal(sent)), sent[0] == 200 and bool(made) and head() > mark
+                  and made in of_kind('intake_proposal') + of_kind('intake_question'))
+            read = call('GET', '/api/v1/domains/%s/objectives' % DOMAIN, None, cookie)
+            served = [i.get('id') for items in ((read[2].get('items') or {}).values() if isinstance(read[2], dict) else [])
+                      for i in items]
+            check(SP, 'a read through the socket serves the committed objective at the store\'s head [%s %s]'
+                  % (read[0], refusal(read)), read[0] == 200 and made in served
+                  and (read[2].get('watermark') or {}).get('seq', read[2].get('watermark')) == head())
+            logged = [o for o in observations()[seen:] if o.get('operation') == 'api_call']
+            calls = [(o.get('call'), o.get('outcome')) for o in logged]
+            check(SP, 'the service itself ran the command and the read: its observation log records each call [%s]' % calls,
+                  ('apply', 'accepted') in calls and ('read', 'accepted') in calls and ('inspect', 'accepted') in calls)
+            waited = wait(lambda: any(isinstance(o, dict) and o.get('delivered') for o in opened.hints.outcomes), 10) \
+                if opened is not None else False
+            check(SP, 'the service sent the API the commit\'s hint, and the API followed it through the feed [%s]'
+                  % (opened.hints.outcomes[-3:] if opened is not None else None), bool(waited))
+
+        # service/edge-signed-requests: only the api edge speaks as the API, in its own namespace.
+        with section(SE):
+            AS = _v130_load('v130s_assertion', mods / 'control_api_assertion.py')
+            SIG = _v130_load('v130s_signer', mods / 'control_signer.py')
+            command = AS.call_command('inspect', {'entity_ids': []}) if hasattr(AS, 'call_command') else \
+                {'operation': 'api_call', 'call': 'inspect', 'arguments': {'entity_ids': []}}
+            binding = CE.read_binding(str(clone))
+            request = CC.build_request(str(clone), binding, command, lambda data: '')
+            wire = {k: v for k, v in request.items() if k != 'signature'}
+            signed = CC.signed_bytes(request)
+            answer = SIG.call(str(A.signer_config), {'operation': 'sign_api_request', 'channel': 'api', 'edge_key_id': 'edge-api',
+                                                     'request': wire}, 'edge-api', str(A.keyfile['api-auth']))
+            signature = answer.get('signature') or ''
+
+            def verified(namespace, principal='api-gate', key='api-gate'):
+                place = base / A.next_id('verify')
+                place.mkdir()
+                (place / 'allowed').write_text('%s namespaces="%s" %s\n' % (principal, namespace, A.public[key]))
+                (place / 'signature').write_text(signature)
+                return _v130_sp.run(['ssh-keygen', '-Y', 'verify', '-f', str(place / 'allowed'), '-I', principal, '-n',
+                                     namespace, '-s', str(place / 'signature')], input=signed, capture_output=True,
+                                    timeout=10).returncode == 0
+            check(SE, 'the protected signer signs the API\'s request, verified independently with the api edge key in '
+                  'veldo-api-request and not in the command namespace [%s]' % answer.get('refusal'),
+                  answer.get('accepted') is True and verified('veldo-api-request') and not verified('veldo-command'))
+            other = dict(wire, command={'operation': 'inspect', 'entity_ids': []})
+            refused = SIG.call(str(A.signer_config), {'operation': 'sign_api_request', 'channel': 'api', 'edge_key_id': 'edge-api',
+                                                      'request': other}, 'edge-api', str(A.keyfile['api-auth']))
+            store_command = dict(wire, command={'command': {'operation': 'upsert_entity'}, 'signature': 'x'})
+            refused2 = SIG.call(str(A.signer_config), {'operation': 'sign_api_request', 'channel': 'api',
+                                                       'edge_key_id': 'edge-api', 'request': store_command},
+                                'edge-api', str(A.keyfile['api-auth']))
+            check(SE, 'it signs nothing but an API call: a service inspect and a store command are refused by name [%s %s]'
+                  % (refused.get('refusal'), refused2.get('refusal')),
+                  refused.get('accepted') is False and refused.get('refusal') == 'forbidden-purpose'
+                  and refused2.get('accepted') is False and refused2.get('refusal') == 'forbidden-purpose')
+
+            def sent_by(sign):
+                try:
+                    return CC.send(str(clone), command, CE, verify, sign, 'v73-host', timeout=30)
+                except CC.RoutingRefused as exc:
+                    return {'refused': exc.reason}
+            edge_command_ns = sent_by(lambda data: A.sign_as('api-gate', data, 'veldo-command'))
+            unsigned = sent_by(lambda data: '')
+            check(SE, 'an API call with no signature is refused before it runs [%s]' % unsigned.get('reason'),
+                  unsigned.get('accepted') is False and unsigned.get('reason') == 'malformed_request')
+            cases = {
+                     'signed by the owner\'s member key': sent_by(lambda data: A.sign_as('owner', data)),
+                     'signed by the api edge key in the command namespace': edge_command_ns,
+                     'signed by the steward\'s key in the API namespace': sent_by(
+                         lambda data: A.sign_as('steward', data, 'veldo-api-request'))}
+            for label, got in cases.items():
+                check(SE, 'an API call %s is refused before it runs [%s]' % (label, got.get('reason') or got.get('refused')),
+                      got.get('accepted') is False and got.get('reason') == 'command_signature_invalid')
+            good = sent_by(lambda data: signature if data == signed else '')
+            check(SE, 'control: the same request with the signer\'s signature is accepted and answered by the service',
+                  good.get('accepted') is True and (good.get('result') or {}).get('ok') is True)
+
+        # service/host-revocation-closes-stream: a steward's revocation, committed by the service at the host,
+        # reaches the API's deliver through the service; this suite never calls deliver.
+        with section(SR):
+            status, _headers, stream = call('GET', '/api/v1/domains/%s/events/stream' % DOMAIN, None, cookie)
+            status2, _h2, stream2 = call('GET', '/api/v1/domains/%s/events/stream' % DOMAIN, None, cookie2)
+            opened_streams = hasattr(stream, 'next') and hasattr(stream2, 'next')
+            check(SR, 'two sessions of two credentials each hold an open event stream [%s %s]' % (status, status2),
+                  status == 200 and status2 == 200 and opened_streams and len(api.streams()) == 2)
+            cursor = stream2.cursor if opened_streams else None
+            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN, {'text': 'A second objective.'}, cookie2, token2)
+            fed = wait(lambda: opened_streams and stream2.cursor > cursor, 10)
+            check(SR, 'control: a commit that revokes nothing reaches both streams through the service and keeps them '
+                  'open [%s]' % sent[0], sent[0] == 200 and bool(fed) and stream.closed is None and stream2.closed is None)
+            mark = head()
+            revoked = steward('revoke', credential_id=phone.credential_id)
+            closed = wait(lambda: opened_streams and stream.closed is not None, 10)
+            check(SR, 'the steward\'s revocation, signed at the host, is committed by the service [%s]'
+                  % ((revoked.get('result') or {}).get('reason'),),
+                  (revoked.get('result') or {}).get('ok') is True and head() > mark)
+            check(SR, 'the revoked credential\'s open stream closes as revoked, with nothing passed by this suite [%s]'
+                  % (stream.closed if opened_streams else None,), bool(closed) and stream.closed == 'revoked')
+            after = call('GET', '/api/v1/auth/session', None, cookie)
+            kept = call('GET', '/api/v1/auth/session', None, cookie2)
+            check(SR, 'its session is ended and the other credential\'s session and stream stay open [%s %s]'
+                  % (after[0], kept[0]), after[0] == 401 and kept[0] == 200 and stream2.closed is None)
+
+        # service/in-process-refused: this process, the API process, cannot run the judge on the store itself.
+        with section(SN):
+            # Loaded from the installed executable, so every ownership declaration names the code the
+            # service runs, as the API process would have to.
+            organs = home / 'bin' if (home / 'bin' / 'control_service_api.py').is_file() else mods
+            IN = _v130_load('v130s_ingress', organs / 'control_channel_ingress.py')
+            ing = IN.open_ingress(str(ingress_config))
+            SA = _v130_load('v130s_service_api_bin', organs / 'control_service_api.py') if SA is not None else None
+            lock = _v130_os.open(str(A.db.parent / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
+            spare.append(lock)
+            local = SA.ServiceApi(str(api_service), SimpleNamespace(ingress=ing), lock, base / 'local-state') if SA else None
+            ASm = _v130_load('v130s_assertion2', mods / 'control_api_assertion.py')
+            at = _v130_time.time()
+            assertion = dict(ids, schema='veldo.api_assertion/v1', domain=DOMAIN, channel='api', edge='api-gate',
+                             edge_key_id='edge-api', request_id=A.next_id('api-local'), principal='owner',
+                             credential_id=desktop.credential_id, session='local', operation='send_message',
+                             target=DOMAIN, parameters={'text': 'Run me in-process.', 'project': None, 'clarifies': None},
+                             expected_versions={}, issued_at=at, expires_at=at + 60)
+            derived = ASm.domain_request(assertion)
+            packet = {'assertion': assertion,
+                      'signature': A.sign_as('api-gate', A.S.canonical_bytes(assertion)),
+                      'domain_signature': A.sign_as('api-gate', A.S.canonical_bytes(derived))}
+            mark = head()
+            answer = local.authority.apply(packet) if local else {}
+            check(SN, 'the judge constructed in this process refuses an edge-signed command as not the authority, '
+                  'writing nothing [%s]' % answer.get('reason'),
+                  answer.get('ok') is False and answer.get('reason') == 'missing_authority:not_the_authority' and head() == mark)
+            try:
+                local.authority.inspect([])
+                inspected = 'answered'
+            except Exception as exc:  # noqa: BLE001 - the refusal is the observation
+                inspected = getattr(exc, 'code', type(exc).__name__)
+            read = local.authority.read('objectives', 'owner') if local else {}
+            check(SN, 'and refuses its reads the same way [%s %s]' % (inspected, read.get('reason')),
+                  inspected == 'missing_authority:not_the_authority'
+                  and read.get('reason') == 'missing_authority:not_the_authority')
+            through = opened.authority.apply(packet) if opened is not None else {}
+            check(SN, 'control: the same packet sent through the service socket is accepted and committed [%s]'
+                  % through.get('reason'), through.get('ok') is True and head() > mark)
+    finally:
+        for fd in spare:
+            with contextlib.suppress(OSError):
+                _v130_os.close(fd)
+        with contextlib.suppress(Exception):
+            if opened is not None:
+                opened.close()
+        with contextlib.suppress(Exception):
+            if unit:
+                CS.stop(unit, manager)
+        manager.close()
+        stop_bot()
+        for conn in (getattr(ing, 'conn', None), getattr(A, 'conn', None)):
+            with contextlib.suppress(Exception):
+                conn.close()
+        for directory, _dirs, _files in _v130_os.walk(str(base)):
+            with contextlib.suppress(OSError):
+                _v130_os.chmod(directory, 0o700)
+    return rows
+
 
 
 _v130_started = _v130_time.monotonic()
@@ -1998,6 +2534,8 @@ _v130_started = _v130_time.monotonic()
 _v130_fast = '/dev/shm' if _v130_os.path.isdir('/dev/shm') and _v130_os.access('/dev/shm', _v130_os.W_OK) else None
 with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir:
     _v130_rows = _v130_checks(_v130_Path(_v130_dir))
+with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir:
+    _v130_rows.update(_v130_service_checks(_v130_Path(_v130_dir)))
 for _v130_name, _v130_observed in _v130_rows.items():
     _v130_ok = bool(_v130_observed) and all(ok for _, ok in _v130_observed)
     if not _v130_ok:

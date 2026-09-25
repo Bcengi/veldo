@@ -16,6 +16,15 @@ save_workflow_revision) for the assertion's principal, and neither has a separat
 The signer signs the assertion and its derived request, and the authority derives the request again
 from the verified assertion, so the command executed is exactly the one the assertion names.
 
+THE CALLS (phase 3). The API reaches the authority only through the VELDO-0047 authority service socket
+over VELDO-0107, one request per call, and each request's command is one API call built here
+(`call_command`): {"operation": "api_call", "call": <name>, "arguments": {...}} with exactly the
+arguments CALLS names. `apply` carries one signed assertion packet; `inspect`, `read`, `workflow`,
+`events` and `feed` are the reads; `subscribe` names the API's own hint socket, to which the service
+sends the VELDO-0046 hint after each commit. The protected signer signs such a request, and nothing
+else, in REQUEST_NAMESPACE with the api edge key; the service verifies an API call against that key
+alone, so no other key can speak as the API and the API's request signature stands in for no command.
+
 WHAT IT IS NOT. Not a session, a transport or a store. Standard library only.
 """
 import hashlib
@@ -50,6 +59,12 @@ OPERATIONS = {
     'revoke_credential': {'parameters': ('credential_id',), 'boundary': 'command_acceptance'},
     'save_workflow': {'parameters': ('workflow', 'base', 'definition', 'layout'), 'boundary': 'command_acceptance'},
 }
+
+CALL = 'api_call'
+REQUEST_NAMESPACE = 'veldo-api-request'
+CALLS = {'apply': ('packet',), 'inspect': ('entity_ids',), 'read': ('model', 'principal'),
+         'workflow': ('principal', 'workflow', 'version'), 'events': ('principal', 'after', 'limit'),
+         'feed': ('after', 'limit'), 'subscribe': ('socket',)}
 
 
 def canonical(value):
@@ -113,3 +128,25 @@ def domain_request(a):
                     presentation_id=p['presentation_id'], presentation_digest=p['presentation_digest'],
                     presentation_version=p['presentation_version'], choice=p['choice'], rationale=p['rationale'])
     return None
+
+
+def call_command(call, arguments):
+    """The command of one API request to the authority service."""
+    return {'operation': CALL, 'call': call, 'arguments': dict(arguments)}
+
+
+def is_call(command):
+    """Whether a request's command claims to be an API call (then only the api edge may have signed it)."""
+    return isinstance(command, dict) and command.get('operation') == CALL
+
+
+def call_problems(command):
+    """Why a request's command is not one API call, by name; [] when it is."""
+    if not isinstance(command, dict) or set(command) != {'operation', 'call', 'arguments'} or command['operation'] != CALL:
+        return ['an API call is exactly operation, call and arguments']
+    fields = CALLS.get(command['call'])
+    if fields is None:
+        return ['the call is one of %s' % ', '.join(sorted(CALLS))]
+    if not isinstance(command['arguments'], dict) or set(command['arguments']) != set(fields):
+        return ['the arguments of %s are exactly %s' % (command['call'], ', '.join(fields))]
+    return []

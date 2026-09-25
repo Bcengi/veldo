@@ -72,6 +72,18 @@ inspect reports the channel's status. A stop takes effect at the next exchange, 
 the edge as the owner left it, because the record in the store decides every exchange. An ingress
 that cannot be constructed leaves the service serving everything else, its refusal reported by name.
 
+THE AUTHENTICATED API (VELDO-0130). An installation given --api-service as well copies that
+veldo.api_service/v1 configuration (this authority's own, and the api edge its Telegram ingress names;
+anything else refuses installation by name) into config/api-service.json, and `serve` constructs the
+API's judge on the ingress's connection with the lock this instance holds (control_service_api), so the
+authority, never the API process, runs every API command and read. An api_call packet, whose request
+signature must be the enrolled api edge's in the API's request namespace (never a member key), is run by
+it; a steward's enroll_api_credential or revoke_api_credential packet is admitted by
+control_api_credentials; inspect reports the API's status. After every packet or channel pass that
+advanced the journal, whoever sent it, the service sends the head record's hint to each subscribed API,
+so a revocation committed here ends the API's sessions and closes their open streams. An API that cannot
+be constructed leaves the service serving everything else, its refusal reported by name.
+
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
 workers never write directly: outside the home and temporary directories. It is judged as named: a
@@ -127,6 +139,8 @@ L = _organ('control_launch')
 C = L.C
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
+SA = _organ('control_service_api')
+API_SERVICE = 'api-service.json'
 
 # The store's own generic commands, taken before any service registers one of its own on this module
 # (control_claim.Receiver adds claim_operation), so a claim transition is never reachable as one.
@@ -275,6 +289,35 @@ class _Loads:
             if not named:
                 self.unresolved.append('%s:%d' % (self.name, call.lineno))
             self.loads |= named or set()
+        # A function that calls one of this module's loader helpers with an argument built from its own
+        # parameter is a loader helper too (control_workflow's _organ(name) calls _sibling(alias,
+        # name + '.py')); its call there names no file itself, so it is delegated, never unresolved.
+        self.delegated = set()
+        while True:
+            found = False
+            for call in self.calls:
+                if id(call) in self.delegated or not isinstance(call.func, ast.Name) or call.func.id not in self.helpers:
+                    continue
+                scope = call
+                while scope in parents and not isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    scope = parents[scope]
+                if not isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)) or scope.name in self.helpers:
+                    continue
+                params = [a.arg for a in scope.args.posonlyargs + scope.args.args + scope.args.kwonlyargs]
+                helper = self.helpers[call.func.id]
+                given = dict(zip(helper['params'], call.args))
+                given.update({k.arg: k.value for k in call.keywords if k.arg})
+                values = [given[p] for p in helper['used'] if p in given]
+                used = [p for p in params if any(isinstance(n, ast.Name) and n.id == p for v in values for n in ast.walk(v))]
+                if not used:
+                    continue
+                self.helpers[scope.name] = {'params': params[1:] if params[:1] == ['self'] else params, 'used': used,
+                                            'suffix': helper['suffix'] or any(isinstance(n, ast.Constant) and n.value == '.py'
+                                                                              for v in values for n in ast.walk(v))}
+                self.delegated.add(id(call))
+                found = True
+            if not found:
+                break
         self.imports = set()
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Import):
@@ -319,6 +362,9 @@ class _Loads:
             return []
 
         for call in self.calls:
+            if id(call) in self.delegated:
+                accounted.add(id(call.func))
+                continue
             target, args = call.func, list(call.args)
             if _callee(call) == 'partial' and args:
                 target, args = args[0], args[1:]
@@ -601,7 +647,7 @@ def _remove_tree(path):
 
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
-            receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None):
+            receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None, api_service=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down."""
@@ -679,6 +725,13 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             ingress = CH.installable(str(channel_ingress), first, principal, journal, repositories)
         except CH.Refused as error:
             raise Refused(error.code, error.detail, 'name the VELDO-0073 ingress configuration of this authority')
+    api = None
+    if api_service is not None:
+        try:
+            api = SA.installable(str(api_service), first, principal, journal, repositories,
+                                 str(channel_ingress) if ingress is not None else None)
+        except SA.Refused as error:
+            raise Refused(error.code, error.detail, 'name the VELDO-0130 API service configuration of this authority')
     bin_dir, config_dir, state_dir = (os.path.join(home, n) for n in ('bin', 'config', 'state'))
     config_path = os.path.join(config_dir, 'service.json')
     values = {'SERVICE': service, 'DOMAIN': first['domain_uuid'], 'STORE': first['store_uuid'],
@@ -705,6 +758,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         _write(os.path.join(config_dir, 'enrollment_signers'), signers, 0o600)
         if ingress is not None:
             _write(os.path.join(config_dir, CHANNEL_INGRESS), ingress, 0o600)
+        if api is not None:
+            _write(os.path.join(config_dir, API_SERVICE), api, 0o600)
         receivers = {}
         for repository, members in sorted(repositories.items()):
             path = os.path.join(config_dir, 'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
@@ -725,7 +780,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                   'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
                   'closure': {name: _digest(data) for name, data in fixed.items()},
                   'template': _digest(TEMPLATE.read_bytes()),
-                  'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None}
+                  'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
+                  'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None}
         _write(config_path, _json(config), 0o600)
         os.makedirs(unit_dir, exist_ok=True)
         _write(unit_path, text, 0o644)
@@ -747,7 +803,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
             'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
             'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
-            'channel_ingress': config['channel_ingress'], 'daemon_reload_rc': reload_rc, 'started': False}
+            'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'],
+            'daemon_reload_rc': reload_rc, 'started': False}
 
 
 def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):
@@ -847,6 +904,8 @@ class Service:
         self.receivers, self.counts, self.refusals = {}, {'accepted': 0, 'refused': 0}, {}
         # The Telegram channel (VELDO-0138): set by serve() when the installation names an ingress.
         self.channel, self.channel_refusal = None, None
+        # The authenticated API (VELDO-0130): set by serve() when the installation names its configuration.
+        self.api, self.api_refusal = None, None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -879,6 +938,9 @@ class Service:
             return (isinstance(principal, str) and bool(principal.strip()) and AC.ssh_keygen_verify(
                 message, signature, self.enrollment_signers, principal, EL.ENROLLMENT_NAMESPACE)[0])
         if signed.get('schema') == CC.REQUEST_SCHEMA:
+            # An API call speaks only for the API: its request is the api edge's, in its own namespace.
+            if SA.AS.is_call(signed.get('command')):
+                return self.api is not None and self.api.verifies(message, signature)
             return self._keyring_verifies(message, signature)
         return False
 
@@ -908,11 +970,18 @@ class Service:
                        'operation': command.get('operation') or (packet.get('operation') if isinstance(packet, dict) else None),
                        'command_id': command.get('command_id'), 'unit_id': command.get('unit_id'),
                        'principal': command.get('principal'), 'accepted_versions': {}}
+        if SA.AS.is_call(packet):
+            observation.update(operation=SA.AS.CALL, call=packet.get('call'))
+        before = self.watermark()
         try:
             if repository not in self.repositories:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
+            elif SA.AS.is_call(packet):
+                result = self.api_call(packet)
+            elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
+                result = self.api_credential(packet, observation)
             elif command.get('operation') == CH.AUTHORIZE:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CLM.OPERATIONS and 'unit_id' in command:
@@ -937,7 +1006,43 @@ class Service:
         observation.update(outcome='accepted' if ok else 'refused', refusal=None if ok else result.get('reason'),
                            taxonomy=None if ok else taxonomy(result.get('reason')), watermark=self.watermark())
         self._count(observation)
+        self.hint_after(before)
         return result
+
+    def api_call(self, packet):
+        """One API call (VELDO-0130), run by this instance's API judge; refused by name without one."""
+        if self.api is None:
+            raise Refused('unavailable_service:api:' + (self.api_refusal or 'not_configured'),
+                          'this instance runs no authenticated API')
+        return self.api.call(packet)
+
+    def api_credential(self, packet, observation):
+        """A steward's enroll_api_credential or revoke_api_credential, signed at the host."""
+        if self.api is None:
+            raise Refused('unavailable_service:api:' + (self.api_refusal or 'not_configured'),
+                          'this instance runs no authenticated API')
+        result = self.api.credential(packet)
+        observation['accepted_versions'] = dict(result.pop('accepted_versions', None) or {})
+        return result
+
+    def hint_after(self, before):
+        """After a packet or pass that advanced the journal, the head record's hint to every subscribed
+        API; a failure is logged by name and never ends the service."""
+        if self.api is None or self.watermark() <= before:
+            return None
+        try:
+            sent = self.api.publish()
+        except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never success
+            sent = {'outcome': 'refused', 'reason': 'unknown_outcome:' + type(error).__name__}
+        if sent.get('dropped') or sent.get('reason'):
+            self._log(dict(sent, kind='api', operation='api_hint', at=time.time(), domain_uuid=self.domain))
+        return sent
+
+    def api_status(self):
+        if self.api is None:
+            return {'available': False, 'configured': bool(self.config.get('api_service')),
+                    'refusal': self.api_refusal}
+        return dict(self.api.status(), configured=True)
 
     def receiver(self, repository):
         if repository not in self.receivers:
@@ -998,12 +1103,14 @@ class Service:
     def channel_pass(self):
         """One channel pass (control_service_channel.Channel.tick), logged when it did something or its
         outcome changed. A fault is an unknown outcome in the log, never the end of the service."""
+        before = self.watermark()
         try:
             summary = self.channel.tick()
         except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never success
             summary = {'outcome': 'refused', 'reason': 'unknown_outcome:' + type(error).__name__, 'notable': True}
         if summary.pop('notable', False):
             self._log(dict(summary, kind='channel', operation='channel_pass', at=time.time(), domain_uuid=self.domain))
+        self.hint_after(before)
         return summary
 
     def inspect(self, packet):
@@ -1020,7 +1127,7 @@ class Service:
                 'journal_head': head[1] if head else S.GENESIS_DIGEST, 'entities': entities,
                 'service': self.config['service'], 'unit': self.config['unit'],
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
-                'channel': self.channel_status()}
+                'channel': self.channel_status(), 'api': self.api_status()}
 
     def pending(self):
         claims = sum(1 for (data,) in self.conn.execute("SELECT data FROM entities WHERE kind='claim'")
@@ -1038,7 +1145,7 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
-        if observation.get('kind') == 'channel':
+        if observation.get('kind') in ('channel', 'api'):
             return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
@@ -1064,6 +1171,8 @@ def serve(config_path):
         try:
             service = Service(config, conn)
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
+            service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
+                                                           os.path.dirname(config['observations']))
             authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,
                                      service.verify, config['host_identity'], service.apply,
                                      watermark=service.watermark,
@@ -1130,6 +1239,7 @@ def main(argv=None):
         ins.add_argument('--profile', help='a JSON file with this host\'s worker profile')
         ins.add_argument('--adapters', help='a JSON file mapping adapter names to {argv: [...]}')
         ins.add_argument('--channel-ingress', help='the VELDO-0073 Telegram ingress configuration this instance runs')
+        ins.add_argument('--api-service', help='the VELDO-0130 API service configuration this instance runs')
         for name in ('start', 'stop', 'status', 'uninstall'):
             one = sub.add_parser(name)
             one.add_argument('unit')
@@ -1142,7 +1252,7 @@ def main(argv=None):
                              install_root=args.install_root, unit_dir=args.unit_dir,
                              profile=json.loads(Path(args.profile).read_text()) if args.profile else None,
                              adapters=json.loads(Path(args.adapters).read_text()) if args.adapters else None,
-                             channel_ingress=args.channel_ingress)
+                             channel_ingress=args.channel_ingress, api_service=args.api_service)
         elif args.cmd == 'uninstall':
             report = uninstall(args.unit, install_root=args.install_root, unit_dir=args.unit_dir)
         else:
