@@ -28,7 +28,8 @@ import tempfile as _v75_temp
 import time as _v75_time
 
 _V75_ROWS = ('install/assets', 'stop/any-authenticated-requester', 'stop/unauthenticated-refused',
-             'notice/each-stop-kind', 'notice/new-version-same-status', 'resume/acknowledgement-grants-nothing',
+             'stop/designated-authority-deliverable', 'notice/each-stop-kind', 'notice/new-version-same-status',
+             'notice/unreachable-authority-classed', 'resume/acknowledgement-grants-nothing',
              'resume/stale-or-wrong-actor', 'resume/owner-settlement-fresh-contract', 'resume/unknown-effect-stays-stopped',
              'observability/named-refusals')
 # Every enabled stop point by the unit states it interrupts (entity_contract's edges into AWAITING_AUTHORITY).
@@ -64,7 +65,7 @@ def _v75_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:200]), False)
             return True
 
-    IA, RA, RU, NE, NV, RK, RW, RF, RX, OB = _V75_ROWS
+    IA, RA, RU, RD, NE, NV, NU, RK, RW, RF, RX, OB = _V75_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {'control_andon.py': ROOT / ".veldo" / "control_andon.py"}
     scaffold_path = ROOT / ".veldo" / "init_scaffold.py"
@@ -128,6 +129,21 @@ def _v75_checks(base):
             A.admin('steward', 'enroll_principal', {'principal': who, 'principal_type': kind, 'roles': [],
                                                     'public_key': A.public[who], 'independence_group': who,
                                                     'scope': ['project-a']}, enrollee=who)
+        # A technical lead: an active person holding technical_authority only, with an enrolled private chat.
+        # The steward (a person holding project_owner, scope everywhere) has no enrolled chat at all.
+        path = base / 'authority' / 'key-techlead'
+        _v75_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v75-techlead', '-f', str(path)],
+                    check=True, capture_output=True, timeout=10, stdin=_v75_sp.DEVNULL)
+        A.keyfile['techlead'] = path
+        A.public['techlead'] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
+        A.admin('steward', 'enroll_principal', {'principal': 'techlead', 'principal_type': 'person',
+                                                'roles': ['technical_authority'], 'public_key': A.public['techlead'],
+                                                'independence_group': 'techlead', 'scope': ['project-a']}, enrollee='techlead')
+        tech_chat = 5570075
+        api['chats'][tech_chat] = {'id': tech_chat, 'type': 'private', 'first_name': 'Techlead'}
+        A.fixture('channel-enrollment:telegram_chat:techlead', 'channel_enrollment',
+                  dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='techlead',
+                       chat_id=tech_chat, revoked_at=None))
 
         def unit(uid, state):
             A.fixture(uid, 'execution_unit', {'unit_id': uid, 'state': state, 'repository_uuid': ids['repository_uuid'],
@@ -150,10 +166,11 @@ def _v75_checks(base):
         def signed(who, body, signer=None):
             return {'command': body, 'signature': A.sign_as(signer or who, A.S.canonical_bytes(body))}
 
-        def raise_packet(who, uid, station, reason, effect='clean', roles=('project_owner',), signer=None):
+        def raise_packet(who, uid, station, reason, effect='clean', roles=('project_owner',), signer=None,
+                         designated='owner'):
             body = dict(ids, operation='raise', principal=who, command_id=A.next_id('raise'),
                         nonce=A.next_id('raise-nonce'), unit=uid, station=station, reason=reason,
-                        resolving={'principal': 'owner', 'roles': list(roles)}, effect=effect)
+                        resolving={'principal': designated, 'roles': list(roles)}, effect=effect)
             return signed(who, body, signer)
 
         def revise_packet(who, sid, reason):
@@ -260,6 +277,45 @@ def _v75_checks(base):
             check(RU, 'nothing was recorded and the unit still runs',
                   andon is not None and len(andon.stops()) == before and unit_state(uid) == 'RUNNING')
 
+        # AC1/AC3 (review finding 75): a stop is recorded only for a designated authority who can settle it
+        # and be reached NOW: the settlement's effective requirement (its decision_disposition policy AND the
+        # named roles) held today, and an enrolled private chat. Otherwise it is refused by name, nothing written.
+        tech_stop = None
+        with section(RD):
+            before = len(andon.stops()) if andon is not None else None
+            sent = sends()
+            uid = unit('unit-techlead', 'REVIEWING')
+            tech = raise_stop(raise_packet('worker', uid, 'review', 'reason-techlead', roles=('technical_authority',),
+                                           designated='techlead'))
+            check(RD, 'a technical_authority-only person designated is refused as role_not_satisfied, naming the person '
+                  'and project_owner [%s %s]' % (tech.get('reason'), tech.get('missing_roles')),
+                  tech.get('outcome') == 'refused' and tech.get('reason') == 'role_not_satisfied'
+                  and tech.get('designated') == 'techlead' and tech.get('missing_roles') == ['project_owner'])
+            check(RD, 'nothing was written or sent and the unit is still reviewing',
+                  andon is not None and len(andon.stops()) == before and unit_state(uid) == 'REVIEWING' and sends() == sent)
+            uid = unit('unit-steward', 'REVIEWING')
+            chatless = raise_stop(raise_packet('worker', uid, 'review', 'reason-steward', designated='steward'))
+            check(RD, 'a person with no enrolled chat designated is refused as no_enrolled_chat, naming the person [%s]'
+                  % chatless.get('reason'), chatless.get('outcome') == 'refused'
+                  and chatless.get('reason') == 'no_enrolled_chat' and chatless.get('designated') == 'steward')
+            check(RD, 'nothing was written or sent and that unit is still reviewing',
+                  andon is not None and len(andon.stops()) == before and unit_state(uid) == 'REVIEWING' and sends() == sent)
+            uid = unit('unit-owner-tech', 'REVIEWING')
+            named = raise_stop(raise_packet('worker', uid, 'review', 'reason-owner-tech', roles=('technical_authority',)))
+            tech_stop = named.get('stop_id')
+            s = stop_of(tech_stop)
+            item = ing.inbox.read(s.get('request_id') or '') if s else None
+            terms = ing.settlement._terms(item['data'])[1] if item and item['data'] else {}
+            check(RD, 'a stop naming technical_authority records the effective roles, project_owner among them [%s]'
+                  % s.get('resolving'), named.get('outcome') == 'stopped'
+                  and s.get('resolving') == {'principal': 'owner', 'roles': ['project_owner', 'technical_authority']}
+                  and s.get('requested_roles') == ['technical_authority']
+                  and sorted(terms.get('required_roles') or []) == ['project_owner', 'technical_authority'])
+            check(RD, 'that stop reached the owner\'s chat', len(notices_of(tech_stop)) == 1)
+            check(RD, 'the recorded refusals are classed missing_authority',
+                  andon is not None and AND.taxonomy('role_not_satisfied') == 'missing_authority'
+                  and AND.taxonomy('no_enrolled_chat') == 'missing_authority')
+
         # AC2: each enabled stop kind reaches the owner's Telegram chat with its current presentation.
         with section(NE):
             for station, state in (('build', 'RUNNING'), ('review', 'REVIEWING'), ('coordination', 'LANDING')):
@@ -365,6 +421,40 @@ def _v75_checks(base):
                   ok and demoted.get('reason') == 'not_authorized' and unit_state(uid) == 'AWAITING_AUTHORITY')
             A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
                                                                                  'priority_authority', 'technical_authority']})
+            # Review finding 75 (a): a settler who lost a role the SETTLEMENT required does not resume. The stop
+            # named technical_authority only; the settlement required project_owner as well.
+            reply(tech_stop, 'accept: resume it')
+            need = ((settled(tech_stop) or {}).get('requirement') or {}).get('roles')
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['admission_authority', 'priority_authority',
+                                                                                 'technical_authority']})
+            lost = resume(tech_stop)
+            check(RW, 'a settler who lost project_owner, which the settlement required, does not resume [%s %s]'
+                  % (need, lost.get('reason')), need == ['project_owner', 'technical_authority']
+                  and lost.get('reason') == 'not_authorized' and unit_state('unit-owner-tech') == 'AWAITING_AUTHORITY')
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
+                                                                                 'priority_authority', 'technical_authority']})
+            # The same when the settlement's requirement outgrows what the stop recorded: the running settlement
+            # service's decision_disposition policy asks one more role at settle time than it did at raise.
+            uid = unit('unit-policy', 'VERIFYING')
+            sid = raise_stop(raise_packet('worker', uid, 'build', 'reason-policy')).get('stop_id')
+            policy = type(ing.settlement).__init__.__globals__['JOURNEY']['decision_disposition']
+            kept_roles = policy['roles']
+            policy['roles'] = tuple(kept_roles) + ('admission_authority',)
+            try:
+                reply(sid, 'accept: resume it')
+            finally:
+                policy['roles'] = kept_roles
+            need = ((settled(sid) or {}).get('requirement') or {}).get('roles')
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'priority_authority',
+                                                                                 'technical_authority']})
+            outgrown = resume(sid)
+            check(RW, 'a settler who lost a role the settlement required beyond the recorded ones does not resume [%s %s %s]'
+                  % (stop_of(sid).get('resolving'), need, outgrown.get('reason')),
+                  stop_of(sid).get('resolving') == {'principal': 'owner', 'roles': ['project_owner']}
+                  and need == ['admission_authority', 'project_owner'] and outgrown.get('reason') == 'not_authorized'
+                  and unit_state(uid) == 'AWAITING_AUTHORITY')
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
+                                                                                 'priority_authority', 'technical_authority']})
 
         # AC3: the designated authority's current settlement resumes a clean stop with a fresh station contract.
         with section(RF):
@@ -427,6 +517,42 @@ def _v75_checks(base):
                   andon is not None and not any(r.get('outcome') == 'resumed' and r.get('stop_id') in (one.get('stop_id'), two.get('stop_id'))
                                                 for r in passed)
                   and unit_state(declared) == unit_state(dispatched) == 'AWAITING_AUTHORITY' and entity(did) == dispatch_before)
+
+        # Filed item (review 75): a notice that cannot reach the designated authority is refused under its own
+        # name and classed missing_authority, as VELDO-0073 classes edge_stopped: an owner who is no longer
+        # current, an edge the owner stopped, a chat enrollment that no longer holds.
+        with section(NU):
+            def notice_refused(result, code):
+                n = result.get('notice') or {}
+                seen = [o for o in (andon.observations if andon is not None else [])
+                        if o.get('operation') == 'notify' and o.get('stop_id') == result.get('stop_id')]
+                return (n.get('outcome') == 'refused' and n.get('reason') == code and bool(seen)
+                        and seen[-1].get('reason') == code and seen[-1].get('error_class') == 'missing_authority')
+
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['admission_authority', 'priority_authority',
+                                                                                 'technical_authority']})
+            demoted = (andon.revise_stop(revise_packet('worker', stops.get('DISPATCHING'), 'reason-owner-demoted'))
+                       if andon is not None else {})
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
+                                                                                 'priority_authority', 'technical_authority']})
+            check(NU, 'an owner no longer current is owner_not_current, classed missing_authority [%s]'
+                  % (demoted.get('notice') or {}).get('reason'), notice_refused(demoted, 'owner_not_current'))
+            A.authorize(acts, 'stop')
+            halted = (andon.revise_stop(revise_packet('worker', stops.get('VERIFYING'), 'reason-edge-stopped'))
+                      if andon is not None else {})
+            check(NU, 'an edge the owner stopped is edge_stopped, classed missing_authority [%s]'
+                  % (halted.get('notice') or {}).get('reason'), notice_refused(halted, 'edge_stopped'))
+            A.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
+                      dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=chat,
+                           revoked_at=_v75_time.time()))
+            revoked = (andon.revise_stop(revise_packet('pm', stops.get('CLAIMED'), 'reason-chat-revoked'))
+                       if andon is not None else {})
+            check(NU, 'a revoked chat enrollment is invalid_enrollment, classed missing_authority [%s]'
+                  % (revoked.get('notice') or {}).get('reason'), notice_refused(revoked, 'invalid_enrollment'))
+            check(NU, 'no_enrolled_chat and owner_not_current keep their names and class wherever a notice meets them',
+                  AND is not None and all(AND.notice_refusal(code, other) == code and AND.taxonomy(code) == 'missing_authority'
+                                          for code in ('no_enrolled_chat', 'owner_not_current', 'edge_stopped')
+                                          for other in ('stale_subject', 'unavailable_service')))
 
         # Observability: named refusals with their error class, counts and pending work, no reason text or signature.
         with section(OB):
