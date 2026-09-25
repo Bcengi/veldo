@@ -502,7 +502,7 @@ def _v78_suite():
             accepted = osend('pm', 'accept', objective=o1, objective_version=(OB.read(conn, o1) or {}).get('version'),
                              request=rid_o)
             features = {}
-            for name in ('intake', 'prepared', 'admitted', 'prioritized', 'main', 'rejected', 'returned', 'closed'):
+            for name in ('intake', 'prepared', 'admitted', 'prioritized', 'main', 'rejected', 'returned', 'closed', 'running'):
                 made = osend('pm', 'propose_feature', objective=o1, objective_version=(OB.read(conn, o1) or {}).get('version'),
                              feature='f-' + name, title='Feature %s' % name, scope=['checkout'])
                 features[name] = made.get('feature_id')
@@ -633,7 +633,11 @@ def _v78_suite():
                     ('a classification that drifts is named', attempt(lambda: CB.classification_problems(
                         types.SimpleNamespace(**dict({k: getattr(PQ, k) for k in dir(PQ) if k.isupper()},
                                                      UNIT_TERMINAL=('COMPLETED',))))) == ['unit_states']),
-                    ('and the service refuses to load over it', drifted == ('error', 'ImportError'))])
+                    ('and the service refuses to load over it', drifted == ('error', 'ImportError')),
+                    ('an entity contract with a unit state the classification does not name is named', attempt(
+                        lambda: CB.classification_problems(PQ, dict(contract.LIFECYCLES, execution_unit=dict(
+                            contract.LIFECYCLES['execution_unit'],
+                            states=tuple(contract.LIFECYCLES['execution_unit']['states']) + ('PAUSED',))))) == ['unit_states'])])
 
                 executable_units = [(eid, u) for eid, u in of_kind('execution_unit')
                                     if u.get('state') not in ('PLANNED', 'CANCELED', 'COMPLETED')]
@@ -759,6 +763,109 @@ def _v78_suite():
                      fresh.get('ok') and readied == {U3: ('READY', 3), U4: ('READY', 3)}
                      and (item(M).get('priority') or {}).get('units') == [U1, U2, U3, U4]),
                     ('then they are claimed', after3.get('ok') and after4 == (True, 'granted'))])
+
+            # Review 2: a running unit's build and review decisions are tickets for its subscription calls and
+            # its landing. The backlog service rewrites the item for the unit's siblings (append, prioritize,
+            # dispose_unit); those leave the tickets current, while a change bearing on the unit is stale by name.
+            with region('ticket/sibling-changes', 'ticket/own-changes'):
+                T1, T2, T3 = 'TASK-78-run', 'TASK-78-sib', 'TASK-78-add'
+                # The domain's authority record, which the publication station reads (authority_current).
+                fixture('authority:' + DOMAIN, 'authority', {'state': 'active', 'generation': 1})
+                _tt, T = take('running')
+                bop('pm', 'prepare', T, units=[unit_entry(T1), unit_entry(T2)])
+                bop('pm', 'request_grooming', T)
+                admit(T, 'ADM-78-T')
+                prioritize(T, 'PRI-78-T')
+                ran = rclaim('builder', T1)
+                if entity(T1) is not None:
+                    fixture(T1, 'execution_unit', dict(data_of(T1), producer='builder'))
+                held_by = {'holder': 'builder', 'generation': (ran.get('claim') or {}).get('generation')}
+                build_t = gate.decide('build', T1, context=dict(held_by))
+                review_t = gate.decide('review', T1, context=dict(held_by, reviewer='reviewer-78'))
+
+                class Guard:
+                    """The provider behind the subscription call: reached only when the Gate accepted."""
+                    def invoke(self, command_id, dispatch, invocation, boundary, wall_seconds, configuration, now):
+                        return {'seq': 1}
+                calls = types.SimpleNamespace(guards={'cli': Guard()}, gate=gate, observations=[])
+                DI = load('v78_dispatch', mods / 'dispatch.py')
+                lander = types.SimpleNamespace(land=lambda u: {'ok': True, 'landed': True, 'spec': u['spec']})
+                landing_self = types.SimpleNamespace(_gate=lambda: gate, _floor=lambda g: None,
+                                                     _context=lambda u: dict(held_by), _refused=DI.Dispatcher._refused,
+                                                     _lander=lander)
+
+                def answers():
+                    """(the subscription call CallHandle.invoke makes against the build decision, the landing
+                    Dispatcher._land makes against the review decision): 'accepted' or the named refusals."""
+                    handle = FR.EL.CallHandle(calls, 'build', T1, 'dispatch-78-run', dict(held_by), build_t)
+                    try:
+                        called = 'accepted' if handle.invoke('cli', 'initial', next_id('inv'), 60, {},
+                                                             now=time.time()) == {'seq': 1} else 'other'
+                    except FR.EL.Refused as error:
+                        called = [error.code]
+                    landed = DI.Dispatcher._land(landing_self, {'spec': T1}, ticket=review_t)
+                    return called, 'accepted' if landed.get('landed') is True else landed.get('refusals')
+                accepted = ('accepted', 'accepted')
+                start = answers()
+                grew_t = bop('pm', 'append', T, unit=unit_entry(T3))
+                after_append = answers()
+                pri_t = prioritize(T, 'PRI-78-T2')[2]
+                after_priority = answers()
+                u2 = dict(data_of(T2), uuid=T2)
+                rid_t2, _ = decide(T, 'decision_disposition', 'ALT-78-T', proposal={'outcome': 'not_required'},
+                                   target=CB.unit_target(u2) if CB is not None and u2.get('revision') else placeholder(T2),
+                                   brief=shown('alternative_brief', u2, default='Close %s.' % T2))
+                gone_t = bop('pm', 'dispose_unit', T, unit=T2, request=rid_t2)
+                after_dispose = answers()
+                moved = item(T)
+                PQ78 = getattr(CB, 'PQ', None)
+                check('ticket/sibling-changes', [
+                    ('the running unit\'s build and review decisions were eligible',
+                     ran.get('ok') and build_t.get('eligible') and review_t.get('eligible') and start == accepted),
+                    ('a sibling appended, prioritized and disposed rewrote the item\'s entries and bookkeeping',
+                     grew_t.get('ok') and pri_t.get('ok') and gone_t.get('ok') and moved.get('decomposition_revision') == 2
+                     and (moved.get('priority') or {}).get('units') == [T1, T2, T3] and len(moved.get('priorities') or []) == 2
+                     and data_of(T2).get('state') == 'CANCELED' and data_of(T3).get('state') == 'READY'),
+                    ('the subscription call and the landing are accepted after the append', after_append == accepted),
+                    ('and after the sibling\'s prioritization', after_priority == accepted),
+                    ('and after the sibling\'s disposal', after_dispose == accepted),
+                    ('every field the service writes on the item is one the ticket classifies',
+                     lambda: set(moved) - {'version'} == set(PQ78.ITEM_FIELDS))])
+
+                def rewritten(change):
+                    """The answers with the item record changed by `change` (a fixture write), then restored."""
+                    original = data_of(T)
+                    changed = copy.deepcopy(original)
+                    change(changed)
+                    fixture(T, 'backlog_item', changed)
+                    try:
+                        return answers()
+                    finally:
+                        fixture(T, 'backlog_item', original)
+
+                def own_entry(d):
+                    [e for e in d['decomposition'] if e['unit'] == T1][0]['scope'] = ['checkout', 'payments']
+
+                def sibling_entry(d):
+                    [e for e in d['decomposition'] if e['unit'] == T3][0]['scope'] = ['checkout', 'payments']
+
+                def own_priority(d):
+                    d['priorities'][0]['rank'] = 9
+
+                def item_scope(d):
+                    d['scope'] = ['checkout', 'payments']
+                stale_t = (['stale_input:backlog'], ['stale_input:backlog'])
+                changes = {name: attempt(lambda: rewritten(fn)) for name, fn in (
+                    ('own-entry', own_entry), ('own-priority', own_priority), ('item-scope', item_scope),
+                    ('sibling-entry', sibling_entry))}
+                restored = answers()
+                check('ticket/own-changes', [
+                    ('a change to the unit\'s own decomposition entry is stale by name', changes['own-entry'] == stale_t),
+                    ('a change to the priority record that prioritized it is stale by name',
+                     changes['own-priority'] == stale_t),
+                    ('a change to the item\'s scope is stale by name', changes['item-scope'] == stale_t),
+                    ('a change to a sibling\'s entry alone leaves the tickets current', changes['sibling-entry'] == accepted),
+                    ('the restored record is current again', restored == accepted)])
 
             # AC3: a clean blocked phase resumes only on its settled binding; DONE needs accepted outcomes.
             with region('blocked/resume-binding', 'done/missing-outcome', 'done/authorized-alternative',
