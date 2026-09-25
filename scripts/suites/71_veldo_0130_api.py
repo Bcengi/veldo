@@ -2460,6 +2460,15 @@ def _v130_service_checks(base):
                 return value
             _v130_time.sleep(0.1)
 
+    def bounded(work, seconds=30):
+        """`work()` on its own thread, or None when it does not return in time: an API whose delivery is
+        deadlocked then fails the rows that need it by assertion, never hanging the suite."""
+        box = []
+        worker = _v130_threading.Thread(target=lambda: box.append(work()), daemon=True)
+        worker.start()
+        worker.join(seconds)
+        return box[0] if box else None
+
     def private(path, text):
         fd = _v130_os.open(str(path), _v130_os.O_WRONLY | _v130_os.O_CREAT | _v130_os.O_EXCL, 0o600)
         with _v130_os.fdopen(fd, 'w') as handle:
@@ -2603,11 +2612,15 @@ def _v130_service_checks(base):
                 headers['Cookie'] = '%s=%s' % (COOKIE, cookie)
             if token:
                 headers['X-Veldo-Token'] = token
-            try:
-                status, out, value = api.handle(method, path, headers, _v130_json.dumps(body).encode() if body is not None else b'')
-            except Exception as error:  # noqa: BLE001 - a handler that raises is an unknown outcome, recorded
-                return 500, {}, {'refusal': 'raised:%s' % type(error).__name__}
-            return status, dict(out), value
+
+            def handled():
+                try:
+                    status, out, value = api.handle(method, path, headers,
+                                                    _v130_json.dumps(body).encode() if body is not None else b'')
+                except Exception as error:  # noqa: BLE001 - a handler that raises is an unknown outcome, recorded
+                    return 500, {}, {'refusal': 'raised:%s' % type(error).__name__}
+                return status, dict(out), value
+            return bounded(handled) or (0, {}, {'refusal': 'no_answer_in_time'})
 
         def refusal(result):
             return result[2].get('refusal') if isinstance(result[2], dict) else None
@@ -2847,7 +2860,7 @@ def _v130_service_checks(base):
             check(SN, 'and refuses its reads the same way [%s %s]' % (inspected, read.get('reason')),
                   inspected == 'missing_authority:not_the_authority'
                   and read.get('reason') == 'missing_authority:not_the_authority')
-            through = opened.authority.apply(packet) if opened is not None else {}
+            through = (bounded(lambda: opened.authority.apply(packet)) if opened is not None else None) or {}
             check(SN, 'control: the same packet sent through the service socket is accepted and committed [%s]'
                   % through.get('reason'), through.get('ok') is True and head() > mark)
 
