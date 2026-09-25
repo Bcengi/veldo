@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -215,2 +215 @@
+-    return (isinstance(tls, dict) and tls.get('verified') is True and tls.get('host') == TELEGRAM_HOST
+-            and _names_cover(tls.get('dns_names'), TELEGRAM_HOST)
++    return (isinstance(tls, dict) and tls.get('verified') is True  # defect: any host's certificate

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -126 +126 @@
+-    return bool(host) and all(c.isalnum() or c in '.-' for c in host)
++    return True  # defect: any https text is a Bot API origin

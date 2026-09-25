@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_ingress.py
++++ b/.veldo/control_channel_ingress.py
+@@ -221,2 +220,0 @@
+-    if trust is None:
+-        raise Refused('missing_authority', 'this host has installed no trust')

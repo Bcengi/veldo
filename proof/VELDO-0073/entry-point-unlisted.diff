@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -109,2 +109 @@
+-                ('control_channel_attribution.py', 'TelegramAcquisitionEdge.get_updates', 'getUpdates'),
+-                ('request_doorbell.py', 'TelegramSink.send', 'sendMessage'))
++                ('control_channel_attribution.py', 'TelegramAcquisitionEdge.get_updates', 'getUpdates'))

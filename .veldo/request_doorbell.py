@@ -222,10 +222,18 @@ class TelegramSink:
     read-back, so idempotency is the caller's key plus a DURABLE keyed marker the adopter wires;
     this reference keeps no marker of its own (it always attempts a send), so it is paired with a
     durable keyed store or driven only by the reconciler. A real chat needs a live network, so this
-    path is reference-wired and the FakeSink is what runs in the gate."""
+    path is reference-wired and the FakeSink is what runs in the gate.
 
-    def __init__(self, chat_id, token_ref, resolve_secret=None):
+    VELDO-0073: a resolving token is never activation. Every send asks the channel activation gate
+    (`activation`, a control_channel_activation.Gate) through control_channel_projection.gated_open,
+    and a sink given none refuses as not_activated before a byte leaves; the gate admits a send only
+    to the enrolled owner's chat of a current, explicitly authorized activation."""
+
+    ORIGIN = "https://api.telegram.org"
+
+    def __init__(self, chat_id, token_ref, resolve_secret=None, activation=None):
         self._chat_id = chat_id
+        self._activation = activation
         resolver = resolve_secret or _resolve_secret_ref
         self._token = resolver(token_ref)
         if not self._token:
@@ -237,9 +245,10 @@ class TelegramSink:
         payload = json.dumps({"chat_id": self._chat_id, "text": message,
                               "disable_web_page_preview": True}).encode()
         req = urllib.request.Request(
-            "https://api.telegram.org/bot%s/sendMessage" % self._token, data=payload, method="POST")
+            "%s/bot%s/sendMessage" % (self.ORIGIN, self._token), data=payload, method="POST")
         req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        projection = _load("veldo_channel_projection_for_doorbell", "control_channel_projection.py")
+        with projection.gated_open(self._activation, self.ORIGIN, req, 30, "sendMessage", self._chat_id) as resp:
             resp.read()
         return True
 

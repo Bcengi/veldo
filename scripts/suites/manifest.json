@@ -860,6 +860,15 @@
    ],
    "regions": "Exact-tip publication by compare-and-swap of the recorded old remote tip with a moved tip refused and never overwritten, the current authority, approval and exact tested and reviewed subjects re-read at the effect boundary, confirmed, failed and unknown results with no further attempt, and the confirmed-landing receipt with its whole evidence chain committed only after the remote's own answer, then the journal projection, read by the frontier, plan and work readers",
    "requires_note": "Uses only shared ROOT and expect. Real Git (a scaffolded seed with its own gate, two disposable bare remotes whose pre-receive hooks record every receive, the caller's clone, the executor's publication clone and another pusher's clone), real SQLite store with OpenSSH journal and effect-connection signatures, the VELDO-0028 effect executor process, the VELDO-0051 projection and the installed frontier, plan and work_state readers in another process. Writes only temporary fixtures."
+  },
+  {
+   "name": "70_veldo_0073_activation",
+   "file": "70_veldo_0073_activation.py",
+   "requires": [
+    "70_veldo_0073_activation"
+   ],
+   "regions": "Per-channel activation of the Telegram edge: every installed Telegram send and receive entry point gated on an explicit owner-signed activation record bound to the current chat enrollment, edge key and qualification evidence; fixture evidence never qualifying the Telegram origin; notifications only waking canonical acquisition; the production construction of the settlement path from host configuration; explicit stop and stale key or configuration bindings producing no authority",
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, journal, possession and answer signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter and VELDO-0068 settlement service built by control_channel_ingress.open_ingress from 0600 host configuration files, a real Git repository for the host trust check, and two loopback Bot API servers. A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Reads proof/VELDO-0073/live/qualification.json when the live run has recorded it. Writes only temporary fixtures."
   }
  ]
 }

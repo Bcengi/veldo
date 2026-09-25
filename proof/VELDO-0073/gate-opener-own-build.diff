@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -297 +297 @@
+-    return P.bot_opener(Handler())
++    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())  # defect: redirects followed

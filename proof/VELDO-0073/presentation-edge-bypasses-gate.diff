@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -459 +459 @@
+-            with self.P.gated_open(self.activation, self.base_url, request, self.timeout, 'sendMessage', chat) as response:
++            with urllib.request.urlopen(request, timeout=self.timeout) as response:  # defect: ungated

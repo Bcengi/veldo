@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -146 +146 @@
+-    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)
++    return urllib.request.build_opener(urllib.request.ProxyHandler({}), *handlers)  # defect: redirects followed

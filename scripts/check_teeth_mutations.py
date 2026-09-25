@@ -4833,6 +4833,104 @@ def cases():
         "            raise Refused('unauthorized:' + refusal, record['evidence_id'])\n"
         "        if known['principal'] not in (None, principal):  # defect: a message outside the person's own chat counts\n",
         ['disposition/foreign-chat-refused', 'disposition/no-foreign-follow-up'])
+    # VELDO-0073: each criterion's declared falsifier first, then the threat model's other shapes.
+    def activation(name, module, old, new, row, also=()):
+        add(73, name, '70_veldo_0073_activation.py', module, old, new, [row], also)
+
+    activation('activation-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_channel_activation.py",\n', '',
+               'install/assets')
+    # AC1 (declared falsifier): the doorbell sends because its token resolves.
+    activation('doorbell-token-resolves-sends', 'request_doorbell.py',
+               '        with projection.gated_open(self._activation, self.ORIGIN, req, 30, "sendMessage", self._chat_id) as resp:\n',
+               '        with urllib.request.urlopen(req, timeout=30) as resp:  # defect: a resolving token sends\n',
+               'activation/no-implicit')
+    activation('ungated-edge-reaches-any-origin', 'control_channel_projection.py',
+               "        if not is_stand_in(base_url):\n            raise EdgeRefused('not_activated'",
+               "        if False:  # defect: an edge without a gate reaches any origin\n            raise EdgeRefused('not_activated'",
+               'activation/no-implicit')
+    activation('presentation-edge-bypasses-gate', 'control_channel_presentation.py',
+               "            with self.P.gated_open(self.activation, self.base_url, request, self.timeout, 'sendMessage', chat) as response:\n",
+               "            with urllib.request.urlopen(request, timeout=self.timeout) as response:  # defect: ungated\n",
+               'entry-points/enumerated')
+    activation('entry-point-unlisted', 'control_channel_activation.py',
+               ",\n                ('request_doorbell.py', 'TelegramSink.send', 'sendMessage'))\n", ")\n",
+               'entry-points/enumerated')
+    activation('steward-authorizes-owner-edge', 'control_channel_activation.py',
+               "        if signer != params['owner']:\n", "        if False:  # defect: anyone with the role authorizes\n",
+               'activation/explicit-bound-operates')
+    activation('send-to-any-chat', 'control_channel_activation.py',
+               "        if operation in SEND and chat != record.get('enrolled_chat'):\n",
+               "        if False:  # defect: a send goes to any chat\n", 'activation/explicit-bound-operates')
+    activation('production-acquisition-ungated', 'control_channel_ingress.py',
+               "EV.TelegramAcquisitionEdge(P, origin, token, activation=gate)", "EV.TelegramAcquisitionEdge(P, origin, token)",
+               'activation/explicit-bound-operates')
+    # AC2 (declared falsifier): fixture-only evidence accepted as the platform's.
+    activation('fixture-evidence-accepted', 'control_channel_activation.py',
+               "    if not exchanges or not all(proven_exchange(x, origin) for x in exchanges):\n",
+               "    if not exchanges:  # defect: any recorded exchange is evidence\n", 'qualification/real-platform-proof')
+    activation('tls-host-unchecked', 'control_channel_activation.py',
+               "    return (isinstance(tls, dict) and tls.get('verified') is True and tls.get('host') == TELEGRAM_HOST\n"
+               "            and _names_cover(tls.get('dns_names'), TELEGRAM_HOST)\n",
+               "    return (isinstance(tls, dict) and tls.get('verified') is True  # defect: any host's certificate\n",
+               'qualification/real-platform-proof')
+    activation('trust-store-from-environment', 'control_channel_activation.py',
+               "    paths = ssl.get_default_verify_paths()\n",
+               "    return ssl.create_default_context()  # defect: the environment names the trust store\n"
+               "    paths = ssl.get_default_verify_paths()\n", 'qualification/real-platform-proof')
+    activation('answer-not-the-platform-bytes', 'control_channel_activation.py',
+               "              and x.get('response_digest') == answer.get('response_digest')\n", '',
+               'qualification/real-platform-proof')
+    activation('host-trust-optional', 'control_channel_ingress.py',
+               "    if trust is None:\n        raise Refused('missing_authority', 'this host has installed no trust')\n", '',
+               'settlement/production-construction')
+    activation('decision-key-unverified', 'control_channel_ingress.py',
+               "    if not settlement_trust.verify(probe, sign(probe), principal):\n", "    if False:  # defect: any key signs\n",
+               'settlement/production-construction')
+    # AC3 (declared falsifier): the notification payload is taken as the answer.
+    activation('notification-settles', 'control_channel_ingress.py',
+               "        acquired = []\n        for result in self.acquirer.acquire():\n",
+               "        acquired = []\n"
+               "        if isinstance(notification, dict) and type(notification.get('update_id')) is int:  # defect\n"
+               "            self.acquirer._keep(self.acquirer.edge.get_me()['id'], notification, notification_digest(notification))\n"
+               "        for result in self.acquirer.acquire():\n",
+               'notification/wakes-only')
+    # AC4 (declared falsifier): the explicit stopped record is ignored.
+    activation('stop-ignored', 'control_channel_activation.py',
+               "        if record.get('state') == 'stopped':\n"
+               "            self._refuse(operation, 'edge_stopped', 'the edge was stopped by an explicit record')\n"
+               "        if record.get('state') not in ('qualifying', 'active'):\n",
+               "        if record.get('state') not in ('qualifying', 'active', 'stopped'):  # defect: stop ignored\n",
+               'stop/halts-edge')
+    activation('bindings-not-compared', 'control_channel_activation.py',
+               "        for field in BOUND:\n            if current[field] != record.get(field):\n",
+               "        for field in ():  # defect: bound versions never compared\n            if current[field] != record.get(field):\n",
+               'stale/key-and-configuration')
+    activation('origin-unbound', 'control_channel_activation.py',
+               "        if not isinstance(origin, str) or origin.rstrip('/') != record.get('origin'):\n",
+               "        if not isinstance(origin, str):  # defect: any origin\n", 'stale/key-and-configuration')
+    activation('bot-unbound', 'control_channel_attribution.py', "        self.P.gated_bot(self.activation, result['id'])\n", '',
+               'stale/key-and-configuration')
+    # Review 1, B1: a listener at the configured origin redirects the exchange, token and all, elsewhere.
+    activation('redirect-followed', 'control_channel_projection.py',
+               '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)\n',
+               '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), *handlers)  # defect: redirects followed\n',
+               'activation/no-redirect')
+    activation('ungated-edge-default-opener', 'control_channel_projection.py',
+               '        return bot_opener().open(request, timeout=timeout)\n',
+               '        return urllib.request.urlopen(request, timeout=timeout)  # defect: the default opener\n',
+               'activation/no-redirect')
+    activation('stand-in-prefix-match', 'control_channel_projection.py',
+               "    return url[len(STAND_IN_ORIGIN):].rstrip('/').isdigit()\n",
+               "    return True  # defect: any text after the loopback prefix is a stand-in\n",
+               'activation/no-redirect')
+    activation('https-origin-unparsed', 'control_channel_projection.py',
+               "    return bool(host) and all(c.isalnum() or c in '.-' for c in host)\n",
+               "    return True  # defect: any https text is a Bot API origin\n",
+               'activation/no-redirect')
+    activation('gate-opener-own-build', 'control_channel_activation.py',
+               '    return P.bot_opener(Handler())\n',
+               '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())  # defect: redirects followed\n',
+               'activation/no-redirect')
     return result
 
 

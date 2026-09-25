@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W58
 plan_revision: 3
-depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0126]
+depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0069, VELDO-0126]
 placement: [tracker, engine, contracts, distribution]
 protected_paths: [.veldo/policy.yaml]
 footprint:
@@ -29,6 +29,16 @@ footprint:
   - "engine/.veldo/control_channel_activation*.py"
   - ".veldo/control_channel_activation*.py"
   - "packs/*/.veldo/control_channel_activation*.py"
+  - "engine/.veldo/control_channel_projection.py"
+  - ".veldo/control_channel_projection.py"
+  - "packs/*/.veldo/control_channel_projection.py"
+  - "engine/.veldo/control_channel_presentation.py"
+  - ".veldo/control_channel_presentation.py"
+  - "packs/*/.veldo/control_channel_presentation.py"
+  - "engine/.veldo/control_channel_attribution.py"
+  - ".veldo/control_channel_attribution.py"
+  - "packs/*/.veldo/control_channel_attribution.py"
+  - "scripts/suites/support/v73_*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -38,6 +48,7 @@ footprint:
   - "scripts/suites/*_veldo_0073_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0073-channel-ingress-activation.md"
   - "specs/index.md"
   - "proof/VELDO-0073/*"
@@ -114,6 +125,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the owner activates the Telegram edge with an explicit, separately authorized activation
+  record bound to the current VELDO-0067 enrollment and to real qualification evidence from the test
+  bot. Only then can the edge send a decision and receive answers. A received update wakes acquisition;
+  the answer is read from the platform's own fields and signed by the restricted signer before the
+  VELDO-0068 settlement takes it. The owner can stop the edge explicitly; pending requests stay pending.
+- Threat model: the edge sending or receiving because a token resolves or because the source landed,
+  without activation; fixture-only or invented qualification evidence accepted as real; a settlement
+  made from a notification payload rather than from acquired platform evidence; an answer from someone
+  who is not the enrolled owner; a stopped edge, a stale key or a stale configuration binding still
+  producing authority. The owner's account, the bot token's custody, the signer and the store are
+  trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); interrupted
+  settlement, retention, reconnect, reordering, restart and rollback qualification (Release 2); other
+  channels (Release 4); a second real person as the unauthorized actor (the owner has none, Telegram
+  29047; the refusal is driven with an update from an unenrolled sender id, as in VELDO-0066); a
+  compromised Telegram account or bot token.
+
 ## Notes
 
 Qualify only the actual Telegram send/receive edge here, using a real sandbox and known
@@ -139,3 +169,38 @@ Release 2; additional channels moved to Release 4. Jira activation is dropped. R
 activation/send/receive/canonical answers remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-24, implementation: every installed Telegram send and receive entry point now asks the
+activation gate before each exchange (control_channel_activation.ENTRY_POINTS: TelegramEdge.send,
+TelegramPresentationEdge.send, TelegramAcquisitionEdge getMe and getUpdates, and the doorbell's
+TelegramSink.send), so the footprint gains the three VELDO-0064 to VELDO-0066 edge modules whose
+exchange lines changed; nothing else in them changed. It also gains
+scripts/suites/support/v73_*.py, the real authority the suite and the live qualification runner
+share, so the runner exercises exactly what the rows exercise. Only a loopback stand-in Bot API is
+reached without a gate, which keeps the earlier suites' stand-ins working unchanged.
+
+2026-09-24, review finding from VELDO-0069: nothing in production constructed the VELDO-0068
+settlement service, so a real Telegram answer had no production path to one authoritative settlement.
+control_channel_ingress.open_ingress now constructs the ingress from host configuration (the store,
+the journal signer, the host trust whose settlement signers VELDO-0054 readers verify against, the
+VELDO-0067 protected answer signer and the token file), with the settlement service on the same
+connection, and a row drives that construction. VELDO-0069 is added to depends_on: after it landed
+(1b8edfe) the construction passes the settlement service its decision signer from the configuration,
+a principal that must be one of the host's settlement signers and a 0600 key outside the workspace
+whose probe signature must verify under those signers, so governing bindings are signed by the key
+the reading side trusts.
+
+2026-09-24, review 1 fix (blocking): a listener at the configured loopback origin could answer with a redirect and
+urllib followed it, token in the path, to any host, including api.telegram.org, with no activation, on the
+ungated edge and through the gate's own opener. Every Bot API exchange now uses one opener
+(control_channel_projection.bot_opener) with no proxy and no redirect. Row activation/no-redirect, red at ad856ac
+(proof/VELDO-0073/red-at-ad856ac.json), and three mutations in finding 73.
+
+2026-09-24, review 2 (blocking, withdrawn claim): the row that checked the live run's committed record
+accepted a hand-written record, because a file cannot show where it came from; the reviewer forged one and
+the row passed. The claim is withdrawn: the row is now qualification/live-record-consistent, a consistency
+check only. The live run's witness is the owner, who can confirm on his phone the reply whose message id
+and date the record names; the binding real-platform proof is the running factory's own qualification and
+activation under VELDO-0138, where the gate records every exchange in the factory's store and his enrolled
+key signs the activation over it. Also from review 2: a Bot API origin is parsed, not prefix-matched
+(http://127.0.0.1:80@api.telegram.org is no stand-in), with row checks and two mutations.

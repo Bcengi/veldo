@@ -1,0 +1,2031 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0073 install/assets",
+    true
+   ],
+   [
+    "VELDO-0073 entry-points/enumerated",
+    true
+   ],
+   [
+    "VELDO-0073 activation/no-implicit",
+    true
+   ],
+   [
+    "VELDO-0073 activation/explicit-bound-operates",
+    true
+   ],
+   [
+    "VELDO-0073 qualification/real-platform-proof",
+    true
+   ],
+   [
+    "VELDO-0073 settlement/production-construction",
+    true
+   ],
+   [
+    "VELDO-0073 notification/wakes-only",
+    true
+   ],
+   [
+    "VELDO-0073 stop/halts-edge",
+    true
+   ],
+   [
+    "VELDO-0073 stale/key-and-configuration",
+    true
+   ],
+   [
+    "VELDO-0073 activation/no-redirect",
+    true
+   ]
+  ],
+  "seconds": 2.651
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 install/assets detail: .veldo/control_channel_activation.py installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0073/activation-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0073 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "ba6fd51e281b7a5f650a7d303125787a3ed465b169849f5a1700c7c0084742ba",
+   "name": "activation-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     false
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.148,
+   "source_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 entry-points/enumerated detail: every Bot API call site opens through the activation gate, never urlopen",
+    "VELDO-0073 activation/no-implicit detail: TelegramSink.send with a token that resolves and no activation refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: TelegramSink.send with the gate and no activation record refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: no connection beyond the loopback interface was attempted [3]",
+    "VELDO-0073 stop/halts-edge detail: the doorbell refuses too"
+   ],
+   "diff": "proof/VELDO-0073/doorbell-token-resolves-sends.diff",
+   "failed_rows": [
+    "VELDO-0073 entry-points/enumerated",
+    "VELDO-0073 activation/no-implicit",
+    "VELDO-0073 stop/halts-edge"
+   ],
+   "module": ".veldo/request_doorbell.py",
+   "mutant_sha256": "8a084376c462cb4f3b701da6362de098a524bcfe01cb347460b8e922e5ee6e54",
+   "name": "doorbell-token-resolves-sends",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-implicit"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     false
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     false
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.643,
+   "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-implicit detail: TelegramAcquisitionEdge.get_me at the Telegram origin with a resolving token and no gate refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: TelegramAcquisitionEdge.get_updates at the Telegram origin with a resolving token and no gate refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: TelegramEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: TelegramPresentationEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: TelegramSink.send with a token that resolves and no activation refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: no connection beyond the loopback interface was attempted [6]",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open (['http://127.0.0.1:80@api.telegram.org raised URLError', 'http://127.0.0.1:38989@127.0.0.2 raised URLError'])"
+   ],
+   "diff": "proof/VELDO-0073/ungated-edge-reaches-any-origin.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-implicit",
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "e59b6d512b061420e71eae4518e145004b13ad4dbbd83694a7df853e4453e543",
+   "name": "ungated-edge-reaches-any-origin",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-implicit"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     false
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 3.145,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 entry-points/enumerated detail: every Bot API call site opens through the activation gate, never urlopen",
+    "VELDO-0073 activation/no-implicit detail: TelegramPresentationEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: TelegramPresentationEdge.send with the gate and no activation record (edge key and chat enrolled) refuses as not_activated",
+    "VELDO-0073 activation/no-implicit detail: no connection beyond the loopback interface was attempted [2]",
+    "VELDO-0073 activation/explicit-bound-operates detail: before any record: the production presentation refuses and sends nothing [published]",
+    "VELDO-0073 activation/explicit-bound-operates detail: a send to any chat but the owner's enrolled one refuses as chat_not_enrolled",
+    "VELDO-0073 activation/explicit-bound-operates detail: the owner's signed activation names the committed qualification and binds its bot",
+    "VELDO-0073 qualification/real-platform-proof detail: the stand-in run is recorded [refused: presentation_unproven]",
+    "VELDO-0073 qualification/real-platform-proof detail: the stand-in run is recorded as stand-in qualification, every leg bound",
+    "VELDO-0073 qualification/real-platform-proof detail: stand-in exchanges relabeled as Telegram are fixture_only_evidence",
+    "VELDO-0073 qualification/real-platform-proof detail: TLS naming another host is fixture_only_evidence",
+    "VELDO-0073 qualification/real-platform-proof detail: control: with TLS facts for api.telegram.org the same legs prove the platform",
+    "VELDO-0073 qualification/real-platform-proof detail: an answer whose evidence is not the bytes of a recorded getUpdates answer is answer_unproven",
+    "VELDO-0073 qualification/real-platform-proof detail: a Telegram run fed fixture exchanges records no qualification (fixture_only_evidence)",
+    "VELDO-0073 notification/wakes-only detail: an invented notification payload wakes acquisition and is kept only as its digest",
+    "VELDO-0073 notification/wakes-only detail: an ordinary platform event is acquired with its platform message id preserved",
+    "VELDO-0073 notification/wakes-only detail: the request settles from the acquired platform evidence, not the payload",
+    "VELDO-0073 stop/halts-edge detail: a stopped edge sends nothing: a new decision is refused and the platform is not asked",
+    "VELDO-0073 stop/halts-edge detail: an explicit activation resumes the edge and the kept pending request then settles",
+    "VELDO-0073 stale/key-and-configuration detail: an edge configured with another origin refuses as stale_configuration and reaches nothing",
+    "VELDO-0073 stale/key-and-configuration detail: a token naming another bot refuses as stale_configuration after getMe",
+    "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration",
+    "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
+    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept"
+   ],
+   "diff": "proof/VELDO-0073/presentation-edge-bypasses-gate.diff",
+   "failed_rows": [
+    "VELDO-0073 entry-points/enumerated",
+    "VELDO-0073 activation/no-implicit",
+    "VELDO-0073 activation/explicit-bound-operates",
+    "VELDO-0073 qualification/real-platform-proof",
+    "VELDO-0073 notification/wakes-only",
+    "VELDO-0073 stop/halts-edge",
+    "VELDO-0073 stale/key-and-configuration"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "3f11f2fd11906c8670b30c11d8d25038e3a34c1d287519ca5dd226c8dce6968f",
+   "name": "presentation-edge-bypasses-gate",
+   "named_row_red": true,
+   "named_rows": [
+    "entry-points/enumerated"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     false
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     false
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     false
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     false
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 2.928,
+   "source_sha256": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 entry-points/enumerated detail: the activation module names the installed entry points",
+    "VELDO-0073 entry-points/enumerated detail: every Bot API call site in the installed source is a named entry point [sites: ['TelegramAcquisitionEdge._call', 'TelegramEdge.send', 'TelegramPresentationEdge.send', 'TelegramSink.send']]"
+   ],
+   "diff": "proof/VELDO-0073/entry-point-unlisted.diff",
+   "failed_rows": [
+    "VELDO-0073 entry-points/enumerated"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "98c8d62fec9650668bb428c983a7d11adce2b412bb6566eafd8d0e20c587f02b",
+   "name": "entry-point-unlisted",
+   "named_row_red": true,
+   "named_rows": [
+    "entry-points/enumerated"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.141,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/explicit-bound-operates detail: a steward cannot authorize the owner's edge (not_owner) and a service cannot (not_a_person)"
+   ],
+   "diff": "proof/VELDO-0073/steward-authorizes-owner-edge.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/explicit-bound-operates"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "ac84c3cef64bb10f771118383f1c96f07fd49f19dc525e507df1c32935fbf401",
+   "name": "steward-authorizes-owner-edge",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/explicit-bound-operates"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     false
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.136,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/explicit-bound-operates detail: a send to any chat but the owner's enrolled one refuses as chat_not_enrolled"
+   ],
+   "diff": "proof/VELDO-0073/send-to-any-chat.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/explicit-bound-operates"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "d7d47b3e011c99c4513b5a38dedb9549f94a569fe0940ddc27eb3b029c11158b",
+   "name": "send-to-any-chat",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/explicit-bound-operates"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     false
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.145,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/explicit-bound-operates detail: before any record: acquisition and wake refuse as not_activated and ask the platform nothing",
+    "VELDO-0073 activation/explicit-bound-operates detail: the owner's signed activation names the committed qualification and binds its bot",
+    "VELDO-0073 activation/explicit-bound-operates detail: the activated edge operates: a new decision is published to the enrolled chat",
+    "VELDO-0073 qualification/real-platform-proof detail: the stand-in run is recorded [refused: presentation_unproven]",
+    "VELDO-0073 qualification/real-platform-proof detail: the stand-in run is recorded as stand-in qualification, every leg bound",
+    "VELDO-0073 qualification/real-platform-proof detail: stand-in exchanges relabeled as Telegram are fixture_only_evidence",
+    "VELDO-0073 qualification/real-platform-proof detail: TLS naming another host is fixture_only_evidence",
+    "VELDO-0073 qualification/real-platform-proof detail: control: with TLS facts for api.telegram.org the same legs prove the platform",
+    "VELDO-0073 qualification/real-platform-proof detail: an answer whose evidence is not the bytes of a recorded getUpdates answer is answer_unproven",
+    "VELDO-0073 qualification/real-platform-proof detail: a Telegram run fed fixture exchanges records no qualification (fixture_only_evidence)",
+    "VELDO-0073 notification/wakes-only detail: an invented notification payload wakes acquisition and is kept only as its digest",
+    "VELDO-0073 notification/wakes-only detail: an ordinary platform event is acquired with its platform message id preserved",
+    "VELDO-0073 notification/wakes-only detail: the request settles from the acquired platform evidence, not the payload",
+    "VELDO-0073 stop/halts-edge detail: a stopped edge accepts no answer: wake and acquisition refuse as edge_stopped",
+    "VELDO-0073 stop/halts-edge detail: an explicit activation resumes the edge and the kept pending request then settles",
+    "VELDO-0073 stale/key-and-configuration detail: an edge configured with another origin refuses as stale_configuration and reaches nothing",
+    "VELDO-0073 stale/key-and-configuration detail: a token naming another bot refuses as stale_configuration after getMe",
+    "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration",
+    "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
+    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept"
+   ],
+   "diff": "proof/VELDO-0073/production-acquisition-ungated.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/explicit-bound-operates",
+    "VELDO-0073 qualification/real-platform-proof",
+    "VELDO-0073 notification/wakes-only",
+    "VELDO-0073 stop/halts-edge",
+    "VELDO-0073 stale/key-and-configuration"
+   ],
+   "module": ".veldo/control_channel_ingress.py",
+   "mutant_sha256": "a48f8e1057fbd07d615c2a98d834d0001734123c052b9af86ab06b63f47a87b2",
+   "name": "production-acquisition-ungated",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/explicit-bound-operates"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     false
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     false
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     false
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 2.139,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 qualification/real-platform-proof detail: stand-in exchanges relabeled as Telegram are fixture_only_evidence",
+    "VELDO-0073 qualification/real-platform-proof detail: TLS naming another host is fixture_only_evidence",
+    "VELDO-0073 qualification/real-platform-proof detail: a Telegram run fed fixture exchanges records no qualification (fixture_only_evidence)"
+   ],
+   "diff": "proof/VELDO-0073/fixture-evidence-accepted.diff",
+   "failed_rows": [
+    "VELDO-0073 qualification/real-platform-proof"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "d7b4919100efbb6565deabbe30c6c187104ec3fa0ee64a928c89e1586b154e1c",
+   "name": "fixture-evidence-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "qualification/real-platform-proof"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 2.643,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 qualification/real-platform-proof detail: TLS naming another host is fixture_only_evidence"
+   ],
+   "diff": "proof/VELDO-0073/tls-host-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0073 qualification/real-platform-proof"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "0d69d7508d154683b00f89a51978cb2325961d09442f0cedbf8fd627d66156b8",
+   "name": "tls-host-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "qualification/real-platform-proof"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.162,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 qualification/real-platform-proof detail: a TLS stand-in trusted only through SSL_CERT_FILE is refused and records no peer [verified]"
+   ],
+   "diff": "proof/VELDO-0073/trust-store-from-environment.diff",
+   "failed_rows": [
+    "VELDO-0073 qualification/real-platform-proof"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "f4748976c85d68f70df815dc00f6851baa76c5fb98dbac87f7eff41f1b674e74",
+   "name": "trust-store-from-environment",
+   "named_row_red": true,
+   "named_rows": [
+    "qualification/real-platform-proof"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.644,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 qualification/real-platform-proof detail: an answer whose evidence is not the bytes of a recorded getUpdates answer is answer_unproven"
+   ],
+   "diff": "proof/VELDO-0073/answer-not-the-platform-bytes.diff",
+   "failed_rows": [
+    "VELDO-0073 qualification/real-platform-proof"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "00496d870621aca7f8ab615895c13b7be6bf2102e17c98463cc0c9afc3019576",
+   "name": "answer-not-the-platform-bytes",
+   "named_row_red": true,
+   "named_rows": [
+    "qualification/real-platform-proof"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     false
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.14,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 settlement/production-construction detail: no host trust installed: the ingress is not constructed"
+   ],
+   "diff": "proof/VELDO-0073/host-trust-optional.diff",
+   "failed_rows": [
+    "VELDO-0073 settlement/production-construction"
+   ],
+   "module": ".veldo/control_channel_ingress.py",
+   "mutant_sha256": "cf2c8a517639f251b9e4de9e97535bd906a5bf44613c213c562e2db5306ba202",
+   "name": "host-trust-optional",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/production-construction"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     false
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.146,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 settlement/production-construction detail: a decision signer the host does not trust for settlements is refused",
+    "VELDO-0073 settlement/production-construction detail: a trusted principal with another key is refused"
+   ],
+   "diff": "proof/VELDO-0073/decision-key-unverified.diff",
+   "failed_rows": [
+    "VELDO-0073 settlement/production-construction"
+   ],
+   "module": ".veldo/control_channel_ingress.py",
+   "mutant_sha256": "0968f2920bdc7fc4b959794592b04c617b7608e1174c6eda4439b2944880c308",
+   "name": "decision-key-unverified",
+   "named_row_red": true,
+   "named_rows": [
+    "settlement/production-construction"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     false
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.14,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 notification/wakes-only detail: an invented notification payload wakes acquisition and is kept only as its digest",
+    "VELDO-0073 notification/wakes-only detail: the payload settles nothing: no answer, no settlement, the request still pending",
+    "VELDO-0073 notification/wakes-only detail: an ordinary platform event is acquired with its platform message id preserved",
+    "VELDO-0073 notification/wakes-only detail: the request settles from the acquired platform evidence, not the payload",
+    "VELDO-0073 stop/halts-edge detail: an explicit activation resumes the edge and the kept pending request then settles"
+   ],
+   "diff": "proof/VELDO-0073/notification-settles.diff",
+   "failed_rows": [
+    "VELDO-0073 notification/wakes-only",
+    "VELDO-0073 stop/halts-edge"
+   ],
+   "module": ".veldo/control_channel_ingress.py",
+   "mutant_sha256": "628acba246884d16cd1ad887d64f572190a42f59fdde9d07775c8c1a2d140300",
+   "name": "notification-settles",
+   "named_row_red": true,
+   "named_rows": [
+    "notification/wakes-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     false
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     false
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.144,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 stop/halts-edge detail: a stopped edge sends nothing: a new decision is refused and the platform is not asked",
+    "VELDO-0073 stop/halts-edge detail: a stopped edge accepts no answer: wake and acquisition refuse as edge_stopped",
+    "VELDO-0073 stop/halts-edge detail: the doorbell refuses too",
+    "VELDO-0073 stop/halts-edge detail: no fresh authority: the pending requests stay pending, unanswered and unsettled",
+    "VELDO-0073 stale/key-and-configuration detail: a stale edge can still be stopped by the owner, and stays stopped"
+   ],
+   "diff": "proof/VELDO-0073/stop-ignored.diff",
+   "failed_rows": [
+    "VELDO-0073 stop/halts-edge",
+    "VELDO-0073 stale/key-and-configuration"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "6f90825eb985081a65fa7d32b396fdd06d57c74fab38a6b3caf6f29c103afcfc",
+   "name": "stop-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "stop/halts-edge"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     false
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.149,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 stale/key-and-configuration detail: a changed chat enrollment refuses as stale_enrollment: nothing acquired or settled",
+    "VELDO-0073 stale/key-and-configuration detail: a retired edge key refuses as stale_key: no send, no acquisition, pending kept"
+   ],
+   "diff": "proof/VELDO-0073/bindings-not-compared.diff",
+   "failed_rows": [
+    "VELDO-0073 stale/key-and-configuration"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "8686437c8fbc26747fae03b80d104238f2bb0b6ccdbd1a4013b0349b80a5d1bb",
+   "name": "bindings-not-compared",
+   "named_row_red": true,
+   "named_rows": [
+    "stale/key-and-configuration"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.14,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 stale/key-and-configuration detail: a wake over an acquirer of another origin refuses as stale_configuration"
+   ],
+   "diff": "proof/VELDO-0073/origin-unbound.diff",
+   "failed_rows": [
+    "VELDO-0073 stale/key-and-configuration"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "a559e5d2eff2ac362880c318e996d7011fcd002d97f40f40e30fbf7ef0e6da6b",
+   "name": "origin-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "stale/key-and-configuration"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.143,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 stale/key-and-configuration detail: a token naming another bot refuses as stale_configuration after getMe"
+   ],
+   "diff": "proof/VELDO-0073/bot-unbound.diff",
+   "failed_rows": [
+    "VELDO-0073 stale/key-and-configuration"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "97142a2750e56d0cc4f3958678f72177d39f6fb285e41ccd8494eaffeb5540f4",
+   "name": "bot-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "stale/key-and-configuration"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     false
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.145,
+   "source_sha256": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: the ungated edge reached the redirecting origin once and did not follow it (EdgeRefused)",
+    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (URLError)",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open ([])"
+   ],
+   "diff": "proof/VELDO-0073/redirect-followed.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "dd91fe05fab9ebeb7f760191f2262bbbc52c4533ed5471d8a98b05100f3bb6bc",
+   "name": "redirect-followed",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 3.142,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: the ungated edge reached the redirecting origin once and did not follow it (EdgeRefused)",
+    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (HTTPError)",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open ([])"
+   ],
+   "diff": "proof/VELDO-0073/ungated-edge-default-opener.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "ebb52cda09e2d487facfbc26f2b7823d1e5da7d13e535260eef4cc227993dda9",
+   "name": "ungated-edge-default-opener",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 3.144,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor (['http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:36465@127.0.0.2', 'http://127.0.0.1:36465@127.0.0.2', 'http://127.0.0.1:36465@127.0.0.2', 'http://127.0.0.1:x', 'http://127.0.0.1:x', 'http://127.0.0.1:x']) and the ungated open (['http://127.0.0.1:80@api.telegram.org raised URLError', 'http://127.0.0.1:36465@127.0.0.2 raised URLError'])"
+   ],
+   "diff": "proof/VELDO-0073/stand-in-prefix-match.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "85bd3540edbb146358dfac9dd3fd1507ff0fd44fc6eff1925df4073e507e5e34",
+   "name": "stand-in-prefix-match",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 3.642,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor (['https://user@api.telegram.org', 'https://user@api.telegram.org', 'https://user@api.telegram.org', 'https://api.telegram.org:443@127.0.0.2', 'https://api.telegram.org:443@127.0.0.2', 'https://api.telegram.org:443@127.0.0.2']) and the ungated open ([])"
+   ],
+   "diff": "proof/VELDO-0073/https-origin-unparsed.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "4699ea5ea41ac80894d4ce1e5862c0871e1f1623c99d82bf01fae4cdef04beb0",
+   "name": "https-origin-unparsed",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 2.648,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (URLError)",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open ([])"
+   ],
+   "diff": "proof/VELDO-0073/gate-opener-own-build.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "d6f927f3bef1c83b173971917e1bd9b4aa81e9e6c0edcbe67bf5bd416bb23f4d",
+   "name": "gate-opener-own-build",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 3.137,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  }
+ ],
+ "mutations_per_row": {
+  "activation/explicit-bound-operates": [
+   "steward-authorizes-owner-edge",
+   "send-to-any-chat",
+   "production-acquisition-ungated"
+  ],
+  "activation/no-implicit": [
+   "doorbell-token-resolves-sends",
+   "ungated-edge-reaches-any-origin"
+  ],
+  "activation/no-redirect": [
+   "redirect-followed",
+   "ungated-edge-default-opener",
+   "stand-in-prefix-match",
+   "https-origin-unparsed",
+   "gate-opener-own-build"
+  ],
+  "entry-points/enumerated": [
+   "presentation-edge-bypasses-gate",
+   "entry-point-unlisted"
+  ],
+  "install/assets": [
+   "activation-not-scaffolded"
+  ],
+  "notification/wakes-only": [
+   "notification-settles"
+  ],
+  "qualification/real-platform-proof": [
+   "fixture-evidence-accepted",
+   "tls-host-unchecked",
+   "trust-store-from-environment",
+   "answer-not-the-platform-bytes"
+  ],
+  "settlement/production-construction": [
+   "host-trust-optional",
+   "decision-key-unverified"
+  ],
+  "stale/key-and-configuration": [
+   "bindings-not-compared",
+   "origin-unbound",
+   "bot-unbound"
+  ],
+  "stop/halts-edge": [
+   "stop-ignored"
+  ]
+ },
+ "noop": {
+  "control_channel_activation.py": {
+   "copy_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.153,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  "control_channel_attribution.py": {
+   "copy_sha256": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.144,
+   "source_sha256": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c"
+  },
+  "control_channel_ingress.py": {
+   "copy_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.15,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  "control_channel_presentation.py": {
+   "copy_sha256": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.643,
+   "source_sha256": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8"
+  },
+  "control_channel_projection.py": {
+   "copy_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.144,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.156,
+   "source_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
+  },
+  "request_doorbell.py": {
+   "copy_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     true
+    ]
+   ],
+   "seconds": 3.152,
+   "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 73",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 99.927,
+ "spec_id": "VELDO-0073",
+ "suite": "scripts/suites/70_veldo_0073_activation.py"
+}

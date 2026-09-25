@@ -101,6 +101,81 @@ SETTLED = {'sent': ('already_projected', None), 'pending': ('unknown_outcome', '
            'unknown_outcome': ('unknown_outcome', 'unknown_outcome')}
 
 
+# VELDO-0073: the only Bot API origin an edge reaches without an activation gate is a local stand-in
+# on the loopback interface, which cannot carry a message to Telegram. Every other exchange asks the
+# gate (control_channel_activation.Gate) the edge was given, and an edge given none refuses.
+STAND_IN_ORIGIN = 'http://127.0.0.1:'
+
+
+def is_stand_in(url):
+    """True only for exactly http://127.0.0.1:<port>, parsed rather than matched as a prefix, so text such
+    as http://127.0.0.1:80@api.telegram.org, which names another host, is not a stand-in."""
+    if not isinstance(url, str) or not url.startswith(STAND_IN_ORIGIN):
+        return False
+    return url[len(STAND_IN_ORIGIN):].rstrip('/').isdigit()
+
+
+def is_bot_origin(url):
+    """A Bot API origin an edge may be built with: a stand-in, or https to a bare host (no credentials,
+    port text or path that could name another host)."""
+    if is_stand_in(url):
+        return True
+    if not isinstance(url, str) or not url.startswith('https://'):
+        return False
+    host = url[len('https://'):].rstrip('/')
+    return bool(host) and all(c.isalnum() or c in '.-' for c in host)
+# The gate's refusals an edge reports under their own names; anything else it raises is not_activated.
+GATE_REFUSALS = ('not_activated', 'edge_stopped', 'stale_configuration', 'stale_key', 'stale_enrollment',
+                 'owner_not_current', 'qualification_expired', 'chat_not_enrolled', 'missing_qualification',
+                 'fixture_only_evidence', 'presentation_unproven', 'answer_unproven', 'unauthorized_unproven',
+                 'settlement_unproven', 'unavailable_service')
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Never follow a redirect: a Bot API exchange goes to its configured origin or nowhere. Returning
+    None makes urllib raise the 3xx as an HTTPError, a transport failure the caller already classifies."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def bot_opener(*handlers):
+    """The one opener every Bot API exchange uses (VELDO-0073): no proxy from the environment and no
+    redirect, so a listener at the configured origin cannot hand the request, token and all, to another
+    host. `handlers` add the gate's verified https connection."""
+    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)
+
+
+def gated_open(activation, base_url, request, timeout, operation, chat=None):
+    """Open one Bot API exchange of `operation` for an installed Telegram entry point (VELDO-0073). With
+    no gate only a loopback stand-in is reached; a resolving token alone is never activation, so any
+    other origin refuses as not_activated before a byte leaves. With a gate, the gate admits the
+    exchange against the current activation record and performs it. A transport failure keeps its own
+    type, so the caller classifies it exactly as before; a gate refusal is an EdgeRefused by name."""
+    if activation is None:
+        if not is_stand_in(base_url):
+            raise EdgeRefused('not_activated', 'a Telegram exchange needs an explicit activation record; a token is not one')
+        return bot_opener().open(request, timeout=timeout)
+    try:
+        return activation.open(request, timeout, operation, base_url, chat)
+    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
+        raise
+    except Exception as exc:
+        code = getattr(exc, 'code', None)
+        raise EdgeRefused(code if code in GATE_REFUSALS else 'not_activated', 'the activation gate refused') from None
+
+
+def gated_bot(activation, bot_id):
+    """Refuse a getMe answer naming another bot than the activated one (VELDO-0073)."""
+    if activation is None:
+        return
+    try:
+        activation.bot(bot_id)
+    except Exception as exc:
+        code = getattr(exc, 'code', None)
+        raise EdgeRefused(code if code in GATE_REFUSALS else 'not_activated', 'the activation gate refused') from None
+
+
 class EdgeRefused(Exception):
     def __init__(self, code, detail=''):
         super().__init__('%s: %s' % (code, detail))
@@ -160,14 +235,16 @@ class TelegramEdge:
     """The Bot API sendMessage call. `base_url` is the Bot API origin; `token` comes from the
     caller's secret custody. The edge has no chat of its own: each send names the chat enrolled
     for the owner of what it sends. `timeout` is keyword-only, so a caller still passing one
-    configured chat fails loudly instead of setting a timeout."""
+    configured chat fails loudly instead of setting a timeout. `activation` is the VELDO-0073 gate
+    every send asks; without one only a loopback stand-in is reached."""
 
-    def __init__(self, base_url, token, *, timeout=10):
-        if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
+    def __init__(self, base_url, token, *, timeout=10, activation=None):
+        if not is_bot_origin(base_url):
             raise EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
         if not isinstance(token, str) or not token:
             raise EdgeRefused('invalid_input', 'a token is required')
         self.base_url, self._token, self.timeout = base_url.rstrip('/'), token, timeout
+        self.activation = activation
 
     def send(self, chat, text):
         if type(chat) is not int:
@@ -176,7 +253,7 @@ class TelegramEdge:
         request = urllib.request.Request('%s/bot%s/sendMessage' % (self.base_url, self._token), data=body,
                                          method='POST', headers={'Content-Type': 'application/json'})
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with gated_open(self.activation, self.base_url, request, self.timeout, 'sendMessage', chat) as response:
                 answer = json.loads(response.read())
         except urllib.error.HTTPError as exc:
             # Only Telegram's own error answer proves that nothing was published: a 4xx whose body

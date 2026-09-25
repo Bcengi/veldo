@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_ingress.py
++++ b/.veldo/control_channel_ingress.py
+@@ -197 +197 @@
+-    if not settlement_trust.verify(probe, sign(probe), principal):
++    if False:  # defect: any key signs

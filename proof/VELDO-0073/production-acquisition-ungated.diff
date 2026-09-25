@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_ingress.py
++++ b/.veldo/control_channel_ingress.py
+@@ -240 +240 @@
+-    acquirer = EV.Acquirer(S, CM, P, V, presenter, EV.TelegramAcquisitionEdge(P, origin, token, activation=gate), conn,
++    acquirer = EV.Acquirer(S, CM, P, V, presenter, EV.TelegramAcquisitionEdge(P, origin, token), conn,

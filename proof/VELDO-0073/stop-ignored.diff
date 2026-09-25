@@ -1,0 +1,7 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -371,3 +371 @@
+-        if record.get('state') == 'stopped':
+-            self._refuse(operation, 'edge_stopped', 'the edge was stopped by an explicit record')
+-        if record.get('state') not in ('qualifying', 'active'):
++        if record.get('state') not in ('qualifying', 'active', 'stopped'):  # defect: stop ignored

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -158 +158 @@
+-        return bot_opener().open(request, timeout=timeout)
++        return urllib.request.urlopen(request, timeout=timeout)  # defect: the default opener
