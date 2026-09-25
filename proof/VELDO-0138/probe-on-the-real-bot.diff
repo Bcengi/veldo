@@ -1,0 +1,12 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -265 +265,2 @@
+-        cursor = acquirer._entity(EV.cursor_id(PROBE_BOT_ID))
++        real = acquirer.edge.get_me()['id']  # defect: the probe is the real bot, on its cursor
++        cursor = acquirer._entity(EV.cursor_id(real))
+@@ -271 +272 @@
+-        answers = {'getMe': {'id': PROBE_BOT_ID, 'is_bot': True, 'first_name': 'probe'}, 'getUpdates': [update]}
++        answers = {'getMe': {'id': real, 'is_bot': True, 'first_name': 'probe'}, 'getUpdates': [update]}
+@@ -300 +301 @@
+-        found = acquirer.evidence(EV.evidence_id(PROBE_BOT_ID, update_id)) or {}
++        found = acquirer.evidence(EV.evidence_id(real, update_id)) or {}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -201,0 +202,2 @@
++        if (record or {}).get('state') == 'active' and (self.last or {}).get('state') == 'stopped':
++            ing.acquirer.edge.get_updates(10 ** 12)  # defect: what arrived while stopped is dropped

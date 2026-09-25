@@ -33,11 +33,11 @@
   "VELDO-0138 command/stop-live detail: the same process stops at once: nothing sent or acquired, each pass refused as edge_stopped [None]",
   "VELDO-0138 command/stop-keeps-pending detail: the owner's explicit activation resumes the edge and the kept request settles from the reply sent while it was stopped",
   "VELDO-0138 command/stop-keeps-pending detail: the request opened while stopped is presented once the edge resumes",
-  "VELDO-0138 restart/active-stays-active detail: restarted with the edge active: a new service process, the record still active [1199389 -> 1202234]",
+  "VELDO-0138 restart/active-stays-active detail: restarted with the edge active: a new service process, the record still active [1897199 -> 1898736]",
   "VELDO-0138 restart/active-stays-active detail: after the restart it presents, acquires and settles",
-  "VELDO-0138 restart/stopped-stays-stopped detail: restarted after the stop: a new process, the record still stopped [1202234 -> 1204099]",
+  "VELDO-0138 restart/stopped-stays-stopped detail: restarted after the stop: a new process, the record still stopped [1898736 -> 1900017]",
   "VELDO-0138 restart/stopped-stays-stopped detail: the stopped edge stays stopped: nothing sent or acquired, passes refused as edge_stopped",
-  "VELDO-0138 restart/never-activated-stays-inert detail: restarted with no record: a new service process, still inert [1198113 -> 1199389]",
+  "VELDO-0138 restart/never-activated-stays-inert detail: restarted with no record: a new service process, still inert [1896341 -> 1897199]",
   "VELDO-0138 restart/never-activated-stays-inert detail: nothing sent or acquired, the request still pending with no presentation"
  ],
  "failed_rows": [
@@ -123,7 +123,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 19.787,
+ "seconds": 19.284,
  "spec_id": "VELDO-0138",
  "suite": "scripts/suites/71_veldo_0138_channel_service.py",
  "tree": "git archive b74c8a64fbaeb439b5771155ae79d304cf4cc584, unchanged; the current suite file run against it"

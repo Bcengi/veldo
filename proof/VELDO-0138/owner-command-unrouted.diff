@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -916,2 +915,0 @@
+-            elif command.get('operation') == CH.AUTHORIZE:
+-                result = self.channel_command(packet, repository, observation)

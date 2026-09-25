@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -528 +528 @@
+-        if not ok:
++        if False:  # defect: the envelope signature is not checked
