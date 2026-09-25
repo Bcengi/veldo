@@ -9,7 +9,7 @@ without trailers.
 **Basis.** The owner approved the operating-model design,
 [docs/design/PLAN-0019-operating-model-design.md](../../docs/design/PLAN-0019-operating-model-design.md)
 at `12879d3`, on Telegram 29162 ("all 6 are yes"), and answered its section 15 on 29163 ("yes, Codex
-and Claude can read creds"); 29165 is the third message of the approval. The design is the
+and Claude can read creds"); on 29165 ("yes") he confirmed that answer. The design is the
 requirements. This writing applies its sections (e) and 10 to 12 and does not redesign; where the
 design left a choice, the resolution is listed at the end.
 
