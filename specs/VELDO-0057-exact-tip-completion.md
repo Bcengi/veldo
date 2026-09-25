@@ -151,3 +151,11 @@ replacement-generation fencing, AC3 lost-ack recovery and AC4 replica-failure re
 to Release 2. Current approval, exact-old-tip publication and confirmed landing remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: .veldo/control_landing.py (engine copy byte-identical) publishes the
+exact tip through the protected effect executor, writes the confirmed-landing receipt and runs the
+VELDO-0051 projection; .veldo/lander.py wires a factory land to it and leases every push on the
+exact watermark. A confirmed publication of another unit or dispatch refuses as
+binding_mismatch:publication/unit, an unconfirmed one as unknown_outcome. Suite 70, the red record
+against b53e7b1, finding 57 (29 mutations) and proof/VELDO-0057/ carry the evidence. No
+specification status was changed.
