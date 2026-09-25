@@ -168,3 +168,15 @@ roles as well as the recorded ones; a notice that cannot reach the authority is 
 missing_authority. Rows `stop/designated-authority-deliverable` and
 `notice/unreachable-authority-classed`, two cases in `resume/stale-or-wrong-actor`; red record at
 e5c2bc8 by assertion; 23 finding 75 mutations. Status unchanged.
+
+2026-09-25, review 75b fix: a raise now asks the VELDO-0068 settlement service's new public
+`Settlement.eligibility` (its own requirement and authority check, the ones settle applies) instead of
+reading `requirement()` through the settlement module's globals and copying only the roles half, so
+`control_request_settlement.py` and its engine copy join this footprint; settlement behavior is
+otherwise unchanged. A raise refuses as `chat_not_enrolled`, writing nothing, a designated person
+whose enrolled chat the live activation does not bind (a stopped or absent edge still records and
+defers). `stale_enrollment` is an unreachable authority, and a request squatted under a stop's alias
+is refused as `foreign_request` at raise, notice and resume. Row
+`stop/request-alias-squat-refused` and cases in `stop/designated-authority-deliverable` and
+`notice/unreachable-authority-classed`; red record at 3ed40c1 by assertion; 28 finding 75 mutations.
+Status unchanged.
