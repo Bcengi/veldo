@@ -25,10 +25,19 @@ the unit moves to AWAITING_AUTHORITY along its declared edge carrying the interr
 unknown when the requester says so OR when a dispatch record of the unit is in the `unknown` state
 (control_dispatch: an ambiguous launch holds a stop owed); the requester cannot declare it away.
 The designated authority must be deliverable and able to settle NOW, or the raise refuses by name
-and writes nothing: it must meet the effective requirement the settlement will apply (the settlement
-service's own requirement() for decision_disposition AND the named roles, so project_owner is always
-among them), refused as role_not_satisfied naming the person and the missing roles; and it must have
-a valid private chat enrollment, refused as no_enrolled_chat. The stop records those effective roles.
+and writes nothing. It must be eligible by the settlement service's own public `eligibility` (its
+requirement() for decision_disposition AND the named roles, so project_owner is always among them,
+and its own authority check over the request's scope and requester, the ones settle applies), refused
+by the settlement's first problem (role_not_satisfied, independence_not_met, unsupported_quorum...)
+naming the person and the missing roles. It must have a valid private chat enrollment, refused as
+no_enrolled_chat. And that chat must be the one the edge can send to: while an activation record is
+qualifying or active, the VELDO-0073 gate sends only to the chat it binds, so a designated person who
+is not the record's owner and whose chat is not that chat is refused as chat_not_enrolled. An edge
+that is stopped or not yet activated is temporary: the stop is recorded and its notice deferred. The
+stop's request alias is predictable, so an inbox item already under it that is not this service's
+own (opened by it for the designated person, binding its own terms for the stop) is refused as
+foreign_request, at raise with nothing written, on replay and at resume. The stop records the
+effective roles.
 
 THE REQUEST. The stop is then asked of its designated authority as an ordinary settlement request:
 this service, an enrolled service principal of its own, records the settlement terms (touchpoint
@@ -59,7 +68,8 @@ OBSERVABILITY. Every operation is observed with domain, repository, unit, stop, 
 versions, outcome, named refusal and its error class (invalid input, missing authority, stale
 subject, unavailable service, missing evidence, unknown outcome; unknown is never success). A notice
 that cannot reach the designated authority (UNREACHABLE_AUTHORITY: an edge the owner stopped, an
-owner no longer current, no enrolled chat) is refused under that name, classed missing authority.
+owner no longer current, no enrolled chat, an enrollment changed since the activation) is refused
+under that name, classed missing authority.
 metrics() counts accepted and refused operations and lists the stops still pending. No reason text,
 signature or key is observed. Not here: recovery, automatic retry, risk disposition of unknown
 effects, lost-send and reconnect handling (Release 2). Standard library only.
@@ -84,6 +94,11 @@ UNIT_KIND, LIFECYCLE = 'execution_unit', 'execution_unit'
 STOPPED, RESUMED = 'AWAITING_AUTHORITY', 'READY'
 # The settled request's terminal assignment state (control_request_settlement.TERMINAL_STATE).
 TERMINAL = 'SATISFIED'
+# The entity kind of recorded settlement terms, which a request names as its subject
+# (control_request_settlement.TERMS_KIND and SUBJECT_KIND).
+TERMS_KIND = 'settlement_terms'
+# The activation states in which the VELDO-0073 gate sends, and only to the chat the record binds.
+LIVE_ACTIVATION = ('qualifying', 'active')
 # Every enabled stop point: the station and the unit states it holds a unit in.
 STOP_POINTS = {'build': ('DISPATCHING', 'RUNNING', 'VERIFYING'),
                'review': ('REVIEWING',),
@@ -105,13 +120,18 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'not_authorized': 'missing_authori
             'stale_presentation': 'stale_subject', 'not_stopped': 'stale_subject',
             'missing_evidence': 'missing_evidence', 'no_settlement': 'missing_authority',
             'unavailable_service': 'unavailable_service', 'unknown_outcome': 'unknown_outcome',
-            'role_not_satisfied': 'missing_authority'}
+            'role_not_satisfied': 'missing_authority', 'independence_not_met': 'missing_authority',
+            'quorum_not_met': 'missing_authority', 'unsupported_quorum': 'missing_authority',
+            'unsupported_touchpoint': 'missing_evidence', 'foreign_request': 'missing_authority'}
 # The refusals meaning the designated authority cannot be reached through the activated edge now: a
-# stopped or absent edge, an owner who is no longer current, a chat that is not enrolled. A notice
-# reports each by its own name, classed missing_authority as VELDO-0073 classes edge_stopped; a raise
-# refuses a designated authority with no enrolled chat as no_enrolled_chat.
+# stopped or absent edge, an owner who is no longer current, a chat that is not enrolled, an enrollment
+# changed since the activation bound it (a re-enrollment window). A notice reports each by its own
+# name, classed missing_authority as VELDO-0073 classes edge_stopped; a raise refuses a designated
+# authority with no enrolled chat as no_enrolled_chat, and one whose chat the edge cannot send to as
+# chat_not_enrolled.
 UNREACHABLE_AUTHORITY = ('missing_authority', 'not_activated', 'edge_stopped', 'owner_not_current',
-                         'chat_not_enrolled', 'no_enrolled_chat', 'invalid_enrollment', 'group_chat')
+                         'chat_not_enrolled', 'no_enrolled_chat', 'invalid_enrollment', 'group_chat',
+                         'stale_enrollment')
 TAXONOMY.update({code: 'missing_authority' for code in UNREACHABLE_AUTHORITY})
 
 
@@ -209,14 +229,17 @@ class Andon:
 
     def __init__(self, ingress, service, *, scope, clock=time.time, deadline_seconds=7 * 86400):
         inbox, presenter, settlement = ingress.inbox, ingress.presenter, ingress.settlement
-        if inbox is None or presenter is None or settlement is None or not (
-                inbox.conn is ingress.conn and presenter.conn is ingress.conn and settlement.conn is ingress.conn):
+        gate = getattr(ingress, 'gate', None)
+        if inbox is None or presenter is None or settlement is None or gate is None or not (
+                inbox.conn is ingress.conn and presenter.conn is ingress.conn and settlement.conn is ingress.conn
+                and gate.conn is ingress.conn):
             raise Refused('invalid_input', 'the andon has one authority: the ingress store connection')
         if not (isinstance(service, tuple) and len(service) == 2 and _is_str(service[0]) and callable(service[1])):
             raise Refused('invalid_input', 'the andon service is (principal, sign)')
         if not _is_str(scope):
             raise Refused('invalid_input', 'the andon names the scope its requests are opened in')
         self.ingress, self.inbox, self.presenter, self.settlement = ingress, inbox, presenter, settlement
+        self.gate = gate
         self.conn = ingress.conn
         self.S, self.CM, self.AC, self.contract = inbox.store, inbox.membership, inbox.AC, inbox.contract
         self.I = settlement.I
@@ -393,15 +416,22 @@ class Andon:
             if (not self.AC.active_member(designated, now)[0] or designated.get('principal_type') != 'person'
                     or not self.CM.scope_covers(designated.get('scope'), self.scope)):
                 raise Refused('invalid_input', 'the designated authority is an active person in this scope')
-            need = self._requirement(resolving['roles'])
-            missing = sorted(set(need['roles']) - set(designated.get('roles') or []))
-            if missing:
-                raise Refused('role_not_satisfied', 'the designated authority does not hold every role a settlement '
-                              'of this stop requires', designated=resolving['principal'], missing_roles=missing)
+            need, problems = self.settlement.eligibility(
+                TOUCHPOINT, {'required_roles': sorted(set(resolving['roles'])), 'quorum': None},
+                resolving['principal'], requested_by=self.service, scopes=[self.scope])
+            if problems or not isinstance(need, dict) or not need.get('roles'):
+                problems = problems or ['unavailable_service']
+                missing = sorted(set(need['roles']) - set(designated.get('roles') or [])) if isinstance(need, dict) else []
+                raise Refused(problems[0], 'the designated authority cannot settle this stop (%s)' % ', '.join(problems),
+                              designated=resolving['principal'], missing_roles=missing)
             enrolled = self._enrolled_chat(resolving['principal'])
             if enrolled is None:
                 raise Refused('no_enrolled_chat', 'the designated authority has no enrolled private chat a notice '
                               'can reach', designated=resolving['principal'])
+            activation = self.gate.current()
+            if self._unsendable(activation, resolving['principal'], enrolled[2]):
+                raise Refused('chat_not_enrolled', 'the activated edge sends only to the chat its activation binds, '
+                              'not the designated authority\'s', designated=resolving['principal'])
             u = state['entities'].get(unit) or {}
             if u.get('kind') != UNIT_KIND or u['data'].get('repository_uuid') != self.ids['repository_uuid']:
                 raise Refused('invalid_input', 'the unit is an execution unit of this repository')
@@ -423,12 +453,17 @@ class Andon:
                     'request_id': self.I.assignment_id(self.ids['repository_uuid'], alias),
                     'request_alias': alias, 'state': 'stopped', 'raised_at': now, 'revisions': [], 'resumption': None,
                     'domain_uuid': self.ids['domain_uuid'], 'repository_uuid': self.ids['repository_uuid']}
+            squatted = self.inbox.read(stop['request_id'])
+            if squatted is not None and self._request_problem(stop, squatted):
+                raise Refused('foreign_request', 'an inbox item this service did not open holds the stop\'s request '
+                              'alias', designated=resolving['principal'])
             interruption = {'stop_id': sid, 'station': c['station'], 'interrupted_state': held, 'effect': effect,
                             'resolving': stop['resolving'], 'outstanding_effects': outstanding}
             expected = dict(self._pinned(state, c['principal'], resolving['principal']),
                             **{sid: 0, unit: u['version'], key['key_id']: state['entities'].get(key['key_id'], {}).get('version', 0)})
             expected.update({d: self._entity(d)['version'] for d in outstanding})
             expected[enrolled[0]] = enrolled[1]
+            expected[self._activation_id()] = (activation or {}).get('entity_version', 0)
             self._commit(dict(action='raise', stop=stop, unit_id=unit, interruption=interruption), expected,
                          c['principal'], c['command_id'], c['nonce'])
         except Refused as exc:
@@ -445,32 +480,29 @@ class Andon:
         result['notice'] = self.notify(sid) if result['request'].get('outcome') == 'opened' else None
         return result
 
-    def _requirement(self, roles):
-        """The effective requirement a settlement of a stop's request applies: the settlement service's
-        own requirement() (its journey policy for TOUCHPOINT AND the stop's roles), taken from the module
-        the running service was loaded from, so the andon keeps no copy of that policy."""
-        module = type(self.settlement).__init__.__globals__
-        requirement, refusal = module.get('requirement'), module.get('Refused')
-        if not callable(requirement) or not isinstance(refusal, type):
-            raise Refused('unavailable_service', 'the settlement service states no requirement')
-        try:
-            need = requirement(TOUCHPOINT, {'required_roles': list(roles)})
-        except refusal as exc:
-            raise Refused('invalid_input', 'the settlement refuses this requirement (%s)' % getattr(exc, 'code', '')) from None
-        if not isinstance(need, dict) or not isinstance(need.get('roles'), list) or not need['roles']:
-            raise Refused('unavailable_service', 'the settlement stated no roles')
-        return need
+    def _activation_id(self):
+        """The id of the activation record the gate reads (control_channel_activation.activation_id)."""
+        return 'channel_activation:%s' % self.gate.channel
+
+    @staticmethod
+    def _unsendable(activation, principal, chat):
+        """Whether the edge, as its activation record stands, can never send to `principal`'s enrolled
+        `chat`: the record is live (qualifying or active), binds another owner and another chat. A
+        stopped or absent record is temporary, and the record's own owner with a changed chat is a
+        re-enrollment window the gate names stale_enrollment; neither is refused here."""
+        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION
+                and activation.get('owner') != principal and activation.get('enrolled_chat') != chat)
 
     def _enrolled_chat(self, principal):
-        """(enrollment id, version) of `principal`'s valid private chat enrollment, or None: the one
-        place a notice to that person can be delivered."""
+        """(enrollment id, version, chat id) of `principal`'s valid private chat enrollment, or None:
+        the one place a notice to that person can be delivered."""
         P = self.presenter.P
         eid = P.enrollment_id(principal)
         held = self._entity(eid)
         if (held is None or P.enrollment_problems(held['kind'], held['data'], principal)
                 or held['data']['chat_id'] < 0):
             return None
-        return eid, held['version']
+        return eid, held['version'], held['data']['chat_id']
 
     # -- the request ----------------------------------------------------------------------------
 
@@ -505,15 +537,40 @@ class Andon:
                     'known, so this stop does not resume on an answer.')
         return 'The unit stays stopped at %s until the resolving authority settles this request.' % stop['station']
 
+    def _terms_body(self, stop):
+        """The settlement terms this service signs for one stop's request."""
+        return dict(touchpoint=TOUCHPOINT, target=stop_target(stop),
+                    proposal={'resume': stop['unit'], 'station': stop['station'], 'stop_id': stop['stop_id']},
+                    required_roles=list(stop['resolving']['roles']), quorum=None)
+
+    def _request_problem(self, stop, item):
+        """Why the inbox item under a stop's alias is not this service's own request for that stop, or
+        None: it must be opened by this service for the designated person and bind, by digest, terms
+        this service recorded with exactly the stop's terms. The alias is predictable, so any member can
+        open an item under it first."""
+        data = item.get('data') if isinstance(item, dict) else None
+        if (not isinstance(data, dict) or data.get('requested_by') != self.service
+                or data.get('owner') != stop['resolving']['principal']):
+            return 'the request was not opened by the andon service for the designated authority'
+        subject = data.get('subject') if isinstance(data.get('subject'), dict) else {}
+        found = self._entity(subject['ref']) if isinstance(subject.get('ref'), str) else None
+        terms = found['data'] if found is not None and found['kind'] == TERMS_KIND else None
+        want = dict(self._terms_body(stop), required_roles=sorted(set(stop['resolving']['roles'])))
+        if (subject.get('kind') != TERMS_KIND or terms is None or subject.get('digest') != digest(terms)
+                or terms.get('requested_by') != self.service or any(terms.get(k) != v for k, v in want.items())):
+            return 'the request does not bind the andon service\'s own terms for this stop'
+        return None
+
     def _open_request(self, stop):
         sid, alias = stop['stop_id'], stop['request_alias']
         rid = stop['request_id']
-        if self.inbox.read(rid) is not None:
+        held = self.inbox.read(rid)
+        if held is not None:
+            if self._request_problem(stop, held):
+                return {'outcome': 'refused', 'stage': 'replay', 'reason': 'foreign_request', 'request_id': rid}
             return {'outcome': 'opened', 'request_id': rid, 'replayed': True}
         terms = self.settlement.terms(self._service_command(sid, 'terms', dict(
-            operation='terms', terms=alias, touchpoint=TOUCHPOINT, target=stop_target(stop),
-            proposal={'resume': stop['unit'], 'station': stop['station'], 'stop_id': sid},
-            required_roles=list(stop['resolving']['roles']), quorum=None)))
+            operation='terms', terms=alias, **self._terms_body(stop))))
         if terms.get('outcome') != 'recorded':
             return {'outcome': 'refused', 'stage': 'terms', 'reason': terms.get('reason'), 'request_id': rid}
         deadline = time.strftime(DEADLINE_FORMAT, time.gmtime(self.clock() + self.deadline_seconds))
@@ -699,6 +756,8 @@ class Andon:
             item = self.inbox.read(rid)
             if item is None or item['data'] is None:
                 raise Refused('missing_evidence', 'the stop\'s request is not readable')
+            if self._request_problem(stop, item):
+                raise Refused('foreign_request', 'the stop\'s request is not this service\'s own')
             now = self.clock()
             state = self.CM.authority_state(self.S, self.conn)
             permission = self._permission(stop, item, state, now)
