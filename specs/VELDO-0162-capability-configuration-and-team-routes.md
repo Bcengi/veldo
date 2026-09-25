@@ -108,7 +108,8 @@ acceptance_criteria:
       save; the owner-answer row and the owner-save row must each fail. Record a principal other than
       the verified one as the owner save's decider, and the decider row must fail; skip the edge
       signature check on the owner-save path, and the unverified-assertion row, which submits an owner
-      save whose edge signature does not verify, must fail.
+      save whose edge signature does not verify and requires it refused as the edge check's named
+      refusal with no team written, must fail.
     falsified_by: >
       Make another principal's proposed team revision current without the owner's settled answer, and
       separately open a decision request for the owner's own save; the owner-answer row and the owner-save
@@ -196,16 +197,18 @@ own team (design section 4(f)); amendment races (Release 2).
 
 Each save is an assertion operation of the api edge, like `save_workflow` (VELDO-0130's History), which
 the authority rechecks and executes as the owning command: VELDO-0127's revision command for a
-capability configuration and VELDO-0089's `propose` for a team, with VELDO-0151's role fields. A save
-by the project's owner takes one new owner-save path in `control_team`: it binds the API edge's verified
-assertion as its evidence, the way VELDO-0150 AC2 binds the intake command, compares the assertion's
-principal with the project's owner, and makes the proposal current in the same commit. `Teams.apply`
-accepts the edge-verified assertion, for `propose` as well as the owner save, in place of an SSH
-signature from the principal's own key, verifying the edge signature itself as the intake's
-`_edge_verifies` does. A proposal by another member takes the existing path: the request
-of AC3 is the one VELDO-0089's `amend` already checks for (its brief, its target, the project's owner as
-its only principal), so `amend` is used as it is, and it settles through VELDO-0089 AC2's retained
-settlement path.
+capability configuration and VELDO-0089's team commands for a team (AC2), with VELDO-0151's role fields.
+A save by the project's owner takes one new owner-save path in `control_team`: it binds the API edge's
+verified assertion as its evidence, the way VELDO-0150 AC2 binds the intake command, compares the
+assertion's principal with the project's owner, and makes the proposal current in the same commit.
+`Teams.apply` accepts the edge-signed command the authority derives from the verified assertion, for
+`propose` as well as the owner save, in place of an SSH signature from the principal's own key, checking
+that edge signature against the edge's keyring key itself, as `send_message` in `control_api_authority`
+and the intake's `_edge_verifies` do. A repeat submission of a pending proposal is looked up before the
+team version check, since `propose` raises the version and the repeat would otherwise be refused as
+stale. A proposal by another member takes the existing path: the request of AC3 is the one VELDO-0089's
+`amend` already checks for (its brief, its target, the project's owner as its only principal), so
+`amend` is used as it is, and it settles through VELDO-0089 AC2's retained settlement path.
 
 The default team of AC4 is what a new project starts with (design section 5, step 4). It is plain team
 data with no project of its own, so the project-bound staffing checks run when a project is given it,
