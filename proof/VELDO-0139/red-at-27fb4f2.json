@@ -90,7 +90,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 16.522,
+ "seconds": 16.566,
  "spec_id": "VELDO-0139",
  "suite": "scripts/suites/73_veldo_0139_factory_setup.py",
  "tree": "git archive 27fb4f28bbc4031e00e4fcad58a68d5652ec0f0f, unchanged; the current suite file run against it"

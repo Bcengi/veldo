@@ -1,5 +1,5 @@
 {
- "all_by_assertion": false,
+ "all_by_assertion": true,
  "all_named_rows_red": true,
  "baseline": {
   "details": [],
@@ -71,7 +71,7 @@
     true
    ]
   ],
-  "seconds": 16.459
+  "seconds": 16.208
  },
  "controls_green": true,
  "mutants": [
@@ -158,14 +158,14 @@
      true
     ]
    ],
-   "seconds": 16.483,
+   "seconds": 16.282,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0139 refuse/writes-nothing detail: mode: refused as invalid_input:state_root:mode, writing nothing [None ['/dev/shm/b139-mmvkkmu6/install/2a17bfadd7c37586', '/dev/shm/b139-mmvkkmu6/install/2a17bfadd7c37586/bin', '/dev/shm/b139-mmvkkmu6/install/2a17bfadd7c37586/bin/arch.py']]",
-    "VELDO-0139 refuse/writes-nothing detail: group-readable: refused as invalid_input:state_root:mode, writing nothing [None ['/dev/shm/b139-mmvkkmu6/install/047ac017a456e627', '/dev/shm/b139-mmvkkmu6/install/047ac017a456e627/bin', '/dev/shm/b139-mmvkkmu6/install/047ac017a456e627/bin/arch.py']]",
+    "VELDO-0139 refuse/writes-nothing detail: mode: refused as invalid_input:state_root:mode, writing nothing [None ['/dev/shm/b139-h3v8ejy8/install/d8833b9b330f037a', '/dev/shm/b139-h3v8ejy8/install/d8833b9b330f037a/bin', '/dev/shm/b139-h3v8ejy8/install/d8833b9b330f037a/bin/arch.py']]",
+    "VELDO-0139 refuse/writes-nothing detail: group-readable: refused as invalid_input:state_root:mode, writing nothing [None ['/dev/shm/b139-h3v8ejy8/install/2f2c14ca444946ee', '/dev/shm/b139-h3v8ejy8/install/2f2c14ca444946ee/bin', '/dev/shm/b139-h3v8ejy8/install/2f2c14ca444946ee/bin/arch.py']]",
     "VELDO-0139 service/starts-inert detail: setup started nothing: the user manager was asked only to reload [['daemon-reload', 'daemon-reload', 'daemon-reload']]"
    ],
    "diff": "proof/VELDO-0139/state-root-mode-unchecked.diff",
@@ -247,13 +247,13 @@
      true
     ]
    ],
-   "seconds": 18.254,
+   "seconds": 18.225,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0139 refuse/writes-nothing detail: host-trust-exists: refused as invalid_input:host_trust:exists, writing nothing [setup_incomplete:host_trust:FileExistsError ['/dev/shm/b139-moq4xb1r/root-trust-exists/authority', '/dev/shm/b139-moq4xb1r/root-trust-exists/authority/control.sqlite3', '/dev/shm/b139-moq4xb1r/root-trust-exists/edge']]"
+    "VELDO-0139 refuse/writes-nothing detail: host-trust-exists: refused as invalid_input:host_trust:exists, writing nothing [setup_incomplete:host_trust:FileExistsError ['/dev/shm/b139-3_c8yset/root-trust-exists/authority', '/dev/shm/b139-3_c8yset/root-trust-exists/authority/control.sqlite3', '/dev/shm/b139-3_c8yset/root-trust-exists/edge']]"
    ],
    "diff": "proof/VELDO-0139/host-trust-overwritten.diff",
    "failed_rows": [
@@ -333,7 +333,7 @@
      true
     ]
    ],
-   "seconds": 16.61,
+   "seconds": 16.495,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -419,7 +419,7 @@
      true
     ]
    ],
-   "seconds": 16.255,
+   "seconds": 16.274,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -505,14 +505,14 @@
      true
     ]
    ],
-   "seconds": 16.203,
+   "seconds": 16.29,
    "source_sha256": "2f395d4b8861b6645c8ce227cf3a3f27b4d152da2ebc070c9e9a5beae8adefc8"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0139 ingress/configuration detail: the ingress configuration is a 0600 VELDO-0073 configuration naming the account's own token file",
-    "VELDO-0139 token/never-copied detail: no copy of the token in the state root, the store, the install root, the unit, the host trust or the workspace [['/dev/shm/b139-1x0z4xnb/state/host/bot-token']]"
+    "VELDO-0139 token/never-copied detail: no copy of the token in the state root, the store, the install root, the unit, the host trust or the workspace [['/dev/shm/b139-6mwxw19h/state/host/bot-token']]"
    ],
    "diff": "proof/VELDO-0139/token-copied.diff",
    "failed_rows": [
@@ -593,7 +593,7 @@
      true
     ]
    ],
-   "seconds": 16.293,
+   "seconds": 16.21,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -686,7 +686,7 @@
      true
     ]
    ],
-   "seconds": 34.63,
+   "seconds": 34.707,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -779,16 +779,18 @@
      true
     ]
    ],
-   "seconds": 33.853,
+   "seconds": 33.887,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
-   "by_assertion": false,
+   "by_assertion": true,
    "details": [
-    "VELDO-0139 refuse/writes-nothing detail: absent: refused as missing_authority:state_root:absent, writing nothing [missing_authority:state_root:absent ['/dev/shm/b139-l6jsi1jo/install/5da44691da53d829/state/observations.jsonl']]",
+    "VELDO-0139 refuse/writes-nothing detail: absent: refused as missing_authority:state_root:absent, writing nothing [missing_authority:state_root:absent ['/dev/shm/b139-wt_wc83q/install/99b276142ef15681/state/observations.jsonl']]",
     "VELDO-0139 service/starts-inert detail: setup started nothing: the user manager was asked only to reload [['daemon-reload', 'start', 'show']]",
-    "VELDO-0139 host-trust/directory-checked detail: trust-directory-mode: refused as invalid_input:host_trust_directory:mode, writing nothing [invalid_input:host_trust_directory:mode ['/dev/shm/b139-l6jsi1jo/install/c054307c1fb6bbd2/state/observations.jsonl']]",
-    "VELDO-0139 qualification/opening-retried detail: the section ran to its end (it raised StoreRefused: ownership_conflict: channel_activation_authorize is bound to the code in /dev/shm/b139-l6jsi1jo/install/c054307c1fb6bbd2/bin/control_channel_activation.py (sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e); VELDO-0073 channel activation declares /dev/shm/b139-l6jsi1jo/src/.vel)"
+    "VELDO-0139 host-trust/directory-checked detail: trust-directory-mode: refused as invalid_input:host_trust_directory:mode, writing nothing [invalid_input:host_trust_directory:mode ['/dev/shm/b139-wt_wc83q/install/ce1a56ba4dc427ab/state/observations.jsonl']]",
+    "VELDO-0139 qualification/opening-retried detail: a fresh factory is set up and the owner's qualify is accepted while the opening is cut [0 None StoreRefused: ownership_conflict: channel_activation_authorize is bound to the code in /dev/shm/b139-wt_wc83q/install/ce1a56ba4dc427ab]",
+    "VELDO-0139 qualification/opening-retried detail: once the fault clears, a later pass of the same process opens the request [None]",
+    "VELDO-0139 qualification/opening-retried detail: and exactly one qualification request exists after further passes [0]"
    ],
    "diff": "proof/VELDO-0139/setup-starts-service.diff",
    "failed_rows": [
@@ -871,7 +873,7 @@
      false
     ]
    ],
-   "seconds": 17.437,
+   "seconds": 17.424,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -988,7 +990,7 @@
      false
     ]
    ],
-   "seconds": 0.832,
+   "seconds": 0.833,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1076,7 +1078,7 @@
      true
     ]
    ],
-   "seconds": 34.724,
+   "seconds": 34.672,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1171,7 +1173,7 @@
      false
     ]
    ],
-   "seconds": 33.726,
+   "seconds": 33.765,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1259,7 +1261,7 @@
      true
     ]
    ],
-   "seconds": 34.659,
+   "seconds": 34.687,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1271,7 +1273,7 @@
     "VELDO-0139 journey/qualified-and-active detail: bin/veldo channel activate over the recorded qualification leaves the edge active [{'outcome': 'refused', 'state': None, 'reason': 'missing_qualification'}]",
     "VELDO-0139 qualification/one-request-across-restart detail: after the restart the run still has exactly its one request, found by its alias [0 -> 0]",
     "VELDO-0139 qualification/one-request-across-restart detail: and nothing was presented again [0 -> 0]",
-    "VELDO-0139 qualification/opening-retried detail: a fresh factory is set up and the owner's qualify is accepted while the opening is cut [0 accepted]",
+    "VELDO-0139 qualification/opening-retried detail: a fresh factory is set up and the owner's qualify is accepted while the opening is cut [0 accepted None]",
     "VELDO-0139 qualification/opening-retried detail: once the fault clears, a later pass of the same process opens the request [skipped]",
     "VELDO-0139 qualification/opening-retried detail: and exactly one qualification request exists after further passes [0]"
    ],
@@ -1355,7 +1357,7 @@
      false
     ]
    ],
-   "seconds": 33.822,
+   "seconds": 33.782,
    "source_sha256": "07e7061b8351d232c58f1f1453ebe7dfc82e74bbe26689f847d6d5db8d931ec4"
   },
   {
@@ -1442,7 +1444,7 @@
      false
     ]
    ],
-   "seconds": 16.176,
+   "seconds": 16.17,
    "source_sha256": "07e7061b8351d232c58f1f1453ebe7dfc82e74bbe26689f847d6d5db8d931ec4"
   },
   {
@@ -1529,7 +1531,7 @@
      true
     ]
    ],
-   "seconds": 16.288,
+   "seconds": 16.28,
    "source_sha256": "07e7061b8351d232c58f1f1453ebe7dfc82e74bbe26689f847d6d5db8d931ec4"
   },
   {
@@ -1616,7 +1618,7 @@
      true
     ]
    ],
-   "seconds": 15.245,
+   "seconds": 15.214,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1702,7 +1704,7 @@
      true
     ]
    ],
-   "seconds": 16.205,
+   "seconds": 16.167,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1788,15 +1790,15 @@
      true
     ]
    ],
-   "seconds": 16.14,
+   "seconds": 16.178,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0139 host-trust/directory-checked detail: trust-directory-mode: refused as invalid_input:host_trust_directory:mode, writing nothing [None ['/dev/shm/b139-4gnl_my_/install/e9e6b93a88915887', '/dev/shm/b139-4gnl_my_/install/e9e6b93a88915887/bin', '/dev/shm/b139-4gnl_my_/install/e9e6b93a88915887/bin/arch.py']]",
-    "VELDO-0139 host-trust/directory-checked detail: trust-directory-owner: refused as invalid_input:host_trust_directory:owner, writing nothing [setup_incomplete:host_trust:PermissionError ['/dev/shm/b139-4gnl_my_/root-hd-owner/authority', '/dev/shm/b139-4gnl_my_/root-hd-owner/authority/control.sqlite3', '/dev/shm/b139-4gnl_my_/root-hd-owner/edge']]",
-    "VELDO-0139 host-trust/directory-checked detail: trust-directory-symlink: refused as invalid_input:host_trust_directory:symlink, writing nothing [None ['/dev/shm/b139-4gnl_my_/install/7d5d8d273069bf5e', '/dev/shm/b139-4gnl_my_/install/7d5d8d273069bf5e/bin', '/dev/shm/b139-4gnl_my_/install/7d5d8d273069bf5e/bin/arch.py']]"
+    "VELDO-0139 host-trust/directory-checked detail: trust-directory-mode: refused as invalid_input:host_trust_directory:mode, writing nothing [None ['/dev/shm/b139-ignon3wn/install/d8806f29b7f8497b', '/dev/shm/b139-ignon3wn/install/d8806f29b7f8497b/bin', '/dev/shm/b139-ignon3wn/install/d8806f29b7f8497b/bin/arch.py']]",
+    "VELDO-0139 host-trust/directory-checked detail: trust-directory-owner: refused as invalid_input:host_trust_directory:owner, writing nothing [setup_incomplete:host_trust:PermissionError ['/dev/shm/b139-ignon3wn/root-hd-owner/authority', '/dev/shm/b139-ignon3wn/root-hd-owner/authority/control.sqlite3', '/dev/shm/b139-ignon3wn/root-hd-owner/edge']]",
+    "VELDO-0139 host-trust/directory-checked detail: trust-directory-symlink: refused as invalid_input:host_trust_directory:symlink, writing nothing [None ['/dev/shm/b139-ignon3wn/install/1ab38c14f113b4e9', '/dev/shm/b139-ignon3wn/install/1ab38c14f113b4e9/bin', '/dev/shm/b139-ignon3wn/install/1ab38c14f113b4e9/bin/arch.py']]"
    ],
    "diff": "proof/VELDO-0139/host-trust-directory-unchecked.diff",
    "failed_rows": [
@@ -1876,7 +1878,7 @@
      true
     ]
    ],
-   "seconds": 18.403,
+   "seconds": 18.279,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   {
@@ -1962,7 +1964,7 @@
      true
     ]
    ],
-   "seconds": 16.19,
+   "seconds": 16.217,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   }
  ],
@@ -2091,7 +2093,7 @@
      true
     ]
    ],
-   "seconds": 16.622,
+   "seconds": 16.298,
    "source_sha256": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
   },
   "control_service_channel.py": {
@@ -2165,7 +2167,7 @@
      true
     ]
    ],
-   "seconds": 16.192,
+   "seconds": 16.258,
    "source_sha256": "07e7061b8351d232c58f1f1453ebe7dfc82e74bbe26689f847d6d5db8d931ec4"
   },
   "init_scaffold.py": {
@@ -2239,13 +2241,13 @@
      true
     ]
    ],
-   "seconds": 16.272,
+   "seconds": 16.252,
    "source_sha256": "2f395d4b8861b6645c8ce227cf3a3f27b4d152da2ebc070c9e9a5beae8adefc8"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 139",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 503.973,
+ "serial_seconds": 503.054,
  "spec_id": "VELDO-0139",
  "suite": "scripts/suites/73_veldo_0139_factory_setup.py"
 }
