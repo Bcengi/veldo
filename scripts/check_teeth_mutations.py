@@ -5169,6 +5169,32 @@ def cases():
               "                    or prior['data'].get('state') not in EC.LIFECYCLES[KIND]['terminal']):\n",
               "                    or False):  # defect: a continuation may name a live objective\n",
               ['cancel/reopen-linked'])
+    # Review 77a: the blocking transfer finding and the filed items, each reddening its own row.
+    objective('transfer-scope-unbounded', 'control_objective.py',
+              "                outside = [s for s in item.get('scope') or [] if s not in to['data']['bound']['scope']]\n",
+              "                outside = []  # defect: a transfer lands outside the receiver's accepted scope\n",
+              ['cancel/transfer-bounded'])
+    objective('transfer-keeps-source-revision', 'control_objective.py',
+              "                item['objective_revision'] = to['data']['accepted_revision']\n",
+              "                pass  # defect: the moved feature keeps the source objective's revision\n",
+              ['cancel/transfer-bounded'])
+    objective('duplicate-disposition-accepted', 'control_objective.py',
+              "        if len(named) != len(set(map(_canonical, named))):\n",
+              "        if False:  # defect: one feature may be disposed of twice\n", ['cancel/transfer-bounded'])
+    objective('pre-acceptance-evidence-counts', 'control_objective.py',
+              "            if recorded is None or accepted_at is None or recorded <= accepted_at:\n",
+              "            if False:  # defect: evidence kept before the acceptance counts\n", ['satisfaction/stale-evidence'])
+    objective('brief-unchecked', 'control_objective.py',
+              "        if req.get('brief') != acceptance_brief(data):\n",
+              "        if False:  # defect: the brief the owner was shown is not compared\n", ['acceptance/stale-answer'])
+    objective('inactive-project-elaborates', 'control_objective.py',
+              "        if op in ('amend', 'accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':\n",
+              "        if False:  # defect: an inactive project amends, accepts, elaborates and satisfies\n",
+              ['project/inactive-refusals'])
+    objective('amend-in-inactive-project', 'control_objective.py',
+              "        if op in ('amend', 'accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':\n",
+              "        if op in ('accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':  # defect\n",
+              ['project/inactive-refusals'])
 
     # VELDO-0075: each criterion's declared falsifier first, then the threat model's other shapes.
     def andon(name, module, old, new, row, also=()):
