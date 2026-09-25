@@ -854,16 +854,20 @@ def _v78_suite():
 
                 def item_scope(d):
                     d['scope'] = ['checkout', 'payments']
+
+                def unclassified(d):
+                    d['unreviewed'] = 'a field the classification does not name'
                 stale_t = (['stale_input:backlog'], ['stale_input:backlog'])
                 changes = {name: attempt(lambda: rewritten(fn)) for name, fn in (
                     ('own-entry', own_entry), ('own-priority', own_priority), ('item-scope', item_scope),
-                    ('sibling-entry', sibling_entry))}
+                    ('unclassified', unclassified), ('sibling-entry', sibling_entry))}
                 restored = answers()
                 check('ticket/own-changes', [
                     ('a change to the unit\'s own decomposition entry is stale by name', changes['own-entry'] == stale_t),
                     ('a change to the priority record that prioritized it is stale by name',
                      changes['own-priority'] == stale_t),
                     ('a change to the item\'s scope is stale by name', changes['item-scope'] == stale_t),
+                    ('a field the classification does not name is bound', changes['unclassified'] == stale_t),
                     ('a change to a sibling\'s entry alone leaves the tickets current', changes['sibling-entry'] == accepted),
                     ('the restored record is current again', restored == accepted)])
 

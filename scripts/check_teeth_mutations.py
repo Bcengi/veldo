@@ -5890,6 +5890,42 @@ def cases():
             "unit_target(ud), alternative_brief(ud), project,\n",
             "unit_target(ud), None, project,  # defect: any brief\n",
             ['done/authorized-alternative'])
+    # Review 2: a unit's ticket binds what bears on that unit, never a sibling's entries or bookkeeping.
+    backlog('backlog-ticket-whole-record', 'control_eligibility.py',
+            "        return SN.digest(SN.canonical(BL.unit_binding(unit, data)))\n",
+            "        return SN.digest(SN.canonical({k: v for k, v in data.items() if k != 'state'} if isinstance(data, dict)\n"
+            "                                      else data))  # defect: the whole record minus its state\n",
+            ['ticket/sibling-changes'])
+    backlog('backlog-ticket-binds-sibling-entries', 'control_backlog_priority.py',
+            "    entries = [e for e in item.get('decomposition') or [] if isinstance(e, dict) and e.get('unit') == unit]\n",
+            "    entries = list(item.get('decomposition') or [])  # defect: every sibling's entry is bound\n",
+            ['ticket/sibling-changes'])
+    backlog('backlog-ticket-binds-sibling-priorities', 'control_backlog_priority.py',
+            "            'entry': entries, 'priority': granted[:1]}\n",
+            "            'entry': entries, 'priority': granted}  # defect: a sibling's later priority record is bound\n",
+            ['ticket/sibling-changes'])
+    backlog('backlog-ticket-own-entry-unbound', 'control_backlog_priority.py',
+            "            'entry': entries, 'priority': granted[:1]}\n",
+            "            'entry': [], 'priority': granted[:1]}  # defect: the unit's own entry is not bound\n",
+            ['ticket/own-changes'])
+    backlog('backlog-ticket-own-priority-unbound', 'control_backlog_priority.py',
+            "            'entry': entries, 'priority': granted[:1]}\n",
+            "            'entry': entries, 'priority': []}  # defect: the unit's own priority record is not bound\n",
+            ['ticket/own-changes'])
+    backlog('backlog-ticket-scope-unbound', 'control_backlog_priority.py',
+            "ITEM_BOOKKEEPING = ('history', ",
+            "ITEM_BOOKKEEPING = ('scope', 'history', ",  # defect: the item's scope is bookkeeping
+            ['ticket/own-changes'],
+            also=[("'objective_uuid', 'feature_uuid', 'title', 'scope', 'work_class',",
+                   "'objective_uuid', 'feature_uuid', 'title', 'work_class',")])
+    backlog('backlog-ticket-unclassified-unbound', 'control_backlog_priority.py',
+            "            'unclassified': {k: v for k, v in item.items() if k not in ITEM_FIELDS},\n",
+            "            'unclassified': {},  # defect: a field nobody classified is silently current\n",
+            ['ticket/own-changes'])
+    backlog('backlog-unit-drift-open', 'control_backlog.py',
+            "    if sorted(units) != sorted(unit['states']) or set(priority.UNIT_TERMINAL) != set(unit['terminal']):\n",
+            "    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:  # defect\n",
+            ['priority/gate-question'])
     return result
 
 
