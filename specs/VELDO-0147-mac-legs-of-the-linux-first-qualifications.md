@@ -103,8 +103,8 @@ acceptance_criteria:
       Claude Code and Codex workers on the Mac on a unit whose work calls tools, runs a command that
       writes to its error stream and edits a file; compare the record kept on Linux, line by line and in
       order, with what the engine emitted on the Mac, including the error stream, with the run's exact
-      credential values replaced before the scanner runs (VELDO-0141 AC1 and AC4). Falsifier: Drop the Mac run's
-      error stream at the relay; the Mac complete-record check must fail.
+      credential values replaced before the scanner runs (VELDO-0141 AC1 and AC4). Falsifier: Drop the
+      Mac run's error stream at the relay; the Mac complete-record check must fail.
     falsified_by: >
       Drop the Mac run's error stream at the relay; the Mac complete-record check must fail.
   - id: AC4
@@ -115,7 +115,7 @@ acceptance_criteria:
       receiver writes one secrets frame over the same SSH channel; the wrapper reads exactly that frame,
       writes the run's private file (mode 0600 in a 0700 directory) and only then execs; the receiver
       removes that directory over SSH when the run ends, and the journal records only the credential ids
-      delivered (VELDO-0144 AC3). Inspect every launched process's command line and environment on the
+      delivered (the Mac leg of VELDO-0144 AC3). Inspect every launched process's command line and environment on the
       Mac, the packet, the contract, the journal and the Mac's keychain. Falsifier: Put a credential value
       in the packet sent to the Mac instead of the secrets frame; the Mac no-value-in-packet row must
       fail.
