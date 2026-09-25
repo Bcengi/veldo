@@ -5074,9 +5074,37 @@ def cases():
     # Review finding 75: the designated authority must meet the settlement's effective requirement at raise
     # and at resume, and be reachable; an unreachable authority's notice is classed missing_authority.
     andon('effective-requirement-not-computed-at-raise', 'control_andon.py',
-          "            need = self._requirement(resolving['roles'])\n",
-          "            need = {'roles': sorted(set(resolving['roles']))}  # defect: the settlement's requirement is not computed\n",
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          "            need = {'roles': sorted(set(resolving['roles']))}  # defect: the settlement's requirement is not computed\n"
+          "            problems = ['role_not_satisfied'] if set(need['roles']) - set(designated.get('roles') or []) else []\n"
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
           'stop/designated-authority-deliverable')
+    # Review 75b: the raise takes the settlement's whole eligibility, refuses a chat the live activation
+    # cannot send to (a stopped edge is temporary), keeps stale_enrollment by name and refuses a request
+    # squatted under the stop's predictable alias.
+    andon('eligibility-bypassed', 'control_andon.py',
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          "            problems = ['role_not_satisfied'] if set(need['roles']) - set(designated.get('roles') or []) else []"
+          "  # defect: only the roles half of the settlement's check\n"
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          'stop/designated-authority-deliverable')
+    andon('reachability-as-any-enrollment', 'control_andon.py',
+          "            if self._unsendable(activation, resolving['principal'], enrolled[2]):\n",
+          "            if False:  # defect: any valid chat enrollment is taken as reachable\n",
+          'stop/designated-authority-deliverable')
+    andon('stopped-edge-refused-at-raise', 'control_andon.py',
+          "        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION\n",
+          "        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION + ('stopped',)"
+          "  # defect: a stopped edge refuses the raise\n",
+          'notice/unreachable-authority-classed')
+    andon('stale-enrollment-misclassed', 'control_andon.py',
+          "'group_chat',\n                         'stale_enrollment')\n",
+          "'group_chat')  # defect: stale_enrollment is not an unreachable authority\n",
+          'notice/unreachable-authority-classed')
+    andon('squat-accepted', 'control_andon.py',
+          "        data = item.get('data') if isinstance(item, dict) else None\n",
+          "        return None  # defect: any item under the alias is taken as the stop's request\n",
+          'stop/request-alias-squat-refused')
     andon('resume-rechecks-recorded-roles-only', 'control_andon.py',
           "        roles = set(settled_roles) | set(stop['resolving']['roles'])\n",
           "        roles = set(stop['resolving']['roles'])  # defect: the settled requirement's roles are not re-checked\n",
