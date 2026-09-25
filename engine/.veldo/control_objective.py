@@ -40,11 +40,17 @@ source or a missing predicate is refused by name.
                    journal command that first wrote the source (invalid_input:intake_command
                    otherwise). The source's principal, the proposal's and the bound acceptor must be the
                    project's current owner (not_owner:source otherwise, which is also a message of his in
-                   a project he does not own), and the command names the objective's CURRENT revision
-                   and bound digest (stale_subject:revision otherwise). The acceptance binds the intake
+                   a project he does not own). Whoever wrote the bound fields must be his too: the
+                   objective's proposer and the author of every amendment are the project's owner or
+                   the project manager of the project's current team (control_team's PM_ROLE workers of
+                   the accepted revision), not_authorized:author otherwise, so an objective a member
+                   elaborated from his message is presented to him through `accept` instead. The
+                   command names the objective's CURRENT revision and bound digest
+                   (stale_subject:revision otherwise). The acceptance binds the intake
                    command, the source and the canonical attribution of the message: for Telegram the
                    kept VELDO-0066 evidence (message id, sender id, platform date, digest), for the API
-                   the edge-signed request (request id, edge, principal, digest). The same command again
+                   the edge-signed request (request id, edge, principal, digest). The same command again,
+                   from a sender who passes the membership and owner checks in an ACTIVE project,
                    returns the same acceptance and writes nothing. Every other objective is accepted
                    only by `accept`.
   propose_feature  Bounded elaboration: under an ACCEPTED or ACTIVE objective a member proposes a
@@ -100,6 +106,7 @@ def _organ(name):
 EC = _organ('entity_contract')
 CC = _organ('completion_contract')
 RF = _organ('release_floor_contract')
+TM = _organ('control_team')
 Y = _organ('yamlish')
 
 SCHEMA = 'veldo.objective/v1'
@@ -283,6 +290,24 @@ def attribution(conn, source):
     return None
 
 
+def project_managers(store, conn, project):
+    """The principals holding the project manager role in project `project`'s current team, as
+    control_team (VELDO-0089) records it: the accepted revision's PM_ROLE workers, none before one."""
+    record = TM.read(store, conn, project) or {}
+    roles = (record.get('team') or {}).get('roles') if record.get('revision') else None
+    workers = ((roles or {}).get(TM.PM_ROLE) or {}).get('workers') if isinstance(roles, dict) else None
+    return [w for w in workers if _is_str(w)] if isinstance(workers, list) else []
+
+
+def bound_authors(data):
+    """Every principal who wrote an objective record's bound fields: its proposer and the author of
+    each amendment, or None when the record does not say who proposed it."""
+    proposer = (data.get('provenance') or {}).get('created_by') if isinstance(data.get('provenance'), dict) else None
+    if not _is_str(proposer):
+        return None
+    return [proposer] + [h.get('by') for h in data.get('history') or [] if h.get('operation') == 'amend']
+
+
 def features(conn, oid):
     """Every feature under `oid`, by id order: the backlog items whose objective_uuid names it."""
     found = []
@@ -388,13 +413,9 @@ class Objectives:
             if current is None:
                 raise Refused('no_such_objective', str(oid)[:128])
             accepted = current.get('acceptance') if isinstance(current.get('acceptance'), dict) else {}
-            if (op == 'accept_message' and accepted.get('path') == MESSAGE_PATH and _is_str(command.get('intake_command'))
-                    and accepted.get('intake_command') == command['intake_command']):
-                # The same message's acceptance again: the acceptance it made, nothing written.
-                observation.update(objective=oid, acceptance=self._acceptance_trace(accepted))
-                return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': current, 'receipt': None,
-                        'feature_id': None, 'repeated': True}
-            if command.get('objective_version') != current['version']:
+            repeat = (op == 'accept_message' and accepted.get('path') == MESSAGE_PATH
+                      and _is_str(command.get('intake_command')) and accepted.get('intake_command') == command['intake_command'])
+            if command.get('objective_version') != current['version'] and not repeat:
                 raise Refused('stale_version', 'command names another objective version')
             project = current['project']
             pinned = []
@@ -419,6 +440,14 @@ class Objectives:
             problems = problems or ['invalid_input:assessor:' + p for p in self._person_problems(state, assessor, project, now)]
         if problems:
             raise Refused(problems[0], '; '.join(problems))
+        if op == 'accept_message' and repeat:
+            # The same message's acceptance again, asked by a member in scope while the project's owner
+            # is current: the acceptance it made, nothing written. A project that is not ACTIVE refuses.
+            if record['data'].get('state') != 'ACTIVE':
+                raise Refused('project_not_active:%s' % record['data'].get('state'), project)
+            observation['acceptance'] = self._acceptance_trace(accepted)
+            return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': current, 'receipt': None,
+                    'feature_id': None, 'repeated': True}
         written = [oid]
         if op == 'propose_feature' and _is_str(command.get('feature')):
             written.append(feature_id(oid, command['feature']))
@@ -435,7 +464,7 @@ class Objectives:
             origin = proposing_source(self.conn, current.get('proposal_id'))
             where = ((origin[1].get('command') or {}).get('provenance') or {}) if origin else {}
             pinned += [current.get('proposal_id')] + ([origin[0]] if origin else []) + (
-                [where['evidence_id']] if _is_str(where.get('evidence_id')) else [])
+                [where['evidence_id']] if _is_str(where.get('evidence_id')) else []) + [TM.team_id(project)]
         if op == 'assess' and isinstance(command.get('evidence'), dict):
             pinned += sorted({e['ref'] for e in command['evidence'].values() if isinstance(e, dict) and _is_str(e.get('ref'))})
         pinned.append('project:' + project)
@@ -622,6 +651,10 @@ class Objectives:
         if (acceptor != owner or source.get('principal') != owner or proposal.get('principal') != owner
                 or (source.get('command') or {}).get('principal') != owner):
             raise Refused('not_owner:source', 'the message is not the project owner\'s own')
+        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])
+        if not authors or any(a != owner and a not in managers for a in authors):
+            raise Refused('not_authorized:author', 'the bound fields were written by someone other than the '
+                                                   'project\'s owner or its project manager')
         if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:
             raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')
         attributed = attribution(conn, source)
