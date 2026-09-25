@@ -452,3 +452,17 @@ enrollment/possession-race, webauthn/openssl-fixed-path, service/restart-reconci
 service/down-at-registration, and an entropy check in reads/authoritative, each red by assertion at
 c3c0c6a; fifteen new finding 130 mutations, each reddening its row. Acceptance criteria, status, risk and
 dependencies are unchanged.
+
+2026-09-25, fresh-check fixes (branch build-veldo-0130): a stream whose credential the stream's own
+recheck finds revoked, or whose membership it finds ended, closes as revoked, as follow closes it, so the
+close reason no longer depends on which path saw the revocation first; service/restart-reconciles waits
+for the reconcile after the new subscription to reach the head with no delivery in hand before it
+revokes. A delivery the service fails (the feed refused unavailable_service, or a call raising, such as a
+reconcile's subscription) keeps its catch-up owed, and the hint socket's thread, which wakes every 0.25
+s, runs it again with backoff (0.25 s doubling to 8 s) until it reaches the head; this is a retry of a
+delivery known to have failed, and with nothing owed it calls nothing. A stream whose session a
+revocation ended while the stream was filling is closed as revoked once registered. open_api delivers the
+head the subscription answers, so the API's cursor is set from the start. New rows
+events/revoked-either-path, events/fill-window-revocation, events/retry-after-failure and
+service/connect-sets-cursor, each red by assertion at c0b27cc; seven new finding 130 mutations, each
+reddening its row. Acceptance criteria, status, risk and dependencies are unchanged.

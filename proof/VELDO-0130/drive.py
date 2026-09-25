@@ -22,12 +22,18 @@ own assertions.
     python3 -B proof/VELDO-0130/drive.py --red 83abf6d
     python3 -B proof/VELDO-0130/drive.py --red 791f094
     python3 -B proof/VELDO-0130/drive.py --red c3c0c6a
+    python3 -B proof/VELDO-0130/drive.py --red c0b27cc
 
 At the end of phase 3 before the review fixes (c3c0c6a) the deliver reads one feed page, the service
 forgets its subscribers on a restart, a reconcile re-enters the delivery in hand, the stream ignores
 Last-Event-ID, an expired session's stream is closed as revoked, the published list is derived rather
 than read, a possession race raises, openssl comes from PATH and a down service at registration raises,
 so each review-fix row fails by its own assertions.
+
+At the end of the review fixes (c0b27cc) the stream's recheck names a revocation
+unauthenticated:credential_revoked, a stream filled across a revocation stays registered, a failed delivery
+owes no catch-up and nothing retries it, and open_api drops the head its subscription answers, so each
+fresh-check row fails by its own assertions.
 
 The mutant runs are independent and run JOBS at a time (default 4); each is its own interpreter.
 """

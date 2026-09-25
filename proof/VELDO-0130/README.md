@@ -230,6 +230,32 @@ expiry-called-revoked, pending-inspect-unguarded (service/down-at-registration),
 redaction-skips-entropy (reads/authoritative), openssl-from-path and openssl-absence-unnamed
 (webauthn/openssl-fixed-path). Seven earlier mutations follow their moved anchors unchanged in meaning.
 
+## Fresh-check fixes
+
+The per-stream recheck in `ControlApi.deliver` names a revoked credential or an ended membership
+(`REVOKED`: credential_revoked, principal_not_member) `revoked`, as `follow` does, so a revocation committed
+after the feed page was read no longer closes its stream as unauthenticated:credential_revoked. A stream
+whose session a revocation ended while it was filling is judged again once registered and closed as
+revoked. `ServiceAuthority.deliver` keeps the catch-up owed when a delivery answers unavailable_service or a
+call raises (a reconcile's subscription), answering the caller's own call either way; `Hints` calls
+`ServiceAuthority.retry` each time its thread wakes (at least every 0.25 s), which runs the owed catch-up
+(subscribe again, deliver the head) once its backoff has passed, 0.25 s doubling to 8 s, and calls nothing
+when nothing is owed. `open_api` delivers the head the subscription answers, so the cursor is set at once.
+service/restart-reconciles waits for the reconcile to reach the head with no delivery in hand before the
+revocation, the ordering it raced on under load.
+
+Four rows (41 in all): events/revoked-either-path (follow and the recheck both close as revoked, the
+recheck's revocation committed by a judge wrapper right after the feed page is answered),
+events/fill-window-revocation (a revocation committed and delivered from inside the new stream's first
+read, with a live control stream), events/retry-after-failure (the real ServiceAuthority and hint socket
+before a stand-in service: a one-off feed refusal and a reconcile's subscription raising, each retried to
+the head with the revoked stream closed, then no further calls) and service/connect-sets-cursor.
+`red-at-c0b27cc.json`: the four rows red by assertion, the other 37 green.
+
+Finding 130 gains seven mutations (95 in all), each red on its row: recheck-revocation-unauthenticated,
+fill-window-unchecked, feed-refusal-not-owed, raised-catch-up-not-owed, owed-never-retried,
+owed-never-cleared and connect-head-dropped.
+
 ## Left
 
 The gaps above, each owned by its specification. Sessions surviving a restart are Release 2.
