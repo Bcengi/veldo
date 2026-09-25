@@ -26,9 +26,9 @@ footprint:
   - "engine/.veldo/control_api*.py"
   - ".veldo/control_api*.py"
   - "packs/*/.veldo/control_api*.py"
-  - "engine/.veldo/control_runner*.py"
-  - ".veldo/control_runner*.py"
-  - "packs/*/.veldo/control_runner*.py"
+  - "engine/.veldo/control_service*.py"
+  - ".veldo/control_service*.py"
+  - "packs/*/.veldo/control_service*.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
@@ -166,7 +166,13 @@ On Linux the keystore is the Secret Service of the GNOME keyring daemon already 
 session, reached through the `secret-tool` executable of the distribution's libsecret-tools package
 (0.21.4 in this release's archive, not yet installed; GNOME's libsecret, LGPL-2.1+ with GPL-2+ parts),
 run as a separate process and never linked. Installing it is the owner's one-time setup step. The
-command's observation and journal entry exclude the value field by name.
+command's observation and journal entry exclude the value field by name. That needs the authority
+service (`control_service`): its generic path commits a command's parameters through the store, which
+journals the command's digest and hands the parameters to the owning transition, and records the
+observation in the service's own log. So the credential command takes its own branch in the service's
+`apply`, as `api_credential` and the channel commands do, which writes the value to the keystore and
+commits only the `credential` record, and neither the digested command nor the observation holds the
+value.
 
 A Mac run gets its values through one secrets frame over the same SSH channel, as section 3 of the
 design sets out; that leg is VELDO-0147 AC4, built once VELDO-0124 and VELDO-0125 land.
@@ -179,3 +185,8 @@ design sets out; that leg is VELDO-0147 AC4, built once VELDO-0124 and VELDO-012
 2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
 dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
 which is built after VELDO-0124 and VELDO-0125. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: leaving the value out of the observation and the journal does
+need the authority service, so the footprint adds `control_service` (the credential command's own branch
+in its `apply`, beside `api_credential`) and drops `control_runner`, which does not exist; the Runner
+is class `Runner` in `control_launch`, already in the footprint.
