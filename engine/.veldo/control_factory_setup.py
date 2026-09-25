@@ -200,7 +200,8 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     try:
         IN.read_token(token_file)
     except IN.Refused as exc:
-        raise Refused('invalid_input:token_file:' + exc.code, token_file) from None
+        raise Refused('missing_authority:token_file:absent' if exc.code == 'missing_authority'
+                      else 'invalid_input:token_file:unusable', token_file) from None
     if _within(token_file, workspace):
         raise Refused('invalid_input:token_file:inside_workspace', token_file)
     key = os.path.realpath(str(owner_key))
@@ -345,7 +346,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                       'connection_public_key': public['connection'], 'scope': ['*']},
                        'artifact_digests': [], 'expected_versions': {}}
             env = envelope(command, owner)
-            possession = ACT.ssh_signer(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-possession')(
+            possession = ACT.ssh_signer(os.path.join(keys, E.edge_key_id(CHANNEL)), E.POSSESSION_NAMESPACE)(
                 AC.canonical_envelope_bytes(env))
             observed = enrollment.admit(env, command, owner_sign(AC.canonical_envelope_bytes(env)), possession)
             if observed.get('outcome') != 'accepted':
@@ -385,9 +386,14 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                  'bot_api': {'origin': plan['origin'], 'token_file': plan['token_file']},
                  'decision_signer': {'principal': SETTLEMENT_PRINCIPAL, 'key': os.path.join(keys, SETTLEMENT_KEY)}},
                 indent=1, sort_keys=True) + '\n')
-            # The configuration is the one the ingress is constructed from: opening it proves every part.
-            opened = IN.open_ingress(ingress, clock)
-            opened.conn.close()
+            # The configuration is the one the ingress is constructed from, read back as it reads it: its
+            # fields, the token file, the journal key and the decision key the host trust names. The ingress
+            # itself is never opened here: its organs bind the store's owned entities to the code that first
+            # attaches them, which must be the installed service's.
+            config = IN.load_config(ingress)
+            IN.read_token(config['bot_api']['token_file'])
+            IN.journal_signer(config['journal'])
+            IN.decision_signer(config, EL.load_host_trust(plan['host_trust']).settlement_trust(workspace))
         with step('service_install'):
             installed = CS.install([workspace], host_trust=plan['host_trust'], key_directory=keys,
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
