@@ -738,6 +738,9 @@ def _v139_suite():
 
         # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
         with section(HD):
+            # The refusals below must see a quiet store: the laid-down factory's live service commits its
+            # first report cursor (VELDO-0128) on its first active pass, and nothing after here needs it.
+            CS.stop(unit, manager)
             loose = base / 'xdg-loose' / 'veldo'
             loose.mkdir(parents=True)
             os.chmod(str(loose), 0o755)

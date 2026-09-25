@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -120 +120 @@
+-FLOOR_RESULTS = ('accept_build', 'record_review', 'handoff')          # dispatch.FLOOR_TRANSITIONS reported
++FLOOR_RESULTS = ('accept_build', 'handoff')  # defect: reviews are not reported          # dispatch.FLOOR_TRANSITIONS reported

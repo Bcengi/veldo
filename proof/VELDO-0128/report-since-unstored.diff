@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -699 +699 @@
+-        if stored is None or target > stored:
++        if False:  # defect: the since is never stored

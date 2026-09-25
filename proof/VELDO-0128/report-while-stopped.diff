@@ -1,0 +1,8 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -429 +429 @@
+-            reported = self.report(record)
++        reported = self.report(record)  # defect: reports whatever the gate said
+@@ -450 +450 @@
+-        if (record or {}).get('state') != 'active' or not owner:
++        if not owner:  # defect: on any edge state

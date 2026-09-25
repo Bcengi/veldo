@@ -20,9 +20,15 @@ footprint:
   - "engine/.veldo/request_doorbell.py"
   - ".veldo/request_doorbell.py"
   - "packs/*/.veldo/request_doorbell.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_service_channel*.py"
+  - ".veldo/control_service_channel*.py"
+  - "packs/*/.veldo/control_service_channel*.py"
   - "scripts/suites/*_veldo_0128_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0128-telegram-journal-reporting.md"
   - "specs/index.md"
   - "proof/VELDO-0128/*"
@@ -93,6 +99,25 @@ Automatic recovery, durability/scale qualification and additional host/channel t
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
 
+## What the reviewer judges
+
+- Normal use: when the authority commits an enabled journal event (accepted objective, a grooming or
+  admission wait, assignment or worker progress, a gate or review result, a stop, a completion), the
+  owner gets one correlated Telegram report through the activated edge, naming the project, unit, run
+  and source event. The report states the committed fact and the next action or evidence: a pending
+  decision links to its current presentation, and a completion names the confirmed revision and proof.
+  Unknown or unavailable state is said plainly. Reports go only to the configured enrolled chat, and
+  each records its real send outcome.
+- Threat model: an enabled event with no report, or a report with no committed event behind it; a
+  completion reported from a build-only event or anything short of the confirmed-landing receipt; a
+  report that grants admission or asserts completion; a report sent to another chat; a refused send
+  recorded as delivered, or the source event lost when a send fails. The owner's account, the store
+  and the activated Telegram edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); reconnect,
+  replay, lost-send lookup and delivery recovery (Release 2); forged rows in our own store and files
+  planted in the installed directory. The real-Telegram send is run once by the lead with the owner
+  through the running factory; the rows use a loopback stand-in.
+
 ## Notes
 
 This fills the ordinary reporting gap between internal wake-ups and the andon decision path.
@@ -114,3 +139,24 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-25: built. `.veldo/control_telegram_report.py` projects the declared event set (accepted
+objective, grooming and admission waits, dispatch progress, gate and review results, andon stops, and
+completion only from VELDO-0051's confirmed-landing reader) into correlated owner reports through the
+activated VELDO-0073 edge, recording each real send outcome. The footprint gains `.veldo/init_scaffold.py`
+and its engine copy: the scaffold must install the new module, as every runtime asset is installed.
+Proof in proof/VELDO-0128/, teeth finding 128.
+
+2026-09-25: review 1 rework. Three blocking findings fixed. The gate and review reports read the records
+their real writers commit: the gate observations control_proof records for LiveLoop.gate, and the floor
+steps dispatch.py's floor_transition commits (accept_build, record_review passing or returning the unit,
+handoff), never execution_unit edges no writer makes. The progress report reads only the dispatch record's
+own fields (the receiver, the process, termination.returncode, signal and deadline_stop, the refusal and
+the unknown reason) and names no worker, which the contract does not carry. The running service's
+Channel.tick runs the reporter on an active edge only, with its since stored in the authority as a
+telegram_report_cursor record (reporting starts after the owner's first activation), so a restart neither
+repeats nor drops a report and nothing is sent or recorded while the edge is stopped. The reporter keeps its
+own record-before-send path through the presenter's gated edge. The footprint gains
+control_service_channel.py and its copies. The suite drives the real dispatch, proof and floor writers and
+the channel; rows sources/real-writers, wiring/tick-reports, wiring/restart and wiring/stopped-edge are new.
+Red record at f623b78, 23 finding-128 mutations, proof in proof/VELDO-0128/. Status stays ready.

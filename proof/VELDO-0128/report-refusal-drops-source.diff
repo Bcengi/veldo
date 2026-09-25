@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -231 +231 @@
+-        data.update(outcome='refused', refusal=refusal)
++        data.update(outcome='refused', refusal=refusal, source=None)  # defect: the source event is lost

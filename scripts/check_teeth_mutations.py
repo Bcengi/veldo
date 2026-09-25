@@ -5848,6 +5848,138 @@ def cases():
           'observability/named-refusals',
           also=[("accepted_versions=dict(versions or {}), outcome=outcome,",
                  "accepted_versions=dict(versions or {}), extra=dict(extra), outcome=outcome,")])
+
+    # VELDO-0128: each criterion's declared falsifier first, then the threat model's other shapes, then
+    # the rework's three findings (wrong sources, invented fields, not wired with a stored since).
+    def report(name, module, old, new, rows, also=()):
+        add(128, name, '72_veldo_0128_reports.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifier): the completion event handler is omitted.
+    report('report-completion-handler-omitted', 'control_telegram_report.py',
+           "    ('completion', None, '_completions'),\n", '', ['registry/delivery'])
+    # AC2 (declared falsifier): a build-only event is reported complete.
+    report('report-complete-from-build-only', 'control_telegram_report.py',
+           "        found = []\n        for event in shipped:\n",
+           "        found = []\n"
+           "        index = {r[0]: r for r in rows}\n"
+           "        for (seq, eid), data in list(receipts.items()):  # defect: a build-only receipt reports complete\n"
+           "            if data.get('fact') == 'attempt_finished':\n"
+           "                shipped = list(shipped) + [{'id': 'build-only', 'unit': data['subject']['id'], 'dispatch_id': None,\n"
+           "                                            'journal_seq': seq, 'receipt': eid, 'commit': None,\n"
+           "                                            'command_id': index[seq][1], 'record_digest': index[seq][2]}]\n"
+           "        for event in shipped:\n", ['content/completed'])
+    # AC3 (declared falsifier): a refused send is recorded as delivered.
+    report('report-refused-marked-delivered', 'control_telegram_report.py',
+           "        data.update(outcome='refused', refusal=refusal)\n",
+           "        data.update(outcome='sent', refusal=None)  # defect: a refused send is recorded as delivered\n",
+           ['send/refusal-recorded'])
+    report('report-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_telegram_report.py",\n', '',
+           ['install/assets'])
+    # AC1: a report for a record before the starting sequence (the activation run's own request).
+    report('report-before-since', 'control_telegram_report.py',
+           "            if seq > since:\n", "            if seq >= 0:  # defect: the starting sequence is ignored\n",
+           ['registry/committed-sources'])
+    # AC1: the source record's entity digest is not kept, so a report does not join its committed record.
+    report('report-source-uncorrelated', 'control_telegram_report.py',
+           "                  'entity_kind': entry.get('kind'), 'entity_digest': entry.get('digest')}\n",
+           "                  'entity_kind': entry.get('kind'), 'entity_digest': None}  # defect: uncorrelated\n",
+           ['registry/committed-sources'])
+    # AC2: running is rendered from the dispatch's current record instead of the committed one.
+    report('report-running-from-current-state', 'control_telegram_report.py',
+           "        data, before = self._data(entry), self._data(prior)\n        status = data.get('state')\n",
+           "        data, before = (self._entity(eid) or {}).get('data') or {}, self._data(prior)  # defect: current, not committed\n"
+           "        status = data.get('state')\n", ['content/running'])
+    # AC2: a pending decision is not linked to its current presentation.
+    report('report-presentation-unlinked', 'control_telegram_report.py',
+           "            reply_to, nxt = self._presentation(source.get('request'))\n",
+           "            reply_to, nxt = None, 'Decide in the inbox.'  # defect: no link to the current presentation\n",
+           ['content/awaiting-decision'])
+    # AC2: a review that returned the unit is reported as a pass.
+    report('report-review-returned-as-passed', 'control_telegram_report.py',
+           "            returned = data.get('state') == 'returned'\n",
+           "            returned = False  # defect: a returned unit reads as passed\n", ['content/gate-rejected'])
+    # AC2: an unknown dispatch outcome reads as running.
+    report('report-unknown-as-running', 'control_telegram_report.py',
+           "        status = data.get('state')\n        if status not in PROGRESS_STATES",
+           "        status = 'running' if data.get('state') == 'unknown' else data.get('state')  # defect\n"
+           "        if status not in PROGRESS_STATES", ['content/unknown-explicit'])
+    # Threat model: the andon's own request is reported again as a waiting decision (a second notice).
+    report('report-andon-request-reported', 'control_telegram_report.py',
+           "                or data.get('request_version') == before.get('request_version') or self._stop_request(eid, state)):\n",
+           "                or data.get('request_version') == before.get('request_version')):  # defect: andon requests too\n",
+           ['stop/no-second-notice'])
+    # AC3: a send that skips the activation gate reaches a substituted chat.
+    report('report-gate-bypassed', 'control_telegram_report.py',
+           "            sent = self.edge.send(chat, text, reply_to)\n",
+           "            sent = type(self.edge)(self.P, self.edge.base_url, self.edge._token,\n"
+           "                                   activation=None).send(chat, text, reply_to)  # defect: no activation gate\n",
+           ['recipient/owner-chat-only', 'recipient/substitution-refused'])
+    # AC3: a refused send loses its source event.
+    report('report-refusal-drops-source', 'control_telegram_report.py',
+           "        data.update(outcome='refused', refusal=refusal)\n",
+           "        data.update(outcome='refused', refusal=refusal, source=None)  # defect: the source event is lost\n",
+           ['send/refusal-recorded'])
+    report('report-refusal-unclassed', 'control_telegram_report.py',
+           "                                      error_class=None if accepted else taxonomy(reason)))\n",
+           "                                      error_class=None))  # defect: refusals carry no error class\n",
+           ['observability/named-refusals'])
+    # Finding 1 (wrong sources): the gate and review report listens to unit edges no writer commits.
+    report('report-gate-from-unit-edges', 'control_telegram_report.py',
+           "    ('gate_result', (OBSERVATION_KIND, FLOOR_KIND), '_gate'),\n",
+           "    ('gate_result', (UNIT_KIND,), '_gate'),  # defect: execution_unit edges, which no gate or review writes\n",
+           ['sources/real-writers', 'content/gate-rejected'])
+    # Finding 1: the gate observations LiveLoop.gate records are not read.
+    report('report-gate-observation-ignored', 'control_telegram_report.py',
+           "        if entry.get('kind') == OBSERVATION_KIND:\n            return self._observed(eid, entry, prior)\n",
+           "        if entry.get('kind') == OBSERVATION_KIND:\n            return None  # defect: the gate's own record is ignored\n",
+           ['content/gate-rejected'])
+    # Finding 1: the floor's record_review step is not reported, so a returned unit is silent.
+    report('report-review-step-unreported', 'control_telegram_report.py',
+           "FLOOR_RESULTS = ('accept_build', 'record_review', 'handoff')",
+           "FLOOR_RESULTS = ('accept_build', 'handoff')  # defect: reviews are not reported",
+           ['content/gate-rejected', 'sources/real-writers'])
+    # Finding 2 (invented fields): the exit reads a status field the termination does not carry.
+    report('report-exit-status-invented', 'control_telegram_report.py',
+           "        code, signal = termination.get('returncode'), termination.get('signal')\n",
+           "        code, signal = termination.get('exit_status'), termination.get('signal')  # defect: no such field\n",
+           ['sources/real-writers'])
+    # Finding 2: the progress report names a worker the contract does not carry.
+    report('report-worker-invented', 'control_telegram_report.py',
+           "                'fact': 'dispatch %s of unit %s at station %s, attempt %s, %s'\n"
+           "                        % (_shown(run), _shown(contract.get('unit')), _shown(contract.get('station')),\n"
+           "                           _shown(contract.get('attempt')), said[1]),\n",
+           "                'fact': 'dispatch %s of unit %s at station %s, attempt %s, %s (worker %s)'\n"
+           "                        % (_shown(run), _shown(contract.get('unit')), _shown(contract.get('station')),\n"
+           "                           _shown(contract.get('attempt')), said[1], _shown(contract.get('worker'))),  # defect\n",
+           ['content/running', 'sources/real-writers'])
+    # Finding 3 (not wired): the running service's pass does not run the reporter.
+    report('report-not-wired', 'control_service_channel.py',
+           "            reported = self.report(record)\n",
+           "            reported = []  # defect: the pass never runs the reporter\n",
+           ['wiring/tick-reports', 'registry/delivery'])
+    # Finding 3: the since is never stored, so a restarted service reads every report it already made.
+    report('report-since-unstored', 'control_telegram_report.py',
+           "        if stored is None or target > stored:\n",
+           "        if False:  # defect: the since is never stored\n",
+           ['wiring/restart', 'wiring/tick-reports'])
+    # Finding 3: a restarted reporter starts from the head it finds, dropping what was committed while down.
+    report('report-since-reset-at-restart', 'control_telegram_report.py',
+           "        self.S.declare_owners(self.conn, OWNER, kinds={KIND: (OPERATION,), CURSOR_KIND: (OPERATION,)}, module=__file__)\n",
+           "        self.S.declare_owners(self.conn, OWNER, kinds={KIND: (OPERATION,), CURSOR_KIND: (OPERATION,)}, module=__file__)\n"
+           "        rows = self._rows()  # defect: every start begins at the current head\n"
+           "        if rows and self.stored_since() is not None:\n"
+           "            self._advance(rows[-1][0])\n",
+           ['wiring/restart'])
+    # Finding 3 (VELDO-0073): the reporter runs whatever the gate said, so a stopped edge records refusals
+    # and what it held back is never sent once the edge is active again.
+    report('report-while-stopped', 'control_service_channel.py',
+           "            reported = self.report(record)\n        sent = sum(1 for outcome in published if outcome == 'published')\n",
+           "        reported = self.report(record)  # defect: reports whatever the gate said\n"
+           "        sent = sum(1 for outcome in published if outcome == 'published')\n",
+           ['wiring/stopped-edge'],
+           also=[("        if (record or {}).get('state') != 'active' or not owner:\n",
+                  "        if not owner:  # defect: on any edge state\n")])
+
     # VELDO-0089: each criterion's declared falsifier first, then the threat model's other shapes.
     def team(name, module, old, new, rows, also=()):
         add(89, name, '73_veldo_0089_team.py', module, old, new, ['team/' + row for row in rows], also)

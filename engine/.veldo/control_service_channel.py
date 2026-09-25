@@ -72,6 +72,14 @@ delegation is within control_signer_answers.RENEW_NOTICE_SECONDS of expiring (or
 is told once per delegation, in his enrolled chat, to renew it. Each message is recorded before it is
 sent, so a redelivery or a later pass never repeats it.
 
+THE OWNER'S REPORTS (VELDO-0128). On every pass of an ACTIVE edge, after acquisition, presentation and the
+tells, the channel runs control_telegram_report's Reporter for the activation record's owner: every enabled
+journal event committed after the stored since (a store record, never a value the service holds) is
+recorded, sent through the presenter's gated edge to his enrolled chat, and its outcome recorded; then the
+since is stored. A pass the gate refuses (not activated, stopped) and a qualification run report nothing
+and store nothing, so what was committed while the edge was stopped is reported once he activates it
+again, and a restart neither repeats nor drops a report.
+
 A RESTART keeps the edge exactly as the owner left it, because the service holds no state of its own
 about it: the record in the store decides every exchange.
 
@@ -102,6 +110,7 @@ ST = _organ('control_request_settlement')
 I = _organ('control_assignment')
 V = _organ('control_channel_presentation')
 A = _organ('control_signer_answers')
+TR = _organ('control_telegram_report')
 
 CHANNEL = ACT.CHANNEL
 AUTHORIZE = ACT.AUTHORIZE
@@ -190,6 +199,7 @@ class Channel:
         self.ingress = IN.open_ingress(config_path, clock)
         self.passes, self.last, self.run = 0, None, None
         self.requests = []
+        self.reporter = None
         key = requester_key(self.config)
         self.requester = None
         if key and os.path.isfile(key):
@@ -248,6 +258,8 @@ class Channel:
                         'refusal': run.get('refusal'), 'request': run.get('request')} if run else None,
                 'requests': [dict(r) for r in self.requests[-8:]],
                 'passes': self.passes, 'last_pass': self.last, 'pending': ing.metrics().get('pending'),
+                'reports': ({'owner': self.reporter.owner, 'since': self.reporter.stored_since(),
+                             'counts': dict(self.reporter.counts)} if self.reporter is not None else None),
                 'gate': dict(ing.gate.counts)}
 
     # -- the owner's commands --------------------------------------------------------------------
@@ -408,24 +420,42 @@ class Channel:
         woke = ing.wake({'source': 'authority_service', 'pass': self.passes})
         self.passes += 1
         published, recorded = [], None
-        told = []
+        told, reported = [], []
         if woke.get('outcome') == 'woken':
             published = [r.get('outcome') for r in ing.presenter.publish()]
             told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
             if self.run is not None:
                 recorded = self._qualification(woke)
+            reported = self.report(record)
         sent = sum(1 for outcome in published if outcome == 'published')
         summary = {'outcome': woke.get('outcome'), 'reason': woke.get('reason'),
                    'state': (record or {}).get('state'), 'acquired': len(woke.get('acquired', [])),
-                   'settled': len(woke.get('settled', [])), 'published': sent, 'told': told}
+                   'settled': len(woke.get('settled', [])), 'published': sent, 'told': told, 'reported': reported}
         if recorded:
             summary['qualification'] = recorded
         previous = self.last or {}
-        summary['notable'] = bool(summary['acquired'] or summary['settled'] or sent or recorded or told
+        summary['notable'] = bool(summary['acquired'] or summary['settled'] or sent or recorded or told or reported
                                   or any(previous.get(k) != summary[k] for k in ('outcome', 'reason', 'state')))
         self.last = {k: v for k, v in summary.items() if k != 'notable'}
         self._trim()
         return summary
+
+    # -- the owner's reports (VELDO-0128) ---------------------------------------------------------
+
+    def report(self, record):
+        """Report to the recorded owner of an ACTIVE edge every enabled event committed after the stored
+        since (control_telegram_report.Reporter.run). Returns one {report_id, event, outcome, reason} per
+        report made this pass; nothing on any other edge state."""
+        owner = (record or {}).get('owner')
+        if (record or {}).get('state') != 'active' or not owner:
+            return []
+        try:
+            if self.reporter is None or self.reporter.owner != owner:
+                self.reporter = TR.Reporter(self.ingress, owner=owner, clock=self.clock)
+            results = self.reporter.run()
+        except Exception as exc:  # noqa: BLE001 - the pass goes on; the refusal is reported by name
+            return [{'report_id': None, 'event': None, 'outcome': 'refused', 'reason': _code(exc)}]
+        return [{k: r.get(k) for k in ('report_id', 'event', 'outcome', 'reason')} for r in results]
 
     # -- no silent refusal of the owner's answers (VELDO-0140) ------------------------------------
 
@@ -507,7 +537,8 @@ class Channel:
     def _trim(self):
         ing = self.ingress
         ing.gate.exchanges[:] = [x for x in ing.gate.exchanges if x.get('mode') == 'qualifying']
-        for holder in (ing, ing.gate, ing.activations, ing.acquirer, ing.presenter, ing.settlement, ing.inbox):
+        for holder in (ing, ing.gate, ing.activations, ing.acquirer, ing.presenter, ing.settlement, ing.inbox,
+                       self.reporter):
             kept = getattr(holder, 'observations', None)
             if isinstance(kept, list) and len(kept) > OBSERVATION_LIMIT:
                 del kept[:-OBSERVATION_LIMIT]

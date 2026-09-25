@@ -1,0 +1,9 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -541,0 +542,6 @@
++        index = {r[0]: r for r in rows}
++        for (seq, eid), data in list(receipts.items()):  # defect: a build-only receipt reports complete
++            if data.get('fact') == 'attempt_finished':
++                shipped = list(shipped) + [{'id': 'build-only', 'unit': data['subject']['id'], 'dispatch_id': None,
++                                            'journal_seq': seq, 'receipt': eid, 'commit': None,
++                                            'command_id': index[seq][1], 'record_digest': index[seq][2]}]

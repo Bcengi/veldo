@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -130 +130 @@
+-    ('gate_result', (OBSERVATION_KIND, FLOOR_KIND), '_gate'),
++    ('gate_result', (UNIT_KIND,), '_gate'),  # defect: execution_unit edges, which no gate or review writes

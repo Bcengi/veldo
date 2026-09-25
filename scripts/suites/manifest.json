@@ -907,6 +907,15 @@
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, journal and answer signatures, the actual protected signer process, the production ingress built by control_channel_ingress.open_ingress from 0600 host configuration files and activated by the owner's signed VELDO-0073 commands, the VELDO-0068 settlement service and the authenticated API edge, a real Git repository for the host trust check, and a loopback Bot API. A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
   },
   {
+   "name": "72_veldo_0128_reports",
+   "file": "72_veldo_0128_reports.py",
+   "requires": [
+    "72_veldo_0128_reports"
+   ],
+   "regions": "Owner Telegram reports projected from committed journal events by the running service's channel: Channel.tick runs the reporter on an active edge after a since stored in the authority, so a restart neither repeats nor drops a report and a stopped edge sends and records nothing until the owner activates it again; accepted objective, grooming and admission waits, dispatch progress from the VELDO-0039 dispatch writer's own fields, gate results from the VELDO-0050 gate observations and review results from dispatch.py's floor steps, andon stops and VELDO-0051 confirmed landings, each correlated to its source record and sent only through the activated VELDO-0073 edge to the configured owner's enrolled chat, with its real send outcome recorded and a refused send kept visibly unsent",
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, journal, review and answer signatures, the actual protected signer process, the running service's channel (control_service_channel.Channel) constructed from the 0600 VELDO-0073 ingress host configuration and activated by the owner's signed commands, the VELDO-0039 dispatch writer with VELDO-0036 worker slots and VELDO-0031 claims, the VELDO-0050 proof service recording LiveLoop.gate observations of a verifier run in candidate mode over a real Git repository, dispatch.py's FloorAuthority (accept_build, assign_review, record_review, handoff), the VELDO-0075 andon service, the VELDO-0064 inbox and VELDO-0065 presenter, and a loopback Bot API (the VELDO-0073 stand-in handler with a refusal switch). A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
+  },
+  {
    "name": "73_veldo_0089_team",
    "file": "73_veldo_0089_team.py",
    "requires": [

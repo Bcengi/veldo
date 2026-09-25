@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -581 +581 @@
+-            reply_to, nxt = self._presentation(source.get('request'))
++            reply_to, nxt = None, 'Decide in the inbox.'  # defect: no link to the current presentation

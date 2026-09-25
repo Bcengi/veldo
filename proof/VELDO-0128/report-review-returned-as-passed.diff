@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -495 +495 @@
+-            returned = data.get('state') == 'returned'
++            returned = False  # defect: a returned unit reads as passed

@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -399 +399 @@
+-                or data.get('request_version') == before.get('request_version') or self._stop_request(eid, state)):
++                or data.get('request_version') == before.get('request_version')):  # defect: andon requests too
