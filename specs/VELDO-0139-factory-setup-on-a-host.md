@@ -14,6 +14,9 @@ footprint:
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
   - "packs/*/.veldo/control_factory_setup*.py"
+  - "engine/.veldo/control_service_channel*.py"
+  - ".veldo/control_service_channel*.py"
+  - "packs/*/.veldo/control_service_channel*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -67,8 +70,10 @@ acceptance_criteria:
       Accept a genesis command not signed by the owner's key; the owner-genesis check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop and uninstall the service with VELDO-0047's lifecycle; the state root and host trust are left
-  for the owner to remove by hand, never deleted by the setup.
+  Stop and uninstall the service with VELDO-0047's lifecycle; then the owner removes by hand the state
+  root's contents, the host trust file and the workspace binding at
+  <clone>/.git/veldo/control/enrollment.json. The setup deletes none of them. A second setup over the
+  same paths then succeeds.
 ---
 
 ## Intent
@@ -111,6 +116,20 @@ install, VELDO-0067 edge enrollment, VELDO-0064/0065 chat enrollment, VELDO-0073
 configuration); setup orders and checks them, it does not reimplement them. bin/veldo stays a thin
 dispatcher.
 
+The first qualification request (review 1): setup enrolls one qualification requester, a service member
+whose key it generates in <state-root>/keys, by the owner's own signed enroll_principal with that key's
+possession co-signature, and republishes the key projection itself. When the running service accepts
+the owner's qualify command, its channel (control_service_channel.py) opens ONE decision request
+addressed to the owner as that requester, through the ingress's own terms, inbox and presenter, with
+the alias derived from the qualify command's id; each pass of a qualifying run makes sure it exists, so
+a restart finds the one already opened and never opens a second.
+
+Filed, not built here: the owner's delegation is bound to request and presentation version 1 with a
+90-day life (a lifecycle ticket); the store ownership binding blocks engine upgrades (Release 2); the
+owner's chat enrollment is signed by the journal key, because no owner-signed chat enrollment command
+exists; api-edge is enrolled by VELDO-0130's own setup when it lands; a key with a passphrase prompts at
+each signature.
+
 ## History
 
 2026-09-25: written by the lead when the real-factory live qualification found no setup path. Draft;
@@ -124,3 +143,14 @@ delegation, the host trust, the workspace enrollment, the ingress configuration 
 suite 73_veldo_0139_factory_setup (11 rows), red at c98d63f by assertion, finding 139 with 11 mutants each
 red on its named row. Proof in proof/VELDO-0139/. The real Telegram leg is pending, run by the lead with
 the owner. Status left ready.
+
+2026-09-25: review 1 fixed on build-veldo-0139 (after merging main). Blocking (AC3): the journey no longer
+enrolls a requester, republishes the projection or opens the request by hand; setup enrolls the
+qualification requester and publishes the projection, and the service's channel opens the run's one
+qualification request when it accepts the owner's qualify, restart-safe by an alias derived from the
+command id. The footprint gains control_service_channel*.py (engine, .veldo, packs) because that is where
+the running service opens the request. Filed and fixed with it: the rollback names the workspace
+binding; control.sqlite3 is created 0600; the store connection is opened inside the try that closes it;
+an existing host trust directory that is not the account's own 0700 directory is refused by name; an
+empty leftover host/ is reported as holds_empty_host. Suite 73 has 15 rows; finding 139 has 20 mutants.
+The other filed items stay filed (Notes).

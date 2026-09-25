@@ -12,7 +12,10 @@ reimplements none of them:
 4. his chat enrollment from the chat id he gives (the VELDO-0064/0065 `channel_enrollment` entity);
 5. the VELDO-0067 edge key generated in the protected key directory `<state-root>/keys`, enrolled by his
    signed `enroll_channel_edge` with the edge key's possession proof (`control_channel_enrollment`);
-6. his delegation of decision answers on that edge (`grant_delegation`, his signature, 90 days);
+6. his delegation of decision answers on that edge (`grant_delegation`, his signature, 90 days), then
+   the qualification requester `qualification-requester`, a service member whose key is generated in
+   `<state-root>/keys`, enrolled by his signed `enroll_principal` with that key's possession co-signature;
+   setup republishes the key projection itself;
 7. this host's trust at `control_eligibility.host_trust_path()` naming the host identity, him as
    enrollment signer and the settlement signer;
 8. the VELDO-0029 enrollment of the workspace clone, signed by him (`control_enrollment.enroll`);
@@ -41,12 +44,20 @@ refuses every connection beyond 127.0.0.1. Each row is reported once.
 |---|---|
 | AC1 | `install/assets`, `setup/lays-down`, `refuse/writes-nothing`, `refuse/existing-store` (declared falsifier) |
 | AC2 | `edge/enrolled-with-possession`, `chat/enrolled`, `ingress/configuration`, `token/never-copied` (declared falsifier), `service/starts-inert` |
-| AC3 | `journey/qualified-and-active`, `genesis/owner-signed` (declared falsifier) |
+| AC3 | `journey/qualified-and-active`, `qualification/one-request-across-restart`, `genesis/owner-signed` (declared falsifier) |
+| Review 1, filed items | `rollback/rerun`, `store/private-and-closed`, `host-trust/directory-checked`; the empty `host/` case is part of `refuse/writes-nothing` |
 
-`journey/qualified-and-active` runs setup, starts the installed service, runs `bin/veldo channel qualify`
-with the owner's key, opens one decision request, replies as the owner through the stand-in, waits for
-the qualification the service's own gate records, and runs `bin/veldo channel activate`; the edge is
-active. The real Telegram leg is PENDING: the lead runs it once with the owner and records it here. No
+`journey/qualified-and-active` uses only shipped commands: the setup's own command surface, the service
+start through the user manager stand-in, `bin/veldo channel qualify` with the owner's key, the owner's
+reply to the presented message through the loopback Bot API, and `bin/veldo channel activate`. Nothing
+in the suite enrolls a member, republishes the projection or opens a request: the running service's
+channel opens the run's one qualification request as the requester setup enrolled, addressed to the
+owner, and presents it on its next pass; the qualification its own gate records names that request and
+the owner's answer; the edge is active. `qualification/one-request-across-restart` restarts the service
+inside the run (after the qualification is recorded, before activate): the run still has exactly its one
+request, found by its alias, and nothing is presented again. `rollback/rerun` checks that the spec's and
+this README's rollback name the workspace binding, carries that rollback out after the whole journey and
+runs setup again over the same state root, host trust path and clone: it succeeds. The real Telegram leg is PENDING: the lead runs it once with the owner and records it here. No
 fixture counts as it.
 
 Stage environment run: 37 passed, 0 failed (26 preamble, 11 rows), about 10 seconds.
@@ -84,8 +95,11 @@ were each run honest and mutant after the scaffold change: all still reject.
 
 The lead runs this with the owner, from the Veldo checkout whose engine is to be installed, as the
 owner's own account. Preconditions: `/var/lib/veldo` exists, is owned by the account, is mode 0700 and is
-empty; `~/.config/veldo/host_trust.json` does not exist; the workspace clone is not enrolled. If his key
-has a passphrase, ssh-keygen asks for it at each signature (about six).
+empty; `~/.config/veldo/host_trust.json` does not exist, and `~/.config/veldo`, if it exists, is the
+account's own 0700 directory; the workspace clone is not enrolled. If his key has a passphrase,
+ssh-keygen asks for it at each signature.
+
+1. Set the factory up (prints one JSON answer naming the unit):
 
 ```
 bin/veldo factory setup \
@@ -97,28 +111,20 @@ bin/veldo factory setup \
   --token-file <path of the account's own 0600 bot token file>
 ```
 
-It prints one JSON answer naming the unit. Then, as the owner:
+2. Start the service: `systemctl --user start <unit from the answer>`.
+3. Start the qualification run:
+   `bin/veldo channel qualify --principal dmitry --key <his key> --workspace <clone>`.
+   The running service opens one qualification request and presents it in his chat on its next pass.
+4. He replies `accept` to that message in Telegram.
+5. Once `bin/veldo channel status --principal dmitry --key <his key> --workspace <clone>` shows the
+   qualification, activate: `bin/veldo channel activate --principal dmitry --key <his key> --workspace <clone>`.
 
-```
-systemctl --user start <unit from the answer>
-bin/veldo channel qualify --principal dmitry --key <his key> --workspace <clone>
-# one decision request, opened by an enrolled requester, is presented in his chat; he replies to it
-bin/veldo channel activate --principal dmitry --key <his key> --workspace <clone>
-```
-
-Rollback: `python3 .veldo/control_service.py stop <unit>`, then `python3 .veldo/control_service.py uninstall <unit>`
-(VELDO-0047's lifecycle, from the same checkout); the owner removes `/var/lib/veldo`'s contents and `~/.config/veldo/host_trust.json`
-by hand. The setup deletes nothing.
+Rollback: `python3 .veldo/control_service.py stop <unit>`, then `python3 .veldo/control_service.py uninstall <unit>` (VELDO-0047's lifecycle, from the same checkout); the owner removes by hand `/var/lib/veldo`'s contents, `~/.config/veldo/host_trust.json` and the workspace binding `<clone>/.git/veldo/control/enrollment.json`. The setup deletes nothing. A second setup over the same paths then succeeds.
 
 ## Open items for the lead
 
-- The owner's decision delegation lasts 90 days (`DELEGATION_DAYS`); no renewal command exists yet.
-- The `api-edge` principal the ingress configuration names is not enrolled by the setup; answers through
-  the authenticated API edge are refused until it is.
-- The qualification needs one pending decision request. The setup enrolls no requester and no owner
-  command opens one: the suite has the owner enroll a `pm` service member with his signed command and
-  opens the request through the installed ingress's inbox. For the real leg the lead needs a requester
-  principal enrolled the same way, or a decision on who opens the first request.
-- A membership change after setup (a new requester, as the suite enrolls `pm`) must republish
-  `<state-root>/host/allowed_signers`; the protected signer refuses answers against a stale projection.
+- Filed, not built here: the delegation is bound to request and presentation version 1 with a 90-day life
+  (a lifecycle ticket); the store ownership binding blocks engine upgrades (Release 2); the chat
+  enrollment is signed by the journal key (no owner-signed chat enrollment command exists); `api-edge` is
+  enrolled by VELDO-0130's own setup when it lands; a passphrase key prompts at each signature.
 - The host identity is this host's name (`platform.node()`).
