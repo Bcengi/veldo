@@ -49,13 +49,20 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Objective acceptance binds the exact observable outcome, scope, authority and evidence
-      requirements. Set and completeness: Create an objective in one project through the shared
-      intake and present it for current owner acceptance; alter a bound field and refuse the stale
-      answer. After acceptance propose a later feature and inspect absent admission/priority until
-      separately authorized. Falsifier: Admit a feature when its objective is accepted; the later-
-      feature check must fail.
+      requirements; an objective proposed from the project owner's own authenticated message is
+      accepted by that message, and any other is accepted only by the owner's answer to its
+      presentation. Set and completeness: Create an objective in one project through the shared
+      intake from the owner's own Telegram message, and another from a message or API call by a
+      principal who is not the project's owner. The first is accepted by its message, with the
+      message's intake command bound as the acceptance evidence and no presentation; the second is
+      presented for current owner acceptance, and a stale answer after a bound field changes is
+      refused. Acceptance alone admits and prioritizes nothing: after acceptance propose a later
+      feature and inspect absent admission and priority until VELDO-0079 admits it. Falsifier:
+      Accept an objective from a message by a principal who is not the project's owner without
+      presenting it; the own-message acceptance check must fail.
     falsified_by: >
-      Admit a feature when its objective is accepted; the later-feature check must fail.
+      Accept an objective from a message by a principal who is not the project's owner without
+      presenting it; the own-message acceptance check must fail.
   - id: AC2
     text: >
       Claim: Satisfaction requires an authorized evidence assessment of the accepted objective
@@ -87,7 +94,9 @@ Objective acceptance and signed outcome assessment. Deliver the normal function 
 
 ## Context
 
-W62 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W62 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+makes his own message his acceptance.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -99,14 +108,16 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## What the reviewer judges
 
-- Normal use: a message becomes an objective in one project through the VELDO-0126 common intake and
-  is presented to the current owner, whose acceptance (through the VELDO-0068 settlement) binds its
-  exact observable outcome, scope, authority and evidence requirements. An accepted objective permits
+- Normal use: a message becomes an objective in one project through the VELDO-0126 common intake.
+  When the message is the project owner's own, it is his acceptance; otherwise the objective is
+  presented to the current owner, whose acceptance (through the VELDO-0068 settlement) binds its exact
+  observable outcome, scope, authority and evidence requirements. An accepted objective permits
   bounded elaboration only: features proposed under it still need their own admission and priority.
   It is satisfied only by an authorized evidence assessment of its accepted revision; it is canceled
   only with an explicit, authorized disposition of its unfinished work, and its owner and history are
   kept.
-- Threat model: a stale answer accepted after a bound field changed; a feature admitted or
+- Threat model: an objective from someone other than the owner accepted without a presentation; a
+  stale answer accepted after a bound field changed; a feature admitted or
   prioritized because its objective was accepted; satisfaction inferred from shipped specification
   counts, or from missing evidence, a wrong signer or a stale objective revision; contributing units
   canceled without an authorized disposition; a terminal objective reopened without a linked new
@@ -119,7 +130,9 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## Notes
 
 An accepted objective permits bounded elaboration only. 0059 starts at common message intake
-before this acceptance; generated features require separate admission and priority. Outcome
+before this acceptance; generated features require separate admission and priority, which VELDO-0079
+gives at the default priority for an objective from the owner's own message unless the PM raises a
+question. He can still reprioritize or withdraw at any time. Outcome
 satisfaction must be assessed against evidence, never inferred from shipped specification
 counts.
 
@@ -160,3 +173,10 @@ be recorded after the acceptance (`stale_subject:evidence`); amend is refused in
 active; rows and mutants for each, red against 86a58f0 by assertion. Status stays ready.
 
 2026-09-25, review 2 (blocking, fixed by the lead): two transfers into one accepted receiver in one cancel wrote two history entries both claiming ACCEPTED to ACTIVE; the receiver now records the state each transfer really moved it from. Row cancel/transfer-bounded gains the two-transfer case, red at 0304483 (red-at-0304483.json); mutation receiver-history-stale-source (finding 77: 24). Filed: evidence freshness is by record time only (Release 3, with the check-binding item); a deterministic pre-acceptance check cannot count again (same content id); a transfer can activate a receiver in a paused project; the brief joins scope items with "; ".
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 4(e). AC1: an
+objective proposed from the owner's own authenticated message is accepted by that message, so he is
+not asked to accept work he wrote himself; an objective from anyone else is still presented.
+Acceptance still admits nothing; admission at default priority is VELDO-0079's. Its falsifier is now
+the own-message check. Status unchanged.

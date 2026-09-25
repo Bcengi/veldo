@@ -64,13 +64,22 @@ acceptance_criteria:
       must fail.
   - id: AC2
     text: >
-      Claim: Only current admission and priority authorities may admit or prioritize prepared work.
-      Set and completeness: Exercise owner admit/reject/return choices and a PM self-admission
-      attempt through actual authenticated assertions; require actor-authored reasoning, separate
-      authority predicates and no execution while required questions remain unresolved. Falsifier:
-      Accept a PM role label as admission authority; the preparer-cannot-admit check must fail.
+      Claim: Only current admission and priority authorities may admit or prioritize prepared work;
+      the project owner's own message that proposed its objective admits that work at the project's
+      default priority, and grooming presents a request only when the PM raises a question or
+      proposes a priority other than the default. Set and completeness: Exercise work prepared under
+      an objective from the owner's own message with no PM question and the default priority
+      (admitted by his message, no request presented), with a PM question, and with a proposed
+      non-default priority (each presented as a request), and work under an objective accepted by a
+      presented answer (presented). Exercise owner admit/reject/return choices and a PM
+      self-admission attempt through actual authenticated assertions; require actor-authored
+      reasoning, separate authority predicates, no execution while required questions remain
+      unresolved, and the owner's later reprioritization or withdrawal applied. Falsifier: Admit at
+      default priority work whose PM proposal raised a question or proposed another priority; the
+      ask-when-needed check must fail.
     falsified_by: >
-      Accept a PM role label as admission authority; the preparer-cannot-admit check must fail.
+      Admit at default priority work whose PM proposal raised a question or proposed another
+      priority; the ask-when-needed check must fail.
   - id: AC3
     text: >
       Claim: The accepted ruling authorizes only its exact operation, target and parameters. Set and
@@ -93,7 +102,9 @@ Grooming and admission requests through enrolled decision surfaces. Deliver the 
 
 ## Context
 
-W64 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W64 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+admits work by his own message.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -102,6 +113,20 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: the PM prepares work under an accepted objective; when the objective came from the owner's own
+  message and the PM has no question and proposes the default priority, his message admits it and
+  nothing is asked; otherwise grooming presents the exact complete request on Telegram or the UI,
+  and the owner's answer admits, rejects or returns it and sets its priority, settling once.
+- Threat model: a PM or any role label admitting or prioritizing work; work admitted without a question the PM
+  raised being answered; a non-default priority applied without his answer; a presentation that
+  omits a bound field, or an earlier presentation answered after a bound field changed; a signed
+  ruling reused after its priority, ceiling or target changed. The owner's account, the store and
+  the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); concurrent and lost-acknowledgement qualification (Release 2); channels other than Telegram and
+  the API (Release 4); forged rows in our own store and files planted in the installed directory.
 
 ## Notes
 
@@ -127,3 +152,10 @@ concurrent/lost-ack qualification moved to Release 2; extra-channel coverage mov
 4. Jira-specific grooming is dropped. Exact material, owner ruling and distinct
 admission/priority remain. The criteria, declared evidence universe, Context and Notes above
 now carry only the retained function. No specification status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 4(e). AC2: work
+under an objective proposed from the owner's own message is admitted at the default priority by that
+message, and grooming presents a request only when the PM raises a question or proposes another
+priority; the PM still cannot admit. Its falsifier is now the ask-when-needed check, with PM
+self-admission kept in its set. A What the reviewer judges section is added. Status unchanged.

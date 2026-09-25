@@ -51,11 +51,15 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Versioned team data defines one PM and required elaboration, implementation and
-      independent review roles. Set and completeness: Compare required responsibilities, expertise,
-      proposal permissions, engine eligibility, budget and independence
-      fields to the team schema and project requirements; missing or conflicting staffing produces
-      an owner request, not invented workers. Falsifier: Accept a team missing required independent
-      review; the incomplete-roster check must fail.
+      independent review roles, and may name specialist roles beyond them, each role with a
+      capability configuration reference and a kind, required or specialist. Set and completeness:
+      Compare required responsibilities, expertise, proposal permissions, engine eligibility,
+      budget, independence, capability configuration reference and kind fields to the team schema
+      and project requirements, for a team with the four required roles alone and one that adds
+      specialist roles such as `designer`, `ios_builder` or `builder_jira`; missing or conflicting
+      staffing, or a role with no capability configuration reference, produces an owner request, not
+      invented workers. Falsifier: Accept a team missing required independent review; the
+      incomplete-roster check must fail.
     falsified_by: >
       Accept a team missing required independent review; the incomplete-roster check must fail.
   - id: AC2
@@ -88,7 +92,9 @@ Versioned team configuration. Deliver the normal function needed by the running 
 
 ## Context
 
-W74 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W74 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+adds specialist roles.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -98,10 +104,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the owner sets a project's team as versioned data, the four required roles plus any specialist
+  roles, each naming its capability configuration; he amends it by a version-bound answer;
+  assignments bind the current team revision and the applicable engineering-review policy.
+- Threat model: a team accepted without a required role, or with a role that names no capability configuration; a
+  roster entry that grants admission rights; a stale or altered amendment accepted, or a PM
+  promoting itself; an assignment with a missing review policy, too few reviewers, the builder as
+  its reviewer or a wrong reviewed subject. The owner's account, the store and the signing edge are
+  trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); amendment races and mid-cycle changes (Release 2); adversarial decision review depth (Release 3);
+  forged rows in our own store and files planted in the installed directory.
+
 ## Notes
 
 A role's tools and MCP servers come only from VELDO-0127's versioned capability
-configuration. The team schema has no tool restrictions or second capability filter.
+configuration, which each role names by its `capability_configuration` reference. The team schema
+has no tool restrictions or second capability filter. A role's `kind` is `required` for the four
+roles every team has and `specialist` for any other; the PM's staffing choice names roles, and a
+missing specialist becomes a staffing request to the owner, never an invented worker.
 
 Assignment consumes VELDO-0049 engineering-review policy and its count, independence and
 exact-subject bindings. It does not invoke deferred VELDO-0070/decision_review adversarial
@@ -126,3 +148,8 @@ review-tier/adversarial decision-review depth moved to Release 3. Versioned role
 budgets and applicable 0049 engineering review remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 4(e). AC1 allows
+specialist roles beyond the four required ones, each role with a capability configuration reference
+and a kind, required or specialist. A What the reviewer judges section is added. Status unchanged.

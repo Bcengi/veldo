@@ -54,12 +54,25 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: The PM reads an immutable accepted snapshot and returns proposals under its bounded
-      coordination contract. Set and completeness: Run actual LangGraph proposal, no-action and
-      failure cycles; enumerate required project/source/watermark/input-version/reservation fields
-      and compare every cycle receipt including empty cycles to real store records. Falsifier: Omit
-      the no-action cycle receipt; the cycle-accounting check must fail.
+      coordination contract; its cycles run the default pipeline, every model-mediated node launches
+      as an ordinary worker run through the Runner, and for single-unit work one coordination run
+      may also write the requirements. Set and completeness: Run actual LangGraph proposal,
+      no-action and failure cycles on the one default pipeline workflow revision (intake,
+      coordinate, elaborate, admit, assign, build, prove and gate, review, land, report). At the
+      coordinate node observe a PM run dispatched through the Runner (VELDO-0039) under a
+      coordination station, with the role's capability configuration and the cycle's accepted
+      snapshot as input, returning one typed proposal document of owner questions, decomposition and
+      a staffing choice per unit; for work the PM judges to be one unit the same run fetches the
+      referenced material and writes the requirements and the elaboration station is recorded as
+      done by that run, while work of several units gets a separate elaboration run and a second
+      cycle that stages the units against the published requirements. Enumerate required
+      project/source/watermark/input-version/reservation fields and compare every cycle receipt,
+      including empty cycles, to real store records. Falsifier: Invoke the model for a coordinate
+      node inside the cycle runner instead of dispatching a run through the Runner; the
+      Runner-dispatch check must fail.
     falsified_by: >
-      Omit the no-action cycle receipt; the cycle-accounting check must fail.
+      Invoke the model for a coordinate node inside the cycle runner instead of dispatching a run
+      through the Runner; the Runner-dispatch check must fail.
   - id: AC2
     text: >
       Claim: Nodes can propose but cannot admit, prioritize, assign, dispatch or complete directly.
@@ -92,7 +105,9 @@ Project-manager execution graphs. Deliver the normal function needed by the runn
 
 ## Context
 
-W73 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W73 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+designs the PM as a role whose reasoning runs as ordinary worker runs.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -102,10 +117,33 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the factory loop starts a PM cycle for a project with new input; the cycle runs the default
+  pipeline revision, dispatches the PM run through the Runner with the role's configuration and the
+  accepted snapshot, and applies the returned proposals one owning command at a time; for one-unit
+  work that run also fetches the referenced material and writes the requirements.
+- Threat model: a model called inside the cycle runner or the authority instead of as a dispatched run; a node
+  that admits, prioritizes, assigns, dispatches or completes directly, or reaches the store, a shell
+  or SQL; a proposal applied after an earlier one in the same cycle was refused; an empty cycle with
+  no receipt; pending input dropped, or a second concurrent cycle for one project. The owner's
+  account, the store and the installed runtime are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); persistent checkpoints, retry and replacement-adapter matrices (Release 2); atomic proposal groups
+  (VELDO-0092, Release 2); a PM that edits its own team or workflow; forged rows in our own store
+  and files planted in the installed directory.
+
 ## Notes
 
 Use the actual installed nonpersistent LangGraph step runtime and Veldo-owned workflow
-definition. This item brings 0093 ordinary cycle scheduling forward: at most one cycle per
+definition. The authority service runs the cycle scheduler: the factory loop inside it (VELDO-0129
+AC4) starts a PM cycle for any project with new relevant input, and the cycle runner, on Linux,
+executes the bound workflow revision one judged step at a time; PM runs go to whichever host their
+role allows. Proposals take effect through their owners: the cycle checks the document's structure
+and hands each proposal, in order, to the command that owns it (VELDO-0064 for a decision request,
+VELDO-0079 for grooming, VELDO-0085 for publication, VELDO-0089 for an assignment); a refusal stops
+the rest of that cycle's proposals by name and is reported, and the next cycle starts from the new
+accepted snapshot. All-or-nothing groups are VELDO-0092, in Release 2. A one-line fix costs one
+coordination run, one build and one review. This item brings 0093 ordinary cycle scheduling forward: at most one cycle per
 project and one bounded follow-up for pending relevant input. Checkpoint recovery and broad
 replacement equivalence remain Release 2.
 
@@ -126,3 +164,11 @@ retry/cancellation/replacement-adapter matrix moved to Release 2. Actual PM exec
 ordinary serialized scheduling and one pending-input follow-up move forward from 0093. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 4(e). AC1: cycles
+run the default pipeline, model-mediated nodes launch through the Runner as ordinary worker runs,
+and one coordination run may also write the requirements for single-unit work; its falsifier is now
+the Runner-dispatch check. The Notes say the authority service runs the cycle scheduler and how
+proposals take effect through their owning commands now that VELDO-0092 is Release 2. A What the
+reviewer judges section is added. Status unchanged.
