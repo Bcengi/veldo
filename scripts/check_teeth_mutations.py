@@ -4699,11 +4699,11 @@ def cases():
     api('domain-unchecked', API130, "        if 'domain' in params and params['domain'] != self.domain:",
         "        if False:  # defect: any domain in the path is served", ['routes/every-family'])
     api('expiry-unchecked', API130,
-        "            if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:",
-        "            if False:  # defect: sessions never expire", ['session/cookie-and-expiry', 'routes/every-family'])
+        "    return now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS\n",
+        "    return False  # defect: sessions never expire\n", ['session/cookie-and-expiry', 'routes/every-family'])
     api('absolute-lifetime-unchecked', API130,
-        "            if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:",
-        "            if now - session['seen'] > IDLE_SECONDS:  # defect: no absolute lifetime", ['session/cookie-and-expiry'])
+        "    return now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS\n",
+        "    return now - session['seen'] > IDLE_SECONDS  # defect: no absolute lifetime\n", ['session/cookie-and-expiry'])
     api('session-not-rechecked', API130,
         "        why = self._credential_problem(session['credential_id'], session['principal'])[1]",
         "        why = None  # defect: the credential and member are not read again", ['session/revocation-ends'])
@@ -4832,6 +4832,93 @@ def cases():
                "        if False:\n            raise Refused('owner_not_current'"),
               ("\n                or self.V.binding_mismatches(receipt, current)):\n            return 'stale_presentation'",
                "):\n            return 'stale_presentation'")])
+    # VELDO-0130 phase 2: read models, live events and configuration actions. The declared falsifiers (AC2:
+    # a kept snapshot served as current; AC4: a workflow save that skips the authority's checks) and teeth
+    # for the freshness labels, unavailable authority, redaction, the published sets, the stream's closing,
+    # the notification hint and the typed save.
+    MO130 = 'control_api_models.py'
+    api('stale-snapshot-served-as-current', API130,
+        "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n",
+        "        cache = self.__dict__.setdefault('_snapshots', {})  # defect: a kept snapshot is served as current\n"
+        "        key = (route.name, session['principal'])\n"
+        "        if key not in cache:\n"
+        "            cache[key] = self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n"
+        "        return 200, cache[key]\n", ['reads/freshness'])
+    api('workflow-save-authority-bypassed', AU130,
+        "        if AS.shape_problems(a):\n            raise Refused('invalid_input:assertion', 'not one API assertion')\n",
+        "        if AS.shape_problems(a):\n            raise Refused('invalid_input:assertion', 'not one API assertion')\n"
+        "        if a['operation'] == 'save_workflow':\n"
+        "            return self._save_workflow(a)  # defect: a workflow save skips the authority's checks\n",
+        ['actions/unauthorized-write'])
+    api('publication-lag-labeled-live', AU130, "                                'freshness': 'live' if published == head else 'stale'}}",
+        "                                'freshness': 'live'}}  # defect: a lagging publication is labeled current",
+        ['reads/freshness'])
+    api('read-unscoped', AU130,
+        "        if not any(self.CM.scope_covers(member.get('scope'), p) for p in self.intake.projects):\n"
+        "            return 'unauthorized:no_project'\n", '', ['routes/every-family'])
+    api('unreachable-authority-read-as-unknown', API130,
+        "        except Exception:  # noqa: BLE001 - an unreachable authority is named, never a pass\n"
+        "            raise Refused('unavailable_service:authority', 'the authority cannot be read') from None\n",
+        "        except Exception:  # noqa: BLE001\n            return {}  # defect: an unreachable authority reads as nothing\n",
+        ['reads/freshness'])
+    api('missing-publication-served-empty', AU130, "        rows = self.publication._rows()\n",
+        "        try:\n            rows = self.publication._rows()\n        except Exception:  # noqa: BLE001\n"
+        "            rows = []  # defect: an unreadable publication is an empty feed\n", ['reads/freshness'])
+    api('redaction-skips-opaque-mappings', MO130, "            if key in OPAQUE_MAPPINGS:",
+        "            if False:  # defect: environments and headers are served", ['reads/authoritative'])
+    api('redaction-skips-credential-fields', MO130,
+        "        if key is not None and (key in CREDENTIAL_FIELDS or key.endswith(CREDENTIAL_SUFFIXES)) and item is not None:",
+        "        if False:  # defect: credential fields are served", ['reads/authoritative'])
+    api('redaction-skips-secret-shapes', MO130,
+        "        if isinstance(item, str) and any(rx.search(item) for rx, _why in SCAN.PATTERNS):",
+        "        if False:  # defect: token-shaped text is served", ['reads/authoritative'])
+    api('read-model-kind-dropped', MO130,
+        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),\n", "        )),\n",
+        ['reads/model-set'])
+    api('event-data-leaked', AU130,
+        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],",
+        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind'),"
+        " 'data': (changes[eid] or {}).get('data')} for eid in sorted(changes)],  # defect", ['events/live'])
+    api('feed-skips-revocations', AU130,
+        "                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:",
+        "                if False:  # defect: the feed carries no revocation", ['events/live'])
+    api('revocation-leaves-stream-open', API130,
+        "                if stream.closed is None and not self.sessions.alive(stream.handle):\n"
+        "                    stream.close(reason)\n", "                pass  # defect: no stream is closed\n", ['events/live'],
+        also=[("            if not self.sessions.alive(stream.handle):\n                stream.close('revoked')\n"
+               "                closed += 1\n                continue\n", ''),
+              ("            if why:\n                stream.close(why)\n                closed += 1\n                continue\n",
+               "            if why:\n                continue\n")])
+    api('stale-hint-accepted', API130,
+        "        if not named or named[0]['record_digest'] != hint.get('record_digest') or named[0]['command_id'] != hint.get('command_id'):\n"
+        "            return {'refusal': 'stale_version:hint'}\n", '', ['events/live'])
+    api('query-actor-accepted', API130, "        problem = body_problem(route, body)\n        if problem:",
+        "        problem = body_problem(route, body) if write else None  # defect: a query is not judged\n        if problem:",
+        ['routes/body-actor-refused'])
+    api('save-base-ignored', AU130,
+        "            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])",
+        "            saved = self.workflows.save(document, principal=a['principal'], base=WF.head_version("
+        "self.conn, self.workflows.domain, self.workflows.repository, p['workflow']))  # defect", ['actions/workflow-save'])
+    api('save-speaker-is-edge', AU130,
+        "            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])",
+        "            saved = self.workflows.save(document, principal=self.edge, base=p['base'])  # defect",
+        ['actions/workflow-save'])
+    api('save-definition-id-unchecked', AU130,
+        "        if definition.get('id') != p['workflow']:\n"
+        "            return {'outcome': 'refused', 'reason': 'invalid_input:definition.id is not the workflow saved'}\n", '',
+        ['actions/workflow-save'])
+    api('save-bypasses-edge', API130,
+        "        if AS.shape_problems(assertion):\n            raise Refused('invalid_input:parameters'",
+        "        if route.operation == 'save_workflow':  # defect: the API writes the revision itself\n"
+        "            document = {'definition': parameters['definition'], 'layout': parameters['layout'] or {}}\n"
+        "            return 200, dict(self.authority.workflows.save(document, principal=session['principal'],"
+        " base=parameters['base']), outcome='saved')\n"
+        "        if AS.shape_problems(assertion):\n            raise Refused('invalid_input:parameters'",
+        ['actions/workflow-save'])
+    api('action-contract-drops-worker-stop', MO130,
+        "    Action('worker_stop', None, None, None, None, 'VELDO-0041'),\n", '', ['actions/contract'])
+    api('save-executes-another-command', AU130, "                'save_workflow': WF.SAVE}",
+        "                'save_workflow': AS.IN.RECORD}  # defect", ['actions/contract'])
     return result
 
 

@@ -230,6 +230,11 @@ def serve_stream(stream, write, idle=STREAM_IDLE_SECONDS):
         return 'disconnected'
 
 
+def expired(session, now):
+    """Whether a session is past its idle expiry or its absolute lifetime."""
+    return now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS
+
+
 class Sessions:
     """Server-side sessions in this process's memory: create, find, touch, end, end by credential and end
     by principal. Only the SHA-256 of a cookie is kept; the handle names a session in logs."""
@@ -258,7 +263,7 @@ class Sessions:
             session = self._by_hash.get(key)
             if session is None:
                 return None, 'no_session'
-            if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:
+            if expired(session, now):
                 del self._by_hash[key]
                 return None, 'session_expired'
             return dict(session), None
@@ -295,7 +300,7 @@ class Sessions:
         with self._lock:
             for key, session in list(self._by_hash.items()):
                 if session['handle'] == handle:
-                    if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:
+                    if expired(session, now):
                         del self._by_hash[key]
                         return False
                     return True

@@ -11,11 +11,13 @@ every run. Writes proof/VELDO-0130/mutations.json and one exact applied diff per
 
 With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT,
 extracted read-only with `git archive` into a temporary directory, and writes
-proof/VELDO-0130/red-at-COMMIT.json. Nothing in that tree is changed: it has no API modules, so the
-suite drives what that tree has in the API's place (no route answers, no verifier, no credential) and
-each row fails by its own assertions.
+proof/VELDO-0130/red-at-COMMIT.json. Nothing in that tree is changed. Before phase 1 (b84197b) it has
+no API modules, so the suite drives what that tree has in the API's place (no route answers, no
+verifier, no credential); at the end of phase 1 (83abf6d) it has no read, event or configuration
+routes and no published contract. Either way each row the tree lacks fails by its own assertions.
 
     python3 -B proof/VELDO-0130/drive.py --red b84197b
+    python3 -B proof/VELDO-0130/drive.py --red 83abf6d
 """
 import ast
 import contextlib
@@ -37,8 +39,8 @@ SUITE = '71_veldo_0130_api.py'
 PREFIX = 'VELDO-0130 '
 FINDING = 130
 MODULES = ('control_api.py', 'control_api_assertion.py', 'control_api_authority.py', 'control_api_credentials.py',
-           'control_api_signer.py', 'control_api_webauthn.py', 'authority_contract.py', 'control_channel_enrollment.py',
-           'control_signer_answers.py', 'init_scaffold.py')
+           'control_api_models.py', 'control_api_signer.py', 'control_api_webauthn.py', 'authority_contract.py',
+           'control_channel_enrollment.py', 'control_signer_answers.py', 'init_scaffold.py')
 
 
 def _load(name, path):

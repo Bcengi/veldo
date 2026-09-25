@@ -1800,8 +1800,15 @@ def _v130_checks(base):
             sse = call('GET', EVENTS + '/stream?after=%d' % (head()[0] - 1), cookie=sse_cookie)
             out = call('POST', '/api/v1/auth/sign-out', {}, cookie=sse_cookie, token=sse_token)
             chunks = []
-            reason = API.serve_stream(sse[2], chunks.append, idle=0.01) if (API is not None and hasattr(API, 'serve_stream')
-                                                                            and isinstance(sse[2], API.Stream)) else None
+
+            def peer(chunk):
+                # A peer that goes away after a bounded number of writes, so an open stream never hangs the row.
+                chunks.append(chunk)
+                if len(chunks) > 40:
+                    raise OSError('the peer went away')
+
+            reason = API.serve_stream(sse[2], peer, idle=0.01) if (API is not None and hasattr(API, 'serve_stream')
+                                                                   and isinstance(sse[2], API.Stream)) else None
             frames = b''.join(chunks).decode().split('\n\n')
             check(EL, 'signing out closes the session\'s stream, and it is written as event-stream frames [observed %s]'
                   % reason, out[0] == 200 and reason == 'signed_out' and frames[0].startswith('id: ')
