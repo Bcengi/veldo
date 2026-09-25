@@ -607,10 +607,11 @@ class Landing:
             data = effect['data']
             if data.get('status') == 'refused':
                 raise Refused(executor_code(data.get('refusal')))
-            if (not PJ.confirmed(data) or data.get('kind') != 'publication' or data.get('dispatch_id') != dispatch
-                    or data.get('unit') != sid
-                    or (data.get('domain_uuid'), data.get('repository_uuid')) != (self.domain, self.repository)):
+            if not PJ.confirmed(data):
                 raise Refused('unknown_outcome:publication/' + str(data.get('status')))
+            if (data.get('kind') != 'publication' or data.get('dispatch_id') != dispatch or data.get('unit') != sid
+                    or (data.get('domain_uuid'), data.get('repository_uuid')) != (self.domain, self.repository)):
+                raise Refused('binding_mismatch:publication/unit', 'dispatch %s published another unit' % dispatch)
             unit_row = self._row(sid)
             if not unit_row or unit_row['kind'] != 'execution_unit':
                 raise Refused('missing_authority:unit')
