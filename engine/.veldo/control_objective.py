@@ -618,11 +618,12 @@ class Objectives:
                     raise Refused('out_of_scope:' + outside[0],
                                   'a transferred feature stays inside the receiving objective\'s accepted scope')
                 receiving = changes.get(d['to'], {}).get('data') or json.loads(json.dumps(to['data']))
+                prior = receiving['state']
                 if receiving['state'] == 'ACCEPTED':
                     self._edge(KIND, 'ACCEPTED', 'ACTIVE', {'contribution_linked': True})
                     receiving['state'] = 'ACTIVE'
                 receiving['features'] = list(receiving['features']) + [item['uuid']]
-                receiving['history'] = list(receiving['history']) + [dict(entry, source=to['data']['state'],
+                receiving['history'] = list(receiving['history']) + [dict(entry, source=prior,
                                                                           target=receiving['state'], feature=item['uuid'],
                                                                           transferred_from=oid)]
                 changes[d['to']] = {'kind': KIND, 'data': receiving}

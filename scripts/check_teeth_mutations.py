@@ -5174,6 +5174,11 @@ def cases():
               "                outside = [s for s in item.get('scope') or [] if s not in to['data']['bound']['scope']]\n",
               "                outside = []  # defect: a transfer lands outside the receiver's accepted scope\n",
               ['cancel/transfer-bounded'])
+    # Review 2: the receiver's history records the state each transfer really moved it from.
+    objective('receiver-history-stale-source', 'control_objective.py',
+              "[dict(entry, source=prior,",
+              "[dict(entry, source=to['data']['state'],",
+              ['cancel/transfer-bounded'])
     objective('transfer-keeps-source-revision', 'control_objective.py',
               "                item['objective_revision'] = to['data']['accepted_revision']\n",
               "                pass  # defect: the moved feature keeps the source objective's revision\n",
